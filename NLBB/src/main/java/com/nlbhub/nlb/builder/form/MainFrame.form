@@ -1,0 +1,513 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.nlbhub.nlb.builder.form.MainFrame">
+  <grid id="27dc6" binding="m_mainFramePanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="20" y="20" width="2366" height="437"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <splitpane id="d8ffb">
+        <constraints border-constraint="Center"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <grid id="a6ada" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints>
+              <splitpane position="left"/>
+            </constraints>
+            <properties>
+              <minimumSize width="200" height="10"/>
+              <preferredSize width="200" height="100"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="d2539" class="javax.swing.JTextArea" binding="m_bookInformationArea">
+                <constraints border-constraint="Center"/>
+                <properties>
+                  <editable value="false"/>
+                  <enabled value="true"/>
+                  <minimumSize width="200" height="15"/>
+                  <preferredSize width="200" height="15"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
+          <grid id="8859b" binding="m_mainView" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints>
+              <splitpane position="right"/>
+            </constraints>
+            <properties>
+              <minimumSize width="10" height="10"/>
+              <preferredSize width="400" height="100"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <tabbedpane id="1e68b" binding="m_graphEditorsPane">
+                <constraints border-constraint="Center"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <grid id="de2a2" layout-manager="BorderLayout" hgap="0" vgap="0">
+                    <constraints>
+                      <tabbedpane title="Untitled"/>
+                    </constraints>
+                    <properties/>
+                    <border type="none"/>
+                    <children/>
+                  </grid>
+                </children>
+              </tabbedpane>
+              <grid id="4817e" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+                <constraints border-constraint="North"/>
+                <properties/>
+                <border type="none"/>
+                <children/>
+              </grid>
+            </children>
+          </grid>
+        </children>
+      </splitpane>
+      <component id="e80c7" class="org.jdesktop.swingx.JXStatusBar" binding="m_statusBar">
+        <constraints border-constraint="South"/>
+        <properties/>
+      </component>
+      <grid id="98f8e" binding="m_toolbarPanel" custom-create="true" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+        <constraints border-constraint="North"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <toolbar id="93ece">
+            <constraints/>
+            <properties>
+              <borderPainted value="false"/>
+              <floatable value="true"/>
+              <orientation value="0"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="397f6" class="javax.swing.JButton" binding="m_newFileButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <contentAreaFilled value="true"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/new.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                  <toolTipText value="new file"/>
+                </properties>
+              </component>
+              <component id="50dea" class="javax.swing.JButton" binding="m_openFileButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/open.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="12f78" class="javax.swing.JButton" binding="m_saveFileButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/save.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="55056" class="javax.swing.JButton" binding="m_saveFileAsButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/saveas.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="6b7da" class="javax.swing.JButton" binding="m_commitButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/commit.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+            </children>
+          </toolbar>
+          <toolbar id="9a138">
+            <constraints/>
+            <properties>
+              <borderPainted value="false"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="1d9f6" class="javax.swing.JButton" binding="m_undoButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/undo.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="7dd2d" class="javax.swing.JButton" binding="m_redoButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/redo.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="b6bfe" class="javax.swing.JButton" binding="m_cutButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/cut.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="b7cbd" class="javax.swing.JButton" binding="m_copyButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/copy.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="a217f" class="javax.swing.JButton" binding="m_pasteButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/paste.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+            </children>
+          </toolbar>
+          <toolbar id="e881">
+            <constraints/>
+            <properties>
+              <borderPainted value="false"/>
+              <floatable value="true"/>
+              <rollover value="true"/>
+            </properties>
+            <clientProperties>
+              <JToolBar.isRollover class="java.lang.Boolean" value="true"/>
+            </clientProperties>
+            <border type="none"/>
+            <children>
+              <component id="70823" class="javax.swing.JButton" binding="m_addStartPointButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="core/EditAddStartPoint.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="cfa96" class="javax.swing.JToggleButton" binding="m_addPageButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="core/EditAddBookPage.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="1cb2" class="javax.swing.JToggleButton" binding="m_addObjButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="core/EditAddObj.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="b63d0" class="javax.swing.JToggleButton" binding="m_addLinkButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="core/EditAddLink.png"/>
+                  <rolloverEnabled value="true"/>
+                  <selected value="false"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="a2719" class="javax.swing.JToggleButton" binding="m_selectionModeButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="core/EditSelectionMode.png"/>
+                  <rolloverEnabled value="true"/>
+                  <selected value="false"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="79d3" class="javax.swing.JButton" binding="m_editModuleButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="core/EditModule.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="359a8" class="javax.swing.JButton" binding="m_editAllPagesButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="core/EditChangeAllPages.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="7f954" class="javax.swing.JButton" binding="m_editPageButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="core/EditPageProperties.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="607fe" class="javax.swing.JButton" binding="m_editObjButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="core/EditObjProperties.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="e71ef" class="javax.swing.JButton" binding="m_editLinkButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="core/EditLinkProperties.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="ce521" class="javax.swing.JButton" binding="m_deletePageButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="core/EditDeletePage.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="7bdae" class="javax.swing.JButton" binding="m_deleteObjButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="core/EditDeleteObj.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="10420" class="javax.swing.JButton" binding="m_deleteLinkButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="core/EditDeleteLink.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="34932" class="javax.swing.JButton" binding="m_zoomOutButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/view_min.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="1b934" class="javax.swing.JButton" binding="m_zoomInButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/view_plus.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+            </children>
+          </toolbar>
+          <toolbar id="6f726">
+            <constraints/>
+            <properties>
+              <borderPainted value="false"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="ddf2a" class="javax.swing.JButton" binding="m_showLeafsButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="core/EditLeafs.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="7af8c" class="javax.swing.JButton" binding="m_editBookVarsButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="core/EditBookVars.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="9e23b" class="javax.swing.JButton" binding="m_checkBookButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/check.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="a2bd4" class="javax.swing.JButton" binding="m_startServerButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/server_run.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="2b84c" class="javax.swing.JButton" binding="m_stopServerButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <enabled value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/server_stop.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="d614b" class="javax.swing.JButton" binding="m_findButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/find.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+            </children>
+          </toolbar>
+          <toolbar id="962c5">
+            <constraints/>
+            <properties>
+              <borderPainted value="false"/>
+              <floatable value="true"/>
+              <orientation value="0"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="44ef8" class="javax.swing.JButton" binding="m_exportToQSPText">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="extras/export/exportqsptxt.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="731b6" class="javax.swing.JButton" binding="m_exportToURQText">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="extras/export/exporturqtxt.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="921b5" class="javax.swing.JButton" binding="m_exportToPDF">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="extras/export/exportpdf.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="58dac" class="javax.swing.JButton" binding="m_exportToHTML">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="extras/export/exporthtml.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="55325" class="javax.swing.JButton" binding="m_exportJSIQ">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="extras/export/exportJSIQ.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="eb76d" class="javax.swing.JButton" binding="m_exportSTEAD">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="extras/export/exportSTEAD.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+            </children>
+          </toolbar>
+        </children>
+      </grid>
+    </children>
+  </grid>
+</form>

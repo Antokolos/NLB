@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.nlbhub.nlb.builder.form.DialogSearch">
+  <grid id="cbd77" binding="contentPane" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="48" y="54" width="802" height="415"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <grid id="94766" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints border-constraint="Center"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <grid id="b1cd1" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints border-constraint="North"/>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="47cca" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="Center"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <grid id="a9cb5" layout-manager="BorderLayout" hgap="0" vgap="0">
+                    <constraints border-constraint="East"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <grid id="30294" layout-manager="GridBagLayout">
+                        <constraints border-constraint="North"/>
+                        <properties/>
+                        <border type="none"/>
+                        <children>
+                          <grid id="6f8f1" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                            <constraints>
+                              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                              <gridbag weightx="0.0" weighty="0.0"/>
+                            </constraints>
+                            <properties/>
+                            <border type="none"/>
+                            <children>
+                              <component id="e7465" class="javax.swing.JButton" binding="buttonOK">
+                                <constraints/>
+                                <properties>
+                                  <preferredSize width="95" height="25"/>
+                                  <text value="Search..."/>
+                                </properties>
+                              </component>
+                            </children>
+                          </grid>
+                          <grid id="61686" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                            <constraints>
+                              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                              <gridbag weightx="0.0" weighty="0.0"/>
+                            </constraints>
+                            <properties/>
+                            <border type="none"/>
+                            <children>
+                              <component id="5723f" class="javax.swing.JButton" binding="buttonCancel">
+                                <constraints/>
+                                <properties>
+                                  <preferredSize width="95" height="25"/>
+                                  <text value="Close"/>
+                                </properties>
+                              </component>
+                            </children>
+                          </grid>
+                        </children>
+                      </grid>
+                    </children>
+                  </grid>
+                  <grid id="c8d16" layout-manager="BorderLayout" hgap="0" vgap="0">
+                    <constraints border-constraint="Center"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <grid id="3a840" layout-manager="GridBagLayout">
+                        <constraints border-constraint="Center"/>
+                        <properties/>
+                        <border type="none"/>
+                        <children>
+                          <component id="61028" class="javax.swing.JLabel">
+                            <constraints>
+                              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                              <gridbag weightx="0.0" weighty="0.0"/>
+                            </constraints>
+                            <properties>
+                              <labelFor value="5c750"/>
+                              <text value="Search text"/>
+                            </properties>
+                          </component>
+                          <grid id="37de7" layout-manager="GridBagLayout">
+                            <constraints>
+                              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                              <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="1.0"/>
+                            </constraints>
+                            <properties>
+                              <minimumSize width="468" height="33"/>
+                              <preferredSize width="468" height="33"/>
+                            </properties>
+                            <border type="none"/>
+                            <children>
+                              <scrollpane id="40bf8">
+                                <constraints>
+                                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                  <gridbag weightx="1.0" weighty="1.0"/>
+                                </constraints>
+                                <properties>
+                                  <horizontalScrollBarPolicy value="31"/>
+                                  <verticalScrollBarPolicy value="21"/>
+                                </properties>
+                                <border type="none"/>
+                                <children>
+                                  <component id="5c750" class="javax.swing.JTextField" binding="m_searchText">
+                                    <constraints/>
+                                    <properties>
+                                      <columns value="40"/>
+                                      <editable value="true"/>
+                                    </properties>
+                                  </component>
+                                </children>
+                              </scrollpane>
+                            </children>
+                          </grid>
+                          <hspacer id="5701e">
+                            <constraints>
+                              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                              <gridbag weightx="0.0" weighty="0.0"/>
+                            </constraints>
+                          </hspacer>
+                          <grid id="8dd74" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+                            <constraints>
+                              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                              <gridbag weightx="1.0" weighty="1.0"/>
+                            </constraints>
+                            <properties/>
+                            <border type="none" title="Find where?"/>
+                            <children>
+                              <component id="6e5c" class="javax.swing.JCheckBox" binding="m_idsCheckBox" default-binding="true">
+                                <constraints/>
+                                <properties>
+                                  <selected value="true"/>
+                                  <text value="Ids"/>
+                                </properties>
+                              </component>
+                              <component id="d392f" class="javax.swing.JCheckBox" binding="m_pagesCheckBox" default-binding="true">
+                                <constraints/>
+                                <properties>
+                                  <selected value="true"/>
+                                  <text value="Pages"/>
+                                </properties>
+                              </component>
+                              <component id="b4b11" class="javax.swing.JCheckBox" binding="m_objectsCheckBox" default-binding="true">
+                                <constraints/>
+                                <properties>
+                                  <selected value="true"/>
+                                  <text value="Objects"/>
+                                </properties>
+                              </component>
+                              <component id="d108e" class="javax.swing.JCheckBox" binding="m_linksCheckBox" default-binding="true">
+                                <constraints/>
+                                <properties>
+                                  <selected value="true"/>
+                                  <text value="Links"/>
+                                </properties>
+                              </component>
+                              <component id="ff6cf" class="javax.swing.JCheckBox" binding="m_variablesCheckBox" default-binding="true">
+                                <constraints/>
+                                <properties>
+                                  <selected value="true"/>
+                                  <text value="Variables"/>
+                                </properties>
+                              </component>
+                            </children>
+                          </grid>
+                          <grid id="7a22d" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+                            <constraints>
+                              <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                              <gridbag weightx="0.0" weighty="0.0"/>
+                            </constraints>
+                            <properties/>
+                            <border type="none" title="Find how?"/>
+                            <children>
+                              <component id="d18e2" class="javax.swing.JCheckBox" binding="m_ignoreCaseCheckBox">
+                                <constraints/>
+                                <properties>
+                                  <text value="Ignore case"/>
+                                </properties>
+                              </component>
+                              <component id="98e4e" class="javax.swing.JCheckBox" binding="m_wholeWordsCheckBox">
+                                <constraints/>
+                                <properties>
+                                  <text value="Whole words"/>
+                                </properties>
+                              </component>
+                            </children>
+                          </grid>
+                        </children>
+                      </grid>
+                    </children>
+                  </grid>
+                </children>
+              </grid>
+            </children>
+          </grid>
+          <grid id="b26a5" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints border-constraint="Center"/>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="e68f7" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="East"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <grid id="aea6b" layout-manager="BorderLayout" hgap="0" vgap="0">
+                    <constraints border-constraint="Center"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <grid id="fb18a" layout-manager="GridBagLayout">
+                        <constraints border-constraint="North"/>
+                        <properties/>
+                        <border type="none"/>
+                        <children>
+                          <grid id="d7f32" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                            <constraints>
+                              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                              <gridbag weightx="0.0" weighty="0.0"/>
+                            </constraints>
+                            <properties/>
+                            <border type="none"/>
+                            <children>
+                              <component id="eda5c" class="javax.swing.JButton" binding="m_goToButton" default-binding="true">
+                                <constraints/>
+                                <properties>
+                                  <preferredSize width="95" height="25"/>
+                                  <text value="Go to"/>
+                                </properties>
+                              </component>
+                            </children>
+                          </grid>
+                        </children>
+                      </grid>
+                    </children>
+                  </grid>
+                </children>
+              </grid>
+              <grid id="f1951" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="Center"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <scrollpane id="1010a">
+                    <constraints border-constraint="Center"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <component id="15c08" class="org.jdesktop.swingx.JXTable" binding="m_searchResultsTable">
+                        <constraints/>
+                        <properties/>
+                        <clientProperties>
+                          <terminateEditOnFocusLost class="java.lang.Boolean" value="true"/>
+                        </clientProperties>
+                      </component>
+                    </children>
+                  </scrollpane>
+                </children>
+              </grid>
+            </children>
+          </grid>
+        </children>
+      </grid>
+    </children>
+  </grid>
+</form>

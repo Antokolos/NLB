@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.nlbhub.nlb.builder.form.DialogModifications">
+  <grid id="cbd77" binding="contentPane" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="48" y="54" width="802" height="415"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <grid id="94766" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints border-constraint="Center"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <grid id="b1cd1" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints border-constraint="North"/>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="47cca" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="Center"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <grid id="a9cb5" layout-manager="BorderLayout" hgap="0" vgap="0">
+                    <constraints border-constraint="East"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <grid id="30294" layout-manager="GridBagLayout">
+                        <constraints border-constraint="North"/>
+                        <properties/>
+                        <border type="none"/>
+                        <children>
+                          <grid id="6f8f1" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                            <constraints>
+                              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                              <gridbag weightx="0.0" weighty="0.0"/>
+                            </constraints>
+                            <properties/>
+                            <border type="none"/>
+                            <children>
+                              <component id="e7465" class="javax.swing.JButton" binding="buttonOK">
+                                <constraints/>
+                                <properties>
+                                  <maximumSize width="85" height="25"/>
+                                  <minimumSize width="85" height="25"/>
+                                  <preferredSize width="85" height="25"/>
+                                  <text value="OK"/>
+                                </properties>
+                              </component>
+                            </children>
+                          </grid>
+                          <grid id="61686" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                            <constraints>
+                              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                              <gridbag weightx="0.0" weighty="0.0"/>
+                            </constraints>
+                            <properties/>
+                            <border type="none"/>
+                            <children>
+                              <component id="5723f" class="javax.swing.JButton" binding="buttonCancel">
+                                <constraints/>
+                                <properties>
+                                  <maximumSize width="85" height="25"/>
+                                  <minimumSize width="85" height="25"/>
+                                  <preferredSize width="85" height="25"/>
+                                  <text value="Cancel"/>
+                                </properties>
+                              </component>
+                            </children>
+                          </grid>
+                          <grid id="b77dd" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                            <constraints>
+                              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                              <gridbag weightx="0.0" weighty="0.0"/>
+                            </constraints>
+                            <properties/>
+                            <border type="none"/>
+                            <children>
+                              <component id="3bb57" class="javax.swing.JButton" binding="m_addButton" default-binding="true">
+                                <constraints/>
+                                <properties>
+                                  <maximumSize width="85" height="25"/>
+                                  <minimumSize width="85" height="25"/>
+                                  <preferredSize width="85" height="25"/>
+                                  <text value="Add"/>
+                                </properties>
+                              </component>
+                            </children>
+                          </grid>
+                          <grid id="6c5b7" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                            <constraints>
+                              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                              <gridbag weightx="0.0" weighty="0.0"/>
+                            </constraints>
+                            <properties/>
+                            <border type="none"/>
+                            <children>
+                              <component id="88c54" class="javax.swing.JButton" binding="m_removeButton" default-binding="true">
+                                <constraints/>
+                                <properties>
+                                  <maximumSize width="85" height="25"/>
+                                  <minimumSize width="85" height="25"/>
+                                  <preferredSize width="85" height="25"/>
+                                  <text value="Remove"/>
+                                </properties>
+                              </component>
+                            </children>
+                          </grid>
+                        </children>
+                      </grid>
+                    </children>
+                  </grid>
+                  <grid id="c8d16" layout-manager="BorderLayout" hgap="0" vgap="0">
+                    <constraints border-constraint="Center"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <scrollpane id="ade09">
+                        <constraints border-constraint="Center"/>
+                        <properties/>
+                        <border type="none"/>
+                        <children>
+                          <component id="36e09" class="org.jdesktop.swingx.JXTable" binding="m_modifications">
+                            <constraints/>
+                            <properties>
+                              <cellSelectionEnabled value="true"/>
+                              <columnSelectionAllowed value="true"/>
+                              <visibleRowCount value="5"/>
+                            </properties>
+                            <clientProperties>
+                              <terminateEditOnFocusLost class="java.lang.Boolean" value="true"/>
+                            </clientProperties>
+                          </component>
+                        </children>
+                      </scrollpane>
+                    </children>
+                  </grid>
+                </children>
+              </grid>
+            </children>
+          </grid>
+          <grid id="b26a5" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints border-constraint="Center"/>
+            <properties/>
+            <border type="none"/>
+            <children/>
+          </grid>
+        </children>
+      </grid>
+      <grid id="206ce" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+        <constraints border-constraint="North"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="e4fee" class="javax.swing.JLabel">
+            <constraints/>
+            <properties>
+              <text value="Actions"/>
+            </properties>
+          </component>
+          <toolbar id="8527d">
+            <constraints/>
+            <properties>
+              <borderPainted value="false"/>
+              <floatable value="false"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="d139f" class="javax.swing.JButton" binding="m_undoButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <icon value="common/undo.png"/>
+                  <text value="Undo"/>
+                </properties>
+              </component>
+              <component id="b2fe0" class="javax.swing.JButton" binding="m_redoButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <icon value="common/redo.png"/>
+                  <text value="Redo"/>
+                </properties>
+              </component>
+            </children>
+          </toolbar>
+        </children>
+      </grid>
+    </children>
+  </grid>
+</form>
