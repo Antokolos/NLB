@@ -1138,7 +1138,7 @@ public class MainFrame implements NLBObserver {
             public void mouseMoved(MouseEvent e) {
                 super.mouseMoved(e);
                 paneEditorInfo.getPaneGraphEditor().mouseMove(e.getPoint());
-                m_statusBar.setLeadingMessage(e.getPoint().toString());
+                //m_statusBar.setLeadingMessage(e.getPoint().toString());
             }
         });
         paneEditorInfo.getPaneNlbFacade().addObserver(this);
@@ -1199,8 +1199,8 @@ public class MainFrame implements NLBObserver {
     }
 
     public void serrext() {
-        m_statusBar.setLeadingMessage("jjj");
-        m_statusBar.setTrailingMessage("lkk");
+        //m_statusBar.setLeadingMessage("jjj");
+        //m_statusBar.setTrailingMessage("lkk");
     }
 
     @Override

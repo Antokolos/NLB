@@ -39,10 +39,10 @@
 package com.nlbhub.nlb.vcs;
 
 import com.nlbhub.nlb.exception.NLBVCSException;
-import org.tmatesoft.hg.core.*;
-import org.tmatesoft.hg.util.CancelledException;
-import org.tmatesoft.hg.util.Outcome;
-import org.tmatesoft.hg.util.Path;
+//import org.tmatesoft.hg.core.*;
+//import org.tmatesoft.hg.util.CancelledException;
+//import org.tmatesoft.hg.util.Outcome;
+//import org.tmatesoft.hg.util.Path;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,6 +56,56 @@ import java.util.Map;
  * @version 1.0 12/30/13
  */
 public class HGAdapter implements VCSAdapter {
+
+    // TODO: temporary stub
+    public HGAdapter(final Author author) {
+    }
+
+    @Override
+    public void initRepo(String path) throws NLBVCSException {
+    }
+
+    @Override
+    public void openRepo(String path) throws NLBVCSException {
+    }
+
+    @Override
+    public void closeAdapter() throws NLBVCSException {
+    }
+
+    @Override
+    public boolean getDirAddFlag() {
+        return false;
+    }
+    
+    @Override
+    public boolean getAddModifiedFilesFlag() {
+        return false;
+    }
+    
+    @Override
+    public Status getStatus(String path) throws NLBVCSException {
+        return Status.Unknown;
+    }
+
+    @Override
+    public void add(String path) throws NLBVCSException {
+    }
+
+    @Override
+    public boolean remove(String path) throws NLBVCSException {
+        return false;
+    }
+
+    @Override
+    public void reset(String path) throws NLBVCSException {
+    }
+
+    @Override
+    public void commit(String message) throws NLBVCSException {
+    }
+
+    /*
     private HgRepoFacade m_hgRepo = new HgRepoFacade();
     private Map<String, HgStatus.Kind> m_statuses = new HashMap<>();
     private Author m_author;
@@ -220,4 +270,5 @@ public class HGAdapter implements VCSAdapter {
     public void commit(String message) throws NLBVCSException {
         // TODO: add implementation
     }
+    */
 }
