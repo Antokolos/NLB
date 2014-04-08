@@ -12,6 +12,7 @@
       <id>jgit-repository</id>
       <url>http://download.eclipse.org/jgit/maven</url>
     </repository>
+    <!-- HG support is out of scope for now -->
     <!--repository>
       <id>hg4j-repository</id>
       <url>http://maven.tmatesoft.com/content/groups/public</url>
@@ -23,22 +24,18 @@
     <version>2.0-SNAPSHOT</version>
   </parent>
   <dependencies>
-    <!-- ??? Should be contained in JDK7 ??? -->
-    <!--dependency>
-      <groupId>rhino</groupId>
-      <artifactId>js</artifactId>
-      <version>1.7R1</version>
-    </dependency-->
     <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>annotations</artifactId>
       <version>12.0</version>
     </dependency>
-    <dependency>
+    <!-- hamcrest was needed for junits only -->
+    <!--dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
       <version>1.3</version>
-    </dependency>
+    </dependency-->
+    <!-- HG support is out of scope for now -->
     <!--dependency>
       <groupId>org.tmatesoft.hg4j</groupId>
       <artifactId>hg4j</artifactId>
