@@ -38,10 +38,10 @@
  */
 package com.nlbhub.nlb.util;
 
-import sun.org.mozilla.javascript.internal.Parser;
-import sun.org.mozilla.javascript.internal.ast.AstNode;
-import sun.org.mozilla.javascript.internal.ast.Name;
-import sun.org.mozilla.javascript.internal.ast.NodeVisitor;
+import org.mozilla.javascript.Parser;
+import org.mozilla.javascript.ast.AstNode;
+import org.mozilla.javascript.ast.Name;
+import org.mozilla.javascript.ast.NodeVisitor;
 
 import java.util.Collection;
 import java.util.HashSet;
