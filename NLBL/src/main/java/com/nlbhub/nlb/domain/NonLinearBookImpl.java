@@ -1377,51 +1377,51 @@ public class NonLinearBookImpl implements NonLinearBook {
     ) throws NLBIOException, NLBConsistencyException, NLBVCSException {
         m_pages.clear();
         final File pagesDir = new File(rootDir, PAGES_DIR_NAME);
-        if (!pagesDir.exists()) {
-            throw new NLBIOException("Incorrect NLB structure: pages directory is absent");
-        }
-        File[] pageDirs = pagesDir.listFiles();
-        if (pageDirs == null) {
-            throw new NLBIOException("Error when enumerating pages' directory contents");
-        }
-        for (File pageDir : pageDirs) {
-            final PageImpl page = new PageImpl(this);
-            page.readPage(pageDir);
-            m_pages.put(pageDir.getName(), page);
+        // pages dir can be nonexistent, in this case there is no pages in the book
+        if (pagesDir.exists()) {
+            File[] pageDirs = pagesDir.listFiles();
+            if (pageDirs == null) {
+                throw new NLBIOException("Error when enumerating pages' directory contents");
+            }
+            for (File pageDir : pageDirs) {
+                final PageImpl page = new PageImpl(this);
+                page.readPage(pageDir);
+                m_pages.put(pageDir.getName(), page);
+            }
         }
     }
 
     private void readObjs(File rootDir) throws NLBIOException, NLBConsistencyException {
         m_objs.clear();
         final File objsDir = new File(rootDir, OBJS_DIR_NAME);
-        if (!objsDir.exists()) {
-            throw new NLBIOException("Incorrect NLB structure: objs directory is absent");
-        }
-        File[] objDirs = objsDir.listFiles();
-        if (objDirs == null) {
-            throw new NLBIOException("Error when enumerating objs' directory contents");
-        }
-        for (File objDir : objDirs) {
-            final ObjImpl obj = new ObjImpl();
-            obj.readObj(objDir);
-            m_objs.put(objDir.getName(), obj);
+        // objs dir can be nonexistent, in this case there is no objects in the book
+        if (objsDir.exists()) {
+            File[] objDirs = objsDir.listFiles();
+            if (objDirs == null) {
+                throw new NLBIOException("Error when enumerating objs' directory contents");
+            }
+            for (File objDir : objDirs) {
+                final ObjImpl obj = new ObjImpl();
+                obj.readObj(objDir);
+                m_objs.put(objDir.getName(), obj);
+            }
         }
     }
 
     private void readVariables(File rootDir) throws NLBIOException, NLBConsistencyException {
         m_variables.clear();
         final File varsDir = new File(rootDir, VARS_DIR_NAME);
-        if (!varsDir.exists()) {
-            throw new NLBIOException("Incorrect NLB structure: vars directory is absent");
-        }
-        File[] varDirs = varsDir.listFiles();
-        if (varDirs == null) {
-            throw new NLBIOException("Error when enumerating vars' directory contents");
-        }
-        for (File varDir : varDirs) {
-            final VariableImpl var = new VariableImpl();
-            var.readVariable(varDir);
-            m_variables.add(var);
+        // vars dir can be nonexistent, in this case there is no variables in the book
+        if (varsDir.exists()) {
+            File[] varDirs = varsDir.listFiles();
+            if (varDirs == null) {
+                throw new NLBIOException("Error when enumerating vars' directory contents");
+            }
+            for (File varDir : varDirs) {
+                final VariableImpl var = new VariableImpl();
+                var.readVariable(varDir);
+                m_variables.add(var);
+            }
         }
     }
 
