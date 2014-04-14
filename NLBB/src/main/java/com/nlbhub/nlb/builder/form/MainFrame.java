@@ -1199,6 +1199,8 @@ public class MainFrame implements NLBObserver {
     }
 
     public void serrext() {
+        m_statusBar.setVisible(false);
+        m_statusBar.setEnabled(false);
         //m_statusBar.setLeadingMessage("jjj");
         //m_statusBar.setTrailingMessage("lkk");
     }

@@ -72,17 +72,20 @@ public abstract class ExportManager {
         private List<Obj> m_objList = new ArrayList<>();
         private Map<String, Integer> m_idToPageNumberMap = new HashMap<>();
         private Map<String, String> m_objNamToIdMap = new HashMap<>();
+        private ExportData m_parentED;
 
         private ExportData(
             NonLinearBook nlb,
             Page modulePage,
             String moduleConstraintText,
-            Integer modulePageNumber
+            Integer modulePageNumber,
+            ExportData parentED
         ) {
             m_nlb = nlb;
             m_modulePage = modulePage;
             m_moduleConstraintText = moduleConstraintText;
             m_modulePageNumber = modulePageNumber;
+            m_parentED = parentED;
         }
 
         private int size() {
@@ -122,7 +125,8 @@ public abstract class ExportManager {
                         startPage.getModule(),
                         startPage,
                         (modConstr != null) ? modConstr.getValue() : Constants.EMPTY_STRING,
-                        pageNumber
+                        pageNumber,
+                        this
                     )
                 );
                 result.putAll(moduleED.init());
@@ -147,7 +151,8 @@ public abstract class ExportManager {
                                 (pageModConstr != null)
                                     ? pageModConstr.getValue()
                                     : Constants.EMPTY_STRING,
-                                pageNumber
+                                pageNumber,
+                                this
                             )
                         );
                         result.putAll(moduleED.init());
@@ -185,8 +190,32 @@ public abstract class ExportManager {
             return m_objList;
         }
 
-        private Map<String, Integer> getIdToPageNumberMap() {
-            return m_idToPageNumberMap;
+        private Integer getPageNumber(final String pageId) throws NLBConsistencyException {
+            if (m_idToPageNumberMap.containsKey(pageId)) {
+                return m_idToPageNumberMap.get(pageId);
+            } else {
+                if (m_parentED != null) {
+                    return m_parentED.getPageNumber(pageId);
+                } else {
+                    throw new NLBConsistencyException(
+                        "Page number cannot be determined for pageId = " + pageId
+                    );
+                }
+            }
+        }
+
+        private String getObjId(final String objName) throws NLBConsistencyException {
+            if (m_objNamToIdMap.containsKey(objName)) {
+                return m_objNamToIdMap.get(objName);
+            } else {
+                if (m_parentED != null) {
+                    return m_parentED.getObjId(objName);
+                } else {
+                    throw new NLBConsistencyException(
+                        "Obj Id cannot be determined for objName = " + objName
+                    );
+                }
+            }
         }
 
         private Map<String, String> getObjNamToIdMap() {
@@ -202,7 +231,8 @@ public abstract class ExportManager {
                     nlb,
                     new RootModulePage(nlb, MAIN_DATA_KEY),
                     Constants.EMPTY_STRING,
-                    0
+                    0,
+                    null
                 )
             );
             m_exportDataMap = mainExportData.init();
@@ -276,7 +306,7 @@ public abstract class ExportManager {
         final ExportData exportData
     ) throws NLBConsistencyException {
         PageBuildingBlocks blocks = new PageBuildingBlocks();
-        final Integer pageNumber = exportData.getIdToPageNumberMap().get(page.getId());
+        final Integer pageNumber = exportData.getPageNumber(page.getId());
         blocks.setPageLabel(decoratePageLabel(page.getId(), pageNumber));
         blocks.setPageNumber(decoratePageNumber(pageNumber));
         blocks.setPageComment(decoratePageComment(page.getCaption()));
@@ -520,11 +550,12 @@ public abstract class ExportManager {
         LinkBuildingBlocks blocks = new LinkBuildingBlocks();
         blocks.setLinkLabel(decorateLinkLabel(link.getId(), link.getText()));
         blocks.setLinkComment(decorateLinkComment(link.getText()));
+        // TODO: exportData.getIdToPageNumberMap().get(link.getTarget()) can produce NPE for return links
         blocks.setLinkStart(
             decorateLinkStart(
                 link.getId(),
                 link.getText(),
-                exportData.getIdToPageNumberMap().get(link.getTarget())
+                exportData.getPageNumber(link.getTarget())
             )
         );
         Variable variable = exportData.getNlb().getVariableById(link.getVarId());
@@ -562,7 +593,7 @@ public abstract class ExportManager {
                 link.getId(),
                 link.getText(),
                 link.getTarget(),
-                exportData.getIdToPageNumberMap().get(link.getTarget())
+                exportData.getPageNumber(link.getTarget())
             )
         );
         return blocks;
@@ -678,7 +709,7 @@ public abstract class ExportManager {
                     }
                     stringBuilder.append(
                         decorateAddObj(
-                            exportData.getObjNamToIdMap().get(expression.getValue()),
+                            exportData.getObjId(expression.getValue()),
                             expression.getValue()
                         )
                     );
@@ -695,7 +726,7 @@ public abstract class ExportManager {
                     }
                     stringBuilder.append(
                         decorateDelObj(
-                            exportData.getObjNamToIdMap().get(expression.getValue()),
+                            exportData.getObjId(expression.getValue()),
                             expression.getValue())
                     );
                 } else if (modification.getType().equals(ModificationImpl.Type.ASSIGN)) {
