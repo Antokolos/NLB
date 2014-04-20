@@ -12,5 +12,4 @@ do
 CP=$CP:$APP_LIB/$jar
 done
 
-# External search
 $JAVA -classpath $CP com.nlbhub.nlb.builder.NLBBMain
