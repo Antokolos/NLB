@@ -91,7 +91,7 @@ public class GitAdapter implements VCSAdapter {
             m_localRepo = (
                 builder.setWorkTree(new File(path))
                 .readEnvironment() // scan environment GIT_* variables
-                .findGitDir() // scan up the file system tree
+                .setGitDir(new File(path, ".git")) // in fact, this can be omitted
                 .build()
             );
             m_git = new Git(m_localRepo);
