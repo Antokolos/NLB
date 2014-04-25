@@ -261,7 +261,7 @@ public interface NonLinearBook {
     );
 
     public SearchResultTableModel getVariables(String modulePageId) throws NLBConsistencyException;
-
+    public boolean findVariable(String variableNameToFind) throws NLBConsistencyException;
     public SearchResultTableModel checkBook(String modulePageId) throws NLBConsistencyException;
 
     public BookStatistics getBookStatistics();

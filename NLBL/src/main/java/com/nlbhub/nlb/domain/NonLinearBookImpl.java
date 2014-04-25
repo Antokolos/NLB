@@ -2146,70 +2146,86 @@ public class NonLinearBookImpl implements NonLinearBook {
             return "Variable names cannot be extracted: " + e.getMessage();
         }
         for (String variableName : constraintVars) {
-            boolean notFound = true;
-            for (VariableImpl variable : m_variables) {
-                if (variable.isDeleted()) {
-                    continue;
-                }
-                if (variableName.equals(variable.getName())) {
-                    Variable.Type type = variable.getType();
-                    switch (type) {
-                        case PAGE:
-                            Page page = getPageById(variable.getTarget());
-                            if (page.isDeleted()) {
-                                continue;
-                            }
-                            break;
-                        case OBJ:
-                            Obj obj = getObjById(variable.getTarget());
-                            if (obj.isDeleted()) {
-                                continue;
-                            }
-                            break;
-                        case LINK:
-                            final Link link = getLinkWithCheck(variable);
-                            if (link.isDeleted()) {
-                                continue;
-                            }
-                            break;
-                        case VAR:
-                            final ModifyingItemAndModification itemAndModification = (
-                                getModifyingItemAndModification(variable)
-                            );
-                            if (
-                                itemAndModification.getModifyingItem().isDeleted()
-                                || itemAndModification.getModification().isDeleted()
-                            ) {
-                                continue;
-                            }
-                            break;
-                        default:
-                            // Do nothing
+            boolean found = findVariable(variableName);
+            if (found) {
+                try {
+                    // Finally try to evaluate the formula. Most probably syntax errors
+                    // already has been handled via VarFinder.findVariableNames() call,
+                    // so this is just a double check
+                    ScriptEngineManager factory = new ScriptEngineManager();
+                    // create a JavaScript engine
+                    ScriptEngine engine = factory.getEngineByName("JavaScript");
+                    for (String variableNameCur : constraintVars) {
+                        engine.put(variableNameCur, false);
                     }
-                    try {
-                        // Finally try to evaluate the formula. Most probably syntax errors
-                        // already has been handled via VarFinder.findVariableNames() call,
-                        // so this is just a double check
-                        ScriptEngineManager factory = new ScriptEngineManager();
-                        // create a JavaScript engine
-                        ScriptEngine engine = factory.getEngineByName("JavaScript");
-                        for (String variableNameCur : constraintVars) {
-                            engine.put(variableNameCur, false);
-                        }
-                        // evaluate JavaScript code from String
-                        engine.eval(formula);
-                        notFound = false;
-                        break;
-                    } catch (ScriptException e) {
-                        return "Formula cannot be evaluated: " + e.getMessage();
-                    }
+                    // evaluate JavaScript code from String
+                    engine.eval(formula);
+                } catch (ScriptException e) {
+                    return "Formula cannot be evaluated: " + e.getMessage();
                 }
-            }
-            if (notFound) {
+            } else {
                 return "Variable '" + variableName + "' was not found in NLB variables";
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean findVariable(String variableNameToFind) throws NLBConsistencyException {
+        boolean found = false;
+        for (VariableImpl variable : m_variables) {
+            if (variable.isDeleted()) {
+                continue;
+            }
+            if (variableNameToFind.equals(variable.getName())) {
+                Variable.Type type = variable.getType();
+                switch (type) {
+                    case PAGE:
+                        Page page = getPageById(variable.getTarget());
+                        if (page.isDeleted()) {
+                            continue;
+                        } else {
+                            found = true;
+                        }
+                        break;
+                    case OBJ:
+                        Obj obj = getObjById(variable.getTarget());
+                        if (obj.isDeleted()) {
+                            continue;
+                        } else {
+                            found = true;
+                        }
+                        break;
+                    case LINK:
+                        final Link link = getLinkWithCheck(variable);
+                        if (link.isDeleted()) {
+                            continue;
+                        } else {
+                            found = true;
+                        }
+                        break;
+                    case VAR:
+                        final ModifyingItemAndModification itemAndModification = (
+                            getModifyingItemAndModification(variable)
+                        );
+                        if (
+                            itemAndModification.getModifyingItem().isDeleted()
+                            || itemAndModification.getModification().isDeleted()
+                        ) {
+                            continue;
+                        } else {
+                            found = true;
+                        }
+                        break;
+                    default:
+                        // Do nothing
+                }
+            }
+        }
+        if (!found && m_parentNLB != null) {
+            found = m_parentNLB.findVariable(variableNameToFind);
+        }
+        return found;
     }
 
     private void searchLinks(
