@@ -182,6 +182,7 @@ public class NonLinearBookImpl implements NonLinearBook {
      */
     private class VariableTracker {
         private final VariableImpl m_existingVariable;
+        private final boolean m_existingVariableDeletionState;
         private final String m_existingVariableName;
         private final String m_existingVariableValue;
         private final VariableImpl m_newVariable;
@@ -198,6 +199,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String newVariableTarget
         ) {
             m_existingVariable = existingVariable;
+            m_existingVariableDeletionState = (existingVariable != null) && m_existingVariable.isDeleted();
             m_deleteFlag = deleteFlag;
             m_newVariableName = newVariableName;
             m_newVariableValue = newVariableValue;
@@ -238,6 +240,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 } else {
                     m_existingVariable.setName(m_newVariableName);
                     m_existingVariable.setValue(m_newVariableValue);
+                    m_existingVariable.setDeleted(false);   // because it can be already deleted; discard this deletion
                     variableId = m_existingVariable.getId();
                 }
             }
@@ -267,6 +270,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 } else {
                     m_existingVariable.setName(m_existingVariableName);
                     m_existingVariable.setValue(m_existingVariableValue);
+                    m_existingVariable.setDeleted(m_existingVariableDeletionState);
                     variableId = m_existingVariable.getId();
                 }
             }
