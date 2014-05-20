@@ -1504,12 +1504,12 @@ public class NonLinearBookImpl implements NonLinearBook {
         if (variable.getType() == VariableImpl.Type.PAGE) {
             final PageImpl page = getPageImplById(variable.getTarget());
             if (variable.isDeleted()) {
-                if (!"".equals(page.getVarId())) {
+                // page.getVarId() should be empty or set to another variable's Id
+                if (variable.getId().equals(page.getVarId())) {
                     throw new NLBConsistencyException(
                         "Page variable for page with Id = "
                         + page.getId()
-                        + " should be set to empty string, because the corresponding"
-                        + " variable with Id = "
+                        + " is incorrect, because the corresponding variable with Id = "
                         + variable.getId()
                         + " has been deleted"
                     );
@@ -1521,12 +1521,12 @@ public class NonLinearBookImpl implements NonLinearBook {
         } else if (variable.getType() == VariableImpl.Type.OBJ) {
             final Obj obj = getObjById(variable.getTarget());
             if (variable.isDeleted()) {
-                if (!"".equals(obj.getVarId())) {
+                // obj.getVarId() should be empty or set to another variable's Id
+                if (variable.getId().equals(obj.getVarId())) {
                     throw new NLBConsistencyException(
-                        "Page variable for obj with Id = "
+                        "Obj variable for obj with Id = "
                         + obj.getId()
-                        + " should be set to empty string, because the corresponding"
-                        + " variable with Id = "
+                        + " is incorrect, because the corresponding variable with Id = "
                         + variable.getId()
                         + " has been deleted"
                     );
@@ -1573,21 +1573,21 @@ public class NonLinearBookImpl implements NonLinearBook {
         final Link link = nodeItem.getLinkById(ids[1]);
         if (variable.isDeleted()) {
             if (variable.getType() == VariableImpl.Type.LINK) {
-                if (!"".equals(link.getVarId())) {
+                // link.getVarId() should be empty or set to another variable's Id
+                if (variable.getId().equals(link.getVarId())) {
                     throw new NLBConsistencyException(
                         "Link variable for link with full Id = " + variable.getTarget()
-                        + " should be set to empty string, because the corresponding"
-                        + " variable with Id = "
+                        + " is incorrect, because the corresponding variable with Id = "
                         + variable.getId()
                         + " has been deleted"
                     );
                 }
             } else if (variable.getType() == VariableImpl.Type.LINKCONSTRAINT) {
-                if (!"".equals(link.getConstrId())) {
+                // link.getConstrId() should be empty or set to another variable's Id
+                if (variable.getId().equals(link.getConstrId())) {
                     throw new NLBConsistencyException(
                         "Link constraint for link with full Id = " + variable.getTarget()
-                        + " should be set to empty string, because the corresponding"
-                        + " variable with Id = "
+                        + " is incorrect, because the corresponding variable with Id = "
                         + variable.getId()
                         + " has been deleted"
                     );
@@ -1665,21 +1665,21 @@ public class NonLinearBookImpl implements NonLinearBook {
 
         if (variable.isDeleted()) {
             if (variable.getType() == VariableImpl.Type.VAR) {
-                if (!"".equals(modification.getVarId())) {
+                // modification.getVarId() should be empty or set to another variable's Id
+                if (variable.getId().equals(modification.getVarId())) {
                     throw new NLBConsistencyException(
                         "Modification variable for modification with full Id = " + variable.getTarget()
-                        + " should be set to empty string, because the corresponding"
-                        + " variable with Id = "
+                        + " is incorrect, because the corresponding variable with Id = "
                         + variable.getId()
                         + " has been deleted"
                     );
                 }
             } else if (variable.getType() == VariableImpl.Type.EXPRESSION) {
-                if (!"".equals(modification.getExprId())) {
+                // modification.getExprId() should be empty or set to another variable's Id
+                if (variable.getId().equals(modification.getExprId())) {
                     throw new NLBConsistencyException(
                         "Modification expression for modification with full Id = " + variable.getTarget()
-                        + " should be set to empty string, because the corresponding"
-                        + " variable with Id = "
+                        + " is incorrect, because the corresponding variable with Id = "
                         + variable.getId()
                         + " has been deleted"
                     );
