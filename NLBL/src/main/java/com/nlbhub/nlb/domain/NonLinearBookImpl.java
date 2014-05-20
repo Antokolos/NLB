@@ -199,7 +199,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String newVariableTarget
         ) {
             m_existingVariable = existingVariable;
-            m_existingVariableDeletionState = (existingVariable != null) && m_existingVariable.isDeleted();
+            m_existingVariableDeletionState = (m_existingVariable != null) && m_existingVariable.isDeleted();
             m_deleteFlag = deleteFlag;
             m_newVariableName = newVariableName;
             m_newVariableValue = newVariableValue;
