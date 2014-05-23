@@ -121,6 +121,7 @@ public class MainFrame implements NLBObserver {
     private JButton m_editModuleButton;
     private JToggleButton m_selectionModeButton;
     private JPanel m_toolbarPanel;
+    private JButton m_exportASM;
     private final Launcher m_launcher;
     final JFileChooser m_dirChooser;
     final JFileChooser m_fileChooser;
@@ -752,6 +753,22 @@ public class MainFrame implements NLBObserver {
                     JOptionPane.showMessageDialog(
                         m_mainFramePanel,
                         "Error while exporting to STEAD: " + ex.toString()
+                    );
+                }
+            }
+        });
+        m_exportASM.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    File exportFile = chooseExportFile();
+                    if (exportFile != null) {
+                        getMainPaneInfo().getPaneNlbFacade().exportToASMFile(exportFile);
+                    }
+                } catch (NLBExportException ex) {
+                    JOptionPane.showMessageDialog(
+                            m_mainFramePanel,
+                            "Error while exporting to ASM: " + ex.toString()
                     );
                 }
             }

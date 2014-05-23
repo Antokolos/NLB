@@ -148,6 +148,10 @@ public class NonLinearBookFacade implements NLBObservable {
         m_nlb.exportToSTEADFile(exportFile);
     }
 
+    public void exportToASMFile(File exportFile) throws NLBExportException {
+        m_nlb.exportToASMFile(exportFile);
+    }
+
     public void updateModifications(
         final ModifyingItem modifyingItem,
         final ModificationsTableModel modificationsTableModel

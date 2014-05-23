@@ -2311,6 +2311,11 @@ public class NonLinearBookImpl implements NonLinearBook {
         manager.exportToFile(targetFile);
     }
 
+    public void exportToASMFile(final File targetFile) throws NLBExportException {
+        ExportManager manager = new ASMExportManager(this, ExportManager.UTF_8);
+        manager.exportToFile(targetFile);
+    }
+
     public void addVariable(@NotNull VariableImpl variable) {
         m_variables.add(variable);
     }

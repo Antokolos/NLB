@@ -504,6 +504,16 @@
                   <text value=""/>
                 </properties>
               </component>
+              <component id="10917" class="javax.swing.JButton" binding="m_exportASM">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="extras/export/exportASM.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
             </children>
           </toolbar>
         </children>
