@@ -70,6 +70,7 @@ public class ASMExportManager extends TextExportManager {
     @Override
     protected String generatePageText(PageBuildingBlocks pageBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder postPage = new StringBuilder();
         stringBuilder.append(pageBlocks.getPageComment());
         stringBuilder.append(pageBlocks.getPageLabel());
         if (pageBlocks.isUseCaption()) {
@@ -82,24 +83,21 @@ public class ASMExportManager extends TextExportManager {
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             final boolean hasConstraint = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
-            stringBuilder.append(linkBlocks.getLinkComment());
             if (hasConstraint) {
-                stringBuilder.append("<<if ").append(linkBlocks.getLinkConstraint()).append(">>");
-                stringBuilder.append(LINE_SEPARATOR);
+                stringBuilder.append("<<if ").append(linkBlocks.getLinkConstraint()).append(">>").append(LINE_SEPARATOR);
             }
             stringBuilder.append(linkBlocks.getLinkStart());
-            stringBuilder.append(linkBlocks.getLinkGoTo());
-            if (!StringHelper.isEmpty(linkBlocks.getLinkVariable()) || !StringHelper.isEmpty(linkBlocks.getLinkModifications())) {
-                stringBuilder.append(linkBlocks.getLinkVariable());
-                // TODO: linkBlocks.getLinkModifications(); is ignored for now, should be fixed
-            }
-            stringBuilder.append("]]").append(LINE_SEPARATOR);
-
             if (hasConstraint) {
                 stringBuilder.append("<<endif>>").append(LINE_SEPARATOR);
             }
+            postPage.append(linkBlocks.getLinkComment());
+            postPage.append(linkBlocks.getLinkLabel());
+            postPage.append(linkBlocks.getLinkVariable());
+            postPage.append(linkBlocks.getLinkModifications());
+            postPage.append(linkBlocks.getLinkGoTo());
         }
         stringBuilder.append(decoratePageEnd());
+        stringBuilder.append(postPage.toString());
         return stringBuilder.toString();
     }
 
@@ -130,7 +128,7 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateLinkLabel(String linkId, String linkText) {
-        return EMPTY_STRING;
+        return ":: " + linkId + "[::]" + "10-10-0" + LINE_SEPARATOR;
     }
 
     @Override
@@ -140,7 +138,7 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateLinkStart(String linkId, String linkText, int pageNumber) {
-        return "[[" + linkText + "|";
+        return "[[" + linkText + "|" + linkId + "]]" + LINE_SEPARATOR;
     }
 
     @Override
@@ -150,7 +148,7 @@ public class ASMExportManager extends TextExportManager {
             String linkTarget,
             int targetPageNumber
     ) {
-        return linkTarget;
+        return "<<goto '" + linkTarget + "'>>" + LINE_SEPARATOR;
     }
 
     @Override
@@ -160,7 +158,7 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateLinkVariable(String variableName) {
-        return "{$" + variableName + " = 1}";
+        return "<<set $" + variableName + " = 1>>" + LINE_SEPARATOR;
     }
 
     @Override
