@@ -508,6 +508,7 @@
                 <constraints/>
                 <properties>
                   <borderPainted value="false"/>
+                  <enabled value="true"/>
                   <focusPainted value="false"/>
                   <icon value="extras/export/exportASM.png"/>
                   <rolloverEnabled value="true"/>

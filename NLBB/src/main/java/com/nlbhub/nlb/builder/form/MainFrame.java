@@ -73,9 +73,11 @@ import java.util.Map;
  * @version 1.0 7/6/12
  */
 public class MainFrame implements NLBObserver {
-    /** Logger for this class. */
+    /**
+     * Logger for this class.
+     */
     private static final Logger LOGGER = (
-        LoggerFactory.getLogger(MainFrame.class)
+            LoggerFactory.getLogger(MainFrame.class)
     );
     private static final String MAIN_PANE_KEY = Constants.MAIN_MODULE_NAME;
     private JPanel m_mainFramePanel;
@@ -455,6 +457,14 @@ public class MainFrame implements NLBObserver {
         m_exportSTEAD.setRolloverEnabled(true);
         m_exportSTEAD.setText("");
         toolBar5.add(m_exportSTEAD);
+        m_exportASM = new JButton();
+        m_exportASM.setBorderPainted(false);
+        m_exportASM.setEnabled(true);
+        m_exportASM.setFocusPainted(false);
+        m_exportASM.setIcon(new ImageIcon(getClass().getResource("/extras/export/exportASM.png")));
+        m_exportASM.setRolloverEnabled(true);
+        m_exportASM.setText("");
+        toolBar5.add(m_exportASM);
     }
 
     /**
@@ -474,10 +484,10 @@ public class MainFrame implements NLBObserver {
         private boolean m_closedManually = false;
 
         private PaneEditorInfo(
-            String modulePageId,
-            NonLinearBookFacade paneNlbFacade,
-            GraphEditor paneGraphEditor,
-            int paneIndex
+                String modulePageId,
+                NonLinearBookFacade paneNlbFacade,
+                GraphEditor paneGraphEditor,
+                int paneIndex
         ) {
             m_modulePageId = modulePageId;
             m_paneNlbFacade = paneNlbFacade;
@@ -525,7 +535,7 @@ public class MainFrame implements NLBObserver {
     public MainFrame(@NotNull NonLinearBookFacade nlbFacade, @NotNull Launcher launcher) {
         final MainFrame mainFrame = this;
         m_mainEditorInfo = (
-            new PaneEditorInfo(MAIN_PANE_KEY, nlbFacade, new GraphEditor(nlbFacade), 0)
+                new PaneEditorInfo(MAIN_PANE_KEY, nlbFacade, new GraphEditor(nlbFacade), 0)
         );
         m_paneEditorInfoMap.put(MAIN_PANE_KEY, m_mainEditorInfo);
         m_launcher = launcher;
@@ -538,16 +548,16 @@ public class MainFrame implements NLBObserver {
         m_graphEditorsPane.setTitleAt(0, "Main");
         m_graphEditorsPane.setComponentAt(0, m_mainEditorInfo.getPaneGraphEditor());
         m_graphEditorsPane.addChangeListener(
-            new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    PaneEditorInfo editorInfo = getSelectedPaneInfo();
-                    NonLinearBook nlb = editorInfo.getPaneNlbFacade().getNlb();
-                    NonLinearBook.BookStatistics bookStats = nlb.getBookStatistics();
-                    NonLinearBook.VariableStatistics variableStats = nlb.getVariableStatistics();
-                    setBookInfoPaneData(bookStats, variableStats);
+                new ChangeListener() {
+                    @Override
+                    public void stateChanged(ChangeEvent e) {
+                        PaneEditorInfo editorInfo = getSelectedPaneInfo();
+                        NonLinearBook nlb = editorInfo.getPaneNlbFacade().getNlb();
+                        NonLinearBook.BookStatistics bookStats = nlb.getBookStatistics();
+                        NonLinearBook.VariableStatistics variableStats = nlb.getVariableStatistics();
+                        setBookInfoPaneData(bookStats, variableStats);
+                    }
                 }
-            }
         );
         m_newFileButton.addActionListener(new ActionListener() {
             @Override
@@ -572,8 +582,8 @@ public class MainFrame implements NLBObserver {
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while loading: " + ex.toString()
+                            m_mainFramePanel,
+                            "Error while loading: " + ex.toString()
                     );
                 }
             }
@@ -593,8 +603,8 @@ public class MainFrame implements NLBObserver {
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while saving: " + ex.toString()
+                            m_mainFramePanel,
+                            "Error while saving: " + ex.toString()
                     );
                 }
             }
@@ -610,8 +620,8 @@ public class MainFrame implements NLBObserver {
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while saving: " + ex.toString()
+                            m_mainFramePanel,
+                            "Error while saving: " + ex.toString()
                     );
                 }
             }
@@ -628,8 +638,8 @@ public class MainFrame implements NLBObserver {
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while committing to VCS: " + ex.toString()
+                            m_mainFramePanel,
+                            "Error while committing to VCS: " + ex.toString()
                     );
                 }
             }
@@ -651,11 +661,11 @@ public class MainFrame implements NLBObserver {
             public void actionPerformed(ActionEvent e) {
                 PaneEditorInfo editorInfo = getSelectedPaneInfo();
                 DialogSearch dialog = (
-                    new DialogSearch(
-                        mainFrame,
-                        editorInfo.getPaneNlbFacade().getNlb(),
-                        editorInfo.getModulePageId()
-                    )
+                        new DialogSearch(
+                                mainFrame,
+                                editorInfo.getPaneNlbFacade().getNlb(),
+                                editorInfo.getModulePageId()
+                        )
                 );
                 dialog.showDialog();
             }
@@ -670,8 +680,8 @@ public class MainFrame implements NLBObserver {
                     }
                 } catch (NLBExportException ex) {
                     JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while exporting to QSP text file: " + ex.toString()
+                            m_mainFramePanel,
+                            "Error while exporting to QSP text file: " + ex.toString()
                     );
                 }
             }
@@ -686,8 +696,8 @@ public class MainFrame implements NLBObserver {
                     }
                 } catch (NLBExportException ex) {
                     JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while exporting to QSP text file: " + ex.toString()
+                            m_mainFramePanel,
+                            "Error while exporting to QSP text file: " + ex.toString()
                     );
                 }
             }
@@ -703,8 +713,8 @@ public class MainFrame implements NLBObserver {
                 } catch (NLBExportException ex) {
                     LOGGER.error("Error while exporting to PDF: ", ex);
                     JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while exporting to PDF: " + ex.toString()
+                            m_mainFramePanel,
+                            "Error while exporting to PDF: " + ex.toString()
                     );
                 }
             }
@@ -719,8 +729,8 @@ public class MainFrame implements NLBObserver {
                     }
                 } catch (NLBExportException ex) {
                     JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while exporting to HTML: " + ex.toString()
+                            m_mainFramePanel,
+                            "Error while exporting to HTML: " + ex.toString()
                     );
                 }
             }
@@ -735,8 +745,8 @@ public class MainFrame implements NLBObserver {
                     }
                 } catch (NLBExportException ex) {
                     JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while exporting to HTML: " + ex.toString()
+                            m_mainFramePanel,
+                            "Error while exporting to HTML: " + ex.toString()
                     );
                 }
             }
@@ -751,8 +761,8 @@ public class MainFrame implements NLBObserver {
                     }
                 } catch (NLBExportException ex) {
                     JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while exporting to STEAD: " + ex.toString()
+                            m_mainFramePanel,
+                            "Error while exporting to STEAD: " + ex.toString()
                     );
                 }
             }
@@ -783,10 +793,10 @@ public class MainFrame implements NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 enableLinkedButton(
-                    m_addPageButton,
-                    m_addLinkButton,
-                    m_addObjButton,
-                    m_selectionModeButton
+                        m_addPageButton,
+                        m_addLinkButton,
+                        m_addObjButton,
+                        m_selectionModeButton
                 );
                 final GraphEditor paneGraphEditor = getSelectedPaneInfo().getPaneGraphEditor();
                 paneGraphEditor.setAddPageMode(!paneGraphEditor.isAddPageMode());
@@ -796,10 +806,10 @@ public class MainFrame implements NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 enableLinkedButton(
-                    m_addObjButton,
-                    m_addPageButton,
-                    m_addLinkButton,
-                    m_selectionModeButton
+                        m_addObjButton,
+                        m_addPageButton,
+                        m_addLinkButton,
+                        m_selectionModeButton
                 );
                 final GraphEditor paneGraphEditor = getSelectedPaneInfo().getPaneGraphEditor();
                 paneGraphEditor.setAddObjMode(!paneGraphEditor.isAddObjMode());
@@ -809,10 +819,10 @@ public class MainFrame implements NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 enableLinkedButton(
-                    m_addLinkButton,
-                    m_addPageButton,
-                    m_addObjButton,
-                    m_selectionModeButton
+                        m_addLinkButton,
+                        m_addPageButton,
+                        m_addObjButton,
+                        m_selectionModeButton
                 );
                 final GraphEditor paneGraphEditor = getSelectedPaneInfo().getPaneGraphEditor();
                 paneGraphEditor.setAddLinkMode(!paneGraphEditor.isAddLinkMode());
@@ -822,10 +832,10 @@ public class MainFrame implements NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 enableLinkedButton(
-                    m_selectionModeButton,
-                    m_addLinkButton,
-                    m_addPageButton,
-                    m_addObjButton
+                        m_selectionModeButton,
+                        m_addLinkButton,
+                        m_addPageButton,
+                        m_addObjButton
                 );
                 final GraphEditor paneGraphEditor = getSelectedPaneInfo().getPaneGraphEditor();
                 paneGraphEditor.setSelectionMode(!paneGraphEditor.isSelectionMode());
@@ -853,7 +863,7 @@ public class MainFrame implements NLBObserver {
                 final Page selectedPage = editorInfo.getPaneGraphEditor().getSelectedPage();
                 if (selectedPage != null) {
                     DialogPageProperties dialog = (
-                        new DialogPageProperties(editorInfo.getPaneNlbFacade(), selectedPage)
+                            new DialogPageProperties(editorInfo.getPaneNlbFacade(), selectedPage)
                     );
                     dialog.showDialog();
                     editorInfo.getPaneGraphEditor().updatePage(selectedPage);
@@ -867,7 +877,7 @@ public class MainFrame implements NLBObserver {
                 final Obj selectedObj = editorInfo.getPaneGraphEditor().getSelectedObj();
                 if (selectedObj != null) {
                     DialogObjProperties dialog = (
-                        new DialogObjProperties(editorInfo.getPaneNlbFacade(), selectedObj)
+                            new DialogObjProperties(editorInfo.getPaneNlbFacade(), selectedObj)
                     );
                     dialog.showDialog();
                     editorInfo.getPaneGraphEditor().updateObj(selectedObj);
@@ -881,7 +891,7 @@ public class MainFrame implements NLBObserver {
                 for (final Page page : editorInfo.getPaneNlbFacade().getNlb().getPages().values()) {
                     if (!page.isDeleted()) {
                         DialogPageProperties dialog = (
-                            new DialogPageProperties(editorInfo.getPaneNlbFacade(), page)
+                                new DialogPageProperties(editorInfo.getPaneNlbFacade(), page)
                         );
                         dialog.showDialog();
                         editorInfo.getPaneGraphEditor().updatePage(page);
@@ -896,18 +906,18 @@ public class MainFrame implements NLBObserver {
                 try {
                     PaneEditorInfo editorInfo = getSelectedPaneInfo();
                     dialog = (
-                        new DialogSearchResults(
-                            mainFrame,
-                            editorInfo.getPaneNlbFacade().getNlb(),
-                            editorInfo.getModulePageId(),
-                            DialogSearchResults.SearchType.Leafs
-                        )
+                            new DialogSearchResults(
+                                    mainFrame,
+                                    editorInfo.getPaneNlbFacade().getNlb(),
+                                    editorInfo.getModulePageId(),
+                                    DialogSearchResults.SearchType.Leafs
+                            )
                     );
                     dialog.showDialog();
                 } catch (NLBConsistencyException ex) {
                     JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while querying NLB leafs: " + ex.toString()
+                            m_mainFramePanel,
+                            "Error while querying NLB leafs: " + ex.toString()
                     );
                 }
             }
@@ -919,18 +929,18 @@ public class MainFrame implements NLBObserver {
                 try {
                     PaneEditorInfo editorInfo = getSelectedPaneInfo();
                     dialog = (
-                        new DialogSearchResults(
-                            mainFrame,
-                            editorInfo.getPaneNlbFacade().getNlb(),
-                            editorInfo.getModulePageId(),
-                            DialogSearchResults.SearchType.Variables
-                        )
+                            new DialogSearchResults(
+                                    mainFrame,
+                                    editorInfo.getPaneNlbFacade().getNlb(),
+                                    editorInfo.getModulePageId(),
+                                    DialogSearchResults.SearchType.Variables
+                            )
                     );
                     dialog.showDialog();
                 } catch (NLBConsistencyException ex) {
                     JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while querying NLB variables: " + ex.toString()
+                            m_mainFramePanel,
+                            "Error while querying NLB variables: " + ex.toString()
                     );
                 }
             }
@@ -952,13 +962,13 @@ public class MainFrame implements NLBObserver {
             public void actionPerformed(ActionEvent e) {
                 PaneEditorInfo editorInfo = getSelectedPaneInfo();
                 final LinkSelectionData selectedLink = (
-                    editorInfo.getPaneGraphEditor().getSelectedLink()
+                        editorInfo.getPaneGraphEditor().getSelectedLink()
                 );
                 if (selectedLink != null && selectedLink.getLink() != null) {
                     DialogLinkProperties dialog = (
-                        new DialogLinkProperties(
-                            editorInfo.getPaneNlbFacade(),
-                            selectedLink.getLink())
+                            new DialogLinkProperties(
+                                    editorInfo.getPaneNlbFacade(),
+                                    selectedLink.getLink())
                     );
                     dialog.showDialog();
                     editorInfo.getPaneGraphEditor().updateLink(selectedLink.getLink());
@@ -983,18 +993,18 @@ public class MainFrame implements NLBObserver {
                 try {
                     PaneEditorInfo editorInfo = getMainPaneInfo();
                     DialogSearchResults dialog = (
-                        new DialogSearchResults(
-                            mainFrame,
-                            editorInfo.getPaneNlbFacade().getNlb(),
-                            editorInfo.getModulePageId(),
-                            DialogSearchResults.SearchType.CheckBook
-                        )
+                            new DialogSearchResults(
+                                    mainFrame,
+                                    editorInfo.getPaneNlbFacade().getNlb(),
+                                    editorInfo.getModulePageId(),
+                                    DialogSearchResults.SearchType.CheckBook
+                            )
                     );
                     dialog.showDialog();
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while checking the NLB: " + ex.toString()
+                            m_mainFramePanel,
+                            "Error while checking the NLB: " + ex.toString()
                     );
                 }
             }
@@ -1011,7 +1021,7 @@ public class MainFrame implements NLBObserver {
                             Thread thread = new Thread(m_launcher);
                             thread.start();
                             BareBonesBrowserLaunch.openURL(
-                                "http://localhost:8111/nlb/" + rootDir.getName() + "/start"
+                                    "http://localhost:8111/nlb/" + rootDir.getName() + "/start"
                             );
                         }
                         m_startServerButton.setEnabled(false);
@@ -1019,8 +1029,8 @@ public class MainFrame implements NLBObserver {
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while starting the server: " + ex.toString()
+                            m_mainFramePanel,
+                            "Error while starting the server: " + ex.toString()
                     );
                 }
             }
@@ -1036,8 +1046,8 @@ public class MainFrame implements NLBObserver {
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while stopping the server: " + ex.toString()
+                            m_mainFramePanel,
+                            "Error while stopping the server: " + ex.toString()
                     );
                 }
             }
@@ -1067,8 +1077,8 @@ public class MainFrame implements NLBObserver {
             }
         } catch (NLBVCSException ex) {
             JOptionPane.showMessageDialog(
-                m_mainFramePanel,
-                "Error while NLB clear: " + ex.toString()
+                    m_mainFramePanel,
+                    "Error while NLB clear: " + ex.toString()
             );
         }
     }
@@ -1095,16 +1105,16 @@ public class MainFrame implements NLBObserver {
             }
         } else {
             NonLinearBookFacade paneNlbFacade = (
-                editorInfo.getPaneNlbFacade().createModuleFacade(page.getId())
+                    editorInfo.getPaneNlbFacade().createModuleFacade(page.getId())
             );
             paneGraphEditor = new GraphEditor(paneNlbFacade);
             paneEditorInfo = (
-                new PaneEditorInfo(
-                    page.getId(),
-                    paneNlbFacade,
-                    paneGraphEditor,
-                    m_graphEditorsPane.getTabCount()
-                )
+                    new PaneEditorInfo(
+                            page.getId(),
+                            paneNlbFacade,
+                            paneGraphEditor,
+                            m_graphEditorsPane.getTabCount()
+                    )
             );
             m_paneEditorInfoMap.put(page.getId(), paneEditorInfo);
             addListenerAndObserver(paneEditorInfo);
@@ -1123,29 +1133,29 @@ public class MainFrame implements NLBObserver {
         m_graphEditorsPane.addTab(title, paneEditorInfo.getPaneGraphEditor());
 
         TabComponent tabComponent = new TabComponent(
-            title,
-            new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    final int index = paneEditorInfo.getPaneIndex();
-                    for (Map.Entry<String, PaneEditorInfo> entry : m_paneEditorInfoMap.entrySet()) {
-                        if (entry.getValue().getPaneIndex() > index) {
-                            entry.getValue().setPaneIndex(entry.getValue().getPaneIndex() - 1);
+                title,
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        final int index = paneEditorInfo.getPaneIndex();
+                        for (Map.Entry<String, PaneEditorInfo> entry : m_paneEditorInfoMap.entrySet()) {
+                            if (entry.getValue().getPaneIndex() > index) {
+                                entry.getValue().setPaneIndex(entry.getValue().getPaneIndex() - 1);
+                            }
                         }
+                        paneEditorInfo.setPaneIndex(PaneEditorInfo.INDEX_UNDEFINED);
+                        if (!(TabComponent.CLOSED_IN_CODE.equals(actionEvent.getActionCommand()))) {
+                            paneEditorInfo.setClosedManually(true);
+                        }
+                        m_graphEditorsPane.remove(index);
                     }
-                    paneEditorInfo.setPaneIndex(PaneEditorInfo.INDEX_UNDEFINED);
-                    if (!(TabComponent.CLOSED_IN_CODE.equals(actionEvent.getActionCommand()))) {
-                        paneEditorInfo.setClosedManually(true);
-                    }
-                    m_graphEditorsPane.remove(index);
                 }
-            }
         );
         paneEditorInfo.setTabComponent(tabComponent);
 
         m_graphEditorsPane.setTabComponentAt(
-            newTabIndex,
-            tabComponent.getPnlTab()
+                newTabIndex,
+                tabComponent.getPnlTab()
         );
     }
 
@@ -1248,9 +1258,9 @@ public class MainFrame implements NLBObserver {
         for (final NonLinearBook.ModuleInfo info : bookStats.getModulesToBeDeletedInfos()) {
             PaneEditorInfo paneEditorInfo = m_paneEditorInfoMap.get(info.getModulePageId());
             if (
-                paneEditorInfo != null
-                    && paneEditorInfo.getPaneIndex() != PaneEditorInfo.INDEX_UNDEFINED
-                ) {
+                    paneEditorInfo != null
+                            && paneEditorInfo.getPaneIndex() != PaneEditorInfo.INDEX_UNDEFINED
+                    ) {
                 paneEditorInfo.getTabComponent().close();
             }
         }
@@ -1258,8 +1268,8 @@ public class MainFrame implements NLBObserver {
     }
 
     private void setBookInfoPaneData(
-        final NonLinearBook.BookStatistics bookStats,
-        final NonLinearBook.VariableStatistics variableStats
+            final NonLinearBook.BookStatistics bookStats,
+            final NonLinearBook.VariableStatistics variableStats
     ) {
         StringBuilder builder = new StringBuilder();
 
@@ -1300,7 +1310,7 @@ public class MainFrame implements NLBObserver {
         builder.append("Module constraint count: ").append(variableStats.getModuleConstraintCount());
         builder.append("\r\n");
         m_bookInformationArea.setText(
-            builder.toString()
+                builder.toString()
         );
     }
 
