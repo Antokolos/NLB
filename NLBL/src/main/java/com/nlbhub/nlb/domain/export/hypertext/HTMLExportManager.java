@@ -83,8 +83,8 @@ public class HTMLExportManager extends HypertextExportManager<HTMLParagraph, HTM
     }
 
     @Override
-    protected HTMLAnchor createHTAnchor(String text, HTMLFont font) throws HTDocumentException {
-        return new HTMLAnchor(text, font);
+    protected HTMLAnchor createHTAnchor(boolean decapitalize, String text, HTMLFont font) throws HTDocumentException {
+        return new HTMLAnchor(decapitalize, text, font);
     }
 
     @Override

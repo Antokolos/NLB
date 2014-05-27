@@ -85,7 +85,7 @@ public abstract class HypertextExportManager
         } catch (
             HTDocumentException | NLBConsistencyException | IOException e
         ) {
-            throw new NLBExportException("Error while converting NLB to PDF", e);
+            throw new NLBExportException("Error while converting NLB to Hypertext", e);
         }
     }
 
@@ -98,6 +98,7 @@ public abstract class HypertextExportManager
         final F font
     ) throws HTDocumentException;
     protected abstract A createHTAnchor(
+        boolean decapitalize,
         final String text,
         final F font
     ) throws HTDocumentException;
@@ -126,7 +127,7 @@ public abstract class HypertextExportManager
                 paraFont
             )
         );
-        A pageAnchor = createHTAnchor(pageBlocks.getPageNumber(), paraFont);
+        A pageAnchor = createHTAnchor(false, pageBlocks.getPageNumber(), paraFont);
         pageAnchor.setName(pageBlocks.getPageLabel());
         page.add(pageAnchor);
         page.add(getLineSeparator());
@@ -138,20 +139,23 @@ public abstract class HypertextExportManager
         page.add(pageBlocks.getPageVariable());
         page.add(pageBlocks.getPageModifications());
         java.util.List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
+        boolean first = true;
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
-            page.add(getLineSeparator());
+            if (first) {
+                first = false;
+            } else {
+                page.add(getLineSeparator());
+            }
             final boolean hasConstraint = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
             //stringBuilder.append(linkBlocks.getLinkComment());
             if (hasConstraint) {
-                page.add(">> Если выполнено условие: ");
+                page.add("Если ");
                 page.add(linkBlocks.getLinkConstraint());
-                page.add(", то:");
-            } else {
-                page.add(">>");
+                page.add(", то вы можете ");
             }
-            page.add(getLineSeparator() + "    ");
-            A linkAnchor = createHTAnchor(linkBlocks.getLinkStart(), linkFont);
-            linkAnchor.setReference("#"+linkBlocks.getLinkGoTo());
+
+            A linkAnchor = createHTAnchor(hasConstraint, linkBlocks.getLinkStart(), linkFont);
+            linkAnchor.setReference("#" + linkBlocks.getLinkGoTo());
             page.add(linkAnchor);
             page.add(linkBlocks.getLinkVariable());
             page.add(linkBlocks.getLinkModifications());
@@ -206,7 +210,7 @@ public abstract class HypertextExportManager
 
     @Override
     protected String decorateLinkStart(String linkId, String linkText, int pageNumber) {
-        return linkText + ", идите на страницу " + String.valueOf(pageNumber);
+        return linkText + " (" + String.valueOf(pageNumber) + ")";
     }
 
     @Override
@@ -238,7 +242,7 @@ public abstract class HypertextExportManager
         if (StringHelper.isEmpty(variableName)) {
             return "";
         } else {
-            return getLineSeparator() + "Запишите ключевое слово: " + variableName;
+            return getLineSeparator() + "Запишите ключевое слово: " + variableName + getLineSeparator();
         }
     }
 
@@ -249,7 +253,7 @@ public abstract class HypertextExportManager
         } else {
             return (
                 getLineSeparator() + "Сделайте следующие действия: "
-                + getLineSeparator() + modificationsText
+                + getLineSeparator() + modificationsText + getLineSeparator()
             );
         }
     }

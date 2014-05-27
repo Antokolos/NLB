@@ -51,8 +51,8 @@ public class HTMLAnchor extends HTAnchor<HTMLFont> {
     private String m_reference;
     private String m_text;
 
-    public HTMLAnchor(String text, HTMLFont font) {
-        super(text, font);
+    public HTMLAnchor(boolean decapitalize, String text, HTMLFont font) {
+        super(decapitalize, text, font);
         m_text = text;
     }
 
@@ -86,7 +86,12 @@ public class HTMLAnchor extends HTAnchor<HTMLFont> {
             sb.append("href='").append(m_reference).append('\'');
         }
         sb.append(">");
-        sb.append(m_text);
+        if (isDecapitalize()) {
+            String firstLetter = m_text.substring(0, 1);
+            sb.append(firstLetter.toLowerCase()).append(m_text.substring(1));
+        } else {
+            sb.append(m_text);
+        }
         sb.append("</a>");
         return sb.toString();
     }

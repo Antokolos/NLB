@@ -80,7 +80,7 @@ public class PDFExportManager extends HypertextExportManager<PDFParagraph, PDFAn
     }
 
     @Override
-    protected PDFAnchor createHTAnchor(String text, PDFFont font) throws HTDocumentException {
-        return new PDFAnchor(text, font);
+    protected PDFAnchor createHTAnchor(boolean decapitalize, String text, PDFFont font) throws HTDocumentException {
+        return new PDFAnchor(decapitalize, text, font);
     }
 }

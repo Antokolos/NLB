@@ -45,7 +45,13 @@ package com.nlbhub.nlb.domain.export.hypertext.document;
  * @version 1.0 12/9/13
  */
 public abstract class HTAnchor<F extends  HTFont> {
-    public HTAnchor(final String text, final F font) {
+    private boolean m_decapitalize;
+    public HTAnchor(final boolean decapitalize, final String text, final F font) {
+        m_decapitalize = decapitalize;
+    }
+
+    public boolean isDecapitalize() {
+        return m_decapitalize;
     }
 
     public abstract void setName(String name);

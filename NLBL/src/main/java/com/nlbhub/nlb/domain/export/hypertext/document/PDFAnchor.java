@@ -48,8 +48,8 @@ import com.itextpdf.text.Anchor;
  */
 public class PDFAnchor extends HTAnchor<PDFFont> {
     private Anchor m_anchor;
-    public PDFAnchor(String text, PDFFont font) {
-        super(text, font);
+    public PDFAnchor(boolean decapitalize, String text, PDFFont font) {
+        super(decapitalize, text, font);
         m_anchor = new Anchor(text, font.getFont());
     }
 
