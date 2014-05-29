@@ -552,6 +552,8 @@ public class MainFrame implements NLBObserver {
                     @Override
                     public void stateChanged(ChangeEvent e) {
                         PaneEditorInfo editorInfo = getSelectedPaneInfo();
+                        m_undoButton.setEnabled(editorInfo.getPaneNlbFacade().canUndo());
+                        m_redoButton.setEnabled(editorInfo.getPaneNlbFacade().canRedo());
                         NonLinearBook nlb = editorInfo.getPaneNlbFacade().getNlb();
                         NonLinearBook.BookStatistics bookStats = nlb.getBookStatistics();
                         NonLinearBook.VariableStatistics variableStats = nlb.getVariableStatistics();
