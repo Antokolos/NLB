@@ -69,6 +69,7 @@ public class NonLinearBookFacade implements NLBObservable {
     private VCSAdapter m_vcsAdapter;
     private Author m_author;
     private boolean m_rootFacade;
+    private List<NonLinearBookFacade> m_moduleFacades = new ArrayList<>();
 
     public NonLinearBookFacade() {
         m_rootFacade = true;
@@ -94,6 +95,7 @@ public class NonLinearBookFacade implements NLBObservable {
         NonLinearBookFacade facade = (
             new NonLinearBookFacade(m_author, m_vcsAdapter, page.getModuleImpl())
         );
+        m_moduleFacades.add(facade);
         notifyObservers();
         return facade;
     }
@@ -103,11 +105,18 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void clear() throws NLBVCSException {
-        clearUndos();
-        clearPools();
         m_nlb.clear();
         if (m_rootFacade) {
             m_vcsAdapter.closeAdapter();
+        }
+        clearUndosAndPools();
+    }
+
+    public void clearUndosAndPools() throws NLBVCSException {
+        clearUndos();
+        clearPools();
+        for (NonLinearBookFacade facade : m_moduleFacades) {
+            facade.clearUndosAndPools();
         }
         notifyObservers();
     }
@@ -444,9 +453,7 @@ public class NonLinearBookFacade implements NLBObservable {
         boolean create
     ) throws NLBVCSException, NLBConsistencyException, NLBFileManipulationException, NLBIOException {
         saveNLB(create);
-        clearUndos();
-        clearPools();
-        notifyObservers();
+        clearUndosAndPools();
     }
 
     private void saveNLB(
