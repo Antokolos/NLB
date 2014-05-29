@@ -1539,7 +1539,9 @@ public class NonLinearBookImpl implements NonLinearBook {
             variable.getType() == VariableImpl.Type.LINK
             || variable.getType() == VariableImpl.Type.LINKCONSTRAINT
         ) {
+            // TODO: check in what circumstances getLinkWithCheck() can return null
             final Link link = getLinkWithCheck(variable);
+            assert link != null;
             if (link.isDeleted()) {
                 variable.setDeleted(true);
             }
@@ -1558,6 +1560,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             }
         } else if (variable.getType() == VariableImpl.Type.MODCONSTRAINT) {
             final Page page = getPageById(variable.getTarget());
+            assert page != null;
             if (page.isDeleted()) {
                 variable.setDeleted(true);
             }
