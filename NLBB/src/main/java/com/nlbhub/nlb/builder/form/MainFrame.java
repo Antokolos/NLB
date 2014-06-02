@@ -699,7 +699,7 @@ public class MainFrame implements NLBObserver {
                 } catch (NLBExportException ex) {
                     JOptionPane.showMessageDialog(
                             m_mainFramePanel,
-                            "Error while exporting to QSP text file: " + ex.toString()
+                            "Error while exporting to URQ file: " + ex.toString()
                     );
                 }
             }
