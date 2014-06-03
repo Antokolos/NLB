@@ -43,6 +43,8 @@ import com.nlbhub.nlb.domain.export.NLBBuildingBlocks;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.JaxbMarshaller;
 
+import java.util.List;
+
 /**
  * The JSIQ2ExportManager class
  *
