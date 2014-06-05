@@ -45,9 +45,17 @@ import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.exception.NLBJAXBException;
 import com.nlbhub.nlb.util.JaxbMarshaller;
+import org.w3c.dom.Document;
 
+import javax.xml.bind.JAXBException;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 
 /**
@@ -64,23 +72,43 @@ public abstract class XMLExportManager extends ExportManager {
 
     @Override
     public void exportToFile(File targetFile) throws NLBExportException {
-        FileOutputStream outputStream = null;
+        FileWriter writer = null;
         try {
             try {
                 NLBBuildingBlocks nlbBlocks = createNLBBuildingBlocks();
                 JaxbMarshaller marshaller = createMarshaller();
+
+                /*
+                We can simply do the following:
                 outputStream = new FileOutputStream(targetFile);
                 marshaller.marshal(createRootObject(nlbBlocks), outputStream, false);
+                but if we want to enable CDATA sections, we should do the following stuff
+                (see http://stackoverflow.com/questions/7536973/jaxb-marshalling-and-unmarshalling-cdata)
+                 */
+                Document document = marshaller.getAsDocument(createRootObject(nlbBlocks), false);
+
+                // Transform the DOM to the output stream
+                // TransformerFactory is not thread-safe
+                writer = new FileWriter(targetFile);
+                TransformerFactory transformerFactory = TransformerFactory.newInstance();
+                Transformer nullTransformer = transformerFactory.newTransformer();
+                nullTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                nullTransformer.setOutputProperty(
+                    OutputKeys.CDATA_SECTION_ELEMENTS,
+                    getCDataSectionElements()
+                );
+                nullTransformer.transform(new DOMSource(document), new StreamResult(writer));
             } finally {
-                if (outputStream != null) {
-                    outputStream.close();
+                if (writer != null) {
+                    writer.close();
                 }
             }
-        } catch (NLBConsistencyException | IOException | NLBJAXBException e) {
+        } catch (TransformerException | NLBConsistencyException | IOException | NLBJAXBException e) {
             throw new NLBExportException("Error while converting NLB to XML", e);
         }
     }
 
+    protected abstract String getCDataSectionElements();
     protected abstract JaxbMarshaller createMarshaller();
     protected abstract Object createRootObject(NLBBuildingBlocks nlbBlocks);
 }

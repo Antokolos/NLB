@@ -91,4 +91,25 @@ public class JaxbMarshaller {
             throw new NLBJAXBException("Exception when marshalling", e);
         }
     }
+
+    /**
+     * Converts object to Node instance.
+     * @param object object to convert
+     * @throws NLBJAXBException on marshaling errors or DocumentBuilder creation errors
+     */
+    public Document getAsDocument(
+        final Object object,
+        final boolean isFragment
+    ) throws NLBJAXBException {
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document document = db.newDocument();
+            m_jaxbMarshaller.setProperty(Marshaller.JAXB_FRAGMENT, isFragment);
+            m_jaxbMarshaller.marshal(object, document);
+            return document;
+        } catch (JAXBException | ParserConfigurationException e) {
+            throw new NLBJAXBException("Exception when marshalling", e);
+        }
+    }
 }

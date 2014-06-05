@@ -50,6 +50,8 @@ import com.nlbhub.nlb.util.StringHelper;
 
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The JSIQ2ExportManager class
@@ -58,34 +60,16 @@ import java.util.List;
  * @version 1.0 6/01/14
  */
 public class JSIQ2ExportManager extends XMLExportManager {
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
     public JSIQ2ExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
         super(nlb, encoding);
     }
 
-    /*
-    * Code to generate CDATA inside tags:
-    * http://stackoverflow.com/questions/7536973/jaxb-marshalling-and-unmarshalling-cdata
-DocumentBuilderFactory docBuilderFactory =
-DocumentBuilderFactory.newInstance();
-Document document =
-docBuilderFactory.newDocumentBuilder().newDocument();
+    @Override
+    protected String getCDataSectionElements() {
+        return "script text action";
+    }
 
-// Marshall the feed object into the empty document.
-jaxbMarshaller.marshal(jaxbObject, document);
-
-// Transform the DOM to the output stream
-// TransformerFactory is not thread-safe
-StringWriter writer = new StringWriter();
-TransformerFactory transformerFactory =
-TransformerFactory.newInstance();
-Transformer nullTransformer = transformerFactory.newTransformer();
-nullTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
-nullTransformer.setOutputProperty(
-OutputKeys.CDATA_SECTION_ELEMENTS,
- "myElement myOtherElement");
-nullTransformer.transform(new DOMSource(document),
- new StreamResult(writer));
-    */
     @Override
     protected JaxbMarshaller createMarshaller() {
         return new JaxbMarshaller(Action.class, Article.class, Book.class, Metadata.class, Script.class);
@@ -108,21 +92,30 @@ nullTransformer.transform(new DOMSource(document),
         article.setId(pageBlocks.getPageNumber());
         article.setMetadata(metadata);
         article.setText(pageBlocks.getPageTextStart());
-        Script pageVariableScript = new Script();
-        pageVariableScript.setType("pvar");
-        pageVariableScript.setValue(pageBlocks.getPageVariable());
-        article.addScript(pageVariableScript);
-        Script pageModificationsScript = new Script();
-        pageModificationsScript.setType("pmod");
-        pageModificationsScript.setValue(pageBlocks.getPageModifications());
-        article.addScript(pageModificationsScript);
-        Script onLoadScript = new Script();
-        onLoadScript.setType("onload");
-        onLoadScript.setValue(
-            //"<![CDATA[pvar(); pmod(); ]]>"
-            "pvar(); pmod();"
-        );
-        article.addScript(onLoadScript);
+        boolean hasPageVariable = !StringHelper.isEmpty(pageBlocks.getPageVariable());
+        if (hasPageVariable) {
+            Script pageVariableScript = new Script();
+            pageVariableScript.setType("pvar");
+            pageVariableScript.setValue(pageBlocks.getPageVariable());
+            article.addScript(pageVariableScript);
+        }
+        boolean hasPageModifications = !StringHelper.isEmpty(pageBlocks.getPageModifications());
+        if (hasPageModifications) {
+            Script pageModificationsScript = new Script();
+            pageModificationsScript.setType("pmod");
+            pageModificationsScript.setValue(pageBlocks.getPageModifications());
+            article.addScript(pageModificationsScript);
+        }
+        if (hasPageVariable || hasPageModifications) {
+            Script onLoadScript = new Script();
+            onLoadScript.setType("onload");
+            onLoadScript.setValue(
+                //"<![CDATA[pvar(); pmod(); ]]>"
+                (hasPageVariable ? "pvar(); " : Constants.EMPTY_STRING)
+                + (hasPageModifications ? "pmod(); " : Constants.EMPTY_STRING)
+            );
+            article.addScript(onLoadScript);
+        }
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         for (int i = 0; i < linksBlocks.size(); i++) {
             Action action = new Action();
@@ -130,38 +123,48 @@ nullTransformer.transform(new DOMSource(document),
             final boolean hasConstraint = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
             if (hasConstraint) {
                 Script actionConditionScript = new Script();
-                actionConditionScript.setType("condition_" + (i*10));
+                actionConditionScript.setType("condition_" + i);
                 actionConditionScript.setValue(
                     //"<![CDATA[return (" + linkBlocks.getLinkConstraint() + ");]]>"
                     "return (" + linkBlocks.getLinkConstraint() + ");"
                 );
                 article.addScript(actionConditionScript);
-                action.setIf("condition_" + (i * 10));
+                action.setIf("condition_" + i);
             }
             action.setGoto(linkBlocks.getLinkGoTo());
             action.setValue(linkBlocks.getLinkStart());
-            Script actionVariableScript = new Script();
-            actionVariableScript.setType("var_" + (i * 10));
-            actionVariableScript.setValue(
-                //"<![CDATA[" + linkBlocks.getLinkVariable() + "]]>"
-                linkBlocks.getLinkVariable()
-            );
-            article.addScript(actionVariableScript);
-            Script actionModificationScript = new Script();
-            actionModificationScript.setType("mod_" + (i * 10));
-            actionModificationScript.setValue(
-                //"<![CDATA[" + linkBlocks.getLinkModifications() + "]]>"
-                linkBlocks.getLinkModifications()
-            );
-            article.addScript(actionModificationScript);
-            Script actionDoScript = new Script();
-            actionDoScript.setType("do_" + (i * 10));
-            actionDoScript.setValue(
-                //"<![CDATA[" + "var_" + (i * 10) + "(); " + "mod_" + (i * 10) + "(); ]]>"
-                "var_" + (i * 10) + "(); " + "mod_" + (i * 10) + "(); "
-            );
-            article.addScript(actionDoScript);
-            action.setDo("do_" + (i * 10));
+            boolean hasLinkVariable = !StringHelper.isEmpty(linkBlocks.getLinkVariable());
+            if (hasLinkVariable) {
+                Script actionVariableScript = new Script();
+                actionVariableScript.setType("var_" + i);
+                actionVariableScript.setValue(
+                    //"<![CDATA[" + linkBlocks.getLinkVariable() + "]]>"
+                    linkBlocks.getLinkVariable()
+                );
+                article.addScript(actionVariableScript);
+            }
+
+            boolean hasLinkModifications = !StringHelper.isEmpty(linkBlocks.getLinkModifications());
+            if (hasLinkModifications) {
+                Script actionModificationScript = new Script();
+                actionModificationScript.setType("mod_" + i);
+                actionModificationScript.setValue(
+                    //"<![CDATA[" + linkBlocks.getLinkModifications() + "]]>"
+                    linkBlocks.getLinkModifications()
+                );
+                article.addScript(actionModificationScript);
+            }
+            if (hasLinkVariable || hasLinkModifications) {
+                Script actionDoScript = new Script();
+                actionDoScript.setType("do_" + i);
+                actionDoScript.setValue(
+                    //"<![CDATA[" + "var_" + i + "(); " + "mod_" + i + "(); ]]>"
+                    (hasLinkVariable ? "var_" + i + "(); " : Constants.EMPTY_STRING)
+                    + (hasLinkModifications ? "mod_" + i + "(); " : Constants.EMPTY_STRING)
+                );
+                article.addScript(actionDoScript);
+                action.setDo("do_" + i);
+            }
             article.addAction(action);
         }
         return article;
@@ -169,7 +172,7 @@ nullTransformer.transform(new DOMSource(document),
 
     @Override
     protected String decorateAssignment(String variableName, String variableValue) {
-        return "vars." + variableName + " = " + variableValue;
+        return "vars." + variableName + " = " + variableValue + "; ";
     }
 
     @Override
@@ -239,12 +242,12 @@ nullTransformer.transform(new DOMSource(document),
 
     @Override
     protected String decoratePageModifications(String modificationsText) {
-        return Constants.EMPTY_STRING;
+        return modificationsText;
     }
 
     @Override
     protected String decorateLinkModifications(String modificationsText) {
-        return Constants.EMPTY_STRING;
+        return modificationsText;
     }
 
     @Override
@@ -254,7 +257,20 @@ nullTransformer.transform(new DOMSource(document),
 
     @Override
     protected String decoratePageTextStart(String pageText) {
-        return pageText;
+        StringBuilder result = new StringBuilder();
+        /*
+         * This RegExp is used to extract multiple lines of text, separated by CR+LF or LF.
+         * By default, ^ and $ match the start- and end-of-input respectively.
+         * You'll need to enable MULTI-LINE mode with (?m), which causes ^ and $ to match the
+         * start- and end-of-line
+         */
+        Pattern pattern = Pattern.compile("(?m)^.*$");
+        Matcher matcher = pattern.matcher(pageText);
+        while (matcher.find()) {
+            final String line = matcher.group().trim();
+            result.append(line).append(" <br/>").append(LINE_SEPARATOR);
+        }
+        return result.toString();
     }
 
     @Override
