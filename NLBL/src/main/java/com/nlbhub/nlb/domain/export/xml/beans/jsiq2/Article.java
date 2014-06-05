@@ -38,11 +38,66 @@
  */
 package com.nlbhub.nlb.domain.export.xml.beans.jsiq2;
 
+import javax.xml.bind.annotation.*;
 import java.util.List;
 
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "article")
 public class Article {
+    @XmlAttribute(name="id")
     private String m_id;
     private Metadata m_metadata;
     private List<Script> m_scripts;
+    private List<Action> m_actions;
     private String text;
+
+    /**
+     * Default contructor. It is needed for JAXB conversion, do not remove!
+     */
+    public Article() {
+    }
+
+    public String getId() {
+        return m_id;
+    }
+
+    public void setId(String id) {
+        m_id = id;
+    }
+
+    @XmlElement(name = "metadata")
+    public Metadata getMetadata() {
+        return m_metadata;
+    }
+
+    public void setMetadata(Metadata metadata) {
+        m_metadata = metadata;
+    }
+
+    @XmlElement(name = "script")
+    public List<Script> getScripts() {
+        return m_scripts;
+    }
+
+    public void setScripts(List<Script> scripts) {
+        m_scripts = scripts;
+    }
+
+    @XmlElement(name = "action")
+    public List<Action> getActions() {
+        return m_actions;
+    }
+
+    public void setActions(List<Action> actions) {
+        m_actions = actions;
+    }
+
+    @XmlElement(name = "text")
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
 }

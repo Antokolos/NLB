@@ -38,8 +38,29 @@
  */
 package com.nlbhub.nlb.domain.export.xml.beans.jsiq2;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "book")
 public class Book {
     private List<Article> m_articleList;
+
+    /**
+     * Default contructor. It is needed for JAXB conversion, do not remove!
+     */
+    public Book() {
+    }
+
+    @XmlElement(name = "article")
+    public List<Article> getArticleList() {
+        return m_articleList;
+    }
+
+    public void setArticleList(List<Article> articleList) {
+        m_articleList = articleList;
+    }
 }

@@ -56,6 +56,30 @@ public class JSIQ2ExportManager extends XMLExportManager {
         super(nlb, encoding);
     }
 
+    /*
+    * Code to generate CDATA inside tags:
+    * http://stackoverflow.com/questions/7536973/jaxb-marshalling-and-unmarshalling-cdata
+DocumentBuilderFactory docBuilderFactory =
+DocumentBuilderFactory.newInstance();
+Document document =
+docBuilderFactory.newDocumentBuilder().newDocument();
+
+// Marshall the feed object into the empty document.
+jaxbMarshaller.marshal(jaxbObject, document);
+
+// Transform the DOM to the output stream
+// TransformerFactory is not thread-safe
+StringWriter writer = new StringWriter();
+TransformerFactory transformerFactory =
+TransformerFactory.newInstance();
+Transformer nullTransformer = transformerFactory.newTransformer();
+nullTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
+nullTransformer.setOutputProperty(
+OutputKeys.CDATA_SECTION_ELEMENTS,
+ "myElement myOtherElement");
+nullTransformer.transform(new DOMSource(document),
+ new StreamResult(writer));
+    */
     @Override
     protected JaxbMarshaller createMarshaller() {
         return null;

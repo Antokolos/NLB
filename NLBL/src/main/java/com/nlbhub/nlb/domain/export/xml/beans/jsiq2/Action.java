@@ -38,7 +38,55 @@
  */
 package com.nlbhub.nlb.domain.export.xml.beans.jsiq2;
 
+import javax.xml.bind.annotation.*;
+
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "action")
 public class Action {
+    @XmlAttribute(name="if")
     private String m_if;
+    @XmlAttribute(name="ifnot")
+    private String m_ifnot;
+    @XmlAttribute(name="goto")
     private String m_goto;
+    @XmlValue
+    protected String m_value;
+
+    /**
+     * Default contructor. It is needed for JAXB conversion, do not remove!
+     */
+    public Action() {
+    }
+
+    public String getIf() {
+        return m_if;
+    }
+
+    public void setIf(String anIf) {
+        m_if = anIf;
+    }
+
+    public String getIfnot() {
+        return m_ifnot;
+    }
+
+    public void setIfnot(String ifnot) {
+        m_ifnot = ifnot;
+    }
+
+    public String getGoto() {
+        return m_goto;
+    }
+
+    public void setGoto(String aGoto) {
+        m_goto = aGoto;
+    }
+
+    public String getValue() {
+        return m_value;
+    }
+
+    public void setValue(String value) {
+        m_value = value;
+    }
 }

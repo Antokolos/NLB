@@ -38,6 +38,35 @@
  */
 package com.nlbhub.nlb.domain.export.xml.beans.jsiq2;
 
+import javax.xml.bind.annotation.*;
+
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "script")
 public class Script {
+    @XmlAttribute(name="type")
     private String m_type;
+    @XmlValue
+    protected String m_value;
+
+    /**
+     * Default contructor. It is needed for JAXB conversion, do not remove!
+     */
+    public Script() {
+    }
+
+    public String getType() {
+        return m_type;
+    }
+
+    public void setType(String type) {
+        m_type = type;
+    }
+
+    public String getValue() {
+        return m_value;
+    }
+
+    public void setValue(String value) {
+        m_value = value;
+    }
 }

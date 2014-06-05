@@ -38,6 +38,28 @@
  */
 package com.nlbhub.nlb.domain.export.xml.beans.jsiq2;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "metadata")
 public class Metadata {
     private String m_lastSave;
+
+    /**
+     * Default contructor. It is needed for JAXB conversion, do not remove!
+     */
+    public Metadata() {
+    }
+
+    @XmlElement(name = "lastsave")
+    public String getLastSave() {
+        return m_lastSave;
+    }
+
+    public void setLastSave(String lastSave) {
+        m_lastSave = lastSave;
+    }
 }
