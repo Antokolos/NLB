@@ -42,12 +42,13 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.ArrayList;
 import java.util.List;
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "book")
 public class Book {
-    private List<Article> m_articleList;
+    private List<Article> m_articleList = new ArrayList<>();
 
     /**
      * Default contructor. It is needed for JAXB conversion, do not remove!
@@ -62,5 +63,8 @@ public class Book {
 
     public void setArticleList(List<Article> articleList) {
         m_articleList = articleList;
+    }
+    public void addArticle(Article article) {
+        m_articleList.add(article);
     }
 }

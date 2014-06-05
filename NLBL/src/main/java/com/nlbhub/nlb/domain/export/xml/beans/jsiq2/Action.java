@@ -49,6 +49,8 @@ public class Action {
     private String m_ifnot;
     @XmlAttribute(name="goto")
     private String m_goto;
+    @XmlAttribute(name="do")
+    private String m_do;
     @XmlValue
     protected String m_value;
 
@@ -80,6 +82,14 @@ public class Action {
 
     public void setGoto(String aGoto) {
         m_goto = aGoto;
+    }
+
+    public String getDo() {
+        return m_do;
+    }
+
+    public void setDo(String aDo) {
+        m_do = aDo;
     }
 
     public String getValue() {

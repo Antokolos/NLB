@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.domain.export.xml.beans.jsiq2;
 
 import javax.xml.bind.annotation.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @XmlAccessorType(XmlAccessType.NONE)
@@ -47,8 +48,8 @@ public class Article {
     @XmlAttribute(name="id")
     private String m_id;
     private Metadata m_metadata;
-    private List<Script> m_scripts;
-    private List<Action> m_actions;
+    private List<Script> m_scripts = new ArrayList<>();
+    private List<Action> m_actions = new ArrayList<>();
     private String text;
 
     /**
@@ -83,6 +84,10 @@ public class Article {
         m_scripts = scripts;
     }
 
+    public void addScript(Script script) {
+        m_scripts.add(script);
+    }
+
     @XmlElement(name = "action")
     public List<Action> getActions() {
         return m_actions;
@@ -90,6 +95,10 @@ public class Article {
 
     public void setActions(List<Action> actions) {
         m_actions = actions;
+    }
+
+    public void addAction(Action action) {
+        m_actions.add(action);
     }
 
     @XmlElement(name = "text")

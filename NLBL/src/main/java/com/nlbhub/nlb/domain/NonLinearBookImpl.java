@@ -42,6 +42,7 @@ import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.domain.export.*;
 import com.nlbhub.nlb.domain.export.hypertext.HTMLExportManager;
 import com.nlbhub.nlb.domain.export.hypertext.PDFExportManager;
+import com.nlbhub.nlb.domain.export.xml.JSIQ2ExportManager;
 import com.nlbhub.nlb.exception.*;
 import com.nlbhub.nlb.util.*;
 import com.nlbhub.user.domain.DecisionPoint;
@@ -2305,7 +2306,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     public void exportToJSIQFile(final File targetFile) throws NLBExportException {
-        ExportManager manager = new JSIQExportManager(this, ExportManager.UTF_8);
+        ExportManager manager = new JSIQ2ExportManager(this, ExportManager.UTF_8);
         manager.exportToFile(targetFile);
     }
 
