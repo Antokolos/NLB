@@ -42,6 +42,7 @@ import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.export.LinkBuildingBlocks;
 import com.nlbhub.nlb.domain.export.NLBBuildingBlocks;
+import com.nlbhub.nlb.domain.export.ObjBuildingBlocks;
 import com.nlbhub.nlb.domain.export.PageBuildingBlocks;
 import com.nlbhub.nlb.domain.export.xml.beans.jsiq2.*;
 import com.nlbhub.nlb.exception.NLBExportException;
@@ -83,13 +84,20 @@ public class JSIQ2ExportManager extends XMLExportManager {
         String lastSaveString = (new Date()).toString();
         boolean first = true;
         for (PageBuildingBlocks pageBuildingBlocks : nlbBlocks.getPagesBuildingBlocks()) {
-            book.addArticle(createArticle(pageBuildingBlocks, lastSaveString, first));
+            book.addArticle(
+                createArticle(pageBuildingBlocks, lastSaveString, nlbBlocks.getObjsBuildingBlocks(), first)
+            );
             first = false;
         }
         return book;
     }
 
-    private Article createArticle(PageBuildingBlocks pageBlocks, String lastSaveString, boolean first) {
+    private Article createArticle(
+            PageBuildingBlocks pageBlocks,
+            String lastSaveString,
+            List<ObjBuildingBlocks> objsBlocks,
+            boolean first
+    ) {
         Article article = new Article();
         Metadata metadata = new Metadata();
         metadata.setLastSave(lastSaveString);
@@ -97,7 +105,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
         article.setMetadata(metadata);
         article.setText(pageBlocks.getPageTextStart());
         if (first) {
-            List<Script> inventoryScripts = createInventoryScripts();
+            List<Script> inventoryScripts = createInventoryScripts(objsBlocks);
             for (Script script : inventoryScripts) {
                 article.addScript(script);
             }
@@ -180,14 +188,31 @@ public class JSIQ2ExportManager extends XMLExportManager {
         return article;
     }
 
-    private List<Script> createInventoryScripts() {
+    private List<Script> createInventoryScripts(List<ObjBuildingBlocks> objsBlocks) {
         List<Script> result = new ArrayList<>();
         Script preload = new Script();
         preload.setType("preload");
-        preload.setValue("vars.inventory = {};");
+        String preloadValue = "vars.inventory = {}; " + createObjsMap(objsBlocks);
+        preload.setValue(preloadValue);
         result.add(preload);
+        Script getItemList = new Script();
+        getItemList.setInfo("getting the list of items");
+        getItemList.setType("getItemList");
+        getItemList.setIsGlobal("true");
+        getItemList.setValue(
+                "var list = [];" + LINE_SEPARATOR +
+                        "for (var name in vars.inventory){" + LINE_SEPARATOR +
+                        "    if (!vars.inventory.hasOwnProperty(name)){   continue;   }" + LINE_SEPARATOR +
+                        "    " + LINE_SEPARATOR +
+                        "    if (vars.inventory[name] > 0){" + LINE_SEPARATOR +
+                        "        list.push( vars.itemNames[name] );" + LINE_SEPARATOR +
+                        "    }" + LINE_SEPARATOR +
+                        "}" + LINE_SEPARATOR +
+                        "return list;"
+        );
+        result.add(getItemList);
         Script checkItem = new Script();
-        checkItem.setInfo("проверяем наличие предмета");
+        checkItem.setInfo("checking item existence");
         checkItem.setType("checkItem");
         checkItem.setIsGlobal("true");
         checkItem.setValue(
@@ -200,7 +225,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
         );
         result.add(checkItem);
         Script addItem = new Script();
-        addItem.setInfo("добавляем предмет");
+        addItem.setInfo("adding item");
         addItem.setType("addItem");
         addItem.setIsGlobal("true");
         addItem.setValue(
@@ -209,11 +234,11 @@ public class JSIQ2ExportManager extends XMLExportManager {
                         "    triggerError('checkItem: название предмета не указано',{});" + LINE_SEPARATOR +
                         "    return;" + LINE_SEPARATOR +
                         "}" + LINE_SEPARATOR +
-                        "return (vars.inventory[name] == true);"
+                        "vars.inventory[name] = true;"
         );
         result.add(addItem);
         Script removeItem = new Script();
-        removeItem.setInfo("удалить предмет");
+        removeItem.setInfo("removing item");
         removeItem.setType("removeItem");
         removeItem.setIsGlobal("true");
         removeItem.setValue(
@@ -228,6 +253,27 @@ public class JSIQ2ExportManager extends XMLExportManager {
         return result;
     }
 
+    private String createObjsMap(List<ObjBuildingBlocks> objsBlocks) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("vars.itemNames = {").append(LINE_SEPARATOR);
+        for (ObjBuildingBlocks objBlocks : objsBlocks) {
+            builder.append("'").append(objBlocks.getObjLabel()).append("': ");
+            builder.append("'").append(objBlocks.getObjName()).append("',").append(LINE_SEPARATOR);
+        }
+        builder.append("'dummy': 'dummy'").append(LINE_SEPARATOR).append("}");
+        return builder.toString();
+    }
+
+    @Override
+    protected String decorateObjLabel(String id) {
+        return decorateId(id);
+    }
+
+    @Override
+    protected String decorateObjName(String name) {
+        return name;
+    }
+
     @Override
     protected String decorateAssignment(String variableName, String variableValue) {
         return "vars." + variableName + " = " + variableValue + "; ";
@@ -235,12 +281,14 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateDelObj(String objectId, String objectName) {
-        return Constants.EMPTY_STRING;
+        String id = decorateId(objectId);
+        return "if (checkItem({'name': '" + id + "'})) { removeItem({'name': '" + id + "'}); }";
     }
 
     @Override
     protected String decorateAddObj(String objectId, String objectName) {
-        return Constants.EMPTY_STRING;
+        String id = decorateId(objectId);
+        return "if (!checkItem({'name': '" + id + "'})) { addItem({'name': '" + id + "'}); }";
     }
 
     @Override
@@ -349,5 +397,9 @@ public class JSIQ2ExportManager extends XMLExportManager {
     @Override
     protected String decoratePageComment(String comment) {
         return Constants.EMPTY_STRING;
+    }
+
+    private String decorateId(String id) {
+        return "v_" + id.replaceAll("-", "_");
     }
 }
