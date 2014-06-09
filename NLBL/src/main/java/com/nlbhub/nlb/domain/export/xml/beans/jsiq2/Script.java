@@ -45,6 +45,10 @@ import javax.xml.bind.annotation.*;
 public class Script {
     @XmlAttribute(name="type")
     private String m_type;
+    @XmlAttribute(name="info")
+    private String m_info;
+    @XmlAttribute(name="isglobal")
+    private String m_isGlobal;
     @XmlValue
     protected String m_value;
 
@@ -68,5 +72,21 @@ public class Script {
 
     public void setValue(String value) {
         m_value = value;
+    }
+
+    public String getInfo() {
+        return m_info;
+    }
+
+    public void setInfo(String info) {
+        m_info = info;
+    }
+
+    public String getIsGlobal() {
+        return m_isGlobal;
+    }
+
+    public void setIsGlobal(String isGlobal) {
+        m_isGlobal = isGlobal;
     }
 }

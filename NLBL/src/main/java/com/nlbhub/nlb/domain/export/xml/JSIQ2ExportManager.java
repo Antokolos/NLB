@@ -48,6 +48,7 @@ import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.JaxbMarshaller;
 import com.nlbhub.nlb.util.StringHelper;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -61,6 +62,7 @@ import java.util.regex.Pattern;
  */
 public class JSIQ2ExportManager extends XMLExportManager {
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
     public JSIQ2ExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
         super(nlb, encoding);
     }
@@ -79,19 +81,27 @@ public class JSIQ2ExportManager extends XMLExportManager {
     protected Object createRootObject(NLBBuildingBlocks nlbBlocks) {
         Book book = new Book();
         String lastSaveString = (new Date()).toString();
+        boolean first = true;
         for (PageBuildingBlocks pageBuildingBlocks : nlbBlocks.getPagesBuildingBlocks()) {
-            book.addArticle(createArticle(pageBuildingBlocks, lastSaveString));
+            book.addArticle(createArticle(pageBuildingBlocks, lastSaveString, first));
+            first = false;
         }
         return book;
     }
 
-    private Article createArticle(PageBuildingBlocks pageBlocks, String lastSaveString) {
+    private Article createArticle(PageBuildingBlocks pageBlocks, String lastSaveString, boolean first) {
         Article article = new Article();
         Metadata metadata = new Metadata();
         metadata.setLastSave(lastSaveString);
         article.setId(pageBlocks.getPageNumber());
         article.setMetadata(metadata);
         article.setText(pageBlocks.getPageTextStart());
+        if (first) {
+            List<Script> inventoryScripts = createInventoryScripts();
+            for (Script script : inventoryScripts) {
+                article.addScript(script);
+            }
+        }
         boolean hasPageVariable = !StringHelper.isEmpty(pageBlocks.getPageVariable());
         if (hasPageVariable) {
             Script pageVariableScript = new Script();
@@ -110,9 +120,9 @@ public class JSIQ2ExportManager extends XMLExportManager {
             Script onLoadScript = new Script();
             onLoadScript.setType("onload");
             onLoadScript.setValue(
-                //"<![CDATA[pvar(); pmod(); ]]>"
-                (hasPageVariable ? "pvar(); " : Constants.EMPTY_STRING)
-                + (hasPageModifications ? "pmod(); " : Constants.EMPTY_STRING)
+                    //"<![CDATA[pvar(); pmod(); ]]>"
+                    (hasPageVariable ? "pvar(); " : Constants.EMPTY_STRING)
+                            + (hasPageModifications ? "pmod(); " : Constants.EMPTY_STRING)
             );
             article.addScript(onLoadScript);
         }
@@ -125,8 +135,8 @@ public class JSIQ2ExportManager extends XMLExportManager {
                 Script actionConditionScript = new Script();
                 actionConditionScript.setType("condition_" + i);
                 actionConditionScript.setValue(
-                    //"<![CDATA[return (" + linkBlocks.getLinkConstraint() + ");]]>"
-                    "return (" + linkBlocks.getLinkConstraint() + ");"
+                        //"<![CDATA[return (" + linkBlocks.getLinkConstraint() + ");]]>"
+                        "return (" + linkBlocks.getLinkConstraint() + ");"
                 );
                 article.addScript(actionConditionScript);
                 action.setIf("condition_" + i);
@@ -138,8 +148,8 @@ public class JSIQ2ExportManager extends XMLExportManager {
                 Script actionVariableScript = new Script();
                 actionVariableScript.setType("var_" + i);
                 actionVariableScript.setValue(
-                    //"<![CDATA[" + linkBlocks.getLinkVariable() + "]]>"
-                    linkBlocks.getLinkVariable()
+                        //"<![CDATA[" + linkBlocks.getLinkVariable() + "]]>"
+                        linkBlocks.getLinkVariable()
                 );
                 article.addScript(actionVariableScript);
             }
@@ -149,8 +159,8 @@ public class JSIQ2ExportManager extends XMLExportManager {
                 Script actionModificationScript = new Script();
                 actionModificationScript.setType("mod_" + i);
                 actionModificationScript.setValue(
-                    //"<![CDATA[" + linkBlocks.getLinkModifications() + "]]>"
-                    linkBlocks.getLinkModifications()
+                        //"<![CDATA[" + linkBlocks.getLinkModifications() + "]]>"
+                        linkBlocks.getLinkModifications()
                 );
                 article.addScript(actionModificationScript);
             }
@@ -158,9 +168,9 @@ public class JSIQ2ExportManager extends XMLExportManager {
                 Script actionDoScript = new Script();
                 actionDoScript.setType("do_" + i);
                 actionDoScript.setValue(
-                    //"<![CDATA[" + "var_" + i + "(); " + "mod_" + i + "(); ]]>"
-                    (hasLinkVariable ? "var_" + i + "(); " : Constants.EMPTY_STRING)
-                    + (hasLinkModifications ? "mod_" + i + "(); " : Constants.EMPTY_STRING)
+                        //"<![CDATA[" + "var_" + i + "(); " + "mod_" + i + "(); ]]>"
+                        (hasLinkVariable ? "var_" + i + "(); " : Constants.EMPTY_STRING)
+                                + (hasLinkModifications ? "mod_" + i + "(); " : Constants.EMPTY_STRING)
                 );
                 article.addScript(actionDoScript);
                 action.setDo("do_" + i);
@@ -168,6 +178,54 @@ public class JSIQ2ExportManager extends XMLExportManager {
             article.addAction(action);
         }
         return article;
+    }
+
+    private List<Script> createInventoryScripts() {
+        List<Script> result = new ArrayList<>();
+        Script preload = new Script();
+        preload.setType("preload");
+        preload.setValue("vars.inventory = {};");
+        result.add(preload);
+        Script checkItem = new Script();
+        checkItem.setInfo("проверяем наличие предмета");
+        checkItem.setType("checkItem");
+        checkItem.setIsGlobal("true");
+        checkItem.setValue(
+                "var name = arg.name;" + LINE_SEPARATOR +
+                        "if (name === undefined && name === '') {" + LINE_SEPARATOR +
+                        "    triggerError('checkItem: название предмета не указано',{});" + LINE_SEPARATOR +
+                        "    return;" + LINE_SEPARATOR +
+                        "}" + LINE_SEPARATOR +
+                        "return (vars.inventory[name] == true);"
+        );
+        result.add(checkItem);
+        Script addItem = new Script();
+        addItem.setInfo("добавляем предмет");
+        addItem.setType("addItem");
+        addItem.setIsGlobal("true");
+        addItem.setValue(
+                "var name = arg.name;" + LINE_SEPARATOR +
+                        "if (name === undefined && name === '') {" + LINE_SEPARATOR +
+                        "    triggerError('checkItem: название предмета не указано',{});" + LINE_SEPARATOR +
+                        "    return;" + LINE_SEPARATOR +
+                        "}" + LINE_SEPARATOR +
+                        "return (vars.inventory[name] == true);"
+        );
+        result.add(addItem);
+        Script removeItem = new Script();
+        removeItem.setInfo("удалить предмет");
+        removeItem.setType("removeItem");
+        removeItem.setIsGlobal("true");
+        removeItem.setValue(
+                "var name = arg.name;" + LINE_SEPARATOR +
+                        "if (name === undefined && name === '') {" + LINE_SEPARATOR +
+                        "    triggerError('removeItem: название предмета не указано',{});" + LINE_SEPARATOR +
+                        "    return;" + LINE_SEPARATOR +
+                        "}" + LINE_SEPARATOR +
+                        "delete vars.inventory[name];"
+        );
+        result.add(removeItem);
+        return result;
     }
 
     @Override
