@@ -108,10 +108,10 @@ public class CoordsImpl implements Coords {
         FileManipulator fileManipulator,
         File coordsDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
-        fileManipulator.writeString(coordsDir, LEFT_FILE_NAME, String.valueOf(m_left));
-        fileManipulator.writeString(coordsDir, TOP_FILE_NAME, String.valueOf(m_top));
-        fileManipulator.writeString(coordsDir, WIDTH_FILE_NAME, String.valueOf(m_width));
-        fileManipulator.writeString(coordsDir, HEIGHT_FILE_NAME, String.valueOf(m_height));
+        fileManipulator.writeRequiredString(coordsDir, LEFT_FILE_NAME, String.valueOf(m_left));
+        fileManipulator.writeRequiredString(coordsDir, TOP_FILE_NAME, String.valueOf(m_top));
+        fileManipulator.writeRequiredString(coordsDir, WIDTH_FILE_NAME, String.valueOf(m_width));
+        fileManipulator.writeRequiredString(coordsDir, HEIGHT_FILE_NAME, String.valueOf(m_height));
     }
 
     public void read(File coordsDir) throws NLBIOException {

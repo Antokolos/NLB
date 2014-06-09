@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.util;
 
+import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.domain.LinkImpl;
 
 import java.util.List;
@@ -52,7 +53,7 @@ public class StringHelper {
     private final static String DELIMITER = ";";
 
     public static boolean isEmpty(final String string) {
-        return string == null || "".equals(string);
+        return string == null || Constants.EMPTY_STRING.equals(string);
     }
 
     public static String formatSequence(final List<String> strings) {

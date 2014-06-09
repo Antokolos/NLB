@@ -76,13 +76,13 @@ public class FileManipulator {
      * @return <code>true</code> if all files and subdirectories
      * successfully deleted.
      */
-    public boolean deleteDir(File file) throws NLBFileManipulationException, NLBIOException {
+    public boolean deleteFileOrDir(File file) throws NLBFileManipulationException, NLBIOException {
         try {
             boolean ret = true;
             if (file.isDirectory()) {
                 String[] children = file.list();
                 for (int i = 0; i < children.length; i++) {
-                    if (!deleteDir(new File(file, children[i]))) {
+                    if (!deleteFileOrDir(new File(file, children[i]))) {
                         ret = false;
                     }
                 }
@@ -168,7 +168,7 @@ public class FileManipulator {
 
     /**
      * This method is similar to getFileAsString(), but it does not throw an exception if
-     * file does not exist. In such case empty string is returned.
+     * file does not exist. In such case default value is returned.
      * @param rootDir
      * @param fileName
      * @return
@@ -176,14 +176,15 @@ public class FileManipulator {
      */
     public static String getOptionalFileAsString(
         final File rootDir,
-        final String fileName
+        final String fileName,
+        final String defaultValue
     ) throws NLBIOException {
         try {
             InputStream fis = null;
             try {
                 final File file = new File(rootDir, fileName);
                 if (!file.exists()) {
-                    return Constants.EMPTY_STRING;
+                    return defaultValue;
                 }
                 fis = new FileInputStream(file);
                 return FileManipulator.getFileAsString(fis);
@@ -287,10 +288,20 @@ public class FileManipulator {
         }
     }
 
-    public void writeString(
-        final File rootDir,
-        final String fileName,
-        final String content
+    /**
+     * This method differs from writeString in that it does not have default content and always writes files, even
+     * empty ones.
+     * @param rootDir
+     * @param fileName
+     * @param content
+     * @throws NLBIOException
+     * @throws NLBFileManipulationException
+     * @throws NLBVCSException
+     */
+    public void writeRequiredString(
+            final File rootDir,
+            final String fileName,
+            final String content
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         ByteArrayInputStream inputStream = null;
         try {
@@ -299,12 +310,50 @@ public class FileManipulator {
                 final boolean newFile = !file.exists();
                 if (content != null) {
                     inputStream = (
-                        new ByteArrayInputStream(content.getBytes(Constants.UNICODE_ENCODING))
+                            new ByteArrayInputStream(content.getBytes(Constants.UNICODE_ENCODING))
                     );
                     writeFile(file, inputStream);
                     addToVCS(file, newFile);
                 } else {
                     createFile(file, "Cannot create empty file with name " + fileName);
+                }
+            } finally {
+                if (inputStream != null) inputStream.close();
+            }
+        } catch (IOException e) {
+            throw new NLBIOException("IOException occured", e);
+        }
+    }
+
+    public void writeString(
+        final File rootDir,
+        final String fileName,
+        final String content,
+        final String defaultContent
+    ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
+        ByteArrayInputStream inputStream = null;
+        try {
+            try {
+                final File file = new File(rootDir, fileName);
+                final boolean newFile = !file.exists();
+                if (content != null) {
+                    if (content.equals(defaultContent)) {
+                        if (!newFile) {
+                            // remove existing file if its content contains default data
+                            deleteFileOrDir(file);
+                        }
+                    } else {
+                        inputStream = (
+                                new ByteArrayInputStream(content.getBytes(Constants.UNICODE_ENCODING))
+                        );
+                        writeFile(file, inputStream);
+                        addToVCS(file, newFile);
+                    }
+                } else {
+                    // if default content is empty, do nothing
+                    if (!StringHelper.isEmpty(defaultContent)) {
+                        createFile(file, "Cannot create empty file with name " + fileName);
+                    }
                 }
             } finally {
                 if (inputStream != null) inputStream.close();

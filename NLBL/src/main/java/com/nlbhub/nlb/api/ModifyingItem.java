@@ -48,6 +48,7 @@ import java.util.List;
  * @version 1.0 1/15/14
  */
 public interface ModifyingItem extends IdentifiableItem {
+    public static final String DEFAULT_MODORDER = Constants.EMPTY_STRING;
     public List<Modification> getModifications();
     public Modification getModificationById(@NotNull String modId);
 }

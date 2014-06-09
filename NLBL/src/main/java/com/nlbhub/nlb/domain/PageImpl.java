@@ -75,23 +75,15 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String RETPAGE_FILE_NAME = "retpage";
     private static final String MODCNSID_FILE_NAME = "modcnsid";
 
-    private static final String DEFAULT_MODULE_NAME_FORMAT = "%s's submodule";
-    private static final String DEFAULT_TRAVERSE_TEXT_FORMAT = "Go to %s";
-    /**
-     * Set to empty String.
-     * This means that by default pages should not return to the parent module
-     * */
-    private static final String DEFAULT_RETURN_TEXT = Constants.EMPTY_STRING;
-
-    private String m_varId;
-    private String m_caption = Constants.EMPTY_STRING;
-    private boolean m_useCaption = false;
-    private String m_text = Constants.EMPTY_STRING;
-    private String m_moduleName;
-    private String m_traverseText;
-    private String m_returnText;
-    private String m_returnPageId = Constants.EMPTY_STRING;
-    private String m_moduleConstrId;
+    private String m_varId = DEFAULT_VARID;
+    private String m_caption = DEFAULT_CAPTION;
+    private boolean m_useCaption = DEFAULT_USE_CAPTION;
+    private String m_text = DEFAULT_TEXT;
+    private String m_moduleName = DEFAULT_MODULE_NAME;
+    private String m_traverseText = DEFAULT_TRAVERSE_TEXT;
+    private String m_returnText = DEFAULT_RETURN_TEXT;
+    private String m_returnPageId = DEFAULT_RETURN_PAGE_ID;
+    private String m_moduleConstrId = DEFAULT_MODULE_CONSTR_ID;
 
     private NonLinearBook m_currentNLB;
     private NonLinearBookImpl m_module;
@@ -112,10 +104,6 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     private void init() {
         m_module = new NonLinearBookImpl(m_currentNLB, this);
-        m_moduleName = String.format(DEFAULT_MODULE_NAME_FORMAT, getId());
-        m_traverseText = String.format(DEFAULT_TRAVERSE_TEXT_FORMAT, m_moduleName);
-        m_returnText = DEFAULT_RETURN_TEXT;
-        m_returnPageId = Constants.EMPTY_STRING;
     }
 
     @Override
@@ -264,7 +252,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         final File pageDir = new File(pagesDir, getId());
         if (isDeleted()) {
             // Completely remove page directory
-            fileManipulator.deleteDir(pageDir);
+            fileManipulator.deleteFileOrDir(pageDir);
         } else {
             fileManipulator.createDir(
                 pageDir,
@@ -272,15 +260,50 @@ public class PageImpl extends AbstractNodeItem implements Page {
             );
             m_module.setRootDir(new File(pageDir, MODULE_SUBDIR_NAME));
             m_module.save(fileManipulator);
-            fileManipulator.writeString(pageDir, VARID_FILE_NAME, m_varId);
-            fileManipulator.writeString(pageDir, CAPTION_FILE_NAME, m_caption);
-            fileManipulator.writeString(pageDir, USE_CAPT_FILE_NAME, String.valueOf(m_useCaption));
-            fileManipulator.writeString(pageDir, TEXT_FILE_NAME, m_text);
-            fileManipulator.writeString(pageDir, MODNAME_FILE_NAME, m_moduleName);
-            fileManipulator.writeString(pageDir, TRAVTEXT_FILE_NAME, m_traverseText);
-            fileManipulator.writeString(pageDir, RETTEXT_FILE_NAME, m_returnText);
-            fileManipulator.writeString(pageDir, RETPAGE_FILE_NAME, m_returnPageId);
-            fileManipulator.writeString(pageDir, MODCNSID_FILE_NAME, m_moduleConstrId);
+            fileManipulator.writeString(pageDir, VARID_FILE_NAME, m_varId, DEFAULT_VARID);
+            fileManipulator.writeString(pageDir, CAPTION_FILE_NAME, m_caption, DEFAULT_CAPTION);
+            fileManipulator.writeString(
+                    pageDir,
+                    USE_CAPT_FILE_NAME,
+                    String.valueOf(m_useCaption),
+                    String.valueOf(DEFAULT_USE_CAPTION)
+            );
+            fileManipulator.writeString(
+                    pageDir,
+                    TEXT_FILE_NAME,
+                    m_text,
+                    DEFAULT_TEXT
+            );
+            fileManipulator.writeString(
+                    pageDir,
+                    MODNAME_FILE_NAME,
+                    m_moduleName,
+                    DEFAULT_MODULE_NAME
+            );
+            fileManipulator.writeString(
+                    pageDir,
+                    TRAVTEXT_FILE_NAME,
+                    m_traverseText,
+                    DEFAULT_TRAVERSE_TEXT
+            );
+            fileManipulator.writeString(
+                    pageDir,
+                    RETTEXT_FILE_NAME,
+                    m_returnText,
+                    DEFAULT_RETURN_TEXT
+            );
+            fileManipulator.writeString(
+                    pageDir,
+                    RETPAGE_FILE_NAME,
+                    m_returnPageId,
+                    DEFAULT_RETURN_PAGE_ID
+            );
+            fileManipulator.writeString(
+                    pageDir,
+                    MODCNSID_FILE_NAME,
+                    m_moduleConstrId,
+                    DEFAULT_MODULE_CONSTR_ID
+            );
             writeModOrderFile(fileManipulator, pageDir);
             writeModifications(fileManipulator, pageDir);
             writeNodeItemProperties(fileManipulator, pageDir, nonLinearBook);
@@ -295,61 +318,66 @@ public class PageImpl extends AbstractNodeItem implements Page {
             final File moduleDir = new File(pageDir, MODULE_SUBDIR_NAME);
             m_module.loadAndSetParent(moduleDir.getCanonicalPath(), m_currentNLB, this);
             m_varId = (
-                FileManipulator.getFileAsString(
+                FileManipulator.getOptionalFileAsString(
                     pageDir,
                     VARID_FILE_NAME,
-                    "Error while reading page variable Id for page with Id = " + getId()
+                    DEFAULT_VARID
                 )
             );
             m_caption = (
-                FileManipulator.getFileAsString(
+                FileManipulator.getOptionalFileAsString(
                     pageDir,
                     CAPTION_FILE_NAME,
-                    "Error while reading page caption for page with Id = " + getId()
+                    DEFAULT_CAPTION
                 )
             );
             m_useCaption = "true".equals(
-                FileManipulator.getFileAsString(
+                FileManipulator.getOptionalFileAsString(
                     pageDir,
                     USE_CAPT_FILE_NAME,
-                    "Error while reading page use caption flag for page with Id = " + getId()
+                    String.valueOf(DEFAULT_USE_CAPTION)
                 )
             );
             m_text = (
-                FileManipulator.getFileAsString(
+                FileManipulator.getOptionalFileAsString(
                     pageDir,
                     TEXT_FILE_NAME,
-                    "Error while reading page text for page with Id = " + getId()
+                    DEFAULT_TEXT
                 )
             );
             m_moduleName = (
                 FileManipulator.getOptionalFileAsString(
                     pageDir,
-                    MODNAME_FILE_NAME
+                    MODNAME_FILE_NAME,
+                    DEFAULT_MODULE_NAME
                 )
             );
             m_traverseText = (
                 FileManipulator.getOptionalFileAsString(
                     pageDir,
-                    TRAVTEXT_FILE_NAME
+                    TRAVTEXT_FILE_NAME,
+                    DEFAULT_TRAVERSE_TEXT
                 )
             );
             m_returnText = (
                 FileManipulator.getOptionalFileAsString(
                     pageDir,
-                    RETTEXT_FILE_NAME
+                    RETTEXT_FILE_NAME,
+                    DEFAULT_RETURN_TEXT
                 )
             );
             m_returnPageId = (
                 FileManipulator.getOptionalFileAsString(
                     pageDir,
-                    RETPAGE_FILE_NAME
+                    RETPAGE_FILE_NAME,
+                    DEFAULT_RETURN_PAGE_ID
                 )
             );
             m_moduleConstrId = (
                 FileManipulator.getOptionalFileAsString(
                     pageDir,
-                    MODCNSID_FILE_NAME
+                    MODCNSID_FILE_NAME,
+                    DEFAULT_MODULE_CONSTR_ID
                 )
             );
             readNodeItemProperties(pageDir);

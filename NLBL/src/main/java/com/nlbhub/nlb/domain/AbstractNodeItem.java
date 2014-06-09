@@ -38,10 +38,7 @@
  */
 package com.nlbhub.nlb.domain;
 
-import com.nlbhub.nlb.api.Link;
-import com.nlbhub.nlb.api.NLBCommand;
-import com.nlbhub.nlb.api.NLBObserver;
-import com.nlbhub.nlb.api.NodeItem;
+import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
@@ -72,9 +69,9 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
     private static final String FILL_FILE_NAME = "fill";
     private static final String TEXTCOLOR_FILE_NAME = "txtcolor";
 
-    private String m_stroke = "000000";
-    private String m_fill = "00FF00";
-    private String m_textColor = "000000";
+    private String m_stroke = DEFAULT_STROKE;
+    private String m_fill = DEFAULT_FILL;
+    private String m_textColor = DEFAULT_TEXTCOLOR;
     private CoordsImpl m_coords = new CoordsImpl();
     private List<LinkImpl> m_links = new LinkedList<>();
     private List<String> m_containedObjIds = new ArrayList<>();
@@ -359,9 +356,9 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
         final @NotNull File nodeDir,
         final @NotNull NonLinearBookImpl nonLinearBook
     ) throws IOException, NLBIOException, NLBFileManipulationException, NLBVCSException {
-        fileManipulator.writeString(nodeDir, STROKE_FILE_NAME, m_stroke);
-        fileManipulator.writeString(nodeDir, FILL_FILE_NAME, m_fill);
-        fileManipulator.writeString(nodeDir, TEXTCOLOR_FILE_NAME, m_textColor);
+        fileManipulator.writeString(nodeDir, STROKE_FILE_NAME, m_stroke, DEFAULT_STROKE);
+        fileManipulator.writeString(nodeDir, FILL_FILE_NAME, m_fill, DEFAULT_FILL);
+        fileManipulator.writeString(nodeDir, TEXTCOLOR_FILE_NAME, m_textColor, DEFAULT_TEXTCOLOR);
         writeLinkOrderFile(fileManipulator, nodeDir);
         writeContent(fileManipulator, nodeDir, nonLinearBook);
         writeCoords(fileManipulator, nodeDir);
@@ -370,24 +367,24 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
 
     public void readNodeItemProperties(File nodeDir) throws NLBIOException, NLBConsistencyException {
         m_stroke = (
-            FileManipulator.getFileAsString(
-                nodeDir,
-                STROKE_FILE_NAME,
-                "Error while reading node stroke color for node with Id = " + getId()
+            FileManipulator.getOptionalFileAsString(
+                    nodeDir,
+                    STROKE_FILE_NAME,
+                    DEFAULT_STROKE
             )
         );
         m_fill = (
-            FileManipulator.getFileAsString(
-                nodeDir,
-                FILL_FILE_NAME,
-                "Error while reading node fill color for node with Id = " + getId()
+            FileManipulator.getOptionalFileAsString(
+                    nodeDir,
+                    FILL_FILE_NAME,
+                    DEFAULT_FILL
             )
         );
         m_textColor = (
-            FileManipulator.getFileAsString(
-                nodeDir,
-                TEXTCOLOR_FILE_NAME,
-                "Error while reading node text color for node with Id = " + getId()
+            FileManipulator.getOptionalFileAsString(
+                    nodeDir,
+                    TEXTCOLOR_FILE_NAME,
+                    DEFAULT_TEXTCOLOR
             )
         );
         readContent(nodeDir);
@@ -396,10 +393,10 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
     }
 
     private void readLinks(File nodeDir) throws NLBIOException, NLBConsistencyException {
-        String linkOrderString = FileManipulator.getFileAsString(
-            nodeDir,
-            LNKORDER_FILE_NAME,
-            "Error while reading link order file for node with Id = " + getId()
+        String linkOrderString = FileManipulator.getOptionalFileAsString(
+                nodeDir,
+                LNKORDER_FILE_NAME,
+                DEFAULT_LNKORDER
         );
         final File linksDir = new File(nodeDir, LINKS_DIR_NAME);
         if (!linksDir.exists() && !linkOrderString.isEmpty()) {
@@ -491,9 +488,9 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
             if (!m_links.get(lastElemIndex).isDeleted()) {
                 sb.append(m_links.get(lastElemIndex).getId());
             }
-            fileManipulator.writeString(nodeDir, LNKORDER_FILE_NAME, String.valueOf(sb.toString()));
+            fileManipulator.writeString(nodeDir, LNKORDER_FILE_NAME, String.valueOf(sb.toString()), DEFAULT_LNKORDER);
         } else {
-            fileManipulator.writeString(nodeDir, LNKORDER_FILE_NAME, "");
+            fileManipulator.writeString(nodeDir, LNKORDER_FILE_NAME, Constants.EMPTY_STRING, DEFAULT_LNKORDER);
         }
     }
 
@@ -529,18 +526,18 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
             if (obj != null && !obj.isDeleted()) {
                 sb.append(m_containedObjIds.get(lastElemIndex));
             }
-            fileManipulator.writeString(nodeDir, CONTENT_FILE_NAME, String.valueOf(sb.toString()));
+            fileManipulator.writeString(nodeDir, CONTENT_FILE_NAME, String.valueOf(sb.toString()), DEFAULT_CONTENT);
         } else {
-            fileManipulator.writeString(nodeDir, CONTENT_FILE_NAME, "");
+            fileManipulator.writeString(nodeDir, CONTENT_FILE_NAME, "", DEFAULT_CONTENT);
         }
     }
 
     private void readContent(File nodeDir) throws NLBIOException, NLBConsistencyException {
         m_containedObjIds.clear();
-        String contentString = FileManipulator.getFileAsString(
-            nodeDir,
-            CONTENT_FILE_NAME,
-            "Error while reading content file for node with Id = " + getId()
+        String contentString = FileManipulator.getOptionalFileAsString(
+                nodeDir,
+                CONTENT_FILE_NAME,
+                DEFAULT_CONTENT
         );
         if (!StringHelper.isEmpty(contentString)) {
             // Do not use m_containedObjIds = Arrays.asList,

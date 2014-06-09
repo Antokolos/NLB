@@ -45,10 +45,19 @@ package com.nlbhub.nlb.api;
  * @version 1.0 1/15/14
  */
 public interface Link extends ModifyingItem, NLBObservable {
+    public final static String DEFAULT_VAR_ID = Constants.EMPTY_STRING;
+    public final static String DEFAULT_TARGET = Constants.EMPTY_STRING;
+    public final static String DEFAULT_TEXT = "Next";
+    public final static String DEFAULT_CONSTR_ID = Constants.EMPTY_STRING;
+    public final static String DEFAULT_STROKE = "0000FF";
+
     public String getVarId();
     public String getTarget();
     public String getText();
     public String getConstrId();
+    public String getStroke();
+    public Coords getCoords();
+
     /**
      * If true, constraint is fulfilled if its expression is true.
      * If false, constraint is fulfilled if its expression is false
@@ -64,6 +73,4 @@ public interface Link extends ModifyingItem, NLBObservable {
     public boolean isObeyToModuleConstraint();
     public boolean isTraversalLink();
     public boolean isReturnLink();
-    public String getStroke();
-    public Coords getCoords();
 }

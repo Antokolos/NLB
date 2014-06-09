@@ -66,16 +66,15 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     private static final String TEXT_FILE_NAME = "text";
     private static final String CONSTRID_FILE_NAME = "constrid";
     private static final String STROKE_FILE_NAME = "stroke";
-    public static final String DEFAULT_LINK_TEXT_FORMAT = "Go to %s";
-    private String m_varId;
+    private String m_varId = DEFAULT_VAR_ID;
     /** Id of the target page of the link (to which this link leads). */
-    private String m_target;
+    private String m_target = DEFAULT_TARGET;
     /** Link text. */
-    private String m_text;
+    private String m_text = DEFAULT_TEXT;
     /** Link constraint Id. */
-    private String m_constrId;
+    private String m_constrId = DEFAULT_CONSTR_ID;
     /** Link stroke color (RGB). */
-    private String m_stroke = "0000FF";
+    private String m_stroke = DEFAULT_STROKE;
     private CoordsImpl m_coords = new CoordsImpl();
     private ObserverHandler m_observerHandler = new ObserverHandler();
     private boolean m_isPositiveConstraint = true;
@@ -120,7 +119,6 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     public LinkImpl(final NodeItem parent, String target) {
         this(parent);
         m_target = target;
-        m_text = String.format(DEFAULT_LINK_TEXT_FORMAT, target);
     }
 
     @Override
@@ -253,17 +251,17 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
         final File linkDir = new File(linksDir, getId());
         if (isDeleted()) {
             // Completely remove link directory
-            fileManipulator.deleteDir(linkDir);
+            fileManipulator.deleteFileOrDir(linkDir);
         } else {
             fileManipulator.createDir(
                 linkDir,
                 "Cannot create NLB link directory for link with Id = " + getId()
             );
-            fileManipulator.writeString(linkDir, VARID_FILE_NAME, m_varId);
-            fileManipulator.writeString(linkDir, TARGET_FILE_NAME, m_target);
-            fileManipulator.writeString(linkDir, TEXT_FILE_NAME, m_text);
-            fileManipulator.writeString(linkDir, CONSTRID_FILE_NAME, m_constrId);
-            fileManipulator.writeString(linkDir, STROKE_FILE_NAME, m_stroke);
+            fileManipulator.writeString(linkDir, VARID_FILE_NAME, m_varId, DEFAULT_VAR_ID);
+            fileManipulator.writeString(linkDir, TARGET_FILE_NAME, m_target, DEFAULT_TARGET);
+            fileManipulator.writeString(linkDir, TEXT_FILE_NAME, m_text, DEFAULT_TEXT);
+            fileManipulator.writeString(linkDir, CONSTRID_FILE_NAME, m_constrId, DEFAULT_CONSTR_ID);
+            fileManipulator.writeString(linkDir, STROKE_FILE_NAME, m_stroke, DEFAULT_STROKE);
             writeCoords(fileManipulator, linkDir);
             writeModOrderFile(fileManipulator, linkDir);
             writeModifications(fileManipulator, linkDir);
@@ -273,38 +271,39 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     public void readLink(File linkDir) throws NLBIOException, NLBConsistencyException {
         setId(linkDir.getName());
         m_varId = (
-            FileManipulator.getFileAsString(
-                linkDir,
-                VARID_FILE_NAME,
-                "Error while reading link variable Id for link with Id = " + getId()
+            FileManipulator.getOptionalFileAsString(
+                    linkDir,
+                    VARID_FILE_NAME,
+                    DEFAULT_VAR_ID
             )
         );
+        // Target is not optional, default target indicates an error
         m_target = (
             FileManipulator.getFileAsString(
-                linkDir,
-                TARGET_FILE_NAME,
-                "Error while reading link target for link with Id = " + getId()
+                    linkDir,
+                    TARGET_FILE_NAME,
+                    "Error while reading link target for link with Id = " + getId()
             )
         );
         m_text = (
-            FileManipulator.getFileAsString(
-                linkDir,
-                TEXT_FILE_NAME,
-                "Error while reading link text for link with Id = " + getId()
+            FileManipulator.getOptionalFileAsString(
+                    linkDir,
+                    TEXT_FILE_NAME,
+                    DEFAULT_TEXT
             )
         );
         m_constrId = (
-            FileManipulator.getFileAsString(
-                linkDir,
-                CONSTRID_FILE_NAME,
-                "Error while reading link constraint for link with Id = " + getId()
+            FileManipulator.getOptionalFileAsString(
+                    linkDir,
+                    CONSTRID_FILE_NAME,
+                    DEFAULT_CONSTR_ID
             )
         );
         m_stroke = (
-            FileManipulator.getFileAsString(
-                linkDir,
-                STROKE_FILE_NAME,
-                "Error while reading link stroke color for link with Id = " + getId()
+            FileManipulator.getOptionalFileAsString(
+                    linkDir,
+                    STROKE_FILE_NAME,
+                    DEFAULT_STROKE
             )
         );
         readCoords(linkDir);

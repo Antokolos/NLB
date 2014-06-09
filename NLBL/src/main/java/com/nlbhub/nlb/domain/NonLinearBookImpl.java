@@ -207,12 +207,12 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingVariableName = (
                 (m_existingVariable != null)
                     ? m_existingVariable.getName()
-                    : Variable.NA
+                    : Variable.DEFAULT_NAME
             );
             m_existingVariableValue = (
                 (m_existingVariable != null)
                     ? m_existingVariable.getValue()
-                    : Variable.NA
+                    : Variable.DEFAULT_VALUE
             );
             if ((existingVariable == null) && !deleteFlag) {
                 m_newVariable = new VariableImpl(
@@ -328,14 +328,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                 StringHelper.isEmpty(pageVariableName),
                 Variable.Type.PAGE,
                 pageVariableName,
-                Variable.NA,
+                Variable.DEFAULT_VALUE,
                 m_page.getFullId()
             );
             m_moduleConstrIdTracker = new VariableTracker(
                 getVariableImplById(m_page.getModuleConstrId()),
                 StringHelper.isEmpty(moduleConsraintVariableName),
                 Variable.Type.MODCONSTRAINT,
-                Variable.NA,
+                Variable.DEFAULT_NAME,
                 moduleConsraintVariableName,
                 m_page.getFullId()
             );
@@ -437,7 +437,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 StringHelper.isEmpty(objVariableName),
                 Variable.Type.OBJ,
                 objVariableName,
-                Variable.NA,
+                Variable.DEFAULT_VALUE,
                 m_obj.getFullId());
             m_existingObjName = obj.getName();
             m_existingObjText = obj.getText();
@@ -498,14 +498,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                 StringHelper.isEmpty(linkVariableName),
                 Variable.Type.LINK,
                 linkVariableName,
-                Variable.NA,
+                Variable.DEFAULT_VALUE,
                 link.getFullId()
             );
             m_constraintTracker = new VariableTracker(
                 getVariableImplById(m_link.getConstrId()),
                 StringHelper.isEmpty(linkConstraintName),
                 Variable.Type.LINKCONSTRAINT,
-                Variable.NA,
+                Variable.DEFAULT_NAME,
                 linkConstraintName,
                 link.getFullId()
             );
@@ -1723,7 +1723,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         final FileManipulator fileManipulator,
         final File rootDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
-        fileManipulator.writeString(rootDir, STARTPOINT_FILE_NAME, m_startPoint);
+        fileManipulator.writeRequiredString(rootDir, STARTPOINT_FILE_NAME, m_startPoint);
     }
 
     public Variable getVariableById(String varId) {

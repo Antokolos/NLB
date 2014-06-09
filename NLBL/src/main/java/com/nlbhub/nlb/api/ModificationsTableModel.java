@@ -145,7 +145,7 @@ public class ModificationsTableModel {
                             new VariableImpl(
                                 Variable.Type.VAR,
                                 cellValue,
-                                Variable.NA,
+                                Variable.DEFAULT_VALUE,
                                 modification.getFullId()
                             )
                         );
@@ -172,7 +172,7 @@ public class ModificationsTableModel {
                         expression = (
                             new VariableImpl(
                                 Variable.Type.EXPRESSION,
-                                Variable.NA,
+                                Variable.DEFAULT_NAME,
                                 cellValue,
                                 modification.getFullId()
                             )

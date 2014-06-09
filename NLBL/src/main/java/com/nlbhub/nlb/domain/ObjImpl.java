@@ -72,12 +72,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     /**
      * Object variable. Will be modified when object is used (act in INSTEAD)
      */
-    private String m_varId;
-    private String m_name = Constants.EMPTY_STRING;
-    private String m_text = Constants.EMPTY_STRING;
+    private String m_varId = DEFAULT_VARID;
+    private String m_name = DEFAULT_NAME;
+    private String m_text = DEFAULT_TEXT;
     /** Object can be taken to the inventory*/
-    private boolean m_takable;
-    private String m_containerId = null;
+    private boolean m_takable = DEFAULT_TAKABLE;
+    private String m_containerId = DEFAULT_CONTAINER_ID;
 
     /**
      * Default contructor. It is needed for JAXB conversion, do not remove!
@@ -165,17 +165,17 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         final File objDir = new File(objsDir, getId());
         if (isDeleted()) {
             // Completely remove obj directory
-            fileManipulator.deleteDir(objDir);
+            fileManipulator.deleteFileOrDir(objDir);
         } else {
             fileManipulator.createDir(
                 objDir,
                 "Cannot create NLB obj directory for obj with Id = " + getId()
             );
-            fileManipulator.writeString(objDir, VARID_FILE_NAME, m_varId);
-            fileManipulator.writeString(objDir, NAME_FILE_NAME, m_name);
-            fileManipulator.writeString(objDir, TEXT_FILE_NAME, m_text);
-            fileManipulator.writeString(objDir, TAKABLE_FILE_NAME, String.valueOf(m_takable));
-            fileManipulator.writeString(objDir, CONTAINERID_FILE_NAME, m_containerId);
+            fileManipulator.writeString(objDir, VARID_FILE_NAME, m_varId, DEFAULT_VARID);
+            fileManipulator.writeString(objDir, NAME_FILE_NAME, m_name, DEFAULT_NAME);
+            fileManipulator.writeString(objDir, TEXT_FILE_NAME, m_text, DEFAULT_TEXT);
+            fileManipulator.writeString(objDir, TAKABLE_FILE_NAME, String.valueOf(m_takable), String.valueOf(DEFAULT_TAKABLE));
+            fileManipulator.writeString(objDir, CONTAINERID_FILE_NAME, m_containerId, DEFAULT_CONTAINER_ID);
 
             writeModOrderFile(fileManipulator, objDir);
             writeModifications(fileManipulator, objDir);
@@ -186,38 +186,38 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     public void readObj(File objDir) throws NLBIOException, NLBConsistencyException {
         setId(objDir.getName());
         m_varId = (
-            FileManipulator.getFileAsString(
+            FileManipulator.getOptionalFileAsString(
                 objDir,
                 VARID_FILE_NAME,
-                "Error while reading obj variable Id for obj with Id = " + getId()
+                DEFAULT_VARID
             )
         );
         m_name = (
-            FileManipulator.getFileAsString(
+            FileManipulator.getOptionalFileAsString(
                 objDir,
                 NAME_FILE_NAME,
-                "Error while reading obj name for obj with Id = " + getId()
+                DEFAULT_NAME
             )
         );
         m_text = (
-            FileManipulator.getFileAsString(
+            FileManipulator.getOptionalFileAsString(
                 objDir,
                 TEXT_FILE_NAME,
-                "Error while reading obj text for obj with Id = " + getId()
+                DEFAULT_TEXT
             )
         );
         m_takable = "true".equals(
-            FileManipulator.getFileAsString(
+            FileManipulator.getOptionalFileAsString(
                 objDir,
                 TAKABLE_FILE_NAME,
-                "Error while reading obj takable flag for obj with Id = " + getId()
+                String.valueOf(DEFAULT_TAKABLE)
             )
         );
         m_containerId = (
-            FileManipulator.getFileAsString(
+            FileManipulator.getOptionalFileAsString(
                 objDir,
                 CONTAINERID_FILE_NAME,
-                "Error while reading obj container Id for obj with Id = " + getId()
+                DEFAULT_CONTAINER_ID
             )
         );
         readNodeItemProperties(objDir);

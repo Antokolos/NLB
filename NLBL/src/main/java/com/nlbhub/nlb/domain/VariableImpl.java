@@ -60,9 +60,9 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
     private static final String TARGET_FILE_NAME = "target";
     private static final String VALUE_FILE_NAME = "value";
     private Type m_type = Type.PAGE;
-    private String m_name = Constants.EMPTY_STRING;
+    private String m_name = DEFAULT_NAME;
     private String m_target;
-    private String m_value = Constants.EMPTY_STRING;
+    private String m_value = DEFAULT_VALUE;
 
     /**
      * Default contructor. It is needed for JAXB conversion, do not remove!
@@ -79,14 +79,14 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
         } else {
             result = new SearchResult();
             if (
-                !Variable.NA.equals(m_name)
+                !DEFAULT_NAME.equals(m_name)
                 && textMatches(m_name, searchText, ignoreCase, wholeWords)
             ) {
                 result.setId(getId());
                 result.setInformation(m_name);
                 return result;
             } else if (
-                !Variable.NA.equals(m_value)
+                !DEFAULT_VALUE.equals(m_value)
                 && textMatches(m_value, searchText, ignoreCase, wholeWords)
             ) {
                 result.setId(getId());
@@ -192,15 +192,15 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
                     + "' cannot be determined for variable with Id = " + getId()
                 );
         }
-        m_name = FileManipulator.getFileAsString(
+        m_name = FileManipulator.getOptionalFileAsString(
             varDir,
             NAME_FILE_NAME,
-            "Error while reading variable name for variable with Id = " + getId()
+            DEFAULT_NAME
         );
-        m_value = FileManipulator.getFileAsString(
+        m_value = FileManipulator.getOptionalFileAsString(
             varDir,
             VALUE_FILE_NAME,
-            "Error while reading variable value for variable with Id = " + getId()
+            DEFAULT_VALUE
         );
         m_target = FileManipulator.getFileAsString(
             varDir,
@@ -216,16 +216,16 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
         final File varDir = new File(varsDir, getId());
         if (isDeleted()) {
             // Completely remove variable directory
-            fileManipulator.deleteDir(varDir);
+            fileManipulator.deleteFileOrDir(varDir);
         } else {
             fileManipulator.createDir(
                 varDir,
                 "Cannot create NLB variable directory for variable with Id = " + getId()
             );
-            fileManipulator.writeString(varDir, TYPE_FILE_NAME, m_type.name());
-            fileManipulator.writeString(varDir, NAME_FILE_NAME, m_name);
-            fileManipulator.writeString(varDir, VALUE_FILE_NAME, m_value);
-            fileManipulator.writeString(varDir, TARGET_FILE_NAME, m_target);
+            fileManipulator.writeRequiredString(varDir, TYPE_FILE_NAME, m_type.name());
+            fileManipulator.writeString(varDir, NAME_FILE_NAME, m_name, DEFAULT_NAME);
+            fileManipulator.writeString(varDir, VALUE_FILE_NAME, m_value, DEFAULT_VALUE);
+            fileManipulator.writeRequiredString(varDir, TARGET_FILE_NAME, m_target);
         }
     }
 }

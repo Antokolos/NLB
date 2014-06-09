@@ -48,6 +48,11 @@ import java.util.List;
  * @version 1.0 1/15/14
  */
 public interface NodeItem extends ModifyingItem, NLBObservable {
+    public static final String DEFAULT_STROKE = "000000";
+    public static final String DEFAULT_FILL = "00FF00";
+    public static final String DEFAULT_TEXTCOLOR = "000000";
+    public static final String DEFAULT_LNKORDER = Constants.EMPTY_STRING;
+    public static final String DEFAULT_CONTENT = Constants.EMPTY_STRING;
     /** Resize bars orientations. */
     public enum Orientation {TOP, BOTTOM, LEFT, RIGHT}
     public static final int DEFAULT_NODE_WIDTH = 100;

@@ -138,15 +138,15 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
         final File modificationDir = new File(modificationsDir, getId());
         if (isDeleted()) {
             // Completely remove modification directory
-            fileManipulator.deleteDir(modificationDir);
+            fileManipulator.deleteFileOrDir(modificationDir);
         } else {
             fileManipulator.createDir(
                 modificationDir,
                 "Cannot create NLB modification directory for modification with Id = " + getId()
             );
-            fileManipulator.writeString(modificationDir, VARID_FILE_NAME, m_varId);
-            fileManipulator.writeString(modificationDir, TYPE_FILE_NAME, m_type.name());
-            fileManipulator.writeString(modificationDir, EXPRID_FILE_NAME, m_exprId);
+            fileManipulator.writeRequiredString(modificationDir, VARID_FILE_NAME, m_varId);
+            fileManipulator.writeRequiredString(modificationDir, TYPE_FILE_NAME, m_type.name());
+            fileManipulator.writeRequiredString(modificationDir, EXPRID_FILE_NAME, m_exprId);
         }
     }
 

@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.domain;
 
+import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.Modification;
 import com.nlbhub.nlb.api.ModifyingItem;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
@@ -116,10 +117,10 @@ public abstract class AbstractModifyingItem extends AbstractIdentifiableItem imp
     }
 
     protected void readModifications(File itemDir) throws NLBIOException, NLBConsistencyException {
-        String modOrderString = FileManipulator.getFileAsString(
+        String modOrderString = FileManipulator.getOptionalFileAsString(
             itemDir,
             MODORDER_FILE_NAME,
-            "Error while reading modifications order file for item with Id = " + getId()
+            DEFAULT_MODORDER
         );
         final File modsDir = new File(itemDir, MODIFICATIONS_DIR_NAME);
         if (!modsDir.exists() && !modOrderString.isEmpty()) {
@@ -176,9 +177,9 @@ public abstract class AbstractModifyingItem extends AbstractIdentifiableItem imp
             if (!m_modifications.get(lastElemIndex).isDeleted()) {
                 sb.append(m_modifications.get(lastElemIndex).getId());
             }
-            fileManipulator.writeString(itemDir, MODORDER_FILE_NAME, String.valueOf(sb.toString()));
+            fileManipulator.writeString(itemDir, MODORDER_FILE_NAME, String.valueOf(sb.toString()), DEFAULT_MODORDER);
         } else {
-            fileManipulator.writeString(itemDir, MODORDER_FILE_NAME, "");
+            fileManipulator.writeString(itemDir, MODORDER_FILE_NAME, Constants.EMPTY_STRING, DEFAULT_MODORDER);
         }
     }
 }
