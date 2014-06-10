@@ -155,16 +155,16 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     ) throws NLBIOException, NLBConsistencyException {
         setId(modificationDir.getName());
         m_varId = (
-            FileManipulator.getFileAsString(
-                modificationDir,
-                VARID_FILE_NAME,
-                "Error while reading modification variable Id for modification with Id = " + getId()
+            FileManipulator.getRequiredFileAsString(
+                    modificationDir,
+                    VARID_FILE_NAME,
+                    "Error while reading modification variable Id for modification with Id = " + getId()
             )
         );
-        String type = FileManipulator.getFileAsString(
-            modificationDir,
-            TYPE_FILE_NAME,
-            "Error while reading modification type for modification with Id = " + getId()
+        String type = FileManipulator.getRequiredFileAsString(
+                modificationDir,
+                TYPE_FILE_NAME,
+                "Error while reading modification type for modification with Id = " + getId()
         );
         switch (type) {
             case "ASSIGN":
@@ -183,10 +183,10 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 );
         }
         m_exprId = (
-            FileManipulator.getFileAsString(
-                modificationDir,
-                EXPRID_FILE_NAME,
-                "Error while reading modification expression Id for modification with Id = " + getId()
+            FileManipulator.getRequiredFileAsString(
+                    modificationDir,
+                    EXPRID_FILE_NAME,
+                    "Error while reading modification expression Id for modification with Id = " + getId()
             )
         );
     }

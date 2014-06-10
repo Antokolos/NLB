@@ -133,7 +133,7 @@ public class FileManipulator {
      * @return String representation for the specified file or
      * <tt>null</tt> if file is not found.
      */
-    public static String getFileAsString(String fName) {
+    private static String getFileAsString(String fName) {
 
         InputStream strm = (
             FileManipulator.class.getClassLoader().getResourceAsStream(fName)
@@ -142,10 +142,10 @@ public class FileManipulator {
         return getFileAsString(strm);
     }
 
-    public static String getFileAsString(
-        final File rootDir,
-        final String fileName,
-        final String errorMessage
+    public static String getRequiredFileAsString(
+            final File rootDir,
+            final String fileName,
+            final String errorMessage
     ) throws NLBIOException {
         try {
             InputStream fis = null;
@@ -167,7 +167,7 @@ public class FileManipulator {
     }
 
     /**
-     * This method is similar to getFileAsString(), but it does not throw an exception if
+     * This method is similar to getRequiredFileAsString(), but it does not throw an exception if
      * file does not exist. In such case default value is returned.
      * @param rootDir
      * @param fileName
@@ -206,7 +206,7 @@ public class FileManipulator {
      * @return String representation for the specified file or
      * <tt>null</tt> if file is not found.
      */
-    public static String getFileAsString(InputStream strm) {
+    private static String getFileAsString(InputStream strm) {
 
         if (strm != null) {
             StringBuilder sb = new StringBuilder();
@@ -237,7 +237,7 @@ public class FileManipulator {
      * @param targetPath destination file path.
      * @throws IOException if an I/O error occurs.
      */
-    public void transfer(
+    private void transfer(
         File sourcePath, File targetPath
     ) throws IOException {
 
@@ -257,7 +257,7 @@ public class FileManipulator {
      * @param output output stream output which content is to be transferred.
      * @throws IOException if an I/O error occurs.
      */
-    public static void transfer(
+    private static void transfer(
         InputStream input, OutputStream output
     ) throws IOException {
         byte[] buffer = new byte[BLOCK_SIZE];
@@ -276,7 +276,7 @@ public class FileManipulator {
      *
      * @throws IOException if an I/O error occurs.
      */
-    public void writeFile(
+    private void writeFile(
         File file, InputStream input
     ) throws IOException {
         FileOutputStream output = new FileOutputStream(file);
@@ -289,7 +289,7 @@ public class FileManipulator {
     }
 
     /**
-     * This method differs from writeString in that it does not have default content and always writes files, even
+     * This method differs from writeOptionalString in that it does not have default content and always writes files, even
      * empty ones.
      * @param rootDir
      * @param fileName
@@ -325,11 +325,11 @@ public class FileManipulator {
         }
     }
 
-    public void writeString(
-        final File rootDir,
-        final String fileName,
-        final String content,
-        final String defaultContent
+    public void writeOptionalString(
+            final File rootDir,
+            final String fileName,
+            final String content,
+            final String defaultContent
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         ByteArrayInputStream inputStream = null;
         try {
@@ -387,7 +387,7 @@ public class FileManipulator {
         }
     }
 
-    public void createFile(
+    private void createFile(
         final File file,
         final String errorMessage
     ) throws NLBIOException, NLBFileManipulationException {

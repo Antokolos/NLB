@@ -38,7 +38,6 @@
  */
 package com.nlbhub.nlb.domain;
 
-import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.Obj;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
@@ -171,11 +170,11 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                 objDir,
                 "Cannot create NLB obj directory for obj with Id = " + getId()
             );
-            fileManipulator.writeString(objDir, VARID_FILE_NAME, m_varId, DEFAULT_VARID);
-            fileManipulator.writeString(objDir, NAME_FILE_NAME, m_name, DEFAULT_NAME);
-            fileManipulator.writeString(objDir, TEXT_FILE_NAME, m_text, DEFAULT_TEXT);
-            fileManipulator.writeString(objDir, TAKABLE_FILE_NAME, String.valueOf(m_takable), String.valueOf(DEFAULT_TAKABLE));
-            fileManipulator.writeString(objDir, CONTAINERID_FILE_NAME, m_containerId, DEFAULT_CONTAINER_ID);
+            fileManipulator.writeOptionalString(objDir, VARID_FILE_NAME, m_varId, DEFAULT_VARID);
+            fileManipulator.writeOptionalString(objDir, NAME_FILE_NAME, m_name, DEFAULT_NAME);
+            fileManipulator.writeOptionalString(objDir, TEXT_FILE_NAME, m_text, DEFAULT_TEXT);
+            fileManipulator.writeOptionalString(objDir, TAKABLE_FILE_NAME, String.valueOf(m_takable), String.valueOf(DEFAULT_TAKABLE));
+            fileManipulator.writeOptionalString(objDir, CONTAINERID_FILE_NAME, m_containerId, DEFAULT_CONTAINER_ID);
 
             writeModOrderFile(fileManipulator, objDir);
             writeModifications(fileManipulator, objDir);

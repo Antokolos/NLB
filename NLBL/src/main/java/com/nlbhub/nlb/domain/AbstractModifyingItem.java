@@ -177,9 +177,9 @@ public abstract class AbstractModifyingItem extends AbstractIdentifiableItem imp
             if (!m_modifications.get(lastElemIndex).isDeleted()) {
                 sb.append(m_modifications.get(lastElemIndex).getId());
             }
-            fileManipulator.writeString(itemDir, MODORDER_FILE_NAME, String.valueOf(sb.toString()), DEFAULT_MODORDER);
+            fileManipulator.writeOptionalString(itemDir, MODORDER_FILE_NAME, String.valueOf(sb.toString()), DEFAULT_MODORDER);
         } else {
-            fileManipulator.writeString(itemDir, MODORDER_FILE_NAME, Constants.EMPTY_STRING, DEFAULT_MODORDER);
+            fileManipulator.writeOptionalString(itemDir, MODORDER_FILE_NAME, Constants.EMPTY_STRING, DEFAULT_MODORDER);
         }
     }
 }

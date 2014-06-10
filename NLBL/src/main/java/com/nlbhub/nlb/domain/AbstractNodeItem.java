@@ -356,9 +356,9 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
         final @NotNull File nodeDir,
         final @NotNull NonLinearBookImpl nonLinearBook
     ) throws IOException, NLBIOException, NLBFileManipulationException, NLBVCSException {
-        fileManipulator.writeString(nodeDir, STROKE_FILE_NAME, m_stroke, DEFAULT_STROKE);
-        fileManipulator.writeString(nodeDir, FILL_FILE_NAME, m_fill, DEFAULT_FILL);
-        fileManipulator.writeString(nodeDir, TEXTCOLOR_FILE_NAME, m_textColor, DEFAULT_TEXTCOLOR);
+        fileManipulator.writeOptionalString(nodeDir, STROKE_FILE_NAME, m_stroke, DEFAULT_STROKE);
+        fileManipulator.writeOptionalString(nodeDir, FILL_FILE_NAME, m_fill, DEFAULT_FILL);
+        fileManipulator.writeOptionalString(nodeDir, TEXTCOLOR_FILE_NAME, m_textColor, DEFAULT_TEXTCOLOR);
         writeLinkOrderFile(fileManipulator, nodeDir);
         writeContent(fileManipulator, nodeDir, nonLinearBook);
         writeCoords(fileManipulator, nodeDir);
@@ -488,9 +488,9 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
             if (!m_links.get(lastElemIndex).isDeleted()) {
                 sb.append(m_links.get(lastElemIndex).getId());
             }
-            fileManipulator.writeString(nodeDir, LNKORDER_FILE_NAME, String.valueOf(sb.toString()), DEFAULT_LNKORDER);
+            fileManipulator.writeOptionalString(nodeDir, LNKORDER_FILE_NAME, String.valueOf(sb.toString()), DEFAULT_LNKORDER);
         } else {
-            fileManipulator.writeString(nodeDir, LNKORDER_FILE_NAME, Constants.EMPTY_STRING, DEFAULT_LNKORDER);
+            fileManipulator.writeOptionalString(nodeDir, LNKORDER_FILE_NAME, Constants.EMPTY_STRING, DEFAULT_LNKORDER);
         }
     }
 
@@ -526,9 +526,9 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
             if (obj != null && !obj.isDeleted()) {
                 sb.append(m_containedObjIds.get(lastElemIndex));
             }
-            fileManipulator.writeString(nodeDir, CONTENT_FILE_NAME, String.valueOf(sb.toString()), DEFAULT_CONTENT);
+            fileManipulator.writeOptionalString(nodeDir, CONTENT_FILE_NAME, String.valueOf(sb.toString()), DEFAULT_CONTENT);
         } else {
-            fileManipulator.writeString(nodeDir, CONTENT_FILE_NAME, "", DEFAULT_CONTENT);
+            fileManipulator.writeOptionalString(nodeDir, CONTENT_FILE_NAME, "", DEFAULT_CONTENT);
         }
     }
 

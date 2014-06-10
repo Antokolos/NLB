@@ -52,6 +52,7 @@ import java.util.*;
  * @version 1.0 1/15/14
  */
 public interface NonLinearBook {
+    public static final String DEFAULT_STARTPOINT = Constants.EMPTY_STRING;
 
     public class ModuleInfo {
         private String m_modulePageId;

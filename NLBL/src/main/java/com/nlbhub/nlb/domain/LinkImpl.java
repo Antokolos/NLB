@@ -257,11 +257,11 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
                 linkDir,
                 "Cannot create NLB link directory for link with Id = " + getId()
             );
-            fileManipulator.writeString(linkDir, VARID_FILE_NAME, m_varId, DEFAULT_VAR_ID);
-            fileManipulator.writeString(linkDir, TARGET_FILE_NAME, m_target, DEFAULT_TARGET);
-            fileManipulator.writeString(linkDir, TEXT_FILE_NAME, m_text, DEFAULT_TEXT);
-            fileManipulator.writeString(linkDir, CONSTRID_FILE_NAME, m_constrId, DEFAULT_CONSTR_ID);
-            fileManipulator.writeString(linkDir, STROKE_FILE_NAME, m_stroke, DEFAULT_STROKE);
+            fileManipulator.writeOptionalString(linkDir, VARID_FILE_NAME, m_varId, DEFAULT_VAR_ID);
+            fileManipulator.writeOptionalString(linkDir, TARGET_FILE_NAME, m_target, DEFAULT_TARGET);
+            fileManipulator.writeOptionalString(linkDir, TEXT_FILE_NAME, m_text, DEFAULT_TEXT);
+            fileManipulator.writeOptionalString(linkDir, CONSTRID_FILE_NAME, m_constrId, DEFAULT_CONSTR_ID);
+            fileManipulator.writeOptionalString(linkDir, STROKE_FILE_NAME, m_stroke, DEFAULT_STROKE);
             writeCoords(fileManipulator, linkDir);
             writeModOrderFile(fileManipulator, linkDir);
             writeModifications(fileManipulator, linkDir);
@@ -279,7 +279,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
         );
         // Target is not optional, default target indicates an error
         m_target = (
-            FileManipulator.getFileAsString(
+            FileManipulator.getRequiredFileAsString(
                     linkDir,
                     TARGET_FILE_NAME,
                     "Error while reading link target for link with Id = " + getId()

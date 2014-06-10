@@ -118,31 +118,31 @@ public class CoordsImpl implements Coords {
         try {
             final String coordsDirPath = coordsDir.getCanonicalPath();
             m_left = Float.parseFloat(
-                FileManipulator.getFileAsString(
-                    coordsDir,
-                    LEFT_FILE_NAME,
-                    "Error reading left coords file; dir = " + coordsDirPath
+                FileManipulator.getRequiredFileAsString(
+                        coordsDir,
+                        LEFT_FILE_NAME,
+                        "Error reading left coords file; dir = " + coordsDirPath
                 )
             );
             m_top = Float.parseFloat(
-                FileManipulator.getFileAsString(
-                    coordsDir,
-                    TOP_FILE_NAME,
-                    "Error reading top coords file; dir = " + coordsDirPath
+                FileManipulator.getRequiredFileAsString(
+                        coordsDir,
+                        TOP_FILE_NAME,
+                        "Error reading top coords file; dir = " + coordsDirPath
                 )
             );
             m_width = Float.parseFloat(
-                FileManipulator.getFileAsString(
-                    coordsDir,
-                    WIDTH_FILE_NAME,
-                    "Error reading width coords file; dir = " + coordsDirPath
+                FileManipulator.getRequiredFileAsString(
+                        coordsDir,
+                        WIDTH_FILE_NAME,
+                        "Error reading width coords file; dir = " + coordsDirPath
                 )
             );
             m_height = Float.parseFloat(
-                FileManipulator.getFileAsString(
-                    coordsDir,
-                    HEIGHT_FILE_NAME,
-                    "Error reading height coords file; dir = " + coordsDirPath
+                FileManipulator.getRequiredFileAsString(
+                        coordsDir,
+                        HEIGHT_FILE_NAME,
+                        "Error reading height coords file; dir = " + coordsDirPath
                 )
             );
         } catch (IOException e) {

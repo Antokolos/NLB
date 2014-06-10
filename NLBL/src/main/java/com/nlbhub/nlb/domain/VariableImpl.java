@@ -38,7 +38,6 @@
  */
 package com.nlbhub.nlb.domain;
 
-import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.Variable;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
@@ -159,10 +158,10 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
 
     public void readVariable(File varDir) throws NLBIOException, NLBConsistencyException {
         setId(varDir.getName());
-        String type = FileManipulator.getFileAsString(
-            varDir,
-            TYPE_FILE_NAME,
-            "Error while reading variable type for variable with Id = " + getId()
+        String type = FileManipulator.getRequiredFileAsString(
+                varDir,
+                TYPE_FILE_NAME,
+                "Error while reading variable type for variable with Id = " + getId()
         );
         switch (type) {
             case "PAGE":
@@ -202,10 +201,10 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
             VALUE_FILE_NAME,
             DEFAULT_VALUE
         );
-        m_target = FileManipulator.getFileAsString(
-            varDir,
-            TARGET_FILE_NAME,
-            "Error while reading variable target for variable with Id = " + getId()
+        m_target = FileManipulator.getRequiredFileAsString(
+                varDir,
+                TARGET_FILE_NAME,
+                "Error while reading variable target for variable with Id = " + getId()
         );
     }
 
@@ -223,8 +222,8 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
                 "Cannot create NLB variable directory for variable with Id = " + getId()
             );
             fileManipulator.writeRequiredString(varDir, TYPE_FILE_NAME, m_type.name());
-            fileManipulator.writeString(varDir, NAME_FILE_NAME, m_name, DEFAULT_NAME);
-            fileManipulator.writeString(varDir, VALUE_FILE_NAME, m_value, DEFAULT_VALUE);
+            fileManipulator.writeOptionalString(varDir, NAME_FILE_NAME, m_name, DEFAULT_NAME);
+            fileManipulator.writeOptionalString(varDir, VALUE_FILE_NAME, m_value, DEFAULT_VALUE);
             fileManipulator.writeRequiredString(varDir, TARGET_FILE_NAME, m_target);
         }
     }

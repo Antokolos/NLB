@@ -1369,10 +1369,10 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     private void readStartPoint(File rootDir) throws NLBIOException {
         m_startPoint = (
-            FileManipulator.getFileAsString(
-                rootDir,
-                STARTPOINT_FILE_NAME,
-                "Incorrect NLB structure: startpoint file does not exist"
+            FileManipulator.getOptionalFileAsString(
+                    rootDir,
+                    STARTPOINT_FILE_NAME,
+                    DEFAULT_STARTPOINT
             )
         );
     }
@@ -1723,7 +1723,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         final FileManipulator fileManipulator,
         final File rootDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
-        fileManipulator.writeRequiredString(rootDir, STARTPOINT_FILE_NAME, m_startPoint);
+        fileManipulator.writeOptionalString(rootDir, STARTPOINT_FILE_NAME, m_startPoint, DEFAULT_STARTPOINT);
     }
 
     public Variable getVariableById(String varId) {
