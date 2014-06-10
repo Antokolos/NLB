@@ -46,6 +46,8 @@ package com.nlbhub.nlb.api;
  */
 public interface NLBObservable {
     public String addObserver(NLBObserver observer);
+
     public void removeObserver(String observerId);
+
     public void notifyObservers();
 }

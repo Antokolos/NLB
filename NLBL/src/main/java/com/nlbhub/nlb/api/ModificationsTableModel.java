@@ -38,7 +38,8 @@
  */
 package com.nlbhub.nlb.api;
 
-import com.nlbhub.nlb.domain.*;
+import com.nlbhub.nlb.domain.ModificationImpl;
+import com.nlbhub.nlb.domain.VariableImpl;
 import com.nlbhub.nlb.util.StringHelper;
 
 import java.util.*;
@@ -54,8 +55,8 @@ public class ModificationsTableModel {
     private Map<String, VariableImpl> m_variableMap;
 
     public ModificationsTableModel(
-        final NonLinearBook nlb,
-        final List<Modification> modifications
+            final NonLinearBook nlb,
+            final List<Modification> modifications
     ) {
         m_modifications = new ArrayList<>();
         m_variableMap = new HashMap<>();
@@ -142,12 +143,12 @@ public class ModificationsTableModel {
                 } else {
                     if (!StringHelper.isEmpty(cellValue)) {
                         variable = (
-                            new VariableImpl(
-                                Variable.Type.VAR,
-                                cellValue,
-                                Variable.DEFAULT_VALUE,
-                                modification.getFullId()
-                            )
+                                new VariableImpl(
+                                        Variable.Type.VAR,
+                                        cellValue,
+                                        Variable.DEFAULT_VALUE,
+                                        modification.getFullId()
+                                )
                         );
                         m_variableMap.put(variable.getId(), variable);
                         modification.setVarId(variable.getId());
@@ -170,12 +171,12 @@ public class ModificationsTableModel {
                 } else {
                     if (!StringHelper.isEmpty(cellValue)) {
                         expression = (
-                            new VariableImpl(
-                                Variable.Type.EXPRESSION,
-                                Variable.DEFAULT_NAME,
-                                cellValue,
-                                modification.getFullId()
-                            )
+                                new VariableImpl(
+                                        Variable.Type.EXPRESSION,
+                                        Variable.DEFAULT_NAME,
+                                        cellValue,
+                                        modification.getFullId()
+                                )
                         );
                         m_variableMap.put(expression.getId(), expression);
                         modification.setExprId(expression.getId());

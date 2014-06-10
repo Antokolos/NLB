@@ -39,13 +39,14 @@
 package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.*;
-import com.nlbhub.nlb.domain.*;
+import com.nlbhub.nlb.domain.ModificationImpl;
+import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 import com.nlbhub.nlb.util.VarFinder;
 
-import java.io.*;
+import java.io.File;
 import java.util.*;
 
 /**
@@ -75,11 +76,11 @@ public abstract class ExportManager {
         private ExportData m_parentED;
 
         private ExportData(
-            NonLinearBook nlb,
-            Page modulePage,
-            String moduleConstraintText,
-            Integer modulePageNumber,
-            ExportData parentED
+                NonLinearBook nlb,
+                Page modulePage,
+                String moduleConstraintText,
+                Integer modulePageNumber,
+                ExportData parentED
         ) {
             m_nlb = nlb;
             m_modulePage = modulePage;
@@ -110,7 +111,7 @@ public abstract class ExportManager {
             final Page startPage = m_nlb.getPageById(startPoint);
             if (startPage == null || startPage.isDeleted()) {
                 throw new NLBConsistencyException(
-                    "Startpoint error: start page is deleted or missing"
+                        "Startpoint error: start page is deleted or missing"
                 );
             }
             m_pageList.add(startPage);
@@ -121,13 +122,13 @@ public abstract class ExportManager {
                 pageNumber++;
             } else {
                 ExportData moduleED = (
-                    new ExportData(
-                        startPage.getModule(),
-                        startPage,
-                        (modConstr != null) ? modConstr.getValue() : Constants.EMPTY_STRING,
-                        pageNumber,
-                        this
-                    )
+                        new ExportData(
+                                startPage.getModule(),
+                                startPage,
+                                (modConstr != null) ? modConstr.getValue() : Constants.EMPTY_STRING,
+                                pageNumber,
+                                this
+                        )
                 );
                 result.putAll(moduleED.init());
                 m_idToPageNumberMap.put(moduleED.getNlb().getStartPoint(), pageNumber + 1);
@@ -145,15 +146,15 @@ public abstract class ExportManager {
                         pageNumber++;
                     } else {
                         ExportData moduleED = (
-                            new ExportData(
-                                page.getModule(),
-                                page,
-                                (pageModConstr != null)
-                                    ? pageModConstr.getValue()
-                                    : Constants.EMPTY_STRING,
-                                pageNumber,
-                                this
-                            )
+                                new ExportData(
+                                        page.getModule(),
+                                        page,
+                                        (pageModConstr != null)
+                                                ? pageModConstr.getValue()
+                                                : Constants.EMPTY_STRING,
+                                        pageNumber,
+                                        this
+                                )
                         );
                         result.putAll(moduleED.init());
                         m_idToPageNumberMap.put(moduleED.getNlb().getStartPoint(), pageNumber + 1);
@@ -198,7 +199,7 @@ public abstract class ExportManager {
                     return m_parentED.getPageNumber(pageId);
                 } else {
                     throw new NLBConsistencyException(
-                        "Page number cannot be determined for pageId = " + pageId
+                            "Page number cannot be determined for pageId = " + pageId
                     );
                 }
             }
@@ -212,7 +213,7 @@ public abstract class ExportManager {
                     return m_parentED.getObjId(objName);
                 } else {
                     throw new NLBConsistencyException(
-                        "Obj Id cannot be determined for objName = " + objName
+                            "Obj Id cannot be determined for objName = " + objName
                     );
                 }
             }
@@ -227,13 +228,13 @@ public abstract class ExportManager {
         try {
             m_encoding = encoding;
             ExportData mainExportData = (
-                new ExportData(
-                    nlb,
-                    new RootModulePage(nlb, MAIN_DATA_KEY),
-                    Constants.EMPTY_STRING,
-                    0,
-                    null
-                )
+                    new ExportData(
+                            nlb,
+                            new RootModulePage(nlb, MAIN_DATA_KEY),
+                            Constants.EMPTY_STRING,
+                            0,
+                            null
+                    )
             );
             m_exportDataMap = mainExportData.init();
         } catch (NLBConsistencyException e) {
@@ -280,7 +281,7 @@ public abstract class ExportManager {
     }
 
     private NLBBuildingBlocks createNLBBuildingBlocks(
-        final ExportData exportData
+            final ExportData exportData
     ) throws NLBConsistencyException {
         NLBBuildingBlocks blocks = new NLBBuildingBlocks();
         //stringBuilder.append("#mode quote").append(LINE_SEPARATOR);
@@ -293,7 +294,7 @@ public abstract class ExportManager {
             } else {
                 blocks.addPageBuildingBlocks(createPageBuildingBlocks(page, exportData));
                 blocks.addNLBBuildingBlocks(
-                    createNLBBuildingBlocks(m_exportDataMap.get(page.getId()))
+                        createNLBBuildingBlocks(m_exportDataMap.get(page.getId()))
                 );
             }
         }
@@ -302,8 +303,8 @@ public abstract class ExportManager {
     }
 
     private PageBuildingBlocks createPageBuildingBlocks(
-        final Page page,
-        final ExportData exportData
+            final Page page,
+            final ExportData exportData
     ) throws NLBConsistencyException {
         PageBuildingBlocks blocks = new PageBuildingBlocks();
         final Integer pageNumber = exportData.getPageNumber(page.getId());
@@ -326,9 +327,9 @@ public abstract class ExportManager {
             blocks.setPageVariable(EMPTY_STRING);
         }
         blocks.setPageModifications(
-            decoratePageModifications(
-                buildModificationsText(EMPTY_STRING, page.getModifications(), exportData)
-            )
+                decoratePageModifications(
+                        buildModificationsText(EMPTY_STRING, page.getModifications(), exportData)
+                )
         );
         blocks.setPageEnd(decoratePageEnd());
         List<String> containedObjIds = page.getContainedObjIds();
@@ -348,62 +349,62 @@ public abstract class ExportManager {
             // If this page is module page for someone, create traverse link on the fly
             ExportData targetED = m_exportDataMap.get(page.getId());
             Link link = (
-                new LinkLw(
-                    LinkLw.Type.Traverse,
-                    targetED.getNlb().getStartPoint(),
-                    page,
-                    page.getTraverseText(),
-                    page.getModuleConstrId(),
-                    true,
-                    false
-                )
+                    new LinkLw(
+                            LinkLw.Type.Traverse,
+                            targetED.getNlb().getStartPoint(),
+                            page,
+                            page.getTraverseText(),
+                            page.getModuleConstrId(),
+                            true,
+                            false
+                    )
             );
             LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(link, exportData);
             blocks.addLinkBuildingBlocks(linkBuildingBlocks);
         }
         if (
-            page.isLeaf()
-            && !exportData.getModulePage().getId().equals(MAIN_DATA_KEY)
-            && page.shouldReturn()
-        ) {
+                page.isLeaf()
+                        && !exportData.getModulePage().getId().equals(MAIN_DATA_KEY)
+                        && page.shouldReturn()
+                ) {
             // Create return link on the fly. Return links for leafs does not have any constraints,
             // i.e. it is shown always
             Link link = (
-                new LinkLw(
-                    LinkLw.Type.Return,
-                    StringHelper.isEmpty(page.getReturnPageId())
-                        ? exportData.getModulePage().getId()
-                        : page.getReturnPageId(),
-                    page,
-                    page.getReturnText(),
-                    Constants.EMPTY_STRING,
-                    true,
-                    false
-                )
+                    new LinkLw(
+                            LinkLw.Type.Return,
+                            StringHelper.isEmpty(page.getReturnPageId())
+                                    ? exportData.getModulePage().getId()
+                                    : page.getReturnPageId(),
+                            page,
+                            page.getReturnText(),
+                            Constants.EMPTY_STRING,
+                            true,
+                            false
+                    )
             );
             LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(link, exportData);
             blocks.addLinkBuildingBlocks(linkBuildingBlocks);
         } else if (
-            !StringHelper.isEmpty(exportData.getModulePage().getModuleConstrId())
-            && !exportData.getModulePage().getId().equals(MAIN_DATA_KEY)
-            && page.shouldReturn()
-        ) {
+                !StringHelper.isEmpty(exportData.getModulePage().getModuleConstrId())
+                        && !exportData.getModulePage().getId().equals(MAIN_DATA_KEY)
+                        && page.shouldReturn()
+                ) {
             // If page has module constraint, than module return links should be added to the
             // each page of the module.
             // These links should have constraints in form of 'NOT (module_constraint)'
             // (i.e. negative constraints)
             Link link = (
-                new LinkLw(
-                    LinkLw.Type.Return,
-                    StringHelper.isEmpty(page.getReturnPageId())
-                        ? exportData.getModulePage().getId()
-                        : page.getReturnPageId(),
-                    page,
-                    page.getReturnText(),
-                    exportData.getModulePage().getModuleConstrId(),
-                    false,
-                    false
-                )
+                    new LinkLw(
+                            LinkLw.Type.Return,
+                            StringHelper.isEmpty(page.getReturnPageId())
+                                    ? exportData.getModulePage().getId()
+                                    : page.getReturnPageId(),
+                            page,
+                            page.getReturnText(),
+                            exportData.getModulePage().getModuleConstrId(),
+                            false,
+                            false
+                    )
             );
             LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(link, exportData);
             blocks.addLinkBuildingBlocks(linkBuildingBlocks);
@@ -412,8 +413,8 @@ public abstract class ExportManager {
     }
 
     final ObjBuildingBlocks createObjBuildingBlocks(
-        final Obj obj,
-        final ExportData exportData
+            final Obj obj,
+            final ExportData exportData
     ) throws NLBConsistencyException {
         ObjBuildingBlocks blocks = new ObjBuildingBlocks();
         blocks.setObjLabel(decorateObjLabel(obj.getId()));
@@ -437,9 +438,9 @@ public abstract class ExportManager {
             blocks.setObjVariable(EMPTY_STRING);
         }
         blocks.setObjModifications(
-            decorateObjModifications(
-                buildModificationsText(EMPTY_STRING, obj.getModifications(), exportData)
-            )
+                decorateObjModifications(
+                        buildModificationsText(EMPTY_STRING, obj.getModifications(), exportData)
+                )
         );
         blocks.setObjActEnd(decorateObjActEnd());
         blocks.setObjUseStart(decorateObjUseStart());
@@ -544,19 +545,19 @@ public abstract class ExportManager {
     }
 
     private LinkBuildingBlocks createLinkBuildingBlocks(
-        final Link link,
-        final ExportData exportData
+            final Link link,
+            final ExportData exportData
     ) throws NLBConsistencyException {
         LinkBuildingBlocks blocks = new LinkBuildingBlocks();
         blocks.setLinkLabel(decorateLinkLabel(link.getId(), link.getText()));
         blocks.setLinkComment(decorateLinkComment(link.getText()));
         // TODO: exportData.getIdToPageNumberMap().get(link.getTarget()) can produce NPE for return links
         blocks.setLinkStart(
-            decorateLinkStart(
-                link.getId(),
-                link.getText(),
-                exportData.getPageNumber(link.getTarget())
-            )
+                decorateLinkStart(
+                        link.getId(),
+                        link.getText(),
+                        exportData.getPageNumber(link.getTarget())
+                )
         );
         Variable variable = exportData.getNlb().getVariableById(link.getVarId());
         if (variable != null && !variable.isDeleted()) {
@@ -566,42 +567,42 @@ public abstract class ExportManager {
         }
         Variable constraint = exportData.getNlb().getVariableById(link.getConstrId());
         if (
-            (constraint != null && !constraint.isDeleted())
-            || (
-                link.isObeyToModuleConstraint()
-                && !StringHelper.isEmpty(exportData.getModuleConstraintText())
-            )
-        ) {
-            blocks.setLinkConstraint(
-                translateConstraintBody(
-                    (constraint != null) ? constraint.getValue().trim() : Constants.EMPTY_STRING,
-                    link.isPositiveConstraint(),
-                    link.isObeyToModuleConstraint(),
-                    exportData.getModuleConstraintText()
+                (constraint != null && !constraint.isDeleted())
+                        || (
+                        link.isObeyToModuleConstraint()
+                                && !StringHelper.isEmpty(exportData.getModuleConstraintText())
                 )
+                ) {
+            blocks.setLinkConstraint(
+                    translateConstraintBody(
+                            (constraint != null) ? constraint.getValue().trim() : Constants.EMPTY_STRING,
+                            link.isPositiveConstraint(),
+                            link.isObeyToModuleConstraint(),
+                            exportData.getModuleConstraintText()
+                    )
             );
         } else {
             blocks.setLinkConstraint(EMPTY_STRING);
         }
         blocks.setLinkModifications(
-            decorateLinkModifications(
-                buildModificationsText("    ", link.getModifications(), exportData)
-            )
+                decorateLinkModifications(
+                        buildModificationsText("    ", link.getModifications(), exportData)
+                )
         );
         blocks.setLinkGoTo(
-            decorateLinkGoTo(
-                link.getId(),
-                link.getText(),
-                link.getTarget(),
-                exportData.getPageNumber(link.getTarget())
-            )
+                decorateLinkGoTo(
+                        link.getId(),
+                        link.getText(),
+                        link.getTarget(),
+                        exportData.getPageNumber(link.getTarget())
+                )
         );
         return blocks;
     }
 
     private UseBuildingBlocks createUseBuildingBlocks(
-        final Link link,
-        final ExportData exportData
+            final Link link,
+            final ExportData exportData
     ) throws NLBConsistencyException {
         UseBuildingBlocks blocks = new UseBuildingBlocks();
         blocks.setUseTarget(decorateUseTarget(link.getTarget()));
@@ -613,84 +614,84 @@ public abstract class ExportManager {
         }
         Variable constraint = exportData.getNlb().getVariableById(link.getConstrId());
         if (
-            (constraint != null && !constraint.isDeleted())
-            || (
-                link.isObeyToModuleConstraint()
-                && !StringHelper.isEmpty(exportData.getModuleConstraintText())
-            )
-        ) {
-            blocks.setUseConstraint(
-                translateConstraintBody(
-                    (constraint != null) ? constraint.getValue().trim() : Constants.EMPTY_STRING,
-                    link.isPositiveConstraint(),
-                    link.isObeyToModuleConstraint(),
-                    exportData.getModuleConstraintText()
+                (constraint != null && !constraint.isDeleted())
+                        || (
+                        link.isObeyToModuleConstraint()
+                                && !StringHelper.isEmpty(exportData.getModuleConstraintText())
                 )
+                ) {
+            blocks.setUseConstraint(
+                    translateConstraintBody(
+                            (constraint != null) ? constraint.getValue().trim() : Constants.EMPTY_STRING,
+                            link.isPositiveConstraint(),
+                            link.isObeyToModuleConstraint(),
+                            exportData.getModuleConstraintText()
+                    )
             );
         } else {
             blocks.setUseConstraint(EMPTY_STRING);
         }
         blocks.setUseModifications(
-            decorateUseModifications(
-                buildModificationsText("    ", link.getModifications(), exportData)
-            )
+                decorateUseModifications(
+                        buildModificationsText("    ", link.getModifications(), exportData)
+                )
         );
         return blocks;
     }
 
     private String translateConstraintBody(
-        String constraintText,
-        boolean isPositiveConstraint,
-        boolean shouldObeyToModuleConstraint,
-        String moduleConstraintText
+            String constraintText,
+            boolean isPositiveConstraint,
+            boolean shouldObeyToModuleConstraint,
+            String moduleConstraintText
     ) {
         String constraintBody = (
-            (shouldObeyToModuleConstraint && !StringHelper.isEmpty(moduleConstraintText))
-                ? (
-                    (!StringHelper.isEmpty(constraintText))
-                        ? moduleConstraintText + "&&" + constraintText
-                        : moduleConstraintText
+                (shouldObeyToModuleConstraint && !StringHelper.isEmpty(moduleConstraintText))
+                        ? (
+                        (!StringHelper.isEmpty(constraintText))
+                                ? moduleConstraintText + "&&" + constraintText
+                                : moduleConstraintText
                 )
-                : constraintText
+                        : constraintText
         );
         final Collection<String> constraintVars = VarFinder.findVariableNames(constraintBody);
         for (final String constraintVar : constraintVars) {
             constraintBody = (
-                constraintBody.replaceAll(
-                    "\\b" + constraintVar + "\\b",
-                    decorateBooleanVar(constraintVar)
-                )
+                    constraintBody.replaceAll(
+                            "\\b" + constraintVar + "\\b",
+                            decorateBooleanVar(constraintVar)
+                    )
             );
         }
         constraintBody = (
-            constraintBody.replaceAll(
-                "\\s*&&\\s*",
-                " " + decorateAnd() + " "
-            )
+                constraintBody.replaceAll(
+                        "\\s*&&\\s*",
+                        " " + decorateAnd() + " "
+                )
         );
         constraintBody = (
-            constraintBody.replaceAll(
-                "\\s*\\|\\|\\s*",
-                " " + decorateOr() + " "
-            )
+                constraintBody.replaceAll(
+                        "\\s*\\|\\|\\s*",
+                        " " + decorateOr() + " "
+                )
         );
         constraintBody = (
-            constraintBody.replaceAll(
-                "\\s*!\\s*",
-                " " + decorateNot() + " "
-            )
+                constraintBody.replaceAll(
+                        "\\s*!\\s*",
+                        " " + decorateNot() + " "
+                )
         );
         return (
-            isPositiveConstraint
-                ? constraintBody
-                : decorateNot() + " (" + constraintBody + ")"
+                isPositiveConstraint
+                        ? constraintBody
+                        : decorateNot() + " (" + constraintBody + ")"
         );
     }
 
     private String buildModificationsText(
-        final String indentString,
-        final List<Modification> modifications,
-        final ExportData exportData
+            final String indentString,
+            final List<Modification> modifications,
+            final ExportData exportData
     ) throws NLBConsistencyException {
         final StringBuilder stringBuilder = new StringBuilder();
         for (final Modification modification : modifications) {
@@ -698,72 +699,71 @@ public abstract class ExportManager {
                 stringBuilder.append(indentString);
                 if (modification.getType().equals(ModificationImpl.Type.ADD)) {
                     Variable expression = (
-                        exportData.getNlb().getVariableById(modification.getExprId())
+                            exportData.getNlb().getVariableById(modification.getExprId())
                     );
                     if (expression == null || expression.isDeleted()) {
                         throw new NLBConsistencyException(
-                            "Expression with id = " + modification.getExprId()
-                            + "cannot be found for modification"
-                            + modification.getFullId()
+                                "Expression with id = " + modification.getExprId()
+                                        + "cannot be found for modification"
+                                        + modification.getFullId()
                         );
                     }
                     stringBuilder.append(
-                        decorateAddObj(
-                            exportData.getObjId(expression.getValue()),
-                            expression.getValue()
-                        )
+                            decorateAddObj(
+                                    exportData.getObjId(expression.getValue()),
+                                    expression.getValue()
+                            )
                     );
                 } else if (modification.getType().equals(ModificationImpl.Type.SUBTRACT)) {
                     Variable expression = (
-                        exportData.getNlb().getVariableById(modification.getExprId())
+                            exportData.getNlb().getVariableById(modification.getExprId())
                     );
                     if (expression == null || expression.isDeleted()) {
                         throw new NLBConsistencyException(
-                            "Expression with id = " + modification.getExprId()
-                            + "cannot be found for modification"
-                            + modification.getFullId()
+                                "Expression with id = " + modification.getExprId()
+                                        + "cannot be found for modification"
+                                        + modification.getFullId()
                         );
                     }
                     stringBuilder.append(
-                        decorateDelObj(
-                            exportData.getObjId(expression.getValue()),
-                            expression.getValue())
+                            decorateDelObj(
+                                    exportData.getObjId(expression.getValue()),
+                                    expression.getValue())
                     );
                 } else if (modification.getType().equals(ModificationImpl.Type.ASSIGN)) {
                     Variable variable = (
-                        exportData.getNlb().getVariableById(modification.getVarId())
+                            exportData.getNlb().getVariableById(modification.getVarId())
                     );
                     if (variable == null || variable.isDeleted()) {
                         throw new NLBConsistencyException(
-                            "Variable with id = " + modification.getVarId()
-                            + "cannot be found for modification"
-                            + modification.getFullId()
+                                "Variable with id = " + modification.getVarId()
+                                        + "cannot be found for modification"
+                                        + modification.getFullId()
                         );
                     }
                     Variable expression = (
-                        exportData.getNlb().getVariableById(modification.getExprId())
+                            exportData.getNlb().getVariableById(modification.getExprId())
                     );
                     if (expression == null || expression.isDeleted()) {
                         throw new NLBConsistencyException(
-                            "Expression with id = " + modification.getExprId()
-                            + "cannot be found for modification"
-                            + modification.getFullId()
+                                "Expression with id = " + modification.getExprId()
+                                        + "cannot be found for modification"
+                                        + modification.getFullId()
                         );
                     }
                     stringBuilder.append(
-                        decorateAssignment(variable.getName(), expression.getValue())
+                            decorateAssignment(variable.getName(), expression.getValue())
                     );
                 } else {
                     throw new NLBConsistencyException(
-                        "Operation has unknown type for modification with id = "
-                        + modification.getFullId()
+                            "Operation has unknown type for modification with id = "
+                                    + modification.getFullId()
                     );
                 }
             }
         }
         return stringBuilder.toString();
     }
-
 
 
     protected abstract String decorateAssignment(String variableName, String variableValue);
@@ -787,10 +787,10 @@ public abstract class ExportManager {
     protected abstract String decorateLinkStart(String linkId, String linkText, int pageNumber);
 
     protected abstract String decorateLinkGoTo(
-        String linkId,
-        String linkText,
-        String linkTarget,
-        int targetPageNumber
+            String linkId,
+            String linkText,
+            String linkTarget,
+            int targetPageNumber
     );
 
     protected abstract String decoratePageEnd();
@@ -806,6 +806,7 @@ public abstract class ExportManager {
     protected abstract String decoratePageCaption(String caption);
 
     protected abstract String decoratePageTextStart(String pageText);
+
     protected abstract String decoratePageTextEnd();
 
     protected abstract String decoratePageLabel(String labelText, int pageNumber);

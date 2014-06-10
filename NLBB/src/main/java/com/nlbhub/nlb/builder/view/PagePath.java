@@ -43,7 +43,6 @@ import com.nlbhub.nlb.util.StringHelper;
 import edu.umd.cs.piccolo.nodes.PText;
 
 import java.awt.*;
-import java.util.ArrayList;
 
 /**
  * The PagePath class
@@ -56,10 +55,10 @@ public class PagePath extends NodePath {
     private final PText m_startPointNode = new PText("<S>");
 
     public PagePath(
-        final NonLinearBook nonLinearBook,
-        final NodeResizeExecutor nodeResizeExecutor,
-        final Page page,
-        Font font
+            final NonLinearBook nonLinearBook,
+            final NodeResizeExecutor nodeResizeExecutor,
+            final Page page,
+            Font font
     ) {
         super(nodeResizeExecutor, page, font);
         m_startPointNode.setVisible(page.getId().equals(nonLinearBook.getStartPoint()));

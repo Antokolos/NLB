@@ -52,17 +52,19 @@ public class VarFinder {
 
     /**
      * For script "(V1ND < 0 ? Math.abs(V1ND) : 0)" output will be [V1ND, abs, Math]
+     *
      * @param script
      * @return
      */
     public static Collection<String> findVariableNames(final String script) {
         final Set<String> names = new HashSet<String>();
         class Visitor implements NodeVisitor {
-            @Override public boolean visit(AstNode node) {
-            if (node instanceof Name) {
-              names.add(node.getString());
-            }
-            return true;
+            @Override
+            public boolean visit(AstNode node) {
+                if (node instanceof Name) {
+                    names.add(node.getString());
+                }
+                return true;
             }
         }
         AstNode node = new Parser().parse(script, "<cmd>", 1);

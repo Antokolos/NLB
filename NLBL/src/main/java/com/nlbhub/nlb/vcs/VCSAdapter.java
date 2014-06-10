@@ -40,8 +40,6 @@ package com.nlbhub.nlb.vcs;
 
 import com.nlbhub.nlb.exception.NLBVCSException;
 
-import java.io.IOException;
-
 /**
  * The VCSAdapter class
  *
@@ -50,23 +48,33 @@ import java.io.IOException;
  */
 public interface VCSAdapter {
     public enum Status {Modified, Added, Removed, Missing, Unknown, Clean, Ignored, Conflict, VCS_Undefined}
+
     public void initRepo(String path) throws NLBVCSException;
+
     public void openRepo(String path) throws NLBVCSException;
+
     public void closeAdapter() throws NLBVCSException;
+
     public boolean getDirAddFlag();
 
     /**
      * If add to repository should be used on changed files already existent in repo to ensure
      * that this files will be staged for commit
+     *
      * @return
      */
     public boolean getAddModifiedFilesFlag();
+
     public Status getStatus(String path) throws NLBVCSException;
+
     public void add(String path) throws NLBVCSException;
+
     /**
      * @return true if file has been physically removed from the working directory, false otherwise
      */
     public boolean remove(String path) throws NLBVCSException;
+
     public void reset(String path) throws NLBVCSException;
+
     public void commit(String message) throws NLBVCSException;
 }

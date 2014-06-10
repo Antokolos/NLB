@@ -54,10 +54,11 @@ import java.io.IOException;
  */
 public class PDFFont implements HTFont {
     private Font m_font;
+
     public PDFFont(float size, Style style, RGBColor color) throws HTDocumentException {
         try {
             BaseFont baseFont = (
-                BaseFont.createFont("fonts/ttf/dejavu/DejaVuSans.ttf", "cp1251", BaseFont.EMBEDDED)
+                    BaseFont.createFont("fonts/ttf/dejavu/DejaVuSans.ttf", "cp1251", BaseFont.EMBEDDED)
             );
             int iStyle;
             switch (style) {
@@ -75,10 +76,10 @@ public class PDFFont implements HTFont {
                     break;
             }
             m_font = new Font(
-                baseFont,
-                size,
-                iStyle,
-                new BaseColor(color.getRed(), color.getGreen(), color.getBlue())
+                    baseFont,
+                    size,
+                    iStyle,
+                    new BaseColor(color.getRed(), color.getGreen(), color.getBlue())
             );
         } catch (DocumentException | IOException e) {
             throw new HTDocumentException("Error while creating PDF font", e);

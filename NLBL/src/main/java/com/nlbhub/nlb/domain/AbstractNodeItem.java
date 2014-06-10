@@ -84,10 +84,10 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
         private List<Link> m_adjacentLinks = new ArrayList<>();
 
         public ResizeNodeCommand(
-            Orientation orientation,
-            double deltaX,
-            double deltaY,
-            List<Link> adjacentLinks
+                Orientation orientation,
+                double deltaX,
+                double deltaY,
+                List<Link> adjacentLinks
         ) {
             m_orientation = orientation;
             m_deltaX = deltaX;
@@ -242,10 +242,10 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
     }
 
     ResizeNodeCommand createResizeNodeCommand(
-        Orientation orientation,
-        double deltaX,
-        double deltaY,
-        List<Link> adjacentLinks
+            Orientation orientation,
+            double deltaX,
+            double deltaY,
+            List<Link> adjacentLinks
     ) {
         return new ResizeNodeCommand(orientation, deltaX, deltaY, adjacentLinks);
     }
@@ -259,7 +259,7 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
     }
 
     SortLinksCommand createSortLinksCommand(
-        List<Link> newSortingOrder
+            List<Link> newSortingOrder
     ) {
         List<String> idsSortingOrder = new ArrayList<>();
         for (final Link link : newSortingOrder) {
@@ -352,9 +352,9 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
     }
 
     public void writeNodeItemProperties(
-        final @NotNull FileManipulator fileManipulator,
-        final @NotNull File nodeDir,
-        final @NotNull NonLinearBookImpl nonLinearBook
+            final @NotNull FileManipulator fileManipulator,
+            final @NotNull File nodeDir,
+            final @NotNull NonLinearBookImpl nonLinearBook
     ) throws IOException, NLBIOException, NLBFileManipulationException, NLBVCSException {
         fileManipulator.writeOptionalString(nodeDir, STROKE_FILE_NAME, m_stroke, DEFAULT_STROKE);
         fileManipulator.writeOptionalString(nodeDir, FILL_FILE_NAME, m_fill, DEFAULT_FILL);
@@ -367,25 +367,25 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
 
     public void readNodeItemProperties(File nodeDir) throws NLBIOException, NLBConsistencyException {
         m_stroke = (
-            FileManipulator.getOptionalFileAsString(
-                    nodeDir,
-                    STROKE_FILE_NAME,
-                    DEFAULT_STROKE
-            )
+                FileManipulator.getOptionalFileAsString(
+                        nodeDir,
+                        STROKE_FILE_NAME,
+                        DEFAULT_STROKE
+                )
         );
         m_fill = (
-            FileManipulator.getOptionalFileAsString(
-                    nodeDir,
-                    FILL_FILE_NAME,
-                    DEFAULT_FILL
-            )
+                FileManipulator.getOptionalFileAsString(
+                        nodeDir,
+                        FILL_FILE_NAME,
+                        DEFAULT_FILL
+                )
         );
         m_textColor = (
-            FileManipulator.getOptionalFileAsString(
-                    nodeDir,
-                    TEXTCOLOR_FILE_NAME,
-                    DEFAULT_TEXTCOLOR
-            )
+                FileManipulator.getOptionalFileAsString(
+                        nodeDir,
+                        TEXTCOLOR_FILE_NAME,
+                        DEFAULT_TEXTCOLOR
+                )
         );
         readContent(nodeDir);
         readCoords(nodeDir);
@@ -401,9 +401,9 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
         final File linksDir = new File(nodeDir, LINKS_DIR_NAME);
         if (!linksDir.exists() && !linkOrderString.isEmpty()) {
             throw new NLBIOException(
-                "Invalid NLB structure: links directory does not exist for node with Id = "
-                + getId()
-                + ", but this node has existent links"
+                    "Invalid NLB structure: links directory does not exist for node with Id = "
+                            + getId()
+                            + ", but this node has existent links"
             );
         }
         m_links.clear();
@@ -413,16 +413,16 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
                 linkDirs = new File[0];
             } else {
                 throw new NLBIOException(
-                    "Error when enumerating links' directory contents for node with Id = " + getId()
+                        "Error when enumerating links' directory contents for node with Id = " + getId()
                 );
             }
         }
         if (linkOrderString.isEmpty()) {
             if (linkDirs.length > 0) {
                 throw new NLBConsistencyException(
-                    "Inconsistent NLB structure: '" + LINKS_DIR_NAME + "' directory "
-                    + "should be empty for node with id = "
-                    + getId()
+                        "Inconsistent NLB structure: '" + LINKS_DIR_NAME + "' directory "
+                                + "should be empty for node with id = "
+                                + getId()
                 );
             }
         } else {
@@ -442,7 +442,7 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
         final File coordsDir = new File(nodeDir, COORDS_DIR_NAME);
         if (!coordsDir.exists()) {
             throw new NLBIOException(
-                "Invalid NLB structure: coords directory does not exist for node with Id = " + getId()
+                    "Invalid NLB structure: coords directory does not exist for node with Id = " + getId()
             );
         }
         m_coords.read(coordsDir);
@@ -459,13 +459,13 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
     }
 
     private void writeLinks(
-        FileManipulator fileManipulator,
-        File nodeDir
+            FileManipulator fileManipulator,
+            File nodeDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         final File linksDir = new File(nodeDir, LINKS_DIR_NAME);
         fileManipulator.createDir(
-            linksDir,
-            "Cannot create node links directory for node with Id = " + getId()
+                linksDir,
+                "Cannot create node links directory for node with Id = " + getId()
         );
         for (LinkImpl link : m_links) {
             link.writeLink(fileManipulator, linksDir);
@@ -473,8 +473,8 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
     }
 
     private void writeLinkOrderFile(
-        FileManipulator fileManipulator,
-        File nodeDir
+            FileManipulator fileManipulator,
+            File nodeDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         StringBuilder sb = new StringBuilder();
         final int lastElemIndex = m_links.size() - 1;
@@ -495,21 +495,21 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
     }
 
     private void writeCoords(
-        FileManipulator fileManipulator,
-        File nodeDir
+            FileManipulator fileManipulator,
+            File nodeDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         final File coordsDir = new File(nodeDir, COORDS_DIR_NAME);
         fileManipulator.createDir(
-            coordsDir,
-            "Cannot create node coords directory for node with Id = " + getId()
+                coordsDir,
+                "Cannot create node coords directory for node with Id = " + getId()
         );
         m_coords.writeCoords(fileManipulator, coordsDir);
     }
 
     private void writeContent(
-        FileManipulator fileManipulator,
-        File nodeDir,
-        NonLinearBookImpl nonLinearBook
+            FileManipulator fileManipulator,
+            File nodeDir,
+            NonLinearBookImpl nonLinearBook
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         StringBuilder sb = new StringBuilder();
         final int lastElemIndex = m_containedObjIds.size() - 1;
@@ -547,9 +547,9 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
     }
 
     public static void filterTargetLinkList(
-        AbstractNodeItem target,
-        AbstractNodeItem source,
-        List<String> linkIdsToBeExcluded
+            AbstractNodeItem target,
+            AbstractNodeItem source,
+            List<String> linkIdsToBeExcluded
     ) {
         target.m_links = new ArrayList<>();
         for (LinkImpl link : source.m_links) {

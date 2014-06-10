@@ -3,7 +3,6 @@ package com.nlbhub.nlb.builder.form;
 import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.api.SearchResultTableModel;
 import com.nlbhub.nlb.builder.model.SearchResultsTableModelSwing;
-import com.nlbhub.nlb.builder.view.GraphEditor;
 import org.jdesktop.swingx.JXTable;
 
 import javax.swing.*;
@@ -29,9 +28,9 @@ public class DialogSearch extends JDialog {
     private SearchResultsTableModelSwing m_tableModel;
 
     public DialogSearch(
-        final MainFrame mainFrame,
-        final NonLinearBook nlb,
-        final String modulePageId
+            final MainFrame mainFrame,
+            final NonLinearBook nlb,
+            final String modulePageId
     ) {
         m_nlb = nlb;
         m_modulePageId = modulePageId;
@@ -54,8 +53,8 @@ public class DialogSearch extends JDialog {
         m_goToButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 mainFrame.goTo(
-                    (String) m_tableModel.getValueAt(m_searchResultsTable.getSelectedRow(), 1),
-                    (String) m_tableModel.getValueAt(m_searchResultsTable.getSelectedRow(), 0)
+                        (String) m_tableModel.getValueAt(m_searchResultsTable.getSelectedRow(), 1),
+                        (String) m_tableModel.getValueAt(m_searchResultsTable.getSelectedRow(), 0)
                 );
             }
         });
@@ -78,15 +77,15 @@ public class DialogSearch extends JDialog {
 
     private void onOK() {
         SearchResultTableModel searchResultTableModel = m_nlb.searchText(
-            m_modulePageId,
-            m_searchText.getText(),
-            m_idsCheckBox.isSelected(),
-            m_pagesCheckBox.isSelected(),
-            m_objectsCheckBox.isSelected(),
-            m_linksCheckBox.isSelected(),
-            m_variablesCheckBox.isSelected(),
-            m_ignoreCaseCheckBox.isSelected(),
-            m_wholeWordsCheckBox.isSelected());
+                m_modulePageId,
+                m_searchText.getText(),
+                m_idsCheckBox.isSelected(),
+                m_pagesCheckBox.isSelected(),
+                m_objectsCheckBox.isSelected(),
+                m_linksCheckBox.isSelected(),
+                m_variablesCheckBox.isSelected(),
+                m_ignoreCaseCheckBox.isSelected(),
+                m_wholeWordsCheckBox.isSelected());
         m_tableModel = new SearchResultsTableModelSwing(searchResultTableModel);
         m_searchResultsTable.setModel(m_tableModel);
     }

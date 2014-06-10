@@ -41,7 +41,6 @@ package com.nlbhub.nlb.builder.view;
 import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.util.StringHelper;
-import edu.umd.cs.piccolo.PLayer;
 import edu.umd.cs.piccolo.PNode;
 
 import java.awt.*;
@@ -61,10 +60,10 @@ public class GraphItemsMapper {
     private Map<String, LinkPath> m_links = new HashMap<>();
 
     public void init(
-        final NonLinearBookFacade nlbFacade,
-        final NodeResizeExecutor nodeResizeExecutor,
-        final Font font,
-        final FontMetrics metrics
+            final NonLinearBookFacade nlbFacade,
+            final NodeResizeExecutor nodeResizeExecutor,
+            final Font font,
+            final FontMetrics metrics
     ) {
         clear();
         final NonLinearBook nlb = nlbFacade.getNlb();
@@ -164,23 +163,23 @@ public class GraphItemsMapper {
                     NodePath nodePath = getPageById(linkData.getTarget());
                     if (nodePath != null) {
                         coords = (
-                            ((Page) nodePath.getAttribute(Constants.NLB_PAGE_ATTR)).getCoords()
+                                ((Page) nodePath.getAttribute(Constants.NLB_PAGE_ATTR)).getCoords()
                         );
                     } else {
                         nodePath = getObjById(linkData.getTarget());
                         coords = (
-                            ((Obj) nodePath.getAttribute(Constants.NLB_OBJ_ATTR)).getCoords()
+                                ((Obj) nodePath.getAttribute(Constants.NLB_OBJ_ATTR)).getCoords()
                         );
                     }
                 }
             } else {
                 coords = (
-                    ((Obj) obj.getAttribute(Constants.NLB_OBJ_ATTR)).getCoords()
+                        ((Obj) obj.getAttribute(Constants.NLB_OBJ_ATTR)).getCoords()
                 );
             }
         } else {
             coords = (
-                ((Page) page.getAttribute(Constants.NLB_PAGE_ATTR)).getCoords()
+                    ((Page) page.getAttribute(Constants.NLB_PAGE_ATTR)).getCoords()
             );
         }
         rect.setFrame(coords.getLeft(), coords.getTop(), coords.getWidth(), coords.getHeight());
@@ -190,18 +189,18 @@ public class GraphItemsMapper {
 
 
     public PagePath addNode(
-        final NonLinearBook nonLinearBook,
-        final NodeResizeExecutor nodeResizeExecutor,
-        final Page page,
-        final Font font
+            final NonLinearBook nonLinearBook,
+            final NodeResizeExecutor nodeResizeExecutor,
+            final Page page,
+            final Font font
     ) {
         PagePath pagePath = (
-            new PagePath(
-                nonLinearBook,
-                nodeResizeExecutor,
-                page,
-                font
-            )
+                new PagePath(
+                        nonLinearBook,
+                        nodeResizeExecutor,
+                        page,
+                        font
+                )
         );
         addPage(pagePath);
         page.notifyObservers();
@@ -209,18 +208,18 @@ public class GraphItemsMapper {
     }
 
     public ObjPath addObjNode(
-        final NonLinearBook nonLinearBook,
-        final NodeResizeExecutor nodeResizeExecutor,
-        final Obj obj,
-        final Font font
+            final NonLinearBook nonLinearBook,
+            final NodeResizeExecutor nodeResizeExecutor,
+            final Obj obj,
+            final Font font
     ) {
         ObjPath objPath = (
-            new ObjPath(
-                nonLinearBook,
-                nodeResizeExecutor,
-                obj,
-                font
-            )
+                new ObjPath(
+                        nonLinearBook,
+                        nodeResizeExecutor,
+                        obj,
+                        font
+                )
         );
         addObj(objPath);
         obj.notifyObservers();
@@ -228,22 +227,22 @@ public class GraphItemsMapper {
     }
 
     public LinkPath addLink(
-        final NonLinearBook nonLinearBook,
-        final Font font,
-        final FontMetrics metrics,
-        NodePath nodeFrom,
-        NodePath nodeTo,
-        final Link link
+            final NonLinearBook nonLinearBook,
+            final Font font,
+            final FontMetrics metrics,
+            NodePath nodeFrom,
+            NodePath nodeTo,
+            final Link link
     ) {
         LinkPath linkPath = (
-            new LinkPath(
-                nonLinearBook,
-                font,
-                metrics,
-                nodeFrom,
-                nodeTo,
-                link
-            )
+                new LinkPath(
+                        nonLinearBook,
+                        font,
+                        metrics,
+                        nodeFrom,
+                        nodeTo,
+                        link
+                )
         );
         addLink(linkPath);
         link.notifyObservers();

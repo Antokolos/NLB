@@ -58,23 +58,32 @@ public interface Page extends NodeItem {
     public static final String DEFAULT_MODULE_CONSTR_ID = Constants.EMPTY_STRING;
 
     public String getText();
+
     public String getVarId();
+
     public String getCaption();
+
     public boolean isUseCaption();
 
     public boolean isLeaf();
 
     public String getTraverseText();
+
     public String getReturnText();
+
     public String getReturnPageId();
 
     /**
      * If false, then return link from module from this page should not be added
      * (truly end of the story)
+     *
      * @return
      */
     public boolean shouldReturn();
+
     public String getModuleConstrId();
+
     public String getModuleName();
+
     public NonLinearBook getModule();
 }

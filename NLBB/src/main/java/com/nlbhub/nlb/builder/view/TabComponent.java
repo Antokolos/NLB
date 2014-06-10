@@ -58,8 +58,8 @@ public class TabComponent {
     private final ActionListener m_closeActionListener;
 
     public TabComponent(
-        final String tabName,
-        final ActionListener closeActionListener
+            final String tabName,
+            final ActionListener closeActionListener
     ) {
         m_pnlTab = new JPanel(new GridBagLayout());
         m_pnlTab.setOpaque(false);
@@ -99,7 +99,7 @@ public class TabComponent {
 
     public void close() {
         m_closeActionListener.actionPerformed(
-            new ActionEvent(m_btnClose, ActionEvent.ACTION_PERFORMED, CLOSED_IN_CODE)
+                new ActionEvent(m_btnClose, ActionEvent.ACTION_PERFORMED, CLOSED_IN_CODE)
         );
     }
 }

@@ -38,9 +38,11 @@
  */
 package com.nlbhub.nlb.builder.view;
 
-import com.nlbhub.nlb.api.*;
+import com.nlbhub.nlb.api.Constants;
+import com.nlbhub.nlb.api.Coords;
+import com.nlbhub.nlb.api.NLBObserver;
+import com.nlbhub.nlb.api.NodeItem;
 import edu.umd.cs.piccolo.PNode;
-import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
 import edu.umd.cs.piccolo.util.PBounds;
 import org.jetbrains.annotations.NotNull;
@@ -48,7 +50,6 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
 
 /**
  * The NodePath class
@@ -66,18 +67,18 @@ public abstract class NodePath extends ItemPath implements NLBObserver {
     private java.awt.geom.Rectangle2D.Float m_textRect;
 
     protected NodePath(
-        final NodeResizeExecutor nodeResizeExecutor,
-        final NodeItem nodeItem,
-        final Font font
+            final NodeResizeExecutor nodeResizeExecutor,
+            final NodeItem nodeItem,
+            final Font font
     ) {
         final Coords coords = nodeItem.getCoords();
         m_nodeRect = new java.awt.geom.Rectangle2D.Float();
         m_textRect = new java.awt.geom.Rectangle2D.Float();
         m_nodeRect.setFrame(
-            coords.getLeft(),
-            coords.getTop(),
-            coords.getWidth(),
-            coords.getHeight()
+                coords.getLeft(),
+                coords.getTop(),
+                coords.getWidth(),
+                coords.getHeight()
         );
         append(m_nodeRect, false);
         m_textNode = new PText();
@@ -88,31 +89,31 @@ public abstract class NodePath extends ItemPath implements NLBObserver {
         m_textNode.setPickable(false);
         addChild(m_textNode);
         m_leftResizeBar = new ResizeBar(
-            nodeResizeExecutor,
-            this,
-            coords,
-            NodeItem.Orientation.LEFT
+                nodeResizeExecutor,
+                this,
+                coords,
+                NodeItem.Orientation.LEFT
         );
         addChild(m_leftResizeBar);
         m_rightResizeBar = new ResizeBar(
-            nodeResizeExecutor,
-            this,
-            coords,
-            NodeItem.Orientation.RIGHT
+                nodeResizeExecutor,
+                this,
+                coords,
+                NodeItem.Orientation.RIGHT
         );
         addChild(m_rightResizeBar);
         m_topResizeBar = new ResizeBar(
-            nodeResizeExecutor,
-            this,
-            coords,
-            NodeItem.Orientation.TOP
+                nodeResizeExecutor,
+                this,
+                coords,
+                NodeItem.Orientation.TOP
         );
         addChild(m_topResizeBar);
         m_bottomResizeBar = new ResizeBar(
-            nodeResizeExecutor,
-            this,
-            coords,
-            NodeItem.Orientation.BOTTOM
+                nodeResizeExecutor,
+                this,
+                coords,
+                NodeItem.Orientation.BOTTOM
         );
         addChild(m_bottomResizeBar);
         nodeItem.addObserver(this);
@@ -122,10 +123,10 @@ public abstract class NodePath extends ItemPath implements NLBObserver {
         // Ignores offset introduced by dragging because it is already taken into account in coords
         setOffset(0.0, 0.0);
         m_nodeRect.setFrame(
-            coords.getLeft(),
-            coords.getTop(),
-            coords.getWidth(),
-            coords.getHeight()
+                coords.getLeft(),
+                coords.getTop(),
+                coords.getWidth(),
+                coords.getHeight()
         );
         setBounds(m_nodeRect);
 
@@ -135,10 +136,10 @@ public abstract class NodePath extends ItemPath implements NLBObserver {
         m_bottomResizeBar.reposition(coords);
         final float fontSize = m_textNode.getFont().getSize2D();
         m_textRect.setFrame(
-            coords.getLeft(),
-            coords.getTop() + fontSize,
-            coords.getWidth(),
-            coords.getHeight() - fontSize
+                coords.getLeft(),
+                coords.getTop() + fontSize,
+                coords.getWidth(),
+                coords.getHeight() - fontSize
         );
         m_textNode.setBounds(m_textRect);
     }
@@ -154,37 +155,37 @@ public abstract class NodePath extends ItemPath implements NLBObserver {
         double flRadiusVert;    // "Vertical radius"
         double flHorzKatetA;    // For calculation of flRadiusHorz
         double flHorzKatetB;    // For calculation of flRadiusHorz,
-                                // obtained from triangle similarity.
+        // obtained from triangle similarity.
         double flLambdaHorz;    // Similarity coefficient for the horizontal rectangles
         double flVertKatetA;     // For calculation of flRadiusVert
         double flVertKatetB;    // For calculation of flRadiusVert,
-                                // obtained from triangle similarity.
+        // obtained from triangle similarity.
         double flLambdaVert;    // Similarity coefficient for the vertical rectangles
         Point2D ptThis;    // Center of the "from" page (this page)
         Point2D ptTo;      // Center of the "to" page
 
         final PBounds nodeFromFullBR = getFullBoundsReference();
         final PBounds nodeToFullBR = nodeTo.getFullBoundsReference();
-        flHorzKatetA = nodeFromFullBR.getWidth()/2.0;
-        flVertKatetA = nodeFromFullBR.getHeight()/2.0;
+        flHorzKatetA = nodeFromFullBR.getWidth() / 2.0;
+        flVertKatetA = nodeFromFullBR.getHeight() / 2.0;
         ptThis = new Point2D.Double(
-            nodeFromFullBR.getMinX() + nodeFromFullBR.getWidth() / 2.0,
-            nodeFromFullBR.getMinY() + nodeFromFullBR.getHeight() / 2.0
+                nodeFromFullBR.getMinX() + nodeFromFullBR.getWidth() / 2.0,
+                nodeFromFullBR.getMinY() + nodeFromFullBR.getHeight() / 2.0
         );
         ptTo = new Point2D.Double(
-            nodeToFullBR.getMinX() + nodeToFullBR.getWidth() / 2.0,
-            nodeToFullBR.getMinY() + nodeToFullBR.getHeight() / 2.0
+                nodeToFullBR.getMinX() + nodeToFullBR.getWidth() / 2.0,
+                nodeToFullBR.getMinY() + nodeToFullBR.getHeight() / 2.0
         );
 
-        flLambdaHorz = Math.abs(ptTo.getX() - ptThis.getX())/flHorzKatetA;
-        flLambdaVert = Math.abs(ptTo.getY() - ptThis.getY())/flVertKatetA;
+        flLambdaHorz = Math.abs(ptTo.getX() - ptThis.getX()) / flHorzKatetA;
+        flLambdaVert = Math.abs(ptTo.getY() - ptThis.getY()) / flVertKatetA;
 
-        flHorzKatetB = Math.abs(ptTo.getY() - ptThis.getY())/flLambdaHorz;
-        flVertKatetB = Math.abs(ptTo.getX() - ptThis.getX())/flLambdaVert;
+        flHorzKatetB = Math.abs(ptTo.getY() - ptThis.getY()) / flLambdaHorz;
+        flVertKatetB = Math.abs(ptTo.getX() - ptThis.getX()) / flLambdaVert;
 
         // Use the Pythagoras theorem
-        flRadiusHorz = Math.sqrt(flHorzKatetA*flHorzKatetA + flHorzKatetB*flHorzKatetB);
-        flRadiusVert = Math.sqrt(flVertKatetA*flVertKatetA + flVertKatetB*flVertKatetB);
+        flRadiusHorz = Math.sqrt(flHorzKatetA * flHorzKatetA + flHorzKatetB * flHorzKatetB);
+        flRadiusVert = Math.sqrt(flVertKatetA * flVertKatetA + flVertKatetB * flVertKatetB);
 
         // Return the smallest length
         if (flRadiusHorz < flRadiusVert)

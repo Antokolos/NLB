@@ -85,7 +85,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
         boolean first = true;
         for (PageBuildingBlocks pageBuildingBlocks : nlbBlocks.getPagesBuildingBlocks()) {
             book.addArticle(
-                createArticle(pageBuildingBlocks, lastSaveString, nlbBlocks.getObjsBuildingBlocks(), first)
+                    createArticle(pageBuildingBlocks, lastSaveString, nlbBlocks.getObjsBuildingBlocks(), first)
             );
             first = false;
         }

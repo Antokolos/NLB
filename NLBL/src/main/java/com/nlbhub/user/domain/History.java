@@ -100,15 +100,16 @@ public class History {
     /**
      * set visitCount to DO_NOT_USE_VISIT_COUNT if you are not doing rollback to the specified
      * visit.
+     *
      * @param decisionPointToBeMade
      * @param rollback
      * @param visitCount
      * @throws DecisionException
      */
     public void suggestDecisionPointToBeMade(
-        DecisionPoint decisionPointToBeMade,
-        boolean rollback,
-        int visitCount
+            DecisionPoint decisionPointToBeMade,
+            boolean rollback,
+            int visitCount
     ) throws DecisionException {
         if (decisionPointToBeMade != null && !m_decisionPoints.isEmpty()) {
             boolean suggestedOK = false;
@@ -128,12 +129,12 @@ public class History {
                 for (int i = m_decisionPoints.size() - 1; i >= 0; i--) {
                     final DecisionPoint curDecisionPoint = m_decisionPoints.get(i);
                     if (
-                        curDecisionPoint.equals(decisionPointToBeMade)
-                        && (
-                            visitCount == DO_NOT_USE_VISIT_COUNT
-                            || visitCount == curDecisionPoint.getVisitCount()
-                        )
-                    ) {
+                            curDecisionPoint.equals(decisionPointToBeMade)
+                                    && (
+                                    visitCount == DO_NOT_USE_VISIT_COUNT
+                                            || visitCount == curDecisionPoint.getVisitCount()
+                            )
+                            ) {
                         m_decisionPointToBeMade = curDecisionPoint;
                         // Possible next decisions will be recreated again
                         m_decisionPointToBeMade.clearPossibleNextDecisionPoints();
@@ -145,7 +146,7 @@ public class History {
                     }
                 }
                 throw new DecisionException(
-                    "Suggested decision cannot be found, please specify correct decision or restart"
+                        "Suggested decision cannot be found, please specify correct decision or restart"
                 );
             }
         }

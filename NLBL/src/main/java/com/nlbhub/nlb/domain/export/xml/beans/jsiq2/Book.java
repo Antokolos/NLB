@@ -64,6 +64,7 @@ public class Book {
     public void setArticleList(List<Article> articleList) {
         m_articleList = articleList;
     }
+
     public void addArticle(Article article) {
         m_articleList.add(article);
     }

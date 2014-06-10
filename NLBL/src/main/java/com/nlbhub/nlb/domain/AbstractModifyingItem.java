@@ -103,13 +103,13 @@ public abstract class AbstractModifyingItem extends AbstractIdentifiableItem imp
     }
 
     protected void writeModifications(
-        FileManipulator fileManipulator,
-        File itemDir
+            FileManipulator fileManipulator,
+            File itemDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         final File modificationsDir = new File(itemDir, MODIFICATIONS_DIR_NAME);
         fileManipulator.createDir(
-            modificationsDir,
-            "Cannot create modifications directory for item with Id = " + getId()
+                modificationsDir,
+                "Cannot create modifications directory for item with Id = " + getId()
         );
         for (ModificationImpl modification : m_modifications) {
             modification.writeModification(fileManipulator, modificationsDir);
@@ -118,16 +118,16 @@ public abstract class AbstractModifyingItem extends AbstractIdentifiableItem imp
 
     protected void readModifications(File itemDir) throws NLBIOException, NLBConsistencyException {
         String modOrderString = FileManipulator.getOptionalFileAsString(
-            itemDir,
-            MODORDER_FILE_NAME,
-            DEFAULT_MODORDER
+                itemDir,
+                MODORDER_FILE_NAME,
+                DEFAULT_MODORDER
         );
         final File modsDir = new File(itemDir, MODIFICATIONS_DIR_NAME);
         if (!modsDir.exists() && !modOrderString.isEmpty()) {
             throw new NLBIOException(
-                "Invalid NLB structure: modifications directory does not exist for item with Id = "
-                + getId()
-                + ", but some modifications should be specified"
+                    "Invalid NLB structure: modifications directory does not exist for item with Id = "
+                            + getId()
+                            + ", but some modifications should be specified"
             );
         }
         m_modifications.clear();
@@ -137,16 +137,16 @@ public abstract class AbstractModifyingItem extends AbstractIdentifiableItem imp
                 modDirs = new File[0];
             } else {
                 throw new NLBIOException(
-                    "Error when enumerating modifications' directory contents for item with Id = " + getId()
+                        "Error when enumerating modifications' directory contents for item with Id = " + getId()
                 );
             }
         }
         if (modOrderString.isEmpty()) {
             if (modDirs.length > 0) {
                 throw new NLBConsistencyException(
-                    "Inconsistent NLB structure: '" + MODIFICATIONS_DIR_NAME + "' directory "
-                    + "should be empty for item with id = "
-                    + getId()
+                        "Inconsistent NLB structure: '" + MODIFICATIONS_DIR_NAME + "' directory "
+                                + "should be empty for item with id = "
+                                + getId()
                 );
             }
         } else {
@@ -162,8 +162,8 @@ public abstract class AbstractModifyingItem extends AbstractIdentifiableItem imp
     }
 
     protected void writeModOrderFile(
-        FileManipulator fileManipulator,
-        File itemDir
+            FileManipulator fileManipulator,
+            File itemDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         StringBuilder sb = new StringBuilder();
         final int lastElemIndex = m_modifications.size() - 1;

@@ -41,12 +41,10 @@ package com.nlbhub.nlb.builder.view;
 import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.builder.config.Parameters;
 import com.nlbhub.nlb.util.StringHelper;
-import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
 
 /**
  * The LinkPath class
@@ -96,12 +94,12 @@ public class LinkPath extends ItemPath implements NLBObserver {
     }
 
     public LinkPath(
-        final NonLinearBook nonLinearBook,
-        Font font,
-        final FontMetrics metrics,
-        NodePath nodeFrom,
-        NodePath nodeTo,
-        final Link link
+            final NonLinearBook nonLinearBook,
+            Font font,
+            final FontMetrics metrics,
+            NodePath nodeFrom,
+            NodePath nodeTo,
+            final Link link
     ) {
         m_metrics = metrics;
         m_nodeFrom = nodeFrom;
@@ -176,8 +174,8 @@ public class LinkPath extends ItemPath implements NLBObserver {
         final Point2D centerTo = m_nodeTo.getFullBoundsReference().getCenter2D();
         final Point2D result = new Point2D.Float();
         result.setLocation(
-            (float) ((centerFrom.getX() + centerTo.getX()) / 2.0),
-            (float) ((centerFrom.getY() + centerTo.getY()) / 2.0)
+                (float) ((centerFrom.getX() + centerTo.getX()) / 2.0),
+                (float) ((centerFrom.getY() + centerTo.getY()) / 2.0)
         );
         return result;
     }
@@ -186,10 +184,10 @@ public class LinkPath extends ItemPath implements NLBObserver {
         final Point2D centerFrom = m_nodeFrom.getFullBoundsReference().getCenter2D();
         final Point2D centerTo = m_nodeTo.getFullBoundsReference().getCenter2D();
         double ratio = (
-            (centerTo.getY() - centerFrom.getY()) / (centerTo.getX() - centerFrom.getX())
+                (centerTo.getY() - centerFrom.getY()) / (centerTo.getX() - centerFrom.getX())
         );
         double theta = Math.atan(Math.abs(ratio));
-        return (ratio > 0) ? theta : 2*Math.PI -theta;// * 360 / (2*Math.PI);
+        return (ratio > 0) ? theta : 2 * Math.PI - theta;// * 360 / (2*Math.PI);
     }
 
     private void update() {
@@ -207,8 +205,8 @@ public class LinkPath extends ItemPath implements NLBObserver {
     }
 
     private void changeTextPosition(
-        final Coords coords,
-        final PositionAndTotalCount positionAndTotalCount
+            final Coords coords,
+            final PositionAndTotalCount positionAndTotalCount
     ) {
         final Point2D origin = getLinkOrigin();
         // get the height of a line of text in this
@@ -219,36 +217,36 @@ public class LinkPath extends ItemPath implements NLBObserver {
         // and render context
         int adv = m_metrics.stringWidth(m_textNode.getText());
         m_textNode.setBounds(
-            -adv/2.0 + coords.getLeft(),
-            -coords.getHeight() * (positionAndTotalCount.getPosition() + 1) + coords.getTop(),
-            coords.getWidth(),
-            coords.getHeight()
+                -adv / 2.0 + coords.getLeft(),
+                -coords.getHeight() * (positionAndTotalCount.getPosition() + 1) + coords.getTop(),
+                coords.getWidth(),
+                coords.getHeight()
         );
         m_textNode.setRotation(getTextRotationAngle());
         m_textNode.setOffset(
-            origin.getX(),
-            origin.getY()
+                origin.getX(),
+                origin.getY()
         );
     }
 
     private void changeTextPositionForSelfLink(
-        final Coords coords,
-        final PositionAndTotalCount positionAndTotalCount
+            final Coords coords,
+            final PositionAndTotalCount positionAndTotalCount
     ) {
         final Point2D origin = new Point2D.Float();
         origin.setLocation(
-            (float) m_nodeFrom.getFullBoundsReference().getMaxX(),
-            (float) m_nodeFrom.getFullBoundsReference().getMinY()
+                (float) m_nodeFrom.getFullBoundsReference().getMaxX(),
+                (float) m_nodeFrom.getFullBoundsReference().getMinY()
         );
         m_textNode.setBounds(
-            coords.getLeft(),
-            -coords.getHeight() * (positionAndTotalCount.getPosition() + 1) + coords.getTop(),
-            coords.getWidth(),
-            coords.getHeight()
+                coords.getLeft(),
+                -coords.getHeight() * (positionAndTotalCount.getPosition() + 1) + coords.getTop(),
+                coords.getWidth(),
+                coords.getHeight()
         );
         m_textNode.setOffset(
-            origin.getX(),
-            origin.getY()
+                origin.getX(),
+                origin.getY()
         );
     }
 
@@ -260,20 +258,20 @@ public class LinkPath extends ItemPath implements NLBObserver {
         reset();
 
         final double shift = (
-            Parameters.singleton().getArrowOffsetCoef()
-            * ((double) (positionAndTotalCount.getPosition() + 1))
+                Parameters.singleton().getArrowOffsetCoef()
+                        * ((double) (positionAndTotalCount.getPosition() + 1))
         );
         // Beginning of the edge
         Point2D ptBegin = new Point2D.Double(
-            m_nodeFrom.getFullBoundsReference().getCenter2D().getX()
-            + shift
-            + m_nodeFrom.getFullBoundsReference().getWidth() / 2.0,
-            m_nodeFrom.getFullBoundsReference().getCenter2D().getY()
+                m_nodeFrom.getFullBoundsReference().getCenter2D().getX()
+                        + shift
+                        + m_nodeFrom.getFullBoundsReference().getWidth() / 2.0,
+                m_nodeFrom.getFullBoundsReference().getCenter2D().getY()
         );
         // End of the edge
         Point2D ptEnd = new Point2D.Double(
-            m_nodeTo.getFullBoundsReference().getCenter2D().getX(),
-            m_nodeTo.getFullBoundsReference().getCenter2D().getY()
+                m_nodeTo.getFullBoundsReference().getCenter2D().getX(),
+                m_nodeTo.getFullBoundsReference().getCenter2D().getY()
         );
         int iRadiusFrom = 0;
         int iRadiusTo = (int) (m_nodeTo.getFullBoundsReference().getWidth() / 2.0);
@@ -282,48 +280,48 @@ public class LinkPath extends ItemPath implements NLBObserver {
         // Draw the edge (to the arrow)
         if (positionAndTotalCount.isLast()) {
             moveTo(
-                (float) m_nodeFrom.getFullBoundsReference().getMaxX(),
-                (float) m_nodeFrom.getFullBoundsReference().getMinY()
+                    (float) m_nodeFrom.getFullBoundsReference().getMaxX(),
+                    (float) m_nodeFrom.getFullBoundsReference().getMinY()
             );
             lineTo(
-                (float) ptBegin.getX(),
-                (float) m_nodeFrom.getFullBoundsReference().getMinY()
+                    (float) ptBegin.getX(),
+                    (float) m_nodeFrom.getFullBoundsReference().getMinY()
             );
             curveTo(
-                (float) ptBegin.getX(),
-                (float) m_nodeFrom.getFullBoundsReference().getMinY(),
-                (float) (ptBegin.getX() + m_nodeFrom.getFullBoundsReference().getHeight() / 2.0),
-                (float) ((m_nodeFrom.getFullBoundsReference().getMinY() + ptBegin.getY()) / 2.0),
-                (float) ptBegin.getX(),
-                (float) ptBegin.getY()
+                    (float) ptBegin.getX(),
+                    (float) m_nodeFrom.getFullBoundsReference().getMinY(),
+                    (float) (ptBegin.getX() + m_nodeFrom.getFullBoundsReference().getHeight() / 2.0),
+                    (float) ((m_nodeFrom.getFullBoundsReference().getMinY() + ptBegin.getY()) / 2.0),
+                    (float) ptBegin.getX(),
+                    (float) ptBegin.getY()
             );
         }
         boolean somethingWasDrawed = drawArrow(
-            ptBegin,
-            ptEnd,
-            positionAndTotalCount,
-            iRadiusFrom,
-            iRadiusTo,
-            positionAndTotalCount.isLast(),
-            true
+                ptBegin,
+                ptEnd,
+                positionAndTotalCount,
+                iRadiusFrom,
+                iRadiusTo,
+                positionAndTotalCount.isLast(),
+                true
         );
         if (positionAndTotalCount.isLast()) {
             lineTo(
-                (float) ptBegin.getX(),
-                (float) ptBegin.getY()
+                    (float) ptBegin.getX(),
+                    (float) ptBegin.getY()
             );
 
             curveTo(
-                (float) ptBegin.getX(),
-                (float) ptBegin.getY(),
-                (float) (ptBegin.getX() + m_nodeFrom.getFullBoundsReference().getHeight() / 2.0),
-                (float) ((m_nodeFrom.getFullBoundsReference().getMinY() + ptBegin.getY()) / 2.0),
-                (float) ptBegin.getX(),
-                (float) m_nodeFrom.getFullBoundsReference().getMinY()
+                    (float) ptBegin.getX(),
+                    (float) ptBegin.getY(),
+                    (float) (ptBegin.getX() + m_nodeFrom.getFullBoundsReference().getHeight() / 2.0),
+                    (float) ((m_nodeFrom.getFullBoundsReference().getMinY() + ptBegin.getY()) / 2.0),
+                    (float) ptBegin.getX(),
+                    (float) m_nodeFrom.getFullBoundsReference().getMinY()
             );
             lineTo(
-                (float) ptBegin.getX(),
-                (float) m_nodeFrom.getFullBoundsReference().getMinY()
+                    (float) ptBegin.getX(),
+                    (float) m_nodeFrom.getFullBoundsReference().getMinY()
             );
         }
         if (somethingWasDrawed) {
@@ -342,19 +340,19 @@ public class LinkPath extends ItemPath implements NLBObserver {
 
         // Beginning of the edge
         Point2D ptBegin = new Point2D.Double(
-            m_nodeFrom.getFullBoundsReference().getCenter2D().getX(),
-            m_nodeFrom.getFullBoundsReference().getCenter2D().getY()
+                m_nodeFrom.getFullBoundsReference().getCenter2D().getX(),
+                m_nodeFrom.getFullBoundsReference().getCenter2D().getY()
         );
         // End of the edge
         Point2D ptEnd = new Point2D.Double(
-            m_nodeTo.getFullBoundsReference().getCenter2D().getX(),
-            m_nodeTo.getFullBoundsReference().getCenter2D().getY()
+                m_nodeTo.getFullBoundsReference().getCenter2D().getX(),
+                m_nodeTo.getFullBoundsReference().getCenter2D().getY()
         );
         int iRadiusFrom = (int) m_nodeFrom.countPageRadius(m_nodeTo);
         int iRadiusTo = (int) m_nodeTo.countPageRadius(m_nodeFrom);
 
         boolean somethingWasDrawed = (
-            drawArrow(ptBegin, ptEnd, positionAndTotalCount, iRadiusFrom, iRadiusTo, false, false)
+                drawArrow(ptBegin, ptEnd, positionAndTotalCount, iRadiusFrom, iRadiusTo, false, false)
         );
         if (somethingWasDrawed) {
             closePath();
@@ -362,108 +360,105 @@ public class LinkPath extends ItemPath implements NLBObserver {
     }
 
     /**
-     *
      * @param ptBegin
      * @param ptEnd
      * @param positionAndTotalCount
-     * @param iRadiusFrom "Radius" of the beginning page
-     * (distance from the rectangle center to the
-     * intersection point of the link edge with the boundary)
-     * @param iRadiusTo  "Radius" of the end page
-     * (distance from the rectangle center to the intersection point of the
-     * link edge with the boundary)
+     * @param iRadiusFrom           "Radius" of the beginning page
+     *                              (distance from the rectangle center to the
+     *                              intersection point of the link edge with the boundary)
+     * @param iRadiusTo             "Radius" of the end page
+     *                              (distance from the rectangle center to the intersection point of the
+     *                              link edge with the boundary)
      */
     private boolean drawArrow(
-        final Point2D ptBegin,
-        final Point2D ptEnd,
-        final PositionAndTotalCount positionAndTotalCount,
-        int iRadiusFrom,
-        int iRadiusTo,
-        boolean continueDrawing,
-        boolean forceDraw
+            final Point2D ptBegin,
+            final Point2D ptEnd,
+            final PositionAndTotalCount positionAndTotalCount,
+            int iRadiusFrom,
+            int iRadiusTo,
+            boolean continueDrawing,
+            boolean forceDraw
     ) {
         final double arrowOffset = (
-            Parameters.singleton().getArrowOffsetCoef()
-            * ((double) positionAndTotalCount.getPosition())
+                Parameters.singleton().getArrowOffsetCoef()
+                        * ((double) positionAndTotalCount.getPosition())
         );
         Point2D ptEnd_Arrow1;    // Point for painting of the arrow at the end of the edge
         Point2D ptEnd_Arrow2;    // Point for painting of the arrow at the end of the edge
         Point2D ptEndArrowOnMainLine; // (ptEnd_Arrow1 + ptEnd_Arrow2) / 2
         Point2D lineVectorTo;    // Vector of the ptEnd shift to the end page radius
-                                 // (needed to shift ptEnd to the page boundary)
+        // (needed to shift ptEnd to the page boundary)
         Point2D lineVectorFrom;    // Vector of the ptBegin shift to the end page radius
-                                   // (needed to shift ptBegin to the page boundary)
+        // (needed to shift ptBegin to the page boundary)
         Point2D lineVector_1;    // Vector of the unit size
         Point2D Ort_To_lineVector_1;    // Vector that is perpendicular to the lineVector
         double lineVectorNorm;    // Link edge length in the Euclidean norm
 
 
-
         // Vector collinear to the link edge
         lineVectorTo = new Point2D.Double(
-            ptEnd.getX() - ptBegin.getX(), ptEnd.getY() - ptBegin.getY()
+                ptEnd.getX() - ptBegin.getX(), ptEnd.getY() - ptBegin.getY()
         );
         // Find its norm (length of the edge)
         lineVectorNorm = (
-            Math.sqrt(
-                lineVectorTo.getX()*lineVectorTo.getX() + lineVectorTo.getY()*lineVectorTo.getY()
-            )
+                Math.sqrt(
+                        lineVectorTo.getX() * lineVectorTo.getX() + lineVectorTo.getY() * lineVectorTo.getY()
+                )
         );
 
         // If edge length <= sum of the radii of the beginning and the end pages => pages are
         // intersecting, therefore we should not draw any edge
-        if ((lineVectorNorm > (iRadiusFrom + iRadiusTo)) || forceDraw)
-        {
+        if ((lineVectorNorm > (iRadiusFrom + iRadiusTo)) || forceDraw) {
             // Else draw the link edge
 
             // Normalize the vector
             lineVector_1 = new Point2D.Double(
-                lineVectorTo.getX() / lineVectorNorm,
-                lineVectorTo.getY() / lineVectorNorm
+                    lineVectorTo.getX() / lineVectorNorm,
+                    lineVectorTo.getY() / lineVectorNorm
             );
 
             // Make the length of the vectors equal to the radii of the beginning and the end pages
             lineVectorFrom = new Point2D.Double(
-                lineVector_1.getX() * iRadiusFrom,
-                lineVector_1.getY() * iRadiusFrom
+                    lineVector_1.getX() * iRadiusFrom,
+                    lineVector_1.getY() * iRadiusFrom
             );
             lineVectorTo.setLocation(
-                lineVector_1.getX() * (iRadiusTo + arrowOffset),
-                lineVector_1.getY() * (iRadiusTo + arrowOffset)
+                    lineVector_1.getX() * (iRadiusTo + arrowOffset),
+                    lineVector_1.getY() * (iRadiusTo + arrowOffset)
             );
 
             // Shift the beginning of the edge
             ptBegin.setLocation(
-                ptBegin.getX() + lineVectorFrom.getX(),
-                ptBegin.getY() + lineVectorFrom.getY()
+                    ptBegin.getX() + lineVectorFrom.getX(),
+                    ptBegin.getY() + lineVectorFrom.getY()
             );
 
             // Shift the end of the edge
             ptEnd.setLocation(
-                ptEnd.getX() - lineVectorTo.getX(),
-                ptEnd.getY() - lineVectorTo.getY()
+                    ptEnd.getX() - lineVectorTo.getX(),
+                    ptEnd.getY() - lineVectorTo.getY()
             );
 
             // Ort to the vector (a, b) - is (-b, a)
             Ort_To_lineVector_1 = new Point2D.Double(
-                -lineVector_1.getY(), lineVector_1.getX()
+                    -lineVector_1.getY(), lineVector_1.getX()
             );
 
             // Calculate the arrow coordinates
             final double arrowWidthCoef = Parameters.singleton().getArrowWidthCoef();
             final double arrowHeightCoef = Parameters.singleton().getArrowHeightCoef();
             ptEnd_Arrow1 = new Point2D.Double(
-                arrowWidthCoef*(-lineVector_1.getX() - Ort_To_lineVector_1.getX()*arrowHeightCoef) + ptEnd.getX(),
-                arrowWidthCoef*(-lineVector_1.getY() - Ort_To_lineVector_1.getY()*arrowHeightCoef) + ptEnd.getY()
+                    arrowWidthCoef * (-lineVector_1.getX() - Ort_To_lineVector_1.getX() * arrowHeightCoef) + ptEnd.getX(),
+                    arrowWidthCoef * (-lineVector_1.getY() - Ort_To_lineVector_1.getY() * arrowHeightCoef) + ptEnd.getY()
             );
             ptEnd_Arrow2 = new Point2D.Double(
-                arrowWidthCoef*(-lineVector_1.getX() + Ort_To_lineVector_1.getX()*arrowHeightCoef) + ptEnd.getX(),
-                arrowWidthCoef*(-lineVector_1.getY() + Ort_To_lineVector_1.getY()*arrowHeightCoef) + ptEnd.getY()
+                    arrowWidthCoef * (-lineVector_1.getX() + Ort_To_lineVector_1.getX() * arrowHeightCoef) + ptEnd.getX(),
+                    arrowWidthCoef * (-lineVector_1.getY() + Ort_To_lineVector_1.getY() * arrowHeightCoef) + ptEnd.getY()
             );
 
             ptEndArrowOnMainLine = new Point2D.Double(
-                (ptEnd_Arrow1.getX() + ptEnd_Arrow2.getX())/2.0,
-                (ptEnd_Arrow1.getY() + ptEnd_Arrow2.getY())/2.0
+                    (ptEnd_Arrow1.getX() + ptEnd_Arrow2.getX()) / 2.0,
+                    (ptEnd_Arrow1.getY() + ptEnd_Arrow2.getY()) / 2.0
             );
 
             // Draw the edge (to the arrow)
@@ -474,8 +469,8 @@ public class LinkPath extends ItemPath implements NLBObserver {
             }
 
             lineTo(
-                (float) (ptEndArrowOnMainLine.getX()),
-                (float) (ptEndArrowOnMainLine.getY())
+                    (float) (ptEndArrowOnMainLine.getX()),
+                    (float) (ptEndArrowOnMainLine.getY())
             );
 
             // Draw the arrow at the end of the edge
@@ -483,8 +478,8 @@ public class LinkPath extends ItemPath implements NLBObserver {
             lineTo((float) ptEnd.getX(), (float) ptEnd.getY());
             lineTo((float) ptEnd_Arrow2.getX(), (float) ptEnd_Arrow2.getY());
             lineTo(
-                (float) (ptEndArrowOnMainLine.getX()),
-                (float) (ptEndArrowOnMainLine.getY())
+                    (float) (ptEndArrowOnMainLine.getX()),
+                    (float) (ptEndArrowOnMainLine.getY())
             );
             return true;
         }

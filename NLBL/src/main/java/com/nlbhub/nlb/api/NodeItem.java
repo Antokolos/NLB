@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.api;
 
 import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 
 /**
@@ -53,15 +54,28 @@ public interface NodeItem extends ModifyingItem, NLBObservable {
     public static final String DEFAULT_TEXTCOLOR = "000000";
     public static final String DEFAULT_LNKORDER = Constants.EMPTY_STRING;
     public static final String DEFAULT_CONTENT = Constants.EMPTY_STRING;
-    /** Resize bars orientations. */
-    public enum Orientation {TOP, BOTTOM, LEFT, RIGHT}
+
+    /**
+     * Resize bars orientations.
+     */
+    public enum Orientation {
+        TOP, BOTTOM, LEFT, RIGHT
+    }
+
     public static final int DEFAULT_NODE_WIDTH = 100;
     public static final int DEFAULT_NODE_HEIGHT = 50;
+
     public String getStroke();
+
     public String getFill();
+
     public String getTextColor();
+
     public List<String> getContainedObjIds();
+
     public Coords getCoords();
+
     public List<Link> getLinks();
+
     public Link getLinkById(@NotNull String linkId);
 }

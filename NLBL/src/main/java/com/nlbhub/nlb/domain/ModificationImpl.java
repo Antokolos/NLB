@@ -132,8 +132,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     }
 
     public void writeModification(
-        FileManipulator fileManipulator,
-        File modificationsDir
+            FileManipulator fileManipulator,
+            File modificationsDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         final File modificationDir = new File(modificationsDir, getId());
         if (isDeleted()) {
@@ -141,8 +141,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             fileManipulator.deleteFileOrDir(modificationDir);
         } else {
             fileManipulator.createDir(
-                modificationDir,
-                "Cannot create NLB modification directory for modification with Id = " + getId()
+                    modificationDir,
+                    "Cannot create NLB modification directory for modification with Id = " + getId()
             );
             fileManipulator.writeRequiredString(modificationDir, VARID_FILE_NAME, m_varId);
             fileManipulator.writeRequiredString(modificationDir, TYPE_FILE_NAME, m_type.name());
@@ -151,15 +151,15 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     }
 
     public void readModification(
-        File modificationDir
+            File modificationDir
     ) throws NLBIOException, NLBConsistencyException {
         setId(modificationDir.getName());
         m_varId = (
-            FileManipulator.getRequiredFileAsString(
-                    modificationDir,
-                    VARID_FILE_NAME,
-                    "Error while reading modification variable Id for modification with Id = " + getId()
-            )
+                FileManipulator.getRequiredFileAsString(
+                        modificationDir,
+                        VARID_FILE_NAME,
+                        "Error while reading modification variable Id for modification with Id = " + getId()
+                )
         );
         String type = FileManipulator.getRequiredFileAsString(
                 modificationDir,
@@ -178,16 +178,16 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             default:
                 throw new NLBConsistencyException(
-                    "Modification type '" + type
-                    + "' cannot be determined for modification with Id = " + getId()
+                        "Modification type '" + type
+                                + "' cannot be determined for modification with Id = " + getId()
                 );
         }
         m_exprId = (
-            FileManipulator.getRequiredFileAsString(
-                    modificationDir,
-                    EXPRID_FILE_NAME,
-                    "Error while reading modification expression Id for modification with Id = " + getId()
-            )
+                FileManipulator.getRequiredFileAsString(
+                        modificationDir,
+                        EXPRID_FILE_NAME,
+                        "Error while reading modification expression Id for modification with Id = " + getId()
+                )
         );
     }
 }

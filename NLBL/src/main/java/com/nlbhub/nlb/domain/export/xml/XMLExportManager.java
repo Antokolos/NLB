@@ -47,14 +47,13 @@ import com.nlbhub.nlb.exception.NLBJAXBException;
 import com.nlbhub.nlb.util.JaxbMarshaller;
 import org.w3c.dom.Document;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -94,8 +93,8 @@ public abstract class XMLExportManager extends ExportManager {
                 Transformer nullTransformer = transformerFactory.newTransformer();
                 nullTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
                 nullTransformer.setOutputProperty(
-                    OutputKeys.CDATA_SECTION_ELEMENTS,
-                    getCDataSectionElements()
+                        OutputKeys.CDATA_SECTION_ELEMENTS,
+                        getCDataSectionElements()
                 );
                 nullTransformer.transform(new DOMSource(document), new StreamResult(writer));
             } finally {
@@ -109,6 +108,8 @@ public abstract class XMLExportManager extends ExportManager {
     }
 
     protected abstract String getCDataSectionElements();
+
     protected abstract JaxbMarshaller createMarshaller();
+
     protected abstract Object createRootObject(NLBBuildingBlocks nlbBlocks);
 }

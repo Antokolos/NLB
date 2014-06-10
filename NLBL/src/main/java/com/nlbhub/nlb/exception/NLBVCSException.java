@@ -45,11 +45,11 @@ package com.nlbhub.nlb.exception;
  * @version 1.0 12/30/13
  */
 public class NLBVCSException extends Exception {
-   public NLBVCSException(String message) {
-       super(message);
-   }
+    public NLBVCSException(String message) {
+        super(message);
+    }
 
-   public NLBVCSException(String message, Throwable cause) {
-       super(message, cause);
-   }
+    public NLBVCSException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

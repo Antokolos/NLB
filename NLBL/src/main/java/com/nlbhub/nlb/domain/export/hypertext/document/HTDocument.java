@@ -43,7 +43,6 @@ import com.nlbhub.nlb.exception.HTDocumentException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 /**
  * The HTDocument class
@@ -53,7 +52,10 @@ import java.io.UnsupportedEncodingException;
  */
 public interface HTDocument<T extends HTParagraph> {
     public void initWriter(File targetFile) throws FileNotFoundException, HTDocumentException;
+
     public void open();
+
     public void close() throws IOException;
+
     public void add(T paragraph) throws HTDocumentException;
 }

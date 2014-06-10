@@ -62,44 +62,44 @@ public class JSIQExportManager extends TextExportManager {
     @Override
     protected String generatePreambleText() {
         return (
-            "<html>" + LINE_SEPARATOR
-            + "<head>" + LINE_SEPARATOR
-            + "<title>jsIQ</title>" + LINE_SEPARATOR
-            + "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">" + LINE_SEPARATOR
-            + "<link type=\"text/css\" rel=\"stylesheet\" media=\"all\" href=\"game.css\"/>" + LINE_SEPARATOR
-            + "</head>" + LINE_SEPARATOR
-            + LINE_SEPARATOR
-            + "<body style=\"font-family:verdana;font-size:95%\">" + LINE_SEPARATOR
-            + "<script src=\"libs/jquery-1.3.2.min.js\"></script>" + LINE_SEPARATOR
-            + LINE_SEPARATOR
-            + "<script src=\"jsiqapi.js\"></script>" + LINE_SEPARATOR
-            + "<script src=\"std_inventory.js\"></script>" + LINE_SEPARATOR
-            + LINE_SEPARATOR
-            + "<script type=\"text/javascript\">" + LINE_SEPARATOR
-            + "var _globFuncs = new Object();" + LINE_SEPARATOR
-            + "function init() {" + LINE_SEPARATOR
-            + "    insertValue('inv', '');" + LINE_SEPARATOR
-            + "}" + LINE_SEPARATOR
-            + "function getInventory() {" + LINE_SEPARATOR
-            + "    if (_G.inventory === undefined) {" + LINE_SEPARATOR
-            + "        " + "_G.inventory = INVENTORY();" + LINE_SEPARATOR
-            + "        " + "_G.inventory.on_update = function() {" + LINE_SEPARATOR
-            + "            " + "insertValue('inv', _G.inventory.getListAsHTML('<br/>', true));" + LINE_SEPARATOR
-            + "        " + "}" + LINE_SEPARATOR
-            + "        " + "return _G.inventory;" + LINE_SEPARATOR
-            + "    } else {" + LINE_SEPARATOR
-            + "        " + "return _G.inventory;" + LINE_SEPARATOR
-            + "    }" + LINE_SEPARATOR
-            + "}" + LINE_SEPARATOR
-            + "function getGlobVar(variableName) {" + LINE_SEPARATOR
-            + "    if (_G[variableName] === undefined) {" + LINE_SEPARATOR
-            + "        " + "return false;" + LINE_SEPARATOR
-            + "    } else {" + LINE_SEPARATOR
-            + "        " + "return _G[variableName];" + LINE_SEPARATOR
-            + "    }" + LINE_SEPARATOR
-            + "}" + LINE_SEPARATOR
-            + "</script>" + LINE_SEPARATOR
-            + "<div id=\"book\" style=\"display:none\">" + LINE_SEPARATOR
+                "<html>" + LINE_SEPARATOR
+                        + "<head>" + LINE_SEPARATOR
+                        + "<title>jsIQ</title>" + LINE_SEPARATOR
+                        + "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">" + LINE_SEPARATOR
+                        + "<link type=\"text/css\" rel=\"stylesheet\" media=\"all\" href=\"game.css\"/>" + LINE_SEPARATOR
+                        + "</head>" + LINE_SEPARATOR
+                        + LINE_SEPARATOR
+                        + "<body style=\"font-family:verdana;font-size:95%\">" + LINE_SEPARATOR
+                        + "<script src=\"libs/jquery-1.3.2.min.js\"></script>" + LINE_SEPARATOR
+                        + LINE_SEPARATOR
+                        + "<script src=\"jsiqapi.js\"></script>" + LINE_SEPARATOR
+                        + "<script src=\"std_inventory.js\"></script>" + LINE_SEPARATOR
+                        + LINE_SEPARATOR
+                        + "<script type=\"text/javascript\">" + LINE_SEPARATOR
+                        + "var _globFuncs = new Object();" + LINE_SEPARATOR
+                        + "function init() {" + LINE_SEPARATOR
+                        + "    insertValue('inv', '');" + LINE_SEPARATOR
+                        + "}" + LINE_SEPARATOR
+                        + "function getInventory() {" + LINE_SEPARATOR
+                        + "    if (_G.inventory === undefined) {" + LINE_SEPARATOR
+                        + "        " + "_G.inventory = INVENTORY();" + LINE_SEPARATOR
+                        + "        " + "_G.inventory.on_update = function() {" + LINE_SEPARATOR
+                        + "            " + "insertValue('inv', _G.inventory.getListAsHTML('<br/>', true));" + LINE_SEPARATOR
+                        + "        " + "}" + LINE_SEPARATOR
+                        + "        " + "return _G.inventory;" + LINE_SEPARATOR
+                        + "    } else {" + LINE_SEPARATOR
+                        + "        " + "return _G.inventory;" + LINE_SEPARATOR
+                        + "    }" + LINE_SEPARATOR
+                        + "}" + LINE_SEPARATOR
+                        + "function getGlobVar(variableName) {" + LINE_SEPARATOR
+                        + "    if (_G[variableName] === undefined) {" + LINE_SEPARATOR
+                        + "        " + "return false;" + LINE_SEPARATOR
+                        + "    } else {" + LINE_SEPARATOR
+                        + "        " + "return _G[variableName];" + LINE_SEPARATOR
+                        + "    }" + LINE_SEPARATOR
+                        + "}" + LINE_SEPARATOR
+                        + "</script>" + LINE_SEPARATOR
+                        + "<div id=\"book\" style=\"display:none\">" + LINE_SEPARATOR
         );
     }
 
@@ -155,45 +155,45 @@ public class JSIQExportManager extends TextExportManager {
     @Override
     protected String generateTrailingText() {
         return (
-            "<div id=\"char_list_tpl\">" + LINE_SEPARATOR
-            + "\t\t<p class=MsoNormal><b>Charsheet</b></p>" + LINE_SEPARATOR
-            + "\t\t<div id=\"main\" style=\"border: 1px solid #FABF8F\">" + LINE_SEPARATOR
-            + "%%inv" + LINE_SEPARATOR
-            + "\t\t</div>" + LINE_SEPARATOR
-            + "\t</div>" + LINE_SEPARATOR
-            + "\t<div id=\"char_list_update\">" + LINE_SEPARATOR
-            + "\t</div>" + LINE_SEPARATOR
-            + "</div>" + LINE_SEPARATOR
-            + "<table id=\"deco\" border=\"0\" width=\"100%\" style=\"border:0;width: 100%; height: 100%;\" cellspacing=\"0\" cellpadding=\"0\">" + LINE_SEPARATOR
-            + "<tr><td width=\"65%\"  height=\"100%\" valign=\"middle\">" + LINE_SEPARATOR
-            + "\t<div id=\"main\">" + LINE_SEPARATOR
-            + "\t\t<div id=\"title\" style=\"height:40px;display:none\">" + LINE_SEPARATOR
-            + "\t\t</div>" + LINE_SEPARATOR
-            + "\t\t<div id=\"main_text\" style=\"text-align:justify;\">" + LINE_SEPARATOR
-            + "\t\t</div>" + LINE_SEPARATOR
-            + "\t\t<br>" + LINE_SEPARATOR
-            + "\t\t<div id=\"actions\">" + LINE_SEPARATOR
-            + "\t\t</div>" + LINE_SEPARATOR
-            + "\t</div>" + LINE_SEPARATOR
-            + "</td>" + LINE_SEPARATOR
-            + "<td width=\"30px\"><br></td>" + LINE_SEPARATOR
-            + "<td height=\"100%\" valign=\"top\" align=\"right\">" + LINE_SEPARATOR
-            + "\t<div id=\"char_list\" style=\"width: 100%; height: 100%\">" + LINE_SEPARATOR
-            + "\t</div>" + LINE_SEPARATOR
-            + "</td>" + LINE_SEPARATOR
-            + "</tr></table>" + LINE_SEPARATOR
-            + LINE_SEPARATOR
-            + "<script type=\"text/javascript\">" + LINE_SEPARATOR
-            + "\tjsIQ.init();" + LINE_SEPARATOR
-            + "\tjsIQ.startGame(function()" + LINE_SEPARATOR
-            + "\t{" + LINE_SEPARATOR
-            + "\t\t\tshowArticle(1);" + LINE_SEPARATOR
-            + "\t});" + LINE_SEPARATOR
-            + "\tinit();" + LINE_SEPARATOR
-            + "</script>" + LINE_SEPARATOR
-            + LINE_SEPARATOR
-            + "</body>" + LINE_SEPARATOR
-            + "</html>"
+                "<div id=\"char_list_tpl\">" + LINE_SEPARATOR
+                        + "\t\t<p class=MsoNormal><b>Charsheet</b></p>" + LINE_SEPARATOR
+                        + "\t\t<div id=\"main\" style=\"border: 1px solid #FABF8F\">" + LINE_SEPARATOR
+                        + "%%inv" + LINE_SEPARATOR
+                        + "\t\t</div>" + LINE_SEPARATOR
+                        + "\t</div>" + LINE_SEPARATOR
+                        + "\t<div id=\"char_list_update\">" + LINE_SEPARATOR
+                        + "\t</div>" + LINE_SEPARATOR
+                        + "</div>" + LINE_SEPARATOR
+                        + "<table id=\"deco\" border=\"0\" width=\"100%\" style=\"border:0;width: 100%; height: 100%;\" cellspacing=\"0\" cellpadding=\"0\">" + LINE_SEPARATOR
+                        + "<tr><td width=\"65%\"  height=\"100%\" valign=\"middle\">" + LINE_SEPARATOR
+                        + "\t<div id=\"main\">" + LINE_SEPARATOR
+                        + "\t\t<div id=\"title\" style=\"height:40px;display:none\">" + LINE_SEPARATOR
+                        + "\t\t</div>" + LINE_SEPARATOR
+                        + "\t\t<div id=\"main_text\" style=\"text-align:justify;\">" + LINE_SEPARATOR
+                        + "\t\t</div>" + LINE_SEPARATOR
+                        + "\t\t<br>" + LINE_SEPARATOR
+                        + "\t\t<div id=\"actions\">" + LINE_SEPARATOR
+                        + "\t\t</div>" + LINE_SEPARATOR
+                        + "\t</div>" + LINE_SEPARATOR
+                        + "</td>" + LINE_SEPARATOR
+                        + "<td width=\"30px\"><br></td>" + LINE_SEPARATOR
+                        + "<td height=\"100%\" valign=\"top\" align=\"right\">" + LINE_SEPARATOR
+                        + "\t<div id=\"char_list\" style=\"width: 100%; height: 100%\">" + LINE_SEPARATOR
+                        + "\t</div>" + LINE_SEPARATOR
+                        + "</td>" + LINE_SEPARATOR
+                        + "</tr></table>" + LINE_SEPARATOR
+                        + LINE_SEPARATOR
+                        + "<script type=\"text/javascript\">" + LINE_SEPARATOR
+                        + "\tjsIQ.init();" + LINE_SEPARATOR
+                        + "\tjsIQ.startGame(function()" + LINE_SEPARATOR
+                        + "\t{" + LINE_SEPARATOR
+                        + "\t\t\tshowArticle(1);" + LINE_SEPARATOR
+                        + "\t});" + LINE_SEPARATOR
+                        + "\tinit();" + LINE_SEPARATOR
+                        + "</script>" + LINE_SEPARATOR
+                        + LINE_SEPARATOR
+                        + "</body>" + LINE_SEPARATOR
+                        + "</html>"
         );
     }
 
@@ -251,15 +251,15 @@ public class JSIQExportManager extends TextExportManager {
     @Override
     protected String decorateLinkGoTo(String linkId, String linkText, String linkTarget, int targetPageNumber) {
         return (
-            "_globFuncs." + decorateId(linkId) + "(); showArticle(" + targetPageNumber + ");\">"
-            + linkText + "</div>" + LINE_SEPARATOR
+                "_globFuncs." + decorateId(linkId) + "(); showArticle(" + targetPageNumber + ");\">"
+                        + linkText + "</div>" + LINE_SEPARATOR
         );
     }
 
     @Override
     protected String decoratePageEnd() {
         return (
-            "    </div>" + LINE_SEPARATOR
+                "    </div>" + LINE_SEPARATOR
         );
     }
 
@@ -271,7 +271,7 @@ public class JSIQExportManager extends TextExportManager {
     @Override
     protected String decoratePageVariable(String variableName) {
         return (
-            decorateAssignment(variableName, "true") + LINE_SEPARATOR
+                decorateAssignment(variableName, "true") + LINE_SEPARATOR
         );
     }
 

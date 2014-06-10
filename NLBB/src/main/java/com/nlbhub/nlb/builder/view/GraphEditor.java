@@ -40,7 +40,7 @@ package com.nlbhub.nlb.builder.view;
 
 import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.builder.model.LinkSelectionData;
-import com.nlbhub.nlb.domain.*;
+import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
@@ -76,6 +76,7 @@ import java.util.List;
  */
 public class GraphEditor extends PCanvas {
     private static enum GraphEditorMode {ADD_PAGE_MODE, ADD_OBJ_MODE, ADD_LINK_MODE, SELECTION_MODE}
+
     private static final long ANIMATE_DURATION_MILLIS = 1000;
     private static final Font FONT = new Font(Font.MONOSPACED, Font.BOLD, 12);
     // These offsets are used because the drag edge should not be targeted by mouse
@@ -200,9 +201,9 @@ public class GraphEditor extends PCanvas {
                     float oldLeft = coords.getLeft();
                     float oldTop = coords.getTop();
                     m_nlbFacade.updateLinkCoords(
-                        link,
-                        oldLeft + (float) (ptShO.getX() - ptO.getX()),
-                        oldTop + (float) (ptShO.getY() - ptO.getY())
+                            link,
+                            oldLeft + (float) (ptShO.getX() - ptO.getX()),
+                            oldTop + (float) (ptShO.getY() - ptO.getY())
                     );
                 }
             }
@@ -316,21 +317,21 @@ public class GraphEditor extends PCanvas {
                 }
                 Coords coords = nodeItem.getCoords();
                 ptDst.setLocation(
-                    ptDst.getX() - coords.getWidth() / 2.0,
-                    ptDst.getY() - coords.getHeight() / 2.0
+                        ptDst.getX() - coords.getWidth() / 2.0,
+                        ptDst.getY() - coords.getHeight() / 2.0
                 );
                 float deltaX = (float) ptDst.getX() - coords.getLeft();
                 float deltaY = (float) ptDst.getY() - coords.getTop();
                 if (
-                    Math.abs(deltaX) > Constants.FL_ZERO_TOLERANCE
-                    || Math.abs(deltaY) > Constants.FL_ZERO_TOLERANCE
-                ) {
+                        Math.abs(deltaX) > Constants.FL_ZERO_TOLERANCE
+                                || Math.abs(deltaY) > Constants.FL_ZERO_TOLERANCE
+                        ) {
                     m_nlbFacade.updateNodeCoords(
-                        nodeItem,
-                        (float) ptDst.getX(),
-                        (float) ptDst.getY(),
-                        deltaX,
-                        deltaY
+                            nodeItem,
+                            (float) ptDst.getX(),
+                            (float) ptDst.getY(),
+                            deltaX,
+                            deltaY
                     );
 
                     final Obj obj = (Obj) pickedNode.getAttribute(Constants.NLB_OBJ_ATTR);
@@ -342,7 +343,7 @@ public class GraphEditor extends PCanvas {
                                 PNode containerNode = m_graphItemsMapper.getContainer(pNode);
                                 if (containerNode != null) {
                                     NodeItem nodeItem = (
-                                        (NodeItem) containerNode.getAttribute(Constants.NLB_PAGE_ATTR)
+                                            (NodeItem) containerNode.getAttribute(Constants.NLB_PAGE_ATTR)
                                     );
                                     if (nodeItem == null) {
                                         nodeItem = (NodeItem) containerNode.getAttribute(Constants.NLB_OBJ_ATTR);
@@ -372,9 +373,9 @@ public class GraphEditor extends PCanvas {
                             if (!processed && obj.getContainerId() != null) {
                                 // Remove from previous container
                                 m_nlbFacade.changeContainer(
-                                    obj.getContainerId(),
-                                    null,
-                                    obj.getId()
+                                        obj.getContainerId(),
+                                        null,
+                                        obj.getId()
                                 );
                             }
                         }
@@ -384,8 +385,8 @@ public class GraphEditor extends PCanvas {
         }
 
         private boolean changeContainer(
-            Obj obj,
-            Collection<PNode> possibleContainers
+                Obj obj,
+                Collection<PNode> possibleContainers
         ) {
             boolean processed = false;
             for (PNode node : possibleContainers) {
@@ -394,8 +395,8 @@ public class GraphEditor extends PCanvas {
                     nodeItem = (NodeItem) node.getAttribute(Constants.NLB_OBJ_ATTR);
                 }
                 final boolean sameContainer = (
-                    nodeItem != null
-                    && nodeItem.getId().equals(obj.getContainerId())
+                        nodeItem != null
+                                && nodeItem.getId().equals(obj.getContainerId())
                 );
                 if (sameContainer) {
                     // If same container is present in the list of the possible containers,
@@ -403,13 +404,13 @@ public class GraphEditor extends PCanvas {
                     return true;
                 }
                 if (
-                    nodeItem != null
-                    && !nodeItem.getId().equals(obj.getId())  // not self
-                ) {
+                        nodeItem != null
+                                && !nodeItem.getId().equals(obj.getId())  // not self
+                        ) {
                     m_nlbFacade.changeContainer(
-                        obj.getContainerId(),
-                        nodeItem.getId(),
-                        obj.getId()
+                            obj.getContainerId(),
+                            nodeItem.getId(),
+                            obj.getId()
                     );
                     // TODO: Use only first elem for now
                     processed = true;
@@ -458,37 +459,37 @@ public class GraphEditor extends PCanvas {
             if (m_prevNode != null) {
                 Point2D start = m_prevNode.getFullBoundsReference().getCenter2D();
                 m_dragEdge.reset();
-                m_dragEdge.moveTo((float)start.getX(), (float)start.getY());
+                m_dragEdge.moveTo((float) start.getX(), (float) start.getY());
                 Point2D ptDst = null;
                 ptDst = getCamera().getViewTransform().inverseTransform(position, ptDst);
                 float offsetX = (
-                    (start.getX() < ptDst.getX())
-                    ? DRAG_END_OFFSET_X
-                    : -DRAG_END_OFFSET_X
+                        (start.getX() < ptDst.getX())
+                                ? DRAG_END_OFFSET_X
+                                : -DRAG_END_OFFSET_X
                 );
                 m_dragEdge.lineTo(
-                    (float) ptDst.getX() - offsetX,
-                    (float) ptDst.getY()
+                        (float) ptDst.getX() - offsetX,
+                        (float) ptDst.getY()
                 );
                 m_dragEdge.lineTo(
-                    (float) ptDst.getX() - offsetX,
-                    (float) ptDst.getY() + DRAG_END_OFFSET_Y
+                        (float) ptDst.getX() - offsetX,
+                        (float) ptDst.getY() + DRAG_END_OFFSET_Y
                 );
                 m_dragEdge.lineTo(
-                    (float) ptDst.getX() + offsetX,
-                    (float) ptDst.getY() + DRAG_END_OFFSET_Y
+                        (float) ptDst.getX() + offsetX,
+                        (float) ptDst.getY() + DRAG_END_OFFSET_Y
                 );
                 m_dragEdge.lineTo(
-                    (float) ptDst.getX() + offsetX,
-                    (float) ptDst.getY() - DRAG_END_OFFSET_Y
+                        (float) ptDst.getX() + offsetX,
+                        (float) ptDst.getY() - DRAG_END_OFFSET_Y
                 );
                 m_dragEdge.lineTo(
-                    (float) ptDst.getX() - offsetX,
-                    (float) ptDst.getY() - DRAG_END_OFFSET_Y
+                        (float) ptDst.getX() - offsetX,
+                        (float) ptDst.getY() - DRAG_END_OFFSET_Y
                 );
                 m_dragEdge.lineTo(
-                    (float) ptDst.getX() - offsetX,
-                    (float) ptDst.getY()
+                        (float) ptDst.getX() - offsetX,
+                        (float) ptDst.getY()
                 );
             } else {
                 m_dragEdge.reset();
@@ -533,10 +534,10 @@ public class GraphEditor extends PCanvas {
         setAnimatingRenderQuality(quality);
 
         m_dragEventHandler = (
-            new GraphDragEventHandler<PagePath>(Color.RED, Constants.NLB_PAGE_ATTR)
+                new GraphDragEventHandler<PagePath>(Color.RED, Constants.NLB_PAGE_ATTR)
         );
         m_dragEventHandlerObjs = (
-            new GraphDragEventHandler<ObjPath>(Color.CYAN, Constants.NLB_OBJ_ATTR)
+                new GraphDragEventHandler<ObjPath>(Color.CYAN, Constants.NLB_OBJ_ATTR)
         );
         m_dragEventHandlerLinks = new GraphDragEventHandlerLinks();
         m_nodeLayer.addInputEventListener(m_dragEventHandler);
@@ -584,12 +585,12 @@ public class GraphEditor extends PCanvas {
         ptDst = getCamera().getViewTransform().inverseTransform(point, ptDst);
         final Page page = createPage((float) ptDst.getX(), (float) ptDst.getY());
         m_nodeLayer.addChild(
-            m_graphItemsMapper.addNode(
-                m_nlbFacade.getNlb(),
-                m_nodeResizeExecutor,
-                page,
-                FONT
-            )
+                m_graphItemsMapper.addNode(
+                        m_nlbFacade.getNlb(),
+                        m_nodeResizeExecutor,
+                        page,
+                        FONT
+                )
         );
         m_nlbFacade.addPage(page);
     }
@@ -599,12 +600,12 @@ public class GraphEditor extends PCanvas {
         ptDst = getCamera().getViewTransform().inverseTransform(point, ptDst);
         final Obj obj = createObj((float) ptDst.getX(), (float) ptDst.getY());
         m_objLayer.addChild(
-            m_graphItemsMapper.addObjNode(
-                m_nlbFacade.getNlb(),
-                m_nodeResizeExecutor,
-                obj,
-                FONT
-            )
+                m_graphItemsMapper.addObjNode(
+                        m_nlbFacade.getNlb(),
+                        m_nodeResizeExecutor,
+                        obj,
+                        FONT
+                )
         );
         m_nlbFacade.addObj(obj);
     }
@@ -612,14 +613,14 @@ public class GraphEditor extends PCanvas {
     public void addLink(NodePath nodeFrom, NodePath nodeTo) {
         final Link link = createLink(nodeFrom, nodeTo);
         m_edgeLayer.addChild(
-            m_graphItemsMapper.addLink(
-                m_nlbFacade.getNlb(),
-                FONT,
-                getFontMetrics(FONT),
-                nodeFrom,
-                nodeTo,
-                link
-            )
+                m_graphItemsMapper.addLink(
+                        m_nlbFacade.getNlb(),
+                        FONT,
+                        getFontMetrics(FONT),
+                        nodeFrom,
+                        nodeTo,
+                        link
+                )
         );
         m_nlbFacade.addLink(link);
         // Update all edges from this node, including just created.
@@ -635,24 +636,24 @@ public class GraphEditor extends PCanvas {
             Point2D ptDst = null;
             ptDst = getCamera().getViewTransform().inverseTransform(position, ptDst);
             m_selectionFrame.moveTo(
-                (float) m_selectionStart.getX(),
-                (float) m_selectionStart.getY()
+                    (float) m_selectionStart.getX(),
+                    (float) m_selectionStart.getY()
             );
             m_selectionFrame.lineTo(
-                (float) ptDst.getX(),
-                (float) m_selectionStart.getY()
+                    (float) ptDst.getX(),
+                    (float) m_selectionStart.getY()
             );
             m_selectionFrame.lineTo(
-                (float) ptDst.getX(),
-                (float) ptDst.getY()
+                    (float) ptDst.getX(),
+                    (float) ptDst.getY()
             );
             m_selectionFrame.lineTo(
-                (float) m_selectionStart.getX(),
-                (float) ptDst.getY()
+                    (float) m_selectionStart.getX(),
+                    (float) ptDst.getY()
             );
             m_selectionFrame.lineTo(
-                (float) m_selectionStart.getX(),
-                (float) m_selectionStart.getY()
+                    (float) m_selectionStart.getX(),
+                    (float) m_selectionStart.getY()
             );
         } else {
             m_dragEventHandler.mouseMove(position);
@@ -712,18 +713,18 @@ public class GraphEditor extends PCanvas {
     public Page getSelectedPage() {
         PNode selectedNode = m_dragEventHandler.getSelectedNode();
         return (
-            (selectedNode == null)
-                ? null
-                : (Page) selectedNode.getAttribute(Constants.NLB_PAGE_ATTR)
+                (selectedNode == null)
+                        ? null
+                        : (Page) selectedNode.getAttribute(Constants.NLB_PAGE_ATTR)
         );
     }
 
     public Obj getSelectedObj() {
         PNode selectedNode = m_dragEventHandlerObjs.getSelectedNode();
         return (
-            (selectedNode == null)
-                ? null
-                : (Obj) selectedNode.getAttribute(Constants.NLB_OBJ_ATTR)
+                (selectedNode == null)
+                        ? null
+                        : (Obj) selectedNode.getAttribute(Constants.NLB_OBJ_ATTR)
         );
     }
 
@@ -739,7 +740,7 @@ public class GraphEditor extends PCanvas {
         m_nlbFacade.updateLink(link);
     }
 
-    public LinkSelectionData getSelectedLink()  {
+    public LinkSelectionData getSelectedLink() {
         return m_dragEventHandlerLinks.getSelectedLink();
     }
 
@@ -762,12 +763,12 @@ public class GraphEditor extends PCanvas {
     }
 
     public void save()
-    throws NLBIOException, NLBConsistencyException, NLBVCSException, NLBFileManipulationException {
+            throws NLBIOException, NLBConsistencyException, NLBVCSException, NLBFileManipulationException {
         m_nlbFacade.save(false);
     }
 
     public void saveAs(
-        final File nlbFolder
+            final File nlbFolder
     ) throws NLBIOException, NLBConsistencyException, NLBVCSException, NLBFileManipulationException {
         m_nlbFacade.saveAs(nlbFolder);
     }
@@ -784,10 +785,10 @@ public class GraphEditor extends PCanvas {
     private void init() {
         clear();
         m_graphItemsMapper.init(
-            m_nlbFacade,
-            m_nodeResizeExecutor,
-            FONT,
-            getFontMetrics(FONT)
+                m_nlbFacade,
+                m_nodeResizeExecutor,
+                FONT,
+                getFontMetrics(FONT)
         );
         for (Map.Entry<String, PagePath> entry : m_graphItemsMapper.pageEntrySet()) {
             m_nodeLayer.addChild(entry.getValue());

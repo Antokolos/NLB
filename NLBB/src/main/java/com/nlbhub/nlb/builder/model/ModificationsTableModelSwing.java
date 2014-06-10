@@ -44,7 +44,7 @@ import com.nlbhub.nlb.api.ModifyingItem;
 import com.nlbhub.nlb.api.NonLinearBook;
 
 import javax.swing.table.AbstractTableModel;
-import java.util.*;
+import java.util.List;
 
 /**
  * The ModificationsTableModelSwing class
@@ -56,8 +56,8 @@ public class ModificationsTableModelSwing extends AbstractTableModel {
     private ModificationsTableModel m_tableModel;
 
     public ModificationsTableModelSwing(
-        final NonLinearBook nlb,
-        final List<Modification> modifications
+            final NonLinearBook nlb,
+            final List<Modification> modifications
     ) {
         m_tableModel = new ModificationsTableModel(nlb, modifications);
     }

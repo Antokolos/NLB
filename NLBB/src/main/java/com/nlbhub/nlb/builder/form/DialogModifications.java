@@ -5,14 +5,13 @@ import com.nlbhub.nlb.api.Modification;
 import com.nlbhub.nlb.api.ModifyingItem;
 import com.nlbhub.nlb.api.NLBObserver;
 import com.nlbhub.nlb.builder.model.ModificationsTableModelSwing;
-import com.nlbhub.nlb.domain.*;
+import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.table.TableColumnExt;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.List;
 
 public class DialogModifications extends JDialog implements NLBObserver {
     private final String m_observerId;
@@ -29,8 +28,8 @@ public class DialogModifications extends JDialog implements NLBObserver {
     private final NonLinearBookFacade m_nlbFacade;
 
     public DialogModifications(
-        final NonLinearBookFacade nlbFacade,
-        final ModifyingItem modifyingItem
+            final NonLinearBookFacade nlbFacade,
+            final ModifyingItem modifyingItem
     ) {
         m_nlbFacade = nlbFacade;
         setModifyingItemProperties(modifyingItem);
@@ -120,14 +119,14 @@ public class DialogModifications extends JDialog implements NLBObserver {
     private void setModifyingItemProperties(final ModifyingItem modifyingItem) {
         m_modifyingItem = modifyingItem;
         m_modificationsTableModel = (
-            new ModificationsTableModelSwing(m_nlbFacade.getNlb(), modifyingItem.getModifications())
+                new ModificationsTableModelSwing(m_nlbFacade.getNlb(), modifyingItem.getModifications())
         );
         m_modifications.setModel(m_modificationsTableModel);
     }
 
     private void onRemove() {
         m_modificationsTableModel.remove(
-            m_modificationsTableModel.getModificationIdsAt(m_modifications.getSelectedRows())
+                m_modificationsTableModel.getModificationIdsAt(m_modifications.getSelectedRows())
         );
         m_modifications.clearSelection();
         m_modifications.updateUI();
@@ -152,10 +151,10 @@ public class DialogModifications extends JDialog implements NLBObserver {
     @Override
     public void updateView() {
         m_undoButton.setEnabled(
-            m_nlbFacade.canUndo(m_modifyingItem.getId() + Constants.MODIFICATIONS_UNDO_ID_POSTFIX)
+                m_nlbFacade.canUndo(m_modifyingItem.getId() + Constants.MODIFICATIONS_UNDO_ID_POSTFIX)
         );
         m_redoButton.setEnabled(
-            m_nlbFacade.canRedo(m_modifyingItem.getId() + Constants.MODIFICATIONS_UNDO_ID_POSTFIX)
+                m_nlbFacade.canRedo(m_modifyingItem.getId() + Constants.MODIFICATIONS_UNDO_ID_POSTFIX)
         );
     }
 

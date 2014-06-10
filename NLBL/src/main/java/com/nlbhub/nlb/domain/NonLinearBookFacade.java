@@ -48,7 +48,10 @@ import com.nlbhub.nlb.vcs.VCSAdapter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The NonLinearBookFacade class
@@ -61,9 +64,13 @@ public class NonLinearBookFacade implements NLBObservable {
     private Map<String, PageImpl> m_newPagesPool = new HashMap<>();
     private Map<String, ObjImpl> m_newObjsPool = new HashMap<>();
     private Map<String, LinkImpl> m_newLinksPool = new HashMap<>();
-    /** Main undo manager. */
+    /**
+     * Main undo manager.
+     */
     private UndoManager m_undoManager = new UndoManager();
-    /** Items' own undo managers. */
+    /**
+     * Items' own undo managers.
+     */
     private Map<String, UndoManager> m_undoManagersMap = new HashMap<>();
     private ObserverHandler m_observerHandler = new ObserverHandler();
     private VCSAdapter m_vcsAdapter;
@@ -93,7 +100,7 @@ public class NonLinearBookFacade implements NLBObservable {
     public NonLinearBookFacade createModuleFacade(final String modulePageId) {
         PageImpl page = m_nlb.getPageImplById(modulePageId);
         NonLinearBookFacade facade = (
-            new NonLinearBookFacade(m_author, m_vcsAdapter, page.getModuleImpl())
+                new NonLinearBookFacade(m_author, m_vcsAdapter, page.getModuleImpl())
         );
         m_moduleFacades.add(facade);
         notifyObservers();
@@ -162,66 +169,66 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void updateModifications(
-        final ModifyingItem modifyingItem,
-        final ModificationsTableModel modificationsTableModel
+            final ModifyingItem modifyingItem,
+            final ModificationsTableModel modificationsTableModel
     ) {
         NonLinearBookImpl.UpdateModificationsCommand command = (
-            m_nlb.createUpdateModificationsCommand(
-                modifyingItem,
-                modificationsTableModel
-            )
+                m_nlb.createUpdateModificationsCommand(
+                        modifyingItem,
+                        modificationsTableModel
+                )
         );
         getUndoManagerByItemId(
-            modifyingItem.getId() + Constants.MODIFICATIONS_UNDO_ID_POSTFIX
+                modifyingItem.getId() + Constants.MODIFICATIONS_UNDO_ID_POSTFIX
         ).executeAndStore(command);
         notifyObservers();
     }
 
     public void updatePage(
-        final Page page,
-        final String pageVariableName,
-        final String pageText,
-        final String pageCaptionText,
-        final boolean useCaption,
-        final String moduleName,
-        final String traverseText,
-        final String returnText,
-        final String returnPageId,
-        final String moduleConsraintVariableName,
-        final LinksTableModel linksTableModel
+            final Page page,
+            final String pageVariableName,
+            final String pageText,
+            final String pageCaptionText,
+            final boolean useCaption,
+            final String moduleName,
+            final String traverseText,
+            final String returnText,
+            final String returnPageId,
+            final String moduleConsraintVariableName,
+            final LinksTableModel linksTableModel
     ) {
         NonLinearBookImpl.UpdatePageCommand command = (
-            m_nlb.createUpdatePageCommand(
-                page,
-                pageVariableName,
-                pageText,
-                pageCaptionText,
-                useCaption,
-                moduleName,
-                traverseText,
-                returnText,
-                returnPageId,
-                moduleConsraintVariableName,
-                linksTableModel
-            )
+                m_nlb.createUpdatePageCommand(
+                        page,
+                        pageVariableName,
+                        pageText,
+                        pageCaptionText,
+                        useCaption,
+                        moduleName,
+                        traverseText,
+                        returnText,
+                        returnPageId,
+                        moduleConsraintVariableName,
+                        linksTableModel
+                )
         );
         getUndoManagerByItemId(page.getId()).executeAndStore(command);
         notifyObservers();
     }
 
     public void updateLink(
-        final Link link,
-        final String linkVariableName,
-        final String linkConstraintName,
-        final String linkText
+            final Link link,
+            final String linkVariableName,
+            final String linkConstraintName,
+            final String linkText
     ) {
         NonLinearBookImpl.UpdateLinkCommand command = (
-            m_nlb.createUpdateLinkCommand(
-                link,
-                linkVariableName,
-                linkConstraintName,
-                linkText
-            )
+                m_nlb.createUpdateLinkCommand(
+                        link,
+                        linkVariableName,
+                        linkConstraintName,
+                        linkText
+                )
         );
         getUndoManagerByItemId(link.getId()).executeAndStore(command);
         notifyObservers();
@@ -241,29 +248,29 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void updateObj(
-        final Obj obj,
-        final String objVariableName,
-        final String objName,
-        final String objText,
-        final boolean objIsTakable
+            final Obj obj,
+            final String objVariableName,
+            final String objName,
+            final String objText,
+            final boolean objIsTakable
     ) {
         NonLinearBookImpl.UpdateObjCommand command = (
-            m_nlb.createUpdateObjCommand(
-                obj,
-                objVariableName,
-                objName,
-                objText,
-                objIsTakable
-            )
+                m_nlb.createUpdateObjCommand(
+                        obj,
+                        objVariableName,
+                        objName,
+                        objText,
+                        objIsTakable
+                )
         );
         getUndoManagerByItemId(obj.getId()).executeAndStore(command);
         notifyObservers();
     }
 
     public void updateLinkCoords(
-        final Link link,
-        final float left,
-        final float top
+            final Link link,
+            final float left,
+            final float top
     ) {
         final NLBCommand command = new UpdateLinkCoordsCommand(m_nlb, link, left, top);
         m_undoManager.executeAndStore(command);
@@ -271,8 +278,8 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void updateLinkCoords(
-        final Link link,
-        final float height
+            final Link link,
+            final float height
     ) {
         final NLBCommand command = new UpdateLinkCoordsCommand(m_nlb, link, height);
         m_undoManager.executeAndStore(command);
@@ -280,10 +287,10 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void resizeNode(
-        NodeItem nodeItem,
-        NodeItem.Orientation orientation,
-        double deltaX,
-        double deltaY
+            NodeItem nodeItem,
+            NodeItem.Orientation orientation,
+            double deltaX,
+            double deltaY
     ) {
         AbstractNodeItem node = m_nlb.getPageImplById(nodeItem.getId());
         if (node == null) {
@@ -291,18 +298,18 @@ public class NonLinearBookFacade implements NLBObservable {
         }
         final List<Link> adjacentLinks = m_nlb.getAssociatedLinks(nodeItem);
         AbstractNodeItem.ResizeNodeCommand command = (
-            node.createResizeNodeCommand(orientation, deltaX, deltaY, adjacentLinks)
+                node.createResizeNodeCommand(orientation, deltaX, deltaY, adjacentLinks)
         );
         m_undoManager.executeAndStore(command);
         notifyObservers();
     }
 
     public void updateNodeCoords(
-        final NodeItem nodeItem,
-        final float left,
-        final float top,
-        final float deltaX,
-        final float deltaY
+            final NodeItem nodeItem,
+            final float left,
+            final float top,
+            final float deltaX,
+            final float deltaY
     ) {
         final CommandChainCommand commandChain = new CommandChainCommand();
         updateNodeCoords(commandChain, nodeItem, left, top, deltaX, deltaY);
@@ -311,12 +318,12 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     private void updateNodeCoords(
-        final CommandChainCommand commandChain,
-        final NodeItem nodeItem,
-        final float left,
-        final float top,
-        final float deltaX,
-        final float deltaY
+            final CommandChainCommand commandChain,
+            final NodeItem nodeItem,
+            final float left,
+            final float top,
+            final float deltaX,
+            final float deltaY
     ) {
         final NLBCommand command = new UpdateNodeCoordsCommand(m_nlb, nodeItem, left, top);
         commandChain.addCommand(command);
@@ -324,21 +331,21 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     private void offsetContainedObjects(
-        final CommandChainCommand commandChain,
-        NodeItem container,
-        float deltaX,
-        float deltaY
+            final CommandChainCommand commandChain,
+            NodeItem container,
+            float deltaX,
+            float deltaY
     ) {
         for (String nodeId : container.getContainedObjIds()) {
             NodeItem node = m_nlb.getObjById(nodeId);
             Coords nodeCoords = node.getCoords();
             updateNodeCoords(
-                commandChain,
-                node,
-                nodeCoords.getLeft() + deltaX,
-                nodeCoords.getTop() + deltaY,
-                deltaX,
-                deltaY
+                    commandChain,
+                    node,
+                    nodeCoords.getLeft() + deltaX,
+                    nodeCoords.getTop() + deltaY,
+                    deltaX,
+                    deltaY
             );
 
             offsetContainedObjects(commandChain, node, deltaX, deltaY);
@@ -346,9 +353,9 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void changeContainer(
-        final String previousContainerId,
-        final String newContainerId,
-        final String objId
+            final String previousContainerId,
+            final String newContainerId,
+            final String objId
     ) {
         AbstractNodeItem prevContainer = null;
         if (!StringHelper.isEmpty(previousContainerId)) {
@@ -365,20 +372,20 @@ public class NonLinearBookFacade implements NLBObservable {
             }
         }
         if (
-            (prevContainer == null && newContainer != null)           // from nowhere to something
-            || (prevContainer != null && newContainer == null)        // from something to nowhere
-            || (
-                prevContainer != null                                 // from something...
-                && !prevContainer.getId().equals(newContainer.getId()) // ...to something new
-            )
-        ) {
+                (prevContainer == null && newContainer != null)           // from nowhere to something
+                        || (prevContainer != null && newContainer == null)        // from something to nowhere
+                        || (
+                        prevContainer != null                                 // from something...
+                                && !prevContainer.getId().equals(newContainer.getId()) // ...to something new
+                )
+                ) {
             ObjImpl obj = m_nlb.getObjImplById(objId);
             ChangeContainerCommand command = (
-                new ChangeContainerCommand(
-                    prevContainer,
-                    newContainer,
-                    obj
-                )
+                    new ChangeContainerCommand(
+                            prevContainer,
+                            newContainer,
+                            obj
+                    )
             );
             m_undoManager.executeAndStore(command);
             notifyObservers();
@@ -387,13 +394,15 @@ public class NonLinearBookFacade implements NLBObservable {
 
     public void changeStartPoint(final String startPoint) {
         NonLinearBookImpl.ChangeStartPointCommand command = (
-            m_nlb.createChangeStartPointCommand(startPoint)
+                m_nlb.createChangeStartPointCommand(startPoint)
         );
         m_undoManager.executeAndStore(command);
         notifyObservers();
     }
 
-    /** This method is not participating in undo. It pre-creates page. */
+    /**
+     * This method is not participating in undo. It pre-creates page.
+     */
     public Page createPage(final float left, final float top) {
         PageImpl page = new PageImpl(m_nlb, left, top);
         m_newPagesPool.put(page.getId(), page);
@@ -409,7 +418,9 @@ public class NonLinearBookFacade implements NLBObservable {
         notifyObservers();
     }
 
-    /** This method is not participating in undo. It pre-creates obj. */
+    /**
+     * This method is not participating in undo. It pre-creates obj.
+     */
     public Obj createObj(final float left, final float top) {
         ObjImpl obj = new ObjImpl(left, top);
         m_newObjsPool.put(obj.getId(), obj);
@@ -425,7 +436,9 @@ public class NonLinearBookFacade implements NLBObservable {
         notifyObservers();
     }
 
-    /** This method is not participating in undo. It pre-creates link. */
+    /**
+     * This method is not participating in undo. It pre-creates link.
+     */
     public Link createLink(final NodeItem item, final NodeItem target) {
         NodeItem origin = m_nlb.getPageById(item.getId());
         if (origin == null) {
@@ -450,14 +463,14 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void save(
-        boolean create
+            boolean create
     ) throws NLBVCSException, NLBConsistencyException, NLBFileManipulationException, NLBIOException {
         saveNLB(create);
         clearUndosAndPools();
     }
 
     private void saveNLB(
-        boolean create
+            boolean create
     ) throws NLBVCSException, NLBConsistencyException, NLBFileManipulationException, NLBIOException {
         try {
             final File rootDir = m_nlb.getRootDir();
@@ -560,8 +573,8 @@ public class NonLinearBookFacade implements NLBObservable {
             command = m_nlb.createDeletePageCommand(page, adjacentLinks);
         } else {
             command = m_nlb.createDeleteObjCommand(
-                m_nlb.getObjImplById(nodeToDelete.getId()),
-                adjacentLinks
+                    m_nlb.getObjImplById(nodeToDelete.getId()),
+                    adjacentLinks
             );
         }
         m_undoManager.executeAndStore(command);

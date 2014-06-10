@@ -46,7 +46,10 @@ package com.nlbhub.nlb.api;
  */
 public interface Modification extends IdentifiableItem {
     public enum Type {ASSIGN, ADD, SUBTRACT}
+
     public String getVarId();
+
     public String getExprId();
+
     public Type getType();
 }

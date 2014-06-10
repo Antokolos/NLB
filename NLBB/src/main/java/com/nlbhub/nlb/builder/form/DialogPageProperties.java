@@ -1,10 +1,10 @@
 package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.NLBObserver;
-import com.nlbhub.nlb.builder.model.LinksTableModelSwing;
-import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.api.Page;
 import com.nlbhub.nlb.api.Variable;
+import com.nlbhub.nlb.builder.model.LinksTableModelSwing;
+import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import org.jdesktop.swingx.JXTable;
 
 import javax.swing.*;

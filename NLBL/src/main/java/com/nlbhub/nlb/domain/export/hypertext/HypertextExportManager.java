@@ -43,7 +43,10 @@ import com.nlbhub.nlb.domain.export.ExportManager;
 import com.nlbhub.nlb.domain.export.LinkBuildingBlocks;
 import com.nlbhub.nlb.domain.export.NLBBuildingBlocks;
 import com.nlbhub.nlb.domain.export.PageBuildingBlocks;
-import com.nlbhub.nlb.domain.export.hypertext.document.*;
+import com.nlbhub.nlb.domain.export.hypertext.document.HTAnchor;
+import com.nlbhub.nlb.domain.export.hypertext.document.HTDocument;
+import com.nlbhub.nlb.domain.export.hypertext.document.HTFont;
+import com.nlbhub.nlb.domain.export.hypertext.document.HTParagraph;
 import com.nlbhub.nlb.exception.HTDocumentException;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBExportException;
@@ -59,7 +62,7 @@ import java.io.IOException;
  * @version 1.0 12/6/13
  */
 public abstract class HypertextExportManager
-    <P extends HTParagraph<F, A>, A extends HTAnchor<F>, F extends HTFont> extends ExportManager {
+        <P extends HTParagraph<F, A>, A extends HTAnchor<F>, F extends HTFont> extends ExportManager {
 
     public HypertextExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
         super(nlb, encoding);
@@ -75,40 +78,45 @@ public abstract class HypertextExportManager
             document.open();
 
             generateHypertext(
-                document,
-                createParaFont(),
-                createLinkFont(),
-                nlbBlocks
+                    document,
+                    createParaFont(),
+                    createLinkFont(),
+                    nlbBlocks
             );
 
             document.close();
         } catch (
-            HTDocumentException | NLBConsistencyException | IOException e
-        ) {
+                HTDocumentException | NLBConsistencyException | IOException e
+                ) {
             throw new NLBExportException("Error while converting NLB to Hypertext", e);
         }
     }
 
     protected abstract String getLineSeparator();
+
     protected abstract HTDocument<P> createDocument(String encoding, String lineSeparator);
+
     protected abstract F createParaFont() throws HTDocumentException;
+
     protected abstract F createLinkFont() throws HTDocumentException;
+
     protected abstract P createHTParagraph(
-        final String text,
-        final F font
+            final String text,
+            final F font
     ) throws HTDocumentException;
+
     protected abstract A createHTAnchor(
-        boolean decapitalize,
-        final String text,
-        final F font
+            boolean decapitalize,
+            final String text,
+            final F font
     ) throws HTDocumentException;
 
 
     private void generateHypertext(
-        HTDocument<P> document,
-        F paraFont,
-        F linkFont,
-        final NLBBuildingBlocks nlbBlocks
+            HTDocument<P> document,
+            F paraFont,
+            F linkFont,
+            final NLBBuildingBlocks nlbBlocks
     ) throws IOException, HTDocumentException {
         final java.util.List<PageBuildingBlocks> pagesBlocks = nlbBlocks.getPagesBuildingBlocks();
         for (int i = 0; i < pagesBlocks.size(); i++) {
@@ -117,15 +125,15 @@ public abstract class HypertextExportManager
     }
 
     protected P createHTParagraph(
-        F paraFont,
-        F linkFont,
-        PageBuildingBlocks pageBlocks
+            F paraFont,
+            F linkFont,
+            PageBuildingBlocks pageBlocks
     ) throws IOException, HTDocumentException {
         P page = (
-            createHTParagraph(
-                getLineSeparator(),
-                paraFont
-            )
+                createHTParagraph(
+                        getLineSeparator(),
+                        paraFont
+                )
         );
         A pageAnchor = createHTAnchor(false, pageBlocks.getPageNumber(), paraFont);
         pageAnchor.setName(pageBlocks.getPageLabel());
@@ -215,10 +223,10 @@ public abstract class HypertextExportManager
 
     @Override
     protected String decorateLinkGoTo(
-        String linkId,
-        String linkText,
-        String linkTarget,
-        int targetPageNumber
+            String linkId,
+            String linkText,
+            String linkTarget,
+            int targetPageNumber
     ) {
         return linkTarget;
     }
@@ -252,8 +260,8 @@ public abstract class HypertextExportManager
             return "";
         } else {
             return (
-                getLineSeparator() + "Сделайте следующие действия: "
-                + getLineSeparator() + modificationsText + getLineSeparator()
+                    getLineSeparator() + "Сделайте следующие действия: "
+                            + getLineSeparator() + modificationsText + getLineSeparator()
             );
         }
     }
@@ -264,9 +272,9 @@ public abstract class HypertextExportManager
             return "";
         } else {
             return (
-                getLineSeparator() + "    "
-                + "Сделайте следующие действия: "
-                + getLineSeparator() + modificationsText
+                    getLineSeparator() + "    "
+                            + "Сделайте следующие действия: "
+                            + getLineSeparator() + modificationsText
             );
         }
     }

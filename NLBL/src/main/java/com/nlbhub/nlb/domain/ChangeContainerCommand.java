@@ -39,7 +39,6 @@
 package com.nlbhub.nlb.domain;
 
 import com.nlbhub.nlb.api.NLBCommand;
-import com.nlbhub.nlb.util.StringHelper;
 
 /**
  * The ChangeContainerCommand class
@@ -53,9 +52,9 @@ public class ChangeContainerCommand implements NLBCommand {
     private ObjImpl m_obj;
 
     public ChangeContainerCommand(
-        AbstractNodeItem prevContainer,
-        AbstractNodeItem newContainer,
-        ObjImpl obj
+            AbstractNodeItem prevContainer,
+            AbstractNodeItem newContainer,
+            ObjImpl obj
     ) {
         m_prevContainer = prevContainer;
         m_newContainer = newContainer;

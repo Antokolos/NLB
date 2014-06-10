@@ -55,9 +55,9 @@ public class SearchResult {
     private List<String> m_information = new ArrayList<>();
 
     public SearchResult(
-        String id,
-        String modulePageId,
-        String information
+            String id,
+            String modulePageId,
+            String information
     ) {
         m_id = id;
         m_modulePageId = modulePageId;

@@ -46,11 +46,16 @@ package com.nlbhub.nlb.api;
  */
 public interface Variable extends IdentifiableItem {
     public enum Type {PAGE, OBJ, LINK, LINKCONSTRAINT, VAR, EXPRESSION, MODCONSTRAINT}
+
     static final String NA = "N/A";
     public static final String DEFAULT_NAME = NA;
     public static final String DEFAULT_VALUE = NA;
+
     public Type getType();
+
     public String getName();
+
     public String getTarget();
+
     public String getValue();
 }

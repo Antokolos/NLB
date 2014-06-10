@@ -46,7 +46,10 @@ package com.nlbhub.nlb.api;
  */
 public interface Coords {
     public float getLeft();
+
     public float getTop();
+
     public float getWidth();
+
     public float getHeight();
 }

@@ -54,7 +54,8 @@ public class SearchResultTableModel {
     /**
      * Column index zero is always "Id",
      * column index one is always "Module Page Id",
-     * these are the names of the other columns. */
+     * these are the names of the other columns.
+     */
     private List<String> m_columnNames = new ArrayList<>();
     private int m_columnCount;
 
@@ -84,14 +85,13 @@ public class SearchResultTableModel {
     }
 
     /**
-     *
      * @param searchResultTableModel should have same column set or at least the same column count
      */
     public void addSearchResultTableModel(final SearchResultTableModel searchResultTableModel) {
         if (
-            searchResultTableModel != null
-            && searchResultTableModel.m_columnCount == m_columnCount
-        ) {
+                searchResultTableModel != null
+                        && searchResultTableModel.m_columnCount == m_columnCount
+                ) {
             m_searchResultMap.putAll(searchResultTableModel.m_searchResultMap);
         }
     }

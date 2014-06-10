@@ -46,10 +46,10 @@ package com.nlbhub.nlb.exception;
  */
 public class NLBFileManipulationException extends Exception {
     public NLBFileManipulationException(String message) {
-       super(message);
-   }
+        super(message);
+    }
 
-   public NLBFileManipulationException(String message, Throwable cause) {
-       super(message, cause);
-   }
+    public NLBFileManipulationException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

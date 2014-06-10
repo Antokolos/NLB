@@ -71,10 +71,10 @@ public class UpdateLinkCoordsCommand implements NLBCommand {
     }
 
     public UpdateLinkCoordsCommand(
-        NonLinearBookImpl nonLinearBook,
-        Link link,
-        final float left,
-        final float top
+            NonLinearBookImpl nonLinearBook,
+            Link link,
+            final float left,
+            final float top
     ) {
         this(nonLinearBook, link);
         m_height = m_heightPrev;
@@ -83,9 +83,9 @@ public class UpdateLinkCoordsCommand implements NLBCommand {
     }
 
     public UpdateLinkCoordsCommand(
-        NonLinearBookImpl nonLinearBook,
-        Link link,
-        final float height
+            NonLinearBookImpl nonLinearBook,
+            Link link,
+            final float height
     ) {
         this(nonLinearBook, link);
         m_height = height;

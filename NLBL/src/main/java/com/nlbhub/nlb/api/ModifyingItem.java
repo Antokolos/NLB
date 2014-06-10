@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.api;
 
 import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 
 /**
@@ -49,6 +50,8 @@ import java.util.List;
  */
 public interface ModifyingItem extends IdentifiableItem {
     public static final String DEFAULT_MODORDER = Constants.EMPTY_STRING;
+
     public List<Modification> getModifications();
+
     public Modification getModificationById(@NotNull String modId);
 }

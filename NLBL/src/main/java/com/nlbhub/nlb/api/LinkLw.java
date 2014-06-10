@@ -59,6 +59,7 @@ import java.util.List;
 @XmlRootElement(name = "link")
 public class LinkLw implements Link {
     public static enum Type {Traverse, Return}
+
     private Type m_type;
     private String m_target;
     private IdentifiableItem m_parent;
@@ -68,13 +69,13 @@ public class LinkLw implements Link {
     private boolean m_shouldObeyToModuleConstraint;
 
     public LinkLw(
-        Type type,
-        String target,
-        IdentifiableItem parent,
-        String text,
-        String constrId,
-        boolean positiveConstraint,
-        boolean shouldObeyToModuleConstraint
+            Type type,
+            String target,
+            IdentifiableItem parent,
+            String text,
+            String constrId,
+            boolean positiveConstraint,
+            boolean shouldObeyToModuleConstraint
     ) {
         m_type = type;
         m_target = target;

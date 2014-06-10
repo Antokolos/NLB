@@ -74,7 +74,9 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private String m_varId = DEFAULT_VARID;
     private String m_name = DEFAULT_NAME;
     private String m_text = DEFAULT_TEXT;
-    /** Object can be taken to the inventory*/
+    /**
+     * Object can be taken to the inventory
+     */
     private boolean m_takable = DEFAULT_TAKABLE;
     private String m_containerId = DEFAULT_CONTAINER_ID;
 
@@ -91,9 +93,9 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         if (result != null) {
             return result;
         } else if (
-            textMatches(m_text, searchText, ignoreCase, wholeWords)
-            || textMatches(m_name, searchText, ignoreCase, wholeWords)
-        ) {
+                textMatches(m_text, searchText, ignoreCase, wholeWords)
+                        || textMatches(m_name, searchText, ignoreCase, wholeWords)
+                ) {
             result = new SearchResult();
             result.setId(getId());
             result.setInformation(m_name);
@@ -157,9 +159,9 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     }
 
     public void writeObj(
-        final @NotNull FileManipulator fileManipulator,
-        final @NotNull File objsDir,
-        final @NotNull NonLinearBookImpl nonLinearBook
+            final @NotNull FileManipulator fileManipulator,
+            final @NotNull File objsDir,
+            final @NotNull NonLinearBookImpl nonLinearBook
     ) throws IOException, NLBIOException, NLBFileManipulationException, NLBVCSException {
         final File objDir = new File(objsDir, getId());
         if (isDeleted()) {
@@ -167,8 +169,8 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             fileManipulator.deleteFileOrDir(objDir);
         } else {
             fileManipulator.createDir(
-                objDir,
-                "Cannot create NLB obj directory for obj with Id = " + getId()
+                    objDir,
+                    "Cannot create NLB obj directory for obj with Id = " + getId()
             );
             fileManipulator.writeOptionalString(objDir, VARID_FILE_NAME, m_varId, DEFAULT_VARID);
             fileManipulator.writeOptionalString(objDir, NAME_FILE_NAME, m_name, DEFAULT_NAME);
@@ -185,39 +187,39 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     public void readObj(File objDir) throws NLBIOException, NLBConsistencyException {
         setId(objDir.getName());
         m_varId = (
-            FileManipulator.getOptionalFileAsString(
-                objDir,
-                VARID_FILE_NAME,
-                DEFAULT_VARID
-            )
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        VARID_FILE_NAME,
+                        DEFAULT_VARID
+                )
         );
         m_name = (
-            FileManipulator.getOptionalFileAsString(
-                objDir,
-                NAME_FILE_NAME,
-                DEFAULT_NAME
-            )
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        NAME_FILE_NAME,
+                        DEFAULT_NAME
+                )
         );
         m_text = (
-            FileManipulator.getOptionalFileAsString(
-                objDir,
-                TEXT_FILE_NAME,
-                DEFAULT_TEXT
-            )
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        TEXT_FILE_NAME,
+                        DEFAULT_TEXT
+                )
         );
         m_takable = "true".equals(
-            FileManipulator.getOptionalFileAsString(
-                objDir,
-                TAKABLE_FILE_NAME,
-                String.valueOf(DEFAULT_TAKABLE)
-            )
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        TAKABLE_FILE_NAME,
+                        String.valueOf(DEFAULT_TAKABLE)
+                )
         );
         m_containerId = (
-            FileManipulator.getOptionalFileAsString(
-                objDir,
-                CONTAINERID_FILE_NAME,
-                DEFAULT_CONTAINER_ID
-            )
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        CONTAINERID_FILE_NAME,
+                        DEFAULT_CONTAINER_ID
+                )
         );
         readNodeItemProperties(objDir);
         readModifications(objDir);

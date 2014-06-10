@@ -38,7 +38,10 @@
  */
 package com.nlbhub.nlb.domain;
 
-import com.nlbhub.nlb.api.*;
+import com.nlbhub.nlb.api.Coords;
+import com.nlbhub.nlb.api.Link;
+import com.nlbhub.nlb.api.NonLinearBook;
+import com.nlbhub.nlb.api.Page;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
@@ -53,7 +56,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
 
 /**
  * The PageImpl class
@@ -124,9 +127,9 @@ public class PageImpl extends AbstractNodeItem implements Page {
         if (result != null) {
             return result;
         } else if (
-            textMatches(m_text, searchText, ignoreCase, wholeWords)
-            || textMatches(m_caption, searchText, ignoreCase, wholeWords)
-        ) {
+                textMatches(m_text, searchText, ignoreCase, wholeWords)
+                        || textMatches(m_caption, searchText, ignoreCase, wholeWords)
+                ) {
             result = new SearchResult();
             result.setId(getId());
             result.setInformation(m_caption);
@@ -241,6 +244,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     /**
      * For internal use only!
+     *
      * @return
      */
     public NonLinearBookImpl getModuleImpl() {
@@ -252,23 +256,23 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     public void writePage(
-        final @NotNull FileManipulator fileManipulator,
-        final @NotNull File pagesDir,
-        final @NotNull NonLinearBookImpl nonLinearBook
+            final @NotNull FileManipulator fileManipulator,
+            final @NotNull File pagesDir,
+            final @NotNull NonLinearBookImpl nonLinearBook
     ) throws
-        IOException,
-        NLBIOException,
-        NLBFileManipulationException,
-        NLBVCSException,
-        NLBConsistencyException {
+            IOException,
+            NLBIOException,
+            NLBFileManipulationException,
+            NLBVCSException,
+            NLBConsistencyException {
         final File pageDir = new File(pagesDir, getId());
         if (isDeleted()) {
             // Completely remove page directory
             fileManipulator.deleteFileOrDir(pageDir);
         } else {
             fileManipulator.createDir(
-                pageDir,
-                "Cannot create NLB page directory for page with Id = " + getId()
+                    pageDir,
+                    "Cannot create NLB page directory for page with Id = " + getId()
             );
             m_module.setRootDir(new File(pageDir, MODULE_SUBDIR_NAME));
             m_module.save(fileManipulator);
@@ -323,7 +327,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     public void readPage(
-        final File pageDir
+            final File pageDir
     ) throws NLBIOException, NLBConsistencyException, NLBVCSException {
         try {
             setId(pageDir.getName());
@@ -331,82 +335,82 @@ public class PageImpl extends AbstractNodeItem implements Page {
             final File moduleDir = new File(pageDir, MODULE_SUBDIR_NAME);
             m_module.loadAndSetParent(moduleDir.getCanonicalPath(), m_currentNLB, this);
             m_varId = (
-                FileManipulator.getOptionalFileAsString(
-                        pageDir,
-                        VARID_FILE_NAME,
-                        DEFAULT_VARID
-                )
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            VARID_FILE_NAME,
+                            DEFAULT_VARID
+                    )
             );
             m_caption = (
-                FileManipulator.getOptionalFileAsString(
-                        pageDir,
-                        CAPTION_FILE_NAME,
-                        DEFAULT_CAPTION
-                )
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            CAPTION_FILE_NAME,
+                            DEFAULT_CAPTION
+                    )
             );
             m_useCaption = "true".equals(
-                FileManipulator.getOptionalFileAsString(
-                        pageDir,
-                        USE_CAPT_FILE_NAME,
-                        String.valueOf(DEFAULT_USE_CAPTION)
-                )
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            USE_CAPT_FILE_NAME,
+                            String.valueOf(DEFAULT_USE_CAPTION)
+                    )
             );
             m_text = (
-                FileManipulator.getOptionalFileAsString(
-                        pageDir,
-                        TEXT_FILE_NAME,
-                        DEFAULT_TEXT
-                )
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            TEXT_FILE_NAME,
+                            DEFAULT_TEXT
+                    )
             );
             m_moduleName = (
-                FileManipulator.getOptionalFileAsString(
-                    pageDir,
-                    MODNAME_FILE_NAME,
-                    m_defaultModuleName
-                )
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            MODNAME_FILE_NAME,
+                            m_defaultModuleName
+                    )
             );
             m_traverseText = (
-                FileManipulator.getOptionalFileAsString(
-                    pageDir,
-                    TRAVTEXT_FILE_NAME,
-                    m_defaultTraverseText
-                )
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            TRAVTEXT_FILE_NAME,
+                            m_defaultTraverseText
+                    )
             );
             m_returnText = (
-                FileManipulator.getOptionalFileAsString(
-                    pageDir,
-                    RETTEXT_FILE_NAME,
-                    DEFAULT_RETURN_TEXT
-                )
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            RETTEXT_FILE_NAME,
+                            DEFAULT_RETURN_TEXT
+                    )
             );
             m_returnPageId = (
-                FileManipulator.getOptionalFileAsString(
-                    pageDir,
-                    RETPAGE_FILE_NAME,
-                    DEFAULT_RETURN_PAGE_ID
-                )
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            RETPAGE_FILE_NAME,
+                            DEFAULT_RETURN_PAGE_ID
+                    )
             );
             m_moduleConstrId = (
-                FileManipulator.getOptionalFileAsString(
-                    pageDir,
-                    MODCNSID_FILE_NAME,
-                    DEFAULT_MODULE_CONSTR_ID
-                )
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            MODCNSID_FILE_NAME,
+                            DEFAULT_MODULE_CONSTR_ID
+                    )
             );
             readNodeItemProperties(pageDir);
             readModifications(pageDir);
         } catch (IOException e) {
             throw new NLBIOException(
-                "Cannot get module dir canonical path for page with Id = " + getId(),
-                e
+                    "Cannot get module dir canonical path for page with Id = " + getId(),
+                    e
             );
         }
     }
 
     public static PageImpl createFilteredClone(
-        final PageImpl source,
-        final List<String> linkIdsToBeExcluded,
-        List<Link> linksToBeAdded
+            final PageImpl source,
+            final List<String> linkIdsToBeExcluded,
+            List<Link> linksToBeAdded
     ) {
         PageImpl result = new PageImpl();
         result.setId(source.getId());

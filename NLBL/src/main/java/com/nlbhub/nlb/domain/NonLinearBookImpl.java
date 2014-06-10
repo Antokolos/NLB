@@ -44,13 +44,18 @@ import com.nlbhub.nlb.domain.export.hypertext.HTMLExportManager;
 import com.nlbhub.nlb.domain.export.hypertext.PDFExportManager;
 import com.nlbhub.nlb.domain.export.xml.JSIQ2ExportManager;
 import com.nlbhub.nlb.exception.*;
-import com.nlbhub.nlb.util.*;
+import com.nlbhub.nlb.util.FileManipulator;
+import com.nlbhub.nlb.util.StringHelper;
+import com.nlbhub.nlb.util.VarFinder;
 import com.nlbhub.user.domain.DecisionPoint;
 import com.nlbhub.user.domain.History;
 import org.jetbrains.annotations.NotNull;
 
-import javax.script.*;
-import java.io.*;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -64,9 +69,13 @@ public class NonLinearBookImpl implements NonLinearBook {
     private static final String PAGES_DIR_NAME = "pages";
     private static final String OBJS_DIR_NAME = "objs";
     private static final String VARS_DIR_NAME = "vars";
-    /** Path to the directory on the disk where this book will be stored. */
+    /**
+     * Path to the directory on the disk where this book will be stored.
+     */
     private File m_rootDir = null;
-    /** UUID of the start page in the pages list. */
+    /**
+     * UUID of the start page in the pages list.
+     */
     private String m_startPoint;
     private Map<String, PageImpl> m_pages;
     private Map<String, ObjImpl> m_objs;
@@ -94,6 +103,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_modification = modification;
         }
     }
+
     /**
      * The ChangeStartPointCommand class
      * This class has package-level visibility and private constructor. It is aggregated with
@@ -150,7 +160,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setDeleted(true);  // Not fully exists for now
             if (getPages().values().size() == 0) {
                 m_changeStartPointCommand = (
-                    new ChangeStartPointCommand(page.getId())
+                        new ChangeStartPointCommand(page.getId())
                 );
             }
         }
@@ -192,12 +202,12 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_deleteFlag;
 
         private VariableTracker(
-            final VariableImpl existingVariable,
-            boolean deleteFlag,
-            final Variable.Type newVariableType,
-            final String newVariableName,
-            final String newVariableValue,
-            final String newVariableTarget
+                final VariableImpl existingVariable,
+                boolean deleteFlag,
+                final Variable.Type newVariableType,
+                final String newVariableName,
+                final String newVariableValue,
+                final String newVariableTarget
         ) {
             m_existingVariable = existingVariable;
             m_existingVariableDeletionState = (m_existingVariable != null) && m_existingVariable.isDeleted();
@@ -205,21 +215,21 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newVariableName = newVariableName;
             m_newVariableValue = newVariableValue;
             m_existingVariableName = (
-                (m_existingVariable != null)
-                    ? m_existingVariable.getName()
-                    : Variable.DEFAULT_NAME
+                    (m_existingVariable != null)
+                            ? m_existingVariable.getName()
+                            : Variable.DEFAULT_NAME
             );
             m_existingVariableValue = (
-                (m_existingVariable != null)
-                    ? m_existingVariable.getValue()
-                    : Variable.DEFAULT_VALUE
+                    (m_existingVariable != null)
+                            ? m_existingVariable.getValue()
+                            : Variable.DEFAULT_VALUE
             );
             if ((existingVariable == null) && !deleteFlag) {
                 m_newVariable = new VariableImpl(
-                    newVariableType,
-                    newVariableName,
-                    newVariableValue,
-                    newVariableTarget
+                        newVariableType,
+                        newVariableName,
+                        newVariableValue,
+                        newVariableTarget
                 );
             } else {
                 m_newVariable = null;
@@ -310,34 +320,34 @@ public class NonLinearBookImpl implements NonLinearBook {
         private List<AbstractNodeItem.DeleteLinkCommand> m_deleteLinkCommands = new ArrayList<>();
 
         private UpdatePageCommand(
-            final Page page,
-            final String pageVariableName,
-            final String pageText,
-            final String pageCaptionText,
-            final boolean useCaption,
-            final String moduleName,
-            final String traverseText,
-            final String returnText,
-            final String returnPageId,
-            final String moduleConsraintVariableName,
-            final LinksTableModel linksTableModel
+                final Page page,
+                final String pageVariableName,
+                final String pageText,
+                final String pageCaptionText,
+                final boolean useCaption,
+                final String moduleName,
+                final String traverseText,
+                final String returnText,
+                final String returnPageId,
+                final String moduleConsraintVariableName,
+                final LinksTableModel linksTableModel
         ) {
             m_page = getPageImplById(page.getId());
             m_variableTracker = new VariableTracker(
-                getVariableImplById(m_page.getVarId()),
-                StringHelper.isEmpty(pageVariableName),
-                Variable.Type.PAGE,
-                pageVariableName,
-                Variable.DEFAULT_VALUE,
-                m_page.getFullId()
+                    getVariableImplById(m_page.getVarId()),
+                    StringHelper.isEmpty(pageVariableName),
+                    Variable.Type.PAGE,
+                    pageVariableName,
+                    Variable.DEFAULT_VALUE,
+                    m_page.getFullId()
             );
             m_moduleConstrIdTracker = new VariableTracker(
-                getVariableImplById(m_page.getModuleConstrId()),
-                StringHelper.isEmpty(moduleConsraintVariableName),
-                Variable.Type.MODCONSTRAINT,
-                Variable.DEFAULT_NAME,
-                moduleConsraintVariableName,
-                m_page.getFullId()
+                    getVariableImplById(m_page.getModuleConstrId()),
+                    StringHelper.isEmpty(moduleConsraintVariableName),
+                    Variable.Type.MODCONSTRAINT,
+                    Variable.DEFAULT_NAME,
+                    moduleConsraintVariableName,
+                    m_page.getFullId()
             );
             m_existingPageText = m_page.getText();
             m_existingPageCaptionText = m_page.getCaption();
@@ -425,20 +435,20 @@ public class NonLinearBookImpl implements NonLinearBook {
         private boolean m_newObjIsTakable;
 
         private UpdateObjCommand(
-            final Obj obj,
-            final String objVariableName,
-            final String objName,
-            final String objText,
-            final boolean objIsTakable
+                final Obj obj,
+                final String objVariableName,
+                final String objName,
+                final String objText,
+                final boolean objIsTakable
         ) {
             m_obj = getObjImplById(obj.getId());
             m_variableTracker = new VariableTracker(
-                getVariableImplById(m_obj.getVarId()),
-                StringHelper.isEmpty(objVariableName),
-                Variable.Type.OBJ,
-                objVariableName,
-                Variable.DEFAULT_VALUE,
-                m_obj.getFullId());
+                    getVariableImplById(m_obj.getVarId()),
+                    StringHelper.isEmpty(objVariableName),
+                    Variable.Type.OBJ,
+                    objVariableName,
+                    Variable.DEFAULT_VALUE,
+                    m_obj.getFullId());
             m_existingObjName = obj.getName();
             m_existingObjText = obj.getText();
             m_existingObjIsTakable = obj.isTakable();
@@ -482,10 +492,10 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final String m_existingLinkText;
 
         private UpdateLinkCommand(
-            final Link link,
-            final String linkVariableName,
-            final String linkConstraintName,
-            final String linkText
+                final Link link,
+                final String linkVariableName,
+                final String linkConstraintName,
+                final String linkText
         ) {
             IdentifiableItem parent = link.getParent();
             AbstractNodeItem nodeItem = getPageImplById(parent.getId());
@@ -494,20 +504,20 @@ public class NonLinearBookImpl implements NonLinearBook {
             }
             m_link = nodeItem.getLinkById(link.getId());
             m_variableTracker = new VariableTracker(
-                getVariableImplById(m_link.getVarId()),
-                StringHelper.isEmpty(linkVariableName),
-                Variable.Type.LINK,
-                linkVariableName,
-                Variable.DEFAULT_VALUE,
-                link.getFullId()
+                    getVariableImplById(m_link.getVarId()),
+                    StringHelper.isEmpty(linkVariableName),
+                    Variable.Type.LINK,
+                    linkVariableName,
+                    Variable.DEFAULT_VALUE,
+                    link.getFullId()
             );
             m_constraintTracker = new VariableTracker(
-                getVariableImplById(m_link.getConstrId()),
-                StringHelper.isEmpty(linkConstraintName),
-                Variable.Type.LINKCONSTRAINT,
-                Variable.DEFAULT_NAME,
-                linkConstraintName,
-                link.getFullId()
+                    getVariableImplById(m_link.getConstrId()),
+                    StringHelper.isEmpty(linkConstraintName),
+                    Variable.Type.LINKCONSTRAINT,
+                    Variable.DEFAULT_NAME,
+                    linkConstraintName,
+                    link.getFullId()
             );
             m_existingLinkText = link.getText();
             m_newLinkText = linkText;
@@ -543,8 +553,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         private Map<String, VariableImpl> m_variablesToBeAdded = new HashMap<>();
 
         private UpdateModificationsCommand(
-            final ModifyingItem modifyingItem,
-            final ModificationsTableModel modificationsTableModel
+                final ModifyingItem modifyingItem,
+                final ModificationsTableModel modificationsTableModel
         ) {
             // TODO: possibly inefficient code, please refactor
             m_item = getModifyingItemImpl(modifyingItem);
@@ -555,21 +565,21 @@ public class NonLinearBookImpl implements NonLinearBook {
                         if (existingModification.getId().equals(modification.getId())) {
                             if (modification.isDeleted()) {
                                 m_modificationsToBeDeleted.put(
-                                    existingModification.getId(),
-                                    existingModification
+                                        existingModification.getId(),
+                                        existingModification
                                 );
                                 m_modificationsDeletionInitState.put(
-                                    existingModification.getId(),
-                                    existingModification.isDeleted()
+                                        existingModification.getId(),
+                                        existingModification.isDeleted()
                                 );
                             } else {
                                 m_modificationsToBeReplaced.put(
-                                    modification.getId(),
-                                    new ModificationImpl(modification)
+                                        modification.getId(),
+                                        new ModificationImpl(modification)
                                 );
                                 m_modificationsToBeReplacedPrev.put(
-                                    existingModification.getId(),
-                                    existingModification
+                                        existingModification.getId(),
+                                        existingModification
                                 );
                             }
                             toBeAdded = false;
@@ -577,8 +587,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                     }
                     if (toBeAdded) {
                         m_modificationsToBeAdded.put(
-                            modification.getId(),
-                            new ModificationImpl(modification)
+                                modification.getId(),
+                                new ModificationImpl(modification)
                         );
                     }
                 }
@@ -589,12 +599,12 @@ public class NonLinearBookImpl implements NonLinearBook {
                     final Variable variable = entry.getValue();
                     if (existingVariable != null) {
                         m_variablesToBeReplacedPrev.put(
-                            existingVariable.getId(),
-                            new VariableImpl(existingVariable)
+                                existingVariable.getId(),
+                                new VariableImpl(existingVariable)
                         );
                         m_variablesToBeReplaced.put(
-                            existingVariable.getId(),
-                            new VariableImpl(variable)
+                                existingVariable.getId(),
+                                new VariableImpl(variable)
                         );
                     } else {
                         if (!variable.isDeleted()) {
@@ -609,7 +619,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         public void execute() {
             if (m_item != null) {
                 ListIterator<ModificationImpl> existingModificationsIterator = (
-                    m_item.getModificationImpls().listIterator()
+                        m_item.getModificationImpls().listIterator()
                 );
                 while (existingModificationsIterator.hasNext()) {
                     final ModificationImpl existingModification = existingModificationsIterator.next();
@@ -617,7 +627,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         existingModification.setDeleted(true);
                     } else if (m_modificationsToBeReplaced.containsKey(existingModification.getId())) {
                         existingModification.copy(
-                            m_modificationsToBeReplaced.get(existingModification.getId())
+                                m_modificationsToBeReplaced.get(existingModification.getId())
                         );
                     }
                 }
@@ -642,17 +652,17 @@ public class NonLinearBookImpl implements NonLinearBook {
         public void revert() {
             if (m_item != null) {
                 ListIterator<ModificationImpl> existingModificationsIterator = (
-                    m_item.getModificationImpls().listIterator()
+                        m_item.getModificationImpls().listIterator()
                 );
                 while (existingModificationsIterator.hasNext()) {
                     final ModificationImpl existingModification = existingModificationsIterator.next();
                     if (m_modificationsToBeDeleted.containsKey(existingModification.getId())) {
                         existingModification.setDeleted(
-                            m_modificationsDeletionInitState.get(existingModification.getId())
+                                m_modificationsDeletionInitState.get(existingModification.getId())
                         );
                     } else if (m_modificationsToBeReplaced.containsKey(existingModification.getId())) {
                         existingModification.copy(
-                            m_modificationsToBeReplacedPrev.get(existingModification.getId())
+                                m_modificationsToBeReplacedPrev.get(existingModification.getId())
                         );
                     } else if (m_modificationsToBeAdded.containsKey(existingModification.getId())) {
                         existingModificationsIterator.remove();
@@ -770,7 +780,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private Map<String, Boolean> m_linksDeletionStates = new HashMap<>();
 
         protected DeleteNodeCommand(
-            final List<Link> adjacentLinks
+                final List<Link> adjacentLinks
         ) {
             for (final Link linkToDelete : adjacentLinks) {
                 AbstractNodeItem parent = getPageImplById(linkToDelete.getParent().getId());
@@ -915,57 +925,57 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     UpdatePageCommand createUpdatePageCommand(
-        final Page page,
-        final String pageVariableName,
-        final String pageText,
-        final String pageCaptionText,
-        final boolean useCaption,
-        final String moduleName,
-        final String traverseText,
-        final String returnText,
-        final String returnPageId,
-        final String moduleConsraintVariableName,
-        final LinksTableModel linksTableModel
+            final Page page,
+            final String pageVariableName,
+            final String pageText,
+            final String pageCaptionText,
+            final boolean useCaption,
+            final String moduleName,
+            final String traverseText,
+            final String returnText,
+            final String returnPageId,
+            final String moduleConsraintVariableName,
+            final LinksTableModel linksTableModel
     ) {
         return (
-            new UpdatePageCommand(
-                page,
-                pageVariableName,
-                pageText,
-                pageCaptionText,
-                useCaption,
-                moduleName,
-                traverseText,
-                returnText,
-                returnPageId,
-                moduleConsraintVariableName,
-                linksTableModel
-            )
+                new UpdatePageCommand(
+                        page,
+                        pageVariableName,
+                        pageText,
+                        pageCaptionText,
+                        useCaption,
+                        moduleName,
+                        traverseText,
+                        returnText,
+                        returnPageId,
+                        moduleConsraintVariableName,
+                        linksTableModel
+                )
         );
     }
 
     UpdateObjCommand createUpdateObjCommand(
-        final Obj obj,
-        final String objVariableName,
-        final String objName,
-        final String objText,
-        final boolean objIsTakable
+            final Obj obj,
+            final String objVariableName,
+            final String objName,
+            final String objText,
+            final boolean objIsTakable
     ) {
         return new UpdateObjCommand(obj, objVariableName, objName, objText, objIsTakable);
     }
 
     UpdateLinkCommand createUpdateLinkCommand(
-        final Link link,
-        final String linkVariableName,
-        final String linkConstraintName,
-        final String linkText
+            final Link link,
+            final String linkVariableName,
+            final String linkConstraintName,
+            final String linkText
     ) {
         return new UpdateLinkCommand(link, linkVariableName, linkConstraintName, linkText);
     }
 
     UpdateModificationsCommand createUpdateModificationsCommand(
-        final ModifyingItem modifyingItem,
-        final ModificationsTableModel modificationsTableModel
+            final ModifyingItem modifyingItem,
+            final ModificationsTableModel modificationsTableModel
     ) {
         return new UpdateModificationsCommand(modifyingItem, modificationsTableModel);
     }
@@ -1096,14 +1106,15 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     /**
      * For internal use only
+     *
      * @param sourceId
      * @param history
      * @return
      * @throws ScriptException
      */
     public PageImpl createFilteredPage(
-        final String sourceId,
-        final History history
+            final String sourceId,
+            final History history
     ) throws ScriptException {
         final PageImpl source = getPageImplById(sourceId);
 
@@ -1118,15 +1129,15 @@ public class NonLinearBookImpl implements NonLinearBook {
         if (!source.getModule().isEmpty()) {
             // If this page is module page for someone, create traverse link on the fly
             Link link = (
-                new LinkLw(
-                    LinkLw.Type.Traverse,
-                    source.getModule().getStartPoint(),
-                    source,
-                    source.getTraverseText(),
-                    source.getModuleConstrId(),
-                    true,
-                    false
-                )
+                    new LinkLw(
+                            LinkLw.Type.Traverse,
+                            source.getModule().getStartPoint(),
+                            source,
+                            source.getTraverseText(),
+                            source.getModuleConstrId(),
+                            true,
+                            false
+                    )
             );
             if (!determineLinkExcludedStatus(history, link)) {
                 linksToBeAdded.add(link);
@@ -1136,42 +1147,42 @@ public class NonLinearBookImpl implements NonLinearBook {
             // Create return link on the fly. Return links for leafs does not have any constraints,
             // i.e. it is shown always
             Link link = (
-                new LinkLw(
-                    LinkLw.Type.Return,
-                    StringHelper.isEmpty(source.getReturnPageId())
-                        ? m_parentPage.getId()
-                        : source.getReturnPageId(),
-                    source,
-                    source.getReturnText(),
-                    Constants.EMPTY_STRING,
-                    true,
-                    false
-                )
+                    new LinkLw(
+                            LinkLw.Type.Return,
+                            StringHelper.isEmpty(source.getReturnPageId())
+                                    ? m_parentPage.getId()
+                                    : source.getReturnPageId(),
+                            source,
+                            source.getReturnText(),
+                            Constants.EMPTY_STRING,
+                            true,
+                            false
+                    )
             );
             if (!determineLinkExcludedStatus(history, link)) {
                 linksToBeAdded.add(link);
             }
         } else if (
-            m_parentNLB != null
-            && m_parentPage != null
-            && !StringHelper.isEmpty(m_parentPage.getModuleConstrId())
-        ) {
+                m_parentNLB != null
+                        && m_parentPage != null
+                        && !StringHelper.isEmpty(m_parentPage.getModuleConstrId())
+                ) {
             // If page has module constraint, than module return links should be added to the
             // each page of the module.
             // These links should have constraints in form of 'NOT (module_constraint)'
             // (i.e. negative constraints)
             Link link = (
-                new LinkLw(
-                    LinkLw.Type.Return,
-                    StringHelper.isEmpty(source.getReturnPageId())
-                        ? m_parentPage.getId()
-                        : source.getReturnPageId(),
-                    source,
-                    source.getReturnText(),
-                    m_parentPage.getModuleConstrId(),
-                    false,
-                    false
-                )
+                    new LinkLw(
+                            LinkLw.Type.Return,
+                            StringHelper.isEmpty(source.getReturnPageId())
+                                    ? m_parentPage.getId()
+                                    : source.getReturnPageId(),
+                            source,
+                            source.getReturnText(),
+                            m_parentPage.getModuleConstrId(),
+                            false,
+                            false
+                    )
             );
             if (!determineLinkExcludedStatus(history, link)) {
                 linksToBeAdded.add(link);
@@ -1181,10 +1192,10 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     private void updateVisitedVars(
-        final NonLinearBook decisionModule,
-        final ModifyingItem modifyingItem,
-        final ScriptEngineManager factory,
-        final Map<String, Object> visitedVars
+            final NonLinearBook decisionModule,
+            final ModifyingItem modifyingItem,
+            final ScriptEngineManager factory,
+            final Map<String, Object> visitedVars
     ) throws ScriptException {
         for (final Modification modification : modifyingItem.getModifications()) {
             if (modification.getType() == Modification.Type.ASSIGN) {
@@ -1223,16 +1234,16 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     private boolean determineLinkExcludedStatus(
-        History history,
-        Link link
+            History history,
+            Link link
     ) throws ScriptException {
         List<DecisionPoint> decisionsList = history.getDecisionPoints();
         ScriptEngineManager factory = new ScriptEngineManager();
         final Variable constraintVar = getVariableById(link.getConstrId());
         final Variable moduleConstraint = (
-            m_parentPage != null
-                ? getVariableById(m_parentPage.getModuleConstrId())
-                : null
+                m_parentPage != null
+                        ? getVariableById(m_parentPage.getModuleConstrId())
+                        : null
         );
 
         if (constraintVar != null || moduleConstraint != null) {
@@ -1251,9 +1262,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                 // TODO: Should check that result can be casted to Boolean, get exception otherwise
                 Boolean evalModule = (Boolean) engine.eval(constraint);
                 if (
-                    (link.isPositiveConstraint() && !evalModule)
-                    || (!link.isPositiveConstraint() && evalModule)
-                ) {
+                        (link.isPositiveConstraint() && !evalModule)
+                                || (!link.isPositiveConstraint() && evalModule)
+                        ) {
                     // Link should be excluded, because it fails to comply module constraint
                     return true;
                 }
@@ -1265,9 +1276,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                 ScriptEngine engine = prepareEngine(factory, constraint, visitedVars);
                 // TODO: Should check that result can be casted to Boolean, get exception otherwise
                 Boolean evalResult = (Boolean) engine.eval(constraint);
-                return  (
-                    (link.isPositiveConstraint() && !evalResult)
-                    || (!link.isPositiveConstraint() && evalResult)
+                return (
+                        (link.isPositiveConstraint() && !evalResult)
+                                || (!link.isPositiveConstraint() && evalResult)
                 );
             }
         }
@@ -1275,9 +1286,9 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     private ScriptEngine prepareEngine(
-        ScriptEngineManager factory,
-        final String constraint,
-        final Map<String, Object> visitedVars
+            ScriptEngineManager factory,
+            final String constraint,
+            final Map<String, Object> visitedVars
     ) {
         final Collection<String> constraintVars = VarFinder.findVariableNames(constraint);
         final Map<String, Object> varMapping = new HashMap<>();
@@ -1297,9 +1308,9 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     private void makeDecisionVariableChange(
-        ScriptEngineManager factory,
-        Map<String, Object> visitedVars,
-        DecisionPoint decisionPoint
+            ScriptEngineManager factory,
+            Map<String, Object> visitedVars,
+            DecisionPoint decisionPoint
     ) throws ScriptException {
         final NonLinearBook decisionModule = getDecisionPointModule(decisionPoint);
         final Page page = decisionModule.getPageById(decisionPoint.getPageId());
@@ -1311,12 +1322,12 @@ public class NonLinearBookImpl implements NonLinearBook {
         if (decisionPoint.isLinkInfo()) {
             final Link linkToBeFollowedCur = findLink(page, decisionPoint.getLinkId());
             Variable variableLinkCur = (
-                decisionModule.getVariableById(linkToBeFollowedCur.getVarId())
+                    decisionModule.getVariableById(linkToBeFollowedCur.getVarId())
             );
             if (
-                variableLinkCur != null
-                && !StringHelper.isEmpty(variableLinkCur.getName())
-            ) {
+                    variableLinkCur != null
+                            && !StringHelper.isEmpty(variableLinkCur.getName())
+                    ) {
                 visitedVars.put(variableLinkCur.getName(), true);
             }
             updateVisitedVars(decisionModule, linkToBeFollowedCur, factory, visitedVars);
@@ -1334,7 +1345,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     public boolean load(
-        final String path
+            final String path
     ) throws NLBIOException, NLBConsistencyException, NLBVCSException {
         final File rootDir = new File(path);
         if (!rootDir.exists()) {
@@ -1349,9 +1360,9 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     public boolean loadAndSetParent(
-        final String path,
-        final NonLinearBook parentNLB,
-        final Page parentPage
+            final String path,
+            final NonLinearBook parentNLB,
+            final Page parentPage
     ) throws NLBIOException, NLBConsistencyException, NLBVCSException {
         final File rootDir = new File(path);
         if (!rootDir.exists()) {
@@ -1369,16 +1380,16 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     private void readStartPoint(File rootDir) throws NLBIOException {
         m_startPoint = (
-            FileManipulator.getOptionalFileAsString(
-                    rootDir,
-                    STARTPOINT_FILE_NAME,
-                    DEFAULT_STARTPOINT
-            )
+                FileManipulator.getOptionalFileAsString(
+                        rootDir,
+                        STARTPOINT_FILE_NAME,
+                        DEFAULT_STARTPOINT
+                )
         );
     }
 
     private void readPages(
-        final File rootDir
+            final File rootDir
     ) throws NLBIOException, NLBConsistencyException, NLBVCSException {
         m_pages.clear();
         final File pagesDir = new File(rootDir, PAGES_DIR_NAME);
@@ -1431,7 +1442,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     public void save(FileManipulator fileManipulator)
-    throws NLBIOException, NLBConsistencyException, NLBVCSException, NLBFileManipulationException {
+            throws NLBIOException, NLBConsistencyException, NLBVCSException, NLBFileManipulationException {
         try {
             if (!m_rootDir.exists()) {
                 if (!m_rootDir.mkdirs()) {
@@ -1448,14 +1459,14 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     private void writePages(
-        FileManipulator fileManipulator,
-        File rootDir
+            FileManipulator fileManipulator,
+            File rootDir
     ) throws
-        IOException,
-        NLBIOException,
-        NLBFileManipulationException,
-        NLBVCSException,
-        NLBConsistencyException {
+            IOException,
+            NLBIOException,
+            NLBFileManipulationException,
+            NLBVCSException,
+            NLBConsistencyException {
         final File pagesDir = new File(rootDir, PAGES_DIR_NAME);
         fileManipulator.createDir(pagesDir, "Cannot create NLB pages directory");
         final List<String> deletedPagesIds = new ArrayList<>();
@@ -1469,8 +1480,8 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     private void writeObjs(
-        FileManipulator fileManipulator,
-        File rootDir
+            FileManipulator fileManipulator,
+            File rootDir
     ) throws IOException, NLBIOException, NLBFileManipulationException, NLBVCSException {
         final File objsDir = new File(rootDir, OBJS_DIR_NAME);
         fileManipulator.createDir(objsDir, "Cannot create NLB objs directory");
@@ -1485,8 +1496,8 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     private void writeVariables(
-        FileManipulator fileManipulator,
-        File rootDir
+            FileManipulator fileManipulator,
+            File rootDir
     ) throws IOException, NLBIOException, NLBConsistencyException, NLBFileManipulationException, NLBVCSException {
         final File varsDir = new File(rootDir, VARS_DIR_NAME);
         fileManipulator.createDir(varsDir, "Cannot create NLB vars directory");
@@ -1508,11 +1519,11 @@ public class NonLinearBookImpl implements NonLinearBook {
                 // page.getVarId() should be empty or set to another variable's Id
                 if (variable.getId().equals(page.getVarId())) {
                     throw new NLBConsistencyException(
-                        "Page variable for page with Id = "
-                        + page.getId()
-                        + " is incorrect, because the corresponding variable with Id = "
-                        + variable.getId()
-                        + " has been deleted"
+                            "Page variable for page with Id = "
+                                    + page.getId()
+                                    + " is incorrect, because the corresponding variable with Id = "
+                                    + variable.getId()
+                                    + " has been deleted"
                     );
                 }
             }
@@ -1525,11 +1536,11 @@ public class NonLinearBookImpl implements NonLinearBook {
                 // obj.getVarId() should be empty or set to another variable's Id
                 if (variable.getId().equals(obj.getVarId())) {
                     throw new NLBConsistencyException(
-                        "Obj variable for obj with Id = "
-                        + obj.getId()
-                        + " is incorrect, because the corresponding variable with Id = "
-                        + variable.getId()
-                        + " has been deleted"
+                            "Obj variable for obj with Id = "
+                                    + obj.getId()
+                                    + " is incorrect, because the corresponding variable with Id = "
+                                    + variable.getId()
+                                    + " has been deleted"
                     );
                 }
             }
@@ -1537,9 +1548,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                 variable.setDeleted(true);
             }
         } else if (
-            variable.getType() == VariableImpl.Type.LINK
-            || variable.getType() == VariableImpl.Type.LINKCONSTRAINT
-        ) {
+                variable.getType() == VariableImpl.Type.LINK
+                        || variable.getType() == VariableImpl.Type.LINKCONSTRAINT
+                ) {
             // TODO: check in what circumstances getLinkWithCheck() can return null
             final Link link = getLinkWithCheck(variable);
             assert link != null;
@@ -1547,16 +1558,16 @@ public class NonLinearBookImpl implements NonLinearBook {
                 variable.setDeleted(true);
             }
         } else if (
-            variable.getType() == VariableImpl.Type.VAR
-            || variable.getType() == VariableImpl.Type.EXPRESSION
-        ) {
+                variable.getType() == VariableImpl.Type.VAR
+                        || variable.getType() == VariableImpl.Type.EXPRESSION
+                ) {
             final ModifyingItemAndModification itemAndModification = (
-                getModifyingItemAndModification(variable)
+                    getModifyingItemAndModification(variable)
             );
             if (
-                itemAndModification.getModifyingItem().isDeleted()
-                || itemAndModification.getModification().isDeleted()
-            ) {
+                    itemAndModification.getModifyingItem().isDeleted()
+                            || itemAndModification.getModification().isDeleted()
+                    ) {
                 variable.setDeleted(true);
             }
         } else if (variable.getType() == VariableImpl.Type.MODCONSTRAINT) {
@@ -1580,20 +1591,20 @@ public class NonLinearBookImpl implements NonLinearBook {
                 // link.getVarId() should be empty or set to another variable's Id
                 if (variable.getId().equals(link.getVarId())) {
                     throw new NLBConsistencyException(
-                        "Link variable for link with full Id = " + variable.getTarget()
-                        + " is incorrect, because the corresponding variable with Id = "
-                        + variable.getId()
-                        + " has been deleted"
+                            "Link variable for link with full Id = " + variable.getTarget()
+                                    + " is incorrect, because the corresponding variable with Id = "
+                                    + variable.getId()
+                                    + " has been deleted"
                     );
                 }
             } else if (variable.getType() == VariableImpl.Type.LINKCONSTRAINT) {
                 // link.getConstrId() should be empty or set to another variable's Id
                 if (variable.getId().equals(link.getConstrId())) {
                     throw new NLBConsistencyException(
-                        "Link constraint for link with full Id = " + variable.getTarget()
-                        + " is incorrect, because the corresponding variable with Id = "
-                        + variable.getId()
-                        + " has been deleted"
+                            "Link constraint for link with full Id = " + variable.getTarget()
+                                    + " is incorrect, because the corresponding variable with Id = "
+                                    + variable.getId()
+                                    + " has been deleted"
                     );
                 }
             }
@@ -1602,7 +1613,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     private ModifyingItemAndModification getModifyingItemAndModification(
-        VariableImpl variable
+            VariableImpl variable
     ) throws NLBConsistencyException {
         ModifyingItemAndModification result = new ModifyingItemAndModification();
         String[] ids = StringHelper.getItems(variable.getTarget());
@@ -1612,10 +1623,10 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
         if (nodeItem == null) {
             throw new NLBConsistencyException(
-                "Cannot find target page or obj with id = "
-                + ids[0]
-                + " for variable with id = "
-                + variable.getId()
+                    "Cannot find target page or obj with id = "
+                            + ids[0]
+                            + " for variable with id = "
+                            + variable.getId()
             );
         }
         LinkImpl link;
@@ -1624,33 +1635,33 @@ public class NonLinearBookImpl implements NonLinearBook {
         if (ids.length > 2) {
             if (nodeItem.isDeleted()) {
                 throw new NLBConsistencyException(
-                    "Node item with id = "
-                    + ids[0]
-                    + " is deleted and cannot be origin for link with id = "
-                    + ids[1]
-                    + " when checking variable with id = "
-                    + variable.getId()
+                        "Node item with id = "
+                                + ids[0]
+                                + " is deleted and cannot be origin for link with id = "
+                                + ids[1]
+                                + " when checking variable with id = "
+                                + variable.getId()
                 );
             }
             link = nodeItem.getLinkById(ids[1]);
             if (link == null) {
                 throw new NLBConsistencyException(
-                    "Cannot find target link with id = "
-                    + ids[1]
-                    + " in page with id = "
-                    + ids[0]
-                    + " for variable with id = "
-                    + variable.getId()
+                        "Cannot find target link with id = "
+                                + ids[1]
+                                + " in page with id = "
+                                + ids[0]
+                                + " for variable with id = "
+                                + variable.getId()
                 );
             }
             modification = link.getModificationById(ids[2]);
             if (modification == null) {
                 throw new NLBConsistencyException(
-                    "Cannot find target modification with id = " + ids[2]
-                    + " in page with id = " + ids[0]
-                    + " and link with id = " + ids[1]
-                    + " for variable with id = "
-                    + variable.getId()
+                        "Cannot find target modification with id = " + ids[2]
+                                + " in page with id = " + ids[0]
+                                + " and link with id = " + ids[1]
+                                + " for variable with id = "
+                                + variable.getId()
                 );
             }
 
@@ -1658,13 +1669,13 @@ public class NonLinearBookImpl implements NonLinearBook {
             link = null;
             modification = nodeItem.getModificationById(ids[1]);
             if (modification == null) {
-               throw new NLBConsistencyException(
-                   "Cannot find target modification with id = " + ids[1]
-                   + " in page with id = " + ids[0]
-                   + " for variable with id = "
-                   + variable.getId()
-               );
-           }
+                throw new NLBConsistencyException(
+                        "Cannot find target modification with id = " + ids[1]
+                                + " in page with id = " + ids[0]
+                                + " for variable with id = "
+                                + variable.getId()
+                );
+            }
         }
 
         if (variable.isDeleted()) {
@@ -1672,20 +1683,20 @@ public class NonLinearBookImpl implements NonLinearBook {
                 // modification.getVarId() should be empty or set to another variable's Id
                 if (variable.getId().equals(modification.getVarId())) {
                     throw new NLBConsistencyException(
-                        "Modification variable for modification with full Id = " + variable.getTarget()
-                        + " is incorrect, because the corresponding variable with Id = "
-                        + variable.getId()
-                        + " has been deleted"
+                            "Modification variable for modification with full Id = " + variable.getTarget()
+                                    + " is incorrect, because the corresponding variable with Id = "
+                                    + variable.getId()
+                                    + " has been deleted"
                     );
                 }
             } else if (variable.getType() == VariableImpl.Type.EXPRESSION) {
                 // modification.getExprId() should be empty or set to another variable's Id
                 if (variable.getId().equals(modification.getExprId())) {
                     throw new NLBConsistencyException(
-                        "Modification expression for modification with full Id = " + variable.getTarget()
-                        + " is incorrect, because the corresponding variable with Id = "
-                        + variable.getId()
-                        + " has been deleted"
+                            "Modification expression for modification with full Id = " + variable.getTarget()
+                                    + " is incorrect, because the corresponding variable with Id = "
+                                    + variable.getId()
+                                    + " has been deleted"
                     );
                 }
             }
@@ -1720,8 +1731,8 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     private void writeStartPoint(
-        final FileManipulator fileManipulator,
-        final File rootDir
+            final FileManipulator fileManipulator,
+            final File rootDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         fileManipulator.writeOptionalString(rootDir, STARTPOINT_FILE_NAME, m_startPoint, DEFAULT_STARTPOINT);
     }
@@ -1755,7 +1766,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final PageImpl page = entry.getValue();
             if (page.isLeaf()) {
                 result.addSearchResult(
-                    new SearchResult(page.getId(), modulePageId, page.getCaption())
+                        new SearchResult(page.getId(), modulePageId, page.getCaption())
                 );
             }
 
@@ -1768,15 +1779,15 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     @Override
     public SearchResultTableModel searchText(
-        final String modulePageId,
-        final String searchText,
-        final boolean searchInIds,
-        final boolean searchInPages,
-        final boolean searchInObjects,
-        final boolean searchInLinks,
-        final boolean searchInVars,
-        final boolean ignoreCase,
-        final boolean wholeWords
+            final String modulePageId,
+            final String searchText,
+            final boolean searchInIds,
+            final boolean searchInPages,
+            final boolean searchInObjects,
+            final boolean searchInLinks,
+            final boolean searchInVars,
+            final boolean ignoreCase,
+            final boolean wholeWords
     ) {
         SearchResultTableModel result = new SearchResultTableModel();
         if (searchInPages) {
@@ -1801,29 +1812,29 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final NonLinearBookImpl moduleImpl = page.getModuleImpl();
                 if (!moduleImpl.isEmpty()) {
                     result.addSearchResultTableModel(
-                        moduleImpl.searchText(
-                            page.getId(),
-                            searchText,
-                            searchInIds,
-                            searchInPages,
-                            searchInObjects,
-                            searchInLinks,
-                            searchInVars,
-                            ignoreCase,
-                            wholeWords
-                        )
+                            moduleImpl.searchText(
+                                    page.getId(),
+                                    searchText,
+                                    searchInIds,
+                                    searchInPages,
+                                    searchInObjects,
+                                    searchInLinks,
+                                    searchInVars,
+                                    ignoreCase,
+                                    wholeWords
+                            )
                     );
                 }
                 if (searchInLinks) {
                     searchLinks(
-                        modulePageId,
-                        page,
-                        result,
-                        searchText,
-                        searchInIds,
-                        searchInVars,
-                        ignoreCase,
-                        wholeWords
+                            modulePageId,
+                            page,
+                            result,
+                            searchText,
+                            searchInIds,
+                            searchInVars,
+                            ignoreCase,
+                            wholeWords
                     );
                 }
             }
@@ -1849,14 +1860,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                 }
                 if (searchInLinks) {
                     searchLinks(
-                        modulePageId,
-                        obj,
-                        result,
-                        searchText,
-                        searchInIds,
-                        searchInVars,
-                        ignoreCase,
-                        wholeWords
+                            modulePageId,
+                            obj,
+                            result,
+                            searchText,
+                            searchInIds,
+                            searchInVars,
+                            ignoreCase,
+                            wholeWords
                     );
                 }
             }
@@ -1866,7 +1877,7 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     @Override
     public SearchResultTableModel getVariables(
-        final String modulePageId
+            final String modulePageId
     ) throws NLBConsistencyException {
         SearchResultTableModel result = new SearchResultTableModel("Type", "Name", "Value");
         for (VariableImpl variable : m_variables) {
@@ -1905,12 +1916,12 @@ public class NonLinearBookImpl implements NonLinearBook {
                 case VAR:
                 case EXPRESSION:
                     final ModifyingItemAndModification itemAndModification = (
-                        getModifyingItemAndModification(variable)
+                            getModifyingItemAndModification(variable)
                     );
                     if (
-                        !itemAndModification.getModifyingItem().isDeleted()
-                        && !itemAndModification.getModification().isDeleted()
-                    ) {
+                            !itemAndModification.getModifyingItem().isDeleted()
+                                    && !itemAndModification.getModification().isDeleted()
+                            ) {
                         searchResult.setId(itemAndModification.getModifyingItem().getId());
                         result.addSearchResult(searchResult);
                     }
@@ -1930,7 +1941,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final NonLinearBookImpl moduleImpl = entry.getValue().getModuleImpl();
             if (!moduleImpl.isEmpty()) {
                 result.addSearchResultTableModel(
-                    moduleImpl.getVariables(entry.getValue().getId())
+                        moduleImpl.getVariables(entry.getValue().getId())
                 );
             }
         }
@@ -1939,7 +1950,7 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     @Override
     public SearchResultTableModel checkBook(
-        final String modulePageId
+            final String modulePageId
     ) throws NLBConsistencyException {
         SearchResultTableModel result = new SearchResultTableModel("Type", "Value", "Problem");
         for (Map.Entry<String, PageImpl> entry : m_pages.entrySet()) {
@@ -1956,7 +1967,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     Page targetPage = m_parentNLB.getPages().get(page.getReturnPageId());
                     if (targetPage == null || targetPage.isDeleted()) {
                         searchResult.addInformation(
-                            "Referenced page cannot be found in the parent book"
+                                "Referenced page cannot be found in the parent book"
                         );
                         result.addSearchResult(searchResult);
                     }
@@ -1989,12 +2000,12 @@ public class NonLinearBookImpl implements NonLinearBook {
                     break;
                 case EXPRESSION:
                     final ModifyingItemAndModification itemAndModification = (
-                        getModifyingItemAndModification(variable)
+                            getModifyingItemAndModification(variable)
                     );
                     if (
-                        !itemAndModification.getModifyingItem().isDeleted()
-                        && !itemAndModification.getModification().isDeleted()
-                    ) {
+                            !itemAndModification.getModifyingItem().isDeleted()
+                                    && !itemAndModification.getModification().isDeleted()
+                            ) {
                         final String error = checkFormula(variable.getValue().trim());
                         if (error != null) {
                             searchResult.addInformation(error);
@@ -2022,7 +2033,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final NonLinearBookImpl moduleImpl = entry.getValue().getModuleImpl();
             if (!moduleImpl.isEmpty()) {
                 result.addSearchResultTableModel(
-                    moduleImpl.checkBook(entry.getValue().getId())
+                        moduleImpl.checkBook(entry.getValue().getId())
                 );
             }
         }
@@ -2072,19 +2083,19 @@ public class NonLinearBookImpl implements NonLinearBook {
                 }
                 if (!page.getModule().isEmpty()) {
                     result.addModuleInfo(
-                        new ModuleInfo(page.getId(), page.getModuleName(), depth)
+                            new ModuleInfo(page.getId(), page.getModuleName(), depth)
                     );
                     result.addBookStatistics(
-                        page.getModuleImpl().getBookStatistics(depth + 1, false)
+                            page.getModuleImpl().getBookStatistics(depth + 1, false)
                     );
                 }
             } else {
                 if (!page.getModule().isEmpty()) {
                     result.addModuleToBeDeletedInfo(
-                        new ModuleInfo(page.getId(), page.getModuleName(), depth)
+                            new ModuleInfo(page.getId(), page.getModuleName(), depth)
                     );
                     result.addDeletedModulesFromBookStatistics(
-                        page.getModuleImpl().getBookStatistics(depth + 1, true)
+                            page.getModuleImpl().getBookStatistics(depth + 1, true)
                     );
                 }
             }
@@ -2148,7 +2159,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         final Collection<String> constraintVars;
         try {
             constraintVars = (
-                VarFinder.findVariableNames(formula)
+                    VarFinder.findVariableNames(formula)
             );
         } catch (Exception e) {
             return "Variable names cannot be extracted: " + e.getMessage();
@@ -2214,12 +2225,12 @@ public class NonLinearBookImpl implements NonLinearBook {
                         break;
                     case VAR:
                         final ModifyingItemAndModification itemAndModification = (
-                            getModifyingItemAndModification(variable)
+                                getModifyingItemAndModification(variable)
                         );
                         if (
-                            itemAndModification.getModifyingItem().isDeleted()
-                            || itemAndModification.getModification().isDeleted()
-                        ) {
+                                itemAndModification.getModifyingItem().isDeleted()
+                                        || itemAndModification.getModification().isDeleted()
+                                ) {
                             continue;
                         } else {
                             found = true;
@@ -2237,14 +2248,14 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     private void searchLinks(
-        final String module,
-        AbstractNodeItem nodeItem,
-        SearchResultTableModel result,
-        final String searchText,
-        final boolean searchInIds,
-        final boolean searchInVars,
-        final boolean ignoreCase,
-        final boolean wholeWords
+            final String module,
+            AbstractNodeItem nodeItem,
+            SearchResultTableModel result,
+            final String searchText,
+            final boolean searchInIds,
+            final boolean searchInVars,
+            final boolean ignoreCase,
+            final boolean wholeWords
     ) {
         for (LinkImpl link : nodeItem.getLinkImpls()) {
             final SearchResult linkResult;
@@ -2269,7 +2280,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         final VariableImpl constraint = getVariableImplById(link.getConstrId());
                         if (constraint != null) {
                             constraintsResult = (
-                                constraint.searchText(searchText, searchInIds, ignoreCase, wholeWords)
+                                    constraint.searchText(searchText, searchInIds, ignoreCase, wholeWords)
                             );
                         } else {
                             constraintsResult = null;

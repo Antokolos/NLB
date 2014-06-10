@@ -39,15 +39,11 @@
 package com.nlbhub.nlb.vcs;
 
 import com.nlbhub.nlb.exception.NLBVCSException;
+
 //import org.tmatesoft.hg.core.*;
 //import org.tmatesoft.hg.util.CancelledException;
 //import org.tmatesoft.hg.util.Outcome;
 //import org.tmatesoft.hg.util.Path;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * The HGAdapter class
@@ -77,12 +73,12 @@ public class HGAdapter implements VCSAdapter {
     public boolean getDirAddFlag() {
         return false;
     }
-    
+
     @Override
     public boolean getAddModifiedFilesFlag() {
         return false;
     }
-    
+
     @Override
     public Status getStatus(String path) throws NLBVCSException {
         return Status.Unknown;

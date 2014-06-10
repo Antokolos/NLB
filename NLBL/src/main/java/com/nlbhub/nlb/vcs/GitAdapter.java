@@ -41,7 +41,10 @@ package com.nlbhub.nlb.vcs;
 import com.nlbhub.nlb.exception.NLBVCSException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.*;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -89,10 +92,10 @@ public class GitAdapter implements VCSAdapter {
         try {
             FileRepositoryBuilder builder = new FileRepositoryBuilder();
             m_localRepo = (
-                builder.setWorkTree(new File(path))
-                .readEnvironment() // scan environment GIT_* variables
-                .setGitDir(new File(path, ".git")) // in fact, this can be omitted
-                .build()
+                    builder.setWorkTree(new File(path))
+                            .readEnvironment() // scan environment GIT_* variables
+                            .setGitDir(new File(path, ".git")) // in fact, this can be omitted
+                            .build()
             );
             m_git = new Git(m_localRepo);
             initStatuses(true);
@@ -242,8 +245,8 @@ public class GitAdapter implements VCSAdapter {
                 case Unknown:
                 case Ignored:
                     throw new NLBVCSException(
-                        "Cannot issue reset command for file with path = " + path
-                        + ", because its status was " + status
+                            "Cannot issue reset command for file with path = " + path
+                                    + ", because its status was " + status
                     );
             }
         } catch (GitAPIException e) {
@@ -255,12 +258,12 @@ public class GitAdapter implements VCSAdapter {
     public void commit(final String message) throws NLBVCSException {
         try {
             m_git
-                .commit()
-                .setAll(false)
-                .setAmend(false)
-                .setAuthor(m_author.getName(), m_author.getEmail())
-                .setMessage(message)
-                .call();
+                    .commit()
+                    .setAll(false)
+                    .setAmend(false)
+                    .setAuthor(m_author.getName(), m_author.getEmail())
+                    .setMessage(message)
+                    .call();
         } catch (GitAPIException e) {
             throw new NLBVCSException("Error while committing to the Git repository", e);
         }

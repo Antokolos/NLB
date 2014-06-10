@@ -43,13 +43,13 @@ import javax.xml.bind.annotation.*;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "action")
 public class Action {
-    @XmlAttribute(name="if")
+    @XmlAttribute(name = "if")
     private String m_if;
-    @XmlAttribute(name="ifnot")
+    @XmlAttribute(name = "ifnot")
     private String m_ifnot;
-    @XmlAttribute(name="goto")
+    @XmlAttribute(name = "goto")
     private String m_goto;
-    @XmlAttribute(name="do")
+    @XmlAttribute(name = "do")
     private String m_do;
     @XmlValue
     protected String m_value;

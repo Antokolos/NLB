@@ -58,7 +58,7 @@ public abstract class TextExportManager extends ExportManager {
     }
 
     public void exportToFile(
-        final File targetFile
+            final File targetFile
     ) throws NLBExportException {
         OutputStream outputStream = null;
         try {
@@ -67,7 +67,7 @@ public abstract class TextExportManager extends ExportManager {
                 final byte[] bytes = generateNLBText(nlbBlocks).getBytes(getEncoding());
                 outputStream = new FileOutputStream(targetFile);
                 outputStream.write(bytes);
-            }  finally {
+            } finally {
                 if (outputStream != null) {
                     outputStream.close();
                 }

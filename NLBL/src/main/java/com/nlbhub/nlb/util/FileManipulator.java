@@ -55,7 +55,9 @@ import java.nio.file.Paths;
  * @version 1.0
  */
 public class FileManipulator {
-    /** Maximum block size */
+    /**
+     * Maximum block size
+     */
     private static final int BLOCK_SIZE = 1024;
     private VCSAdapter m_vcsAdapter;
     private File m_mainRoot;
@@ -108,10 +110,10 @@ public class FileManipulator {
                 case Missing:
                 case Ignored:
                     throw new NLBFileManipulationException(
-                        "Incorrect file status while deleting file with path = "
-                        + path
-                        + " from VCS: "
-                        + status
+                            "Incorrect file status while deleting file with path = "
+                                    + path
+                                    + " from VCS: "
+                                    + status
                     );
             }
             if (!removed) {
@@ -129,14 +131,13 @@ public class FileManipulator {
      * Returns a specified file as a string
      *
      * @param fName file name from classpath.
-     *
      * @return String representation for the specified file or
      * <tt>null</tt> if file is not found.
      */
     private static String getFileAsString(String fName) {
 
         InputStream strm = (
-            FileManipulator.class.getClassLoader().getResourceAsStream(fName)
+                FileManipulator.class.getClassLoader().getResourceAsStream(fName)
         );
 
         return getFileAsString(strm);
@@ -169,15 +170,16 @@ public class FileManipulator {
     /**
      * This method is similar to getRequiredFileAsString(), but it does not throw an exception if
      * file does not exist. In such case default value is returned.
+     *
      * @param rootDir
      * @param fileName
      * @return
      * @throws NLBIOException
      */
     public static String getOptionalFileAsString(
-        final File rootDir,
-        final String fileName,
-        final String defaultValue
+            final File rootDir,
+            final String fileName,
+            final String defaultValue
     ) throws NLBIOException {
         try {
             InputStream fis = null;
@@ -202,7 +204,6 @@ public class FileManipulator {
      * Returns a specified file as a string
      *
      * @param strm input file stream.
-     *
      * @return String representation for the specified file or
      * <tt>null</tt> if file is not found.
      */
@@ -238,7 +239,7 @@ public class FileManipulator {
      * @throws IOException if an I/O error occurs.
      */
     private void transfer(
-        File sourcePath, File targetPath
+            File sourcePath, File targetPath
     ) throws IOException {
 
         FileInputStream sourceStream = new FileInputStream(sourcePath);
@@ -253,12 +254,12 @@ public class FileManipulator {
     /**
      * Transfers content from input stream to the output stream.
      *
-     * @param input input stream whose content is to be transferred.
+     * @param input  input stream whose content is to be transferred.
      * @param output output stream output which content is to be transferred.
      * @throws IOException if an I/O error occurs.
      */
     private static void transfer(
-        InputStream input, OutputStream output
+            InputStream input, OutputStream output
     ) throws IOException {
         byte[] buffer = new byte[BLOCK_SIZE];
         int bytesRead;
@@ -271,13 +272,12 @@ public class FileManipulator {
     /**
      * Writes content from the specified input stream to the specified file.
      *
-     * @param file the file to be opened for writing.
+     * @param file  the file to be opened for writing.
      * @param input input stream whose content is to be written to the file.
-     *
      * @throws IOException if an I/O error occurs.
      */
     private void writeFile(
-        File file, InputStream input
+            File file, InputStream input
     ) throws IOException {
         FileOutputStream output = new FileOutputStream(file);
 
@@ -291,6 +291,7 @@ public class FileManipulator {
     /**
      * This method differs from writeOptionalString in that it does not have default content and always writes files, even
      * empty ones.
+     *
      * @param rootDir
      * @param fileName
      * @param content
@@ -364,32 +365,32 @@ public class FileManipulator {
     }
 
     public void createDir(
-        final File dir,
-        final String errorMessage
+            final File dir,
+            final String errorMessage
     ) throws NLBIOException, NLBFileManipulationException {
         try {
             if (!dir.exists()) {
                 if (!dir.mkdir()) {
                     throw new NLBIOException(
-                        errorMessage
+                            errorMessage
                     );
                 }
                 addToVCS(dir, true);
             }
         } catch (NLBVCSException e) {
             throw new NLBFileManipulationException(
-                "Error while creating directory", e
+                    "Error while creating directory", e
             );
         } catch (IOException e) {
             throw new NLBIOException(
-                "Error while creating directory", e
+                    "Error while creating directory", e
             );
         }
     }
 
     private void createFile(
-        final File file,
-        final String errorMessage
+            final File file,
+            final String errorMessage
     ) throws NLBIOException, NLBFileManipulationException {
         try {
             if (!file.exists()) {
@@ -400,14 +401,14 @@ public class FileManipulator {
             throw new NLBIOException(errorMessage, e);
         } catch (NLBVCSException e) {
             throw new NLBFileManipulationException(
-                "Error while creating file", e
+                    "Error while creating file", e
             );
         }
     }
 
     private void addToVCS(
-        final File file,
-        final boolean isNewFile
+            final File file,
+            final boolean isNewFile
     ) throws IOException, NLBVCSException, NLBFileManipulationException {
         if (file.isDirectory() && !m_vcsAdapter.getDirAddFlag()) {
             // Directories does not count as files in some VCSs, such as Mercurial
@@ -430,10 +431,10 @@ public class FileManipulator {
                 case Missing:
                 case Ignored:
                     throw new NLBFileManipulationException(
-                        "Incorrect file status while adding file with path = "
-                        + path
-                        + " to VCS: "
-                        + status
+                            "Incorrect file status while adding file with path = "
+                                    + path
+                                    + " to VCS: "
+                                    + status
                     );
             }
         } else {

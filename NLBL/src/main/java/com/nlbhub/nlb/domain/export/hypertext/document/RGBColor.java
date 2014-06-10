@@ -53,9 +53,9 @@ public class RGBColor {
 
     public RGBColor(int red, int green, int blue) throws HTDocumentException {
         if (
-            red < 0 || green < 0 || blue < 0
-            || red > 255 || green > 255 || blue > 255
-        ) {
+                red < 0 || green < 0 || blue < 0
+                        || red > 255 || green > 255 || blue > 255
+                ) {
             throw new HTDocumentException("Color components should be in 0-255 range");
         }
         m_red = red;

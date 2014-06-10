@@ -198,12 +198,12 @@ public class ASMExportManager extends TextExportManager {
     protected String decoratePageLabel(String labelText, int pageNumber) {
         if (pageNumber == 1) {
             return (
-                ":: Start[::]0-0-0" + LINE_SEPARATOR
-                + "<<goto '" + labelText + "'>>" + LINE_SEPARATOR + LINE_SEPARATOR
-                + ":: " + labelText + "[::]" + (pageNumber % 10)*150 + "-" + (pageNumber / 10)*150 + "-0" + LINE_SEPARATOR
+                    ":: Start[::]0-0-0" + LINE_SEPARATOR
+                            + "<<goto '" + labelText + "'>>" + LINE_SEPARATOR + LINE_SEPARATOR
+                            + ":: " + labelText + "[::]" + (pageNumber % 10) * 150 + "-" + (pageNumber / 10) * 150 + "-0" + LINE_SEPARATOR
             );
         } else {
-            return ":: " + labelText + "[::]" + (pageNumber % 10)*150 + "-" + (pageNumber / 10)*150 + "-0" + LINE_SEPARATOR;
+            return ":: " + labelText + "[::]" + (pageNumber % 10) * 150 + "-" + (pageNumber / 10) * 150 + "-0" + LINE_SEPARATOR;
         }
 
     }

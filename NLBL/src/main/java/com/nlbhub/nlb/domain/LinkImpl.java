@@ -67,13 +67,21 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     private static final String CONSTRID_FILE_NAME = "constrid";
     private static final String STROKE_FILE_NAME = "stroke";
     private String m_varId = DEFAULT_VAR_ID;
-    /** Id of the target page of the link (to which this link leads). */
+    /**
+     * Id of the target page of the link (to which this link leads).
+     */
     private String m_target = DEFAULT_TARGET;
-    /** Link text. */
+    /**
+     * Link text.
+     */
     private String m_text = DEFAULT_TEXT;
-    /** Link constraint Id. */
+    /**
+     * Link constraint Id.
+     */
     private String m_constrId = DEFAULT_CONSTR_ID;
-    /** Link stroke color (RGB). */
+    /**
+     * Link stroke color (RGB).
+     */
     private String m_stroke = DEFAULT_STROKE;
     private CoordsImpl m_coords = new CoordsImpl();
     private ObserverHandler m_observerHandler = new ObserverHandler();
@@ -130,10 +138,10 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
 
     @Override
     public SearchResult searchText(
-        String searchText,
-        boolean searchInId,
-        boolean ignoreCase,
-        boolean wholeWords
+            String searchText,
+            boolean searchInId,
+            boolean ignoreCase,
+            boolean wholeWords
     ) {
         SearchResult result = super.searchText(searchText, searchInId, ignoreCase, wholeWords);
         if (result != null) {
@@ -223,13 +231,13 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     }
 
     private void writeCoords(
-        FileManipulator fileManipulator,
-        File linkDir
+            FileManipulator fileManipulator,
+            File linkDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         final File coordsDir = new File(linkDir, COORDS_DIR_NAME);
         fileManipulator.createDir(
-            coordsDir,
-            "Cannot create link text block coords directory for link with Id = " + getId()
+                coordsDir,
+                "Cannot create link text block coords directory for link with Id = " + getId()
         );
         m_coords.writeCoords(fileManipulator, coordsDir);
     }
@@ -238,15 +246,15 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
         final File coordsDir = new File(linkDir, COORDS_DIR_NAME);
         if (!coordsDir.exists()) {
             throw new NLBIOException(
-                "Invalid NLB structure: coords directory does not exist for link with Id = " + getId()
+                    "Invalid NLB structure: coords directory does not exist for link with Id = " + getId()
             );
         }
         m_coords.read(coordsDir);
     }
 
     public void writeLink(
-        FileManipulator fileManipulator,
-        File linksDir
+            FileManipulator fileManipulator,
+            File linksDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         final File linkDir = new File(linksDir, getId());
         if (isDeleted()) {
@@ -254,8 +262,8 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
             fileManipulator.deleteFileOrDir(linkDir);
         } else {
             fileManipulator.createDir(
-                linkDir,
-                "Cannot create NLB link directory for link with Id = " + getId()
+                    linkDir,
+                    "Cannot create NLB link directory for link with Id = " + getId()
             );
             fileManipulator.writeOptionalString(linkDir, VARID_FILE_NAME, m_varId, DEFAULT_VAR_ID);
             fileManipulator.writeOptionalString(linkDir, TARGET_FILE_NAME, m_target, DEFAULT_TARGET);
@@ -271,40 +279,40 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     public void readLink(File linkDir) throws NLBIOException, NLBConsistencyException {
         setId(linkDir.getName());
         m_varId = (
-            FileManipulator.getOptionalFileAsString(
-                    linkDir,
-                    VARID_FILE_NAME,
-                    DEFAULT_VAR_ID
-            )
+                FileManipulator.getOptionalFileAsString(
+                        linkDir,
+                        VARID_FILE_NAME,
+                        DEFAULT_VAR_ID
+                )
         );
         // Target is not optional, default target indicates an error
         m_target = (
-            FileManipulator.getRequiredFileAsString(
-                    linkDir,
-                    TARGET_FILE_NAME,
-                    "Error while reading link target for link with Id = " + getId()
-            )
+                FileManipulator.getRequiredFileAsString(
+                        linkDir,
+                        TARGET_FILE_NAME,
+                        "Error while reading link target for link with Id = " + getId()
+                )
         );
         m_text = (
-            FileManipulator.getOptionalFileAsString(
-                    linkDir,
-                    TEXT_FILE_NAME,
-                    DEFAULT_TEXT
-            )
+                FileManipulator.getOptionalFileAsString(
+                        linkDir,
+                        TEXT_FILE_NAME,
+                        DEFAULT_TEXT
+                )
         );
         m_constrId = (
-            FileManipulator.getOptionalFileAsString(
-                    linkDir,
-                    CONSTRID_FILE_NAME,
-                    DEFAULT_CONSTR_ID
-            )
+                FileManipulator.getOptionalFileAsString(
+                        linkDir,
+                        CONSTRID_FILE_NAME,
+                        DEFAULT_CONSTR_ID
+                )
         );
         m_stroke = (
-            FileManipulator.getOptionalFileAsString(
-                    linkDir,
-                    STROKE_FILE_NAME,
-                    DEFAULT_STROKE
-            )
+                FileManipulator.getOptionalFileAsString(
+                        linkDir,
+                        STROKE_FILE_NAME,
+                        DEFAULT_STROKE
+                )
         );
         readCoords(linkDir);
         readModifications(linkDir);

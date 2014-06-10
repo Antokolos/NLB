@@ -45,7 +45,7 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "article")
 public class Article {
-    @XmlAttribute(name="id")
+    @XmlAttribute(name = "id")
     private String m_id;
     private Metadata m_metadata;
     private List<Script> m_scripts = new ArrayList<>();

@@ -43,11 +43,11 @@ import javax.xml.bind.annotation.*;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "script")
 public class Script {
-    @XmlAttribute(name="type")
+    @XmlAttribute(name = "type")
     private String m_type;
-    @XmlAttribute(name="info")
+    @XmlAttribute(name = "info")
     private String m_info;
-    @XmlAttribute(name="isglobal")
+    @XmlAttribute(name = "isglobal")
     private String m_isGlobal;
     @XmlValue
     protected String m_value;

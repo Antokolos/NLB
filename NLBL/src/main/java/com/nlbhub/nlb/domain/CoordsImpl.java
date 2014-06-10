@@ -105,8 +105,8 @@ public class CoordsImpl implements Coords {
     }
 
     public void writeCoords(
-        FileManipulator fileManipulator,
-        File coordsDir
+            FileManipulator fileManipulator,
+            File coordsDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         fileManipulator.writeRequiredString(coordsDir, LEFT_FILE_NAME, String.valueOf(m_left));
         fileManipulator.writeRequiredString(coordsDir, TOP_FILE_NAME, String.valueOf(m_top));
@@ -118,32 +118,32 @@ public class CoordsImpl implements Coords {
         try {
             final String coordsDirPath = coordsDir.getCanonicalPath();
             m_left = Float.parseFloat(
-                FileManipulator.getRequiredFileAsString(
-                        coordsDir,
-                        LEFT_FILE_NAME,
-                        "Error reading left coords file; dir = " + coordsDirPath
-                )
+                    FileManipulator.getRequiredFileAsString(
+                            coordsDir,
+                            LEFT_FILE_NAME,
+                            "Error reading left coords file; dir = " + coordsDirPath
+                    )
             );
             m_top = Float.parseFloat(
-                FileManipulator.getRequiredFileAsString(
-                        coordsDir,
-                        TOP_FILE_NAME,
-                        "Error reading top coords file; dir = " + coordsDirPath
-                )
+                    FileManipulator.getRequiredFileAsString(
+                            coordsDir,
+                            TOP_FILE_NAME,
+                            "Error reading top coords file; dir = " + coordsDirPath
+                    )
             );
             m_width = Float.parseFloat(
-                FileManipulator.getRequiredFileAsString(
-                        coordsDir,
-                        WIDTH_FILE_NAME,
-                        "Error reading width coords file; dir = " + coordsDirPath
-                )
+                    FileManipulator.getRequiredFileAsString(
+                            coordsDir,
+                            WIDTH_FILE_NAME,
+                            "Error reading width coords file; dir = " + coordsDirPath
+                    )
             );
             m_height = Float.parseFloat(
-                FileManipulator.getRequiredFileAsString(
-                        coordsDir,
-                        HEIGHT_FILE_NAME,
-                        "Error reading height coords file; dir = " + coordsDirPath
-                )
+                    FileManipulator.getRequiredFileAsString(
+                            coordsDir,
+                            HEIGHT_FILE_NAME,
+                            "Error reading height coords file; dir = " + coordsDirPath
+                    )
             );
         } catch (IOException e) {
             throw new NLBIOException("IOException occurred", e);

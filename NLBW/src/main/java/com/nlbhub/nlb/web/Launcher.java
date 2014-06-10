@@ -40,13 +40,10 @@ package com.nlbhub.nlb.web;
 
 import com.nlbhub.nlb.web.exception.LauncherException;
 import com.nlbhub.nlb.web.service.rest.GetNLBDataService;
-import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
  * The Launcher class
@@ -60,8 +57,8 @@ public class Launcher implements Runnable {
     public Launcher() {
         // set the TransformFactory to use the Saxon TransformerFactoryImpl method
         System.setProperty(
-            "javax.xml.transform.TransformerFactory",
-            "net.sf.saxon.TransformerFactoryImpl"
+                "javax.xml.transform.TransformerFactory",
+                "net.sf.saxon.TransformerFactoryImpl"
         );
 
         ServerConnector http = new ServerConnector(m_server);
@@ -73,11 +70,11 @@ public class Launcher implements Runnable {
         context.setContextPath("/");
         m_server.setHandler(context);
         ServletHolder holder = (
-            context.addServlet(org.apache.wink.server.internal.servlet.RestServlet.class, "/nlb/*")
+                context.addServlet(org.apache.wink.server.internal.servlet.RestServlet.class, "/nlb/*")
         );
         holder.setInitParameter(
-            "javax.ws.rs.Application",
-            "com.nlbhub.nlb.web.service.rest.NLBServiceWebApplication"
+                "javax.ws.rs.Application",
+                "com.nlbhub.nlb.web.service.rest.NLBServiceWebApplication"
         );
     }
 

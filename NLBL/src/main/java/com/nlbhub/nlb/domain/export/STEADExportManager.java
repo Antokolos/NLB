@@ -62,6 +62,7 @@ public class STEADExportManager extends TextExportManager {
      * Enable comments in the generated text
      */
     private static final boolean ENABLE_COMMENTS = true;
+
     public STEADExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
         super(nlb, encoding);
     }
@@ -101,8 +102,8 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append(objBlocks.getObjActStart());
         boolean varsOrModsPresent = (
-            !StringHelper.isEmpty(objBlocks.getObjVariable())
-            || !StringHelper.isEmpty(objBlocks.getObjModifications())
+                !StringHelper.isEmpty(objBlocks.getObjVariable())
+                        || !StringHelper.isEmpty(objBlocks.getObjModifications())
         );
         if (varsOrModsPresent) {
             stringBuilder.append(objBlocks.getObjVariable());
@@ -198,8 +199,8 @@ public class STEADExportManager extends TextExportManager {
         }
 
         boolean varsOrModsPresent = (
-            !StringHelper.isEmpty(pageBlocks.getPageVariable())
-            || !StringHelper.isEmpty(pageBlocks.getPageModifications())
+                !StringHelper.isEmpty(pageBlocks.getPageVariable())
+                        || !StringHelper.isEmpty(pageBlocks.getPageModifications())
         );
         stringBuilder.append(pageBlocks.getPageTextEnd());
 
@@ -310,10 +311,10 @@ public class STEADExportManager extends TextExportManager {
 
     protected String decorateUseVariable(String variableName) {
         return (
-            "    if not (" + variableName + ") then stead.add_var { "
-            + variableName
-            + " = true }; end;"
-            + LINE_SEPARATOR
+                "    if not (" + variableName + ") then stead.add_var { "
+                        + variableName
+                        + " = true }; end;"
+                        + LINE_SEPARATOR
         );
     }
 
@@ -324,10 +325,10 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateObjVariable(String variableName) {
         return (
-            "        if not (" + variableName + ") then stead.add_var { "
-            + variableName
-            + " = true }; end;"
-            + LINE_SEPARATOR
+                "        if not (" + variableName + ") then stead.add_var { "
+                        + variableName
+                        + " = true }; end;"
+                        + LINE_SEPARATOR
         );
     }
 
@@ -359,19 +360,19 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateDelObj(String objectId, String objectName) {
         return (
-            "            if have(\"" + objectName + "\") then remove(\""
-            + objectName + "\", " + "inv()); end;" + LINE_SEPARATOR
+                "            if have(\"" + objectName + "\") then remove(\""
+                        + objectName + "\", " + "inv()); end;" + LINE_SEPARATOR
         );
     }
 
     @Override
     protected String decorateAddObj(String objectId, String objectName) {
         return (
-            "            if not have(\""
-            + objectName
-            + "\") then take('"
-            + decorateId(objectId)
-            + "'); end;" + LINE_SEPARATOR
+                "            if not have(\""
+                        + objectName
+                        + "\") then take('"
+                        + decorateId(objectId)
+                        + "'); end;" + LINE_SEPARATOR
         );
     }
 
@@ -408,29 +409,29 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateLinkStart(String linkId, String linkText, int pageNumber) {
         return (
-            "        xact(" + LINE_SEPARATOR
-            + "            '" + decorateId(linkId) + "'," + LINE_SEPARATOR
-            + "            function(s) " + LINE_SEPARATOR
+                "        xact(" + LINE_SEPARATOR
+                        + "            '" + decorateId(linkId) + "'," + LINE_SEPARATOR
+                        + "            function(s) " + LINE_SEPARATOR
         );
     }
 
     @Override
     protected String decorateLinkGoTo(
-        String linkId,
-        String linkText,
-        String linkTarget,
-        int targetPageNumber
+            String linkId,
+            String linkText,
+            String linkTarget,
+            int targetPageNumber
     ) {
         return (
-            "                walk("
-            + (
-                GOTO_PAGE_NUMBERS
-                    ? decorateId(String.valueOf(targetPageNumber))
-                    : decorateId(linkTarget)
-            )
-            + ");" + LINE_SEPARATOR
-            + "            end" + LINE_SEPARATOR
-            + "        )," + LINE_SEPARATOR
+                "                walk("
+                        + (
+                        GOTO_PAGE_NUMBERS
+                                ? decorateId(String.valueOf(targetPageNumber))
+                                : decorateId(linkTarget)
+                )
+                        + ");" + LINE_SEPARATOR
+                        + "            end" + LINE_SEPARATOR
+                        + "        )," + LINE_SEPARATOR
         );
     }
 
@@ -442,20 +443,20 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateLinkVariable(String variableName) {
         return (
-            "                if not (" + variableName + ") then stead.add_var { "
-            + variableName
-            + " = true }; end;"
-            + LINE_SEPARATOR
+                "                if not (" + variableName + ") then stead.add_var { "
+                        + variableName
+                        + " = true }; end;"
+                        + LINE_SEPARATOR
         );
     }
 
     @Override
     protected String decoratePageVariable(String variableName) {
         return (
-            "        if not (" + variableName + ") then stead.add_var { "
-            + variableName
-            + " = true }; end;"
-            + LINE_SEPARATOR
+                "        if not (" + variableName + ") then stead.add_var { "
+                        + variableName
+                        + " = true }; end;"
+                        + LINE_SEPARATOR
         );
     }
 
@@ -515,12 +516,12 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decoratePageLabel(String labelText, int pageNumber) {
         String roomName = (
-            (pageNumber == 1)
-                ? "main"
-                : (
-                    GOTO_PAGE_NUMBERS
-                        ? decorateId(String.valueOf(pageNumber))
-                        : decorateId(labelText)
+                (pageNumber == 1)
+                        ? "main"
+                        : (
+                        GOTO_PAGE_NUMBERS
+                                ? decorateId(String.valueOf(pageNumber))
+                                : decorateId(labelText)
                 )
         );
         return roomName + " = room {" + LINE_SEPARATOR;

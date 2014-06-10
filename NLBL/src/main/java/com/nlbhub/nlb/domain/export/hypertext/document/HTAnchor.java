@@ -44,8 +44,9 @@ package com.nlbhub.nlb.domain.export.hypertext.document;
  * @author Anton P. Kolosov
  * @version 1.0 12/9/13
  */
-public abstract class HTAnchor<F extends  HTFont> {
+public abstract class HTAnchor<F extends HTFont> {
     private boolean m_decapitalize;
+
     public HTAnchor(final boolean decapitalize, final String text, final F font) {
         m_decapitalize = decapitalize;
     }

@@ -40,7 +40,6 @@ package com.nlbhub.nlb.builder.view;
 
 import com.nlbhub.nlb.api.Coords;
 import com.nlbhub.nlb.api.NodeItem;
-import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
 import edu.umd.cs.piccolo.event.PInputEvent;
 import edu.umd.cs.piccolo.nodes.PPath;
@@ -109,10 +108,10 @@ public class ResizeBar extends PPath {
         @Override
         public void mouseReleased(final PInputEvent event) {
             m_nodeResizeExecutor.executeResize(
-                m_resizingNode,
-                m_resizeBar.m_orientation,
-                m_totalDeltaX,
-                m_totalDeltaY
+                    m_resizingNode,
+                    m_resizeBar.m_orientation,
+                    m_totalDeltaX,
+                    m_totalDeltaY
             );
             clearResizeInfo();
             event.setHandled(true);
@@ -169,10 +168,10 @@ public class ResizeBar extends PPath {
     }
 
     public ResizeBar(
-        NodeResizeExecutor nodeResizeExecutor,
-        NodePath node,
-        Coords coords,
-        NodeItem.Orientation orientation
+            NodeResizeExecutor nodeResizeExecutor,
+            NodePath node,
+            Coords coords,
+            NodeItem.Orientation orientation
     ) {
         m_nodeResizeExecutor = nodeResizeExecutor;
         m_orientation = orientation;
@@ -188,34 +187,34 @@ public class ResizeBar extends PPath {
         switch (m_orientation) {
             case LEFT:
                 m_resizeRect.setFrame(
-                    coords.getLeft() - m_resizeBarThickness,
-                    coords.getTop() + m_resizeBarCornerOffsetVert,
-                    m_resizeBarThickness,
-                    coords.getHeight() - 2 * m_resizeBarCornerOffsetVert
+                        coords.getLeft() - m_resizeBarThickness,
+                        coords.getTop() + m_resizeBarCornerOffsetVert,
+                        m_resizeBarThickness,
+                        coords.getHeight() - 2 * m_resizeBarCornerOffsetVert
                 );
                 break;
             case RIGHT:
                 m_resizeRect.setFrame(
-                    coords.getLeft() + coords.getWidth(),
-                    coords.getTop() + m_resizeBarCornerOffsetVert,
-                    m_resizeBarThickness,
-                    coords.getHeight() - 2 * m_resizeBarCornerOffsetVert
+                        coords.getLeft() + coords.getWidth(),
+                        coords.getTop() + m_resizeBarCornerOffsetVert,
+                        m_resizeBarThickness,
+                        coords.getHeight() - 2 * m_resizeBarCornerOffsetVert
                 );
                 break;
             case TOP:
                 m_resizeRect.setFrame(
-                    coords.getLeft() + m_resizeBarCornerOffsetHorz,
-                    coords.getTop() - m_resizeBarThickness,
-                    coords.getWidth() - 2 * m_resizeBarCornerOffsetHorz,
-                    m_resizeBarThickness
+                        coords.getLeft() + m_resizeBarCornerOffsetHorz,
+                        coords.getTop() - m_resizeBarThickness,
+                        coords.getWidth() - 2 * m_resizeBarCornerOffsetHorz,
+                        m_resizeBarThickness
                 );
                 break;
             case BOTTOM:
                 m_resizeRect.setFrame(
-                    coords.getLeft() + m_resizeBarCornerOffsetHorz,
-                    coords.getTop() + coords.getHeight(),
-                    coords.getWidth() - 2 * m_resizeBarCornerOffsetHorz,
-                    m_resizeBarThickness
+                        coords.getLeft() + m_resizeBarCornerOffsetHorz,
+                        coords.getTop() + coords.getHeight(),
+                        coords.getWidth() - 2 * m_resizeBarCornerOffsetHorz,
+                        m_resizeBarThickness
                 );
                 break;
         }

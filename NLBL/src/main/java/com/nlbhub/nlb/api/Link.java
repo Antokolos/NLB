@@ -52,10 +52,15 @@ public interface Link extends ModifyingItem, NLBObservable {
     public final static String DEFAULT_STROKE = "0000FF";
 
     public String getVarId();
+
     public String getTarget();
+
     public String getText();
+
     public String getConstrId();
+
     public String getStroke();
+
     public Coords getCoords();
 
     /**
@@ -68,9 +73,12 @@ public interface Link extends ModifyingItem, NLBObservable {
     /**
      * If true, module constraint also constrains this link, in addition to link's own constraint.
      * If false, module constraint should not be applied.
+     *
      * @return
      */
     public boolean isObeyToModuleConstraint();
+
     public boolean isTraversalLink();
+
     public boolean isReturnLink();
 }

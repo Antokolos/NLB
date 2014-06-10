@@ -121,10 +121,10 @@ public abstract class AbstractIdentifiableItem implements IdentifiableItem {
     }
 
     public SearchResult searchText(
-        final String searchText,
-        boolean searchInId,
-        boolean ignoreCase,
-        boolean wholeWords
+            final String searchText,
+            boolean searchInId,
+            boolean ignoreCase,
+            boolean wholeWords
     ) {
         if (searchInId && textMatches(m_id, searchText, ignoreCase, wholeWords)) {
             SearchResult result = new SearchResult();
@@ -137,10 +137,10 @@ public abstract class AbstractIdentifiableItem implements IdentifiableItem {
     }
 
     protected boolean textMatches(
-        final String stringToTest,
-        final String searchText,
-        boolean ignoreCase,
-        boolean wholeWords
+            final String stringToTest,
+            final String searchText,
+            boolean ignoreCase,
+            boolean wholeWords
     ) {
         StringBuilder patternText = new StringBuilder();
         if (wholeWords) {
@@ -151,21 +151,21 @@ public abstract class AbstractIdentifiableItem implements IdentifiableItem {
             patternText.append("\\b");
         }
         Pattern pattern = (
-            (ignoreCase)
-                ? (
-                    Pattern.compile(
-                        patternText.toString(),
-                        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
-                    )
+                (ignoreCase)
+                        ? (
+                        Pattern.compile(
+                                patternText.toString(),
+                                Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
+                        )
                 )
-                : Pattern.compile(patternText.toString())
+                        : Pattern.compile(patternText.toString())
         );
         Matcher matcher = pattern.matcher(stringToTest);
         return matcher.find();
     }
 
     protected List<File> createSortedDirList(
-        File[] dirs, List<String> orderList
+            File[] dirs, List<String> orderList
     ) throws NLBConsistencyException {
         List<File> dirsList = new LinkedList<File>();
         // Cannot use Arrays.asList(), because this list will be modified later
@@ -189,20 +189,20 @@ public abstract class AbstractIdentifiableItem implements IdentifiableItem {
             }
             if (!found) {
                 throw new NLBConsistencyException(
-                    "Inconsistent NLB structure: cannot locate directory with name = "
-                    + dirName
-                    + " for item with id = "
-                    + m_id
+                        "Inconsistent NLB structure: cannot locate directory with name = "
+                                + dirName
+                                + " for item with id = "
+                                + m_id
                 );
             }
         }
         if (!dirsList.isEmpty()) {
             throw new NLBConsistencyException(
-                "Inconsistent NLB structure: directories with names = "
-                + orderList.toString()
-                + " for item with id = "
-                + m_id
-                + " cannot be located in the order file"
+                    "Inconsistent NLB structure: directories with names = "
+                            + orderList.toString()
+                            + " for item with id = "
+                            + m_id
+                            + " cannot be located in the order file"
             );
         }
         return result;

@@ -78,19 +78,19 @@ public class GetNLBDataService {
     public static String s_nlbLibraryRoot = "/D:/work/Azartox/NLB/books/";
     private static final Map<String, NonLinearBookImpl> m_nlbCache = new HashMap<>();
     private static final JaxbMarshaller PAGE_MARSHALLER = (
-        new JaxbMarshaller(
-            PageImpl.class,
-            LinkImpl.class,
-            AbstractModifyingItem.class,
-            AbstractIdentifiableItem.class,
-            ModificationImpl.class
-        )
+            new JaxbMarshaller(
+                    PageImpl.class,
+                    LinkImpl.class,
+                    AbstractModifyingItem.class,
+                    AbstractIdentifiableItem.class,
+                    ModificationImpl.class
+            )
     );
     private static final JaxbMarshaller DECISIONS_MARSHALLER = (
-        new JaxbMarshaller(
-            History.class,
-            DecisionPoint.class
-        )
+            new JaxbMarshaller(
+                    History.class,
+                    DecisionPoint.class
+            )
     );
     private static History s_history = new History();
 
@@ -149,7 +149,7 @@ public class GetNLBDataService {
     @Produces(MediaType.TEXT_HTML)
     @Path("start")
     public Response start(
-        @PathParam("bookId") final PathSegment bookId
+            @PathParam("bookId") final PathSegment bookId
     ) {
         s_history.clear();
         return getStartPointData(bookId, null, null);
@@ -158,9 +158,9 @@ public class GetNLBDataService {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response getStartPointData(
-        @PathParam("bookId") final PathSegment bookId,
-        @QueryParam("rollback") final Boolean rollback,
-        @QueryParam("visit-count") final Integer visitCount
+            @PathParam("bookId") final PathSegment bookId,
+            @QueryParam("rollback") final Boolean rollback,
+            @QueryParam("visit-count") final Integer visitCount
     ) {
         Response response;
         try {
@@ -168,43 +168,43 @@ public class GetNLBDataService {
             // Now get required module
             ModuleData moduleData = getNonLinearBookModuleData(bookId, mainNLB);
             final DecisionPoint decisionPointToBeMade = (
-                new DecisionPoint(bookId.toString(), moduleData.getModule().getStartPoint())
+                    new DecisionPoint(bookId.toString(), moduleData.getModule().getStartPoint())
             );
             s_history.suggestDecisionPointToBeMade(
-                decisionPointToBeMade,
-                (rollback != null) ? rollback : false,
-                (visitCount != null) ? visitCount : History.DO_NOT_USE_VISIT_COUNT
+                    decisionPointToBeMade,
+                    (rollback != null) ? rollback : false,
+                    (visitCount != null) ? visitCount : History.DO_NOT_USE_VISIT_COUNT
             );
             ReturnBookIdAndModulePage returnBookIdAndModulePage = (
-                getReturnLinkBookId(decisionPointToBeMade, moduleData)
+                    getReturnLinkBookId(decisionPointToBeMade, moduleData)
             );
             final String normalLinkBookId = getNormalLinkBookId(decisionPointToBeMade);
             final String traversalLinkBookId = getTraversalLinkBookId(
-                decisionPointToBeMade,
-                moduleData,
-                moduleData.getModule().getStartPoint()
+                    decisionPointToBeMade,
+                    moduleData,
+                    moduleData.getModule().getStartPoint()
             );
             final Page pageToBeVisited = (
-                moduleData.getModule().getPageById(moduleData.getModule().getStartPoint())
+                    moduleData.getModule().getPageById(moduleData.getModule().getStartPoint())
             );
             addPossibleNextDecisions(
-                pageToBeVisited,
-                decisionPointToBeMade,
-                returnBookIdAndModulePage,
-                normalLinkBookId,
-                traversalLinkBookId
+                    pageToBeVisited,
+                    decisionPointToBeMade,
+                    returnBookIdAndModulePage,
+                    normalLinkBookId,
+                    traversalLinkBookId
             );
             response = generateResponse(
-                bookId.getPath(),
-                normalLinkBookId,
-                traversalLinkBookId,
-                returnBookIdAndModulePage,
-                pageToBeVisited
+                    bookId.getPath(),
+                    normalLinkBookId,
+                    traversalLinkBookId,
+                    returnBookIdAndModulePage,
+                    pageToBeVisited
             );
             s_history.makeDecision(
-                !StringHelper.isEmpty(pageToBeVisited.getCaption())
-                    ? pageToBeVisited.getCaption()
-                    : pageToBeVisited.getId()
+                    !StringHelper.isEmpty(pageToBeVisited.getCaption())
+                            ? pageToBeVisited.getCaption()
+                            : pageToBeVisited.getId()
             );
             return response;
         } catch (NLBIOException ex) {
@@ -220,8 +220,8 @@ public class GetNLBDataService {
     }
 
     private ModuleData getNonLinearBookModuleData(
-        PathSegment bookId,
-        NonLinearBookImpl mainNLB
+            PathSegment bookId,
+            NonLinearBookImpl mainNLB
     ) {
         ModuleData result = new ModuleData();
         NonLinearBookImpl module = mainNLB;
@@ -246,17 +246,17 @@ public class GetNLBDataService {
     @Produces(MediaType.TEXT_HTML)
     @Path("page/{pageId}")
     public Response getPageData(
-        @PathParam("bookId") final PathSegment bookId,
-        @PathParam("pageId") final String pageId,
-        @QueryParam("rollback") final Boolean rollback,
-        @QueryParam("visit-count") final Integer visitCount
+            @PathParam("bookId") final PathSegment bookId,
+            @PathParam("pageId") final String pageId,
+            @QueryParam("rollback") final Boolean rollback,
+            @QueryParam("visit-count") final Integer visitCount
     ) {
         Response response;
         try {
             s_history.suggestDecisionPointToBeMade(
-                new DecisionPoint(bookId.toString(), pageId),
-                (rollback != null) ? rollback : false,
-                (visitCount != null) ? visitCount : History.DO_NOT_USE_VISIT_COUNT
+                    new DecisionPoint(bookId.toString(), pageId),
+                    (rollback != null) ? rollback : false,
+                    (visitCount != null) ? visitCount : History.DO_NOT_USE_VISIT_COUNT
             );
             NonLinearBookImpl mainNLB = getNLBFromCache(bookId.getPath());
             // Now get required module
@@ -264,9 +264,9 @@ public class GetNLBDataService {
             response = generateFilteredResponse(moduleData, pageId);
             Page pageToBeVisited = moduleData.getModule().getPageById(pageId);
             s_history.makeDecision(
-                !StringHelper.isEmpty(pageToBeVisited.getCaption())
-                    ? pageToBeVisited.getCaption()
-                    : pageToBeVisited.getId()
+                    !StringHelper.isEmpty(pageToBeVisited.getCaption())
+                            ? pageToBeVisited.getCaption()
+                            : pageToBeVisited.getId()
             );
             return response;
         } catch (NLBIOException ex) {
@@ -284,7 +284,7 @@ public class GetNLBDataService {
     }
 
     private NonLinearBookImpl getNLBFromCache(
-        String bookId
+            String bookId
     ) throws NLBIOException, NLBConsistencyException, NLBVCSException {
         NonLinearBookImpl nlb;
         if (m_nlbCache.containsKey(bookId)) {
@@ -306,18 +306,18 @@ public class GetNLBDataService {
     @Produces(MediaType.TEXT_HTML)
     @Path("link/{pageId}/{linkId}")
     public Response followLink(
-        @PathParam("bookId") final PathSegment bookId,
-        @PathParam("pageId") final String pageId,
-        @PathParam("linkId") final String linkId,
-        @QueryParam("rollback") final Boolean rollback,
-        @QueryParam("visit-count") final Integer visitCount
+            @PathParam("bookId") final PathSegment bookId,
+            @PathParam("pageId") final String pageId,
+            @PathParam("linkId") final String linkId,
+            @QueryParam("rollback") final Boolean rollback,
+            @QueryParam("visit-count") final Integer visitCount
     ) {
         Response response;
         try {
             s_history.suggestDecisionPointToBeMade(
-                new DecisionPoint(bookId.toString(), pageId, linkId),
-                (rollback != null) ? rollback : false,
-                (visitCount != null) ? visitCount : History.DO_NOT_USE_VISIT_COUNT
+                    new DecisionPoint(bookId.toString(), pageId, linkId),
+                    (rollback != null) ? rollback : false,
+                    (visitCount != null) ? visitCount : History.DO_NOT_USE_VISIT_COUNT
             );
             NonLinearBookImpl mainNLB = getNLBFromCache(bookId.getPath());
             // Now get required module
@@ -348,7 +348,7 @@ public class GetNLBDataService {
     @Produces(MediaType.TEXT_HTML)
     @Path("history")
     public Response getHistory(
-        @PathParam("bookId") final PathSegment bookId
+            @PathParam("bookId") final PathSegment bookId
     ) {
         StreamingOutput stream = new StreamingOutput() {
             public void write(OutputStream output) throws IOException, WebApplicationException {
@@ -356,17 +356,17 @@ public class GetNLBDataService {
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     DECISIONS_MARSHALLER.marshal(s_history, outputStream, false);
                     ByteArrayInputStream inputStream = (
-                        new ByteArrayInputStream(
-                            outputStream
-                                .toString(Constants.UNICODE_ENCODING)
-                                .getBytes(Constants.UNICODE_ENCODING)
-                        )
+                            new ByteArrayInputStream(
+                                    outputStream
+                                            .toString(Constants.UNICODE_ENCODING)
+                                            .getBytes(Constants.UNICODE_ENCODING)
+                            )
                     );
                     transform(
-                        bookId.getPath(),
-                        inputStream,
-                        "xsl/history.xsl",
-                        output
+                            bookId.getPath(),
+                            inputStream,
+                            "xsl/history.xsl",
+                            output
                     );
                 } catch (Exception e) {
                     throw new WebApplicationException(e);
@@ -382,13 +382,13 @@ public class GetNLBDataService {
     }
 
     public void transform(
-        final String mainNLBId,
-        final String normalLinkBookId,
-        final String traversalLinkBookId,
-        final ReturnBookIdAndModulePage returnBookIdAndModulePage,
-        InputStream inputStream,
-        String xslID,
-        OutputStream outputStream
+            final String mainNLBId,
+            final String normalLinkBookId,
+            final String traversalLinkBookId,
+            final ReturnBookIdAndModulePage returnBookIdAndModulePage,
+            InputStream inputStream,
+            String xslID,
+            OutputStream outputStream
     ) throws TransformerException, TransformerConfigurationException {
         // Create a transform factory instance.
         TransformerFactory tfactory = TransformerFactory.newInstance();
@@ -403,16 +403,16 @@ public class GetNLBDataService {
 
         // Transform the source XML to System.out.
         transformer.transform(
-            new StreamSource(inputStream),
-            new StreamResult(outputStream)
+                new StreamSource(inputStream),
+                new StreamResult(outputStream)
         );
     }
 
     public void transform(
-        String mainNLBId,
-        InputStream inputStream,
-        String xslID,
-        OutputStream outputStream
+            String mainNLBId,
+            InputStream inputStream,
+            String xslID,
+            OutputStream outputStream
     ) throws TransformerException, TransformerConfigurationException {
         // Create a transform factory instance.
         TransformerFactory tfactory = TransformerFactory.newInstance();
@@ -423,8 +423,8 @@ public class GetNLBDataService {
 
         // Transform the source XML to System.out.
         transformer.transform(
-            new StreamSource(inputStream),
-            new StreamResult(outputStream)
+                new StreamSource(inputStream),
+                new StreamResult(outputStream)
         );
     }
 
@@ -435,11 +435,11 @@ public class GetNLBDataService {
      * request results
      */
     protected Response generateResponse(
-        final String mainNLBId,
-        final String normalLinkBookId,
-        final String traversalLinkBookId,
-        final ReturnBookIdAndModulePage returnBookIdAndModulePage,
-        final Page page
+            final String mainNLBId,
+            final String normalLinkBookId,
+            final String traversalLinkBookId,
+            final ReturnBookIdAndModulePage returnBookIdAndModulePage,
+            final Page page
     ) {
         StreamingOutput stream = new StreamingOutput() {
             public void write(OutputStream output) throws IOException, WebApplicationException {
@@ -447,20 +447,20 @@ public class GetNLBDataService {
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     PAGE_MARSHALLER.marshal(page, outputStream, false);
                     ByteArrayInputStream inputStream = (
-                        new ByteArrayInputStream(
-                            outputStream
-                                .toString(Constants.UNICODE_ENCODING)
-                                .getBytes(Constants.UNICODE_ENCODING)
-                        )
+                            new ByteArrayInputStream(
+                                    outputStream
+                                            .toString(Constants.UNICODE_ENCODING)
+                                            .getBytes(Constants.UNICODE_ENCODING)
+                            )
                     );
                     transform(
-                        mainNLBId,
-                        normalLinkBookId,
-                        traversalLinkBookId,
-                        returnBookIdAndModulePage,
-                        inputStream,
-                        "xsl/page.xsl",
-                        output
+                            mainNLBId,
+                            normalLinkBookId,
+                            traversalLinkBookId,
+                            returnBookIdAndModulePage,
+                            inputStream,
+                            "xsl/page.xsl",
+                            output
                     );
                 } catch (Exception e) {
                     throw new WebApplicationException(e);
@@ -482,77 +482,77 @@ public class GetNLBDataService {
      * request results
      */
     protected Response generateFilteredResponse(
-        final ModuleData moduleData,
-        final String pageId
+            final ModuleData moduleData,
+            final String pageId
     ) throws ScriptException {
         final PageImpl filteredPage = (
-            moduleData.getModule().createFilteredPage(pageId, s_history)
+                moduleData.getModule().createFilteredPage(pageId, s_history)
         );
 
         final DecisionPoint decisionPointToBeMade = s_history.getDecisionPointToBeMade();
         ReturnBookIdAndModulePage returnBookIdAndPage = getReturnLinkBookId(
-            decisionPointToBeMade, moduleData
+                decisionPointToBeMade, moduleData
         );
         final String normalLinkBookId = getNormalLinkBookId(decisionPointToBeMade);
         final String traversalLinkBookId = (
-            getTraversalLinkBookId(decisionPointToBeMade, moduleData, pageId)
+                getTraversalLinkBookId(decisionPointToBeMade, moduleData, pageId)
         );
         addPossibleNextDecisions(
-            filteredPage,
-            decisionPointToBeMade,
-            returnBookIdAndPage,
-            normalLinkBookId,
-            traversalLinkBookId
+                filteredPage,
+                decisionPointToBeMade,
+                returnBookIdAndPage,
+                normalLinkBookId,
+                traversalLinkBookId
         );
         return generateResponse(
-            moduleData.getMainNLBId(),
-            normalLinkBookId,
-            traversalLinkBookId,
-            returnBookIdAndPage,
-            filteredPage
+                moduleData.getMainNLBId(),
+                normalLinkBookId,
+                traversalLinkBookId,
+                returnBookIdAndPage,
+                filteredPage
         );
     }
 
     private void addPossibleNextDecisions(
-        Page pageToBeVisited,
-        DecisionPoint decisionPointToBeMade,
-        ReturnBookIdAndModulePage returnBookIdAndPage,
-        String normalLinkBookId,
-        String traversalLinkBookId
+            Page pageToBeVisited,
+            DecisionPoint decisionPointToBeMade,
+            ReturnBookIdAndModulePage returnBookIdAndPage,
+            String normalLinkBookId,
+            String traversalLinkBookId
     ) {
         for (final Link link : pageToBeVisited.getLinks()) {
             // This code is equivalent to the code in page.xsl
             if (link.isTraversalLink()) {
                 decisionPointToBeMade.addPossibleNextDecisionPoint(
-                    new DecisionPoint(
-                        traversalLinkBookId,
-                        link.getTarget()
-                    )
+                        new DecisionPoint(
+                                traversalLinkBookId,
+                                link.getTarget()
+                        )
                 );
             } else if (link.isReturnLink()) {
                 if (StringHelper.isEmpty(pageToBeVisited.getReturnPageId())) {
                     decisionPointToBeMade.addPossibleNextDecisionPoint(
-                        new DecisionPoint(
-                            returnBookIdAndPage.getBookId(),
-                            returnBookIdAndPage.getModulePageId()
-                        )
+                            new DecisionPoint(
+                                    returnBookIdAndPage.getBookId(),
+                                    returnBookIdAndPage.getModulePageId()
+                            )
                     );
                 } else {
                     decisionPointToBeMade.addPossibleNextDecisionPoint(
-                        new DecisionPoint(
-                            returnBookIdAndPage.getBookId(),
-                            pageToBeVisited.getReturnPageId()
-                        )
+                            new DecisionPoint(
+                                    returnBookIdAndPage.getBookId(),
+                                    pageToBeVisited.getReturnPageId()
+                            )
                     );
                 }
             } else {
                 // Normal link
                 decisionPointToBeMade.addPossibleNextDecisionPoint(
-                    new DecisionPoint(
-                        normalLinkBookId,
-                        pageToBeVisited.getId(),
-                        link.getId()
-                    )
+                        new DecisionPoint(
+                                normalLinkBookId,
+                                pageToBeVisited.getId(),
+                                link.getId()
+                        )
                 );
             }
         }
@@ -563,16 +563,16 @@ public class GetNLBDataService {
     }
 
     private String getTraversalLinkBookId(
-        final DecisionPoint decisionPoint,
-        final ModuleData moduleData,
-        final String pageId
+            final DecisionPoint decisionPoint,
+            final ModuleData moduleData,
+            final String pageId
     ) {
         return decisionPoint.getBookId() + ";" + (moduleData.getModuleDepth() + 1) + "=" + pageId;
     }
 
     private ReturnBookIdAndModulePage getReturnLinkBookId(
-        final DecisionPoint decisionPoint,
-        final ModuleData moduleData
+            final DecisionPoint decisionPoint,
+            final ModuleData moduleData
     ) {
         ReturnBookIdAndModulePage result = new ReturnBookIdAndModulePage();
         // Exclude the current module and return to its module page

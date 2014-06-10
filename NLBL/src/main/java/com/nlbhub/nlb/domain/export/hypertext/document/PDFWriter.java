@@ -40,10 +40,6 @@ package com.nlbhub.nlb.domain.export.hypertext.document;
 
 import com.itextpdf.text.pdf.PdfWriter;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-
 /**
  * The PDFWriter class
  *

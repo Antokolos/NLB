@@ -8,7 +8,10 @@ package com.nlbhub.nlb.api;
  */
 public interface IdentifiableItem {
     public String getId();
+
     public String getFullId();
+
     public boolean isDeleted();
+
     public IdentifiableItem getParent();
 }

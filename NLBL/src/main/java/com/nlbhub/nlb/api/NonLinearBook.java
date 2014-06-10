@@ -38,12 +38,16 @@
  */
 package com.nlbhub.nlb.api;
 
-import com.nlbhub.nlb.exception.*;
+import com.nlbhub.nlb.exception.NLBConsistencyException;
+import com.nlbhub.nlb.exception.NLBIOException;
+import com.nlbhub.nlb.exception.NLBVCSException;
 import com.nlbhub.user.domain.History;
 
 import javax.script.ScriptException;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The NonLinearBook class
@@ -250,22 +254,26 @@ public interface NonLinearBook {
     public SearchResultTableModel getLeafs(String modulePageId);
 
     public SearchResultTableModel searchText(
-        String modulePageId,
-        String searchText,
-        boolean searchInIds,
-        boolean searchInPages,
-        boolean searchInObjects,
-        boolean searchInLinks,
-        boolean searchInVars,
-        boolean ignoreCase,
-        boolean wholeWords
+            String modulePageId,
+            String searchText,
+            boolean searchInIds,
+            boolean searchInPages,
+            boolean searchInObjects,
+            boolean searchInLinks,
+            boolean searchInVars,
+            boolean ignoreCase,
+            boolean wholeWords
     );
 
     public SearchResultTableModel getVariables(String modulePageId) throws NLBConsistencyException;
+
     public boolean findVariable(String variableNameToFind) throws NLBConsistencyException;
+
     public SearchResultTableModel checkBook(String modulePageId) throws NLBConsistencyException;
 
     public BookStatistics getBookStatistics();
+
     public VariableStatistics getVariableStatistics();
+
     public NonLinearBook getParentNLB();
 }

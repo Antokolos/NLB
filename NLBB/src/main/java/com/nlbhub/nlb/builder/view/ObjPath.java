@@ -43,7 +43,6 @@ import com.nlbhub.nlb.util.StringHelper;
 import edu.umd.cs.piccolo.nodes.PText;
 
 import java.awt.*;
-import java.util.ArrayList;
 
 /**
  * The ObjPath class
@@ -59,10 +58,10 @@ public class ObjPath extends NodePath {
     private String m_infoText = INFO_OBJ;
 
     public ObjPath(
-        final NonLinearBook nonLinearBook,
-        final NodeResizeExecutor nodeResizeExecutor,
-        final Obj obj,
-        Font font
+            final NonLinearBook nonLinearBook,
+            final NodeResizeExecutor nodeResizeExecutor,
+            final Obj obj,
+            Font font
     ) {
         super(nodeResizeExecutor, obj, font);
         m_infoNode.setVisible(true);

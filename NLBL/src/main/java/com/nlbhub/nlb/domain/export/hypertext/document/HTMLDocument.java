@@ -40,7 +40,10 @@ package com.nlbhub.nlb.domain.export.hypertext.document;
 
 import com.nlbhub.nlb.exception.HTDocumentException;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * The HTMLDocument class
@@ -69,7 +72,7 @@ public class HTMLDocument implements HTDocument<HTMLParagraph> {
     public void open() {
         m_textBuilder.append("<html>").append(SYSTEM_SEPARATOR);
         m_textBuilder.append(
-            "<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head>"
+                "<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head>"
         );
         m_textBuilder.append(SYSTEM_SEPARATOR).append("<body>").append(SYSTEM_SEPARATOR);
     }

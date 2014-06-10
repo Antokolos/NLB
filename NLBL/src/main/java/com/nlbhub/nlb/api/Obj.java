@@ -50,9 +50,14 @@ public interface Obj extends NodeItem {
     public static final String DEFAULT_NAME = Constants.EMPTY_STRING;
     public static final boolean DEFAULT_TAKABLE = false;
     public static final String DEFAULT_CONTAINER_ID = Constants.EMPTY_STRING;
+
     public String getText();
+
     public String getVarId();
+
     public String getName();
+
     public boolean isTakable();
+
     public String getContainerId();
 }

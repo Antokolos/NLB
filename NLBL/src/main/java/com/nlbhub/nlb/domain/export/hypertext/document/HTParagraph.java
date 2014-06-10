@@ -45,10 +45,11 @@ package com.nlbhub.nlb.domain.export.hypertext.document;
  * @author Anton P. Kolosov
  * @version 1.0 12/9/13
  */
-public abstract class HTParagraph<F extends  HTFont, A extends HTAnchor> {
+public abstract class HTParagraph<F extends HTFont, A extends HTAnchor> {
     public HTParagraph(final String text, final F font) {
     }
 
     public abstract void add(String text);
+
     public abstract void add(A anchor);
 }

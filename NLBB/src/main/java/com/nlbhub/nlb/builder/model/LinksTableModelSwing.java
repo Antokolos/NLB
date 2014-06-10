@@ -38,8 +38,8 @@
  */
 package com.nlbhub.nlb.builder.model;
 
-import com.nlbhub.nlb.api.LinksTableModel;
 import com.nlbhub.nlb.api.Link;
+import com.nlbhub.nlb.api.LinksTableModel;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.List;

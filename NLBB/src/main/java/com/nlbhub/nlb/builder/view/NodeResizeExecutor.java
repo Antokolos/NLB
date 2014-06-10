@@ -56,20 +56,20 @@ public class NodeResizeExecutor {
     }
 
     public void executeResize(
-        NodePath resizingNode,
-        NodeItem.Orientation orientation,
-        double deltaX,
-        double deltaY
+            NodePath resizingNode,
+            NodeItem.Orientation orientation,
+            double deltaX,
+            double deltaY
     ) {
         NodeItem nodeItem = (NodeItem) resizingNode.getAttribute(Constants.NLB_PAGE_ATTR);
         if (nodeItem == null) {
             nodeItem = (NodeItem) resizingNode.getAttribute(Constants.NLB_OBJ_ATTR);
         }
         m_nonLinearBookFacade.resizeNode(
-            nodeItem,
-            orientation,
-            deltaX,
-            deltaY
+                nodeItem,
+                orientation,
+                deltaX,
+                deltaY
         );
     }
 }

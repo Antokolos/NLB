@@ -2,7 +2,6 @@ package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.builder.model.SearchResultsTableModelSwing;
-import com.nlbhub.nlb.builder.view.GraphEditor;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import org.jdesktop.swingx.JXTable;
 
@@ -120,10 +119,10 @@ public class DialogSearchResults extends JDialog {
     private SearchResultsTableModelSwing m_tableModel;
 
     public DialogSearchResults(
-        final MainFrame mainFrame,
-        final NonLinearBook nlb,
-        final String modulePageId,
-        final SearchType searchType
+            final MainFrame mainFrame,
+            final NonLinearBook nlb,
+            final String modulePageId,
+            final SearchType searchType
     ) throws NLBConsistencyException {
         setContentPane(contentPane);
         switch (searchType) {
@@ -158,8 +157,8 @@ public class DialogSearchResults extends JDialog {
         m_buttonGoTo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 mainFrame.goTo(
-                    (String) m_tableModel.getValueAt(m_searchResults.getSelectedRow(), 1),
-                    (String) m_tableModel.getValueAt(m_searchResults.getSelectedRow(), 0)
+                        (String) m_tableModel.getValueAt(m_searchResults.getSelectedRow(), 1),
+                        (String) m_tableModel.getValueAt(m_searchResults.getSelectedRow(), 0)
                 );
             }
         });

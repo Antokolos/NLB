@@ -46,5 +46,6 @@ package com.nlbhub.nlb.api;
  */
 public interface NLBCommand {
     public void execute();
+
     public void revert();
 }

@@ -2,8 +2,8 @@ package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.Link;
 import com.nlbhub.nlb.api.NLBObserver;
-import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.api.Variable;
+import com.nlbhub.nlb.domain.NonLinearBookFacade;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,8 +28,8 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
     private JButton m_redoButton;
 
     public DialogLinkProperties(
-        final NonLinearBookFacade nlbFacade,
-        final Link link
+            final NonLinearBookFacade nlbFacade,
+            final Link link
     ) {
         m_nlbFacade = nlbFacade;
         setLinkProperties(link);
@@ -114,10 +114,10 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
 
     private void onOK() {
         m_nlbFacade.updateLink(
-            m_link,
-            m_linkVariableTextField.getText(),
-            m_linkConstraintsTextField.getText(),
-            m_linkTextTextField.getText()
+                m_link,
+                m_linkVariableTextField.getText(),
+                m_linkConstraintsTextField.getText(),
+                m_linkTextTextField.getText()
         );
         m_nlbFacade.removeObserver(m_observerId);
         dispose();

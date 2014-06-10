@@ -70,10 +70,10 @@ public class NLBBMain implements Runnable {
      */
     private void createAndShowGUI(
     ) throws
-        ClassNotFoundException,
-        UnsupportedLookAndFeelException,
-        IllegalAccessException,
-        InstantiationException {
+            ClassNotFoundException,
+            UnsupportedLookAndFeelException,
+            IllegalAccessException,
+            InstantiationException {
 
         //Create and set up the window.
         JFrame frame = new JFrame("Non-Linear Book Builder");

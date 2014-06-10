@@ -38,7 +38,7 @@
  */
 package com.nlbhub.nlb.domain.export;
 
-import com.nlbhub.nlb.domain.*;
+import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 
@@ -143,10 +143,10 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateLinkGoTo(
-        String linkId,
-        String linkText,
-        String linkTarget,
-        int targetPageNumber
+            String linkId,
+            String linkText,
+            String linkTarget,
+            int targetPageNumber
     ) {
         return "    GOTO '" + linkTarget + "'" + LINE_SEPARATOR + "  END" + LINE_SEPARATOR;
     }
@@ -179,9 +179,9 @@ public class QSPExportManager extends TextExportManager {
     protected String decoratePageCaption(String caption) {
         if (!StringHelper.isEmpty(caption)) {
             return (
-                "'" + caption.toUpperCase() + "'" + LINE_SEPARATOR
-                + "'" + StringHelper.createRepeatedString(caption.length(), "-") + "'" + LINE_SEPARATOR
-                + "''" + LINE_SEPARATOR
+                    "'" + caption.toUpperCase() + "'" + LINE_SEPARATOR
+                            + "'" + StringHelper.createRepeatedString(caption.length(), "-") + "'" + LINE_SEPARATOR
+                            + "''" + LINE_SEPARATOR
             );
         } else {
             return "";

@@ -112,16 +112,15 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateLinkGoTo(
-        String linkId,
-        String linkText,
-        String linkTarget,
-        int targetPageNumber
+            String linkId,
+            String linkText,
+            String linkTarget,
+            int targetPageNumber
     ) {
         return "goto " + linkTarget + LINE_SEPARATOR + LINE_SEPARATOR;
     }
 
     /**
-     *
      * @return
      */
     @Override
@@ -130,7 +129,6 @@ public class URQExportManager extends TextExportManager {
     }
 
     /**
-     *
      * @return
      */
     @Override
@@ -139,7 +137,6 @@ public class URQExportManager extends TextExportManager {
     }
 
     /**
-     *
      * @return
      */
     @Override
@@ -148,7 +145,6 @@ public class URQExportManager extends TextExportManager {
     }
 
     /**
-     *
      * @param constraintVar
      * @return
      */
@@ -158,7 +154,6 @@ public class URQExportManager extends TextExportManager {
     }
 
     /**
-     *
      * @return
      */
     @Override
@@ -177,7 +172,6 @@ public class URQExportManager extends TextExportManager {
     }
 
     /**
-     *
      * @param variableName
      * @return
      */
@@ -187,7 +181,6 @@ public class URQExportManager extends TextExportManager {
     }
 
     /**
-     *
      * @param variableName
      * @return
      */
@@ -210,9 +203,9 @@ public class URQExportManager extends TextExportManager {
     protected String decoratePageCaption(String caption) {
         if (!StringHelper.isEmpty(caption)) {
             return (
-                "pln " + caption.toUpperCase() + LINE_SEPARATOR
-                + "pln " + StringHelper.createRepeatedString(caption.length(), "-") + LINE_SEPARATOR
-                + "pln" + LINE_SEPARATOR
+                    "pln " + caption.toUpperCase() + LINE_SEPARATOR
+                            + "pln " + StringHelper.createRepeatedString(caption.length(), "-") + LINE_SEPARATOR
+                            + "pln" + LINE_SEPARATOR
             );
         } else {
             return "";
@@ -220,7 +213,6 @@ public class URQExportManager extends TextExportManager {
     }
 
     /**
-     *
      * @param pageText
      * @return
      */
@@ -248,9 +240,6 @@ public class URQExportManager extends TextExportManager {
     }
 
     /**
-     *
-     *
-     *
      * @param labelText
      * @param pageNumber
      * @return
@@ -271,7 +260,6 @@ public class URQExportManager extends TextExportManager {
     }
 
     /**
-     *
      * @param variableName
      * @param variableValue
      * @return
@@ -282,8 +270,6 @@ public class URQExportManager extends TextExportManager {
     }
 
     /**
-     *
-     *
      * @param objectId
      * @param objectName
      * @return
@@ -294,8 +280,6 @@ public class URQExportManager extends TextExportManager {
     }
 
     /**
-     *
-     *
      * @param objectId
      * @param objectName
      * @return

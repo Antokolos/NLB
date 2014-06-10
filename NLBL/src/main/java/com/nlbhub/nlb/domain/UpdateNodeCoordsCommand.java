@@ -76,10 +76,10 @@ public class UpdateNodeCoordsCommand implements NLBCommand {
     }
 
     public UpdateNodeCoordsCommand(
-        NonLinearBookImpl nonLinearBook,
-        NodeItem node,
-        final float left,
-        final float top
+            NonLinearBookImpl nonLinearBook,
+            NodeItem node,
+            final float left,
+            final float top
     ) {
         this(nonLinearBook, node);
         m_width = m_widthPrev;
@@ -89,12 +89,12 @@ public class UpdateNodeCoordsCommand implements NLBCommand {
     }
 
     public UpdateNodeCoordsCommand(
-        NonLinearBookImpl nonLinearBook,
-        NodeItem node,
-        final float left,
-        final float top,
-        final float width,
-        final float height
+            NonLinearBookImpl nonLinearBook,
+            NodeItem node,
+            final float left,
+            final float top,
+            final float width,
+            final float height
     ) {
         this(nonLinearBook, node);
         m_width = width;
