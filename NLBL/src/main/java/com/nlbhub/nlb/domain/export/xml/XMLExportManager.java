@@ -53,9 +53,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * The XMLExportManager class
@@ -71,7 +69,8 @@ public abstract class XMLExportManager extends ExportManager {
 
     @Override
     public void exportToFile(File targetFile) throws NLBExportException {
-        FileWriter writer = null;
+        OutputStreamWriter writer = null;
+        FileOutputStream stream = null;
         try {
             try {
                 NLBBuildingBlocks nlbBlocks = createNLBBuildingBlocks();
@@ -88,7 +87,8 @@ public abstract class XMLExportManager extends ExportManager {
 
                 // Transform the DOM to the output stream
                 // TransformerFactory is not thread-safe
-                writer = new FileWriter(targetFile);
+                stream = new FileOutputStream(targetFile);
+                writer = new OutputStreamWriter(stream, getEncoding());
                 TransformerFactory transformerFactory = TransformerFactory.newInstance();
                 Transformer nullTransformer = transformerFactory.newTransformer();
                 nullTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -100,6 +100,9 @@ public abstract class XMLExportManager extends ExportManager {
             } finally {
                 if (writer != null) {
                     writer.close();
+                }
+                if (stream != null) {
+                    stream.close();
                 }
             }
         } catch (TransformerException | NLBConsistencyException | IOException | NLBJAXBException e) {
