@@ -205,8 +205,8 @@ public class JSIQ2ExportManager extends XMLExportManager {
         preload.setType("preload");
         String preloadValue = (
                 "vars.inventory = {}; " + LINE_SEPARATOR +
-                createObjsMap(objsBlocks) + LINE_SEPARATOR +
-                "; " + createInventoryLinkedVariable()
+                createObjsMap(objsBlocks) + "; " + LINE_SEPARATOR +
+                createInventoryLinkedVariable()
         );
         preload.setValue(preloadValue);
         result.add(preload);
