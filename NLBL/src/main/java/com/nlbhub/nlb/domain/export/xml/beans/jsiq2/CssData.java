@@ -1,5 +1,5 @@
 /**
- * @(#)Script.java
+ * @(#)CssData.java
  *
  * This file is part of the Non-Linear Book project.
  * Copyright (c) 2012-2014 Anton P. Kolosov
@@ -38,56 +38,39 @@
  */
 package com.nlbhub.nlb.domain.export.xml.beans.jsiq2;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlRootElement(name = "script")
-public class Script {
-    @XmlAttribute(name = "type")
-    private String m_type;
-    @XmlAttribute(name = "info")
-    private String m_info;
-    @XmlAttribute(name = "isglobal")
-    private String m_isGlobal;
-    @XmlValue
-    protected String m_value;
+@XmlRootElement(name = "cssdata")
+public class CssData {
+    private Style m_style;
+    private Css m_css;
 
     /**
      * Default contructor. It is needed for JAXB conversion, do not remove!
      */
     @SuppressWarnings({"UnusedDeclaration"})
-    public Script() {
+    public CssData() {
     }
 
-    public String getType() {
-        return m_type;
+    @XmlElement(name = "style")
+    public Style getStyle() {
+        return m_style;
     }
 
-    public void setType(String type) {
-        m_type = type;
+    public void setStyle(Style style) {
+        m_style = style;
     }
 
-    public String getValue() {
-        return m_value;
+    @XmlElement(name = "css")
+    public Css getCss() {
+        return m_css;
     }
 
-    public void setValue(String value) {
-        m_value = value;
-    }
-
-    public String getInfo() {
-        return m_info;
-    }
-
-    public void setInfo(String info) {
-        m_info = info;
-    }
-
-    public String getIsGlobal() {
-        return m_isGlobal;
-    }
-
-    public void setIsGlobal(String isGlobal) {
-        m_isGlobal = isGlobal;
+    public void setCss(Css css) {
+        m_css = css;
     }
 }

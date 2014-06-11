@@ -70,12 +70,21 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String getCDataSectionElements() {
-        return "script text action";
+        return "script text action cssdata css style";
     }
 
     @Override
     protected JaxbMarshaller createMarshaller() {
-        return new JaxbMarshaller(Action.class, Article.class, Book.class, Metadata.class, Script.class);
+        return new JaxbMarshaller(
+                Action.class,
+                Article.class,
+                Book.class,
+                Metadata.class,
+                Script.class,
+                Css.class,
+                CssData.class,
+                Style.class
+        );
     }
 
     @Override
@@ -90,6 +99,16 @@ public class JSIQ2ExportManager extends XMLExportManager {
             first = false;
         }
         book.addArticle(createCharsheetArticle(lastSaveString));
+        CssData cssData = new CssData();
+        Css css = new Css();
+        css.setName("default");
+        css.setValue(".atril-game td{border: 2px solid gray; border-radius: 8px;}");
+        Style style = new Style();
+        style.setName("default");
+        style.setValue("td {border: 2px solid gray; border-radius: 8px;}");
+        cssData.setCss(css);
+        cssData.setStyle(style);
+        book.setCssData(cssData);
         return book;
     }
 

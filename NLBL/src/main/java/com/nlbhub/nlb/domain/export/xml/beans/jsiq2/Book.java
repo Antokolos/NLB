@@ -49,10 +49,12 @@ import java.util.List;
 @XmlRootElement(name = "book")
 public class Book {
     private List<Article> m_articleList = new ArrayList<>();
+    private CssData m_cssData;
 
     /**
      * Default contructor. It is needed for JAXB conversion, do not remove!
      */
+    @SuppressWarnings({"UnusedDeclaration"})
     public Book() {
     }
 
@@ -67,5 +69,14 @@ public class Book {
 
     public void addArticle(Article article) {
         m_articleList.add(article);
+    }
+
+    @XmlElement(name = "cssdata")
+    public CssData getCssData() {
+        return m_cssData;
+    }
+
+    public void setCssData(CssData cssData) {
+        m_cssData = cssData;
     }
 }

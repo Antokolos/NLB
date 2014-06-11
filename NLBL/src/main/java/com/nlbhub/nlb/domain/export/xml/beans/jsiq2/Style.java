@@ -1,5 +1,5 @@
 /**
- * @(#)Script.java
+ * @(#)Style.java
  *
  * This file is part of the Non-Linear Book project.
  * Copyright (c) 2012-2014 Anton P. Kolosov
@@ -41,30 +41,26 @@ package com.nlbhub.nlb.domain.export.xml.beans.jsiq2;
 import javax.xml.bind.annotation.*;
 
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlRootElement(name = "script")
-public class Script {
-    @XmlAttribute(name = "type")
-    private String m_type;
-    @XmlAttribute(name = "info")
-    private String m_info;
-    @XmlAttribute(name = "isglobal")
-    private String m_isGlobal;
+@XmlRootElement(name = "style")
+public class Style {
+    @XmlAttribute(name = "name")
+    private String m_name;
     @XmlValue
-    protected String m_value;
+    private String m_value;
 
     /**
      * Default contructor. It is needed for JAXB conversion, do not remove!
      */
     @SuppressWarnings({"UnusedDeclaration"})
-    public Script() {
+    public Style() {
     }
 
-    public String getType() {
-        return m_type;
+    public String getName() {
+        return m_name;
     }
 
-    public void setType(String type) {
-        m_type = type;
+    public void setName(String name) {
+        m_name = name;
     }
 
     public String getValue() {
@@ -73,21 +69,5 @@ public class Script {
 
     public void setValue(String value) {
         m_value = value;
-    }
-
-    public String getInfo() {
-        return m_info;
-    }
-
-    public void setInfo(String info) {
-        m_info = info;
-    }
-
-    public String getIsGlobal() {
-        return m_isGlobal;
-    }
-
-    public void setIsGlobal(String isGlobal) {
-        m_isGlobal = isGlobal;
     }
 }

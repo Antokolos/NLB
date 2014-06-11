@@ -57,6 +57,7 @@ public class Action {
     /**
      * Default contructor. It is needed for JAXB conversion, do not remove!
      */
+    @SuppressWarnings({"UnusedDeclaration"})
     public Action() {
     }
 
