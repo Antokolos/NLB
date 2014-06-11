@@ -89,6 +89,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
             );
             first = false;
         }
+        book.addArticle(createCharsheetArticle(lastSaveString));
         return book;
     }
 
@@ -188,11 +189,25 @@ public class JSIQ2ExportManager extends XMLExportManager {
         return article;
     }
 
+    private Article createCharsheetArticle(String lastSaveString) {
+        Article article = new Article();
+        Metadata metadata = new Metadata();
+        metadata.setLastSave(lastSaveString);
+        article.setId("charsheet");
+        article.setMetadata(metadata);
+        article.setText("CHARACTER SHEET<br/> <span class=\"linked\" name=\"inventory\"></span>");
+        return article;
+    }
+
     private List<Script> createInventoryScripts(List<ObjBuildingBlocks> objsBlocks) {
         List<Script> result = new ArrayList<>();
         Script preload = new Script();
         preload.setType("preload");
-        String preloadValue = "vars.inventory = {}; " + createObjsMap(objsBlocks);
+        String preloadValue = (
+                "vars.inventory = {}; " + LINE_SEPARATOR +
+                createObjsMap(objsBlocks) + LINE_SEPARATOR +
+                "; " + createInventoryLinkedVariable()
+        );
         preload.setValue(preloadValue);
         result.add(preload);
         Script getItemList = new Script();
@@ -251,6 +266,20 @@ public class JSIQ2ExportManager extends XMLExportManager {
         );
         result.add(removeItem);
         return result;
+    }
+
+    private String createInventoryLinkedVariable() {
+        return "jsIQ.linkValue('inventory', function(){" + LINE_SEPARATOR +
+                "   if (!vars.inventory) return '';" + LINE_SEPARATOR +
+                "   var list = $('<ul></ul>');" + LINE_SEPARATOR +
+                "   for (var name in vars.inventory){" + LINE_SEPARATOR +
+                "       if (!vars.inventory.hasOwnProperty(name)){   continue;   }       " + LINE_SEPARATOR +
+                "       if (vars.inventory[name] > 0){" + LINE_SEPARATOR +
+                "           list.append('<li>' + vars.itemNames[name] + '</li>');" + LINE_SEPARATOR +
+                "       }" + LINE_SEPARATOR +
+                "   }" + LINE_SEPARATOR +
+                "   return list.html();" + LINE_SEPARATOR +
+                "});";
     }
 
     private String createObjsMap(List<ObjBuildingBlocks> objsBlocks) {
