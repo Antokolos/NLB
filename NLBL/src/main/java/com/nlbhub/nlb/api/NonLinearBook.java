@@ -276,4 +276,6 @@ public interface NonLinearBook {
     public VariableStatistics getVariableStatistics();
 
     public NonLinearBook getParentNLB();
+
+    public Map<String, Variable.DataType> getVariableDataTypes() throws NLBConsistencyException;
 }

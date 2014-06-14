@@ -45,17 +45,31 @@ package com.nlbhub.nlb.api;
  * @version 1.0 1/15/14
  */
 public interface Variable extends IdentifiableItem {
-    public enum Type {PAGE, OBJ, LINK, LINKCONSTRAINT, VAR, EXPRESSION, MODCONSTRAINT}
 
     static final String NA = "N/A";
     public static final String DEFAULT_NAME = NA;
     public static final String DEFAULT_VALUE = NA;
+    public static final DataType DEFAULT_DATATYPE = DataType.AUTO;
 
     public Type getType();
+
+    public DataType getDataType();
 
     public String getName();
 
     public String getTarget();
 
     public String getValue();
+
+    /**
+     * The DataType class represents possible data type of the variable
+     * (as the result of JS evaluation).
+     *
+     * @author Anton P. Kolosov
+     */
+    public enum DataType {
+        AUTO, BOOLEAN, NUMBER, STRING
+    }
+
+    public enum Type {PAGE, OBJ, LINK, LINKCONSTRAINT, VAR, EXPRESSION, MODCONSTRAINT}
 }

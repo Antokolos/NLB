@@ -728,7 +728,8 @@ public abstract class ExportManager {
                     stringBuilder.append(
                             decorateDelObj(
                                     exportData.getObjId(expression.getValue()),
-                                    expression.getValue())
+                                    expression.getValue()
+                            )
                     );
                 } else if (modification.getType().equals(ModificationImpl.Type.ASSIGN)) {
                     Variable variable = (

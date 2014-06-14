@@ -55,10 +55,12 @@ import java.io.File;
  */
 public class VariableImpl extends AbstractIdentifiableItem implements Variable {
     private static final String TYPE_FILE_NAME = "type";
+    private static final String DATATYPE_FILE_NAME = "datatype";
     private static final String NAME_FILE_NAME = "name";
     private static final String TARGET_FILE_NAME = "target";
     private static final String VALUE_FILE_NAME = "value";
     private Type m_type = Type.PAGE;
+    private DataType m_dataType = DataType.AUTO;
     private String m_name = DEFAULT_NAME;
     private String m_target;
     private String m_value = DEFAULT_VALUE;
@@ -99,6 +101,7 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
     public VariableImpl(Variable variable) {
         super(variable);
         m_type = variable.getType();
+        m_dataType = variable.getDataType();
         m_name = variable.getName();
         m_target = variable.getTarget();
         m_value = variable.getValue();
@@ -107,14 +110,22 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
     public void copy(Variable variable) {
         super.copy(variable);
         m_type = variable.getType();
+        m_dataType = variable.getDataType();
         m_name = variable.getName();
         m_target = variable.getTarget();
         m_value = variable.getValue();
     }
 
-    public VariableImpl(Type type, String name, String value, String target) {
+    public VariableImpl(
+            Type type,
+            DataType dataType,
+            String name,
+            String value,
+            String target
+    ) {
         this();
         m_type = type;
+        m_dataType = dataType;
         m_name = name;
         m_value = value;
         m_target = target;
@@ -125,8 +136,17 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
         return m_type;
     }
 
+    @Override
+    public DataType getDataType() {
+        return m_dataType;
+    }
+
     public void setType(Type type) {
         m_type = type;
+    }
+
+    public void setDataType(DataType dataType) {
+        m_dataType = dataType;
     }
 
     @Override
@@ -191,6 +211,42 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
                                 + "' cannot be determined for variable with Id = " + getId()
                 );
         }
+
+        switch (m_type) {
+            case PAGE:
+            case OBJ:
+            case LINK:
+            case LINKCONSTRAINT:
+            case MODCONSTRAINT:
+                m_dataType = DataType.BOOLEAN;
+                break;
+            default:
+                String dataType = FileManipulator.getOptionalFileAsString(
+                        varDir,
+                        DATATYPE_FILE_NAME,
+                        DEFAULT_DATATYPE.name()
+                );
+                switch (dataType) {
+                    case "AUTO":
+                        m_dataType = DataType.AUTO;
+                        break;
+                    case "BOOLEAN":
+                        m_dataType = DataType.BOOLEAN;
+                        break;
+                    case "NUMBER":
+                        m_dataType = DataType.NUMBER;
+                        break;
+                    case "STRING":
+                        m_dataType = DataType.STRING;
+                        break;
+                    default:
+                        throw new NLBConsistencyException(
+                                "Variable datatype '" + dataType
+                                        + "' cannot be determined for variable with Id = " + getId()
+                        );
+                }
+        }
+
         m_name = FileManipulator.getOptionalFileAsString(
                 varDir,
                 NAME_FILE_NAME,
@@ -222,6 +278,7 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
                     "Cannot create NLB variable directory for variable with Id = " + getId()
             );
             fileManipulator.writeRequiredString(varDir, TYPE_FILE_NAME, m_type.name());
+            fileManipulator.writeOptionalString(varDir, DATATYPE_FILE_NAME, m_dataType.name(), DEFAULT_DATATYPE.name());
             fileManipulator.writeOptionalString(varDir, NAME_FILE_NAME, m_name, DEFAULT_NAME);
             fileManipulator.writeOptionalString(varDir, VALUE_FILE_NAME, m_value, DEFAULT_VALUE);
             fileManipulator.writeRequiredString(varDir, TARGET_FILE_NAME, m_target);

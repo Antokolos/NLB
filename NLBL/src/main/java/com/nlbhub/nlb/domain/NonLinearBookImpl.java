@@ -196,15 +196,20 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_existingVariableDeletionState;
         private final String m_existingVariableName;
         private final String m_existingVariableValue;
+        private final Variable.Type m_existingVariableType;
+        private final Variable.DataType m_existingVariableDataType;
         private final VariableImpl m_newVariable;
         private final String m_newVariableName;
         private final String m_newVariableValue;
+        private final Variable.Type m_newVariableType;
+        private final Variable.DataType m_newVariableDataType;
         private final boolean m_deleteFlag;
 
         private VariableTracker(
                 final VariableImpl existingVariable,
                 boolean deleteFlag,
                 final Variable.Type newVariableType,
+                final Variable.DataType newVariableDataType,
                 final String newVariableName,
                 final String newVariableValue,
                 final String newVariableTarget
@@ -214,6 +219,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_deleteFlag = deleteFlag;
             m_newVariableName = newVariableName;
             m_newVariableValue = newVariableValue;
+            m_newVariableType = newVariableType;
+            m_newVariableDataType = newVariableDataType;
             m_existingVariableName = (
                     (m_existingVariable != null)
                             ? m_existingVariable.getName()
@@ -224,9 +231,20 @@ public class NonLinearBookImpl implements NonLinearBook {
                             ? m_existingVariable.getValue()
                             : Variable.DEFAULT_VALUE
             );
+            m_existingVariableType = (
+                    (m_existingVariable != null)
+                            ? m_existingVariable.getType()
+                            : Variable.Type.VAR
+            );
+            m_existingVariableDataType = (
+                    (m_existingVariable != null)
+                            ? m_existingVariable.getDataType()
+                            : Variable.DataType.AUTO
+            );
             if ((existingVariable == null) && !deleteFlag) {
                 m_newVariable = new VariableImpl(
                         newVariableType,
+                        newVariableDataType,
                         newVariableName,
                         newVariableValue,
                         newVariableTarget
@@ -251,6 +269,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 } else {
                     m_existingVariable.setName(m_newVariableName);
                     m_existingVariable.setValue(m_newVariableValue);
+                    m_existingVariable.setType(m_newVariableType);
+                    m_existingVariable.setDataType(m_newVariableDataType);
                     m_existingVariable.setDeleted(false);   // because it can be already deleted; discard this deletion
                     variableId = m_existingVariable.getId();
                 }
@@ -281,6 +301,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 } else {
                     m_existingVariable.setName(m_existingVariableName);
                     m_existingVariable.setValue(m_existingVariableValue);
+                    m_existingVariable.setType(m_existingVariableType);
+                    m_existingVariable.setDataType(m_existingVariableDataType);
                     m_existingVariable.setDeleted(m_existingVariableDeletionState);
                     variableId = m_existingVariable.getId();
                 }
@@ -337,6 +359,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     getVariableImplById(m_page.getVarId()),
                     StringHelper.isEmpty(pageVariableName),
                     Variable.Type.PAGE,
+                    Variable.DataType.BOOLEAN,
                     pageVariableName,
                     Variable.DEFAULT_VALUE,
                     m_page.getFullId()
@@ -345,6 +368,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     getVariableImplById(m_page.getModuleConstrId()),
                     StringHelper.isEmpty(moduleConsraintVariableName),
                     Variable.Type.MODCONSTRAINT,
+                    Variable.DataType.BOOLEAN,
                     Variable.DEFAULT_NAME,
                     moduleConsraintVariableName,
                     m_page.getFullId()
@@ -446,6 +470,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     getVariableImplById(m_obj.getVarId()),
                     StringHelper.isEmpty(objVariableName),
                     Variable.Type.OBJ,
+                    Variable.DataType.BOOLEAN,
                     objVariableName,
                     Variable.DEFAULT_VALUE,
                     m_obj.getFullId());
@@ -507,6 +532,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     getVariableImplById(m_link.getVarId()),
                     StringHelper.isEmpty(linkVariableName),
                     Variable.Type.LINK,
+                    Variable.DataType.BOOLEAN,
                     linkVariableName,
                     Variable.DEFAULT_VALUE,
                     link.getFullId()
@@ -515,6 +541,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     getVariableImplById(m_link.getConstrId()),
                     StringHelper.isEmpty(linkConstraintName),
                     Variable.Type.LINKCONSTRAINT,
+                    Variable.DataType.BOOLEAN,
                     Variable.DEFAULT_NAME,
                     linkConstraintName,
                     link.getFullId()
@@ -2145,6 +2172,62 @@ public class NonLinearBookImpl implements NonLinearBook {
     @Override
     public NonLinearBook getParentNLB() {
         return m_parentNLB;
+    }
+
+    @Override
+    public Map<String, Variable.DataType> getVariableDataTypes() throws NLBConsistencyException {
+        Map<String, Variable.DataType> result = new HashMap<>();
+        for (VariableImpl variable : m_variables) {
+            if (variable.isDeleted()) {
+                continue;
+            }
+            Variable.Type type = variable.getType();
+            switch (type) {
+                case PAGE:
+                    Page page = getPageById(variable.getTarget());
+                    if (!page.isDeleted()) {
+                        result.put(variable.getName(), Variable.DataType.BOOLEAN);
+                    }
+                    break;
+                case OBJ:
+                    Obj obj = getObjById(variable.getTarget());
+                    if (!obj.isDeleted()) {
+                        result.put(variable.getName(), Variable.DataType.BOOLEAN);
+                    }
+                    break;
+                case LINK:
+                    final Link link = getLinkWithCheck(variable);
+                    if (!link.isDeleted()) {
+                        result.put(variable.getName(), Variable.DataType.BOOLEAN);
+                    }
+                    break;
+                case VAR:
+                    final ModifyingItemAndModification itemAndModification = (
+                            getModifyingItemAndModification(variable)
+                    );
+                    if (
+                            !itemAndModification.getModifyingItem().isDeleted()
+                                    && !itemAndModification.getModification().isDeleted()
+                            ) {
+                        //
+                    }
+                    break;
+                case LINKCONSTRAINT:
+                case EXPRESSION:
+                case MODCONSTRAINT:
+                default:
+                    // Do nothing
+            }
+        }
+        for (Map.Entry<String, PageImpl> entry : m_pages.entrySet()) {
+            final NonLinearBookImpl moduleImpl = entry.getValue().getModuleImpl();
+            if (!moduleImpl.isEmpty()) {
+                result.putAll(
+                        moduleImpl.getVariableDataTypes()
+                );
+            }
+        }
+        return result;
     }
 
     private NonLinearBook getMainNLB() {
