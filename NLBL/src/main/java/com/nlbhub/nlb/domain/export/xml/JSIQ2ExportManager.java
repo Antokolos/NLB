@@ -360,6 +360,16 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
+    protected String decorateStringVar(String constraintVar) {
+        return "vars." + constraintVar;
+    }
+
+    @Override
+    protected String decorateNumberVar(String constraintVar) {
+        return "vars." + constraintVar;
+    }
+
+    @Override
     protected String decorateLinkLabel(String linkId, String linkText) {
         return Constants.EMPTY_STRING;
     }

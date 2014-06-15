@@ -153,6 +153,16 @@ public class URQExportManager extends TextExportManager {
         return "(" + constraintVar + ">0)";//"(" + constraintVar + " == 1)";
     }
 
+    @Override
+    protected String decorateStringVar(String constraintVar) {
+        return constraintVar;
+    }
+
+    @Override
+    protected String decorateNumberVar(String constraintVar) {
+        return constraintVar;
+    }
+
     /**
      * @return
      */

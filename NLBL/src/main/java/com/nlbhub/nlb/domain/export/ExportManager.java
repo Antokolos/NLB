@@ -63,6 +63,7 @@ public abstract class ExportManager {
     private static final String MAIN_DATA_KEY = Constants.MAIN_MODULE_NAME;
     private String m_encoding;
     private Map<String, ExportData> m_exportDataMap;
+    private Map<String, Variable.DataType> m_dataTypeMap;
 
     private class ExportData {
         private NonLinearBook m_nlb;
@@ -237,6 +238,7 @@ public abstract class ExportManager {
                     )
             );
             m_exportDataMap = mainExportData.init();
+            m_dataTypeMap = nlb.getVariableDataTypes();
         } catch (NLBConsistencyException e) {
             throw new NLBExportException("Export error", e);
         }
@@ -659,7 +661,7 @@ public abstract class ExportManager {
             constraintBody = (
                     constraintBody.replaceAll(
                             "\\b" + constraintVar + "\\b",
-                            decorateBooleanVar(constraintVar)
+                            decorateVariable(constraintVar)
                     )
             );
         }
@@ -686,6 +688,57 @@ public abstract class ExportManager {
                         ? constraintBody
                         : decorateNot() + " (" + constraintBody + ")"
         );
+    }
+
+    private String translateExpressionBody(String expressionText) {
+        String expression = expressionText;
+        final Collection<String> expressionVars = VarFinder.findVariableNames(expression);
+        for (final String expressionVar : expressionVars) {
+            expression = (
+                    expression.replaceAll(
+                            "\\b" + expressionVar + "\\b",
+                            decorateVariable(expressionVar)
+                    )
+            );
+        }
+        expression = (
+                expression.replaceAll(
+                        "\\s*&&\\s*",
+                        " " + decorateAnd() + " "
+                )
+        );
+        expression = (
+                expression.replaceAll(
+                        "\\s*\\|\\|\\s*",
+                        " " + decorateOr() + " "
+                )
+        );
+        expression = (
+                expression.replaceAll(
+                        "\\s*!\\s*",
+                        " " + decorateNot() + " "
+                )
+        );
+        return expression;
+    }
+
+    private String decorateVariable(String constraintVar) {
+        Variable.DataType dataType = m_dataTypeMap.get(constraintVar);
+        switch (dataType) {
+            case BOOLEAN:
+                return decorateBooleanVar(constraintVar);
+            case NUMBER:
+                return decorateNumberVar(constraintVar);
+            case STRING:
+                return decorateStringVar(constraintVar);
+            case AUTO:
+            default:
+                return decorateAutoVar(constraintVar);
+        }
+    }
+
+    private String decorateAutoVar(String constraintVar) {
+        return decorateNumberVar(constraintVar);
     }
 
     private String buildModificationsText(
@@ -753,7 +806,10 @@ public abstract class ExportManager {
                         );
                     }
                     stringBuilder.append(
-                            decorateAssignment(variable.getName(), expression.getValue())
+                            decorateAssignment(
+                                    variable.getName(),
+                                    translateExpressionBody(expression.getValue())
+                            )
                     );
                 } else {
                     throw new NLBConsistencyException(
@@ -780,6 +836,10 @@ public abstract class ExportManager {
     protected abstract String decorateAnd();
 
     protected abstract String decorateBooleanVar(String constraintVar);
+
+    protected abstract String decorateStringVar(String constraintVar);
+
+    protected abstract String decorateNumberVar(String constraintVar);
 
     protected abstract String decorateLinkLabel(String linkId, String linkText);
 

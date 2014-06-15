@@ -2186,19 +2186,19 @@ public class NonLinearBookImpl implements NonLinearBook {
                 case PAGE:
                     Page page = getPageById(variable.getTarget());
                     if (!page.isDeleted()) {
-                        result.put(variable.getName(), Variable.DataType.BOOLEAN);
+                        result.put(variable.getName(), variable.getDataType());
                     }
                     break;
                 case OBJ:
                     Obj obj = getObjById(variable.getTarget());
                     if (!obj.isDeleted()) {
-                        result.put(variable.getName(), Variable.DataType.BOOLEAN);
+                        result.put(variable.getName(), variable.getDataType());
                     }
                     break;
                 case LINK:
                     final Link link = getLinkWithCheck(variable);
                     if (!link.isDeleted()) {
-                        result.put(variable.getName(), Variable.DataType.BOOLEAN);
+                        result.put(variable.getName(), variable.getDataType());
                     }
                     break;
                 case VAR:
@@ -2209,7 +2209,10 @@ public class NonLinearBookImpl implements NonLinearBook {
                             !itemAndModification.getModifyingItem().isDeleted()
                                     && !itemAndModification.getModification().isDeleted()
                             ) {
-                        //
+                        Variable modificationVariable = (
+                                getVariableById(itemAndModification.getModification().getVarId())
+                        );
+                        result.put(modificationVariable.getName(), modificationVariable.getDataType());
                     }
                     break;
                 case LINKCONSTRAINT:

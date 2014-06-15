@@ -51,6 +51,7 @@ import java.util.regex.Pattern;
  *
  * @author Anton P. Kolosov
  * @version 1.0 12/12/13
+ * @deprecated use JSIQ2ExportManager instead
  */
 public class JSIQExportManager extends TextExportManager {
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -230,6 +231,16 @@ public class JSIQExportManager extends TextExportManager {
 
     @Override
     protected String decorateBooleanVar(String constraintVar) {
+        return "getGlobVar('" + constraintVar + "')";
+    }
+
+    @Override
+    protected String decorateStringVar(String constraintVar) {
+        return "getGlobVar('" + constraintVar + "')";
+    }
+
+    @Override
+    protected String decorateNumberVar(String constraintVar) {
         return "getGlobVar('" + constraintVar + "')";
     }
 

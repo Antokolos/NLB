@@ -397,6 +397,16 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateStringVar(String constraintVar) {
+        return constraintVar;
+    }
+
+    @Override
+    protected String decorateNumberVar(String constraintVar) {
+        return constraintVar;
+    }
+
+    @Override
     protected String decorateLinkLabel(String linkId, String linkText) {
         return "{" + decorateId(linkId) + "|" + linkText + "}^";
     }
