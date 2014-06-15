@@ -1,9 +1,6 @@
 package com.nlbhub.nlb.builder.form;
 
-import com.nlbhub.nlb.api.Constants;
-import com.nlbhub.nlb.api.Modification;
-import com.nlbhub.nlb.api.ModifyingItem;
-import com.nlbhub.nlb.api.NLBObserver;
+import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.builder.model.ModificationsTableModelSwing;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import org.jdesktop.swingx.JXTable;
@@ -33,7 +30,14 @@ public class DialogModifications extends JDialog implements NLBObserver {
     ) {
         m_nlbFacade = nlbFacade;
         setModifyingItemProperties(modifyingItem);
-        TableColumnExt typeColumn = m_modifications.getColumnExt(2);
+        TableColumnExt dataTypeColumn = m_modifications.getColumnExt(1);
+        JComboBox<String> comboBoxDataType = new JComboBox<>();
+        comboBoxDataType.addItem(Variable.DataType.AUTO.name());
+        comboBoxDataType.addItem(Variable.DataType.STRING.name());
+        comboBoxDataType.addItem(Variable.DataType.NUMBER.name());
+        comboBoxDataType.addItem(Variable.DataType.BOOLEAN.name());
+        dataTypeColumn.setCellEditor(new DefaultCellEditor(comboBoxDataType));
+        TableColumnExt typeColumn = m_modifications.getColumnExt(3);
         JComboBox<String> comboBox = new JComboBox<>();
         comboBox.addItem(Modification.Type.ASSIGN.name());
         comboBox.addItem(Modification.Type.ADD.name());

@@ -81,10 +81,12 @@ public class ModificationsTableModel {
             case 0:
                 return "Modification Id";
             case 1:
-                return "Variable";
+                return "DataType";
             case 2:
-                return "Operation";
+                return "Variable";
             case 3:
+                return "Operation";
+            case 4:
                 return "Expression";
             default:
                 return "N/A";
@@ -102,23 +104,25 @@ public class ModificationsTableModel {
     }
 
     public int getColumnCount() {
-        return 4;
+        return 5;
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
         final Modification modification = getModificationAt(rowIndex);
+        final Variable expression;
         switch (columnIndex) {
             case 0:
                 return modification.getId();
             case 1:
-                String varId = modification.getVarId();
-                final Variable variable = m_variableMap.get(varId);
-                return (variable != null) ? variable.getName() : "";
+                expression = getExpression(modification);
+                return (expression != null) ? expression.getDataType() : Variable.DEFAULT_DATATYPE;
             case 2:
-                return modification.getType();
+                final Variable variable = getVariable(modification);
+                return (variable != null) ? variable.getName() : "";
             case 3:
-                String exprId = modification.getExprId();
-                final Variable expression = m_variableMap.get(exprId);
+                return modification.getType();
+            case 4:
+                expression = getExpression(modification);
                 return (expression != null) ? expression.getValue() : "";
             default:
                 return "N/A";
@@ -126,13 +130,25 @@ public class ModificationsTableModel {
         }
     }
 
+    private VariableImpl getVariable(Modification modification) {
+        String varId = modification.getVarId();
+        return m_variableMap.get(varId);
+    }
+
+    private VariableImpl getExpression(Modification modification) {
+        String varId = modification.getExprId();
+        return m_variableMap.get(varId);
+    }
+
     public boolean setValueAt(Object aValue, int rowIndex, int columnIndex) {
         ModificationImpl modification = getModificationAt(rowIndex);
         final String cellValue = (String) aValue;
         switch (columnIndex) {
             case 1:
-                String prevVarId = modification.getVarId();
-                VariableImpl variable = m_variableMap.get(prevVarId);
+                setDataType(modification, cellValue);
+                break;
+            case 2:
+                VariableImpl variable = getVariable(modification);
                 if (variable != null) {
                     if (StringHelper.isEmpty(cellValue)) {
                         variable.setDeleted(true);
@@ -142,10 +158,13 @@ public class ModificationsTableModel {
                     }
                 } else {
                     if (!StringHelper.isEmpty(cellValue)) {
+                        VariableImpl expression = getExpression(modification);
                         variable = (
                                 new VariableImpl(
                                         Variable.Type.VAR,
-                                        Variable.DataType.AUTO,
+                                        (expression != null)
+                                                ? expression.getDataType()
+                                                : Variable.DEFAULT_DATATYPE,
                                         cellValue,
                                         Variable.DEFAULT_VALUE,
                                         modification.getFullId()
@@ -156,12 +175,11 @@ public class ModificationsTableModel {
                     }
                 }
                 break;
-            case 2:
+            case 3:
                 modification.setType(cellValue);
                 break;
-            case 3:
-                String prevExprId = modification.getExprId();
-                VariableImpl expression = m_variableMap.get(prevExprId);
+            case 4:
+                VariableImpl expression = getExpression(modification);
                 if (expression != null) {
                     if (StringHelper.isEmpty(cellValue)) {
                         expression.setDeleted(true);
@@ -174,7 +192,7 @@ public class ModificationsTableModel {
                         expression = (
                                 new VariableImpl(
                                         Variable.Type.EXPRESSION,
-                                        Variable.DataType.AUTO,
+                                        Variable.DEFAULT_DATATYPE,
                                         Variable.DEFAULT_NAME,
                                         cellValue,
                                         modification.getFullId()
@@ -189,6 +207,40 @@ public class ModificationsTableModel {
                 return false;
         }
         return true;
+    }
+
+    private void setDataType(ModificationImpl modification, String cellValue) {
+        VariableImpl variable = getVariable(modification);
+        VariableImpl expression = getExpression(modification);
+        if (cellValue.equals(Variable.DataType.STRING.name())) {
+            if (variable != null) {
+                variable.setDataType(Variable.DataType.STRING);
+            }
+            if (expression != null) {
+                expression.setDataType(Variable.DataType.STRING);
+            }
+        } else if (cellValue.equals(Variable.DataType.BOOLEAN.name())) {
+            if (variable != null) {
+                variable.setDataType(Variable.DataType.BOOLEAN);
+            }
+            if (expression != null) {
+                expression.setDataType(Variable.DataType.BOOLEAN);
+            }
+        } else if (cellValue.equals(Variable.DataType.NUMBER.name())) {
+            if (variable != null) {
+                variable.setDataType(Variable.DataType.NUMBER);
+            }
+            if (expression != null) {
+                expression.setDataType(Variable.DataType.NUMBER);
+            }
+        } else {
+            if (variable != null) {
+                variable.setDataType(Variable.DataType.AUTO);
+            }
+            if (expression != null) {
+                expression.setDataType(Variable.DataType.AUTO);
+            }
+        }
     }
 
     private ModificationImpl getModificationAt(int rowIndex) {
