@@ -1341,7 +1341,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             DecisionPoint decisionPoint
     ) throws ScriptException {
         final NonLinearBook decisionModule = getDecisionPointModule(decisionPoint);
-        final Page page = decisionModule.getPageById(decisionPoint.getPageId());
+        final Page page = decisionModule.getPageById(decisionPoint.getFromPageId());
         Variable variableCur = decisionModule.getVariableById(page.getVarId());
         if (variableCur != null && !StringHelper.isEmpty(variableCur.getName())) {
             visitedVars.put(variableCur.getName(), true);

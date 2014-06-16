@@ -25,13 +25,14 @@
                                     <xsl:value-of select="bookId"/>
                                     <xsl:if test="is-link-info/text() = 'true'">
                                         <xsl:text>/link/</xsl:text>
-                                        <xsl:value-of select="pageId"/>
+                                        <xsl:value-of select="fromPageId"/>
                                         <xsl:text>/</xsl:text>
                                         <xsl:value-of select="linkId"/>
                                     </xsl:if>
                                     <xsl:if test="is-link-info/text() = 'false'">
                                         <xsl:text>/page/</xsl:text>
-                                        <xsl:value-of select="pageId"/>
+                                        <!-- TODO: Should be changed to toPageId -->
+                                        <xsl:value-of select="fromPageId"/>
                                     </xsl:if>
                                     <xsl:text>?rollback=true&amp;visit-count=</xsl:text>
                                     <xsl:value-of select="visit-count"/>

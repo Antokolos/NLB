@@ -58,7 +58,7 @@ import java.util.List;
 @XmlRootElement(name = "decision-point")
 public class DecisionPoint {
     private String m_bookId;
-    private String m_pageId;
+    private String m_fromPageId;
     private String m_linkId;
     private String m_text;
     private Integer m_visitCount;
@@ -72,17 +72,17 @@ public class DecisionPoint {
         m_visitCount = 1;
     }
 
-    public DecisionPoint(String bookId, String pageId, String linkId) {
+    public DecisionPoint(String bookId, String fromPageId, String linkId) {
         this();
         m_bookId = bookId;
-        m_pageId = pageId;
+        m_fromPageId = fromPageId;
         m_linkId = linkId;
     }
 
-    public DecisionPoint(String bookId, String pageId) {
+    public DecisionPoint(String bookId, String fromPageId) {
         this();
         m_bookId = bookId;
-        m_pageId = pageId;
+        m_fromPageId = fromPageId;
         m_linkId = Constants.EMPTY_STRING;
     }
 
@@ -96,13 +96,13 @@ public class DecisionPoint {
         m_bookId = bookId;
     }
 
-    @XmlElement(name = "pageId")
-    public String getPageId() {
-        return m_pageId;
+    @XmlElement(name = "fromPageId")
+    public String getFromPageId() {
+        return m_fromPageId;
     }
 
-    public void setPageId(String pageId) {
-        m_pageId = pageId;
+    public void setFromPageId(String fromPageId) {
+        m_fromPageId = fromPageId;
     }
 
     @XmlElement(name = "linkId")
@@ -162,7 +162,7 @@ public class DecisionPoint {
 
         if (!m_bookId.equals(decisionPoint.m_bookId)) return false;
         if (!m_linkId.equals(decisionPoint.m_linkId)) return false;
-        if (!m_pageId.equals(decisionPoint.m_pageId)) return false;
+        if (!m_fromPageId.equals(decisionPoint.m_fromPageId)) return false;
 
         return true;
     }
@@ -170,7 +170,7 @@ public class DecisionPoint {
     @Override
     public int hashCode() {
         int result = m_bookId.hashCode();
-        result = 31 * result + m_pageId.hashCode();
+        result = 31 * result + m_fromPageId.hashCode();
         result = 31 * result + m_linkId.hashCode();
         return result;
     }

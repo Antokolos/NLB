@@ -224,25 +224,25 @@ public class GetNLBDataService {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    @Path("page/{pageId}")
+    @Path("page/{toPageId}")
     public Response getPageData(
             @PathParam("bookId") final PathSegment bookId,
-            @PathParam("pageId") final String pageId,
+            @PathParam("toPageId") final String toPageId,
             @QueryParam("rollback") final Boolean rollback,
             @QueryParam("visit-count") final Integer visitCount
     ) {
         Response response;
         try {
             s_history.suggestDecisionPointToBeMade(
-                    new DecisionPoint(bookId.toString(), pageId),
+                    new DecisionPoint(bookId.toString(), toPageId),
                     (rollback != null) ? rollback : false,
                     (visitCount != null) ? visitCount : History.DO_NOT_USE_VISIT_COUNT
             );
             NonLinearBookImpl mainNLB = getNLBFromCache(bookId.getPath());
             // Now get required module
             ModuleData moduleData = getNonLinearBookModuleData(bookId, mainNLB);
-            response = generateFilteredResponse(moduleData, pageId);
-            Page pageToBeVisited = moduleData.getModule().getPageById(pageId);
+            response = generateFilteredResponse(moduleData, toPageId);
+            Page pageToBeVisited = moduleData.getModule().getPageById(toPageId);
             s_history.makeDecision(
                     !StringHelper.isEmpty(pageToBeVisited.getCaption())
                             ? pageToBeVisited.getCaption()
@@ -284,10 +284,10 @@ public class GetNLBDataService {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    @Path("link/{pageId}/{linkId}")
+    @Path("link/{fromPageId}/{linkId}")
     public Response followLink(
             @PathParam("bookId") final PathSegment bookId,
-            @PathParam("pageId") final String pageId,
+            @PathParam("fromPageId") final String fromPageId,
             @PathParam("linkId") final String linkId,
             @QueryParam("rollback") final Boolean rollback,
             @QueryParam("visit-count") final Integer visitCount
@@ -295,14 +295,14 @@ public class GetNLBDataService {
         Response response;
         try {
             s_history.suggestDecisionPointToBeMade(
-                    new DecisionPoint(bookId.toString(), pageId, linkId),
+                    new DecisionPoint(bookId.toString(), fromPageId, linkId),
                     (rollback != null) ? rollback : false,
                     (visitCount != null) ? visitCount : History.DO_NOT_USE_VISIT_COUNT
             );
             NonLinearBookImpl mainNLB = getNLBFromCache(bookId.getPath());
             // Now get required module
             ModuleData moduleData = getNonLinearBookModuleData(bookId, mainNLB);
-            final Link link = moduleData.getModule().getPageById(pageId).getLinkById(linkId);
+            final Link link = moduleData.getModule().getPageById(fromPageId).getLinkById(linkId);
             if (link != null) {
                 response = generateFilteredResponse(moduleData, link.getTarget());
                 s_history.makeDecision(link.getText());
