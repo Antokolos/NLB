@@ -767,7 +767,7 @@ public abstract class ExportManager {
                                     expression.getValue()
                             )
                     );
-                } else if (modification.getType().equals(ModificationImpl.Type.SUBTRACT)) {
+                } else if (modification.getType().equals(ModificationImpl.Type.REMOVE)) {
                     Variable expression = (
                             exportData.getNlb().getVariableById(modification.getExprId())
                     );
@@ -805,9 +805,12 @@ public abstract class ExportManager {
                                         + modification.getFullId()
                         );
                     }
+                    // Left part of assignment should be decorated as ordinary variable, with the exception of String
                     stringBuilder.append(
                             decorateAssignment(
-                                    variable.getName(),
+                                    (variable.getDataType() == Variable.DataType.STRING)
+                                            ? decorateStringVar(variable.getName())
+                                            : decorateAutoVar(variable.getName()),
                                     translateExpressionBody(expression.getValue())
                             )
                     );

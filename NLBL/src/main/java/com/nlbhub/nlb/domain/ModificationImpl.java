@@ -124,8 +124,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     public void setType(String type) {
         if (type.equals(Type.ADD.name())) {
             m_type = Type.ADD;
-        } else if (type.equals(Type.SUBTRACT.name())) {
-            m_type = Type.SUBTRACT;
+        } else if (type.equals(Type.REMOVE.name())) {
+            m_type = Type.REMOVE;
         } else {
             m_type = Type.ASSIGN;
         }
@@ -166,6 +166,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 TYPE_FILE_NAME,
                 "Error while reading modification type for modification with Id = " + getId()
         );
+        // TODO: SUBTRACT is the deprecated alias of REMOVE, this case should be deleted when all books are updated
         switch (type) {
             case "ASSIGN":
                 m_type = Type.ASSIGN;
@@ -174,7 +175,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 m_type = Type.ADD;
                 break;
             case "SUBTRACT":
-                m_type = Type.SUBTRACT;
+            case "REMOVE":
+                m_type = Type.REMOVE;
                 break;
             default:
                 throw new NLBConsistencyException(
