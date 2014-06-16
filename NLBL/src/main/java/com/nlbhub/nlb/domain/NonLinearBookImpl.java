@@ -1144,11 +1144,21 @@ public class NonLinearBookImpl implements NonLinearBook {
             final History history
     ) throws ScriptException {
         final PageImpl source = getPageImplById(sourceId);
+        ScriptEngineManager factory = new ScriptEngineManager();
+        List<DecisionPoint> decisionsList = history.getDecisionPoints();
+        final Map<String, Object> visitedVars = new HashMap<>();
+
+        for (final DecisionPoint decisionPoint : decisionsList) {
+            makeDecisionVariableChange(factory, visitedVars, decisionPoint);
+        }
+
+        final DecisionPoint decisionPointToBeMade = history.getDecisionPointToBeMade();
+        makeDecisionVariableChange(factory, visitedVars, decisionPointToBeMade);
 
         List<String> linkIdsToBeExcluded = new ArrayList<>();
         // TODO: ineffective search, please refactor!
         for (final Link link : source.getLinks()) {
-            if (determineLinkExcludedStatus(history, link)) {
+            if (determineLinkExcludedStatus(factory, visitedVars, link)) {
                 linkIdsToBeExcluded.add(link.getId());
             }
         }
@@ -1166,7 +1176,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                             false
                     )
             );
-            if (!determineLinkExcludedStatus(history, link)) {
+            if (!determineLinkExcludedStatus(factory, visitedVars, link)) {
                 linksToBeAdded.add(link);
             }
         }
@@ -1186,7 +1196,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                             false
                     )
             );
-            if (!determineLinkExcludedStatus(history, link)) {
+            if (!determineLinkExcludedStatus(factory, visitedVars, link)) {
                 linksToBeAdded.add(link);
             }
         } else if (
@@ -1211,7 +1221,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                             false
                     )
             );
-            if (!determineLinkExcludedStatus(history, link)) {
+            if (!determineLinkExcludedStatus(factory, visitedVars, link)) {
                 linksToBeAdded.add(link);
             }
         }
@@ -1261,11 +1271,11 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     private boolean determineLinkExcludedStatus(
-            History history,
-            Link link
+            final ScriptEngineManager factory,
+            final Map<String, Object> visitedVars,
+            final Link link
     ) throws ScriptException {
-        List<DecisionPoint> decisionsList = history.getDecisionPoints();
-        ScriptEngineManager factory = new ScriptEngineManager();
+
         final Variable constraintVar = getVariableById(link.getConstrId());
         final Variable moduleConstraint = (
                 m_parentPage != null
@@ -1274,15 +1284,6 @@ public class NonLinearBookImpl implements NonLinearBook {
         );
 
         if (constraintVar != null || moduleConstraint != null) {
-            final Map<String, Object> visitedVars = new HashMap<>();
-
-            for (final DecisionPoint decisionPoint : decisionsList) {
-                makeDecisionVariableChange(factory, visitedVars, decisionPoint);
-            }
-
-            final DecisionPoint decisionPointToBeMade = history.getDecisionPointToBeMade();
-            makeDecisionVariableChange(factory, visitedVars, decisionPointToBeMade);
-
             if (moduleConstraint != null && link.isObeyToModuleConstraint()) {
                 final String constraint = moduleConstraint.getValue().trim();
                 ScriptEngine engine = prepareEngine(factory, constraint, visitedVars);

@@ -423,6 +423,17 @@ public class PageImpl extends AbstractNodeItem implements Page {
         resultCoords.setHeight(sourceCoords.getHeight());
         result.setDeleted(source.isDeleted());
         result.setReturnPageId(source.getReturnPageId());
+        result.setVarId(source.getVarId());
+        result.setCaption(source.getCaption());
+        result.setModuleConstrId(source.getModuleConstrId());
+        result.setModuleName(source.getModuleName());
+        result.setReturnText(source.getReturnText());
+        result.setTraverseText(source.getTraverseText());
+        result.setUseCaption(source.isUseCaption());
+        result.setFill(source.getFill());
+        result.setParent(source.getParent());
+        result.setStroke(source.getStroke());
+        result.setTextColor(source.getTextColor());
         AbstractNodeItem.filterTargetLinkList(result, source, linkIdsToBeExcluded);
         for (Link link : linksToBeAdded) {
             result.addLink(new LinkImpl(source, link));

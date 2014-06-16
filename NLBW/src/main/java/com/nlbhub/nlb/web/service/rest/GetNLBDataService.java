@@ -175,31 +175,9 @@ public class GetNLBDataService {
                     (rollback != null) ? rollback : false,
                     (visitCount != null) ? visitCount : History.DO_NOT_USE_VISIT_COUNT
             );
-            ReturnBookIdAndModulePage returnBookIdAndModulePage = (
-                    getReturnLinkBookId(decisionPointToBeMade, moduleData)
-            );
-            final String normalLinkBookId = getNormalLinkBookId(decisionPointToBeMade);
-            final String traversalLinkBookId = getTraversalLinkBookId(
-                    decisionPointToBeMade,
-                    moduleData,
-                    moduleData.getModule().getStartPoint()
-            );
+            response = generateFilteredResponse(moduleData, moduleData.getModule().getStartPoint());
             final Page pageToBeVisited = (
                     moduleData.getModule().getPageById(moduleData.getModule().getStartPoint())
-            );
-            addPossibleNextDecisions(
-                    pageToBeVisited,
-                    decisionPointToBeMade,
-                    returnBookIdAndModulePage,
-                    normalLinkBookId,
-                    traversalLinkBookId
-            );
-            response = generateResponse(
-                    bookId.getPath(),
-                    normalLinkBookId,
-                    traversalLinkBookId,
-                    returnBookIdAndModulePage,
-                    pageToBeVisited
             );
             s_history.makeDecision(
                     !StringHelper.isEmpty(pageToBeVisited.getCaption())
@@ -214,6 +192,8 @@ public class GetNLBDataService {
         } catch (NLBVCSException ex) {
             Logger.getLogger(GetNLBDataService.class.getName()).log(Level.SEVERE, null, ex);
         } catch (DecisionException ex) {
+            Logger.getLogger(GetNLBDataService.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ScriptException ex) {
             Logger.getLogger(GetNLBDataService.class.getName()).log(Level.SEVERE, null, ex);
         }
         return Response.serverError().build();
