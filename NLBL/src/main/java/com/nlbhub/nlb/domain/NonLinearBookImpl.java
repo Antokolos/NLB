@@ -1302,8 +1302,20 @@ public class NonLinearBookImpl implements NonLinearBook {
             if (constraintVar != null) {
                 final String constraint = constraintVar.getValue().trim();
                 ScriptEngine engine = prepareEngine(factory, constraint, visitedVars);
-                // TODO: Should check that result can be casted to Boolean, get exception otherwise
-                Boolean evalResult = (Boolean) engine.eval(constraint);
+                Object evalObject = engine.eval(constraint);
+                Boolean evalResult = false;
+                if (evalObject != null) {
+                    if (evalObject instanceof Boolean) {
+                        evalResult = (Boolean) evalObject;
+                    } else if (evalObject instanceof Double) {
+                        evalResult = ((Double) evalObject) != 0.0;
+                    } else if (evalObject instanceof Integer) {
+                        evalResult = ((Integer) evalObject) != 0;
+                    } else {
+                        // Every other non-null result type will be interpreted as true
+                        evalResult = true;
+                    }
+                }
                 return (
                         (link.isPositiveConstraint() && !evalResult)
                                 || (!link.isPositiveConstraint() && evalResult)
