@@ -31,7 +31,8 @@
                                     </xsl:if>
                                     <xsl:if test="is-link-info/text() = 'false'">
                                         <xsl:text>/page/</xsl:text>
-                                        <!-- TODO: Should be changed to toPageId -->
+                                        <xsl:value-of select="toPageId"/>
+                                        <xsl:text>/from/</xsl:text>
                                         <xsl:value-of select="fromPageId"/>
                                     </xsl:if>
                                     <xsl:text>?rollback=true&amp;visit-count=</xsl:text>

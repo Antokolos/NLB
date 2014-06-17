@@ -59,6 +59,7 @@ import java.util.List;
 public class DecisionPoint {
     private String m_bookId;
     private String m_fromPageId;
+    private String m_toPageId;
     private String m_linkId;
     private String m_text;
     private Integer m_visitCount;
@@ -76,13 +77,15 @@ public class DecisionPoint {
         this();
         m_bookId = bookId;
         m_fromPageId = fromPageId;
+        m_toPageId = Constants.EMPTY_STRING;
         m_linkId = linkId;
     }
 
-    public DecisionPoint(String bookId, String fromPageId) {
+    public DecisionPoint(String bookId, String fromPageId, String toPageId, boolean isTraverse) {
         this();
         m_bookId = bookId;
         m_fromPageId = fromPageId;
+        m_toPageId = toPageId;
         m_linkId = Constants.EMPTY_STRING;
     }
 
@@ -103,6 +106,15 @@ public class DecisionPoint {
 
     public void setFromPageId(String fromPageId) {
         m_fromPageId = fromPageId;
+    }
+
+    @XmlElement(name = "toPageId")
+    public String getToPageId() {
+        return m_toPageId;
+    }
+
+    public void setToPageId(String toPageId) {
+        m_toPageId = toPageId;
     }
 
     @XmlElement(name = "linkId")
@@ -163,6 +175,7 @@ public class DecisionPoint {
         if (!m_bookId.equals(decisionPoint.m_bookId)) return false;
         if (!m_linkId.equals(decisionPoint.m_linkId)) return false;
         if (!m_fromPageId.equals(decisionPoint.m_fromPageId)) return false;
+        if (!m_toPageId.equals(decisionPoint.m_toPageId)) return false;
 
         return true;
     }
@@ -171,6 +184,7 @@ public class DecisionPoint {
     public int hashCode() {
         int result = m_bookId.hashCode();
         result = 31 * result + m_fromPageId.hashCode();
+        result = 31 * result + m_toPageId.hashCode();
         result = 31 * result + m_linkId.hashCode();
         return result;
     }

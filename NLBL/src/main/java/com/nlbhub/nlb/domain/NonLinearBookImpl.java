@@ -1341,14 +1341,11 @@ public class NonLinearBookImpl implements NonLinearBook {
             DecisionPoint decisionPoint
     ) throws ScriptException {
         final NonLinearBook decisionModule = getDecisionPointModule(decisionPoint);
-        final Page page = decisionModule.getPageById(decisionPoint.getFromPageId());
-        Variable variableCur = decisionModule.getVariableById(page.getVarId());
-        if (variableCur != null && !StringHelper.isEmpty(variableCur.getName())) {
-            visitedVars.put(variableCur.getName(), true);
-        }
-        updateVisitedVars(decisionModule, page, factory, visitedVars);
+        makeVariableChangesForVisitedPage(decisionModule, decisionPoint.getFromPageId(), factory, visitedVars);
+        makeVariableChangesForVisitedPage(decisionModule, decisionPoint.getToPageId(), factory, visitedVars);
         if (decisionPoint.isLinkInfo()) {
-            final Link linkToBeFollowedCur = findLink(page, decisionPoint.getLinkId());
+            final Page pageFrom = decisionModule.getPageById(decisionPoint.getFromPageId());
+            final Link linkToBeFollowedCur = findLink(pageFrom, decisionPoint.getLinkId());
             Variable variableLinkCur = (
                     decisionModule.getVariableById(linkToBeFollowedCur.getVarId())
             );
@@ -1359,6 +1356,22 @@ public class NonLinearBookImpl implements NonLinearBook {
                 visitedVars.put(variableLinkCur.getName(), true);
             }
             updateVisitedVars(decisionModule, linkToBeFollowedCur, factory, visitedVars);
+        }
+    }
+
+    private void makeVariableChangesForVisitedPage(
+            final NonLinearBook decisionModule,
+            final String pageId,
+            final ScriptEngineManager factory,
+            final Map<String, Object> visitedVars
+    ) throws ScriptException {
+        if (!StringHelper.isEmpty(pageId)) {
+            final Page page = decisionModule.getPageById(pageId);
+            Variable variable = decisionModule.getVariableById(page.getVarId());
+            if (variable != null && !StringHelper.isEmpty(variable.getName())) {
+                visitedVars.put(variable.getName(), true);
+            }
+            updateVisitedVars(decisionModule, page, factory, visitedVars);
         }
     }
 

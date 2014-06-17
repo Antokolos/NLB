@@ -152,13 +152,15 @@ public class GetNLBDataService {
             @PathParam("bookId") final PathSegment bookId
     ) {
         s_history.clear();
-        return getStartPointData(bookId, null, null);
+        return getStartPointData(bookId, Constants.EMPTY_STRING, null, null);
     }
 
     @GET
     @Produces(MediaType.TEXT_HTML)
+    @Path("from/{fromPageId}")
     public Response getStartPointData(
             @PathParam("bookId") final PathSegment bookId,
+            @PathParam("fromPageId") final String fromPageId,
             @QueryParam("rollback") final Boolean rollback,
             @QueryParam("visit-count") final Integer visitCount
     ) {
@@ -168,7 +170,12 @@ public class GetNLBDataService {
             // Now get required module
             ModuleData moduleData = getNonLinearBookModuleData(bookId, mainNLB);
             final DecisionPoint decisionPointToBeMade = (
-                    new DecisionPoint(bookId.toString(), moduleData.getModule().getStartPoint())
+                    new DecisionPoint(
+                            bookId.toString(),
+                            fromPageId,
+                            moduleData.getModule().getStartPoint(),
+                            true
+                    )
             );
             s_history.suggestDecisionPointToBeMade(
                     decisionPointToBeMade,
@@ -224,17 +231,23 @@ public class GetNLBDataService {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    @Path("page/{toPageId}")
+    @Path("page/{toPageId}/from/{fromPageId}")
     public Response getPageData(
             @PathParam("bookId") final PathSegment bookId,
             @PathParam("toPageId") final String toPageId,
+            @PathParam("fromPageId") final String fromPageId,
             @QueryParam("rollback") final Boolean rollback,
             @QueryParam("visit-count") final Integer visitCount
     ) {
         Response response;
         try {
             s_history.suggestDecisionPointToBeMade(
-                    new DecisionPoint(bookId.toString(), toPageId),
+                    new DecisionPoint(
+                            bookId.toString(),
+                            fromPageId,
+                            toPageId,
+                            false
+                    ),
                     (rollback != null) ? rollback : false,
                     (visitCount != null) ? visitCount : History.DO_NOT_USE_VISIT_COUNT
             );
@@ -506,7 +519,9 @@ public class GetNLBDataService {
                 decisionPointToBeMade.addPossibleNextDecisionPoint(
                         new DecisionPoint(
                                 traversalLinkBookId,
-                                link.getTarget()
+                                pageToBeVisited.getId(),
+                                link.getTarget(),
+                                true
                         )
                 );
             } else if (link.isReturnLink()) {
@@ -514,14 +529,18 @@ public class GetNLBDataService {
                     decisionPointToBeMade.addPossibleNextDecisionPoint(
                             new DecisionPoint(
                                     returnBookIdAndPage.getBookId(),
-                                    returnBookIdAndPage.getModulePageId()
+                                    pageToBeVisited.getId(),
+                                    returnBookIdAndPage.getModulePageId(),
+                                    false
                             )
                     );
                 } else {
                     decisionPointToBeMade.addPossibleNextDecisionPoint(
                             new DecisionPoint(
                                     returnBookIdAndPage.getBookId(),
-                                    pageToBeVisited.getReturnPageId()
+                                    pageToBeVisited.getId(),
+                                    pageToBeVisited.getReturnPageId(),
+                                    false
                             )
                     );
                 }
