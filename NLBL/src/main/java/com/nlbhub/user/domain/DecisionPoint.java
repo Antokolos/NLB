@@ -58,6 +58,7 @@ import java.util.List;
 @XmlRootElement(name = "decision-point")
 public class DecisionPoint {
     private String m_bookId;
+    private String m_fromBookId;
     private String m_fromPageId;
     private String m_toPageId;
     private String m_linkId;
@@ -75,15 +76,17 @@ public class DecisionPoint {
 
     public DecisionPoint(String bookId, String fromPageId, String linkId) {
         this();
-        m_bookId = bookId;
+        // book Id is the same as the from book Id
+        m_bookId = m_fromBookId = bookId;
         m_fromPageId = fromPageId;
         m_toPageId = Constants.EMPTY_STRING;
         m_linkId = linkId;
     }
 
-    public DecisionPoint(String bookId, String fromPageId, String toPageId, boolean isTraverse) {
+    public DecisionPoint(String bookId, String fromPageId, String toPageId, String fromBookId) {
         this();
         m_bookId = bookId;
+        m_fromBookId = fromBookId;
         m_fromPageId = fromPageId;
         m_toPageId = toPageId;
         m_linkId = Constants.EMPTY_STRING;
@@ -97,6 +100,15 @@ public class DecisionPoint {
 
     public void setBookId(String bookId) {
         m_bookId = bookId;
+    }
+
+    @XmlElement(name = "fromBookId")
+    public String getFromBookId() {
+        return m_fromBookId;
+    }
+
+    public void setFromBookId(String fromBookId) {
+        m_fromBookId = fromBookId;
     }
 
     @XmlElement(name = "fromPageId")
@@ -173,6 +185,7 @@ public class DecisionPoint {
         DecisionPoint decisionPoint = (DecisionPoint) o;
 
         if (!m_bookId.equals(decisionPoint.m_bookId)) return false;
+        if (!m_fromBookId.equals(decisionPoint.m_fromBookId)) return false;
         if (!m_linkId.equals(decisionPoint.m_linkId)) return false;
         if (!m_fromPageId.equals(decisionPoint.m_fromPageId)) return false;
         if (!m_toPageId.equals(decisionPoint.m_toPageId)) return false;
@@ -183,6 +196,7 @@ public class DecisionPoint {
     @Override
     public int hashCode() {
         int result = m_bookId.hashCode();
+        result = 31 * result + m_fromBookId.hashCode();
         result = 31 * result + m_fromPageId.hashCode();
         result = 31 * result + m_toPageId.hashCode();
         result = 31 * result + m_linkId.hashCode();

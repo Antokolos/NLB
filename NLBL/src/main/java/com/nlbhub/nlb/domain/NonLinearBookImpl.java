@@ -1249,10 +1249,10 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
-    private NonLinearBook getDecisionPointModule(DecisionPoint decisionPoint) {
+    private NonLinearBook getModuleByBookId(final String bookId) {
         NonLinearBook result = getMainNLB();
         Map<Integer, String> modulePageMap = new HashMap<>();
-        String[] idParts = decisionPoint.getBookId().split(";");
+        String[] idParts = bookId.split(";");
         int maxModuleIdx = 0;
         for (String idPart : idParts) {
             String[] modulePageParts = idPart.split("=");
@@ -1336,12 +1336,13 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     private void makeDecisionVariableChange(
-            ScriptEngineManager factory,
-            Map<String, Object> visitedVars,
-            DecisionPoint decisionPoint
+            final ScriptEngineManager factory,
+            final Map<String, Object> visitedVars,
+            final DecisionPoint decisionPoint
     ) throws ScriptException {
-        final NonLinearBook decisionModule = getDecisionPointModule(decisionPoint);
-        makeVariableChangesForVisitedPage(decisionModule, decisionPoint.getFromPageId(), factory, visitedVars);
+        final NonLinearBook decisionModule = getModuleByBookId(decisionPoint.getBookId());
+        final NonLinearBook fromModule = getModuleByBookId(decisionPoint.getFromBookId());
+        makeVariableChangesForVisitedPage(fromModule, decisionPoint.getFromPageId(), factory, visitedVars);
         makeVariableChangesForVisitedPage(decisionModule, decisionPoint.getToPageId(), factory, visitedVars);
         if (decisionPoint.isLinkInfo()) {
             final Page pageFrom = decisionModule.getPageById(decisionPoint.getFromPageId());

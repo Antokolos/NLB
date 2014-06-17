@@ -47,6 +47,8 @@
                 <xsl:if test="is-traversal/text() = 'true'">
                     <xsl:value-of select="$traversalLinkBookId"/>
                     <xsl:text>/from/</xsl:text>
+                    <xsl:value-of select="$normalLinkBookId"/>
+                    <xsl:text>/</xsl:text>
                     <xsl:value-of select="/page/id"/>
                 </xsl:if>
                 <xsl:if test="not(is-traversal/text() = 'true') and is-return/text() = 'true'">
@@ -59,6 +61,8 @@
                         <xsl:value-of select="$returnModulePageId"/>
                     </xsl:if>
                     <xsl:text>/from/</xsl:text>
+                    <xsl:value-of select="$normalLinkBookId"/>
+                    <xsl:text>/</xsl:text>
                     <xsl:value-of select="/page/id"/>
                 </xsl:if>
                 <xsl:if test="not(is-traversal/text() = 'true') and not(is-return/text() = 'true')">

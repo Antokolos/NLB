@@ -152,17 +152,18 @@ public class GetNLBDataService {
             @PathParam("bookId") final PathSegment bookId
     ) {
         s_history.clear();
-        return getStartPointData(bookId, Constants.EMPTY_STRING, null, null);
+        return getStartPointData(bookId, Constants.EMPTY_STRING, null, null, bookId);
     }
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    @Path("from/{fromPageId}")
+    @Path("from/{fromBookId}/{fromPageId}")
     public Response getStartPointData(
             @PathParam("bookId") final PathSegment bookId,
             @PathParam("fromPageId") final String fromPageId,
             @QueryParam("rollback") final Boolean rollback,
-            @QueryParam("visit-count") final Integer visitCount
+            @QueryParam("visit-count") final Integer visitCount,
+            @PathParam("fromBookId") final PathSegment fromBookId
     ) {
         Response response;
         try {
@@ -174,7 +175,7 @@ public class GetNLBDataService {
                             bookId.toString(),
                             fromPageId,
                             moduleData.getModule().getStartPoint(),
-                            true
+                            fromBookId.toString()
                     )
             );
             s_history.suggestDecisionPointToBeMade(
@@ -231,11 +232,12 @@ public class GetNLBDataService {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    @Path("page/{toPageId}/from/{fromPageId}")
+    @Path("page/{toPageId}/from/{fromBookId}/{fromPageId}")
     public Response getPageData(
             @PathParam("bookId") final PathSegment bookId,
             @PathParam("toPageId") final String toPageId,
             @PathParam("fromPageId") final String fromPageId,
+            @PathParam("fromBookId") final PathSegment fromBookId,
             @QueryParam("rollback") final Boolean rollback,
             @QueryParam("visit-count") final Integer visitCount
     ) {
@@ -246,7 +248,7 @@ public class GetNLBDataService {
                             bookId.toString(),
                             fromPageId,
                             toPageId,
-                            false
+                            fromBookId.toString()
                     ),
                     (rollback != null) ? rollback : false,
                     (visitCount != null) ? visitCount : History.DO_NOT_USE_VISIT_COUNT
@@ -521,7 +523,7 @@ public class GetNLBDataService {
                                 traversalLinkBookId,
                                 pageToBeVisited.getId(),
                                 link.getTarget(),
-                                true
+                                normalLinkBookId
                         )
                 );
             } else if (link.isReturnLink()) {
@@ -531,7 +533,7 @@ public class GetNLBDataService {
                                     returnBookIdAndPage.getBookId(),
                                     pageToBeVisited.getId(),
                                     returnBookIdAndPage.getModulePageId(),
-                                    false
+                                    normalLinkBookId
                             )
                     );
                 } else {
@@ -540,7 +542,7 @@ public class GetNLBDataService {
                                     returnBookIdAndPage.getBookId(),
                                     pageToBeVisited.getId(),
                                     pageToBeVisited.getReturnPageId(),
-                                    false
+                                    normalLinkBookId
                             )
                     );
                 }
