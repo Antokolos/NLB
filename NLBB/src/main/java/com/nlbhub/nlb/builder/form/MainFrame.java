@@ -65,6 +65,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * The MainFrame class
@@ -80,6 +81,10 @@ public class MainFrame implements NLBObserver {
             LoggerFactory.getLogger(MainFrame.class)
     );
     private static final String MAIN_PANE_KEY = Constants.MAIN_MODULE_NAME;
+    /**
+     * The number of ms to wait for server start before launching browser
+     */
+    private static final long START_SERVER_TIMEOUT = 500;
     private JPanel m_mainFramePanel;
     private JButton m_newFileButton;
     private JButton m_openFileButton;
@@ -1017,15 +1022,21 @@ public class MainFrame implements NLBObserver {
                 try {
                     if (!m_launcher.isRunning()) {
                         PaneEditorInfo editorInfo = getMainPaneInfo();
-                        final File rootDir = editorInfo.getPaneNlbFacade().getNlb().getRootDir();
+                        NonLinearBook mainNLB = editorInfo.getPaneNlbFacade().getNlb();
+                        final File rootDir = mainNLB.getRootDir();
                         if (rootDir != null) {
                             m_launcher.setNLBLibraryRoot(rootDir.getParent());
-                            Thread thread = new Thread(m_launcher);
-                            thread.start();
-                            BareBonesBrowserLaunch.openURL(
-                                    "http://localhost:8111/nlb/" + rootDir.getName() + "/start"
-                            );
                         }
+                        String bookId = (rootDir != null) ? rootDir.getName() : UUID.randomUUID().toString();
+                        m_launcher.clearNLBCache();
+                        // Always prefer in-memory data
+                        m_launcher.putNLBInMemoryToCache(bookId, mainNLB);
+                        Thread thread = new Thread(m_launcher);
+                        thread.start();
+                        Thread.sleep(START_SERVER_TIMEOUT);
+                        BareBonesBrowserLaunch.openURL(
+                                "http://localhost:8111/nlb/" + bookId + "/start"
+                        );
                         m_startServerButton.setEnabled(false);
                         m_stopServerButton.setEnabled(true);
                     }

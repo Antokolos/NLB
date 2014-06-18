@@ -40,6 +40,7 @@ package com.nlbhub.nlb.web.service.rest;
 
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.Link;
+import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.api.Page;
 import com.nlbhub.nlb.domain.*;
 import com.nlbhub.nlb.exception.DecisionException;
@@ -76,7 +77,7 @@ import java.util.logging.Logger;
 @Path("{bookId}")
 public class GetNLBDataService {
     public static String s_nlbLibraryRoot = "/D:/work/Azartox/NLB/books/";
-    private static final Map<String, NonLinearBookImpl> m_nlbCache = new HashMap<>();
+    private static final Map<String, NonLinearBook> m_nlbCache = new HashMap<>();
     private static final JaxbMarshaller PAGE_MARSHALLER = (
             new JaxbMarshaller(
                     PageImpl.class,
@@ -117,14 +118,14 @@ public class GetNLBDataService {
 
     private class ModuleData {
         private String m_mainNLBId;
-        private NonLinearBookImpl m_module;
+        private NonLinearBook m_module;
         private int m_moduleDepth;
 
-        private NonLinearBookImpl getModule() {
+        private NonLinearBook getModule() {
             return m_module;
         }
 
-        private void setModule(NonLinearBookImpl module) {
+        private void setModule(NonLinearBook module) {
             m_module = module;
         }
 
@@ -167,7 +168,7 @@ public class GetNLBDataService {
     ) {
         Response response;
         try {
-            NonLinearBookImpl mainNLB = getNLBFromCache(bookId.getPath());
+            NonLinearBook mainNLB = getNLBFromCache(bookId.getPath());
             // Now get required module
             ModuleData moduleData = getNonLinearBookModuleData(bookId, mainNLB);
             final DecisionPoint decisionPointToBeMade = (
@@ -209,10 +210,10 @@ public class GetNLBDataService {
 
     private ModuleData getNonLinearBookModuleData(
             PathSegment bookId,
-            NonLinearBookImpl mainNLB
+            NonLinearBook mainNLB
     ) {
         ModuleData result = new ModuleData();
-        NonLinearBookImpl module = mainNLB;
+        NonLinearBook module = mainNLB;
         MultivaluedMap<String, String> mvm = bookId.getMatrixParameters();
         int parentDepth = 0;
         for (Map.Entry<String, List<String>> entry : mvm.entrySet()) {
@@ -220,8 +221,8 @@ public class GetNLBDataService {
             if (curParentDepth > parentDepth) {
                 parentDepth = curParentDepth;
                 String modulePageId = entry.getValue().get(0);
-                PageImpl pageImpl = module.getPageImplById(modulePageId);
-                module = pageImpl.getModuleImpl();
+                Page page = module.getPageById(modulePageId);
+                module = page.getModule();
             }
         }
         result.setModuleDepth(parentDepth);
@@ -253,7 +254,7 @@ public class GetNLBDataService {
                     (rollback != null) ? rollback : false,
                     (visitCount != null) ? visitCount : History.DO_NOT_USE_VISIT_COUNT
             );
-            NonLinearBookImpl mainNLB = getNLBFromCache(bookId.getPath());
+            NonLinearBook mainNLB = getNLBFromCache(bookId.getPath());
             // Now get required module
             ModuleData moduleData = getNonLinearBookModuleData(bookId, mainNLB);
             response = generateFilteredResponse(moduleData, toPageId);
@@ -278,10 +279,10 @@ public class GetNLBDataService {
         return Response.serverError().build();
     }
 
-    private NonLinearBookImpl getNLBFromCache(
+    private NonLinearBook getNLBFromCache(
             String bookId
     ) throws NLBIOException, NLBConsistencyException, NLBVCSException {
-        NonLinearBookImpl nlb;
+        NonLinearBook nlb;
         if (m_nlbCache.containsKey(bookId)) {
             nlb = m_nlbCache.get(bookId);
         } else {
@@ -295,6 +296,17 @@ public class GetNLBDataService {
             m_nlbCache.put(bookId, nlb);
         }
         return nlb;
+    }
+
+    public static void putNLBInMemoryToCache(
+            final String bookId,
+            final NonLinearBook nlb
+    ) {
+        m_nlbCache.put(bookId, nlb);
+    }
+
+    public static void clearNLBCache() {
+        m_nlbCache.clear();
     }
 
     @GET
@@ -314,7 +326,7 @@ public class GetNLBDataService {
                     (rollback != null) ? rollback : false,
                     (visitCount != null) ? visitCount : History.DO_NOT_USE_VISIT_COUNT
             );
-            NonLinearBookImpl mainNLB = getNLBFromCache(bookId.getPath());
+            NonLinearBook mainNLB = getNLBFromCache(bookId.getPath());
             // Now get required module
             ModuleData moduleData = getNonLinearBookModuleData(bookId, mainNLB);
             final Link link = moduleData.getModule().getPageById(fromPageId).getLinkById(linkId);
@@ -480,7 +492,7 @@ public class GetNLBDataService {
             final ModuleData moduleData,
             final String pageId
     ) throws ScriptException {
-        final PageImpl filteredPage = (
+        final Page filteredPage = (
                 moduleData.getModule().createFilteredPage(pageId, s_history)
         );
 

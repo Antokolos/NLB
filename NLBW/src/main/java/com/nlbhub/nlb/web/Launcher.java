@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.web;
 
+import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.web.exception.LauncherException;
 import com.nlbhub.nlb.web.service.rest.GetNLBDataService;
 import org.eclipse.jetty.server.Server;
@@ -112,6 +113,17 @@ public class Launcher implements Runnable {
             throw new LauncherException("Cannot change NLB library root while server is running!");
         }
         GetNLBDataService.s_nlbLibraryRoot = path + "/";
+    }
+
+    public void putNLBInMemoryToCache(
+            final String bookId,
+            final NonLinearBook nlb
+    ) {
+        GetNLBDataService.putNLBInMemoryToCache(bookId, nlb);
+    }
+
+    public void clearNLBCache() {
+        GetNLBDataService.clearNLBCache();
     }
 
     @Override
