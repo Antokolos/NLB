@@ -65,7 +65,6 @@ import java.awt.event.MouseMotionAdapter;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * The MainFrame class
@@ -85,6 +84,7 @@ public class MainFrame implements NLBObserver {
      * The number of ms to wait for server start before launching browser
      */
     private static final long START_SERVER_TIMEOUT = 500;
+    private static final String DEFAULT_BOOK_ID = "noname";
     private JPanel m_mainFramePanel;
     private JButton m_newFileButton;
     private JButton m_openFileButton;
@@ -1027,7 +1027,7 @@ public class MainFrame implements NLBObserver {
                         if (rootDir != null) {
                             m_launcher.setNLBLibraryRoot(rootDir.getParent());
                         }
-                        String bookId = (rootDir != null) ? rootDir.getName() : UUID.randomUUID().toString();
+                        String bookId = (rootDir != null) ? rootDir.getName() : DEFAULT_BOOK_ID;
                         m_launcher.clearNLBCache();
                         // Always prefer in-memory data
                         m_launcher.putNLBInMemoryToCache(bookId, mainNLB);
