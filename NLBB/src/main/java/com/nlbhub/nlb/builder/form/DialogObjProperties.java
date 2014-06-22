@@ -64,6 +64,15 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 setObjProperties(obj);
             }
         });
+
+        m_modificationsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                DialogModifications dialog = new DialogModifications(m_nlbFacade, obj);
+                dialog.showDialog();
+            }
+        });
+
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
