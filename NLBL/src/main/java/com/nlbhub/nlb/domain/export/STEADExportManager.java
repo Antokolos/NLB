@@ -267,7 +267,12 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateObjTak(String takString) {
-        return "    tak = \"" + takString + "\"," + LINE_SEPARATOR;
+        return (
+                "    tak = function(s)" + LINE_SEPARATOR +
+                "        p \"" + takString + "\";" + LINE_SEPARATOR +
+                "        s.act(s);" + LINE_SEPARATOR +
+                "    end," + LINE_SEPARATOR
+        );
     }
 
     @Override
