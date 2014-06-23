@@ -773,9 +773,9 @@ public class GraphEditor extends PCanvas {
         m_nlbFacade.saveAs(nlbFolder);
     }
 
-    public void load(final File nlbFolder) throws NLBIOException, NLBConsistencyException, NLBVCSException {
+    public void load(final File nlbFolder, ProgressData progressData) throws NLBIOException, NLBConsistencyException, NLBVCSException {
         try {
-            m_nlbFacade.load(nlbFolder.getCanonicalPath());
+            m_nlbFacade.load(nlbFolder.getCanonicalPath(), progressData);
             init();
         } catch (IOException e) {
             throw new NLBIOException("IOException while loading book", e);

@@ -247,7 +247,7 @@ public interface NonLinearBook {
 
     public Page createFilteredPage(final String sourceId, final History history) throws ScriptException;
 
-    public boolean load(final String path) throws NLBIOException, NLBConsistencyException, NLBVCSException;
+    public boolean load(final String path, final ProgressData progressData) throws NLBIOException, NLBConsistencyException, NLBVCSException;
 
     public Variable getVariableById(String varId);
 

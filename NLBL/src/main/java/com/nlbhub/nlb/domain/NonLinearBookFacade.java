@@ -550,7 +550,7 @@ public class NonLinearBookFacade implements NLBObservable {
         notifyObservers();
     }
 
-    public void load(String path) throws NLBIOException, NLBConsistencyException, NLBVCSException {
+    public void load(String path, ProgressData progressData) throws NLBIOException, NLBConsistencyException, NLBVCSException {
         try {
             final File rootDir = new File(path);
             if (!rootDir.exists()) {
@@ -558,7 +558,7 @@ public class NonLinearBookFacade implements NLBObservable {
                 throw new NLBIOException("Specified NLB root directory " + path + " does not exist");
             }
             m_vcsAdapter.openRepo(rootDir.getCanonicalPath());
-            m_nlb.load(path);
+            m_nlb.load(path, progressData);
             notifyObservers();
         } catch (IOException e) {
             throw new NLBIOException("Error while obtaining canonical path for path = " + path);

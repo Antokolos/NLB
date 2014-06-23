@@ -38,10 +38,7 @@
  */
 package com.nlbhub.nlb.web.service.rest;
 
-import com.nlbhub.nlb.api.Constants;
-import com.nlbhub.nlb.api.Link;
-import com.nlbhub.nlb.api.NonLinearBook;
-import com.nlbhub.nlb.api.Page;
+import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.domain.*;
 import com.nlbhub.nlb.exception.DecisionException;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
@@ -292,7 +289,12 @@ public class GetNLBDataService {
                 throw new NLBIOException("Specified NLB root directory " + path + " does not exist");
             }
             nlb = new NonLinearBookImpl();
-            nlb.load(path);
+            nlb.load(path, new ProgressData() {
+                @Override
+                public void setProgressValue(int progress) {
+                    // no op
+                }
+            });
             m_nlbCache.put(bookId, nlb);
         }
         return nlb;

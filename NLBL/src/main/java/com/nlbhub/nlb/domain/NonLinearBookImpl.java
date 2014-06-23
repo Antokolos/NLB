@@ -1399,7 +1399,8 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     public boolean load(
-            final String path
+            final String path,
+            final ProgressData progressData
     ) throws NLBIOException, NLBConsistencyException, NLBVCSException {
         final File rootDir = new File(path);
         if (!rootDir.exists()) {
@@ -1407,9 +1408,13 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
         m_rootDir = rootDir;
         readStartPoint(rootDir);
+        progressData.setProgressValue(25);
         readObjs(rootDir);
+        progressData.setProgressValue(50);
         readPages(rootDir);
+        progressData.setProgressValue(75);
         readVariables(rootDir);
+        progressData.setProgressValue(100);
         return true;
     }
 

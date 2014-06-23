@@ -487,23 +487,23 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     }
 
     // Progress bar handling -- begin
-    class Task extends SwingWorker<Void, Void> {
+    class Task extends SwingWorker<Void, Void> implements ProgressData {
 
         @Override
         public Void doInBackground() {
-            Random random = new Random();
-            int progress = 0;
             setProgress(0);
             try {
-                Thread.sleep(100);
-                while (progress < 100 && !isCancelled()) {
-                    //Sleep for up to one second.
-                    Thread.sleep(random.nextInt(100));
-
-                    progress = 1;
-                    setProgress(Math.min(progress, 100));
-                }
-            } catch (InterruptedException ignore) {
+                // Opening the book
+                clearAll();
+                File file = m_dirChooser.getSelectedFile();
+                PaneEditorInfo editorInfo = getMainPaneInfo();
+                editorInfo.getPaneGraphEditor().load(file, this);
+                openModulesPanes();
+            } catch (NLBVCSException | NLBConsistencyException | NLBIOException ex) {
+                JOptionPane.showMessageDialog(
+                        m_mainFramePanel,
+                        "Error while loading: " + ex.toString()
+                );
             }
             return null;
         }
@@ -512,7 +512,12 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         public void done() {
             Toolkit.getDefaultToolkit().beep();
             m_openFileButton.setEnabled(true);
-            m_progressMonitor.setProgress(0);
+            m_progressMonitor.setProgress(100);
+        }
+
+        @Override
+        public void setProgressValue(int progress) {
+            setProgress(Math.min(progress, 100));
         }
     }
 
@@ -633,21 +638,20 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 try {
                     int returnVal = m_dirChooser.showOpenDialog(m_mainFramePanel);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        /*m_progressMonitor = new ProgressMonitor($$$getRootComponent$$$(),
+                        m_progressMonitor = new ProgressMonitor(
+                                $$$getRootComponent$$$(),
                                 "Running a Long Task",
-                                "", 0, 100);
+                                "",
+                                0,
+                                100
+                        );
                         m_progressMonitor.setProgress(0);
+                        m_progressMonitor.setMillisToDecideToPopup(10);
+                        m_progressMonitor.setMillisToPopup(10);
                         m_task = new Task();
                         m_task.addPropertyChangeListener(mainFrame);
                         m_task.execute();
-                        m_openFileButton.setEnabled(false);*/
-
-                        // Opening the book
-                        clearAll();
-                        File file = m_dirChooser.getSelectedFile();
-                        PaneEditorInfo editorInfo = getMainPaneInfo();
-                        editorInfo.getPaneGraphEditor().load(file);
-                        openModulesPanes();
+                        m_openFileButton.setEnabled(false);
                     } else {
                         // Open command cancelled by user
                     }
