@@ -1407,14 +1407,17 @@ public class NonLinearBookImpl implements NonLinearBook {
             return false;
         }
         m_rootDir = rootDir;
+        progressData.setNoteText("Reading startpoint...");
         readStartPoint(rootDir);
-        progressData.setProgressValue(25);
+        progressData.setProgressValue(20);
+        progressData.setNoteText("Reading objects...");
         readObjs(rootDir);
-        progressData.setProgressValue(50);
+        progressData.setProgressValue(35);
+        progressData.setNoteText("Reading pages and modules...");
         readPages(rootDir);
-        progressData.setProgressValue(75);
+        progressData.setProgressValue(60);
+        progressData.setNoteText("Reading variables...");
         readVariables(rootDir);
-        progressData.setProgressValue(100);
         return true;
     }
 
@@ -1500,7 +1503,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
-    public void save(FileManipulator fileManipulator)
+    public void save(final FileManipulator fileManipulator, final ProgressData progressData)
             throws NLBIOException, NLBConsistencyException, NLBVCSException, NLBFileManipulationException {
         try {
             if (!m_rootDir.exists()) {
@@ -1508,9 +1511,17 @@ public class NonLinearBookImpl implements NonLinearBook {
                     throw new NLBIOException("Cannot create NLB root directory");
                 }
             }
+            progressData.setProgressValue(20);
+            progressData.setNoteText("Writing variables...");
             writeVariables(fileManipulator, m_rootDir);
+            progressData.setProgressValue(25);
+            progressData.setNoteText("Writing pages and modules...");
             writePages(fileManipulator, m_rootDir);
+            progressData.setProgressValue(85);
+            progressData.setNoteText("Writing objects...");
             writeObjs(fileManipulator, m_rootDir);
+            progressData.setProgressValue(95);
+            progressData.setNoteText("Writing startpoint...");
             writeStartPoint(fileManipulator, m_rootDir);
         } catch (IOException e) {
             throw new NLBIOException("IO exception occurred", e);

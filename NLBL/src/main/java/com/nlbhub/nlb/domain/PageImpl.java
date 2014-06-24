@@ -38,10 +38,7 @@
  */
 package com.nlbhub.nlb.domain;
 
-import com.nlbhub.nlb.api.Coords;
-import com.nlbhub.nlb.api.Link;
-import com.nlbhub.nlb.api.NonLinearBook;
-import com.nlbhub.nlb.api.Page;
+import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
@@ -275,7 +272,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     "Cannot create NLB page directory for page with Id = " + getId()
             );
             m_module.setRootDir(new File(pageDir, MODULE_SUBDIR_NAME));
-            m_module.save(fileManipulator);
+            m_module.save(fileManipulator, new DummyProgressData());
             fileManipulator.writeOptionalString(pageDir, VARID_FILE_NAME, m_varId, DEFAULT_VARID);
             fileManipulator.writeOptionalString(pageDir, CAPTION_FILE_NAME, m_caption, DEFAULT_CAPTION);
             fileManipulator.writeOptionalString(

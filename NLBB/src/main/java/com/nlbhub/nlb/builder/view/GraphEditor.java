@@ -762,20 +762,23 @@ public class GraphEditor extends PCanvas {
         return m_nlbFacade.createLink(item, target);
     }
 
-    public void save()
+    public void save(final ProgressData progressData)
             throws NLBIOException, NLBConsistencyException, NLBVCSException, NLBFileManipulationException {
-        m_nlbFacade.save(false);
+        m_nlbFacade.save(false, progressData);
     }
 
     public void saveAs(
-            final File nlbFolder
+            final File nlbFolder,
+            final ProgressData progressData
     ) throws NLBIOException, NLBConsistencyException, NLBVCSException, NLBFileManipulationException {
-        m_nlbFacade.saveAs(nlbFolder);
+        m_nlbFacade.saveAs(nlbFolder, progressData);
     }
 
     public void load(final File nlbFolder, ProgressData progressData) throws NLBIOException, NLBConsistencyException, NLBVCSException {
         try {
             m_nlbFacade.load(nlbFolder.getCanonicalPath(), progressData);
+            progressData.setProgressValue(75);
+            progressData.setNoteText("Drawing objects...");
             init();
         } catch (IOException e) {
             throw new NLBIOException("IOException while loading book", e);
@@ -800,6 +803,9 @@ public class GraphEditor extends PCanvas {
             m_edgeLayer.addChild(entry.getValue());
         }
         m_nlbFacade.updateAllViews();
+        m_nodeLayer.repaint();
+        m_objLayer.repaint();
+        m_edgeLayer.repaint();
     }
 
     public void clear() {

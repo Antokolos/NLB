@@ -44,10 +44,7 @@ import com.nlbhub.nlb.builder.model.LinkSelectionData;
 import com.nlbhub.nlb.builder.view.GraphEditor;
 import com.nlbhub.nlb.builder.view.TabComponent;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
-import com.nlbhub.nlb.exception.NLBConsistencyException;
-import com.nlbhub.nlb.exception.NLBExportException;
-import com.nlbhub.nlb.exception.NLBIOException;
-import com.nlbhub.nlb.exception.NLBVCSException;
+import com.nlbhub.nlb.exception.*;
 import com.nlbhub.nlb.util.BareBonesBrowserLaunch;
 import com.nlbhub.nlb.web.Launcher;
 import org.jdesktop.swingx.JXStatusBar;
@@ -68,7 +65,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * The MainFrame class
@@ -487,7 +483,25 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     }
 
     // Progress bar handling -- begin
-    class Task extends SwingWorker<Void, Void> implements ProgressData {
+    abstract class Task extends SwingWorker<Void, Void> implements ProgressData {
+        @Override
+        public void setProgressValue(int progress) {
+            setProgress(Math.min(progress, 100));
+        }
+
+        @Override
+        public void setNoteText(String text) {
+            m_progressMonitor.setNote(text);
+        }
+
+        @Override
+        public void done() {
+            Toolkit.getDefaultToolkit().beep();
+            m_progressMonitor.setProgress(100);
+        }
+    }
+
+    class OpenTask extends Task {
 
         @Override
         public Void doInBackground() {
@@ -498,7 +512,11 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 File file = m_dirChooser.getSelectedFile();
                 PaneEditorInfo editorInfo = getMainPaneInfo();
                 editorInfo.getPaneGraphEditor().load(file, this);
+                setProgressValue(85);
+                setNoteText("Opening panes...");
                 openModulesPanes();
+                setNoteText("All done!");
+                setProgressValue(100);
             } catch (NLBVCSException | NLBConsistencyException | NLBIOException ex) {
                 JOptionPane.showMessageDialog(
                         m_mainFramePanel,
@@ -510,17 +528,62 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
 
         @Override
         public void done() {
-            Toolkit.getDefaultToolkit().beep();
+            super.done();
             m_openFileButton.setEnabled(true);
-            m_progressMonitor.setProgress(100);
-        }
-
-        @Override
-        public void setProgressValue(int progress) {
-            setProgress(Math.min(progress, 100));
         }
     }
 
+    class SaveAsTask extends Task {
+        File m_saveDir;
+
+        SaveAsTask(File saveDir) {
+            m_saveDir = saveDir;
+        }
+
+        @Override
+        protected Void doInBackground() {
+            try {
+                PaneEditorInfo editorInfo = getMainPaneInfo();
+                editorInfo.getPaneGraphEditor().saveAs(m_saveDir, this);
+            } catch (NLBVCSException | NLBConsistencyException | NLBIOException | NLBFileManipulationException ex) {
+                JOptionPane.showMessageDialog(
+                        m_mainFramePanel,
+                        "Error while saving: " + ex.toString()
+                );
+            }
+            return null;
+        }
+
+        @Override
+        public void done() {
+            super.done();
+            m_saveFileButton.setEnabled(true);
+            m_saveFileAsButton.setEnabled(true);
+        }
+    }
+
+    class SaveTask extends Task {
+        @Override
+        protected Void doInBackground() {
+            try {
+                PaneEditorInfo editorInfo = getMainPaneInfo();
+                editorInfo.getPaneGraphEditor().save(this);
+            } catch (NLBVCSException | NLBConsistencyException | NLBIOException | NLBFileManipulationException ex) {
+                JOptionPane.showMessageDialog(
+                        m_mainFramePanel,
+                        "Error while saving: " + ex.toString()
+                );
+            }
+            return null;
+        }
+
+        @Override
+        public void done() {
+            super.done();
+            m_saveFileButton.setEnabled(true);
+            m_saveFileAsButton.setEnabled(true);
+        }
+    }
     /**
      * Invoked when task's progress property changes.
      */
@@ -533,6 +596,8 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 if (m_progressMonitor.isCanceled()) {
                     m_task.cancel(true);
                 }
+                m_saveFileButton.setEnabled(true);
+                m_saveFileAsButton.setEnabled(true);
                 m_openFileButton.setEnabled(true);
             }
         }
@@ -640,18 +705,18 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         m_progressMonitor = new ProgressMonitor(
                                 $$$getRootComponent$$$(),
-                                "Running a Long Task",
-                                "",
+                                "Opening Non-Linear Book",
+                                "Initializing...",
                                 0,
                                 100
                         );
                         m_progressMonitor.setProgress(0);
-                        m_progressMonitor.setMillisToDecideToPopup(10);
-                        m_progressMonitor.setMillisToPopup(10);
-                        m_task = new Task();
+                        m_progressMonitor.setMillisToDecideToPopup(200);
+                        m_progressMonitor.setMillisToPopup(200);
+                        m_task = new OpenTask();
                         m_task.addPropertyChangeListener(mainFrame);
-                        m_task.execute();
                         m_openFileButton.setEnabled(false);
+                        m_task.execute();
                     } else {
                         // Open command cancelled by user
                     }
@@ -671,11 +736,20 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                     if (editorInfo.getPaneNlbFacade().getNlb().getRootDir() == null) {
                         File saveDir = chooseSaveDir();
                         if (saveDir != null) {
-                            editorInfo.getPaneGraphEditor().saveAs(saveDir);
+                            initSaveProgress();
+                            m_task = new SaveAsTask(saveDir);
+                        } else {
+                            return;
                         }
                     } else {
-                        editorInfo.getPaneGraphEditor().save();
+                        initSaveProgress();
+                        m_task = new SaveTask();
                     }
+
+                    m_task.addPropertyChangeListener(mainFrame);
+                    m_saveFileButton.setEnabled(false);
+                    m_saveFileAsButton.setEnabled(false);
+                    m_task.execute();
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(
                             m_mainFramePanel,
@@ -688,10 +762,14 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    PaneEditorInfo editorInfo = getMainPaneInfo();
                     File saveDir = chooseSaveDir();
                     if (saveDir != null) {
-                        editorInfo.getPaneGraphEditor().saveAs(saveDir);
+                        initSaveProgress();
+                        m_task = new SaveAsTask(saveDir);
+                        m_task.addPropertyChangeListener(mainFrame);
+                        m_saveFileButton.setEnabled(false);
+                        m_saveFileAsButton.setEnabled(false);
+                        m_task.execute();
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(
@@ -1135,6 +1213,19 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         });
         addListenerAndObserver(getMainPaneInfo());
         updateView();
+    }
+
+    private void initSaveProgress() {
+        m_progressMonitor = new ProgressMonitor(
+                $$$getRootComponent$$$(),
+                "Saving Non-Linear Book",
+                "Initializing...",
+                0,
+                100
+        );
+        m_progressMonitor.setProgress(0);
+        m_progressMonitor.setMillisToDecideToPopup(200);
+        m_progressMonitor.setMillisToPopup(200);
     }
 
     public void goTo(String modulePageId, String itemId) {

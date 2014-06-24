@@ -1,5 +1,5 @@
 /**
- * @(#)ProgressData.java
+ * @(#)DummyProgressData.java
  *
  * This file is part of the Non-Linear Book project.
  * Copyright (c) 2012-2014 Anton P. Kolosov
@@ -38,7 +38,19 @@
  */
 package com.nlbhub.nlb.api;
 
-public interface ProgressData {
-    public void setProgressValue(int progress);
-    public void setNoteText(String text);
+/**
+ * This class represents dummy progress data implementation that does nothing.
+ *
+ * @author Anton P. Kolosov
+ */
+public class DummyProgressData implements ProgressData {
+    @Override
+    public void setProgressValue(int progress) {
+        // no op
+    }
+
+    @Override
+    public void setNoteText(String text) {
+        // no op
+    }
 }

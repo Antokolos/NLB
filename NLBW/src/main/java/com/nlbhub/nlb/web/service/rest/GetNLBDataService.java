@@ -289,12 +289,7 @@ public class GetNLBDataService {
                 throw new NLBIOException("Specified NLB root directory " + path + " does not exist");
             }
             nlb = new NonLinearBookImpl();
-            nlb.load(path, new ProgressData() {
-                @Override
-                public void setProgressValue(int progress) {
-                    // no op
-                }
-            });
+            nlb.load(path, new DummyProgressData());
             m_nlbCache.put(bookId, nlb);
         }
         return nlb;

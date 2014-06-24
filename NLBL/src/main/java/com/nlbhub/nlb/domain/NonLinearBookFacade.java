@@ -463,17 +463,23 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void save(
-            boolean create
+            final boolean create,
+            final ProgressData progressData
     ) throws NLBVCSException, NLBConsistencyException, NLBFileManipulationException, NLBIOException {
-        saveNLB(create);
+        saveNLB(create, progressData);
+        progressData.setProgressValue(70);
+        progressData.setNoteText("Clearing undos and pools...");
         clearUndosAndPools();
     }
 
     private void saveNLB(
-            boolean create
+            final boolean create,
+            final ProgressData progressData
     ) throws NLBVCSException, NLBConsistencyException, NLBFileManipulationException, NLBIOException {
         try {
             final File rootDir = m_nlb.getRootDir();
+            progressData.setProgressValue(5);
+            progressData.setNoteText("Opening VCS repository...");
             // Here we actually duplicating code from NonLinearBookImpl.save(), because
             // we need to be sure that main root dir exists before trying to init or open VCS repo
             if (!rootDir.exists()) {
@@ -488,8 +494,10 @@ public class NonLinearBookFacade implements NLBObservable {
                     m_vcsAdapter.openRepo(rootDir.getCanonicalPath());
                 }
             }
+            progressData.setProgressValue(15);
+            progressData.setNoteText("Saving Non-Linear Book...");
             FileManipulator fileManipulator = new FileManipulator(m_vcsAdapter, rootDir);
-            m_nlb.save(fileManipulator);
+            m_nlb.save(fileManipulator, progressData);
         } catch (IOException e) {
             throw new NLBIOException("Error while obtaining canonical path during save");
         }
@@ -542,23 +550,33 @@ public class NonLinearBookFacade implements NLBObservable {
         m_newLinksPool.clear();
     }
 
-    public void saveAs(File nlbFolder) throws NLBVCSException, NLBConsistencyException, NLBFileManipulationException, NLBIOException {
+    public void saveAs(
+            final File nlbFolder,
+            final ProgressData progressData
+    ) throws NLBVCSException, NLBConsistencyException, NLBFileManipulationException, NLBIOException {
         m_nlb.setRootDir(nlbFolder);
-        saveNLB(true);
-        clearUndos();
-        clearPools();
-        notifyObservers();
+        saveNLB(true, progressData);
+        clearUndosAndPools();
     }
 
-    public void load(String path, ProgressData progressData) throws NLBIOException, NLBConsistencyException, NLBVCSException {
+    public void load(
+            final String path,
+            final ProgressData progressData
+    ) throws NLBIOException, NLBConsistencyException, NLBVCSException {
         try {
             final File rootDir = new File(path);
             if (!rootDir.exists()) {
                 // We need to be sure that main root dir exists before trying to open VCS repo
                 throw new NLBIOException("Specified NLB root directory " + path + " does not exist");
             }
+            progressData.setNoteText("Opening VCS repository...");
+            progressData.setProgressValue(5);
             m_vcsAdapter.openRepo(rootDir.getCanonicalPath());
+            progressData.setNoteText("Loading book contents...");
+            progressData.setProgressValue(15);
             m_nlb.load(path, progressData);
+            progressData.setProgressValue(70);
+            progressData.setNoteText("Prepare to drawing...");
             notifyObservers();
         } catch (IOException e) {
             throw new NLBIOException("Error while obtaining canonical path for path = " + path);
