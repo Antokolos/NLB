@@ -467,8 +467,6 @@ public class NonLinearBookFacade implements NLBObservable {
             final ProgressData progressData
     ) throws NLBVCSException, NLBConsistencyException, NLBFileManipulationException, NLBIOException {
         saveNLB(create, progressData);
-        progressData.setProgressValue(70);
-        progressData.setNoteText("Clearing undos and pools...");
         clearUndosAndPools();
     }
 
@@ -497,7 +495,19 @@ public class NonLinearBookFacade implements NLBObservable {
             progressData.setProgressValue(15);
             progressData.setNoteText("Saving Non-Linear Book...");
             FileManipulator fileManipulator = new FileManipulator(m_vcsAdapter, rootDir);
-            m_nlb.save(fileManipulator, progressData);
+            int effectivePagesCount = m_nlb.getEffectivePagesCountForSave();
+            int startProgress = 25; // it will become 25 when pages saving will be started, see the code in m_nlb.save()
+            int maxProgress = 85; // it will become 85 when pages saving will be finished, see the code in m_nlb.save()
+            Double itemsCountPerIncrement = (
+                    Math.ceil(((double) effectivePagesCount) / ((double) (maxProgress - startProgress)))
+            );
+            // if pages count is less than (max - start), then max will never be reached, but we don't care,
+            // because it will become max rightly after pages' saving.
+            // All this mess is about to support progress handling in case when pages count is much more than 60
+            PartialProgressData partialProgressData = (
+                    new PartialProgressData(progressData, startProgress, maxProgress, itemsCountPerIncrement.intValue())
+            );
+            m_nlb.save(fileManipulator, progressData, partialProgressData);
         } catch (IOException e) {
             throw new NLBIOException("Error while obtaining canonical path during save");
         }

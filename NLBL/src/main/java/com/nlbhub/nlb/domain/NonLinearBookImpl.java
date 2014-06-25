@@ -1503,7 +1503,11 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
-    public void save(final FileManipulator fileManipulator, final ProgressData progressData)
+    public void save(
+            final FileManipulator fileManipulator,
+            final ProgressData progressData,
+            final PartialProgressData partialProgressData
+    )
             throws NLBIOException, NLBConsistencyException, NLBVCSException, NLBFileManipulationException {
         try {
             if (!m_rootDir.exists()) {
@@ -1514,10 +1518,10 @@ public class NonLinearBookImpl implements NonLinearBook {
             progressData.setProgressValue(20);
             progressData.setNoteText("Writing variables...");
             writeVariables(fileManipulator, m_rootDir);
-            progressData.setProgressValue(25);
+            progressData.setProgressValue(partialProgressData.getStartingProgress());
             progressData.setNoteText("Writing pages and modules...");
-            writePages(fileManipulator, m_rootDir);
-            progressData.setProgressValue(85);
+            writePages(fileManipulator, m_rootDir, partialProgressData);
+            progressData.setProgressValue(partialProgressData.getMaximumAllowedProgress());
             progressData.setNoteText("Writing objects...");
             writeObjs(fileManipulator, m_rootDir);
             progressData.setProgressValue(95);
@@ -1529,8 +1533,9 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     private void writePages(
-            FileManipulator fileManipulator,
-            File rootDir
+            final FileManipulator fileManipulator,
+            final File rootDir,
+            final PartialProgressData partialProgressData
     ) throws
             IOException,
             NLBIOException,
@@ -1541,7 +1546,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         fileManipulator.createDir(pagesDir, "Cannot create NLB pages directory");
         final List<String> deletedPagesIds = new ArrayList<>();
         for (PageImpl page : m_pages.values()) {
-            page.writePage(fileManipulator, pagesDir, this);
+            partialProgressData.setRealProgressValue();
+            page.writePage(fileManipulator, pagesDir, this, partialProgressData);
             if (page.isDeleted()) {
                 deletedPagesIds.add(page.getId());
             }
@@ -2173,6 +2179,28 @@ public class NonLinearBookImpl implements NonLinearBook {
         result.incPagesCount(pagesCount);
         result.incUniqueEndings(uniqueEndingsCount);
         return result;
+    }
+
+    /**
+     * This method returns overall pages count (even deleted pages are accounted for, but all pages from modules with
+     * deleted module page are skipped). This is used during save progress calculation.
+     * NB: all pages from modules with deleted module page are skipped, this is because module page directory is
+     * removed recursively with its module and pages of this module, therefore such module pages will never be
+     * visited during save.
+     *
+     * @return overall pages count in the book, even in case when these pages were scheduled for deletion, see NB.
+     */
+    public int getEffectivePagesCountForSave() {
+        int pagesCount = 0;
+        for (Map.Entry<String, PageImpl> pageEntry : m_pages.entrySet()) {
+            pagesCount++;
+            final PageImpl page = pageEntry.getValue();
+            if (!page.isDeleted() && !page.getModule().isEmpty()) {
+                pagesCount += page.getModuleImpl().getEffectivePagesCountForSave();
+            }
+        }
+
+        return pagesCount;
     }
 
     @Override

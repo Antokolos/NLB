@@ -255,7 +255,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
     public void writePage(
             final @NotNull FileManipulator fileManipulator,
             final @NotNull File pagesDir,
-            final @NotNull NonLinearBookImpl nonLinearBook
+            final @NotNull NonLinearBookImpl nonLinearBook,
+            final @NotNull PartialProgressData partialProgressData
     ) throws
             IOException,
             NLBIOException,
@@ -272,7 +273,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     "Cannot create NLB page directory for page with Id = " + getId()
             );
             m_module.setRootDir(new File(pageDir, MODULE_SUBDIR_NAME));
-            m_module.save(fileManipulator, new DummyProgressData());
+            m_module.save(fileManipulator, new DummyProgressData(), partialProgressData);
             fileManipulator.writeOptionalString(pageDir, VARID_FILE_NAME, m_varId, DEFAULT_VARID);
             fileManipulator.writeOptionalString(pageDir, CAPTION_FILE_NAME, m_caption, DEFAULT_CAPTION);
             fileManipulator.writeOptionalString(
