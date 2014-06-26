@@ -324,19 +324,19 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateAssignment(String variableName, String variableValue) {
-        return "vars." + variableName + " = " + variableValue + "; ";
+        return variableName + " = " + variableValue + "; ";
     }
 
     @Override
     protected String decorateDelObj(String objectId, String objectName) {
         String id = decorateId(objectId);
-        return "if (checkItem({'name': '" + id + "'})) { removeItem({'name': '" + id + "'}); }";
+        return "if (checkItem({'name': '" + id + "'})) { removeItem({'name': '" + id + "'}); }; ";
     }
 
     @Override
     protected String decorateAddObj(String objectId, String objectName) {
         String id = decorateId(objectId);
-        return "if (!checkItem({'name': '" + id + "'})) { addItem({'name': '" + id + "'}); }";
+        return "if (!checkItem({'name': '" + id + "'})) { addItem({'name': '" + id + "'}); }; ";
     }
 
     @Override
