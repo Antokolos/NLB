@@ -230,7 +230,7 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateAssignment(String variableName, String variableValue) {
-        return "<<set $" + variableName + " = " + variableValue + ">>" + LINE_SEPARATOR;
+        return "<<set " + variableName + " = " + variableValue + ">>" + LINE_SEPARATOR;
     }
 
     @Override
