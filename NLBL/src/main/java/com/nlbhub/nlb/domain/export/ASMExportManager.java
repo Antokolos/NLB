@@ -123,17 +123,17 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateBooleanVar(String constraintVar) {
-        return "(\\$" + constraintVar + " eq 1)";
+        return "($" + constraintVar + " eq 1)";
     }
 
     @Override
     protected String decorateStringVar(String constraintVar) {
-        return "\\$" + constraintVar;
+        return "$" + constraintVar;
     }
 
     @Override
     protected String decorateNumberVar(String constraintVar) {
-        return "\\$" + constraintVar;
+        return "$" + constraintVar;
     }
 
     @Override

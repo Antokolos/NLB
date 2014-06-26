@@ -48,6 +48,7 @@ import com.nlbhub.nlb.util.VarFinder;
 
 import java.io.File;
 import java.util.*;
+import java.util.regex.Matcher;
 
 /**
  * The ExportManager class
@@ -661,7 +662,7 @@ public abstract class ExportManager {
             constraintBody = (
                     constraintBody.replaceAll(
                             "\\b" + constraintVar + "\\b",
-                            decorateVariable(constraintVar)
+                            Matcher.quoteReplacement(decorateVariable(constraintVar))
                     )
             );
         }
@@ -697,7 +698,7 @@ public abstract class ExportManager {
             expression = (
                     expression.replaceAll(
                             "\\b" + expressionVar + "\\b",
-                            decorateVariable(expressionVar)
+                            Matcher.quoteReplacement(decorateVariable(expressionVar))
                     )
             );
         }
