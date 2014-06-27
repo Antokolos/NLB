@@ -82,6 +82,7 @@ public class GraphEditor extends PCanvas {
     // These offsets are used because the drag edge should not be targeted by mouse
     private static final float DRAG_END_OFFSET_X = (float) 10.0;
     private static final float DRAG_END_OFFSET_Y = (float) 10.0;
+    private static final Color NORMAL_NODE_COLOR = Color.WHITE;
     private static final Color SELECTED_NODE_COLOR = Color.GRAY;
     private EnumSet<GraphEditorMode> m_graphEditorMode = EnumSet.noneOf(GraphEditorMode.class);
     private PLayer m_dragLayer = getLayer();
@@ -96,6 +97,7 @@ public class GraphEditor extends PCanvas {
     private NodeResizeExecutor m_nodeResizeExecutor;
     private Point2D m_selectionStart = null;
     private PPath m_selectionFrame = new PPath();
+    private BulkSelectionHandler m_bulkSelectionHandler = new BulkSelectionHandler();
 
     private class GraphDragEventHandlerLinks extends PDragEventHandler {
         PNode m_selectedNode = null;
@@ -251,7 +253,12 @@ public class GraphEditor extends PCanvas {
         public void mouseExited(PInputEvent e) {
             super.mouseExited(e);
             if (e.getButton() == MouseEvent.NOBUTTON) {
-                e.getPickedNode().setPaint(Color.WHITE);
+                PNode pickedNode = e.getPickedNode();
+                if (m_bulkSelectionHandler.isSelected(pickedNode)) {
+                    pickedNode.setPaint(SELECTED_NODE_COLOR);
+                } else {
+                    pickedNode.setPaint(NORMAL_NODE_COLOR);
+                }
             }
             if (m_selectedNode != null) {
                 m_selectedNode.setPaint(SELECTED_NODE_COLOR);
@@ -423,6 +430,9 @@ public class GraphEditor extends PCanvas {
         @Override
         public void mouseClicked(PInputEvent event) {
             super.mouseClicked(event);
+            m_bulkSelectionHandler.recolor(m_graphItemsMapper, NORMAL_NODE_COLOR);
+            m_bulkSelectionHandler.clear();
+
             PNode node = event.getPickedNode();
             if (isAddLinkMode()) {
                 Object nodeData = node.getAttribute(m_attributeName);
@@ -441,7 +451,7 @@ public class GraphEditor extends PCanvas {
             }
 
             if (m_selectedNode != null) {
-                m_selectedNode.setPaint(Color.WHITE);
+                m_selectedNode.setPaint(NORMAL_NODE_COLOR);
             }
             m_selectedNode = (T) node;
             m_selectedNode.setPaint(SELECTED_NODE_COLOR);
@@ -566,6 +576,16 @@ public class GraphEditor extends PCanvas {
                     }
                 }
                 super.mouseClicked(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                m_bulkSelectionHandler.recolor(m_graphItemsMapper, NORMAL_NODE_COLOR);
+                if (isSelectionMode()) {
+                    m_bulkSelectionHandler.makeSelection(m_selectionFrame, m_objLayer, m_nodeLayer);
+                }
+                m_bulkSelectionHandler.recolor(m_graphItemsMapper, SELECTED_NODE_COLOR);
+                super.mouseReleased(e);
             }
         });
 
