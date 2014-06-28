@@ -52,6 +52,8 @@ public class LinkBuildingBlocks {
     private String m_linkConstraint;
     private String m_linkModifications;
     private String m_linkGoTo;
+    private String m_linkEnd;
+    private boolean m_auto;
 
     public LinkBuildingBlocks() {
     }
@@ -110,5 +112,21 @@ public class LinkBuildingBlocks {
 
     public void setLinkGoTo(String linkGoTo) {
         m_linkGoTo = linkGoTo;
+    }
+
+    public String getLinkEnd() {
+        return m_linkEnd;
+    }
+
+    public void setLinkEnd(String linkEnd) {
+        m_linkEnd = linkEnd;
+    }
+
+    public boolean isAuto() {
+        return m_auto;
+    }
+
+    public void setAuto(boolean auto) {
+        m_auto = auto;
     }
 }

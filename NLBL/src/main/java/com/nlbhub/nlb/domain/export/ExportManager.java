@@ -552,6 +552,7 @@ public abstract class ExportManager {
             final ExportData exportData
     ) throws NLBConsistencyException {
         LinkBuildingBlocks blocks = new LinkBuildingBlocks();
+        blocks.setAuto(link.isAuto());
         blocks.setLinkLabel(decorateLinkLabel(link.getId(), link.getText()));
         blocks.setLinkComment(decorateLinkComment(link.getText()));
         // TODO: exportData.getIdToPageNumberMap().get(link.getTarget()) can produce NPE for return links
@@ -599,6 +600,9 @@ public abstract class ExportManager {
                         link.getTarget(),
                         exportData.getPageNumber(link.getTarget())
                 )
+        );
+        blocks.setLinkEnd(
+                decorateLinkEnd()
         );
         return blocks;
     }
@@ -857,6 +861,10 @@ public abstract class ExportManager {
             String linkTarget,
             int targetPageNumber
     );
+
+    protected String decorateLinkEnd() {
+        return Constants.EMPTY_STRING;
+    }
 
     protected abstract String decoratePageEnd();
 
