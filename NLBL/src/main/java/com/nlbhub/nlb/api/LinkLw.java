@@ -146,6 +146,12 @@ public class LinkLw implements Link {
     }
 
     @Override
+    @XmlElement(name = "is-auto")
+    public boolean isAuto() {
+        return false;
+    }
+
+    @Override
     public List<Modification> getModifications() {
         return new ArrayList<>();
     }

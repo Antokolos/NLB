@@ -515,12 +515,15 @@ public class NonLinearBookImpl implements NonLinearBook {
         private VariableTracker m_constraintTracker;
         private final String m_newLinkText;
         private final String m_existingLinkText;
+        private final boolean m_existingAuto;
+        private final boolean m_newAuto;
 
         private UpdateLinkCommand(
                 final Link link,
                 final String linkVariableName,
                 final String linkConstraintName,
-                final String linkText
+                final String linkText,
+                final boolean auto
         ) {
             IdentifiableItem parent = link.getParent();
             AbstractNodeItem nodeItem = getPageImplById(parent.getId());
@@ -548,6 +551,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             );
             m_existingLinkText = link.getText();
             m_newLinkText = linkText;
+            m_existingAuto = link.isAuto();
+            m_newAuto = auto;
         }
 
         @Override
@@ -555,6 +560,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_link.setVarId(m_variableTracker.execute());
             m_link.setConstrId(m_constraintTracker.execute());
             m_link.setText(m_newLinkText);
+            m_link.setAuto(m_newAuto);
             m_link.notifyObservers();
         }
 
@@ -563,6 +569,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_link.setVarId(m_variableTracker.revert());
             m_link.setConstrId(m_constraintTracker.revert());
             m_link.setText(m_existingLinkText);
+            m_link.setAuto(m_existingAuto);
             m_link.notifyObservers();
         }
     }
@@ -995,9 +1002,10 @@ public class NonLinearBookImpl implements NonLinearBook {
             final Link link,
             final String linkVariableName,
             final String linkConstraintName,
-            final String linkText
+            final String linkText,
+            final boolean auto
     ) {
-        return new UpdateLinkCommand(link, linkVariableName, linkConstraintName, linkText);
+        return new UpdateLinkCommand(link, linkVariableName, linkConstraintName, linkText, auto);
     }
 
     UpdateModificationsCommand createUpdateModificationsCommand(

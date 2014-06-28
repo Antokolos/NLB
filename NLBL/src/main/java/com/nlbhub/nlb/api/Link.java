@@ -50,6 +50,7 @@ public interface Link extends ModifyingItem, NLBObservable {
     public final static String DEFAULT_TEXT = "Next";
     public final static String DEFAULT_CONSTR_ID = Constants.EMPTY_STRING;
     public final static String DEFAULT_STROKE = "0000FF";
+    public final static boolean DEFAUlT_AUTO = false;
 
     public String getVarId();
 
@@ -62,6 +63,8 @@ public interface Link extends ModifyingItem, NLBObservable {
     public String getStroke();
 
     public Coords getCoords();
+
+    public boolean isAuto();
 
     /**
      * If true, constraint is fulfilled if its expression is true.

@@ -499,6 +499,9 @@ public class LinkPath extends ItemPath implements NLBObserver {
         final Variable variable = nonLinearBook.getVariableById(link.getVarId());
         final Variable variableCons = nonLinearBook.getVariableById(link.getConstrId());
         final StringBuilder text = new StringBuilder();
+        if (link.isAuto()) {
+            text.append("<A> ");
+        }
         if (!StringHelper.isEmpty(link.getText())) {
             int captionSize = link.getText().length();
             if (captionSize > MAX_CAPTION_CHARS_IN_LINK_TEXT) {

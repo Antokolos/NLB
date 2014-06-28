@@ -26,6 +26,7 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
     private JButton m_modificationsButton;
     private JButton m_undoButton;
     private JButton m_redoButton;
+    private JCheckBox m_autoCheckBox;
 
     public DialogLinkProperties(
             final NonLinearBookFacade nlbFacade,
@@ -109,6 +110,7 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         m_linkIdTextField.setText(link.getId());
         m_linkVariableTextField.setText(m_variable != null ? m_variable.getName() : "");
         m_linkTextTextField.setText(link.getText());
+        m_autoCheckBox.setSelected(link.isAuto());
         m_linkConstraintsTextField.setText(m_constraint != null ? m_constraint.getValue() : "");
     }
 
@@ -117,7 +119,8 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
                 m_link,
                 m_linkVariableTextField.getText(),
                 m_linkConstraintsTextField.getText(),
-                m_linkTextTextField.getText()
+                m_linkTextTextField.getText(),
+                m_autoCheckBox.isSelected()
         );
         m_nlbFacade.removeObserver(m_observerId);
         dispose();
@@ -282,6 +285,9 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         m_modificationsButton = new JButton();
         m_modificationsButton.setText("Modifications...");
         panel14.add(m_modificationsButton);
+        m_autoCheckBox = new JCheckBox();
+        m_autoCheckBox.setText("Auto");
+        panel12.add(m_autoCheckBox, BorderLayout.CENTER);
         final JLabel label3 = new JLabel();
         label3.setText("Link constraints");
         gbc = new GridBagConstraints();

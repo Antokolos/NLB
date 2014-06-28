@@ -199,6 +199,12 @@
                                   </component>
                                 </children>
                               </grid>
+                              <component id="be12e" class="javax.swing.JCheckBox" binding="m_autoCheckBox">
+                                <constraints border-constraint="Center"/>
+                                <properties>
+                                  <text value="Auto"/>
+                                </properties>
+                              </component>
                             </children>
                           </grid>
                           <component id="5b1d2" class="javax.swing.JLabel">
