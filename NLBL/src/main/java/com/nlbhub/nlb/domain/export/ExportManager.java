@@ -358,6 +358,7 @@ public abstract class ExportManager {
                             page,
                             page.getTraverseText(),
                             page.getModuleConstrId(),
+                            page.isAutoTraverse(),
                             true,
                             false
                     )
@@ -381,6 +382,7 @@ public abstract class ExportManager {
                             page,
                             page.getReturnText(),
                             Constants.EMPTY_STRING,
+                            false,
                             true,
                             false
                     )
@@ -405,6 +407,7 @@ public abstract class ExportManager {
                             page,
                             page.getReturnText(),
                             exportData.getModulePage().getModuleConstrId(),
+                            false,
                             false,
                             false
                     )

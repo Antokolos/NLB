@@ -65,6 +65,7 @@ public class LinkLw implements Link {
     private IdentifiableItem m_parent;
     private String m_text;
     private String m_constrId;
+    private boolean m_auto;
     private boolean m_positiveConstraint;
     private boolean m_shouldObeyToModuleConstraint;
 
@@ -74,6 +75,7 @@ public class LinkLw implements Link {
             IdentifiableItem parent,
             String text,
             String constrId,
+            boolean auto,
             boolean positiveConstraint,
             boolean shouldObeyToModuleConstraint
     ) {
@@ -82,6 +84,7 @@ public class LinkLw implements Link {
         m_parent = parent;
         m_text = text;
         m_constrId = constrId;
+        m_auto = auto;
         m_positiveConstraint = positiveConstraint;
         m_shouldObeyToModuleConstraint = shouldObeyToModuleConstraint;
     }
@@ -148,7 +151,7 @@ public class LinkLw implements Link {
     @Override
     @XmlElement(name = "is-auto")
     public boolean isAuto() {
-        return false;
+        return m_auto;
     }
 
     @Override

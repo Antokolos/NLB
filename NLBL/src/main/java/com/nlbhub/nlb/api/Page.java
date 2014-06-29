@@ -49,6 +49,7 @@ public interface Page extends NodeItem {
     public static final String DEFAULT_VARID = Constants.EMPTY_STRING;
     public static final String DEFAULT_CAPTION = Constants.EMPTY_STRING;
     public static final boolean DEFAULT_USE_CAPTION = false;
+    public static final boolean DEFAULT_AUTO_TRAVERSE = false;
     /**
      * Set to empty String.
      * This means that by default pages should not return to the parent module
@@ -68,6 +69,8 @@ public interface Page extends NodeItem {
     public boolean isLeaf();
 
     public String getTraverseText();
+
+    public boolean isAutoTraverse();
 
     public String getReturnText();
 

@@ -330,12 +330,14 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final String m_existingModuleName;
         private final String m_existingTraverseText;
         private final String m_existingReturnText;
+        private final boolean m_existingAutoTraverse;
         private final String m_existingReturnPageId;
         private final String m_newPageText;
         private final String m_newPageCaptionText;
         private final boolean m_newUseCaption;
         private final String m_newModuleName;
         private final String m_newTraverseText;
+        private final boolean m_newAutoTraverse;
         private final String m_newReturnText;
         private final String m_newReturnPageId;
         private AbstractNodeItem.SortLinksCommand m_sortLinkCommand;
@@ -349,6 +351,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final boolean useCaption,
                 final String moduleName,
                 final String traverseText,
+                final boolean autoTraverse,
                 final String returnText,
                 final String returnPageId,
                 final String moduleConsraintVariableName,
@@ -378,6 +381,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingUseCaption = m_page.isUseCaption();
             m_existingModuleName = m_page.getModuleName();
             m_existingTraverseText = m_page.getTraverseText();
+            m_existingAutoTraverse = m_page.isAutoTraverse();
             m_existingReturnText = m_page.getReturnText();
             m_existingReturnPageId = m_page.getReturnPageId();
             m_newPageText = pageText;
@@ -385,6 +389,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newUseCaption = useCaption;
             m_newModuleName = moduleName;
             m_newTraverseText = traverseText;
+            m_newAutoTraverse = autoTraverse;
             m_newReturnText = returnText;
             m_newReturnPageId = returnPageId;
             for (final Link link : m_page.getLinks()) {
@@ -415,6 +420,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setUseCaption(m_newUseCaption);
             m_page.setModuleName(m_newModuleName);
             m_page.setTraverseText(m_newTraverseText);
+            m_page.setAutoTraverse(m_newAutoTraverse);
             m_page.setReturnText(m_newReturnText);
             m_page.setReturnPageId(m_newReturnPageId);
             m_page.notifyObservers();
@@ -433,6 +439,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setUseCaption(m_existingUseCaption);
             m_page.setModuleName(m_existingModuleName);
             m_page.setTraverseText(m_existingTraverseText);
+            m_page.setAutoTraverse(m_existingAutoTraverse);
             m_page.setReturnText(m_existingReturnText);
             m_page.setReturnPageId(m_existingReturnPageId);
             m_page.notifyObservers();
@@ -966,6 +973,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final boolean useCaption,
             final String moduleName,
             final String traverseText,
+            final boolean autoTraverse,
             final String returnText,
             final String returnPageId,
             final String moduleConsraintVariableName,
@@ -980,6 +988,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         useCaption,
                         moduleName,
                         traverseText,
+                        autoTraverse,
                         returnText,
                         returnPageId,
                         moduleConsraintVariableName,
@@ -1180,6 +1189,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                             source,
                             source.getTraverseText(),
                             source.getModuleConstrId(),
+                            source.isAutoTraverse(),
                             true,
                             false
                     )
@@ -1200,6 +1210,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                             source,
                             source.getReturnText(),
                             Constants.EMPTY_STRING,
+                            false,
                             true,
                             false
                     )
@@ -1225,6 +1236,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                             source,
                             source.getReturnText(),
                             m_parentPage.getModuleConstrId(),
+                            false,
                             false,
                             false
                     )

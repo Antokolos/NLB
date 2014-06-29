@@ -546,7 +546,7 @@
                                   </component>
                                   <grid id="6922d" layout-manager="GridBagLayout">
                                     <constraints>
-                                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                       <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
                                     </constraints>
                                     <properties>
@@ -578,7 +578,7 @@
                                   </grid>
                                   <component id="4f3e" class="javax.swing.JLabel">
                                     <constraints>
-                                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                                       <gridbag weightx="0.0" weighty="0.0"/>
                                     </constraints>
                                     <properties>
@@ -588,13 +588,13 @@
                                   </component>
                                   <vspacer id="99863">
                                     <constraints>
-                                      <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                                      <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
                                       <gridbag weightx="0.0" weighty="1.0"/>
                                     </constraints>
                                   </vspacer>
                                   <component id="76a3e" class="javax.swing.JLabel">
                                     <constraints>
-                                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                      <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                                       <gridbag weightx="0.0" weighty="0.0"/>
                                     </constraints>
                                     <properties>
@@ -603,7 +603,7 @@
                                   </component>
                                   <grid id="f8e77" layout-manager="GridBagLayout">
                                     <constraints>
-                                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                       <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
                                     </constraints>
                                     <properties>
@@ -635,7 +635,7 @@
                                   </grid>
                                   <component id="35280" class="javax.swing.JLabel">
                                     <constraints>
-                                      <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                      <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                                       <gridbag weightx="0.0" weighty="0.0"/>
                                     </constraints>
                                     <properties>
@@ -644,7 +644,7 @@
                                   </component>
                                   <grid id="ac6ad" layout-manager="GridBagLayout">
                                     <constraints>
-                                      <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                       <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
                                     </constraints>
                                     <properties>
@@ -674,6 +674,15 @@
                                       </scrollpane>
                                     </children>
                                   </grid>
+                                  <component id="a9deb" class="javax.swing.JCheckBox" binding="m_autoTraverseCheckBox">
+                                    <constraints>
+                                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <text value="Auto Traverse"/>
+                                    </properties>
+                                  </component>
                                 </children>
                               </grid>
                             </children>

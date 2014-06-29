@@ -39,6 +39,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JTextField m_returnTextTextField;
     private JTextField m_moduleConstraintTextField;
     private JTextField m_returnPageIdTextField;
+    private JCheckBox m_autoTraverseCheckBox;
 
     public DialogPageProperties(final NonLinearBookFacade nlbFacade, final Page page) {
         m_nlbFacade = nlbFacade;
@@ -159,6 +160,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
 
         m_moduleNameTextField.setText(page.getModuleName());
         m_traverseTextTextField.setText(page.getTraverseText());
+        m_autoTraverseCheckBox.setSelected(page.isAutoTraverse());
         m_returnTextTextField.setText(page.getReturnText());
         m_returnPageIdTextField.setText(page.getReturnPageId());
 
@@ -174,6 +176,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 m_useCheckBox.isSelected(),
                 m_moduleNameTextField.getText(),
                 m_traverseTextTextField.getText(),
+                m_autoTraverseCheckBox.isSelected(),
                 m_returnTextTextField.getText(),
                 m_returnPageIdTextField.getText(),
                 m_moduleConstraintTextField.getText(),
@@ -597,7 +600,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         panel34.setPreferredSize(new Dimension(505, 33));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
@@ -619,13 +622,13 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         label6.setText("Module constraint");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         gbc.anchor = GridBagConstraints.EAST;
         panel31.add(label6, gbc);
         final JPanel spacer2 = new JPanel();
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 5;
+        gbc.gridy = 6;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.VERTICAL;
         panel31.add(spacer2, gbc);
@@ -633,7 +636,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         label7.setText("Return text");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.anchor = GridBagConstraints.EAST;
         panel31.add(label7, gbc);
         final JPanel panel35 = new JPanel();
@@ -642,7 +645,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         panel35.setPreferredSize(new Dimension(505, 33));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
@@ -664,7 +667,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         label8.setText("Return page Id");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.anchor = GridBagConstraints.EAST;
         panel31.add(label8, gbc);
         final JPanel panel36 = new JPanel();
@@ -673,7 +676,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         panel36.setPreferredSize(new Dimension(505, 33));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
@@ -691,6 +694,13 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_returnPageIdTextField = new JTextField();
         m_returnPageIdTextField.setColumns(42);
         scrollPane9.setViewportView(m_returnPageIdTextField);
+        m_autoTraverseCheckBox = new JCheckBox();
+        m_autoTraverseCheckBox.setText("Auto Traverse");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel31.add(m_autoTraverseCheckBox, gbc);
         final JPanel panel37 = new JPanel();
         panel37.setLayout(new BorderLayout(0, 0));
         panel1.add(panel37, BorderLayout.CENTER);
