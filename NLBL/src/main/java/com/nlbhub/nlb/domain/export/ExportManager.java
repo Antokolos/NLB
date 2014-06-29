@@ -382,7 +382,7 @@ public abstract class ExportManager {
                             page,
                             page.getReturnText(),
                             Constants.EMPTY_STRING,
-                            false,
+                            page.isAutoReturn(),
                             true,
                             false
                     )
@@ -407,7 +407,7 @@ public abstract class ExportManager {
                             page,
                             page.getReturnText(),
                             exportData.getModulePage().getModuleConstrId(),
-                            false,
+                            page.isAutoReturn(),
                             false,
                             false
                     )

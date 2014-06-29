@@ -94,6 +94,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public boolean isAutoReturn() {
+        return false;
+    }
+
+    @Override
     public String getReturnText() {
         return Constants.EMPTY_STRING;
     }

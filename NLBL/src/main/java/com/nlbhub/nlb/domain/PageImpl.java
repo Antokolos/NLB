@@ -72,6 +72,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String MODNAME_FILE_NAME = "modname";
     private static final String TRAVTEXT_FILE_NAME = "travtext";
     private static final String AUTOTRAV_FILE_NAME = "autotrav";
+    private static final String AUTORET_FILE_NAME = "autoret";
     private static final String RETTEXT_FILE_NAME = "rettext";
     private static final String RETPAGE_FILE_NAME = "retpage";
     private static final String MODCNSID_FILE_NAME = "modcnsid";
@@ -86,6 +87,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private String m_defaultModuleName;
     private String m_traverseText;
     private boolean m_autoTraverse = DEFAULT_AUTO_TRAVERSE;
+    private boolean m_autoReturn = DEFAULT_AUTO_RETURN;
     private String m_defaultTraverseText;
     private String m_returnText = DEFAULT_RETURN_TEXT;
     private String m_returnPageId = DEFAULT_RETURN_PAGE_ID;
@@ -210,6 +212,16 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     @Override
+    @XmlElement(name = "is-auto-return")
+    public boolean isAutoReturn() {
+        return m_autoReturn;
+    }
+
+    public void setAutoReturn(boolean autoReturn) {
+        m_autoReturn = autoReturn;
+    }
+
+    @Override
     public String getReturnText() {
         return m_returnText;
     }
@@ -226,7 +238,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     @Override
     public boolean shouldReturn() {
-        return !StringHelper.isEmpty(m_returnText);
+        return !StringHelper.isEmpty(m_returnText) || m_autoReturn;
     }
 
     @Override
@@ -320,6 +332,12 @@ public class PageImpl extends AbstractNodeItem implements Page {
             );
             fileManipulator.writeOptionalString(
                     pageDir,
+                    AUTORET_FILE_NAME,
+                    String.valueOf(m_autoReturn),
+                    String.valueOf(DEFAULT_AUTO_RETURN)
+            );
+            fileManipulator.writeOptionalString(
+                    pageDir,
                     RETTEXT_FILE_NAME,
                     m_returnText,
                     DEFAULT_RETURN_TEXT
@@ -399,6 +417,13 @@ public class PageImpl extends AbstractNodeItem implements Page {
                             String.valueOf(DEFAULT_AUTO_TRAVERSE)
                     )
             );
+            m_autoReturn = "true".equals(
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            AUTORET_FILE_NAME,
+                            String.valueOf(DEFAULT_AUTO_RETURN)
+                    )
+            );
             m_returnText = (
                     FileManipulator.getOptionalFileAsString(
                             pageDir,
@@ -454,6 +479,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         result.setTraverseText(source.getTraverseText());
         result.setUseCaption(source.isUseCaption());
         result.setAutoTraverse(source.isAutoTraverse());
+        result.setAutoReturn(source.isAutoReturn());
         result.setFill(source.getFill());
         result.setParent(source.getParent());
         result.setStroke(source.getStroke());
