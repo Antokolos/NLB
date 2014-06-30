@@ -1383,8 +1383,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     ) throws ScriptException {
         final NonLinearBook decisionModule = getModuleByBookId(decisionPoint.getBookId());
         final NonLinearBook fromModule = getModuleByBookId(decisionPoint.getFromBookId());
-        makeVariableChangesForVisitedPage(fromModule, decisionPoint.getFromPageId(), factory, visitedVars);
-        makeVariableChangesForVisitedPage(decisionModule, decisionPoint.getToPageId(), factory, visitedVars);
+        //makeVariableChangesForVisitedPage(fromModule, decisionPoint.getFromPageId(), factory, visitedVars);
         if (decisionPoint.isLinkInfo()) {
             final Page pageFrom = decisionModule.getPageById(decisionPoint.getFromPageId());
             final Link linkToBeFollowedCur = findLink(pageFrom, decisionPoint.getLinkId());
@@ -1398,6 +1397,10 @@ public class NonLinearBookImpl implements NonLinearBook {
                 visitedVars.put(variableLinkCur.getName(), true);
             }
             updateVisitedVars(decisionModule, linkToBeFollowedCur, factory, visitedVars);
+
+            makeVariableChangesForVisitedPage(decisionModule, linkToBeFollowedCur.getTarget(), factory, visitedVars);
+        } else {
+            makeVariableChangesForVisitedPage(decisionModule, decisionPoint.getToPageId(), factory, visitedVars);
         }
     }
 
