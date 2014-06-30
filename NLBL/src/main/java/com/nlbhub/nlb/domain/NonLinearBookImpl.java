@@ -1219,7 +1219,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                             source,
                             source.getReturnText(),
                             Constants.EMPTY_STRING,
-                            false,
+                            source.isAutoReturn(),
                             true,
                             false
                     )
@@ -1245,7 +1245,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                             source,
                             source.getReturnText(),
                             m_parentPage.getModuleConstrId(),
-                            false,
+                            source.isAutoReturn(),
                             false,
                             false
                     )
