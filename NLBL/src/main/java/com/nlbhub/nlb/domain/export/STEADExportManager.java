@@ -193,8 +193,11 @@ public class STEADExportManager extends TextExportManager {
                 if (constrained) {
                     autosBuilder.append("if (").append(linkBlocks.getLinkConstraint()).append(") then ");
                 }
-                autosBuilder.append(linkBlocks.getLinkGoTo()).append(" end");
-                autosBuilder.append(";").append(LINE_SEPARATOR);
+                autosBuilder.append(linkBlocks.getLinkGoTo());
+                if (constrained) {
+                    autosBuilder.append(" end;");
+                }
+                autosBuilder.append(LINE_SEPARATOR);
             } else {
                 stringBuilder.append("        p ");
                 if (constrained) {
@@ -217,13 +220,14 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageTextEnd());
 
         stringBuilder.append(autosBuilder.toString());
+        // TODO: check that here() will not be used in modifications (for example, when automatically taking objects to the inventory)
+        stringBuilder.append("    enter = function(s)").append(LINE_SEPARATOR);
         if (varsOrModsPresent) {
-            stringBuilder.append("    entered = function(s)").append(LINE_SEPARATOR);
             stringBuilder.append(pageBlocks.getPageVariable());
             stringBuilder.append(pageBlocks.getPageModifications());
-            stringBuilder.append("        s.autos();").append(LINE_SEPARATOR);
-            stringBuilder.append("    end,").append(LINE_SEPARATOR);
         }
+        stringBuilder.append("        s.autos();").append(LINE_SEPARATOR);
+        stringBuilder.append("    end,").append(LINE_SEPARATOR);
 
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             if (!linkBlocks.isAuto()) {
