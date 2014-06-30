@@ -182,10 +182,8 @@ public class GetNLBDataService {
             // TODO: calculate visit count and pass correct value
             return getStartPointData(
                     new ManualPathSegment(decisionPoint.getBookId()),
-                    decisionPoint.getFromPageId(),
                     false,
-                    0,
-                    new ManualPathSegment(decisionPoint.getFromBookId())
+                    0
             );
         }
     }
@@ -202,8 +200,6 @@ public class GetNLBDataService {
             return getPageData(
                     new ManualPathSegment(decisionPoint.getBookId()),
                     decisionPoint.getToPageId(),
-                    decisionPoint.getFromPageId(),
-                    new ManualPathSegment(decisionPoint.getFromBookId()),
                     false,
                     0
             );
@@ -268,18 +264,15 @@ public class GetNLBDataService {
             @PathParam("bookId") final PathSegment bookId
     ) {
         s_history.clear();
-        return getStartPointData(bookId, Constants.EMPTY_STRING, null, null, bookId);
+        return getStartPointData(bookId, null, null);
     }
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    @Path("from/{fromBookId}/{fromPageId}")
     public Response getStartPointData(
             @PathParam("bookId") final PathSegment bookId,
-            @PathParam("fromPageId") final String fromPageId,
             @QueryParam("rollback") final Boolean rollback,
-            @QueryParam("visit-count") final Integer visitCount,
-            @PathParam("fromBookId") final PathSegment fromBookId
+            @QueryParam("visit-count") final Integer visitCount
     ) {
         Response response;
         try {
@@ -289,9 +282,7 @@ public class GetNLBDataService {
             final DecisionPoint decisionPointToBeMade = (
                     new DecisionPoint(
                             bookId.toString(),
-                            fromPageId,
-                            moduleData.getModule().getStartPoint(),
-                            fromBookId.toString()
+                            moduleData.getModule().getStartPoint()
                     )
             );
             s_history.suggestDecisionPointToBeMade(
@@ -349,12 +340,10 @@ public class GetNLBDataService {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    @Path("page/{toPageId}/from/{fromBookId}/{fromPageId}")
+    @Path("page/{toPageId}")
     public Response getPageData(
             @PathParam("bookId") final PathSegment bookId,
             @PathParam("toPageId") final String toPageId,
-            @PathParam("fromPageId") final String fromPageId,
-            @PathParam("fromBookId") final PathSegment fromBookId,
             @QueryParam("rollback") final Boolean rollback,
             @QueryParam("visit-count") final Integer visitCount
     ) {
@@ -363,9 +352,7 @@ public class GetNLBDataService {
             s_history.suggestDecisionPointToBeMade(
                     new DecisionPoint(
                             bookId.toString(),
-                            fromPageId,
-                            toPageId,
-                            fromBookId.toString()
+                            toPageId
                     ),
                     (rollback != null) ? rollback : false,
                     (visitCount != null) ? visitCount : History.DO_NOT_USE_VISIT_COUNT
@@ -658,9 +645,7 @@ public class GetNLBDataService {
             if (link.isTraversalLink()) {
                 decisionPoint = new DecisionPoint(
                         traversalLinkBookId,
-                        pageToBeVisited.getId(),
-                        link.getTarget(),
-                        normalLinkBookId
+                        link.getTarget()
                 );
                 decisionPointToBeMade.addPossibleNextDecisionPoint(decisionPoint);
                 if (automaticDecision == null && link.isAuto()) {
@@ -670,17 +655,13 @@ public class GetNLBDataService {
                 if (StringHelper.isEmpty(pageToBeVisited.getReturnPageId())) {
                     decisionPoint = new DecisionPoint(
                             returnBookIdAndPage.getBookId(),
-                            pageToBeVisited.getId(),
-                            returnBookIdAndPage.getModulePageId(),
-                            normalLinkBookId
+                            returnBookIdAndPage.getModulePageId()
                     );
                     decisionPointToBeMade.addPossibleNextDecisionPoint(decisionPoint);
                 } else {
                     decisionPoint = new DecisionPoint(
                             returnBookIdAndPage.getBookId(),
-                            pageToBeVisited.getId(),
-                            pageToBeVisited.getReturnPageId(),
-                            normalLinkBookId
+                            pageToBeVisited.getReturnPageId()
                     );
                     decisionPointToBeMade.addPossibleNextDecisionPoint(decisionPoint);
                 }

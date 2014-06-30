@@ -1382,8 +1382,6 @@ public class NonLinearBookImpl implements NonLinearBook {
             final DecisionPoint decisionPoint
     ) throws ScriptException {
         final NonLinearBook decisionModule = getModuleByBookId(decisionPoint.getBookId());
-        final NonLinearBook fromModule = getModuleByBookId(decisionPoint.getFromBookId());
-        //makeVariableChangesForVisitedPage(fromModule, decisionPoint.getFromPageId(), factory, visitedVars);
         if (decisionPoint.isLinkInfo()) {
             final Page pageFrom = decisionModule.getPageById(decisionPoint.getFromPageId());
             final Link linkToBeFollowedCur = findLink(pageFrom, decisionPoint.getLinkId());
