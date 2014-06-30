@@ -59,6 +59,7 @@ public class History {
     public static final int DO_NOT_USE_VISIT_COUNT = -1;
     private List<DecisionPoint> m_decisionPoints = new LinkedList<DecisionPoint>();
     private DecisionPoint m_decisionPointToBeMade = null;
+    private String m_decisionPointToBeMadeText;
 
     /**
      * Default contructor. It is needed for JAXB conversion, do not remove!
@@ -80,9 +81,13 @@ public class History {
         m_decisionPoints = decisionPoints;
     }
 
-    public void makeDecision(final String text) {
+    public void setDecisionPointToBeMadeText(String decisionPointToBeMadeText) {
+        m_decisionPointToBeMadeText = decisionPointToBeMadeText;
+    }
+
+    public void makeDecision() {
         if (m_decisionPointToBeMade != null) {
-            m_decisionPointToBeMade.setText(text);
+            m_decisionPointToBeMade.setText(m_decisionPointToBeMadeText);
             for (final DecisionPoint decisionPoint : m_decisionPoints) {
                 if (decisionPoint.equals(m_decisionPointToBeMade)) {
                     m_decisionPointToBeMade.incVisitCount();

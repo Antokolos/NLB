@@ -124,6 +124,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
         m_isObeyToModuleConstraint = sourceLink.isObeyToModuleConstraint();
         m_isTraversalLink = sourceLink.isTraversalLink();
         m_isReturnLink = sourceLink.isReturnLink();
+        m_auto = sourceLink.isAuto();
     }
 
     public LinkImpl(final NodeItem parent, String target) {

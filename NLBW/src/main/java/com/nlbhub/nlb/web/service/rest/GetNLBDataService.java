@@ -48,6 +48,7 @@ import com.nlbhub.nlb.util.JaxbMarshaller;
 import com.nlbhub.nlb.util.StringHelper;
 import com.nlbhub.user.domain.DecisionPoint;
 import com.nlbhub.user.domain.History;
+import org.apache.wink.common.internal.MultivaluedMapImpl;
 
 import javax.script.ScriptException;
 import javax.ws.rs.*;
@@ -59,6 +60,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,6 +93,122 @@ public class GetNLBDataService {
             )
     );
     private static History s_history = new History();
+
+    private abstract class AutomaticDecision {
+        private DecisionPoint m_decisionPoint;
+
+        protected AutomaticDecision(DecisionPoint decisionPoint) {
+            m_decisionPoint = decisionPoint;
+        }
+
+        public DecisionPoint getDecisionPoint() {
+            return m_decisionPoint;
+        }
+
+        public abstract Response proceed();
+    }
+
+    private class ManualPathSegment implements PathSegment {
+        private String m_path;
+        private MultivaluedMap<String, String> m_matrixParameters;
+
+        private ManualPathSegment(String bookId) {
+            String[] parts = bookId.split(";");
+            m_path = parts[0];
+            m_matrixParameters = new MultivaluedMapImpl<>();
+            for (int i = 1; i < parts.length; i++) {
+                String[] matrixParts = parts[i].split("=");
+                List<String> elements = m_matrixParameters.get(matrixParts[0]);
+                if (elements == null) {
+                    elements = new ArrayList<>();
+                    m_matrixParameters.put(matrixParts[0], elements);
+                }
+                elements.add(matrixParts[1]);
+            }
+        }
+
+        @Override
+        public String getPath() {
+            return m_path;
+        }
+
+        @Override
+        public MultivaluedMap<String, String> getMatrixParameters() {
+            return m_matrixParameters;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            builder.append(m_path);
+            for (Map.Entry<String, List<String>> entry : m_matrixParameters.entrySet()) {
+                for (String value : entry.getValue()) {
+                    builder.append(";").append(entry.getKey()).append("=").append(value);
+                }
+
+            }
+            return builder.toString();
+        }
+    }
+
+    private class NormalAutomaticDecision extends AutomaticDecision {
+
+        protected NormalAutomaticDecision(DecisionPoint decisionPoint) {
+            super(decisionPoint);
+        }
+
+        @Override
+        public Response proceed() {
+            DecisionPoint decisionPoint = getDecisionPoint();
+            // TODO: calculate visit count and pass correct value
+            return followLink(
+                    new ManualPathSegment(decisionPoint.getBookId()),
+                    decisionPoint.getFromPageId(),
+                    decisionPoint.getLinkId(),
+                    false,
+                    0
+            );
+        }
+    }
+    private class TraverseAutomaticDecision extends AutomaticDecision {
+
+        protected TraverseAutomaticDecision(DecisionPoint decisionPoint) {
+            super(decisionPoint);
+        }
+
+        @Override
+        public Response proceed() {
+            DecisionPoint decisionPoint = getDecisionPoint();
+            // TODO: calculate visit count and pass correct value
+            return getStartPointData(
+                    new ManualPathSegment(decisionPoint.getBookId()),
+                    decisionPoint.getFromPageId(),
+                    false,
+                    0,
+                    new ManualPathSegment(decisionPoint.getFromBookId())
+            );
+        }
+    }
+    private class ReturnAutomaticDecision extends AutomaticDecision {
+
+        protected ReturnAutomaticDecision(DecisionPoint decisionPoint) {
+            super(decisionPoint);
+        }
+
+        @Override
+        public Response proceed() {
+            DecisionPoint decisionPoint = getDecisionPoint();
+            // TODO: calculate visit count and pass correct value
+            return getPageData(
+                    new ManualPathSegment(decisionPoint.getBookId()),
+                    decisionPoint.getToPageId(),
+                    decisionPoint.getFromPageId(),
+                    new ManualPathSegment(decisionPoint.getFromBookId()),
+                    false,
+                    0
+            );
+        }
+    }
 
     private class ReturnBookIdAndModulePage {
         private String m_bookId;
@@ -181,15 +299,16 @@ public class GetNLBDataService {
                     (rollback != null) ? rollback : false,
                     (visitCount != null) ? visitCount : History.DO_NOT_USE_VISIT_COUNT
             );
-            response = generateFilteredResponse(moduleData, moduleData.getModule().getStartPoint());
             final Page pageToBeVisited = (
                     moduleData.getModule().getPageById(moduleData.getModule().getStartPoint())
             );
-            s_history.makeDecision(
+            s_history.setDecisionPointToBeMadeText(
                     !StringHelper.isEmpty(pageToBeVisited.getCaption())
                             ? pageToBeVisited.getCaption()
                             : pageToBeVisited.getId()
             );
+            response = generateFilteredResponse(moduleData, moduleData.getModule().getStartPoint());
+            s_history.makeDecision();
             return response;
         } catch (NLBIOException ex) {
             Logger.getLogger(GetNLBDataService.class.getName()).log(Level.SEVERE, null, ex);
@@ -254,13 +373,15 @@ public class GetNLBDataService {
             NonLinearBook mainNLB = getNLBFromCache(bookId.getPath());
             // Now get required module
             ModuleData moduleData = getNonLinearBookModuleData(bookId, mainNLB);
-            response = generateFilteredResponse(moduleData, toPageId);
+
             Page pageToBeVisited = moduleData.getModule().getPageById(toPageId);
-            s_history.makeDecision(
+            s_history.setDecisionPointToBeMadeText(
                     !StringHelper.isEmpty(pageToBeVisited.getCaption())
                             ? pageToBeVisited.getCaption()
                             : pageToBeVisited.getId()
             );
+            response = generateFilteredResponse(moduleData, toPageId);
+            s_history.makeDecision();
             return response;
         } catch (NLBIOException ex) {
             Logger.getLogger(GetNLBDataService.class.getName()).log(Level.SEVERE, null, ex);
@@ -328,8 +449,9 @@ public class GetNLBDataService {
             ModuleData moduleData = getNonLinearBookModuleData(bookId, mainNLB);
             final Link link = moduleData.getModule().getPageById(fromPageId).getLinkById(linkId);
             if (link != null) {
+                s_history.setDecisionPointToBeMadeText(link.getText());
                 response = generateFilteredResponse(moduleData, link.getTarget());
-                s_history.makeDecision(link.getText());
+                s_history.makeDecision();
             } else {
                 response = Response.serverError().build();
             }
@@ -501,71 +623,84 @@ public class GetNLBDataService {
         final String traversalLinkBookId = (
                 getTraversalLinkBookId(decisionPointToBeMade, moduleData, pageId)
         );
-        addPossibleNextDecisions(
+        AutomaticDecision automaticDecision = addPossibleNextDecisions(
                 filteredPage,
                 decisionPointToBeMade,
                 returnBookIdAndPage,
                 normalLinkBookId,
                 traversalLinkBookId
         );
-        return generateResponse(
-                moduleData.getMainNLBId(),
-                normalLinkBookId,
-                traversalLinkBookId,
-                returnBookIdAndPage,
-                filteredPage
-        );
+        if (automaticDecision != null) {
+            s_history.makeDecision();
+            return automaticDecision.proceed();
+        } else {
+            return generateResponse(
+                    moduleData.getMainNLBId(),
+                    normalLinkBookId,
+                    traversalLinkBookId,
+                    returnBookIdAndPage,
+                    filteredPage
+            );
+        }
     }
 
-    private void addPossibleNextDecisions(
+    private AutomaticDecision addPossibleNextDecisions(
             Page pageToBeVisited,
             DecisionPoint decisionPointToBeMade,
             ReturnBookIdAndModulePage returnBookIdAndPage,
             String normalLinkBookId,
             String traversalLinkBookId
     ) {
+        AutomaticDecision automaticDecision = null;
         for (final Link link : pageToBeVisited.getLinks()) {
+            DecisionPoint decisionPoint;
             // This code is equivalent to the code in page.xsl
             if (link.isTraversalLink()) {
-                decisionPointToBeMade.addPossibleNextDecisionPoint(
-                        new DecisionPoint(
-                                traversalLinkBookId,
-                                pageToBeVisited.getId(),
-                                link.getTarget(),
-                                normalLinkBookId
-                        )
+                decisionPoint = new DecisionPoint(
+                        traversalLinkBookId,
+                        pageToBeVisited.getId(),
+                        link.getTarget(),
+                        normalLinkBookId
                 );
+                decisionPointToBeMade.addPossibleNextDecisionPoint(decisionPoint);
+                if (automaticDecision == null && link.isAuto()) {
+                    automaticDecision = new TraverseAutomaticDecision(decisionPoint);
+                }
             } else if (link.isReturnLink()) {
                 if (StringHelper.isEmpty(pageToBeVisited.getReturnPageId())) {
-                    decisionPointToBeMade.addPossibleNextDecisionPoint(
-                            new DecisionPoint(
-                                    returnBookIdAndPage.getBookId(),
-                                    pageToBeVisited.getId(),
-                                    returnBookIdAndPage.getModulePageId(),
-                                    normalLinkBookId
-                            )
+                    decisionPoint = new DecisionPoint(
+                            returnBookIdAndPage.getBookId(),
+                            pageToBeVisited.getId(),
+                            returnBookIdAndPage.getModulePageId(),
+                            normalLinkBookId
                     );
+                    decisionPointToBeMade.addPossibleNextDecisionPoint(decisionPoint);
                 } else {
-                    decisionPointToBeMade.addPossibleNextDecisionPoint(
-                            new DecisionPoint(
-                                    returnBookIdAndPage.getBookId(),
-                                    pageToBeVisited.getId(),
-                                    pageToBeVisited.getReturnPageId(),
-                                    normalLinkBookId
-                            )
+                    decisionPoint = new DecisionPoint(
+                            returnBookIdAndPage.getBookId(),
+                            pageToBeVisited.getId(),
+                            pageToBeVisited.getReturnPageId(),
+                            normalLinkBookId
                     );
+                    decisionPointToBeMade.addPossibleNextDecisionPoint(decisionPoint);
+                }
+                if (automaticDecision == null && link.isAuto()) {
+                    automaticDecision = new ReturnAutomaticDecision(decisionPoint);
                 }
             } else {
                 // Normal link
-                decisionPointToBeMade.addPossibleNextDecisionPoint(
-                        new DecisionPoint(
-                                normalLinkBookId,
-                                pageToBeVisited.getId(),
-                                link.getId()
-                        )
+                decisionPoint = new DecisionPoint(
+                        normalLinkBookId,
+                        pageToBeVisited.getId(),
+                        link.getId()
                 );
+                decisionPointToBeMade.addPossibleNextDecisionPoint(decisionPoint);
+                if (automaticDecision == null && link.isAuto()) {
+                    automaticDecision = new NormalAutomaticDecision(decisionPoint);
+                }
             }
         }
+        return automaticDecision;
     }
 
     private String getNormalLinkBookId(final DecisionPoint decisionPoint) {
