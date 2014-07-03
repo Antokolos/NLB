@@ -306,7 +306,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
         builder.append("vars.itemNames = {").append(LINE_SEPARATOR);
         for (ObjBuildingBlocks objBlocks : objsBlocks) {
             builder.append("'").append(objBlocks.getObjLabel()).append("': ");
-            builder.append("'").append(objBlocks.getObjName()).append("',").append(LINE_SEPARATOR);
+            builder.append("'").append(objBlocks.getObjDisp()).append("',").append(LINE_SEPARATOR);
         }
         builder.append("'dummy': 'dummy'").append(LINE_SEPARATOR).append("}");
         return builder.toString();
@@ -328,13 +328,13 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decorateDelObj(String objectId, String objectName) {
+    protected String decorateDelObj(String objectId, String objectName, String objectDisplayName) {
         String id = decorateId(objectId);
         return "if (checkItem({'name': '" + id + "'})) { removeItem({'name': '" + id + "'}); }; ";
     }
 
     @Override
-    protected String decorateAddObj(String objectId, String objectName) {
+    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
         String id = decorateId(objectId);
         return "if (!checkItem({'name': '" + id + "'})) { addItem({'name': '" + id + "'}); }; ";
     }

@@ -282,20 +282,22 @@ public class URQExportManager extends TextExportManager {
     /**
      * @param objectId
      * @param objectName
+     * @param objectDisplayName
      * @return
      */
     @Override
-    protected String decorateDelObj(String objectId, String objectName) {
-        return "Inv- " + objectName + LINE_SEPARATOR;
+    protected String decorateDelObj(String objectId, String objectName, String objectDisplayName) {
+        return "Inv- " + objectDisplayName + LINE_SEPARATOR;
     }
 
     /**
      * @param objectId
      * @param objectName
+     * @param objectDisplayName
      * @return
      */
     @Override
-    protected String decorateAddObj(String objectId, String objectName) {
-        return "Inv+ " + objectName + LINE_SEPARATOR;
+    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
+        return "Inv+ " + objectDisplayName + LINE_SEPARATOR;
     }
 }

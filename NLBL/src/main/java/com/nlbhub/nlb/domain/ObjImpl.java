@@ -65,6 +65,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String TEXT_FILE_NAME = "text";
     private static final String VARID_FILE_NAME = "varid";
     private static final String NAME_FILE_NAME = "name";
+    private static final String DISP_FILE_NAME = "disp";
     private static final String TAKABLE_FILE_NAME = "takable";
     private static final String CONTAINERID_FILE_NAME = "containerid";
 
@@ -73,6 +74,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
      */
     private String m_varId = DEFAULT_VARID;
     private String m_name = DEFAULT_NAME;
+    private String m_disp = DEFAULT_DISP;
     private String m_text = DEFAULT_TEXT;
     /**
      * Object can be taken to the inventory
@@ -95,6 +97,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         } else if (
                 textMatches(m_text, searchText, ignoreCase, wholeWords)
                         || textMatches(m_name, searchText, ignoreCase, wholeWords)
+                        || textMatches(m_disp, searchText, ignoreCase, wholeWords)
                 ) {
             result = new SearchResult();
             result.setId(getId());
@@ -139,6 +142,16 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    @XmlElement(name = "disp")
+    public String getDisp() {
+        return m_disp;
+    }
+
+    public void setDisp(String disp) {
+        m_disp = disp;
+    }
+
+    @Override
     @XmlElement(name = "takable")
     public boolean isTakable() {
         return m_takable;
@@ -174,6 +187,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(objDir, VARID_FILE_NAME, m_varId, DEFAULT_VARID);
             fileManipulator.writeOptionalString(objDir, NAME_FILE_NAME, m_name, DEFAULT_NAME);
+            fileManipulator.writeOptionalString(objDir, DISP_FILE_NAME, m_disp, DEFAULT_DISP);
             fileManipulator.writeOptionalString(objDir, TEXT_FILE_NAME, m_text, DEFAULT_TEXT);
             fileManipulator.writeOptionalString(objDir, TAKABLE_FILE_NAME, String.valueOf(m_takable), String.valueOf(DEFAULT_TAKABLE));
             fileManipulator.writeOptionalString(objDir, CONTAINERID_FILE_NAME, m_containerId, DEFAULT_CONTAINER_ID);
@@ -198,6 +212,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         NAME_FILE_NAME,
                         DEFAULT_NAME
+                )
+        );
+        m_disp = (
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        DISP_FILE_NAME,
+                        DEFAULT_DISP
                 )
         );
         m_text = (

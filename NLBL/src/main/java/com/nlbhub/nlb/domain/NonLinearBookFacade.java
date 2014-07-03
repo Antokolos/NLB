@@ -257,6 +257,7 @@ public class NonLinearBookFacade implements NLBObservable {
             final Obj obj,
             final String objVariableName,
             final String objName,
+            final String objDisp,
             final String objText,
             final boolean objIsTakable
     ) {
@@ -265,6 +266,7 @@ public class NonLinearBookFacade implements NLBObservable {
                         obj,
                         objVariableName,
                         objName,
+                        objDisp,
                         objText,
                         objIsTakable
                 )

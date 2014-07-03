@@ -48,6 +48,7 @@ public interface Obj extends NodeItem {
     public static final String DEFAULT_TEXT = Constants.EMPTY_STRING;
     public static final String DEFAULT_VARID = Constants.EMPTY_STRING;
     public static final String DEFAULT_NAME = Constants.EMPTY_STRING;
+    public static final String DEFAULT_DISP = Constants.EMPTY_STRING;
     public static final boolean DEFAULT_TAKABLE = false;
     public static final String DEFAULT_CONTAINER_ID = Constants.EMPTY_STRING;
 
@@ -56,6 +57,12 @@ public interface Obj extends NodeItem {
     public String getVarId();
 
     public String getName();
+
+    /**
+     * Returns display name of the object, which is used in the text, e.g. when inserted into the inventory
+     * @return display name of the object
+     */
+    public String getDisp();
 
     public boolean isTakable();
 

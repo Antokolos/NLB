@@ -52,6 +52,7 @@ public class ObjBuildingBlocks {
     private String m_objComment;
     private String m_objStart;
     private String m_objName;
+    private String m_objDisp;
     private String m_objText;
     private boolean m_takable;
     private String m_objTak;
@@ -103,6 +104,14 @@ public class ObjBuildingBlocks {
 
     public void setObjName(String objName) {
         m_objName = objName;
+    }
+
+    public String getObjDisp() {
+        return m_objDisp;
+    }
+
+    public void setObjDisp(String objDisp) {
+        m_objDisp = objDisp;
     }
 
     public String getObjText() {

@@ -229,12 +229,12 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateDelObj(String objectId, String objectName) {
-        return "DELOBJ '" + objectName + "'" + LINE_SEPARATOR;
+    protected String decorateDelObj(String objectId, String objectName, String objectDisplayName) {
+        return "DELOBJ '" + objectDisplayName + "'" + LINE_SEPARATOR;
     }
 
     @Override
-    protected String decorateAddObj(String objectId, String objectName) {
-        return "ADDOBJ '" + objectName + "'" + LINE_SEPARATOR;
+    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
+        return "ADDOBJ '" + objectDisplayName + "'" + LINE_SEPARATOR;
     }
 }

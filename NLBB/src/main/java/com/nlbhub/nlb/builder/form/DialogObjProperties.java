@@ -26,6 +26,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JCheckBox m_objIsTakable;
     private JButton m_undoButton;
     private JButton m_redoButton;
+    private JTextField m_objDispTextField;
 
     public DialogObjProperties(
             final NonLinearBookFacade nlbFacade,
@@ -108,6 +109,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_variable = m_nlbFacade.getNlb().getVariableById(obj.getVarId());
         m_objIdTextField.setText(obj.getId());
         m_objNameTextField.setText(obj.getName());
+        m_objDispTextField.setText(obj.getDisp());
         m_objVariableTextField.setText(m_variable != null ? m_variable.getName() : "");
         m_objTextTextField.setText(obj.getText());
         m_objIsTakable.setSelected(obj.isTakable());
@@ -118,6 +120,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_obj,
                 m_objVariableTextField.getText(),
                 m_objNameTextField.getText(),
+                m_objDispTextField.getText(),
                 m_objTextTextField.getText(),
                 m_objIsTakable.isSelected()
         );
@@ -267,7 +270,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         panel12.setLayout(new BorderLayout(0, 0));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 6;
+        gbc.gridy = 7;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
@@ -288,7 +291,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         label3.setText("Obj text");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.anchor = GridBagConstraints.EAST;
         panel9.add(label3, gbc);
         final JPanel panel15 = new JPanel();
@@ -297,7 +300,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         panel15.setPreferredSize(new Dimension(468, 33));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
@@ -326,7 +329,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         label4.setText("Obj variable");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.anchor = GridBagConstraints.EAST;
         panel9.add(label4, gbc);
         final JPanel panel16 = new JPanel();
@@ -335,7 +338,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         panel16.setPreferredSize(new Dimension(468, 33));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
@@ -358,7 +361,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objIsTakable.setText("Can be taken to the inventory");
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 5;
+        gbc.gridy = 6;
         gbc.anchor = GridBagConstraints.WEST;
         panel9.add(m_objIsTakable, gbc);
         final JToolBar toolBar1 = new JToolBar();
@@ -385,12 +388,45 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.anchor = GridBagConstraints.EAST;
         panel9.add(label5, gbc);
         final JPanel panel17 = new JPanel();
-        panel17.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel17, BorderLayout.CENTER);
+        panel17.setLayout(new GridBagLayout());
+        panel17.setMinimumSize(new Dimension(468, 33));
+        panel17.setPreferredSize(new Dimension(468, 33));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(5, 5, 5, 0);
+        panel9.add(panel17, gbc);
+        final JScrollPane scrollPane5 = new JScrollPane();
+        scrollPane5.setHorizontalScrollBarPolicy(31);
+        scrollPane5.setVerticalScrollBarPolicy(21);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel17.add(scrollPane5, gbc);
+        m_objDispTextField = new JTextField();
+        m_objDispTextField.setColumns(40);
+        scrollPane5.setViewportView(m_objDispTextField);
+        final JLabel label6 = new JLabel();
+        label6.setText("Obj display name");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel9.add(label6, gbc);
+        final JPanel panel18 = new JPanel();
+        panel18.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel18, BorderLayout.CENTER);
         label1.setLabelFor(m_objIdTextField);
         label2.setLabelFor(m_objNameTextField);
         label3.setLabelFor(m_objTextTextField);
         label4.setLabelFor(m_objVariableTextField);
+        label6.setLabelFor(m_objDispTextField);
     }
 
     /**

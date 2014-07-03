@@ -466,9 +466,11 @@ public class NonLinearBookImpl implements NonLinearBook {
         private VariableTracker m_variableTracker;
 
         private String m_existingObjName;
+        private String m_existingObjDisp;
         private String m_existingObjText;
         private boolean m_existingObjIsTakable;
         private String m_newObjName;
+        private String m_newObjDisp;
         private String m_newObjText;
         private boolean m_newObjIsTakable;
 
@@ -476,6 +478,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final Obj obj,
                 final String objVariableName,
                 final String objName,
+                final String objDisp,
                 final String objText,
                 final boolean objIsTakable
         ) {
@@ -489,9 +492,11 @@ public class NonLinearBookImpl implements NonLinearBook {
                     Variable.DEFAULT_VALUE,
                     m_obj.getFullId());
             m_existingObjName = obj.getName();
+            m_existingObjDisp = obj.getDisp();
             m_existingObjText = obj.getText();
             m_existingObjIsTakable = obj.isTakable();
             m_newObjName = objName;
+            m_newObjDisp = objDisp;
             m_newObjText = objText;
             m_newObjIsTakable = objIsTakable;
         }
@@ -500,6 +505,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         public void execute() {
             m_obj.setVarId(m_variableTracker.execute());
             m_obj.setName(m_newObjName);
+            m_obj.setDisp(m_newObjDisp);
             m_obj.setText(m_newObjText);
             m_obj.setTakable(m_newObjIsTakable);
             m_obj.notifyObservers();
@@ -509,6 +515,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         public void revert() {
             m_obj.setVarId(m_variableTracker.revert());
             m_obj.setName(m_existingObjName);
+            m_obj.setDisp(m_existingObjDisp);
             m_obj.setText(m_existingObjText);
             m_obj.setTakable(m_existingObjIsTakable);
             m_obj.notifyObservers();
@@ -1010,10 +1017,11 @@ public class NonLinearBookImpl implements NonLinearBook {
             final Obj obj,
             final String objVariableName,
             final String objName,
+            final String objDisp,
             final String objText,
             final boolean objIsTakable
     ) {
-        return new UpdateObjCommand(obj, objVariableName, objName, objText, objIsTakable);
+        return new UpdateObjCommand(obj, objVariableName, objName, objDisp, objText, objIsTakable);
     }
 
     UpdateLinkCommand createUpdateLinkCommand(

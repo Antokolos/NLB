@@ -95,6 +95,7 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append(objBlocks.getObjLabel()).append(objBlocks.getObjStart());
         stringBuilder.append(objBlocks.getObjName());
+        stringBuilder.append(objBlocks.getObjDisp());
         stringBuilder.append(objBlocks.getObjText());
         if (objBlocks.isTakable()) {
             stringBuilder.append(objBlocks.getObjTak());
@@ -282,6 +283,11 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateObjDisp(String disp) {
+        return "    disp = \"" + disp + "\"," + LINE_SEPARATOR;
+    }
+
+    @Override
     protected String decorateObjText(String text) {
         return "    dsc = [[" + text + "]]," + LINE_SEPARATOR;
     }
@@ -384,7 +390,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateDelObj(String objectId, String objectName) {
+    protected String decorateDelObj(String objectId, String objectName, String objectDisplayName) {
         return (
                 "            if have(\"" + objectName + "\") then remove(\""
                         + objectName + "\", " + "inv()); end;" + LINE_SEPARATOR
@@ -392,7 +398,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAddObj(String objectId, String objectName) {
+    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
         return (
                 "            if not have(\""
                         + objectName

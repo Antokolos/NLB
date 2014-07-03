@@ -177,13 +177,13 @@ public abstract class HypertextExportManager
     }
 
     @Override
-    protected String decorateDelObj(String objectId, String objectName) {
-        return "Вычеркните из инвентаря " + objectName;
+    protected String decorateDelObj(String objectId, String objectName, String objectDisplayName) {
+        return "Вычеркните из инвентаря " + objectDisplayName;
     }
 
     @Override
-    protected String decorateAddObj(String objectId, String objectName) {
-        return "Положите в инвентарь  " + objectName;
+    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
+        return "Положите в инвентарь  " + objectDisplayName;
     }
 
     @Override

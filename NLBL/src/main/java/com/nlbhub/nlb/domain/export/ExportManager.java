@@ -427,6 +427,7 @@ public abstract class ExportManager {
         blocks.setObjComment(decorateObjComment(obj.getName()));
         blocks.setObjStart(decorateObjStart());
         blocks.setObjName(decorateObjName(obj.getName()));
+        blocks.setObjDisp(decorateObjDisp(obj.getDisp()));
         blocks.setObjText(decorateObjText(obj.getText()));
         blocks.setTakable(obj.isTakable());
         blocks.setObjTak(decorateObjTak(obj.getName()));
@@ -483,6 +484,10 @@ public abstract class ExportManager {
     }
 
     protected String decorateObjName(String name) {
+        return EMPTY_STRING;
+    }
+
+    protected String decorateObjDisp(String disp) {
         return EMPTY_STRING;
     }
 
@@ -769,10 +774,12 @@ public abstract class ExportManager {
                                         + modification.getFullId()
                         );
                     }
+                    final String objId = exportData.getObjId(expression.getValue());
                     stringBuilder.append(
                             decorateAddObj(
-                                    exportData.getObjId(expression.getValue()),
-                                    expression.getValue()
+                                    objId,
+                                    expression.getValue(),
+                                    exportData.getNlb().getObjById(objId).getDisp()
                             )
                     );
                 } else if (modification.getType().equals(ModificationImpl.Type.REMOVE)) {
@@ -786,10 +793,12 @@ public abstract class ExportManager {
                                         + modification.getFullId()
                         );
                     }
+                    final String objId = exportData.getObjId(expression.getValue());
                     stringBuilder.append(
                             decorateDelObj(
-                                    exportData.getObjId(expression.getValue()),
-                                    expression.getValue()
+                                    objId,
+                                    expression.getValue(),
+                                    exportData.getNlb().getObjById(objId).getDisp()
                             )
                     );
                 } else if (modification.getType().equals(ModificationImpl.Type.ASSIGN)) {
@@ -836,9 +845,9 @@ public abstract class ExportManager {
 
     protected abstract String decorateAssignment(String variableName, String variableValue);
 
-    protected abstract String decorateDelObj(String objectId, String objectName);
+    protected abstract String decorateDelObj(String objectId, String objectName, String objectDisplayName);
 
-    protected abstract String decorateAddObj(String objectId, String objectName);
+    protected abstract String decorateAddObj(String objectId, String objectName, String objectDisplayName);
 
     protected abstract String decorateNot();
 
