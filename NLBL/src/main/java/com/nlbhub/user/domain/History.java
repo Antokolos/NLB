@@ -98,6 +98,16 @@ public class History {
         }
     }
 
+    public int predictDecisionCount(final DecisionPoint decisionPoint) {
+        int count = 1;
+        for (final DecisionPoint currentDecisionPoint : m_decisionPoints) {
+            if (currentDecisionPoint.equals(decisionPoint)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public DecisionPoint getDecisionPointToBeMade() {
         return m_decisionPointToBeMade;
     }

@@ -94,20 +94,6 @@ public class GetNLBDataService {
     );
     private static History s_history = new History();
 
-    private abstract class AutomaticDecision {
-        private DecisionPoint m_decisionPoint;
-
-        protected AutomaticDecision(DecisionPoint decisionPoint) {
-            m_decisionPoint = decisionPoint;
-        }
-
-        public DecisionPoint getDecisionPoint() {
-            return m_decisionPoint;
-        }
-
-        public abstract Response proceed();
-    }
-
     private class ManualPathSegment implements PathSegment {
         private String m_path;
         private MultivaluedMap<String, String> m_matrixParameters;
@@ -151,57 +137,76 @@ public class GetNLBDataService {
         }
     }
 
+    private abstract class AutomaticDecision {
+        private DecisionPoint m_decisionPoint;
+        private int m_count;
+
+        protected AutomaticDecision(final DecisionPoint decisionPoint, final int count) {
+            m_decisionPoint = decisionPoint;
+            m_count = count;
+        }
+
+        public DecisionPoint getDecisionPoint() {
+            return m_decisionPoint;
+        }
+
+        public int getCount() {
+            return m_count;
+        }
+
+        public abstract Response proceed();
+    }
+
     private class NormalAutomaticDecision extends AutomaticDecision {
 
-        protected NormalAutomaticDecision(DecisionPoint decisionPoint) {
-            super(decisionPoint);
+        protected NormalAutomaticDecision(final DecisionPoint decisionPoint, final int count) {
+            super(decisionPoint, count);
         }
 
         @Override
         public Response proceed() {
             DecisionPoint decisionPoint = getDecisionPoint();
-            // TODO: calculate visit count and pass correct value
             return followLink(
                     new ManualPathSegment(decisionPoint.getBookId()),
                     decisionPoint.getFromPageId(),
                     decisionPoint.getLinkId(),
                     false,
-                    0
+                    getCount()
             );
         }
     }
+
     private class TraverseAutomaticDecision extends AutomaticDecision {
 
-        protected TraverseAutomaticDecision(DecisionPoint decisionPoint) {
-            super(decisionPoint);
+        protected TraverseAutomaticDecision(final DecisionPoint decisionPoint, final int count) {
+            super(decisionPoint, count);
         }
 
         @Override
         public Response proceed() {
             DecisionPoint decisionPoint = getDecisionPoint();
-            // TODO: calculate visit count and pass correct value
             return getStartPointData(
                     new ManualPathSegment(decisionPoint.getBookId()),
                     false,
-                    0
+                    getCount()
             );
         }
     }
+
     private class ReturnAutomaticDecision extends AutomaticDecision {
 
-        protected ReturnAutomaticDecision(DecisionPoint decisionPoint) {
-            super(decisionPoint);
+        protected ReturnAutomaticDecision(final DecisionPoint decisionPoint, final int count) {
+            super(decisionPoint, count);
         }
 
         @Override
         public Response proceed() {
             DecisionPoint decisionPoint = getDecisionPoint();
-            // TODO: calculate visit count and pass correct value
             return getPageData(
                     new ManualPathSegment(decisionPoint.getBookId()),
                     decisionPoint.getToPageId(),
                     false,
-                    0
+                    getCount()
             );
         }
     }
@@ -649,7 +654,9 @@ public class GetNLBDataService {
                 );
                 decisionPointToBeMade.addPossibleNextDecisionPoint(decisionPoint);
                 if (automaticDecision == null && link.isAuto()) {
-                    automaticDecision = new TraverseAutomaticDecision(decisionPoint);
+                    automaticDecision = (
+                            new TraverseAutomaticDecision(decisionPoint, s_history.predictDecisionCount(decisionPoint))
+                    );
                 }
             } else if (link.isReturnLink()) {
                 if (StringHelper.isEmpty(pageToBeVisited.getReturnPageId())) {
@@ -666,7 +673,9 @@ public class GetNLBDataService {
                     decisionPointToBeMade.addPossibleNextDecisionPoint(decisionPoint);
                 }
                 if (automaticDecision == null && link.isAuto()) {
-                    automaticDecision = new ReturnAutomaticDecision(decisionPoint);
+                    automaticDecision = (
+                            new ReturnAutomaticDecision(decisionPoint, s_history.predictDecisionCount(decisionPoint))
+                    );
                 }
             } else {
                 // Normal link
@@ -677,7 +686,9 @@ public class GetNLBDataService {
                 );
                 decisionPointToBeMade.addPossibleNextDecisionPoint(decisionPoint);
                 if (automaticDecision == null && link.isAuto()) {
-                    automaticDecision = new NormalAutomaticDecision(decisionPoint);
+                    automaticDecision = (
+                            new NormalAutomaticDecision(decisionPoint, s_history.predictDecisionCount(decisionPoint))
+                    );
                 }
             }
         }
