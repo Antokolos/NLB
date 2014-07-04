@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.util;
 
 import com.nlbhub.nlb.api.Constants;
+import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
 import com.nlbhub.nlb.exception.NLBVCSException;
@@ -396,7 +397,7 @@ public class FileManipulator {
         }
     }
 
-    public static MultiLangString readOptionalMultiLangString(
+    public MultiLangString readOptionalMultiLangString(
             final File mlsRootDir,
             final MultiLangString defaultValue
     ) throws NLBIOException {
@@ -405,25 +406,43 @@ public class FileManipulator {
         }
         MultiLangString result = new MultiLangString();
         try {
-            String[] langKeys = mlsRootDir.list();
-            if (langKeys != null) {
-                for (String langKey : langKeys) {
-                    InputStream fis = null;
-                    try {
-                        final File file = new File(mlsRootDir, langKey);
-                        if (!file.exists()) {
-                            result.put(langKey, defaultValue.get(langKey));
-                        }
-                        fis = new FileInputStream(file);
-                        result.put(langKey, FileManipulator.getFileAsString(fis));
-                    } finally {
-                        if (fis != null) {
-                            fis.close();
+            if (mlsRootDir.isDirectory()) {
+                String[] langKeys = mlsRootDir.list();
+                if (langKeys != null) {
+                    for (String langKey : langKeys) {
+                        InputStream fis = null;
+                        try {
+                            final File file = new File(mlsRootDir, langKey);
+                            if (!file.exists()) {
+                                result.put(langKey, defaultValue.get(langKey));
+                            }
+                            fis = new FileInputStream(file);
+                            result.put(langKey, FileManipulator.getFileAsString(fis));
+                        } finally {
+                            if (fis != null) {
+                                fis.close();
+                            }
                         }
                     }
+                } else {
+                    throw new NLBIOException("Error while listing directory");
                 }
             } else {
-                throw new NLBIOException("Pathname does not denote a directory, or an I/O error occurs");
+                // TODO: This code is provided for backward compatibility and should be removed, when all books will be converted
+                InputStream fis = null;
+                try {
+                    fis = new FileInputStream(mlsRootDir);
+                    result.put(NonLinearBook.DEFAULT_LANGUAGE, FileManipulator.getFileAsString(fis));
+                } finally {
+                    if (fis != null) {
+                        fis.close();
+                    }
+                }
+                // TODO: Warning! Deleting old file when reading! This method should be declared static when this temporary code will be deleted.
+                try {
+                    deleteFileOrDir(mlsRootDir);
+                } catch (NLBFileManipulationException ignore) {
+                }
             }
         } catch (IOException e) {
             throw new NLBIOException("IOException occured", e);
