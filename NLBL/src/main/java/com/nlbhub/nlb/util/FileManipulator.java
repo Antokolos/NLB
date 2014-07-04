@@ -316,7 +316,7 @@ public class FileManipulator {
                     writeFile(file, inputStream);
                     addToVCS(file, newFile);
                 } else {
-                    createFile(file, "Cannot create empty file with name " + fileName);
+                    createFile(file, "Cannot create file with name " + fileName);
                 }
             } finally {
                 if (inputStream != null) inputStream.close();
@@ -353,7 +353,7 @@ public class FileManipulator {
                 } else {
                     // if default content is empty, do nothing
                     if (!StringHelper.isEmpty(defaultContent)) {
-                        createFile(file, "Cannot create empty file with name " + fileName);
+                        createFile(file, "Cannot create file with name " + fileName);
                     }
                 }
             } finally {
@@ -362,6 +362,74 @@ public class FileManipulator {
         } catch (IOException e) {
             throw new NLBIOException("IOException occured", e);
         }
+    }
+
+    public void writeOptionalMultiLangString(
+            final File mlsRootDir,
+            final MultiLangString content,
+            final MultiLangString defaultContent
+    ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
+        ByteArrayInputStream inputStream = null;
+        try {
+            for (String key : content.keySet()) {
+                try {
+                    final File file = new File(mlsRootDir, key);
+                    final boolean newFile = !file.exists();
+                    if (content.equalsAs(key, defaultContent)) {
+                        if (!newFile) {
+                            // remove existing file if its content contains default data
+                            deleteFileOrDir(file);
+                        }
+                    } else {
+                        inputStream = (
+                                new ByteArrayInputStream(content.get(key).getBytes(Constants.UNICODE_ENCODING))
+                        );
+                        writeFile(file, inputStream);
+                        addToVCS(file, newFile);
+                    }
+                } finally {
+                    if (inputStream != null) inputStream.close();
+                }
+            }
+        } catch (IOException e) {
+            throw new NLBIOException("IOException occured", e);
+        }
+    }
+
+    public static MultiLangString readOptionalMultiLangString(
+            final File mlsRootDir,
+            final MultiLangString defaultValue
+    ) throws NLBIOException {
+        if (!mlsRootDir.exists()) {
+            return defaultValue;
+        }
+        MultiLangString result = new MultiLangString();
+        try {
+            String[] langKeys = mlsRootDir.list();
+            if (langKeys != null) {
+                for (String langKey : langKeys) {
+                    InputStream fis = null;
+                    try {
+                        final File file = new File(mlsRootDir, langKey);
+                        if (!file.exists()) {
+                            result.put(langKey, defaultValue.get(langKey));
+                        }
+                        fis = new FileInputStream(file);
+                        result.put(langKey, FileManipulator.getFileAsString(fis));
+                    } finally {
+                        if (fis != null) {
+                            fis.close();
+                        }
+                    }
+                }
+            } else {
+                throw new NLBIOException("Pathname does not denote a directory, or an I/O error occurs");
+            }
+        } catch (IOException e) {
+            throw new NLBIOException("IOException occured", e);
+        }
+
+        return result;
     }
 
     public void createDir(
