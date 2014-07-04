@@ -66,6 +66,7 @@ import java.util.*;
  */
 public class NonLinearBookImpl implements NonLinearBook {
     private static final String STARTPOINT_FILE_NAME = "startpoint";
+    private static final String LANGUAGE_FILE_NAME = "language";
     private static final String PAGES_DIR_NAME = "pages";
     private static final String OBJS_DIR_NAME = "objs";
     private static final String VARS_DIR_NAME = "vars";
@@ -77,6 +78,7 @@ public class NonLinearBookImpl implements NonLinearBook {
      * UUID of the start page in the pages list.
      */
     private String m_startPoint;
+    private String m_language;
     private Map<String, PageImpl> m_pages;
     private Map<String, ObjImpl> m_objs;
     private List<VariableImpl> m_variables;
@@ -1089,6 +1091,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_objs.clear();
         m_variables.clear();
         m_startPoint = null;
+        m_language = (m_parentNLB != null) ? m_parentNLB.getLanguage() : DEFAULT_LANGUAGE;
         m_rootDir = null;
     }
 
@@ -1099,6 +1102,11 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     public String getStartPoint() {
         return m_startPoint;
+    }
+
+    @Override
+    public String getLanguage() {
+        return m_language;
     }
 
     public void setStartPoint(String startPoint) {
@@ -1446,7 +1454,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
         m_rootDir = rootDir;
         progressData.setNoteText("Reading startpoint...");
-        readStartPoint(rootDir);
+        readBookProperties(rootDir);
         progressData.setProgressValue(20);
         progressData.setNoteText("Reading objects...");
         readObjs(rootDir);
@@ -1471,19 +1479,26 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_rootDir = rootDir;
         m_parentNLB = parentNLB;
         m_parentPage = parentPage;
-        readStartPoint(rootDir);
+        readBookProperties(rootDir);
         readObjs(rootDir);
         readPages(rootDir);
         readVariables(rootDir);
         return true;
     }
 
-    private void readStartPoint(File rootDir) throws NLBIOException {
+    private void readBookProperties(File rootDir) throws NLBIOException {
         m_startPoint = (
                 FileManipulator.getOptionalFileAsString(
                         rootDir,
                         STARTPOINT_FILE_NAME,
                         DEFAULT_STARTPOINT
+                )
+        );
+        m_language = (
+                FileManipulator.getOptionalFileAsString(
+                        rootDir,
+                        LANGUAGE_FILE_NAME,
+                        (m_parentNLB != null) ? m_parentNLB.getLanguage() : DEFAULT_LANGUAGE
                 )
         );
     }
@@ -1563,8 +1578,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             progressData.setNoteText("Writing objects...");
             writeObjs(fileManipulator, m_rootDir);
             progressData.setProgressValue(95);
-            progressData.setNoteText("Writing startpoint...");
-            writeStartPoint(fileManipulator, m_rootDir);
+            progressData.setNoteText("Writing book properties...");
+            writeBookProperties(fileManipulator, m_rootDir);
         } catch (IOException e) {
             throw new NLBIOException("IO exception occurred", e);
         }
@@ -1844,11 +1859,17 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
-    private void writeStartPoint(
+    private void writeBookProperties(
             final FileManipulator fileManipulator,
             final File rootDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         fileManipulator.writeOptionalString(rootDir, STARTPOINT_FILE_NAME, m_startPoint, DEFAULT_STARTPOINT);
+        fileManipulator.writeOptionalString(
+                rootDir,
+                LANGUAGE_FILE_NAME,
+                m_language,
+                (m_parentNLB != null) ? m_parentNLB.getLanguage() : DEFAULT_LANGUAGE
+        );
     }
 
     public Variable getVariableById(String varId) {
