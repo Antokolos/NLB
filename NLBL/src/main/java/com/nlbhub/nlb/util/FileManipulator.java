@@ -372,6 +372,17 @@ public class FileManipulator {
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         ByteArrayInputStream inputStream = null;
         try {
+            if (mlsRootDir.exists() && !mlsRootDir.isDirectory()) {
+                // TODO: Warning! Deleting old file when writing! This is done for backward compatibility and can be removed when all books will be converted.
+                deleteFileOrDir(mlsRootDir);
+            }
+            if (!mlsRootDir.exists()) {
+                if (!mlsRootDir.mkdir()) {
+                    throw new NLBFileManipulationException(
+                            "Cannot create MultiLangString root: " + mlsRootDir.getCanonicalPath()
+                    );
+                }
+            }
             for (String key : content.keySet()) {
                 try {
                     final File file = new File(mlsRootDir, key);
@@ -397,7 +408,7 @@ public class FileManipulator {
         }
     }
 
-    public MultiLangString readOptionalMultiLangString(
+    public static MultiLangString readOptionalMultiLangString(
             final File mlsRootDir,
             final MultiLangString defaultValue
     ) throws NLBIOException {
@@ -437,11 +448,6 @@ public class FileManipulator {
                     if (fis != null) {
                         fis.close();
                     }
-                }
-                // TODO: Warning! Deleting old file when reading! This method should be declared static when this temporary code will be deleted.
-                try {
-                    deleteFileOrDir(mlsRootDir);
-                } catch (NLBFileManipulationException ignore) {
                 }
             }
         } catch (IOException e) {

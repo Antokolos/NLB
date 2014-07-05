@@ -44,6 +44,7 @@ import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
 import com.nlbhub.nlb.exception.NLBVCSException;
 import com.nlbhub.nlb.util.FileManipulator;
+import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.StringHelper;
 import org.jetbrains.annotations.NotNull;
 
@@ -64,32 +65,32 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "page")
 public class PageImpl extends AbstractNodeItem implements Page {
-    private static final String TEXT_FILE_NAME = "text";
+    private static final String TEXT_SUBDIR_NAME = "text";
     private static final String VARID_FILE_NAME = "varid";
-    private static final String CAPTION_FILE_NAME = "caption";
+    private static final String CAPTION_SUBDIR_NAME = "caption";
     private static final String USE_CAPT_FILE_NAME = "use_capt";
     private static final String MODULE_SUBDIR_NAME = "module";
     private static final String MODNAME_FILE_NAME = "modname";
     private static final String TRAVTEXT_FILE_NAME = "travtext";
     private static final String AUTOTRAV_FILE_NAME = "autotrav";
     private static final String AUTORET_FILE_NAME = "autoret";
-    private static final String RETTEXT_FILE_NAME = "rettext";
+    private static final String RETTEXT_SUBDIR_NAME = "rettext";
     private static final String RETPAGE_FILE_NAME = "retpage";
     private static final String MODCNSID_FILE_NAME = "modcnsid";
 
     private static final String DEFAULT_MODULE_NAME_FORMAT = "%s's submodule";
     private static final String DEFAULT_TRAVERSE_TEXT_FORMAT = "Go to %s";
     private String m_varId = DEFAULT_VARID;
-    private String m_caption = DEFAULT_CAPTION;
+    private MultiLangString m_caption = DEFAULT_CAPTION;
     private boolean m_useCaption = DEFAULT_USE_CAPTION;
-    private String m_text = DEFAULT_TEXT;
+    private MultiLangString m_text = DEFAULT_TEXT;
     private String m_moduleName;
     private String m_defaultModuleName;
     private String m_traverseText;
     private boolean m_autoTraverse = DEFAULT_AUTO_TRAVERSE;
     private boolean m_autoReturn = DEFAULT_AUTO_RETURN;
     private String m_defaultTraverseText;
-    private String m_returnText = DEFAULT_RETURN_TEXT;
+    private MultiLangString m_returnText = DEFAULT_RETURN_TEXT;
     private String m_returnPageId = DEFAULT_RETURN_PAGE_ID;
     private String m_moduleConstrId = DEFAULT_MODULE_CONSTR_ID;
 
@@ -133,7 +134,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
                 ) {
             result = new SearchResult();
             result.setId(getId());
-            result.setInformation(m_caption);
+            result.setInformation(getCaption());
             return result;
         }
         return null;
@@ -146,12 +147,17 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     public void setText(String text) {
-        m_text = text;
+        m_text.put(m_currentNLB.getLanguage(), text);
     }
 
     @Override
     @XmlElement(name = "text")
     public String getText() {
+        return m_text.get(m_currentNLB.getLanguage());
+    }
+
+    @Override
+    public MultiLangString getTexts() {
         return m_text;
     }
 
@@ -178,11 +184,16 @@ public class PageImpl extends AbstractNodeItem implements Page {
     @Override
     @XmlElement(name = "caption")
     public String getCaption() {
+        return m_caption.get(m_currentNLB.getLanguage());
+    }
+
+    @Override
+    public MultiLangString getCaptions() {
         return m_caption;
     }
 
     public void setCaption(String caption) {
-        m_caption = caption;
+        m_caption.put(m_currentNLB.getLanguage(), caption);
     }
 
     @Override
@@ -223,6 +234,11 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     @Override
     public String getReturnText() {
+        return m_returnText.get(m_currentNLB.getLanguage());
+    }
+
+    @Override
+    public MultiLangString getReturnTexts() {
         return m_returnText;
     }
 
@@ -255,7 +271,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     public void setReturnText(String returnText) {
-        m_returnText = returnText;
+        m_returnText.put(m_currentNLB.getLanguage(), returnText);
     }
 
     @Override
@@ -299,16 +315,19 @@ public class PageImpl extends AbstractNodeItem implements Page {
             m_module.setRootDir(new File(pageDir, MODULE_SUBDIR_NAME));
             m_module.save(fileManipulator, new DummyProgressData(), partialProgressData);
             fileManipulator.writeOptionalString(pageDir, VARID_FILE_NAME, m_varId, DEFAULT_VARID);
-            fileManipulator.writeOptionalString(pageDir, CAPTION_FILE_NAME, m_caption, DEFAULT_CAPTION);
+            fileManipulator.writeOptionalMultiLangString(
+                    new File(pageDir, CAPTION_SUBDIR_NAME),
+                    m_caption,
+                    DEFAULT_CAPTION
+            );
             fileManipulator.writeOptionalString(
                     pageDir,
                     USE_CAPT_FILE_NAME,
                     String.valueOf(m_useCaption),
                     String.valueOf(DEFAULT_USE_CAPTION)
             );
-            fileManipulator.writeOptionalString(
-                    pageDir,
-                    TEXT_FILE_NAME,
+            fileManipulator.writeOptionalMultiLangString(
+                    new File(pageDir, TEXT_SUBDIR_NAME),
                     m_text,
                     DEFAULT_TEXT
             );
@@ -336,9 +355,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     String.valueOf(m_autoReturn),
                     String.valueOf(DEFAULT_AUTO_RETURN)
             );
-            fileManipulator.writeOptionalString(
-                    pageDir,
-                    RETTEXT_FILE_NAME,
+            fileManipulator.writeOptionalMultiLangString(
+                    new File(pageDir, RETTEXT_SUBDIR_NAME),
                     m_returnText,
                     DEFAULT_RETURN_TEXT
             );
@@ -376,9 +394,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     )
             );
             m_caption = (
-                    FileManipulator.getOptionalFileAsString(
-                            pageDir,
-                            CAPTION_FILE_NAME,
+                    FileManipulator.readOptionalMultiLangString(
+                            new File(pageDir, CAPTION_SUBDIR_NAME),
                             DEFAULT_CAPTION
                     )
             );
@@ -390,9 +407,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     )
             );
             m_text = (
-                    FileManipulator.getOptionalFileAsString(
-                            pageDir,
-                            TEXT_FILE_NAME,
+                    FileManipulator.readOptionalMultiLangString(
+                            new File(pageDir,TEXT_SUBDIR_NAME),
                             DEFAULT_TEXT
                     )
             );
@@ -425,9 +441,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     )
             );
             m_returnText = (
-                    FileManipulator.getOptionalFileAsString(
-                            pageDir,
-                            RETTEXT_FILE_NAME,
+                    FileManipulator.readOptionalMultiLangString(
+                            new File(pageDir,RETTEXT_SUBDIR_NAME),
                             DEFAULT_RETURN_TEXT
                     )
             );

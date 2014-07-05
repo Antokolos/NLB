@@ -40,6 +40,7 @@ package com.nlbhub.nlb.domain;
 
 import com.nlbhub.nlb.api.IdentifiableItem;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
+import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.StringHelper;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -134,6 +135,20 @@ public abstract class AbstractIdentifiableItem implements IdentifiableItem {
         } else {
             return null;
         }
+    }
+
+    protected boolean textMatches(
+            final MultiLangString mlsToTest,
+            final String searchText,
+            boolean ignoreCase,
+            boolean wholeWords
+    ) {
+        for (String text : mlsToTest.values()) {
+            if (textMatches(text, searchText, ignoreCase, wholeWords)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected boolean textMatches(

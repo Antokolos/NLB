@@ -38,6 +38,8 @@
  */
 package com.nlbhub.nlb.api;
 
+import com.nlbhub.nlb.util.MultiLangString;
+
 /**
  * The Page class
  *
@@ -45,9 +47,9 @@ package com.nlbhub.nlb.api;
  * @version 1.0 1/15/14
  */
 public interface Page extends NodeItem {
-    public static final String DEFAULT_TEXT = Constants.EMPTY_STRING;
+    public static final MultiLangString DEFAULT_TEXT = MultiLangString.createDefault();
     public static final String DEFAULT_VARID = Constants.EMPTY_STRING;
-    public static final String DEFAULT_CAPTION = Constants.EMPTY_STRING;
+    public static final MultiLangString DEFAULT_CAPTION = MultiLangString.createDefault();
     public static final boolean DEFAULT_USE_CAPTION = false;
     public static final boolean DEFAULT_AUTO_TRAVERSE = false;
     public static final boolean DEFAULT_AUTO_RETURN = false;
@@ -55,15 +57,19 @@ public interface Page extends NodeItem {
      * Set to empty String.
      * This means that by default pages should not return to the parent module
      */
-    public static final String DEFAULT_RETURN_TEXT = Constants.EMPTY_STRING;
+    public static final MultiLangString DEFAULT_RETURN_TEXT = MultiLangString.createDefault();
     public static final String DEFAULT_RETURN_PAGE_ID = Constants.EMPTY_STRING;
     public static final String DEFAULT_MODULE_CONSTR_ID = Constants.EMPTY_STRING;
 
     public String getText();
 
+    public MultiLangString getTexts();
+
     public String getVarId();
 
     public String getCaption();
+
+    public MultiLangString getCaptions();
 
     public boolean isUseCaption();
 
@@ -76,6 +82,8 @@ public interface Page extends NodeItem {
     public boolean isAutoReturn();
 
     public String getReturnText();
+
+    public MultiLangString getReturnTexts();
 
     public String getReturnPageId();
 

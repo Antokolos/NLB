@@ -40,6 +40,7 @@ package com.nlbhub.nlb.util;
 
 import com.nlbhub.nlb.api.Constants;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -60,6 +61,10 @@ public class MultiLangString {
 
     public Set<String> keySet() {
         return m_content.keySet();
+    }
+
+    public Collection<String> values() {
+        return m_content.values();
     }
 
     public void put(final String langKey, final String value) {

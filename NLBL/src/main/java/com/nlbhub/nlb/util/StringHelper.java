@@ -55,6 +55,15 @@ public class StringHelper {
         return string == null || Constants.EMPTY_STRING.equals(string);
     }
 
+    public static boolean isEmpty(final MultiLangString multiLangString) {
+        for (final String text : multiLangString.values()) {
+            if (!isEmpty(text)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static String formatSequence(final List<String> strings) {
         final StringBuilder sb = new StringBuilder();
         final int lastElemIndex = strings.size() - 1;

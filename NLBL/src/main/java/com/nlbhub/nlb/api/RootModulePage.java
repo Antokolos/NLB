@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.api;
 
+import com.nlbhub.nlb.util.MultiLangString;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -64,6 +65,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public MultiLangString getTexts() {
+        return DEFAULT_TEXT;
+    }
+
+    @Override
     public String getVarId() {
         return Constants.EMPTY_STRING;
     }
@@ -71,6 +77,11 @@ public class RootModulePage implements Page {
     @Override
     public String getCaption() {
         return Constants.EMPTY_STRING;
+    }
+
+    @Override
+    public MultiLangString getCaptions() {
+        return DEFAULT_CAPTION;
     }
 
     @Override
@@ -101,6 +112,11 @@ public class RootModulePage implements Page {
     @Override
     public String getReturnText() {
         return Constants.EMPTY_STRING;
+    }
+
+    @Override
+    public MultiLangString getReturnTexts() {
+        return DEFAULT_RETURN_TEXT;
     }
 
     @Override
