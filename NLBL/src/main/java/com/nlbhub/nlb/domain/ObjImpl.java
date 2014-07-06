@@ -45,6 +45,7 @@ import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
 import com.nlbhub.nlb.exception.NLBVCSException;
 import com.nlbhub.nlb.util.FileManipulator;
+import com.nlbhub.nlb.util.MultiLangString;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -63,10 +64,10 @@ import java.io.IOException;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "obj")
 public class ObjImpl extends AbstractNodeItem implements Obj {
-    private static final String TEXT_FILE_NAME = "text";
+    private static final String TEXT_SUBDIR_NAME = "text";
     private static final String VARID_FILE_NAME = "varid";
-    private static final String NAME_FILE_NAME = "name";
-    private static final String DISP_FILE_NAME = "disp";
+    private static final String NAME_SUBDIR_NAME = "name";
+    private static final String DISP_SUBDIR_NAME = "disp";
     private static final String TAKABLE_FILE_NAME = "takable";
     private static final String CONTAINERID_FILE_NAME = "containerid";
 
@@ -74,9 +75,9 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
      * Object variable. Will be modified when object is used (act in INSTEAD)
      */
     private String m_varId = DEFAULT_VARID;
-    private String m_name = DEFAULT_NAME;
-    private String m_disp = DEFAULT_DISP;
-    private String m_text = DEFAULT_TEXT;
+    private MultiLangString m_name = DEFAULT_NAME;
+    private MultiLangString m_disp = DEFAULT_DISP;
+    private MultiLangString m_text = DEFAULT_TEXT;
     /**
      * Object can be taken to the inventory
      */
@@ -95,7 +96,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                 ) {
             result = new SearchResult();
             result.setId(getId());
-            result.setInformation(m_name);
+            result.setInformation(getName());
             return result;
         }
         return null;
@@ -110,12 +111,17 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     }
 
     public void setText(String text) {
-        m_text = text;
+        m_text.put(getCurrentNLB().getLanguage(), text);
     }
 
     @Override
     @XmlElement(name = "text")
     public String getText() {
+        return m_text.get(getCurrentNLB().getLanguage());
+    }
+
+    @Override
+    public MultiLangString getTexts() {
         return m_text;
     }
 
@@ -132,21 +138,31 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     @Override
     @XmlElement(name = "name")
     public String getName() {
+        return m_name.get(getCurrentNLB().getLanguage());
+    }
+
+    @Override
+    public MultiLangString getNames() {
         return m_name;
     }
 
     public void setName(String name) {
-        m_name = name;
+        m_name.put(getCurrentNLB().getLanguage(), name);
     }
 
     @Override
     @XmlElement(name = "disp")
     public String getDisp() {
+        return m_disp.get(getCurrentNLB().getLanguage());
+    }
+
+    @Override
+    public MultiLangString getDisps() {
         return m_disp;
     }
 
     public void setDisp(String disp) {
-        m_disp = disp;
+        m_disp.put(getCurrentNLB().getLanguage(), disp);
     }
 
     @Override
@@ -184,11 +200,33 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                     "Cannot create NLB obj directory for obj with Id = " + getId()
             );
             fileManipulator.writeOptionalString(objDir, VARID_FILE_NAME, m_varId, DEFAULT_VARID);
-            fileManipulator.writeOptionalString(objDir, NAME_FILE_NAME, m_name, DEFAULT_NAME);
-            fileManipulator.writeOptionalString(objDir, DISP_FILE_NAME, m_disp, DEFAULT_DISP);
-            fileManipulator.writeOptionalString(objDir, TEXT_FILE_NAME, m_text, DEFAULT_TEXT);
-            fileManipulator.writeOptionalString(objDir, TAKABLE_FILE_NAME, String.valueOf(m_takable), String.valueOf(DEFAULT_TAKABLE));
-            fileManipulator.writeOptionalString(objDir, CONTAINERID_FILE_NAME, m_containerId, DEFAULT_CONTAINER_ID);
+            fileManipulator.writeOptionalMultiLangString(
+                    new File(objDir, NAME_SUBDIR_NAME),
+                    m_name,
+                    DEFAULT_NAME
+            );
+            fileManipulator.writeOptionalMultiLangString(
+                    new File(objDir, DISP_SUBDIR_NAME),
+                    m_disp,
+                    DEFAULT_DISP
+            );
+            fileManipulator.writeOptionalMultiLangString(
+                    new File(objDir, TEXT_SUBDIR_NAME),
+                    m_text,
+                    DEFAULT_TEXT
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
+                    TAKABLE_FILE_NAME,
+                    String.valueOf(m_takable),
+                    String.valueOf(DEFAULT_TAKABLE)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
+                    CONTAINERID_FILE_NAME,
+                    m_containerId,
+                    DEFAULT_CONTAINER_ID
+            );
 
             writeModOrderFile(fileManipulator, objDir);
             writeModifications(fileManipulator, objDir);
@@ -206,23 +244,20 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                 )
         );
         m_name = (
-                FileManipulator.getOptionalFileAsString(
-                        objDir,
-                        NAME_FILE_NAME,
+                FileManipulator.readOptionalMultiLangString(
+                        new File(objDir, NAME_SUBDIR_NAME),
                         DEFAULT_NAME
                 )
         );
         m_disp = (
-                FileManipulator.getOptionalFileAsString(
-                        objDir,
-                        DISP_FILE_NAME,
+                FileManipulator.readOptionalMultiLangString(
+                        new File(objDir, DISP_SUBDIR_NAME),
                         DEFAULT_DISP
                 )
         );
         m_text = (
-                FileManipulator.getOptionalFileAsString(
-                        objDir,
-                        TEXT_FILE_NAME,
+                FileManipulator.readOptionalMultiLangString(
+                        new File(objDir, TEXT_SUBDIR_NAME),
                         DEFAULT_TEXT
                 )
         );

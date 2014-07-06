@@ -1504,6 +1504,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         DEFAULT_STARTPOINT
                 )
         );
+        // TODO: Language will be required file in the root NLB, but we make it optional for backward compatibility.
         m_language = (
                 FileManipulator.getOptionalFileAsString(
                         rootDir,
@@ -1874,12 +1875,16 @@ public class NonLinearBookImpl implements NonLinearBook {
             final File rootDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         fileManipulator.writeOptionalString(rootDir, STARTPOINT_FILE_NAME, m_startPoint, DEFAULT_STARTPOINT);
-        fileManipulator.writeOptionalString(
-                rootDir,
-                LANGUAGE_FILE_NAME,
-                m_language,
-                (m_parentNLB != null) ? m_parentNLB.getLanguage() : DEFAULT_LANGUAGE
-        );
+        if (m_parentNLB != null) {
+            fileManipulator.writeOptionalString(
+                    rootDir,
+                    LANGUAGE_FILE_NAME,
+                    m_language,
+                    m_parentNLB.getLanguage()
+            );
+        } else {
+            fileManipulator.writeRequiredString(rootDir, LANGUAGE_FILE_NAME, m_language);
+        }
     }
 
     public Variable getVariableById(String varId) {

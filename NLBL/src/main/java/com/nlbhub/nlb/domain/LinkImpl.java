@@ -64,7 +64,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     private static final String COORDS_DIR_NAME = "coords";
     private static final String VARID_FILE_NAME = "varid";
     private static final String TARGET_FILE_NAME = "target";
-    private static final String TEXT_FILE_NAME = "text";
+    private static final String TEXT_SUBDIR_NAME = "text";
     private static final String CONSTRID_FILE_NAME = "constrid";
     private static final String STROKE_FILE_NAME = "stroke";
     private static final String AUTO_FILE_NAME = "auto";
@@ -290,7 +290,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
             fileManipulator.writeOptionalString(linkDir, VARID_FILE_NAME, m_varId, DEFAULT_VAR_ID);
             fileManipulator.writeOptionalString(linkDir, TARGET_FILE_NAME, m_target, DEFAULT_TARGET);
             fileManipulator.writeOptionalMultiLangString(
-                    new File(linkDir, TEXT_FILE_NAME),
+                    new File(linkDir, TEXT_SUBDIR_NAME),
                     m_text,
                     DEFAULT_TEXT
             );
@@ -327,7 +327,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
         );
         m_text = (
                 FileManipulator.readOptionalMultiLangString(
-                        new File(linkDir, TEXT_FILE_NAME),
+                        new File(linkDir, TEXT_SUBDIR_NAME),
                         DEFAULT_TEXT
                 )
         );

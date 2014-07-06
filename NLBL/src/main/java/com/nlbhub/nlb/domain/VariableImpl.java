@@ -92,6 +92,14 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
         return null;
     }
 
+    /**
+     * Default contructor. It is needed for JAXB conversion, do not remove!
+     * Do not use it for any other purpose!
+     */
+    public VariableImpl() {
+        super();
+    }
+
     public VariableImpl(NonLinearBook currentNLB) {
         super(currentNLB);
     }

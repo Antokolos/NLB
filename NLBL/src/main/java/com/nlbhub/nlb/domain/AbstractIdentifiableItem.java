@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.domain;
 
+import com.nlbhub.nlb.api.DummyNLB;
 import com.nlbhub.nlb.api.IdentifiableItem;
 import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
@@ -75,6 +76,7 @@ public abstract class AbstractIdentifiableItem implements IdentifiableItem {
      */
     public AbstractIdentifiableItem() {
         m_id = UUID.randomUUID().toString();
+        m_currentNLB = DummyNLB.singleton();
     }
 
     public AbstractIdentifiableItem(NonLinearBook currentNLB) {
