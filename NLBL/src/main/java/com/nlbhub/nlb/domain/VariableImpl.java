@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.domain;
 
+import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.api.Variable;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
@@ -65,13 +66,6 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
     private String m_target;
     private String m_value = DEFAULT_VALUE;
 
-    /**
-     * Default contructor. It is needed for JAXB conversion, do not remove!
-     */
-    public VariableImpl() {
-        super();
-    }
-
     @Override
     public SearchResult searchText(String searchText, boolean searchInId, boolean ignoreCase, boolean wholeWords) {
         SearchResult result = super.searchText(searchText, searchInId, ignoreCase, wholeWords);
@@ -98,6 +92,10 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
         return null;
     }
 
+    public VariableImpl(NonLinearBook currentNLB) {
+        super(currentNLB);
+    }
+
     public VariableImpl(Variable variable) {
         super(variable);
         m_type = variable.getType();
@@ -117,13 +115,14 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
     }
 
     public VariableImpl(
+            NonLinearBook currentNLB,
             Type type,
             DataType dataType,
             String name,
             String value,
             String target
     ) {
-        this();
+        this(currentNLB);
         m_type = type;
         m_dataType = dataType;
         m_name = name;

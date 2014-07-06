@@ -55,8 +55,15 @@ public class MultiLangString {
         m_content = new HashMap<>();
     }
 
-    public static MultiLangString createDefault() {
+    public static MultiLangString createEmptyText() {
         return new MultiLangString();
+    }
+
+    public static MultiLangString createDefaultLinkText() {
+        MultiLangString linkText = new MultiLangString();
+        linkText.put(Constants.RU, "Далее");
+        linkText.put(Constants.EN, "Next");
+        return linkText;
     }
 
     public Set<String> keySet() {

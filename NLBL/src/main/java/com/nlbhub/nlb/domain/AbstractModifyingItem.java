@@ -41,6 +41,7 @@ package com.nlbhub.nlb.domain;
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.Modification;
 import com.nlbhub.nlb.api.ModifyingItem;
+import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
@@ -72,8 +73,14 @@ public abstract class AbstractModifyingItem extends AbstractIdentifiableItem imp
 
     /**
      * Default contructor. It is needed for JAXB conversion, do not remove!
+     * Do not use it for any other purpose!
      */
-    protected AbstractModifyingItem() {
+    public AbstractModifyingItem() {
+        super();
+    }
+
+    protected AbstractModifyingItem(NonLinearBook currentNLB) {
+        super(currentNLB);
     }
 
     @Override

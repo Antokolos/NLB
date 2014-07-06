@@ -86,33 +86,31 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private MultiLangString m_text = DEFAULT_TEXT;
     private String m_moduleName;
     private String m_defaultModuleName;
-    private String m_traverseText;
+    private MultiLangString m_traverseText;
     private boolean m_autoTraverse = DEFAULT_AUTO_TRAVERSE;
     private boolean m_autoReturn = DEFAULT_AUTO_RETURN;
-    private String m_defaultTraverseText;
+    private MultiLangString m_defaultTraverseText;
     private MultiLangString m_returnText = DEFAULT_RETURN_TEXT;
     private String m_returnPageId = DEFAULT_RETURN_PAGE_ID;
     private String m_moduleConstrId = DEFAULT_MODULE_CONSTR_ID;
 
-    private NonLinearBook m_currentNLB;
     private NonLinearBookImpl m_module;
 
     /**
      * Default contructor. It is needed for JAXB conversion, do not remove!
+     * Do not use it for any other purpose!
      */
     public PageImpl() {
         super();
-        init();
     }
 
     public PageImpl(NonLinearBook currentNLB) {
-        super();
-        m_currentNLB = currentNLB;
+        super(currentNLB);
         init();
     }
 
     private void init() {
-        m_module = new NonLinearBookImpl(m_currentNLB, this);
+        m_module = new NonLinearBookImpl(getCurrentNLB(), this);
         resetDefaultModuleNameAndTraverseText();
         m_moduleName = m_defaultModuleName;
         m_traverseText = m_defaultTraverseText;
@@ -120,7 +118,11 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     private void resetDefaultModuleNameAndTraverseText() {
         m_defaultModuleName = String.format(DEFAULT_MODULE_NAME_FORMAT, getId());
-        m_defaultTraverseText = String.format(DEFAULT_TRAVERSE_TEXT_FORMAT, m_defaultModuleName);
+        m_defaultTraverseText = new MultiLangString();
+        m_defaultTraverseText.put(
+                getCurrentNLB().getLanguage(),
+                String.format(DEFAULT_TRAVERSE_TEXT_FORMAT, m_defaultModuleName)
+        );
     }
 
     @Override
@@ -141,19 +143,18 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     public PageImpl(NonLinearBook currentNLB, float left, float top) {
-        super(left, top);
-        m_currentNLB = currentNLB;
+        super(currentNLB, left, top);
         init();
     }
 
     public void setText(String text) {
-        m_text.put(m_currentNLB.getLanguage(), text);
+        m_text.put(getCurrentNLB().getLanguage(), text);
     }
 
     @Override
     @XmlElement(name = "text")
     public String getText() {
-        return m_text.get(m_currentNLB.getLanguage());
+        return m_text.get(getCurrentNLB().getLanguage());
     }
 
     @Override
@@ -184,7 +185,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     @Override
     @XmlElement(name = "caption")
     public String getCaption() {
-        return m_caption.get(m_currentNLB.getLanguage());
+        return m_caption.get(getCurrentNLB().getLanguage());
     }
 
     @Override
@@ -193,7 +194,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     public void setCaption(String caption) {
-        m_caption.put(m_currentNLB.getLanguage(), caption);
+        m_caption.put(getCurrentNLB().getLanguage(), caption);
     }
 
     @Override
@@ -209,6 +210,11 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     @Override
     public String getTraverseText() {
+        return m_traverseText.get(getCurrentNLB().getLanguage());
+    }
+
+    @Override
+    public MultiLangString getTraverseTexts() {
         return m_traverseText;
     }
 
@@ -234,7 +240,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     @Override
     public String getReturnText() {
-        return m_returnText.get(m_currentNLB.getLanguage());
+        return m_returnText.get(getCurrentNLB().getLanguage());
     }
 
     @Override
@@ -267,11 +273,11 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     public void setTraverseText(String traverseText) {
-        m_traverseText = traverseText;
+        m_traverseText.put(getCurrentNLB().getLanguage(), traverseText);
     }
 
     public void setReturnText(String returnText) {
-        m_returnText.put(m_currentNLB.getLanguage(), returnText);
+        m_returnText.put(getCurrentNLB().getLanguage(), returnText);
     }
 
     @Override
@@ -337,9 +343,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     m_moduleName,
                     m_defaultModuleName
             );
-            fileManipulator.writeOptionalString(
-                    pageDir,
-                    TRAVTEXT_FILE_NAME,
+            fileManipulator.writeOptionalMultiLangString(
+                    new File(pageDir, TRAVTEXT_FILE_NAME),
                     m_traverseText,
                     m_defaultTraverseText
             );
@@ -385,7 +390,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
             setId(pageDir.getName());
             resetDefaultModuleNameAndTraverseText();
             final File moduleDir = new File(pageDir, MODULE_SUBDIR_NAME);
-            m_module.loadAndSetParent(moduleDir.getCanonicalPath(), m_currentNLB, this);
+            m_module.loadAndSetParent(moduleDir.getCanonicalPath(), getCurrentNLB(), this);
             m_varId = (
                     FileManipulator.getOptionalFileAsString(
                             pageDir,
@@ -420,9 +425,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     )
             );
             m_traverseText = (
-                    FileManipulator.getOptionalFileAsString(
-                            pageDir,
-                            TRAVTEXT_FILE_NAME,
+                    FileManipulator.readOptionalMultiLangString(
+                            new File(pageDir, TRAVTEXT_FILE_NAME),
                             m_defaultTraverseText
                     )
             );
@@ -470,38 +474,37 @@ public class PageImpl extends AbstractNodeItem implements Page {
         }
     }
 
-    public static PageImpl createFilteredClone(
-            final PageImpl source,
+    public PageImpl createFilteredClone(
             final List<String> linkIdsToBeExcluded,
             List<Link> linksToBeAdded
     ) {
-        PageImpl result = new PageImpl();
-        result.setId(source.getId());
-        result.setText(source.getText());
-        final Coords sourceCoords = source.getCoords();
+        PageImpl result = new PageImpl(getCurrentNLB());
+        result.setId(getId());
+        result.setText(getText());
+        final Coords sourceCoords = getCoords();
         final CoordsImpl resultCoords = result.getCoords();
         resultCoords.setLeft(sourceCoords.getLeft());
         resultCoords.setTop(sourceCoords.getTop());
         resultCoords.setWidth(sourceCoords.getWidth());
         resultCoords.setHeight(sourceCoords.getHeight());
-        result.setDeleted(source.isDeleted());
-        result.setReturnPageId(source.getReturnPageId());
-        result.setVarId(source.getVarId());
-        result.setCaption(source.getCaption());
-        result.setModuleConstrId(source.getModuleConstrId());
-        result.setModuleName(source.getModuleName());
-        result.setReturnText(source.getReturnText());
-        result.setTraverseText(source.getTraverseText());
-        result.setUseCaption(source.isUseCaption());
-        result.setAutoTraverse(source.isAutoTraverse());
-        result.setAutoReturn(source.isAutoReturn());
-        result.setFill(source.getFill());
-        result.setParent(source.getParent());
-        result.setStroke(source.getStroke());
-        result.setTextColor(source.getTextColor());
-        AbstractNodeItem.filterTargetLinkList(result, source, linkIdsToBeExcluded);
+        result.setDeleted(isDeleted());
+        result.setReturnPageId(getReturnPageId());
+        result.setVarId(getVarId());
+        result.setCaption(getCaption());
+        result.setModuleConstrId(getModuleConstrId());
+        result.setModuleName(getModuleName());
+        result.setReturnText(getReturnText());
+        result.setTraverseText(getTraverseText());
+        result.setUseCaption(isUseCaption());
+        result.setAutoTraverse(isAutoTraverse());
+        result.setAutoReturn(isAutoReturn());
+        result.setFill(getFill());
+        result.setParent(getParent());
+        result.setStroke(getStroke());
+        result.setTextColor(getTextColor());
+        AbstractNodeItem.filterTargetLinkList(result, this, linkIdsToBeExcluded);
         for (Link link : linksToBeAdded) {
-            result.addLink(new LinkImpl(source, link));
+            result.addLink(new LinkImpl(this, link));
         }
         return result;
     }

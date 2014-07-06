@@ -430,7 +430,7 @@ public class NonLinearBookFacade implements NLBObservable {
      * This method is not participating in undo. It pre-creates obj.
      */
     public Obj createObj(final float left, final float top) {
-        ObjImpl obj = new ObjImpl(left, top);
+        ObjImpl obj = new ObjImpl(m_nlb, left, top);
         m_newObjsPool.put(obj.getId(), obj);
         return obj;
     }

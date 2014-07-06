@@ -236,6 +236,7 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
 
     /**
      * Default contructor. It is needed for JAXB conversion, do not remove!
+     * Do not use it for any other purpose!
      */
     public AbstractNodeItem() {
         super();
@@ -268,7 +269,12 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
         return new SortLinksCommand(this, idsSortingOrder);
     }
 
-    public AbstractNodeItem(float left, float top) {
+    protected AbstractNodeItem(NonLinearBook currentNLB) {
+        super(currentNLB);
+    }
+
+    public AbstractNodeItem(NonLinearBook currentNLB, float left, float top) {
+        super(currentNLB);
         m_coords.setLeft(left);
         m_coords.setTop(top);
         m_coords.setWidth(DEFAULT_NODE_WIDTH);

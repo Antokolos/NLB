@@ -44,6 +44,7 @@ import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
 import com.nlbhub.nlb.exception.NLBVCSException;
 import com.nlbhub.nlb.util.FileManipulator;
+import com.nlbhub.nlb.util.MultiLangString;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -75,7 +76,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     /**
      * Link text.
      */
-    private String m_text = DEFAULT_TEXT;
+    private MultiLangString m_text = DEFAULT_TEXT;
     /**
      * Link constraint Id.
      */
@@ -94,17 +95,19 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
 
     /**
      * Default contructor. It is needed for JAXB conversion, do not remove!
+     * Do not use it for any other purpose!
      */
     public LinkImpl() {
+        super();
     }
 
     public LinkImpl(final NodeItem parent) {
-        super();
+        super(parent.getCurrentNLB());
         setParent(parent);
     }
 
     public LinkImpl(final NodeItem parent, final Link sourceLink) {
-        super();
+        super(parent.getCurrentNLB());
         setId(sourceLink.getId());
         setDeleted(sourceLink.isDeleted());
         setParent(parent);
@@ -113,7 +116,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
         }
         m_varId = sourceLink.getVarId();
         m_target = sourceLink.getTarget();
-        m_text = sourceLink.getText();
+        m_text = sourceLink.getTexts();
         m_constrId = sourceLink.getConstrId();
         m_stroke = sourceLink.getStroke();
         m_coords.setLeft(sourceLink.getCoords().getLeft());
@@ -152,7 +155,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
         } else if (textMatches(m_text, searchText, ignoreCase, wholeWords)) {
             result = new SearchResult();
             result.setId(getId());
-            result.setInformation(m_text);
+            result.setInformation(getText());
             return result;
         }
         return null;
@@ -178,11 +181,16 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
 
     @XmlElement(name = "text")
     public String getText() {
+        return m_text.get(getCurrentNLB().getLanguage());
+    }
+
+    @Override
+    public MultiLangString getTexts() {
         return m_text;
     }
 
     public void setText(String text) {
-        m_text = text;
+        m_text.put(getCurrentNLB().getLanguage(), text);
     }
 
     @XmlElement(name = "constrid")
@@ -281,7 +289,11 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
             );
             fileManipulator.writeOptionalString(linkDir, VARID_FILE_NAME, m_varId, DEFAULT_VAR_ID);
             fileManipulator.writeOptionalString(linkDir, TARGET_FILE_NAME, m_target, DEFAULT_TARGET);
-            fileManipulator.writeOptionalString(linkDir, TEXT_FILE_NAME, m_text, DEFAULT_TEXT);
+            fileManipulator.writeOptionalMultiLangString(
+                    new File(linkDir, TEXT_FILE_NAME),
+                    m_text,
+                    DEFAULT_TEXT
+            );
             fileManipulator.writeOptionalString(linkDir, CONSTRID_FILE_NAME, m_constrId, DEFAULT_CONSTR_ID);
             fileManipulator.writeOptionalString(linkDir, STROKE_FILE_NAME, m_stroke, DEFAULT_STROKE);
             fileManipulator.writeOptionalString(
@@ -314,9 +326,8 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
                 )
         );
         m_text = (
-                FileManipulator.getOptionalFileAsString(
-                        linkDir,
-                        TEXT_FILE_NAME,
+                FileManipulator.readOptionalMultiLangString(
+                        new File(linkDir, TEXT_FILE_NAME),
                         DEFAULT_TEXT
                 )
         );

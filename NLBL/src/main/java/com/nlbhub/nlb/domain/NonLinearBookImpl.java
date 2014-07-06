@@ -208,6 +208,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_deleteFlag;
 
         private VariableTracker(
+                final NonLinearBook currentNLB,
                 final VariableImpl existingVariable,
                 boolean deleteFlag,
                 final Variable.Type newVariableType,
@@ -245,6 +246,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             );
             if ((existingVariable == null) && !deleteFlag) {
                 m_newVariable = new VariableImpl(
+                        currentNLB,
                         newVariableType,
                         newVariableDataType,
                         newVariableName,
@@ -348,6 +350,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private List<AbstractNodeItem.DeleteLinkCommand> m_deleteLinkCommands = new ArrayList<>();
 
         private UpdatePageCommand(
+                final NonLinearBook currentNLB,
                 final Page page,
                 final String pageVariableName,
                 final String pageText,
@@ -364,6 +367,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         ) {
             m_page = getPageImplById(page.getId());
             m_variableTracker = new VariableTracker(
+                    currentNLB,
                     getVariableImplById(m_page.getVarId()),
                     StringHelper.isEmpty(pageVariableName),
                     Variable.Type.PAGE,
@@ -373,6 +377,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     m_page.getFullId()
             );
             m_moduleConstrIdTracker = new VariableTracker(
+                    currentNLB,
                     getVariableImplById(m_page.getModuleConstrId()),
                     StringHelper.isEmpty(moduleConsraintVariableName),
                     Variable.Type.MODCONSTRAINT,
@@ -477,6 +482,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private boolean m_newObjIsTakable;
 
         private UpdateObjCommand(
+                final NonLinearBook currentNLB,
                 final Obj obj,
                 final String objVariableName,
                 final String objName,
@@ -486,6 +492,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         ) {
             m_obj = getObjImplById(obj.getId());
             m_variableTracker = new VariableTracker(
+                    currentNLB,
                     getVariableImplById(m_obj.getVarId()),
                     StringHelper.isEmpty(objVariableName),
                     Variable.Type.OBJ,
@@ -542,6 +549,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_newAuto;
 
         private UpdateLinkCommand(
+                final NonLinearBook currentNLB,
                 final Link link,
                 final String linkVariableName,
                 final String linkConstraintName,
@@ -555,6 +563,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             }
             m_link = nodeItem.getLinkById(link.getId());
             m_variableTracker = new VariableTracker(
+                    currentNLB,
                     getVariableImplById(m_link.getVarId()),
                     StringHelper.isEmpty(linkVariableName),
                     Variable.Type.LINK,
@@ -564,6 +573,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     link.getFullId()
             );
             m_constraintTracker = new VariableTracker(
+                    currentNLB,
                     getVariableImplById(m_link.getConstrId()),
                     StringHelper.isEmpty(linkConstraintName),
                     Variable.Type.LINKCONSTRAINT,
@@ -998,7 +1008,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     ) {
         return (
                 new UpdatePageCommand(
-                        page,
+                        this, page,
                         pageVariableName,
                         pageText,
                         pageCaptionText,
@@ -1023,7 +1033,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String objText,
             final boolean objIsTakable
     ) {
-        return new UpdateObjCommand(obj, objVariableName, objName, objDisp, objText, objIsTakable);
+        return new UpdateObjCommand(this, obj, objVariableName, objName, objDisp, objText, objIsTakable);
     }
 
     UpdateLinkCommand createUpdateLinkCommand(
@@ -1033,7 +1043,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String linkText,
             final boolean auto
     ) {
-        return new UpdateLinkCommand(link, linkVariableName, linkConstraintName, linkText, auto);
+        return new UpdateLinkCommand(this, link, linkVariableName, linkConstraintName, linkText, auto);
     }
 
     UpdateModificationsCommand createUpdateModificationsCommand(
@@ -1212,7 +1222,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                             LinkLw.Type.Traverse,
                             source.getModule().getStartPoint(),
                             source,
-                            source.getTraverseText(),
+                            source.getTraverseTexts(),
                             source.getModuleConstrId(),
                             source.isAutoTraverse(),
                             true,
@@ -1233,7 +1243,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                                     ? m_parentPage.getId()
                                     : source.getReturnPageId(),
                             source,
-                            source.getReturnText(),
+                            source.getReturnTexts(),
                             Constants.EMPTY_STRING,
                             source.isAutoReturn(),
                             true,
@@ -1259,7 +1269,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                                     ? m_parentPage.getId()
                                     : source.getReturnPageId(),
                             source,
-                            source.getReturnText(),
+                            source.getReturnTexts(),
                             m_parentPage.getModuleConstrId(),
                             source.isAutoReturn(),
                             false,
@@ -1270,7 +1280,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 linksToBeAdded.add(link);
             }
         }
-        return PageImpl.createFilteredClone(source, linkIdsToBeExcluded, linksToBeAdded);
+        return source.createFilteredClone(linkIdsToBeExcluded, linksToBeAdded);
     }
 
     private void updateVisitedVars(
@@ -1532,7 +1542,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 throw new NLBIOException("Error when enumerating objs' directory contents");
             }
             for (File objDir : objDirs) {
-                final ObjImpl obj = new ObjImpl();
+                final ObjImpl obj = new ObjImpl(this);
                 obj.readObj(objDir);
                 m_objs.put(objDir.getName(), obj);
             }
@@ -1549,7 +1559,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 throw new NLBIOException("Error when enumerating vars' directory contents");
             }
             for (File varDir : varDirs) {
-                final VariableImpl var = new VariableImpl();
+                final VariableImpl var = new VariableImpl(this);
                 var.readVariable(varDir);
                 m_variables.add(var);
             }

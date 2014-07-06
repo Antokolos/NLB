@@ -51,6 +51,7 @@ import java.util.*;
  * @version 1.0 1/16/14
  */
 public class ModificationsTableModel {
+    private NonLinearBook m_currentNLB;
     private List<ModificationImpl> m_modifications;
     private Map<String, VariableImpl> m_variableMap;
 
@@ -58,6 +59,7 @@ public class ModificationsTableModel {
             final NonLinearBook nlb,
             final List<Modification> modifications
     ) {
+        m_currentNLB = nlb;
         m_modifications = new ArrayList<>();
         m_variableMap = new HashMap<>();
         // Adds COPIES of original modifications to the list
@@ -161,6 +163,7 @@ public class ModificationsTableModel {
                         VariableImpl expression = getExpression(modification);
                         variable = (
                                 new VariableImpl(
+                                        m_currentNLB,
                                         Variable.Type.VAR,
                                         (expression != null)
                                                 ? expression.getDataType()
@@ -191,6 +194,7 @@ public class ModificationsTableModel {
                     if (!StringHelper.isEmpty(cellValue)) {
                         expression = (
                                 new VariableImpl(
+                                        m_currentNLB,
                                         Variable.Type.EXPRESSION,
                                         Variable.DEFAULT_DATATYPE,
                                         Variable.DEFAULT_NAME,

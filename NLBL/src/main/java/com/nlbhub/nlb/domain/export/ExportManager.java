@@ -356,7 +356,7 @@ public abstract class ExportManager {
                             LinkLw.Type.Traverse,
                             targetED.getNlb().getStartPoint(),
                             page,
-                            page.getTraverseText(),
+                            page.getTraverseTexts(),
                             page.getModuleConstrId(),
                             page.isAutoTraverse(),
                             true,
@@ -380,7 +380,7 @@ public abstract class ExportManager {
                                     ? exportData.getModulePage().getId()
                                     : page.getReturnPageId(),
                             page,
-                            page.getReturnText(),
+                            page.getReturnTexts(),
                             Constants.EMPTY_STRING,
                             page.isAutoReturn(),
                             true,
@@ -405,7 +405,7 @@ public abstract class ExportManager {
                                     ? exportData.getModulePage().getId()
                                     : page.getReturnPageId(),
                             page,
-                            page.getReturnText(),
+                            page.getReturnTexts(),
                             exportData.getModulePage().getModuleConstrId(),
                             page.isAutoReturn(),
                             false,

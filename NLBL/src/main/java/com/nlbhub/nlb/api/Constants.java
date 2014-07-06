@@ -48,6 +48,7 @@ public interface Constants {
     float FL_ZERO_TOLERANCE = (float) 1e-6;
     String UNICODE_ENCODING = "UTF-8";
     String RU = "RU";
+    String EN = "EN";
     String MAIN_MODULE_NAME = "MAIN";
     String EMPTY_STRING = "";
     String EOL_STRING = "\n";

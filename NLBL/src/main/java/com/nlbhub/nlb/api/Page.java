@@ -47,9 +47,9 @@ import com.nlbhub.nlb.util.MultiLangString;
  * @version 1.0 1/15/14
  */
 public interface Page extends NodeItem {
-    public static final MultiLangString DEFAULT_TEXT = MultiLangString.createDefault();
+    public static final MultiLangString DEFAULT_TEXT = MultiLangString.createEmptyText();
     public static final String DEFAULT_VARID = Constants.EMPTY_STRING;
-    public static final MultiLangString DEFAULT_CAPTION = MultiLangString.createDefault();
+    public static final MultiLangString DEFAULT_CAPTION = MultiLangString.createEmptyText();
     public static final boolean DEFAULT_USE_CAPTION = false;
     public static final boolean DEFAULT_AUTO_TRAVERSE = false;
     public static final boolean DEFAULT_AUTO_RETURN = false;
@@ -57,7 +57,7 @@ public interface Page extends NodeItem {
      * Set to empty String.
      * This means that by default pages should not return to the parent module
      */
-    public static final MultiLangString DEFAULT_RETURN_TEXT = MultiLangString.createDefault();
+    public static final MultiLangString DEFAULT_RETURN_TEXT = MultiLangString.createEmptyText();
     public static final String DEFAULT_RETURN_PAGE_ID = Constants.EMPTY_STRING;
     public static final String DEFAULT_MODULE_CONSTR_ID = Constants.EMPTY_STRING;
 
@@ -76,6 +76,8 @@ public interface Page extends NodeItem {
     public boolean isLeaf();
 
     public String getTraverseText();
+
+    public MultiLangString getTraverseTexts();
 
     public boolean isAutoTraverse();
 

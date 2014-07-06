@@ -100,6 +100,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public MultiLangString getTraverseTexts() {
+        return MultiLangString.createEmptyText();
+    }
+
+    @Override
     public boolean isAutoTraverse() {
         return true;
     }
@@ -207,6 +212,11 @@ public class RootModulePage implements Page {
     @Override
     public IdentifiableItem getParent() {
         return null;
+    }
+
+    @Override
+    public NonLinearBook getCurrentNLB() {
+        return m_nlb;
     }
 
     @Override

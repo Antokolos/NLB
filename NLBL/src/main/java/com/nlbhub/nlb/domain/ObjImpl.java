@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.domain;
 
+import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.api.Obj;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
@@ -82,13 +83,6 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private boolean m_takable = DEFAULT_TAKABLE;
     private String m_containerId = DEFAULT_CONTAINER_ID;
 
-    /**
-     * Default contructor. It is needed for JAXB conversion, do not remove!
-     */
-    public ObjImpl() {
-        super();
-    }
-
     @Override
     public SearchResult searchText(String searchText, boolean searchInId, boolean ignoreCase, boolean wholeWords) {
         SearchResult result = super.searchText(searchText, searchInId, ignoreCase, wholeWords);
@@ -107,8 +101,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         return null;
     }
 
-    public ObjImpl(float left, float top) {
-        super(left, top);
+    public ObjImpl(NonLinearBook currentNLB) {
+        super(currentNLB);
+    }
+
+    public ObjImpl(NonLinearBook currentNLB, float left, float top) {
+        super(currentNLB, left, top);
     }
 
     public void setText(String text) {

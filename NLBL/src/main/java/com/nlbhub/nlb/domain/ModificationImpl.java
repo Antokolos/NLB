@@ -73,16 +73,17 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
         m_exprId = modification.getExprId();
     }
 
-    public ModificationImpl(final ModifyingItem parent) {
-        super();
-        setParent(parent);
-    }
-
     /**
      * Default contructor. It is needed for JAXB conversion, do not remove!
+     * Do not use it for any other purpose!
      */
-    @SuppressWarnings({"UnusedDeclaration"})
     public ModificationImpl() {
+        super();
+    }
+
+    public ModificationImpl(final ModifyingItem parent) {
+        super(parent.getCurrentNLB());
+        setParent(parent);
     }
 
     @Override

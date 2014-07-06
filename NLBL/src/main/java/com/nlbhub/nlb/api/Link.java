@@ -38,6 +38,8 @@
  */
 package com.nlbhub.nlb.api;
 
+import com.nlbhub.nlb.util.MultiLangString;
+
 /**
  * The Link class
  *
@@ -47,7 +49,7 @@ package com.nlbhub.nlb.api;
 public interface Link extends ModifyingItem, NLBObservable {
     public final static String DEFAULT_VAR_ID = Constants.EMPTY_STRING;
     public final static String DEFAULT_TARGET = Constants.EMPTY_STRING;
-    public final static String DEFAULT_TEXT = "Next";
+    public final static MultiLangString DEFAULT_TEXT = MultiLangString.createDefaultLinkText();
     public final static String DEFAULT_CONSTR_ID = Constants.EMPTY_STRING;
     public final static String DEFAULT_STROKE = "0000FF";
     public final static boolean DEFAUlT_AUTO = false;
@@ -57,6 +59,8 @@ public interface Link extends ModifyingItem, NLBObservable {
     public String getTarget();
 
     public String getText();
+
+    public MultiLangString getTexts();
 
     public String getConstrId();
 

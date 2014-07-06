@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.domain;
 
 import com.nlbhub.nlb.api.IdentifiableItem;
+import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.StringHelper;
@@ -65,22 +66,34 @@ public abstract class AbstractIdentifiableItem implements IdentifiableItem {
      * This means that link directory will be completely removed during save.
      */
     private boolean m_isDeleted = false;
+    private NonLinearBook m_currentNLB;
     private IdentifiableItem m_parent = null;
 
+    /**
+     * Default contructor. It is needed for JAXB conversion, do not remove!
+     * Do not use it for any other purpose!
+     */
     public AbstractIdentifiableItem() {
         m_id = UUID.randomUUID().toString();
+    }
+
+    public AbstractIdentifiableItem(NonLinearBook currentNLB) {
+        this();
+        m_currentNLB = currentNLB;
     }
 
     public AbstractIdentifiableItem(IdentifiableItem identifiableItem) {
         m_id = identifiableItem.getId();
         m_isDeleted = identifiableItem.isDeleted();
         m_parent = identifiableItem.getParent();
+        m_currentNLB = identifiableItem.getCurrentNLB();
     }
 
     public void copy(IdentifiableItem identifiableItem) {
         m_id = identifiableItem.getId();
         m_isDeleted = identifiableItem.isDeleted();
         m_parent = identifiableItem.getParent();
+        m_currentNLB = identifiableItem.getCurrentNLB();
     }
 
     public void setId(String id) {
@@ -119,6 +132,11 @@ public abstract class AbstractIdentifiableItem implements IdentifiableItem {
     @Override
     public boolean isDeleted() {
         return m_isDeleted;
+    }
+
+    @Override
+    public NonLinearBook getCurrentNLB() {
+        return m_currentNLB;
     }
 
     public SearchResult searchText(

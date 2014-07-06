@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.api;
 
+import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.StringHelper;
 import org.jetbrains.annotations.NotNull;
 
@@ -63,7 +64,7 @@ public class LinkLw implements Link {
     private Type m_type;
     private String m_target;
     private IdentifiableItem m_parent;
-    private String m_text;
+    private MultiLangString m_text;
     private String m_constrId;
     private boolean m_auto;
     private boolean m_positiveConstraint;
@@ -73,7 +74,7 @@ public class LinkLw implements Link {
             Type type,
             String target,
             IdentifiableItem parent,
-            String text,
+            MultiLangString text,
             String constrId,
             boolean auto,
             boolean positiveConstraint,
@@ -104,6 +105,11 @@ public class LinkLw implements Link {
     @Override
     @XmlElement(name = "text")
     public String getText() {
+        return m_text.get(m_parent.getCurrentNLB().getLanguage());
+    }
+
+    @Override
+    public MultiLangString getTexts() {
         return m_text;
     }
 
@@ -183,6 +189,11 @@ public class LinkLw implements Link {
     @Override
     public IdentifiableItem getParent() {
         return m_parent;
+    }
+
+    @Override
+    public NonLinearBook getCurrentNLB() {
+        return m_parent.getCurrentNLB();
     }
 
     @Override
