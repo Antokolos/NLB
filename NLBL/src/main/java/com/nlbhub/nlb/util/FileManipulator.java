@@ -413,26 +413,27 @@ public class FileManipulator {
             final MultiLangString defaultValue
     ) throws NLBIOException {
         if (!mlsRootDir.exists()) {
-            return defaultValue;
+            return MultiLangString.createCopy(defaultValue);
         }
-        MultiLangString result = new MultiLangString();
+        MultiLangString result = MultiLangString.createCopy(defaultValue);
         try {
             if (mlsRootDir.isDirectory()) {
                 String[] langKeys = mlsRootDir.list();
                 if (langKeys != null) {
                     if (langKeys.length == 0) {
                         // Directory exists but empty -- return default value
-                        return defaultValue;
+                        // Can return result, but will not, because I want to be absolutely sure that copy of default
+                        // value will be returned
+                        return MultiLangString.createCopy(defaultValue);
                     }
                     for (String langKey : langKeys) {
                         InputStream fis = null;
                         try {
                             final File file = new File(mlsRootDir, langKey);
-                            if (!file.exists()) {
-                                result.put(langKey, defaultValue.get(langKey));
+                            if (file.exists()) {
+                                fis = new FileInputStream(file);
+                                result.put(langKey, FileManipulator.getFileAsString(fis));
                             }
-                            fis = new FileInputStream(file);
-                            result.put(langKey, FileManipulator.getFileAsString(fis));
                         } finally {
                             if (fis != null) {
                                 fis.close();

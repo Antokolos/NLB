@@ -54,6 +54,11 @@ import java.util.Set;
 public class MultiLangString {
     private Map<String, String> m_content;
 
+    public MultiLangString(final MultiLangString source) {
+        this();
+        m_content.putAll(source.m_content);
+    }
+
     public MultiLangString() {
         m_content = new HashMap<>();
     }
@@ -67,6 +72,10 @@ public class MultiLangString {
         linkText.put(Constants.RU, "Далее");
         linkText.put(Constants.EN, "Next");
         return linkText;
+    }
+
+    public static MultiLangString createCopy(final MultiLangString source) {
+        return new MultiLangString(source);
     }
 
     public Set<String> keySet() {
