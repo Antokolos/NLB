@@ -81,6 +81,11 @@ public class MultiLangString {
         m_content.put(langKey, value);
     }
 
+    public void putInAllLangauges(final String value) {
+        m_content.put(Constants.RU, value);
+        m_content.put(Constants.EN, value);
+    }
+
     public String get(final String langKey) {
         String result = m_content.get(langKey);
         return result != null ? result : Constants.EMPTY_STRING;

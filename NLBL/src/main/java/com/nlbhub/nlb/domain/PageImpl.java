@@ -119,10 +119,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private void resetDefaultModuleNameAndTraverseText() {
         m_defaultModuleName = String.format(DEFAULT_MODULE_NAME_FORMAT, getId());
         m_defaultTraverseText = new MultiLangString();
-        m_defaultTraverseText.put(
-                getCurrentNLB().getLanguage(),
-                String.format(DEFAULT_TRAVERSE_TEXT_FORMAT, m_defaultModuleName)
-        );
+        m_defaultTraverseText.putInAllLangauges(String.format(DEFAULT_TRAVERSE_TEXT_FORMAT, m_defaultModuleName));
     }
 
     @Override

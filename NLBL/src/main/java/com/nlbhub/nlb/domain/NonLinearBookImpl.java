@@ -969,6 +969,7 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     public NonLinearBookImpl() {
         m_parentNLB = null;
+        m_language = DEFAULT_LANGUAGE;
         m_parentPage = null;
         m_pages = new HashMap<>();
         m_objs = new HashMap<>();
@@ -977,6 +978,7 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     public NonLinearBookImpl(NonLinearBook parentNLB, Page parentPage) {
         m_parentNLB = parentNLB;
+        m_language = parentNLB.getLanguage();
         m_parentPage = parentPage;
         m_pages = new HashMap<>();
         m_objs = new HashMap<>();
