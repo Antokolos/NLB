@@ -46,7 +46,10 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by apkolosov on 7/4/14.
+ * The MultiLangString class
+ *
+ * @author Anton P. Kolosov
+ * @version 1.0
  */
 public class MultiLangString {
     private Map<String, String> m_content;
