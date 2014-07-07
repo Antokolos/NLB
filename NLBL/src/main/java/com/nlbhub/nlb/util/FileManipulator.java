@@ -420,6 +420,10 @@ public class FileManipulator {
             if (mlsRootDir.isDirectory()) {
                 String[] langKeys = mlsRootDir.list();
                 if (langKeys != null) {
+                    if (langKeys.length == 0) {
+                        // Directory exists but empty -- return default value
+                        return defaultValue;
+                    }
                     for (String langKey : langKeys) {
                         InputStream fis = null;
                         try {
