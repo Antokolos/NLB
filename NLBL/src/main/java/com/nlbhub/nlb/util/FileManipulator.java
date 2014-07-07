@@ -415,25 +415,19 @@ public class FileManipulator {
         if (!mlsRootDir.exists()) {
             return MultiLangString.createCopy(defaultValue);
         }
+        // Create copy of default value and then overwrite it with actual data, if it exists
         MultiLangString result = MultiLangString.createCopy(defaultValue);
         try {
             if (mlsRootDir.isDirectory()) {
                 String[] langKeys = mlsRootDir.list();
                 if (langKeys != null) {
-                    if (langKeys.length == 0) {
-                        // Directory exists but empty -- return default value
-                        // Can return result, but will not, because I want to be absolutely sure that copy of default
-                        // value will be returned
-                        return MultiLangString.createCopy(defaultValue);
-                    }
+                    // if (langKeys.length == 0) then copy of default value will be returned
                     for (String langKey : langKeys) {
                         InputStream fis = null;
                         try {
                             final File file = new File(mlsRootDir, langKey);
-                            if (file.exists()) {
-                                fis = new FileInputStream(file);
-                                result.put(langKey, FileManipulator.getFileAsString(fis));
-                            }
+                            fis = new FileInputStream(file);
+                            result.put(langKey, FileManipulator.getFileAsString(fis));
                         } finally {
                             if (fis != null) {
                                 fis.close();
