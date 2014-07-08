@@ -394,9 +394,7 @@ public class FileManipulator {
                             deleteFileOrDir(file);
                         }
                     } else {
-                        inputStream = (
-                                new ByteArrayInputStream(content.get(key).getBytes(Constants.UNICODE_ENCODING))
-                        );
+                        inputStream = new ByteArrayInputStream(content.get(key).getBytes(Constants.UNICODE_ENCODING));
                         writeFile(file, inputStream);
                         addToVCS(file, newFile);
                     }
