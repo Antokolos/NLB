@@ -372,11 +372,12 @@ public class FileManipulator {
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         ByteArrayInputStream inputStream = null;
         try {
-            if (mlsRootDir.exists() && !mlsRootDir.isDirectory()) {
+            boolean rootDirExists = mlsRootDir.exists();
+            if (rootDirExists && !mlsRootDir.isDirectory()) {
                 // TODO: Warning! Deleting old file when writing! This is done for backward compatibility and can be removed when all books will be converted.
                 deleteFileOrDir(mlsRootDir);
             }
-            if (!mlsRootDir.exists()) {
+            if (!rootDirExists) {
                 if (!mlsRootDir.mkdir()) {
                     throw new NLBFileManipulationException(
                             "Cannot create MultiLangString root: " + mlsRootDir.getCanonicalPath()
@@ -393,9 +394,7 @@ public class FileManipulator {
                             deleteFileOrDir(file);
                         }
                     } else {
-                        inputStream = (
-                                new ByteArrayInputStream(content.get(key).getBytes(Constants.UNICODE_ENCODING))
-                        );
+                        inputStream = new ByteArrayInputStream(content.get(key).getBytes(Constants.UNICODE_ENCODING));
                         writeFile(file, inputStream);
                         addToVCS(file, newFile);
                     }
