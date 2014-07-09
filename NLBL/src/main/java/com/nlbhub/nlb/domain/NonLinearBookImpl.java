@@ -45,6 +45,7 @@ import com.nlbhub.nlb.domain.export.hypertext.PDFExportManager;
 import com.nlbhub.nlb.domain.export.xml.JSIQ2ExportManager;
 import com.nlbhub.nlb.exception.*;
 import com.nlbhub.nlb.util.FileManipulator;
+import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.StringHelper;
 import com.nlbhub.nlb.util.VarFinder;
 import com.nlbhub.user.domain.DecisionPoint;
@@ -328,23 +329,23 @@ public class NonLinearBookImpl implements NonLinearBook {
         private VariableTracker m_variableTracker;
         private VariableTracker m_moduleConstrIdTracker;
 
-        private final String m_existingPageText;
-        private final String m_existingPageCaptionText;
+        private final MultiLangString m_existingPageText;
+        private final MultiLangString m_existingPageCaptionText;
         private final boolean m_existingUseCaption;
         private final String m_existingModuleName;
-        private final String m_existingTraverseText;
-        private final String m_existingReturnText;
+        private final MultiLangString m_existingTraverseText;
+        private final MultiLangString m_existingReturnText;
         private final boolean m_existingAutoTraverse;
         private final boolean m_existingAutoReturn;
         private final String m_existingReturnPageId;
-        private final String m_newPageText;
-        private final String m_newPageCaptionText;
+        private final MultiLangString m_newPageText;
+        private final MultiLangString m_newPageCaptionText;
         private final boolean m_newUseCaption;
         private final String m_newModuleName;
-        private final String m_newTraverseText;
+        private final MultiLangString m_newTraverseText;
         private final boolean m_newAutoTraverse;
         private final boolean m_newAutoReturn;
-        private final String m_newReturnText;
+        private final MultiLangString m_newReturnText;
         private final String m_newReturnPageId;
         private AbstractNodeItem.SortLinksCommand m_sortLinkCommand;
         private List<AbstractNodeItem.DeleteLinkCommand> m_deleteLinkCommands = new ArrayList<>();
@@ -353,14 +354,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final NonLinearBook currentNLB,
                 final Page page,
                 final String pageVariableName,
-                final String pageText,
-                final String pageCaptionText,
+                final MultiLangString pageText,
+                final MultiLangString pageCaptionText,
                 final boolean useCaption,
                 final String moduleName,
-                final String traverseText,
+                final MultiLangString traverseText,
                 final boolean autoTraverse,
                 final boolean autoReturn,
-                final String returnText,
+                final MultiLangString returnText,
                 final String returnPageId,
                 final String moduleConsraintVariableName,
                 final LinksTableModel linksTableModel
@@ -386,14 +387,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                     moduleConsraintVariableName,
                     m_page.getFullId()
             );
-            m_existingPageText = m_page.getText();
-            m_existingPageCaptionText = m_page.getCaption();
+            m_existingPageText = m_page.getTexts();
+            m_existingPageCaptionText = m_page.getCaptions();
             m_existingUseCaption = m_page.isUseCaption();
             m_existingModuleName = m_page.getModuleName();
-            m_existingTraverseText = m_page.getTraverseText();
+            m_existingTraverseText = m_page.getTraverseTexts();
             m_existingAutoTraverse = m_page.isAutoTraverse();
             m_existingAutoReturn = m_page.isAutoReturn();
-            m_existingReturnText = m_page.getReturnText();
+            m_existingReturnText = m_page.getReturnTexts();
             m_existingReturnPageId = m_page.getReturnPageId();
             m_newPageText = pageText;
             m_newPageCaptionText = pageCaptionText;
@@ -427,14 +428,14 @@ public class NonLinearBookImpl implements NonLinearBook {
             }
             m_page.setVarId(m_variableTracker.execute());
             m_page.setModuleConstrId(m_moduleConstrIdTracker.execute());
-            m_page.setText(m_newPageText);
-            m_page.setCaption(m_newPageCaptionText);
+            m_page.setTexts(m_newPageText);
+            m_page.setCaptions(m_newPageCaptionText);
             m_page.setUseCaption(m_newUseCaption);
             m_page.setModuleName(m_newModuleName);
-            m_page.setTraverseText(m_newTraverseText);
+            m_page.setTraverseTexts(m_newTraverseText);
             m_page.setAutoTraverse(m_newAutoTraverse);
             m_page.setAutoReturn(m_newAutoReturn);
-            m_page.setReturnText(m_newReturnText);
+            m_page.setReturnTexts(m_newReturnText);
             m_page.setReturnPageId(m_newReturnPageId);
             m_page.notifyObservers();
         }
@@ -447,14 +448,14 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_sortLinkCommand.revert();
             m_page.setVarId(m_variableTracker.revert());
             m_page.setModuleConstrId(m_moduleConstrIdTracker.revert());
-            m_page.setText(m_existingPageText);
-            m_page.setCaption(m_existingPageCaptionText);
+            m_page.setTexts(m_existingPageText);
+            m_page.setCaptions(m_existingPageCaptionText);
             m_page.setUseCaption(m_existingUseCaption);
             m_page.setModuleName(m_existingModuleName);
-            m_page.setTraverseText(m_existingTraverseText);
+            m_page.setTraverseTexts(m_existingTraverseText);
             m_page.setAutoTraverse(m_existingAutoTraverse);
             m_page.setAutoReturn(m_existingAutoReturn);
-            m_page.setReturnText(m_existingReturnText);
+            m_page.setReturnTexts(m_existingReturnText);
             m_page.setReturnPageId(m_existingReturnPageId);
             m_page.notifyObservers();
         }
@@ -996,21 +997,22 @@ public class NonLinearBookImpl implements NonLinearBook {
     UpdatePageCommand createUpdatePageCommand(
             final Page page,
             final String pageVariableName,
-            final String pageText,
-            final String pageCaptionText,
+            final MultiLangString pageText,
+            final MultiLangString pageCaptionText,
             final boolean useCaption,
             final String moduleName,
-            final String traverseText,
+            final MultiLangString traverseText,
             final boolean autoTraverse,
             final boolean autoReturn,
-            final String returnText,
+            final MultiLangString returnText,
             final String returnPageId,
             final String moduleConsraintVariableName,
             final LinksTableModel linksTableModel
     ) {
         return (
                 new UpdatePageCommand(
-                        this, page,
+                        this,
+                        page,
                         pageVariableName,
                         pageText,
                         pageCaptionText,

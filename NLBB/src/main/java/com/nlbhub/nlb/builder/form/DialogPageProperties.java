@@ -1,10 +1,12 @@
 package com.nlbhub.nlb.builder.form;
 
+import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.NLBObserver;
 import com.nlbhub.nlb.api.Page;
 import com.nlbhub.nlb.api.Variable;
 import com.nlbhub.nlb.builder.model.LinksTableModelSwing;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
+import com.nlbhub.nlb.util.MultiLangString;
 import org.jdesktop.swingx.JXTable;
 
 import javax.swing.*;
@@ -15,6 +17,11 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private final String m_observerId;
     private Page m_page;
     private NonLinearBookFacade m_nlbFacade;
+    private MultiLangString m_pageCaptionTexts;
+    private MultiLangString m_pageTexts;
+    private MultiLangString m_traverseTexts;
+    private MultiLangString m_returnTexts;
+    private String m_selectedLanguage;
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -41,6 +48,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JTextField m_returnPageIdTextField;
     private JCheckBox m_autoTraverseCheckBox;
     private JCheckBox m_autoReturnCheckBox;
+    private JComboBox m_languageComboBox;
 
     public DialogPageProperties(final NonLinearBookFacade nlbFacade, final Page page) {
         m_nlbFacade = nlbFacade;
@@ -114,6 +122,20 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
             }
         });
 
+        m_languageComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JComboBox cb = (JComboBox) e.getSource();
+                refreshTextsForCurrentLanguage();
+                String selectedLanguage = (String) cb.getSelectedItem();
+                m_pageCaptionTextField.setText(m_pageCaptionTexts.get(selectedLanguage));
+                m_pageText.setText(m_pageTexts.get(selectedLanguage));
+                m_traverseTextTextField.setText(m_traverseTexts.get(selectedLanguage));
+                m_returnTextTextField.setText(m_returnTexts.get(selectedLanguage));
+                m_selectedLanguage = selectedLanguage;
+            }
+        });
+
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -129,6 +151,13 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         m_observerId = nlbFacade.addObserver(this);
+    }
+
+    private void refreshTextsForCurrentLanguage() {
+        m_pageCaptionTexts.put(m_selectedLanguage, m_pageCaptionTextField.getText());
+        m_pageTexts.put(m_selectedLanguage, m_pageText.getText());
+        m_traverseTexts.put(m_selectedLanguage, m_traverseTextTextField.getText());
+        m_returnTexts.put(m_selectedLanguage, m_returnTextTextField.getText());
     }
 
     public void showDialog() {
@@ -167,20 +196,32 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_returnPageIdTextField.setText(page.getReturnPageId());
 
         m_linksTable.setModel(new LinksTableModelSwing(m_page.getLinks()));
+
+        DefaultComboBoxModel<String> languageComboboxModel = new DefaultComboBoxModel<>();
+        languageComboboxModel.addElement(Constants.RU);
+        languageComboboxModel.addElement(Constants.EN);
+        m_languageComboBox.setModel(languageComboboxModel);
+
+        m_pageCaptionTexts = page.getCaptions();
+        m_pageTexts = page.getTexts();
+        m_traverseTexts = page.getTraverseTexts();
+        m_returnTexts = page.getReturnTexts();
+        m_selectedLanguage = (String) languageComboboxModel.getSelectedItem();
     }
 
     private void onOK() {
+        refreshTextsForCurrentLanguage();
         m_nlbFacade.updatePage(
                 m_page,
                 m_pageVariableTextField.getText(),
-                m_pageText.getText(),
-                m_pageCaptionTextField.getText(),
+                m_pageTexts,
+                m_pageCaptionTexts,
                 m_useCheckBox.isSelected(),
                 m_moduleNameTextField.getText(),
-                m_traverseTextTextField.getText(),
+                m_traverseTexts,
                 m_autoTraverseCheckBox.isSelected(),
                 m_autoReturnCheckBox.isSelected(),
-                m_returnTextTextField.getText(),
+                m_returnTexts,
                 m_returnPageIdTextField.getText(),
                 m_moduleConstraintTextField.getText(),
                 ((LinksTableModelSwing) m_linksTable.getModel()).getTableModel()
@@ -775,6 +816,8 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_redoButton.setIcon(new ImageIcon(getClass().getResource("/common/redo.png")));
         m_redoButton.setText("Redo");
         toolBar1.add(m_redoButton);
+        m_languageComboBox = new JComboBox();
+        panel44.add(m_languageComboBox, BorderLayout.EAST);
         label1.setLabelFor(m_pageCaptionTextField);
         label2.setLabelFor(m_pageVariableTextField);
         label3.setLabelFor(m_pageIdTextField);

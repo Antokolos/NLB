@@ -812,6 +812,10 @@
                   </component>
                 </children>
               </toolbar>
+              <component id="4b8e2" class="javax.swing.JComboBox" binding="m_languageComboBox">
+                <constraints border-constraint="East"/>
+                <properties/>
+              </component>
             </children>
           </grid>
         </children>

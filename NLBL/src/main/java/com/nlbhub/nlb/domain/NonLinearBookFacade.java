@@ -41,6 +41,7 @@ package com.nlbhub.nlb.domain;
 import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.exception.*;
 import com.nlbhub.nlb.util.FileManipulator;
+import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.StringHelper;
 import com.nlbhub.nlb.vcs.Author;
 import com.nlbhub.nlb.vcs.GitAdapterWithPathDecoration;
@@ -187,14 +188,14 @@ public class NonLinearBookFacade implements NLBObservable {
     public void updatePage(
             final Page page,
             final String pageVariableName,
-            final String pageText,
-            final String pageCaptionText,
+            final MultiLangString pageText,
+            final MultiLangString pageCaptionText,
             final boolean useCaption,
             final String moduleName,
-            final String traverseText,
+            final MultiLangString traverseText,
             final boolean autoTraverse,
             final boolean autoReturn,
-            final String returnText,
+            final MultiLangString returnText,
             final String returnPageId,
             final String moduleConsraintVariableName,
             final LinksTableModel linksTableModel

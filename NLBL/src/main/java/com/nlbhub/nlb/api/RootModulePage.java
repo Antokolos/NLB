@@ -66,7 +66,7 @@ public class RootModulePage implements Page {
 
     @Override
     public MultiLangString getTexts() {
-        return DEFAULT_TEXT;
+        return MultiLangString.createCopy(DEFAULT_TEXT);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class RootModulePage implements Page {
 
     @Override
     public MultiLangString getCaptions() {
-        return DEFAULT_CAPTION;
+        return MultiLangString.createCopy(DEFAULT_CAPTION);
     }
 
     @Override
@@ -121,7 +121,7 @@ public class RootModulePage implements Page {
 
     @Override
     public MultiLangString getReturnTexts() {
-        return DEFAULT_RETURN_TEXT;
+        return MultiLangString.createCopy(DEFAULT_RETURN_TEXT);
     }
 
     @Override

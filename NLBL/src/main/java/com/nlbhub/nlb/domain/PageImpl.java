@@ -156,7 +156,11 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     @Override
     public MultiLangString getTexts() {
-        return m_text;
+        return MultiLangString.createCopy(m_text);
+    }
+
+    public void setTexts(final MultiLangString text) {
+        m_text = text;
     }
 
     @Override
@@ -187,7 +191,11 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     @Override
     public MultiLangString getCaptions() {
-        return m_caption;
+        return MultiLangString.createCopy(m_caption);
+    }
+
+    public void setCaptions(final MultiLangString caption) {
+        m_caption = caption;
     }
 
     public void setCaption(String caption) {
@@ -212,7 +220,11 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     @Override
     public MultiLangString getTraverseTexts() {
-        return m_traverseText;
+        return MultiLangString.createCopy(m_traverseText);
+    }
+
+    public void setTraverseTexts(final MultiLangString traverseText) {
+        m_traverseText = traverseText;
     }
 
     @Override
@@ -242,7 +254,11 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     @Override
     public MultiLangString getReturnTexts() {
-        return m_returnText;
+        return MultiLangString.createCopy(m_returnText);
+    }
+
+    public void setReturnTexts(final MultiLangString returnText) {
+        m_returnText = returnText;
     }
 
     @Override
