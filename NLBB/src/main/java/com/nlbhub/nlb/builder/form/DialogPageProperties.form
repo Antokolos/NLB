@@ -84,6 +84,170 @@
                         <properties/>
                         <border type="none"/>
                         <children>
+                          <grid id="fcb2f" layout-manager="BorderLayout" hgap="0" vgap="0">
+                            <constraints>
+                              <tabbedpane title="Additional Text"/>
+                            </constraints>
+                            <properties/>
+                            <border type="none"/>
+                            <children>
+                              <grid id="8b78e" layout-manager="GridBagLayout">
+                                <constraints border-constraint="Center"/>
+                                <properties/>
+                                <border type="none"/>
+                                <children>
+                                  <component id="c9e08" class="javax.swing.JLabel">
+                                    <constraints>
+                                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <text value="Traverse text"/>
+                                    </properties>
+                                  </component>
+                                  <component id="8177c" class="javax.swing.JLabel">
+                                    <constraints>
+                                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <text value="Return text"/>
+                                    </properties>
+                                  </component>
+                                  <component id="36c24" class="javax.swing.JLabel">
+                                    <constraints>
+                                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <text value="Page caption"/>
+                                    </properties>
+                                  </component>
+                                  <grid id="bfa06" layout-manager="BorderLayout" hgap="0" vgap="0">
+                                    <constraints>
+                                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties/>
+                                    <border type="none"/>
+                                    <children>
+                                      <component id="c2402" class="javax.swing.JCheckBox" binding="m_useCheckBox" default-binding="true">
+                                        <constraints border-constraint="Center"/>
+                                        <properties>
+                                          <horizontalAlignment value="2"/>
+                                          <text value="Use"/>
+                                        </properties>
+                                      </component>
+                                    </children>
+                                  </grid>
+                                  <grid id="51194" layout-manager="GridBagLayout">
+                                    <constraints>
+                                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <minimumSize width="143" height="33"/>
+                                      <preferredSize width="605" height="33"/>
+                                    </properties>
+                                    <border type="none"/>
+                                    <children>
+                                      <scrollpane id="86ac7">
+                                        <constraints>
+                                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                          <gridbag weightx="1.0" weighty="1.0"/>
+                                        </constraints>
+                                        <properties>
+                                          <horizontalScrollBarPolicy value="31"/>
+                                          <verticalScrollBarPolicy value="21"/>
+                                        </properties>
+                                        <border type="none"/>
+                                        <children>
+                                          <component id="efe79" class="javax.swing.JTextField" binding="m_pageCaptionTextField" default-binding="true">
+                                            <constraints/>
+                                            <properties>
+                                              <columns value="42"/>
+                                              <focusAccelerator value="C"/>
+                                              <horizontalAlignment value="10"/>
+                                            </properties>
+                                          </component>
+                                        </children>
+                                      </scrollpane>
+                                    </children>
+                                  </grid>
+                                  <grid id="eacdc" layout-manager="GridBagLayout">
+                                    <constraints>
+                                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <minimumSize width="56" height="33"/>
+                                      <preferredSize width="505" height="33"/>
+                                    </properties>
+                                    <border type="none"/>
+                                    <children>
+                                      <scrollpane id="42e25">
+                                        <constraints>
+                                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                          <gridbag weightx="1.0" weighty="1.0"/>
+                                        </constraints>
+                                        <properties>
+                                          <horizontalScrollBarPolicy value="31"/>
+                                          <verticalScrollBarPolicy value="21"/>
+                                        </properties>
+                                        <border type="none"/>
+                                        <children>
+                                          <component id="dc8a5" class="javax.swing.JTextField" binding="m_traverseTextTextField">
+                                            <constraints/>
+                                            <properties>
+                                              <columns value="42"/>
+                                            </properties>
+                                          </component>
+                                        </children>
+                                      </scrollpane>
+                                    </children>
+                                  </grid>
+                                  <grid id="d3f1b" layout-manager="GridBagLayout">
+                                    <constraints>
+                                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <minimumSize width="56" height="33"/>
+                                      <preferredSize width="505" height="33"/>
+                                    </properties>
+                                    <border type="none"/>
+                                    <children>
+                                      <scrollpane id="8d0c2">
+                                        <constraints>
+                                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                          <gridbag weightx="1.0" weighty="1.0"/>
+                                        </constraints>
+                                        <properties>
+                                          <horizontalScrollBarPolicy value="31"/>
+                                          <verticalScrollBarPolicy value="21"/>
+                                        </properties>
+                                        <border type="none"/>
+                                        <children>
+                                          <component id="30ba6" class="javax.swing.JTextField" binding="m_returnTextTextField">
+                                            <constraints/>
+                                            <properties>
+                                              <columns value="42"/>
+                                            </properties>
+                                          </component>
+                                        </children>
+                                      </scrollpane>
+                                    </children>
+                                  </grid>
+                                  <vspacer id="fc4c7">
+                                    <constraints>
+                                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="0.0" weighty="1.0"/>
+                                    </constraints>
+                                  </vspacer>
+                                </children>
+                              </grid>
+                            </children>
+                          </grid>
                           <grid id="b8a6c" layout-manager="BorderLayout" hgap="0" vgap="0">
                             <constraints>
                               <tabbedpane title="Properties"/>
@@ -101,112 +265,6 @@
                                     <properties/>
                                     <border type="none"/>
                                     <children>
-                                      <grid id="ca37f" layout-manager="GridBagLayout">
-                                        <constraints>
-                                          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                                          <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
-                                        </constraints>
-                                        <properties>
-                                          <minimumSize width="143" height="33"/>
-                                          <preferredSize width="605" height="33"/>
-                                        </properties>
-                                        <border type="none"/>
-                                        <children>
-                                          <scrollpane id="a214d">
-                                            <constraints>
-                                              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                                              <gridbag weightx="1.0" weighty="1.0"/>
-                                            </constraints>
-                                            <properties>
-                                              <horizontalScrollBarPolicy value="31"/>
-                                              <verticalScrollBarPolicy value="21"/>
-                                            </properties>
-                                            <border type="none"/>
-                                            <children>
-                                              <component id="54013" class="javax.swing.JTextField" binding="m_pageCaptionTextField" default-binding="true">
-                                                <constraints/>
-                                                <properties>
-                                                  <columns value="42"/>
-                                                  <focusAccelerator value="C"/>
-                                                  <horizontalAlignment value="10"/>
-                                                </properties>
-                                              </component>
-                                            </children>
-                                          </scrollpane>
-                                        </children>
-                                      </grid>
-                                      <grid id="c643a" layout-manager="GridBagLayout">
-                                        <constraints>
-                                          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                                          <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
-                                        </constraints>
-                                        <properties>
-                                          <minimumSize width="56" height="33"/>
-                                          <preferredSize width="518" height="33"/>
-                                        </properties>
-                                        <border type="none"/>
-                                        <children>
-                                          <scrollpane id="f6e9c">
-                                            <constraints>
-                                              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                                              <gridbag weightx="1.0" weighty="1.0"/>
-                                            </constraints>
-                                            <properties>
-                                              <horizontalScrollBarPolicy value="31"/>
-                                              <verticalScrollBarPolicy value="21"/>
-                                            </properties>
-                                            <border type="none"/>
-                                            <children>
-                                              <component id="e4554" class="javax.swing.JTextField" binding="m_pageVariableTextField" default-binding="true">
-                                                <constraints/>
-                                                <properties>
-                                                  <columns value="42"/>
-                                                  <focusAccelerator value="V"/>
-                                                </properties>
-                                              </component>
-                                            </children>
-                                          </scrollpane>
-                                        </children>
-                                      </grid>
-                                      <component id="2f199" class="javax.swing.JLabel">
-                                        <constraints>
-                                          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
-                                          <gridbag weightx="0.0" weighty="0.0"/>
-                                        </constraints>
-                                        <properties>
-                                          <labelFor value="54013"/>
-                                          <text value="Page caption"/>
-                                        </properties>
-                                      </component>
-                                      <component id="58e0c" class="javax.swing.JLabel">
-                                        <constraints>
-                                          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
-                                          <gridbag weightx="0.0" weighty="0.0"/>
-                                        </constraints>
-                                        <properties>
-                                          <horizontalAlignment value="10"/>
-                                          <horizontalTextPosition value="11"/>
-                                          <labelFor value="e4554"/>
-                                          <text value="Page variable"/>
-                                        </properties>
-                                      </component>
-                                      <grid id="3a9fe" layout-manager="BorderLayout" hgap="0" vgap="0">
-                                        <constraints>
-                                          <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                                          <gridbag weightx="0.0" weighty="0.0"/>
-                                        </constraints>
-                                        <properties/>
-                                        <border type="none"/>
-                                        <children>
-                                          <component id="ea5e7" class="javax.swing.JCheckBox" binding="m_useCheckBox" default-binding="true">
-                                            <constraints border-constraint="Center"/>
-                                            <properties>
-                                              <horizontalAlignment value="2"/>
-                                              <text value="Use"/>
-                                            </properties>
-                                          </component>
-                                        </children>
-                                      </grid>
                                       <grid id="31bf0" layout-manager="GridBagLayout">
                                         <constraints>
                                           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -253,13 +311,13 @@
                                       </component>
                                       <vspacer id="8a828">
                                         <constraints>
-                                          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                                          <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
                                           <gridbag weightx="0.0" weighty="1.0"/>
                                         </constraints>
                                       </vspacer>
                                       <grid id="a4e3c" layout-manager="BorderLayout" hgap="0" vgap="0">
                                         <constraints>
-                                          <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                           <gridbag weightx="1.0" weighty="0.0"/>
                                         </constraints>
                                         <properties/>
@@ -292,6 +350,50 @@
                                           </grid>
                                         </children>
                                       </grid>
+                                      <grid id="9b116" layout-manager="GridBagLayout">
+                                        <constraints>
+                                          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                          <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
+                                        </constraints>
+                                        <properties>
+                                          <minimumSize width="56" height="33"/>
+                                          <preferredSize width="518" height="33"/>
+                                        </properties>
+                                        <border type="none"/>
+                                        <children>
+                                          <scrollpane id="733b5">
+                                            <constraints>
+                                              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                              <gridbag weightx="1.0" weighty="1.0"/>
+                                            </constraints>
+                                            <properties>
+                                              <horizontalScrollBarPolicy value="31"/>
+                                              <verticalScrollBarPolicy value="21"/>
+                                            </properties>
+                                            <border type="none"/>
+                                            <children>
+                                              <component id="56f70" class="javax.swing.JTextField" binding="m_pageVariableTextField" default-binding="true">
+                                                <constraints/>
+                                                <properties>
+                                                  <columns value="42"/>
+                                                  <focusAccelerator value="V"/>
+                                                </properties>
+                                              </component>
+                                            </children>
+                                          </scrollpane>
+                                        </children>
+                                      </grid>
+                                      <component id="56c26" class="javax.swing.JLabel">
+                                        <constraints>
+                                          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                          <gridbag weightx="0.0" weighty="0.0"/>
+                                        </constraints>
+                                        <properties>
+                                          <horizontalAlignment value="10"/>
+                                          <horizontalTextPosition value="11"/>
+                                          <text value="Page variable"/>
+                                        </properties>
+                                      </component>
                                     </children>
                                   </grid>
                                 </children>
@@ -447,167 +549,9 @@
                               </grid>
                             </children>
                           </grid>
-                          <grid id="fcb2f" layout-manager="BorderLayout" hgap="0" vgap="0">
-                            <constraints>
-                              <tabbedpane title="Module Traverse"/>
-                            </constraints>
-                            <properties/>
-                            <border type="none"/>
-                            <children>
-                              <grid id="8b78e" layout-manager="GridBagLayout">
-                                <constraints border-constraint="Center"/>
-                                <properties/>
-                                <border type="none"/>
-                                <children>
-                                  <grid id="e0b4d" layout-manager="GridBagLayout">
-                                    <constraints>
-                                      <grid row="0" column="1" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                                      <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
-                                    </constraints>
-                                    <properties>
-                                      <minimumSize width="56" height="33"/>
-                                      <preferredSize width="505" height="33"/>
-                                    </properties>
-                                    <border type="none"/>
-                                    <children>
-                                      <scrollpane id="566b9">
-                                        <constraints>
-                                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                                          <gridbag weightx="1.0" weighty="1.0"/>
-                                        </constraints>
-                                        <properties>
-                                          <horizontalScrollBarPolicy value="31"/>
-                                          <verticalScrollBarPolicy value="21"/>
-                                        </properties>
-                                        <border type="none"/>
-                                        <children>
-                                          <component id="76e4c" class="javax.swing.JTextField" binding="m_moduleNameTextField">
-                                            <constraints/>
-                                            <properties>
-                                              <columns value="42"/>
-                                            </properties>
-                                          </component>
-                                        </children>
-                                      </scrollpane>
-                                    </children>
-                                  </grid>
-                                  <component id="1aa34" class="javax.swing.JLabel">
-                                    <constraints>
-                                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
-                                      <gridbag weightx="0.0" weighty="0.0"/>
-                                    </constraints>
-                                    <properties>
-                                      <horizontalTextPosition value="11"/>
-                                      <labelFor value="76e4c"/>
-                                      <text value="Module name"/>
-                                    </properties>
-                                  </component>
-                                  <grid id="7af46" layout-manager="GridBagLayout">
-                                    <constraints>
-                                      <grid row="1" column="1" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                                      <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
-                                    </constraints>
-                                    <properties>
-                                      <minimumSize width="56" height="33"/>
-                                      <preferredSize width="505" height="33"/>
-                                    </properties>
-                                    <border type="none"/>
-                                    <children>
-                                      <scrollpane id="951eb">
-                                        <constraints>
-                                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                                          <gridbag weightx="1.0" weighty="1.0"/>
-                                        </constraints>
-                                        <properties>
-                                          <horizontalScrollBarPolicy value="31"/>
-                                          <verticalScrollBarPolicy value="21"/>
-                                        </properties>
-                                        <border type="none"/>
-                                        <children>
-                                          <component id="8711e" class="javax.swing.JTextField" binding="m_traverseTextTextField">
-                                            <constraints/>
-                                            <properties>
-                                              <columns value="42"/>
-                                            </properties>
-                                          </component>
-                                        </children>
-                                      </scrollpane>
-                                    </children>
-                                  </grid>
-                                  <component id="c9e08" class="javax.swing.JLabel">
-                                    <constraints>
-                                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
-                                      <gridbag weightx="0.0" weighty="0.0"/>
-                                    </constraints>
-                                    <properties>
-                                      <labelFor value="8711e"/>
-                                      <text value="Traverse text"/>
-                                    </properties>
-                                  </component>
-                                  <grid id="6922d" layout-manager="GridBagLayout">
-                                    <constraints>
-                                      <grid row="2" column="1" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                                      <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
-                                    </constraints>
-                                    <properties>
-                                      <minimumSize width="56" height="33"/>
-                                      <preferredSize width="505" height="33"/>
-                                    </properties>
-                                    <border type="none"/>
-                                    <children>
-                                      <scrollpane id="719a9">
-                                        <constraints>
-                                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                                          <gridbag weightx="1.0" weighty="1.0"/>
-                                        </constraints>
-                                        <properties>
-                                          <horizontalScrollBarPolicy value="31"/>
-                                          <verticalScrollBarPolicy value="21"/>
-                                        </properties>
-                                        <border type="none"/>
-                                        <children>
-                                          <component id="e5d8c" class="javax.swing.JTextField" binding="m_moduleConstraintTextField">
-                                            <constraints/>
-                                            <properties>
-                                              <columns value="42"/>
-                                            </properties>
-                                          </component>
-                                        </children>
-                                      </scrollpane>
-                                    </children>
-                                  </grid>
-                                  <component id="4f3e" class="javax.swing.JLabel">
-                                    <constraints>
-                                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
-                                      <gridbag weightx="0.0" weighty="0.0"/>
-                                    </constraints>
-                                    <properties>
-                                      <labelFor value="e5d8c"/>
-                                      <text value="Module constraint"/>
-                                    </properties>
-                                  </component>
-                                  <vspacer id="99863">
-                                    <constraints>
-                                      <grid row="4" column="1" row-span="1" col-span="2" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-                                      <gridbag weightx="0.0" weighty="1.0"/>
-                                    </constraints>
-                                  </vspacer>
-                                  <component id="a9deb" class="javax.swing.JCheckBox" binding="m_autoTraverseCheckBox">
-                                    <constraints>
-                                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                                      <gridbag weightx="0.0" weighty="0.0"/>
-                                    </constraints>
-                                    <properties>
-                                      <text value="Auto Traverse"/>
-                                    </properties>
-                                  </component>
-                                </children>
-                              </grid>
-                            </children>
-                          </grid>
                           <grid id="f4bd8" layout-manager="BorderLayout" hgap="0" vgap="0">
                             <constraints>
-                              <tabbedpane title="Module Return"/>
+                              <tabbedpane title="Module"/>
                             </constraints>
                             <properties/>
                             <border type="none"/>
@@ -619,7 +563,7 @@
                                 <children>
                                   <grid id="ac6ad" layout-manager="GridBagLayout">
                                     <constraints>
-                                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                       <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
                                     </constraints>
                                     <properties>
@@ -651,32 +595,20 @@
                                   </grid>
                                   <component id="35280" class="javax.swing.JLabel">
                                     <constraints>
-                                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                                       <gridbag weightx="0.0" weighty="0.0"/>
                                     </constraints>
                                     <properties>
                                       <text value="Return page Id"/>
                                     </properties>
                                   </component>
-                                  <component id="76a3e" class="javax.swing.JLabel">
+                                  <vspacer id="a2325">
                                     <constraints>
-                                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
-                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                      <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="0.0" weighty="1.0"/>
                                     </constraints>
-                                    <properties>
-                                      <text value="Return text"/>
-                                    </properties>
-                                  </component>
-                                  <component id="9d480" class="javax.swing.JCheckBox" binding="m_autoReturnCheckBox">
-                                    <constraints>
-                                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                                      <gridbag weightx="0.0" weighty="0.0"/>
-                                    </constraints>
-                                    <properties>
-                                      <text value="Auto Return"/>
-                                    </properties>
-                                  </component>
-                                  <grid id="f8e77" layout-manager="GridBagLayout">
+                                  </vspacer>
+                                  <grid id="86428" layout-manager="GridBagLayout">
                                     <constraints>
                                       <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                       <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
@@ -687,7 +619,7 @@
                                     </properties>
                                     <border type="none"/>
                                     <children>
-                                      <scrollpane id="2a1b4">
+                                      <scrollpane id="768f8">
                                         <constraints>
                                           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                           <gridbag weightx="1.0" weighty="1.0"/>
@@ -698,7 +630,7 @@
                                         </properties>
                                         <border type="none"/>
                                         <children>
-                                          <component id="7b7c1" class="javax.swing.JTextField" binding="m_returnTextTextField">
+                                          <component id="312d7" class="javax.swing.JTextField" binding="m_moduleNameTextField">
                                             <constraints/>
                                             <properties>
                                               <columns value="42"/>
@@ -708,12 +640,86 @@
                                       </scrollpane>
                                     </children>
                                   </grid>
-                                  <vspacer id="a2325">
+                                  <component id="29beb" class="javax.swing.JLabel">
                                     <constraints>
-                                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-                                      <gridbag weightx="0.0" weighty="1.0"/>
+                                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="0.0" weighty="0.0"/>
                                     </constraints>
-                                  </vspacer>
+                                    <properties>
+                                      <horizontalTextPosition value="11"/>
+                                      <text value="Module name"/>
+                                    </properties>
+                                  </component>
+                                  <grid id="460ab" layout-manager="GridBagLayout">
+                                    <constraints>
+                                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <minimumSize width="56" height="33"/>
+                                      <preferredSize width="505" height="33"/>
+                                    </properties>
+                                    <border type="none"/>
+                                    <children>
+                                      <scrollpane id="fa322">
+                                        <constraints>
+                                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                          <gridbag weightx="1.0" weighty="1.0"/>
+                                        </constraints>
+                                        <properties>
+                                          <horizontalScrollBarPolicy value="31"/>
+                                          <verticalScrollBarPolicy value="21"/>
+                                        </properties>
+                                        <border type="none"/>
+                                        <children>
+                                          <component id="91f8" class="javax.swing.JTextField" binding="m_moduleConstraintTextField">
+                                            <constraints/>
+                                            <properties>
+                                              <columns value="42"/>
+                                            </properties>
+                                          </component>
+                                        </children>
+                                      </scrollpane>
+                                    </children>
+                                  </grid>
+                                  <component id="ee50e" class="javax.swing.JLabel">
+                                    <constraints>
+                                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <text value="Module constraint"/>
+                                    </properties>
+                                  </component>
+                                  <grid id="726b8" layout-manager="BorderLayout" hgap="0" vgap="0">
+                                    <constraints>
+                                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties/>
+                                    <border type="none"/>
+                                    <children>
+                                      <grid id="3f69a" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+                                        <constraints border-constraint="Center"/>
+                                        <properties/>
+                                        <border type="none"/>
+                                        <children>
+                                          <component id="b11f0" class="javax.swing.JCheckBox" binding="m_autoTraverseCheckBox">
+                                            <constraints/>
+                                            <properties>
+                                              <text value="Auto Traverse"/>
+                                            </properties>
+                                          </component>
+                                          <component id="9d480" class="javax.swing.JCheckBox" binding="m_autoReturnCheckBox">
+                                            <constraints/>
+                                            <properties>
+                                              <text value="Auto Return"/>
+                                            </properties>
+                                          </component>
+                                        </children>
+                                      </grid>
+                                    </children>
+                                  </grid>
                                 </children>
                               </grid>
                             </children>
