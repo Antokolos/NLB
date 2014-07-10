@@ -96,6 +96,7 @@
                               <gridbag weightx="0.0" weighty="0.0"/>
                             </constraints>
                             <properties>
+                              <font style="1"/>
                               <labelFor value="60c1f"/>
                               <text value="Link text"/>
                             </properties>

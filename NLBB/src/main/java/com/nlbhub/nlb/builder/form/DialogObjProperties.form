@@ -96,6 +96,7 @@
                               <gridbag weightx="0.0" weighty="0.0"/>
                             </constraints>
                             <properties>
+                              <font/>
                               <labelFor value="60c1f"/>
                               <text value="Obj name"/>
                             </properties>
@@ -207,6 +208,7 @@
                               <gridbag weightx="0.0" weighty="0.0"/>
                             </constraints>
                             <properties>
+                              <font style="1"/>
                               <labelFor value="3d38f"/>
                               <text value="Obj text"/>
                             </properties>
@@ -376,6 +378,7 @@
                               <gridbag weightx="0.0" weighty="0.0"/>
                             </constraints>
                             <properties>
+                              <font style="1"/>
                               <labelFor value="21f13"/>
                               <text value="Obj display name"/>
                             </properties>

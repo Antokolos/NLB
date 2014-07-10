@@ -246,6 +246,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.anchor = GridBagConstraints.EAST;
         panel9.add(label1, gbc);
         final JLabel label2 = new JLabel();
+        label2.setFont(new Font(label2.getFont().getName(), label2.getFont().getStyle(), label2.getFont().getSize()));
         label2.setText("Obj name");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -325,6 +326,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_modificationsButton.setText("Modifications...");
         panel14.add(m_modificationsButton);
         final JLabel label3 = new JLabel();
+        label3.setFont(new Font(label3.getFont().getName(), Font.BOLD, label3.getFont().getSize()));
         label3.setText("Obj text");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -450,6 +452,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objDispTextField.setColumns(40);
         scrollPane5.setViewportView(m_objDispTextField);
         final JLabel label6 = new JLabel();
+        label6.setFont(new Font(label6.getFont().getName(), Font.BOLD, label6.getFont().getSize()));
         label6.setText("Obj display name");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;

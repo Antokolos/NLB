@@ -236,6 +236,7 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         gbc.anchor = GridBagConstraints.EAST;
         panel9.add(label1, gbc);
         final JLabel label2 = new JLabel();
+        label2.setFont(new Font(label2.getFont().getName(), Font.BOLD, label2.getFont().getSize()));
         label2.setText("Link text");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
