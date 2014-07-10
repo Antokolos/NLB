@@ -1,9 +1,11 @@
 package com.nlbhub.nlb.builder.form;
 
+import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.NLBObserver;
 import com.nlbhub.nlb.api.Obj;
 import com.nlbhub.nlb.api.Variable;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
+import com.nlbhub.nlb.util.MultiLangString;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,6 +16,10 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private Obj m_obj;
     private NonLinearBookFacade m_nlbFacade;
     private Variable m_variable;
+    private MultiLangString m_objNames;
+    private MultiLangString m_objDisplayNames;
+    private MultiLangString m_objTexts;
+    private String m_selectedLanguage;
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -27,6 +33,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JButton m_undoButton;
     private JButton m_redoButton;
     private JTextField m_objDispTextField;
+    private JComboBox m_languageComboBox;
 
     public DialogObjProperties(
             final NonLinearBookFacade nlbFacade,
@@ -74,6 +81,19 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
             }
         });
 
+        m_languageComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JComboBox cb = (JComboBox) e.getSource();
+                refreshTextsForCurrentLanguage();
+                String selectedLanguage = (String) cb.getSelectedItem();
+                m_objNameTextField.setText(m_objNames.get(selectedLanguage));
+                m_objDispTextField.setText(m_objDisplayNames.get(selectedLanguage));
+                m_objTextTextField.setText(m_objTexts.get(selectedLanguage));
+                m_selectedLanguage = selectedLanguage;
+            }
+        });
+
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -89,6 +109,12 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         m_observerId = nlbFacade.addObserver(this);
+    }
+
+    private void refreshTextsForCurrentLanguage() {
+        m_objNames.put(m_selectedLanguage, m_objNameTextField.getText());
+        m_objDisplayNames.put(m_selectedLanguage, m_objDispTextField.getText());
+        m_objTexts.put(m_selectedLanguage, m_objTextTextField.getText());
     }
 
     public void showDialog() {
@@ -113,15 +139,26 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objVariableTextField.setText(m_variable != null ? m_variable.getName() : "");
         m_objTextTextField.setText(obj.getText());
         m_objIsTakable.setSelected(obj.isTakable());
+
+        DefaultComboBoxModel<String> languageComboboxModel = new DefaultComboBoxModel<>();
+        languageComboboxModel.addElement(Constants.RU);
+        languageComboboxModel.addElement(Constants.EN);
+        m_languageComboBox.setModel(languageComboboxModel);
+
+        m_objNames = obj.getNames();
+        m_objDisplayNames = obj.getDisps();
+        m_objTexts = obj.getTexts();
+        m_selectedLanguage = (String) languageComboboxModel.getSelectedItem();
     }
 
     private void onOK() {
+        refreshTextsForCurrentLanguage();
         m_nlbFacade.updateObj(
                 m_obj,
                 m_objVariableTextField.getText(),
-                m_objNameTextField.getText(),
-                m_objDispTextField.getText(),
-                m_objTextTextField.getText(),
+                m_objNames,
+                m_objDisplayNames,
+                m_objTexts,
                 m_objIsTakable.isSelected()
         );
         m_nlbFacade.removeObserver(m_observerId);
@@ -419,6 +456,13 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.gridy = 3;
         gbc.anchor = GridBagConstraints.EAST;
         panel9.add(label6, gbc);
+        m_languageComboBox = new JComboBox();
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel9.add(m_languageComboBox, gbc);
         final JPanel panel18 = new JPanel();
         panel18.setLayout(new BorderLayout(0, 0));
         panel1.add(panel18, BorderLayout.CENTER);

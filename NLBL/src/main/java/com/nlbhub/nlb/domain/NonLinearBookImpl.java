@@ -473,22 +473,22 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final ObjImpl m_obj;
         private VariableTracker m_variableTracker;
 
-        private String m_existingObjName;
-        private String m_existingObjDisp;
-        private String m_existingObjText;
+        private MultiLangString m_existingObjName;
+        private MultiLangString m_existingObjDisp;
+        private MultiLangString m_existingObjText;
         private boolean m_existingObjIsTakable;
-        private String m_newObjName;
-        private String m_newObjDisp;
-        private String m_newObjText;
+        private MultiLangString m_newObjName;
+        private MultiLangString m_newObjDisp;
+        private MultiLangString m_newObjText;
         private boolean m_newObjIsTakable;
 
         private UpdateObjCommand(
                 final NonLinearBook currentNLB,
                 final Obj obj,
                 final String objVariableName,
-                final String objName,
-                final String objDisp,
-                final String objText,
+                final MultiLangString objName,
+                final MultiLangString objDisp,
+                final MultiLangString objText,
                 final boolean objIsTakable
         ) {
             m_obj = getObjImplById(obj.getId());
@@ -501,9 +501,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                     objVariableName,
                     Variable.DEFAULT_VALUE,
                     m_obj.getFullId());
-            m_existingObjName = obj.getName();
-            m_existingObjDisp = obj.getDisp();
-            m_existingObjText = obj.getText();
+            m_existingObjName = obj.getNames();
+            m_existingObjDisp = obj.getDisps();
+            m_existingObjText = obj.getTexts();
             m_existingObjIsTakable = obj.isTakable();
             m_newObjName = objName;
             m_newObjDisp = objDisp;
@@ -514,9 +514,9 @@ public class NonLinearBookImpl implements NonLinearBook {
         @Override
         public void execute() {
             m_obj.setVarId(m_variableTracker.execute());
-            m_obj.setName(m_newObjName);
-            m_obj.setDisp(m_newObjDisp);
-            m_obj.setText(m_newObjText);
+            m_obj.setNames(m_newObjName);
+            m_obj.setDisps(m_newObjDisp);
+            m_obj.setTexts(m_newObjText);
             m_obj.setTakable(m_newObjIsTakable);
             m_obj.notifyObservers();
         }
@@ -524,9 +524,9 @@ public class NonLinearBookImpl implements NonLinearBook {
         @Override
         public void revert() {
             m_obj.setVarId(m_variableTracker.revert());
-            m_obj.setName(m_existingObjName);
-            m_obj.setDisp(m_existingObjDisp);
-            m_obj.setText(m_existingObjText);
+            m_obj.setNames(m_existingObjName);
+            m_obj.setDisps(m_existingObjDisp);
+            m_obj.setTexts(m_existingObjText);
             m_obj.setTakable(m_existingObjIsTakable);
             m_obj.notifyObservers();
         }
@@ -544,8 +544,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final LinkImpl m_link;
         private VariableTracker m_variableTracker;
         private VariableTracker m_constraintTracker;
-        private final String m_newLinkText;
-        private final String m_existingLinkText;
+        private final MultiLangString m_newLinkText;
+        private final MultiLangString m_existingLinkText;
         private final boolean m_existingAuto;
         private final boolean m_newAuto;
 
@@ -554,7 +554,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final Link link,
                 final String linkVariableName,
                 final String linkConstraintName,
-                final String linkText,
+                final MultiLangString linkText,
                 final boolean auto
         ) {
             IdentifiableItem parent = link.getParent();
@@ -583,7 +583,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     linkConstraintName,
                     link.getFullId()
             );
-            m_existingLinkText = link.getText();
+            m_existingLinkText = link.getTexts();
             m_newLinkText = linkText;
             m_existingAuto = link.isAuto();
             m_newAuto = auto;
@@ -593,7 +593,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         public void execute() {
             m_link.setVarId(m_variableTracker.execute());
             m_link.setConstrId(m_constraintTracker.execute());
-            m_link.setText(m_newLinkText);
+            m_link.setTexts(m_newLinkText);
             m_link.setAuto(m_newAuto);
             m_link.notifyObservers();
         }
@@ -602,7 +602,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         public void revert() {
             m_link.setVarId(m_variableTracker.revert());
             m_link.setConstrId(m_constraintTracker.revert());
-            m_link.setText(m_existingLinkText);
+            m_link.setTexts(m_existingLinkText);
             m_link.setAuto(m_existingAuto);
             m_link.notifyObservers();
         }
@@ -1032,9 +1032,9 @@ public class NonLinearBookImpl implements NonLinearBook {
     UpdateObjCommand createUpdateObjCommand(
             final Obj obj,
             final String objVariableName,
-            final String objName,
-            final String objDisp,
-            final String objText,
+            final MultiLangString objName,
+            final MultiLangString objDisp,
+            final MultiLangString objText,
             final boolean objIsTakable
     ) {
         return new UpdateObjCommand(this, obj, objVariableName, objName, objDisp, objText, objIsTakable);
@@ -1044,7 +1044,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final Link link,
             final String linkVariableName,
             final String linkConstraintName,
-            final String linkText,
+            final MultiLangString linkText,
             final boolean auto
     ) {
         return new UpdateLinkCommand(this, link, linkVariableName, linkConstraintName, linkText, auto);

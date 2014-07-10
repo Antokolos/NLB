@@ -225,7 +225,7 @@ public class NonLinearBookFacade implements NLBObservable {
             final Link link,
             final String linkVariableName,
             final String linkConstraintName,
-            final String linkText,
+            final MultiLangString linkText,
             final boolean auto
     ) {
         NonLinearBookImpl.UpdateLinkCommand command = (
@@ -257,9 +257,9 @@ public class NonLinearBookFacade implements NLBObservable {
     public void updateObj(
             final Obj obj,
             final String objVariableName,
-            final String objName,
-            final String objDisp,
-            final String objText,
+            final MultiLangString objName,
+            final MultiLangString objDisp,
+            final MultiLangString objText,
             final boolean objIsTakable
     ) {
         NonLinearBookImpl.UpdateObjCommand command = (

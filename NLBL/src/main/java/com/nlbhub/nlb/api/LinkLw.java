@@ -110,7 +110,7 @@ public class LinkLw implements Link {
 
     @Override
     public MultiLangString getTexts() {
-        return m_text;
+        return MultiLangString.createCopy(m_text);
     }
 
     @Override

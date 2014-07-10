@@ -186,7 +186,11 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
 
     @Override
     public MultiLangString getTexts() {
-        return m_text;
+        return MultiLangString.createCopy(m_text);
+    }
+
+    public void setTexts(final MultiLangString text) {
+        m_text = text;
     }
 
     public void setText(String text) {

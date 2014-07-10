@@ -122,7 +122,11 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
 
     @Override
     public MultiLangString getTexts() {
-        return m_text;
+        return MultiLangString.createCopy(m_text);
+    }
+
+    public void setTexts(final MultiLangString text) {
+        m_text = text;
     }
 
     @Override
@@ -143,7 +147,11 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
 
     @Override
     public MultiLangString getNames() {
-        return m_name;
+        return MultiLangString.createCopy(m_name);
+    }
+
+    public void setNames(final MultiLangString name) {
+        m_name = name;
     }
 
     public void setName(String name) {
@@ -158,7 +166,11 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
 
     @Override
     public MultiLangString getDisps() {
-        return m_disp;
+        return MultiLangString.createCopy(m_disp);
+    }
+
+    public void setDisps(final MultiLangString disp) {
+        m_disp = disp;
     }
 
     public void setDisp(String disp) {

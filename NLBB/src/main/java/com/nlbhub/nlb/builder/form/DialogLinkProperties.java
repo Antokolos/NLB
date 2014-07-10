@@ -1,9 +1,11 @@
 package com.nlbhub.nlb.builder.form;
 
+import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.Link;
 import com.nlbhub.nlb.api.NLBObserver;
 import com.nlbhub.nlb.api.Variable;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
+import com.nlbhub.nlb.util.MultiLangString;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,6 +17,8 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
     private NonLinearBookFacade m_nlbFacade;
     private Variable m_variable;
     private Variable m_constraint;
+    private MultiLangString m_linkTexts;
+    private String m_selectedLanguage;
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -27,6 +31,7 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
     private JButton m_undoButton;
     private JButton m_redoButton;
     private JCheckBox m_autoCheckBox;
+    private JComboBox m_languageComboBox;
 
     public DialogLinkProperties(
             final NonLinearBookFacade nlbFacade,
@@ -73,6 +78,17 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
             }
         });
 
+        m_languageComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JComboBox cb = (JComboBox) e.getSource();
+                refreshTextsForCurrentLanguage();
+                String selectedLanguage = (String) cb.getSelectedItem();
+                m_linkTextTextField.setText(m_linkTexts.get(selectedLanguage));
+                m_selectedLanguage = selectedLanguage;
+            }
+        });
+
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -88,6 +104,10 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         m_observerId = nlbFacade.addObserver(this);
+    }
+
+    private void refreshTextsForCurrentLanguage() {
+        m_linkTexts.put(m_selectedLanguage, m_linkTextTextField.getText());
     }
 
     public void showDialog() {
@@ -112,14 +132,23 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         m_linkTextTextField.setText(link.getText());
         m_autoCheckBox.setSelected(link.isAuto());
         m_linkConstraintsTextField.setText(m_constraint != null ? m_constraint.getValue() : "");
+
+        DefaultComboBoxModel<String> languageComboboxModel = new DefaultComboBoxModel<>();
+        languageComboboxModel.addElement(Constants.RU);
+        languageComboboxModel.addElement(Constants.EN);
+        m_languageComboBox.setModel(languageComboboxModel);
+
+        m_linkTexts = link.getTexts();
+        m_selectedLanguage = (String) languageComboboxModel.getSelectedItem();
     }
 
     private void onOK() {
+        refreshTextsForCurrentLanguage();
         m_nlbFacade.updateLink(
                 m_link,
                 m_linkVariableTextField.getText(),
                 m_linkConstraintsTextField.getText(),
-                m_linkTextTextField.getText(),
+                m_linkTexts,
                 m_autoCheckBox.isSelected()
         );
         m_nlbFacade.removeObserver(m_observerId);
@@ -381,6 +410,13 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.EAST;
         panel9.add(label5, gbc);
+        m_languageComboBox = new JComboBox();
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel9.add(m_languageComboBox, gbc);
         final JPanel panel17 = new JPanel();
         panel17.setLayout(new BorderLayout(0, 0));
         panel1.add(panel17, BorderLayout.CENTER);
