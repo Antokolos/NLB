@@ -16,7 +16,6 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private Obj m_obj;
     private NonLinearBookFacade m_nlbFacade;
     private Variable m_variable;
-    private MultiLangString m_objNames;
     private MultiLangString m_objDisplayNames;
     private MultiLangString m_objTexts;
     private String m_selectedLanguage;
@@ -87,7 +86,6 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 JComboBox cb = (JComboBox) e.getSource();
                 refreshTextsForCurrentLanguage();
                 String selectedLanguage = (String) cb.getSelectedItem();
-                m_objNameTextField.setText(m_objNames.get(selectedLanguage));
                 m_objDispTextField.setText(m_objDisplayNames.get(selectedLanguage));
                 m_objTextTextField.setText(m_objTexts.get(selectedLanguage));
                 m_selectedLanguage = selectedLanguage;
@@ -112,7 +110,6 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     }
 
     private void refreshTextsForCurrentLanguage() {
-        m_objNames.put(m_selectedLanguage, m_objNameTextField.getText());
         m_objDisplayNames.put(m_selectedLanguage, m_objDispTextField.getText());
         m_objTexts.put(m_selectedLanguage, m_objTextTextField.getText());
     }
@@ -145,7 +142,6 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         languageComboboxModel.addElement(Constants.EN);
         m_languageComboBox.setModel(languageComboboxModel);
 
-        m_objNames = obj.getNames();
         m_objDisplayNames = obj.getDisps();
         m_objTexts = obj.getTexts();
         m_selectedLanguage = (String) languageComboboxModel.getSelectedItem();
@@ -156,7 +152,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_nlbFacade.updateObj(
                 m_obj,
                 m_objVariableTextField.getText(),
-                m_objNames,
+                m_objNameTextField.getText(),
                 m_objDisplayNames,
                 m_objTexts,
                 m_objIsTakable.isSelected()

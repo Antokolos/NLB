@@ -257,7 +257,7 @@ public class NonLinearBookFacade implements NLBObservable {
     public void updateObj(
             final Obj obj,
             final String objVariableName,
-            final MultiLangString objName,
+            final String objName,
             final MultiLangString objDisp,
             final MultiLangString objText,
             final boolean objIsTakable

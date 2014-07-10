@@ -473,11 +473,11 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final ObjImpl m_obj;
         private VariableTracker m_variableTracker;
 
-        private MultiLangString m_existingObjName;
+        private String m_existingObjName;
         private MultiLangString m_existingObjDisp;
         private MultiLangString m_existingObjText;
         private boolean m_existingObjIsTakable;
-        private MultiLangString m_newObjName;
+        private String m_newObjName;
         private MultiLangString m_newObjDisp;
         private MultiLangString m_newObjText;
         private boolean m_newObjIsTakable;
@@ -486,7 +486,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final NonLinearBook currentNLB,
                 final Obj obj,
                 final String objVariableName,
-                final MultiLangString objName,
+                final String objName,
                 final MultiLangString objDisp,
                 final MultiLangString objText,
                 final boolean objIsTakable
@@ -501,7 +501,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     objVariableName,
                     Variable.DEFAULT_VALUE,
                     m_obj.getFullId());
-            m_existingObjName = obj.getNames();
+            m_existingObjName = obj.getName();
             m_existingObjDisp = obj.getDisps();
             m_existingObjText = obj.getTexts();
             m_existingObjIsTakable = obj.isTakable();
@@ -514,7 +514,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         @Override
         public void execute() {
             m_obj.setVarId(m_variableTracker.execute());
-            m_obj.setNames(m_newObjName);
+            m_obj.setName(m_newObjName);
             m_obj.setDisps(m_newObjDisp);
             m_obj.setTexts(m_newObjText);
             m_obj.setTakable(m_newObjIsTakable);
@@ -524,7 +524,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         @Override
         public void revert() {
             m_obj.setVarId(m_variableTracker.revert());
-            m_obj.setNames(m_existingObjName);
+            m_obj.setName(m_existingObjName);
             m_obj.setDisps(m_existingObjDisp);
             m_obj.setTexts(m_existingObjText);
             m_obj.setTakable(m_existingObjIsTakable);
@@ -1032,7 +1032,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     UpdateObjCommand createUpdateObjCommand(
             final Obj obj,
             final String objVariableName,
-            final MultiLangString objName,
+            final String objName,
             final MultiLangString objDisp,
             final MultiLangString objText,
             final boolean objIsTakable
