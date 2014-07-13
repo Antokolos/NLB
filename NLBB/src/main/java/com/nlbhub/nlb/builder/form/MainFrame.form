@@ -283,62 +283,22 @@
                   <text value=""/>
                 </properties>
               </component>
-              <component id="7f954" class="javax.swing.JButton" binding="m_editPageButton">
+              <component id="96390" class="javax.swing.JButton" binding="m_editPropertiesButton">
                 <constraints/>
                 <properties>
                   <borderPainted value="false"/>
                   <focusPainted value="false"/>
-                  <icon value="core/EditPageProperties.png"/>
+                  <icon value="core/EditProperties.png"/>
                   <rolloverEnabled value="true"/>
                   <text value=""/>
                 </properties>
               </component>
-              <component id="607fe" class="javax.swing.JButton" binding="m_editObjButton">
+              <component id="a86b6" class="javax.swing.JButton" binding="m_editDeleteButton">
                 <constraints/>
                 <properties>
                   <borderPainted value="false"/>
                   <focusPainted value="false"/>
-                  <icon value="core/EditObjProperties.png"/>
-                  <rolloverEnabled value="true"/>
-                  <text value=""/>
-                </properties>
-              </component>
-              <component id="e71ef" class="javax.swing.JButton" binding="m_editLinkButton">
-                <constraints/>
-                <properties>
-                  <borderPainted value="false"/>
-                  <focusPainted value="false"/>
-                  <icon value="core/EditLinkProperties.png"/>
-                  <rolloverEnabled value="true"/>
-                  <text value=""/>
-                </properties>
-              </component>
-              <component id="ce521" class="javax.swing.JButton" binding="m_deletePageButton">
-                <constraints/>
-                <properties>
-                  <borderPainted value="false"/>
-                  <focusPainted value="false"/>
-                  <icon value="core/EditDeletePage.png"/>
-                  <rolloverEnabled value="true"/>
-                  <text value=""/>
-                </properties>
-              </component>
-              <component id="7bdae" class="javax.swing.JButton" binding="m_deleteObjButton">
-                <constraints/>
-                <properties>
-                  <borderPainted value="false"/>
-                  <focusPainted value="false"/>
-                  <icon value="core/EditDeleteObj.png"/>
-                  <rolloverEnabled value="true"/>
-                  <text value=""/>
-                </properties>
-              </component>
-              <component id="10420" class="javax.swing.JButton" binding="m_deleteLinkButton">
-                <constraints/>
-                <properties>
-                  <borderPainted value="false"/>
-                  <focusPainted value="false"/>
-                  <icon value="core/EditDeleteLink.png"/>
+                  <icon value="core/EditDelete.png"/>
                   <rolloverEnabled value="true"/>
                   <text value=""/>
                 </properties>

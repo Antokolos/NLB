@@ -103,10 +103,6 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     private JButton m_pasteButton;
     private JButton m_findButton;
     private JButton m_addStartPointButton;
-    private JButton m_editPageButton;
-    private JButton m_editLinkButton;
-    private JButton m_deletePageButton;
-    private JButton m_deleteLinkButton;
     private JButton m_editAllPagesButton;
     private JButton m_showLeafsButton;
     private JButton m_zoomOutButton;
@@ -118,8 +114,6 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     private JButton m_exportSTEAD;
     private JButton m_exportJSIQ;
     private JToggleButton m_addObjButton;
-    private JButton m_deleteObjButton;
-    private JButton m_editObjButton;
     private JButton m_commitButton;
     private JButton m_startServerButton;
     private JButton m_stopServerButton;
@@ -129,6 +123,8 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     private JToggleButton m_selectionModeButton;
     private JPanel m_toolbarPanel;
     private JButton m_exportASM;
+    private JButton m_editPropertiesButton;
+    private JButton m_editDeleteButton;
     private final Launcher m_launcher;
     final JFileChooser m_dirChooser;
     final JFileChooser m_fileChooser;
@@ -316,48 +312,20 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_editAllPagesButton.setRolloverEnabled(true);
         m_editAllPagesButton.setText("");
         toolBar3.add(m_editAllPagesButton);
-        m_editPageButton = new JButton();
-        m_editPageButton.setBorderPainted(false);
-        m_editPageButton.setFocusPainted(false);
-        m_editPageButton.setIcon(new ImageIcon(getClass().getResource("/core/EditPageProperties.png")));
-        m_editPageButton.setRolloverEnabled(true);
-        m_editPageButton.setText("");
-        toolBar3.add(m_editPageButton);
-        m_editObjButton = new JButton();
-        m_editObjButton.setBorderPainted(false);
-        m_editObjButton.setFocusPainted(false);
-        m_editObjButton.setIcon(new ImageIcon(getClass().getResource("/core/EditObjProperties.png")));
-        m_editObjButton.setRolloverEnabled(true);
-        m_editObjButton.setText("");
-        toolBar3.add(m_editObjButton);
-        m_editLinkButton = new JButton();
-        m_editLinkButton.setBorderPainted(false);
-        m_editLinkButton.setFocusPainted(false);
-        m_editLinkButton.setIcon(new ImageIcon(getClass().getResource("/core/EditLinkProperties.png")));
-        m_editLinkButton.setRolloverEnabled(true);
-        m_editLinkButton.setText("");
-        toolBar3.add(m_editLinkButton);
-        m_deletePageButton = new JButton();
-        m_deletePageButton.setBorderPainted(false);
-        m_deletePageButton.setFocusPainted(false);
-        m_deletePageButton.setIcon(new ImageIcon(getClass().getResource("/core/EditDeletePage.png")));
-        m_deletePageButton.setRolloverEnabled(true);
-        m_deletePageButton.setText("");
-        toolBar3.add(m_deletePageButton);
-        m_deleteObjButton = new JButton();
-        m_deleteObjButton.setBorderPainted(false);
-        m_deleteObjButton.setFocusPainted(false);
-        m_deleteObjButton.setIcon(new ImageIcon(getClass().getResource("/core/EditDeleteObj.png")));
-        m_deleteObjButton.setRolloverEnabled(true);
-        m_deleteObjButton.setText("");
-        toolBar3.add(m_deleteObjButton);
-        m_deleteLinkButton = new JButton();
-        m_deleteLinkButton.setBorderPainted(false);
-        m_deleteLinkButton.setFocusPainted(false);
-        m_deleteLinkButton.setIcon(new ImageIcon(getClass().getResource("/core/EditDeleteLink.png")));
-        m_deleteLinkButton.setRolloverEnabled(true);
-        m_deleteLinkButton.setText("");
-        toolBar3.add(m_deleteLinkButton);
+        m_editPropertiesButton = new JButton();
+        m_editPropertiesButton.setBorderPainted(false);
+        m_editPropertiesButton.setFocusPainted(false);
+        m_editPropertiesButton.setIcon(new ImageIcon(getClass().getResource("/core/EditProperties.png")));
+        m_editPropertiesButton.setRolloverEnabled(true);
+        m_editPropertiesButton.setText("");
+        toolBar3.add(m_editPropertiesButton);
+        m_editDeleteButton = new JButton();
+        m_editDeleteButton.setBorderPainted(false);
+        m_editDeleteButton.setFocusPainted(false);
+        m_editDeleteButton.setIcon(new ImageIcon(getClass().getResource("/core/EditDelete.png")));
+        m_editDeleteButton.setRolloverEnabled(true);
+        m_editDeleteButton.setText("");
+        toolBar3.add(m_editDeleteButton);
         m_zoomOutButton = new JButton();
         m_zoomOutButton.setBorderPainted(false);
         m_zoomOutButton.setFocusPainted(false);
@@ -584,6 +552,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             m_saveFileAsButton.setEnabled(true);
         }
     }
+
     /**
      * Invoked when task's progress property changes.
      */
@@ -1003,37 +972,56 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 m_graphEditorsPane.setSelectedIndex(paneEditorInfo.getPaneIndex());
             }
         });
-        m_deletePageButton.addActionListener(new ActionListener() {
+        m_editDeleteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                getSelectedPaneInfo().getPaneGraphEditor().deleteSelectedPage();
+                PaneEditorInfo editorInfo = getSelectedPaneInfo();
+                GraphEditor paneGraphEditor = editorInfo.getPaneGraphEditor();
+                final Page selectedPage = paneGraphEditor.getSelectedPage();
+                final Obj selectedObj = paneGraphEditor.getSelectedObj();
+                if (selectedPage != null) {
+                    paneGraphEditor.deleteSelectedPage();
+                } else if (selectedObj != null) {
+                    paneGraphEditor.deleteSelectedObj();
+                } else {
+                    final LinkSelectionData selectedLink = paneGraphEditor.getSelectedLink();
+                    if (selectedLink != null && selectedLink.getLink() != null) {
+                        paneGraphEditor.deleteSelectedLink();
+                    }
+                }
             }
         });
-        m_editPageButton.addActionListener(new ActionListener() {
+        m_editPropertiesButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 PaneEditorInfo editorInfo = getSelectedPaneInfo();
                 final Page selectedPage = editorInfo.getPaneGraphEditor().getSelectedPage();
+                final Obj selectedObj = editorInfo.getPaneGraphEditor().getSelectedObj();
                 if (selectedPage != null) {
                     DialogPageProperties dialog = (
                             new DialogPageProperties(editorInfo.getPaneNlbFacade(), selectedPage)
                     );
                     dialog.showDialog();
                     editorInfo.getPaneGraphEditor().updatePage(selectedPage);
-                }
-            }
-        });
-        m_editObjButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                PaneEditorInfo editorInfo = getSelectedPaneInfo();
-                final Obj selectedObj = editorInfo.getPaneGraphEditor().getSelectedObj();
-                if (selectedObj != null) {
+                } else if (selectedObj != null) {
                     DialogObjProperties dialog = (
                             new DialogObjProperties(editorInfo.getPaneNlbFacade(), selectedObj)
                     );
                     dialog.showDialog();
                     editorInfo.getPaneGraphEditor().updateObj(selectedObj);
+                } else {
+                    final LinkSelectionData selectedLink = (
+                            editorInfo.getPaneGraphEditor().getSelectedLink()
+                    );
+                    if (selectedLink != null && selectedLink.getLink() != null) {
+                        DialogLinkProperties dialog = (
+                                new DialogLinkProperties(
+                                        editorInfo.getPaneNlbFacade(),
+                                        selectedLink.getLink())
+                        );
+                        dialog.showDialog();
+                        editorInfo.getPaneGraphEditor().updateLink(selectedLink.getLink());
+                    }
                 }
             }
         });
@@ -1095,36 +1083,6 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                             m_mainFramePanel,
                             "Error while querying NLB variables: " + ex.toString()
                     );
-                }
-            }
-        });
-        m_deleteLinkButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                getSelectedPaneInfo().getPaneGraphEditor().deleteSelectedLink();
-            }
-        });
-        m_deleteObjButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                getSelectedPaneInfo().getPaneGraphEditor().deleteSelectedObj();
-            }
-        });
-        m_editLinkButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                PaneEditorInfo editorInfo = getSelectedPaneInfo();
-                final LinkSelectionData selectedLink = (
-                        editorInfo.getPaneGraphEditor().getSelectedLink()
-                );
-                if (selectedLink != null && selectedLink.getLink() != null) {
-                    DialogLinkProperties dialog = (
-                            new DialogLinkProperties(
-                                    editorInfo.getPaneNlbFacade(),
-                                    selectedLink.getLink())
-                    );
-                    dialog.showDialog();
-                    editorInfo.getPaneGraphEditor().updateLink(selectedLink.getLink());
                 }
             }
         });
