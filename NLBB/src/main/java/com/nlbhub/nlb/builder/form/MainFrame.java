@@ -994,35 +994,8 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_editPropertiesButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                PaneEditorInfo editorInfo = getSelectedPaneInfo();
-                final Page selectedPage = editorInfo.getPaneGraphEditor().getSelectedPage();
-                final Obj selectedObj = editorInfo.getPaneGraphEditor().getSelectedObj();
-                if (selectedPage != null) {
-                    DialogPageProperties dialog = (
-                            new DialogPageProperties(editorInfo.getPaneNlbFacade(), selectedPage)
-                    );
-                    dialog.showDialog();
-                    editorInfo.getPaneGraphEditor().updatePage(selectedPage);
-                } else if (selectedObj != null) {
-                    DialogObjProperties dialog = (
-                            new DialogObjProperties(editorInfo.getPaneNlbFacade(), selectedObj)
-                    );
-                    dialog.showDialog();
-                    editorInfo.getPaneGraphEditor().updateObj(selectedObj);
-                } else {
-                    final LinkSelectionData selectedLink = (
-                            editorInfo.getPaneGraphEditor().getSelectedLink()
-                    );
-                    if (selectedLink != null && selectedLink.getLink() != null) {
-                        DialogLinkProperties dialog = (
-                                new DialogLinkProperties(
-                                        editorInfo.getPaneNlbFacade(),
-                                        selectedLink.getLink())
-                        );
-                        dialog.showDialog();
-                        editorInfo.getPaneGraphEditor().updateLink(selectedLink.getLink());
-                    }
-                }
+                GraphEditor graphEditor = getSelectedPaneInfo().getPaneGraphEditor();
+                graphEditor.editSelectedItemProperties();
             }
         });
         m_editAllPagesButton.addActionListener(new ActionListener() {

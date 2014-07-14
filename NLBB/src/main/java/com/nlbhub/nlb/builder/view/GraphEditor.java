@@ -39,6 +39,9 @@
 package com.nlbhub.nlb.builder.view;
 
 import com.nlbhub.nlb.api.*;
+import com.nlbhub.nlb.builder.form.DialogLinkProperties;
+import com.nlbhub.nlb.builder.form.DialogObjProperties;
+import com.nlbhub.nlb.builder.form.DialogPageProperties;
 import com.nlbhub.nlb.builder.model.LinkSelectionData;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
@@ -106,10 +109,14 @@ public class GraphEditor extends PCanvas {
         @Override
         public void mousePressed(PInputEvent event) {
             super.mousePressed(event);
-            reselectNode(event);
+            deselectAll();
+            reselectNode(event.getPickedNode());
+            if (event.getClickCount() > 1) {
+                editSelectedItemProperties();
+            }
         }
 
-        private PNode reselectNode(PInputEvent event) {
+        private PNode reselectNode(PNode node) {
             List<PNode> relatedNodes;
             if (m_selectedNode != null) {
                 relatedNodes = getRelatedNodesReference(m_selectedNode);
@@ -120,17 +127,24 @@ public class GraphEditor extends PCanvas {
                     relNode.repaint();
                 }
             }
-            PNode node = event.getPickedNode();
-            relatedNodes = getRelatedNodesReference(node);
-            m_pickedNodeOrigin = node.getFullBoundsReference().getOrigin();
-            node.setPaint(LinkPath.SELECTED_PAINT);
-            node.repaint();
-            for (final PNode relNode : relatedNodes) {
-                relNode.setPaint(LinkPath.SELECTED_PAINT);
-                relNode.repaint();
+
+            if (node != null) {
+                relatedNodes = getRelatedNodesReference(node);
+                m_pickedNodeOrigin = node.getFullBoundsReference().getOrigin();
+                node.setPaint(LinkPath.SELECTED_PAINT);
+                node.repaint();
+                for (final PNode relNode : relatedNodes) {
+                    relNode.setPaint(LinkPath.SELECTED_PAINT);
+                    relNode.repaint();
+                }
             }
+
             m_selectedNode = node;
             return m_selectedNode;
+        }
+
+        public void deselect() {
+            reselectNode(null);
         }
 
         private PNode getLinkNode(PNode node) {
@@ -218,8 +232,6 @@ public class GraphEditor extends PCanvas {
                 super.drag(event);
             }
         }
-
-
     }
 
     // Create event handler to move nodes and update edges
@@ -230,17 +242,17 @@ public class GraphEditor extends PCanvas {
         Color m_mouseOverColor;
         String m_attributeName;
 
-        private GraphDragEventHandler(Color mouseOverColor, String attributeName) {
-            m_mouseOverColor = mouseOverColor;
-            m_attributeName = attributeName;
-        }
-
         {
             m_dragEdge.setStrokePaint(LinkPath.NORMAL_STROKE_PAINT);
             m_dragLayer.addChild(m_dragEdge);
             PInputEventFilter filter = new PInputEventFilter();
             filter.setOrMask(InputEvent.BUTTON1_MASK | InputEvent.BUTTON3_MASK);
             setEventFilter(filter);
+        }
+
+        private GraphDragEventHandler(Color mouseOverColor, String attributeName) {
+            m_mouseOverColor = mouseOverColor;
+            m_attributeName = attributeName;
         }
 
         public void mouseEntered(PInputEvent e) {
@@ -450,12 +462,13 @@ public class GraphEditor extends PCanvas {
                 m_prevNode = null;
             }
 
-            if (m_selectedNode != null) {
-                m_selectedNode.setPaint(NORMAL_NODE_COLOR);
-            }
+            deselectAll();
             m_selectedNode = (T) node;
             m_selectedNode.setPaint(SELECTED_NODE_COLOR);
 
+            if (event.getClickCount() > 1) {
+                editSelectedItemProperties();
+            }
             // Adding of the pages should not be done here, because this handler does not work
             // if mouse isn't over the graph elements
         }
@@ -463,6 +476,13 @@ public class GraphEditor extends PCanvas {
         public void resetLinkAddition() {
             m_prevNode = null;
             m_dragEdge.reset();
+        }
+
+        public void deselect() {
+            if (m_selectedNode != null) {
+                m_selectedNode.setPaint(NORMAL_NODE_COLOR);
+                m_selectedNode = null;
+            }
         }
 
         public void mouseMove(Point2D position) {
@@ -598,6 +618,12 @@ public class GraphEditor extends PCanvas {
                 super.keyPressed(e);
             }
         });
+    }
+
+    public void deselectAll() {
+        m_dragEventHandler.deselect();
+        m_dragEventHandlerObjs.deselect();
+        m_dragEventHandlerLinks.deselect();
     }
 
     public void addNode(Point2D point) {
@@ -859,6 +885,27 @@ public class GraphEditor extends PCanvas {
             m_nlbFacade.deleteLink(link);
             // m_edgeLayer.removeChild(node); -- do not remove. Deletion is depicted by changing of
             // the node's visibility state.
+        }
+    }
+
+    public void editSelectedItemProperties() {
+        final Page selectedPage = getSelectedPage();
+        final Obj selectedObj = getSelectedObj();
+        if (selectedPage != null) {
+            DialogPageProperties dialog = new DialogPageProperties(m_nlbFacade, selectedPage);
+            dialog.showDialog();
+            updatePage(selectedPage);
+        } else if (selectedObj != null) {
+            DialogObjProperties dialog = new DialogObjProperties(m_nlbFacade, selectedObj);
+            dialog.showDialog();
+            updateObj(selectedObj);
+        } else {
+            final LinkSelectionData selectedLink = getSelectedLink();
+            if (selectedLink != null && selectedLink.getLink() != null) {
+                DialogLinkProperties dialog = new DialogLinkProperties(m_nlbFacade, selectedLink.getLink());
+                dialog.showDialog();
+                updateLink(selectedLink.getLink());
+            }
         }
     }
 
