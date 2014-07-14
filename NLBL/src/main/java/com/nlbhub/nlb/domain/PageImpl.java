@@ -88,7 +88,6 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private MultiLangString m_traverseText;
     private boolean m_autoTraverse = DEFAULT_AUTO_TRAVERSE;
     private boolean m_autoReturn = DEFAULT_AUTO_RETURN;
-    private MultiLangString m_defaultTraverseText;
     private MultiLangString m_returnText = DEFAULT_RETURN_TEXT;
     private String m_returnPageId = DEFAULT_RETURN_PAGE_ID;
     private String m_moduleConstrId = DEFAULT_MODULE_CONSTR_ID;
@@ -110,14 +109,13 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     private void init() {
         m_module = new NonLinearBookImpl(getCurrentNLB(), this);
-        resetDefaultModuleNameAndTraverseText();
+        resetDefaultModuleName();
         m_moduleName = m_defaultModuleName;
-        m_traverseText = m_defaultTraverseText;
+        m_traverseText = MultiLangString.createCopy(DEFAULT_TRAVERSE_TEXT);
     }
 
-    private void resetDefaultModuleNameAndTraverseText() {
+    private void resetDefaultModuleName() {
         m_defaultModuleName = String.format(DEFAULT_MODULE_NAME_FORMAT, getId());
-        m_defaultTraverseText = MultiLangString.createDefaultTraverseText();
     }
 
     @Override
@@ -357,7 +355,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
             fileManipulator.writeOptionalMultiLangString(
                     new File(pageDir, TRAVTEXT_FILE_NAME),
                     m_traverseText,
-                    m_defaultTraverseText
+                    DEFAULT_TRAVERSE_TEXT
             );
             fileManipulator.writeOptionalString(
                     pageDir,
@@ -399,7 +397,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     ) throws NLBIOException, NLBConsistencyException, NLBVCSException {
         try {
             setId(pageDir.getName());
-            resetDefaultModuleNameAndTraverseText();
+            resetDefaultModuleName();
             final File moduleDir = new File(pageDir, MODULE_SUBDIR_NAME);
             m_module.loadAndSetParent(moduleDir.getCanonicalPath(), getCurrentNLB(), this);
             m_varId = (
@@ -438,7 +436,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
             m_traverseText = (
                     FileManipulator.readOptionalMultiLangString(
                             new File(pageDir, TRAVTEXT_FILE_NAME),
-                            m_defaultTraverseText
+                            DEFAULT_TRAVERSE_TEXT
                     )
             );
             m_autoTraverse = "true".equals(
