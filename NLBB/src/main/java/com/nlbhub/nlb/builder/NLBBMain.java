@@ -86,7 +86,8 @@ public class NLBBMain implements Runnable {
             public void windowClosing(WindowEvent we) {
                 if (m_nlbFacade.hasChanges()) {
                     String ObjButtons[] = {"No", "Yes"};
-                    int PromptResult = JOptionPane.showOptionDialog(frame,
+                    int PromptResult = JOptionPane.showOptionDialog(
+                            frame,
                             "There are unsaved changes. Are you sure you want to exit?",
                             "Non-Linear Book Builder",
                             JOptionPane.DEFAULT_OPTION,
