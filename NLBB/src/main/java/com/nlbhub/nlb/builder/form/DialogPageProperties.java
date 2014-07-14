@@ -166,7 +166,8 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     }
 
     private String getTraverseTextInField(String langKey, String traverseTextInPage) {
-        if (Page.DEFAULT_TRAVERSE_TEXT.get(langKey).equals(traverseTextInPage)) {
+        boolean moduleIsEmpty = m_page.getModule().isEmpty();
+        if (moduleIsEmpty && Page.DEFAULT_TRAVERSE_TEXT.get(langKey).equals(traverseTextInPage)) {
             return Constants.EMPTY_STRING;
         } else {
             return traverseTextInPage;
