@@ -125,6 +125,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     private JButton m_exportASM;
     private JButton m_editPropertiesButton;
     private JButton m_editDeleteButton;
+    private JButton m_editBookPropertiesButton;
     private final Launcher m_launcher;
     final JFileChooser m_dirChooser;
     final JFileChooser m_fileChooser;
@@ -261,6 +262,13 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         toolBar3.setRollover(true);
         toolBar3.putClientProperty("JToolBar.isRollover", Boolean.TRUE);
         m_toolbarPanel.add(toolBar3);
+        m_editBookPropertiesButton = new JButton();
+        m_editBookPropertiesButton.setBorderPainted(false);
+        m_editBookPropertiesButton.setFocusPainted(false);
+        m_editBookPropertiesButton.setIcon(new ImageIcon(getClass().getResource("/core/EditBookProperties.png")));
+        m_editBookPropertiesButton.setRolloverEnabled(true);
+        m_editBookPropertiesButton.setText("");
+        toolBar3.add(m_editBookPropertiesButton);
         m_addStartPointButton = new JButton();
         m_addStartPointButton.setBorderPainted(false);
         m_addStartPointButton.setFocusPainted(false);
@@ -903,6 +911,15 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                             "Error while exporting to ASM: " + ex.toString()
                     );
                 }
+            }
+        });
+        m_editBookPropertiesButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                DialogBookProperties dialog;
+                PaneEditorInfo editorInfo = getSelectedPaneInfo();
+                dialog = new DialogBookProperties(editorInfo.getPaneNlbFacade());
+                dialog.showDialog();
             }
         });
         m_addStartPointButton.addActionListener(new ActionListener() {

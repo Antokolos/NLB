@@ -211,6 +211,16 @@
             </clientProperties>
             <border type="none"/>
             <children>
+              <component id="7d0bc" class="javax.swing.JButton" binding="m_editBookPropertiesButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="core/EditBookProperties.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
               <component id="70823" class="javax.swing.JButton" binding="m_addStartPointButton">
                 <constraints/>
                 <properties>

@@ -1,5 +1,5 @@
 /**
- * @(#)DialogCommit.java
+ * @(#)DialogBookProperties.java
  *
  * This file is part of the Non-Linear Book project.
  * Copyright (c) 2012-2014 Anton P. Kolosov
@@ -38,20 +38,24 @@
  */
 package com.nlbhub.nlb.builder.form;
 
+import com.nlbhub.nlb.domain.NonLinearBookFacade;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class DialogCommit extends JDialog {
-    private String m_commitMessageText;
-    private boolean m_ok;
+public class DialogBookProperties extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
-    private JTextField m_commitMessage;
+    private JTextArea m_licenseTextArea;
+    private JComboBox m_languageComboBox;
+    private JButton m_undoButton;
+    private JButton m_redoButton;
 
-    public DialogCommit() {
+    public DialogBookProperties(final NonLinearBookFacade nonLinearBookFacade) {
         setContentPane(contentPane);
+        setTitle("Book properties");
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
@@ -96,22 +100,13 @@ public class DialogCommit extends JDialog {
     }
 
     private void onOK() {
-        m_ok = true;
-        m_commitMessageText = m_commitMessage.getText();
+        // add your code here
         dispose();
     }
 
     private void onCancel() {
-        m_ok = false;
+        // add your code here if necessary
         dispose();
-    }
-
-    public boolean isOk() {
-        return m_ok;
-    }
-
-    public String getCommitMessageText() {
-        return m_commitMessageText;
     }
 
     {
@@ -177,17 +172,20 @@ public class DialogCommit extends JDialog {
         panel8.setLayout(new BorderLayout(0, 0));
         panel3.add(panel8, BorderLayout.CENTER);
         final JPanel panel9 = new JPanel();
-        panel9.setLayout(new GridBagLayout());
+        panel9.setLayout(new BorderLayout(0, 0));
         panel8.add(panel9, BorderLayout.CENTER);
+        final JPanel panel10 = new JPanel();
+        panel10.setLayout(new GridBagLayout());
+        panel9.add(panel10, BorderLayout.CENTER);
         final JLabel label1 = new JLabel();
-        label1.setText("Commit message");
+        label1.setText("License text");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.WEST;
-        panel9.add(label1, gbc);
-        final JPanel panel10 = new JPanel();
-        panel10.setLayout(new GridBagLayout());
+        panel10.add(label1, gbc);
+        final JPanel panel11 = new JPanel();
+        panel11.setLayout(new GridBagLayout());
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 0;
@@ -195,7 +193,7 @@ public class DialogCommit extends JDialog {
         gbc.weighty = 0.5;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
-        panel9.add(panel10, gbc);
+        panel10.add(panel11, gbc);
         final JScrollPane scrollPane1 = new JScrollPane();
         scrollPane1.setHorizontalScrollBarPolicy(31);
         scrollPane1.setVerticalScrollBarPolicy(21);
@@ -205,21 +203,67 @@ public class DialogCommit extends JDialog {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        panel10.add(scrollPane1, gbc);
-        m_commitMessage = new JTextField();
-        m_commitMessage.setColumns(40);
-        scrollPane1.setViewportView(m_commitMessage);
+        panel11.add(scrollPane1, gbc);
+        m_licenseTextArea = new JTextArea();
+        m_licenseTextArea.setColumns(50);
+        m_licenseTextArea.setRows(10);
+        scrollPane1.setViewportView(m_licenseTextArea);
         final JPanel spacer1 = new JPanel();
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 1;
+        gbc.gridy = 2;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.VERTICAL;
-        panel9.add(spacer1, gbc);
-        final JPanel panel11 = new JPanel();
-        panel11.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel11, BorderLayout.CENTER);
-        label1.setLabelFor(m_commitMessage);
+        panel10.add(spacer1, gbc);
+        final JPanel panel12 = new JPanel();
+        panel12.setLayout(new GridBagLayout());
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        gbc.weightx = 1.0;
+        gbc.weighty = 0.5;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(5, 5, 5, 0);
+        panel10.add(panel12, gbc);
+        final JScrollPane scrollPane2 = new JScrollPane();
+        scrollPane2.setHorizontalScrollBarPolicy(31);
+        scrollPane2.setVerticalScrollBarPolicy(21);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel12.add(scrollPane2, gbc);
+        m_languageComboBox = new JComboBox();
+        scrollPane2.setViewportView(m_languageComboBox);
+        final JLabel label2 = new JLabel();
+        label2.setText("Active language");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel10.add(label2, gbc);
+        final JPanel panel13 = new JPanel();
+        panel13.setLayout(new BorderLayout(0, 0));
+        panel8.add(panel13, BorderLayout.NORTH);
+        final JToolBar toolBar1 = new JToolBar();
+        toolBar1.setBorderPainted(false);
+        toolBar1.setFloatable(false);
+        panel13.add(toolBar1, BorderLayout.WEST);
+        m_undoButton = new JButton();
+        m_undoButton.setIcon(new ImageIcon(getClass().getResource("/common/undo.png")));
+        m_undoButton.setText("Undo");
+        toolBar1.add(m_undoButton);
+        m_redoButton = new JButton();
+        m_redoButton.setIcon(new ImageIcon(getClass().getResource("/common/redo.png")));
+        m_redoButton.setText("Redo");
+        toolBar1.add(m_redoButton);
+        final JPanel panel14 = new JPanel();
+        panel14.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel14, BorderLayout.CENTER);
+        label1.setLabelFor(m_licenseTextArea);
+        label2.setLabelFor(m_languageComboBox);
     }
 
     /**
