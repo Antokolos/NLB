@@ -74,6 +74,13 @@ public class MultiLangString {
         return linkText;
     }
 
+    public static MultiLangString createDefaultTraverseText() {
+        MultiLangString linkText = new MultiLangString();
+        linkText.put(Constants.RU, "Зайти внутрь");
+        linkText.put(Constants.EN, "Go inside");
+        return linkText;
+    }
+
     public static MultiLangString createCopy(final MultiLangString source) {
         return new MultiLangString(source);
     }
@@ -88,11 +95,6 @@ public class MultiLangString {
 
     public void put(final String langKey, final String value) {
         m_content.put(langKey, value);
-    }
-
-    public void putInAllLangauges(final String value) {
-        m_content.put(Constants.RU, value);
-        m_content.put(Constants.EN, value);
     }
 
     public String get(final String langKey) {

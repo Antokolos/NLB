@@ -79,7 +79,6 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String MODCNSID_FILE_NAME = "modcnsid";
 
     private static final String DEFAULT_MODULE_NAME_FORMAT = "%s's submodule";
-    private static final String DEFAULT_TRAVERSE_TEXT_FORMAT = "Go to %s";
     private String m_varId = DEFAULT_VARID;
     private MultiLangString m_caption = DEFAULT_CAPTION;
     private boolean m_useCaption = DEFAULT_USE_CAPTION;
@@ -118,8 +117,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     private void resetDefaultModuleNameAndTraverseText() {
         m_defaultModuleName = String.format(DEFAULT_MODULE_NAME_FORMAT, getId());
-        m_defaultTraverseText = new MultiLangString();
-        m_defaultTraverseText.putInAllLangauges(String.format(DEFAULT_TRAVERSE_TEXT_FORMAT, m_defaultModuleName));
+        m_defaultTraverseText = MultiLangString.createDefaultTraverseText();
     }
 
     @Override
