@@ -44,6 +44,9 @@ import com.nlbhub.nlb.web.Launcher;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 /**
  * The NLBBMain class represents main class used to start the application.
@@ -76,8 +79,29 @@ public class NLBBMain implements Runnable {
             InstantiationException {
 
         //Create and set up the window.
-        JFrame frame = new JFrame("Non-Linear Book Builder");
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        final JFrame frame = new JFrame("Non-Linear Book Builder");
+        frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent we) {
+                if (m_nlbFacade.hasChanges()) {
+                    String ObjButtons[] = {"No", "Yes"};
+                    int PromptResult = JOptionPane.showOptionDialog(frame,
+                            "There are unsaved changes. Are you sure you want to exit?",
+                            "Non-Linear Book Builder",
+                            JOptionPane.DEFAULT_OPTION,
+                            JOptionPane.WARNING_MESSAGE,
+                            null,
+                            ObjButtons,
+                            ObjButtons[0]);
+                    if (PromptResult == 1) {
+                        System.exit(0);
+                    }
+                } else {
+                    System.exit(0);
+                }
+            }
+        });
 
         m_nlbFacade.createNewBook();
         MainFrame mf = new MainFrame(m_nlbFacade, m_launcher);

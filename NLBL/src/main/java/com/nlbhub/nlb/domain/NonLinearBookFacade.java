@@ -471,6 +471,18 @@ public class NonLinearBookFacade implements NLBObservable {
         notifyObservers();
     }
 
+    public boolean hasChanges() {
+        if (canUndo() || canRedo()) {
+            return true;
+        }
+        for (NonLinearBookFacade facade : m_moduleFacades) {
+            if (facade.hasChanges()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void save(
             final boolean create,
             final ProgressData progressData
