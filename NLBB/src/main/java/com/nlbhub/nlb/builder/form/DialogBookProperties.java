@@ -56,6 +56,7 @@ public class DialogBookProperties extends JDialog {
     private JComboBox m_languageComboBox;
     private JTextField m_authorTextField;
     private JTextField m_versionTextField;
+    private JCheckBox m_propagateToSubmodulesCheckBox;
 
     public DialogBookProperties(final NonLinearBookFacade nlbFacade) {
         m_nlbFacade = nlbFacade;
@@ -125,7 +126,8 @@ public class DialogBookProperties extends JDialog {
                 m_licenseTextArea.getText(),
                 m_languageComboboxModel.getElementAt(m_languageComboBox.getSelectedIndex()),
                 m_authorTextField.getText(),
-                m_versionTextField.getText()
+                m_versionTextField.getText(),
+                m_propagateToSubmodulesCheckBox.isSelected()
         );
         dispose();
     }
@@ -236,7 +238,7 @@ public class DialogBookProperties extends JDialog {
         final JPanel spacer1 = new JPanel();
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.VERTICAL;
         panel10.add(spacer1, gbc);
@@ -325,8 +327,31 @@ public class DialogBookProperties extends JDialog {
         gbc.anchor = GridBagConstraints.EAST;
         panel10.add(label4, gbc);
         final JPanel panel15 = new JPanel();
-        panel15.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel15, BorderLayout.CENTER);
+        panel15.setLayout(new GridBagLayout());
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(5, 5, 5, 0);
+        panel10.add(panel15, gbc);
+        final JScrollPane scrollPane5 = new JScrollPane();
+        scrollPane5.setHorizontalScrollBarPolicy(31);
+        scrollPane5.setVerticalScrollBarPolicy(21);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel15.add(scrollPane5, gbc);
+        m_propagateToSubmodulesCheckBox = new JCheckBox();
+        m_propagateToSubmodulesCheckBox.setSelected(true);
+        m_propagateToSubmodulesCheckBox.setText("Propagate to submodules");
+        scrollPane5.setViewportView(m_propagateToSubmodulesCheckBox);
+        final JPanel panel16 = new JPanel();
+        panel16.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel16, BorderLayout.CENTER);
         label1.setLabelFor(m_licenseTextArea);
         label2.setLabelFor(m_languageComboBox);
         label3.setLabelFor(m_authorTextField);

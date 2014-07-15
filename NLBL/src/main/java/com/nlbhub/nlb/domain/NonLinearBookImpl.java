@@ -976,7 +976,6 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     class UpdateBookPropertiesCommand implements NLBCommand {
 
-        private final NonLinearBook m_self;
         private final String m_prevLicense;
         private final String m_prevLanguage;
         private final String m_prevAuthor;
@@ -985,15 +984,15 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final String m_newLanguage;
         private final String m_newAuthor;
         private final String m_newVersion;
+        private List<UpdateBookPropertiesCommand> m_submodulesCommands = new ArrayList<>();
 
         UpdateBookPropertiesCommand(
-                final NonLinearBook self,
                 final String license,
                 final String language,
                 final String author,
-                final String version
+                final String version,
+                final boolean propagateToSubmodules
         ) {
-            m_self = self;
             m_prevLicense = m_license;
             m_prevLanguage = m_language;
             m_prevAuthor = m_author;
@@ -1002,22 +1001,32 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newLanguage = language;
             m_newAuthor = author;
             m_newVersion = version;
+            if (propagateToSubmodules) {
+                for (PageImpl page : m_pages.values()) {
+                    NonLinearBookImpl moduleImpl = page.getModuleImpl();
+                    if (!moduleImpl.isEmpty()) {
+                        m_submodulesCommands.add(
+                                moduleImpl.createUpdateBookPropertiesCommand(
+                                        license,
+                                        language,
+                                        author,
+                                        version,
+                                        true
+                                )
+                        );
+                    }
+                }
+            }
         }
 
-        private void notifyAllChildren(NonLinearBook nonLinearBook) {
-            for (Page page : nonLinearBook.getPages().values()) {
+        private void notifyAllChildren() {
+            for (Page page : m_pages.values()) {
                 page.notifyObservers();
                 for (Link link : page.getLinks()) {
                     link.notifyObservers();
                 }
-                /*
-                Do not notifying modules because they have its own properties
-                if (!page.getModule().isEmpty()) {
-                    notifyAllChildren(page.getModule());
-                }
-                */
             }
-            for (Obj obj : nonLinearBook.getObjs().values()) {
+            for (Obj obj : m_objs.values()) {
                 obj.notifyObservers();
                 for (Link link : obj.getLinks()) {
                     link.notifyObservers();
@@ -1031,7 +1040,10 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_language = m_newLanguage;
             m_author = m_newAuthor;
             m_version = m_newVersion;
-            notifyAllChildren(m_self);
+            for (UpdateBookPropertiesCommand command : m_submodulesCommands) {
+                command.execute();
+            }
+            notifyAllChildren();
         }
 
         @Override
@@ -1040,7 +1052,10 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_language = m_prevLanguage;
             m_author = m_prevAuthor;
             m_version = m_prevVersion;
-            notifyAllChildren(m_self);
+            for (UpdateBookPropertiesCommand command : m_submodulesCommands) {
+                command.revert();
+            }
+            notifyAllChildren();
         }
     }
 
@@ -1155,9 +1170,10 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String license,
             final String language,
             final String author,
-            final String version
+            final String version,
+            final boolean propagateToSubmodules
     ) {
-        return new UpdateBookPropertiesCommand(this, license, language, author, version);
+        return new UpdateBookPropertiesCommand(license, language, author, version, propagateToSubmodules);
     }
 
     public List<Link> getAssociatedLinks(NodeItem nodeItem) {

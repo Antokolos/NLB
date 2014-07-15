@@ -189,10 +189,11 @@ public class NonLinearBookFacade implements NLBObservable {
             final String license,
             final String language,
             final String author,
-            final String version
+            final String version,
+            final boolean propagateToSubmodules
     ) {
         NonLinearBookImpl.UpdateBookPropertiesCommand command = (
-                m_nlb.createUpdateBookPropertiesCommand(license, language, author, version)
+                m_nlb.createUpdateBookPropertiesCommand(license, language, author, version, propagateToSubmodules)
         );
         m_undoManager.executeAndStore(command);
         notifyObservers();
