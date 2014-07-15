@@ -180,6 +180,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         languageComboboxModel.addElement(Constants.RU);
         languageComboboxModel.addElement(Constants.EN);
         m_languageComboBox.setModel(languageComboboxModel);
+        m_languageComboBox.setSelectedIndex(
+                obj.getCurrentNLB().getLanguage().equals(Constants.RU) ? 0 : 1
+        );
 
         m_objDisplayNames = obj.getDisps();
         m_objTexts = obj.getTexts();

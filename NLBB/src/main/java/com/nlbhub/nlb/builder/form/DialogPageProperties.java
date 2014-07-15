@@ -242,6 +242,9 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         languageComboboxModel.addElement(Constants.RU);
         languageComboboxModel.addElement(Constants.EN);
         m_languageComboBox.setModel(languageComboboxModel);
+        m_languageComboBox.setSelectedIndex(
+                page.getCurrentNLB().getLanguage().equals(Constants.RU) ? 0 : 1
+        );
 
         m_pageCaptionTexts = page.getCaptions();
         m_pageTexts = page.getTexts();
