@@ -488,6 +488,11 @@ public class NonLinearBookFacade implements NLBObservable {
         if (canUndo() || canRedo()) {
             return true;
         }
+        for (UndoManager undoManager : m_undoManagersMap.values()) {
+            if (undoManager.canUndo() || undoManager.canRedo()) {
+                return true;
+            }
+        }
         for (NonLinearBookFacade facade : m_moduleFacades) {
             if (facade.hasChanges()) {
                 return true;
