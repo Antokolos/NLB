@@ -1010,10 +1010,12 @@ public class NonLinearBookImpl implements NonLinearBook {
                 for (Link link : page.getLinks()) {
                     link.notifyObservers();
                 }
+                /*
+                Do not notifying modules because they have its own properties
                 if (!page.getModule().isEmpty()) {
                     notifyAllChildren(page.getModule());
                 }
-
+                */
             }
             for (Obj obj : nonLinearBook.getObjs().values()) {
                 obj.notifyObservers();
