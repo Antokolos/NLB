@@ -327,8 +327,10 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     pageDir,
                     "Cannot create NLB page directory for page with Id = " + getId()
             );
-            m_module.setRootDir(new File(pageDir, MODULE_SUBDIR_NAME));
-            m_module.save(fileManipulator, new DummyProgressData(), partialProgressData);
+            if (!m_module.isEmpty()) {
+                m_module.setRootDir(new File(pageDir, MODULE_SUBDIR_NAME));
+                m_module.save(fileManipulator, new DummyProgressData(), partialProgressData);
+            }
             fileManipulator.writeOptionalString(pageDir, VARID_FILE_NAME, m_varId, DEFAULT_VARID);
             fileManipulator.writeOptionalMultiLangString(
                     new File(pageDir, CAPTION_SUBDIR_NAME),
