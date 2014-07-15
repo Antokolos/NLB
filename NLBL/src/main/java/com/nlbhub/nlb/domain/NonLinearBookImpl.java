@@ -976,6 +976,7 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     class UpdateBookPropertiesCommand implements NLBCommand {
 
+        private final NonLinearBook m_self;
         private final String m_prevLicense;
         private final String m_prevLanguage;
         private final String m_prevAuthor;
@@ -986,11 +987,13 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final String m_newVersion;
 
         UpdateBookPropertiesCommand(
+                final NonLinearBook self,
                 final String license,
                 final String language,
                 final String author,
                 final String version
         ) {
+            m_self = self;
             m_prevLicense = m_license;
             m_prevLanguage = m_language;
             m_prevAuthor = m_author;
@@ -1001,12 +1004,32 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newVersion = version;
         }
 
+        private void notifyAllChildren(NonLinearBook nonLinearBook) {
+            for (Page page : nonLinearBook.getPages().values()) {
+                page.notifyObservers();
+                for (Link link : page.getLinks()) {
+                    link.notifyObservers();
+                }
+                if (!page.getModule().isEmpty()) {
+                    notifyAllChildren(page.getModule());
+                }
+
+            }
+            for (Obj obj : nonLinearBook.getObjs().values()) {
+                obj.notifyObservers();
+                for (Link link : obj.getLinks()) {
+                    link.notifyObservers();
+                }
+            }
+        }
+
         @Override
         public void execute() {
             m_license = m_newLicense;
             m_language = m_newLanguage;
             m_author = m_newAuthor;
             m_version = m_newVersion;
+            notifyAllChildren(m_self);
         }
 
         @Override
@@ -1015,6 +1038,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_language = m_prevLanguage;
             m_author = m_prevAuthor;
             m_version = m_prevVersion;
+            notifyAllChildren(m_self);
         }
     }
 
@@ -1131,7 +1155,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String author,
             final String version
     ) {
-        return new UpdateBookPropertiesCommand(license, language, author, version);
+        return new UpdateBookPropertiesCommand(this, license, language, author, version);
     }
 
     public List<Link> getAssociatedLinks(NodeItem nodeItem) {
