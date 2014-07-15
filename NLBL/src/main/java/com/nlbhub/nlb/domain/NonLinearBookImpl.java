@@ -68,6 +68,9 @@ import java.util.*;
 public class NonLinearBookImpl implements NonLinearBook {
     private static final String STARTPOINT_FILE_NAME = "startpoint";
     private static final String LANGUAGE_FILE_NAME = "language";
+    private static final String LICENSE_FILE_NAME = "license";
+    private static final String AUTHOR_FILE_NAME = "author";
+    private static final String VERSION_FILE_NAME = "version";
     private static final String PAGES_DIR_NAME = "pages";
     private static final String OBJS_DIR_NAME = "objs";
     private static final String VARS_DIR_NAME = "vars";
@@ -80,6 +83,9 @@ public class NonLinearBookImpl implements NonLinearBook {
      */
     private String m_startPoint;
     private String m_language;
+    private String m_license;
+    private String m_author;
+    private String m_version;
     private Map<String, PageImpl> m_pages;
     private Map<String, ObjImpl> m_objs;
     private List<VariableImpl> m_variables;
@@ -968,9 +974,56 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
+    class UpdateBookPropertiesCommand implements NLBCommand {
+
+        private final String m_prevLicense;
+        private final String m_prevLanguage;
+        private final String m_prevAuthor;
+        private final String m_prevVersion;
+        private final String m_newLicense;
+        private final String m_newLanguage;
+        private final String m_newAuthor;
+        private final String m_newVersion;
+
+        UpdateBookPropertiesCommand(
+                final String license,
+                final String language,
+                final String author,
+                final String version
+        ) {
+            m_prevLicense = m_license;
+            m_prevLanguage = m_language;
+            m_prevAuthor = m_author;
+            m_prevVersion = m_version;
+            m_newLicense = license;
+            m_newLanguage = language;
+            m_newAuthor = author;
+            m_newVersion = version;
+        }
+
+        @Override
+        public void execute() {
+            m_license = m_newLicense;
+            m_language = m_newLanguage;
+            m_author = m_newAuthor;
+            m_version = m_newVersion;
+        }
+
+        @Override
+        public void revert() {
+            m_license = m_prevLicense;
+            m_language = m_prevLanguage;
+            m_author = m_prevAuthor;
+            m_version = m_prevVersion;
+        }
+    }
+
     public NonLinearBookImpl() {
         m_parentNLB = null;
         m_language = DEFAULT_LANGUAGE;
+        m_license = DEFAULT_LICENSE;
+        m_author = DEFAULT_AUTHOR;
+        m_version = DEFAULT_VERSION;
         m_parentPage = null;
         m_pages = new HashMap<>();
         m_objs = new HashMap<>();
@@ -980,6 +1033,9 @@ public class NonLinearBookImpl implements NonLinearBook {
     public NonLinearBookImpl(NonLinearBook parentNLB, Page parentPage) {
         m_parentNLB = parentNLB;
         m_language = parentNLB.getLanguage();
+        m_license = parentNLB.getLicense();
+        m_author = parentNLB.getAuthor();
+        m_version = parentNLB.getVersion();
         m_parentPage = parentPage;
         m_pages = new HashMap<>();
         m_objs = new HashMap<>();
@@ -1069,6 +1125,15 @@ public class NonLinearBookImpl implements NonLinearBook {
         return new DeleteObjCommand(obj, adjacentLinks);
     }
 
+    UpdateBookPropertiesCommand createUpdateBookPropertiesCommand(
+            final String license,
+            final String language,
+            final String author,
+            final String version
+    ) {
+        return new UpdateBookPropertiesCommand(license, language, author, version);
+    }
+
     public List<Link> getAssociatedLinks(NodeItem nodeItem) {
         List<Link> result = new ArrayList<>();
         NodeItem node = getPageById(nodeItem.getId());
@@ -1106,6 +1171,9 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_variables.clear();
         m_startPoint = null;
         m_language = (m_parentNLB != null) ? m_parentNLB.getLanguage() : DEFAULT_LANGUAGE;
+        m_license = (m_parentNLB != null) ? m_parentNLB.getLicense() : DEFAULT_LICENSE;
+        m_author = (m_parentNLB != null) ? m_parentNLB.getAuthor() : DEFAULT_AUTHOR;
+        m_version = (m_parentNLB != null) ? m_parentNLB.getVersion() : DEFAULT_VERSION;
         m_rootDir = null;
     }
 
@@ -1121,6 +1189,21 @@ public class NonLinearBookImpl implements NonLinearBook {
     @Override
     public String getLanguage() {
         return m_language;
+    }
+
+    @Override
+    public String getLicense() {
+        return m_license;
+    }
+
+    @Override
+    public String getAuthor() {
+        return m_author;
+    }
+
+    @Override
+    public String getVersion() {
+        return m_version;
     }
 
     public void setStartPoint(String startPoint) {
@@ -1516,6 +1599,27 @@ public class NonLinearBookImpl implements NonLinearBook {
                         (m_parentNLB != null) ? m_parentNLB.getLanguage() : DEFAULT_LANGUAGE
                 )
         );
+        m_license = (
+                FileManipulator.getOptionalFileAsString(
+                        rootDir,
+                        LICENSE_FILE_NAME,
+                        (m_parentNLB != null) ? m_parentNLB.getLicense() : DEFAULT_LICENSE
+                )
+        );
+        m_author = (
+                FileManipulator.getOptionalFileAsString(
+                        rootDir,
+                        AUTHOR_FILE_NAME,
+                        (m_parentNLB != null) ? m_parentNLB.getAuthor() : DEFAULT_AUTHOR
+                )
+        );
+        m_version = (
+                FileManipulator.getOptionalFileAsString(
+                        rootDir,
+                        VERSION_FILE_NAME,
+                        (m_parentNLB != null) ? m_parentNLB.getVersion() : DEFAULT_VERSION
+                )
+        );
     }
 
     private void readPages(
@@ -1886,8 +1990,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                     m_language,
                     m_parentNLB.getLanguage()
             );
+            fileManipulator.writeOptionalString(rootDir, LICENSE_FILE_NAME, m_license, m_parentNLB.getLicense());
+            fileManipulator.writeOptionalString(rootDir, AUTHOR_FILE_NAME, m_author, m_parentNLB.getAuthor());
+            fileManipulator.writeOptionalString(rootDir, VERSION_FILE_NAME, m_version, m_parentNLB.getVersion());
         } else {
             fileManipulator.writeRequiredString(rootDir, LANGUAGE_FILE_NAME, m_language);
+            fileManipulator.writeOptionalString(rootDir, LICENSE_FILE_NAME, m_license, DEFAULT_LICENSE);
+            fileManipulator.writeOptionalString(rootDir, AUTHOR_FILE_NAME, m_author, DEFAULT_AUTHOR);
+            fileManipulator.writeOptionalString(rootDir, VERSION_FILE_NAME, m_version, DEFAULT_VERSION);
         }
     }
 

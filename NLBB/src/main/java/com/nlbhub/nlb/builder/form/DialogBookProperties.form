@@ -91,7 +91,7 @@
                             <children>
                               <component id="30650" class="javax.swing.JLabel">
                                 <constraints>
-                                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                                   <gridbag weightx="0.0" weighty="0.0"/>
                                 </constraints>
                                 <properties>
@@ -102,7 +102,7 @@
                               <grid id="c29e" layout-manager="GridBagLayout">
                                 <constraints>
                                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                                  <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.5"/>
+                                  <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
                                 </constraints>
                                 <properties/>
                                 <border type="none"/>
@@ -131,14 +131,14 @@
                               </grid>
                               <vspacer id="9e52e">
                                 <constraints>
-                                  <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                                  <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
                                   <gridbag weightx="0.0" weighty="1.0"/>
                                 </constraints>
                               </vspacer>
                               <grid id="3954c" layout-manager="GridBagLayout">
                                 <constraints>
                                   <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                                  <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.5"/>
+                                  <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
                                 </constraints>
                                 <properties/>
                                 <border type="none"/>
@@ -164,7 +164,7 @@
                               </grid>
                               <component id="6f308" class="javax.swing.JLabel">
                                 <constraints>
-                                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                                   <gridbag weightx="0.0" weighty="0.0"/>
                                 </constraints>
                                 <properties>
@@ -172,39 +172,82 @@
                                   <text value="Active language"/>
                                 </properties>
                               </component>
+                              <grid id="5dcc0" layout-manager="GridBagLayout">
+                                <constraints>
+                                  <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                  <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
+                                </constraints>
+                                <properties/>
+                                <border type="none"/>
+                                <children>
+                                  <scrollpane id="ba52c">
+                                    <constraints>
+                                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="1.0" weighty="1.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <horizontalScrollBarPolicy value="31"/>
+                                      <verticalScrollBarPolicy value="21"/>
+                                    </properties>
+                                    <border type="none"/>
+                                    <children>
+                                      <component id="dc72f" class="javax.swing.JTextField" binding="m_authorTextField">
+                                        <constraints/>
+                                        <properties/>
+                                      </component>
+                                    </children>
+                                  </scrollpane>
+                                </children>
+                              </grid>
+                              <component id="585d5" class="javax.swing.JLabel">
+                                <constraints>
+                                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                  <gridbag weightx="0.0" weighty="0.0"/>
+                                </constraints>
+                                <properties>
+                                  <labelFor value="dc72f"/>
+                                  <text value="Author"/>
+                                </properties>
+                              </component>
+                              <grid id="6287b" layout-manager="GridBagLayout">
+                                <constraints>
+                                  <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                  <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
+                                </constraints>
+                                <properties/>
+                                <border type="none"/>
+                                <children>
+                                  <scrollpane id="1d174">
+                                    <constraints>
+                                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="1.0" weighty="1.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <horizontalScrollBarPolicy value="31"/>
+                                      <verticalScrollBarPolicy value="21"/>
+                                    </properties>
+                                    <border type="none"/>
+                                    <children>
+                                      <component id="b41ca" class="javax.swing.JTextField" binding="m_versionTextField">
+                                        <constraints/>
+                                        <properties/>
+                                      </component>
+                                    </children>
+                                  </scrollpane>
+                                </children>
+                              </grid>
+                              <component id="d04a7" class="javax.swing.JLabel">
+                                <constraints>
+                                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                  <gridbag weightx="0.0" weighty="0.0"/>
+                                </constraints>
+                                <properties>
+                                  <labelFor value="b41ca"/>
+                                  <text value="Version"/>
+                                </properties>
+                              </component>
                             </children>
                           </grid>
-                        </children>
-                      </grid>
-                      <grid id="c386" layout-manager="BorderLayout" hgap="0" vgap="0">
-                        <constraints border-constraint="North"/>
-                        <properties/>
-                        <border type="none"/>
-                        <children>
-                          <toolbar id="f8cfd">
-                            <constraints border-constraint="West"/>
-                            <properties>
-                              <borderPainted value="false"/>
-                              <floatable value="false"/>
-                            </properties>
-                            <border type="none"/>
-                            <children>
-                              <component id="e667" class="javax.swing.JButton" binding="m_undoButton" default-binding="true">
-                                <constraints/>
-                                <properties>
-                                  <icon value="common/undo.png"/>
-                                  <text value="Undo"/>
-                                </properties>
-                              </component>
-                              <component id="fa05c" class="javax.swing.JButton" binding="m_redoButton" default-binding="true">
-                                <constraints/>
-                                <properties>
-                                  <icon value="common/redo.png"/>
-                                  <text value="Redo"/>
-                                </properties>
-                              </component>
-                            </children>
-                          </toolbar>
                         </children>
                       </grid>
                     </children>

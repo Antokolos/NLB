@@ -58,6 +58,9 @@ import java.util.Map;
 public interface NonLinearBook {
     public static final String DEFAULT_STARTPOINT = Constants.EMPTY_STRING;
     public static final String DEFAULT_LANGUAGE = Constants.RU;
+    public static final String DEFAULT_LICENSE = Constants.EMPTY_STRING;
+    public static final String DEFAULT_AUTHOR = Constants.EMPTY_STRING;
+    public static final String DEFAULT_VERSION = Constants.EMPTY_STRING;
 
     public class ModuleInfo {
         private String m_modulePageId;
@@ -237,6 +240,12 @@ public interface NonLinearBook {
     public String getStartPoint();
 
     public String getLanguage();
+
+    public String getLicense();
+
+    public String getAuthor();
+
+    public String getVersion();
 
     public File getRootDir();
 

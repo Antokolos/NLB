@@ -78,6 +78,21 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
+    public String getLicense() {
+        return DEFAULT_LICENSE;
+    }
+
+    @Override
+    public String getAuthor() {
+        return DEFAULT_AUTHOR;
+    }
+
+    @Override
+    public String getVersion() {
+        return DEFAULT_VERSION;
+    }
+
+    @Override
     public File getRootDir() {
         return null;
     }

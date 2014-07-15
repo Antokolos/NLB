@@ -185,6 +185,19 @@ public class NonLinearBookFacade implements NLBObservable {
         notifyObservers();
     }
 
+    public void updateBookProperties(
+            final String license,
+            final String language,
+            final String author,
+            final String version
+    ) {
+        NonLinearBookImpl.UpdateBookPropertiesCommand command = (
+                m_nlb.createUpdateBookPropertiesCommand(license, language, author, version)
+        );
+        m_undoManager.executeAndStore(command);
+        notifyObservers();
+    }
+
     public void updatePage(
             final Page page,
             final String pageVariableName,

@@ -38,6 +38,8 @@
  */
 package com.nlbhub.nlb.builder.form;
 
+import com.nlbhub.nlb.api.Constants;
+import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 
 import javax.swing.*;
@@ -45,15 +47,19 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class DialogBookProperties extends JDialog {
+    private NonLinearBookFacade m_nlbFacade;
+    private DefaultComboBoxModel<String> m_languageComboboxModel;
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
     private JTextArea m_licenseTextArea;
     private JComboBox m_languageComboBox;
-    private JButton m_undoButton;
-    private JButton m_redoButton;
+    private JTextField m_authorTextField;
+    private JTextField m_versionTextField;
 
-    public DialogBookProperties(final NonLinearBookFacade nonLinearBookFacade) {
+    public DialogBookProperties(final NonLinearBookFacade nlbFacade) {
+        m_nlbFacade = nlbFacade;
+        setBookProperties();
         setContentPane(contentPane);
         setTitle("Book properties");
         setModal(true);
@@ -71,6 +77,7 @@ public class DialogBookProperties extends JDialog {
             }
         });
 
+
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -87,6 +94,20 @@ public class DialogBookProperties extends JDialog {
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
+    private void setBookProperties() {
+        NonLinearBook nonLinearBook = m_nlbFacade.getNlb();
+        m_licenseTextArea.setText(nonLinearBook.getLicense());
+        m_authorTextField.setText(nonLinearBook.getAuthor());
+        m_versionTextField.setText(nonLinearBook.getVersion());
+        m_languageComboboxModel = new DefaultComboBoxModel<>();
+        m_languageComboboxModel.addElement(Constants.RU);
+        m_languageComboboxModel.addElement(Constants.EN);
+        m_languageComboBox.setModel(m_languageComboboxModel);
+        m_languageComboBox.setSelectedIndex(
+                nonLinearBook.getLanguage().equals(Constants.RU) ? 0 : 1
+        );
+    }
+
     public void showDialog() {
         pack();
         // this solves the problem where the dialog was not getting
@@ -100,7 +121,12 @@ public class DialogBookProperties extends JDialog {
     }
 
     private void onOK() {
-        // add your code here
+        m_nlbFacade.updateBookProperties(
+                m_licenseTextArea.getText(),
+                m_languageComboboxModel.getElementAt(m_languageComboBox.getSelectedIndex()),
+                m_authorTextField.getText(),
+                m_versionTextField.getText()
+        );
         dispose();
     }
 
@@ -182,7 +208,7 @@ public class DialogBookProperties extends JDialog {
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.WEST;
+        gbc.anchor = GridBagConstraints.EAST;
         panel10.add(label1, gbc);
         final JPanel panel11 = new JPanel();
         panel11.setLayout(new GridBagLayout());
@@ -190,7 +216,6 @@ public class DialogBookProperties extends JDialog {
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 1.0;
-        gbc.weighty = 0.5;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
         panel10.add(panel11, gbc);
@@ -211,7 +236,7 @@ public class DialogBookProperties extends JDialog {
         final JPanel spacer1 = new JPanel();
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 2;
+        gbc.gridy = 4;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.VERTICAL;
         panel10.add(spacer1, gbc);
@@ -221,7 +246,6 @@ public class DialogBookProperties extends JDialog {
         gbc.gridx = 1;
         gbc.gridy = 1;
         gbc.weightx = 1.0;
-        gbc.weighty = 0.5;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
         panel10.add(panel12, gbc);
@@ -242,28 +266,71 @@ public class DialogBookProperties extends JDialog {
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 1;
-        gbc.anchor = GridBagConstraints.WEST;
+        gbc.anchor = GridBagConstraints.EAST;
         panel10.add(label2, gbc);
         final JPanel panel13 = new JPanel();
-        panel13.setLayout(new BorderLayout(0, 0));
-        panel8.add(panel13, BorderLayout.NORTH);
-        final JToolBar toolBar1 = new JToolBar();
-        toolBar1.setBorderPainted(false);
-        toolBar1.setFloatable(false);
-        panel13.add(toolBar1, BorderLayout.WEST);
-        m_undoButton = new JButton();
-        m_undoButton.setIcon(new ImageIcon(getClass().getResource("/common/undo.png")));
-        m_undoButton.setText("Undo");
-        toolBar1.add(m_undoButton);
-        m_redoButton = new JButton();
-        m_redoButton.setIcon(new ImageIcon(getClass().getResource("/common/redo.png")));
-        m_redoButton.setText("Redo");
-        toolBar1.add(m_redoButton);
+        panel13.setLayout(new GridBagLayout());
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(5, 5, 5, 0);
+        panel10.add(panel13, gbc);
+        final JScrollPane scrollPane3 = new JScrollPane();
+        scrollPane3.setHorizontalScrollBarPolicy(31);
+        scrollPane3.setVerticalScrollBarPolicy(21);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel13.add(scrollPane3, gbc);
+        m_authorTextField = new JTextField();
+        scrollPane3.setViewportView(m_authorTextField);
+        final JLabel label3 = new JLabel();
+        label3.setText("Author");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel10.add(label3, gbc);
         final JPanel panel14 = new JPanel();
-        panel14.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel14, BorderLayout.CENTER);
+        panel14.setLayout(new GridBagLayout());
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(5, 5, 5, 0);
+        panel10.add(panel14, gbc);
+        final JScrollPane scrollPane4 = new JScrollPane();
+        scrollPane4.setHorizontalScrollBarPolicy(31);
+        scrollPane4.setVerticalScrollBarPolicy(21);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel14.add(scrollPane4, gbc);
+        m_versionTextField = new JTextField();
+        scrollPane4.setViewportView(m_versionTextField);
+        final JLabel label4 = new JLabel();
+        label4.setText("Version");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel10.add(label4, gbc);
+        final JPanel panel15 = new JPanel();
+        panel15.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel15, BorderLayout.CENTER);
         label1.setLabelFor(m_licenseTextArea);
         label2.setLabelFor(m_languageComboBox);
+        label3.setLabelFor(m_authorTextField);
+        label4.setLabelFor(m_versionTextField);
     }
 
     /**
