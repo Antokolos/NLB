@@ -469,12 +469,18 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
             File nodeDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         final File linksDir = new File(nodeDir, LINKS_DIR_NAME);
-        fileManipulator.createDir(
-                linksDir,
-                "Cannot create node links directory for node with Id = " + getId()
-        );
-        for (LinkImpl link : m_links) {
-            link.writeLink(fileManipulator, linksDir);
+        if (m_links.isEmpty()) {
+            if (linksDir.exists()) {
+                fileManipulator.deleteFileOrDir(linksDir);
+            }
+        } else {
+            fileManipulator.createDir(
+                    linksDir,
+                    "Cannot create node links directory for node with Id = " + getId()
+            );
+            for (LinkImpl link : m_links) {
+                link.writeLink(fileManipulator, linksDir);
+            }
         }
     }
 

@@ -111,4 +111,17 @@ public class MultiLangString {
             return contentText.equals(contentTextToCompare);
         }
     }
+
+    public boolean isSubsetOf(final MultiLangString mlsToCompare) {
+        for (Map.Entry<String, String> entry : m_content.entrySet()) {
+            final String valueToCompare = mlsToCompare.get(entry.getKey());
+            if (StringHelper.isEmpty(valueToCompare) && !StringHelper.isEmpty(entry.getValue())) {
+                return false;
+            }
+            if (!valueToCompare.equals(entry.getValue())) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

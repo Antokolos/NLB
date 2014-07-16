@@ -114,12 +114,18 @@ public abstract class AbstractModifyingItem extends AbstractIdentifiableItem imp
             File itemDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         final File modificationsDir = new File(itemDir, MODIFICATIONS_DIR_NAME);
-        fileManipulator.createDir(
-                modificationsDir,
-                "Cannot create modifications directory for item with Id = " + getId()
-        );
-        for (ModificationImpl modification : m_modifications) {
-            modification.writeModification(fileManipulator, modificationsDir);
+        if (m_modifications.isEmpty()) {
+            if (modificationsDir.exists()) {
+                fileManipulator.deleteFileOrDir(modificationsDir);
+            }
+        } else {
+            fileManipulator.createDir(
+                    modificationsDir,
+                    "Cannot create modifications directory for item with Id = " + getId()
+            );
+            for (ModificationImpl modification : m_modifications) {
+                modification.writeModification(fileManipulator, modificationsDir);
+            }
         }
     }
 

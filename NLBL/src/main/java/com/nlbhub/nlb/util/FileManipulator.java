@@ -377,29 +377,32 @@ public class FileManipulator {
                 // TODO: Warning! Deleting old file when writing! This is done for backward compatibility and can be removed when all books will be converted.
                 deleteFileOrDir(mlsRootDir);
             }
-            if (!rootDirExists) {
-                if (!mlsRootDir.mkdir()) {
-                    throw new NLBFileManipulationException(
-                            "Cannot create MultiLangString root: " + mlsRootDir.getCanonicalPath()
-                    );
+            boolean isSubsetOfDefault = content.isSubsetOf(defaultContent);
+            if (isSubsetOfDefault) {
+                if (rootDirExists) {
+                    deleteFileOrDir(mlsRootDir);
                 }
-            }
-            for (String key : content.keySet()) {
-                try {
-                    final File file = new File(mlsRootDir, key);
-                    final boolean newFile = !file.exists();
-                    if (content.equalsAs(key, defaultContent)) {
-                        if (!newFile) {
-                            // remove existing file if its content contains default data
-                            deleteFileOrDir(file);
+            } else {
+                if (!rootDirExists) {
+                    createDir(mlsRootDir, "Cannot create MultiLangString root: " + mlsRootDir.getCanonicalPath());
+                }
+                for (String key : content.keySet()) {
+                    try {
+                        final File file = new File(mlsRootDir, key);
+                        final boolean newFile = !file.exists();
+                        if (content.equalsAs(key, defaultContent)) {
+                            if (!newFile) {
+                                // remove existing file if its content contains default data
+                                deleteFileOrDir(file);
+                            }
+                        } else {
+                            inputStream = new ByteArrayInputStream(content.get(key).getBytes(Constants.UNICODE_ENCODING));
+                            writeFile(file, inputStream);
+                            addToVCS(file, newFile);
                         }
-                    } else {
-                        inputStream = new ByteArrayInputStream(content.get(key).getBytes(Constants.UNICODE_ENCODING));
-                        writeFile(file, inputStream);
-                        addToVCS(file, newFile);
+                    } finally {
+                        if (inputStream != null) inputStream.close();
                     }
-                } finally {
-                    if (inputStream != null) inputStream.close();
                 }
             }
         } catch (IOException e) {
