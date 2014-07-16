@@ -64,7 +64,6 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JTextField m_objNameTextField;
     private JTextField m_objVariableTextField;
     private JTextField m_objTextTextField;
-    private JButton m_button1;
     private JButton m_modificationsButton;
     private JCheckBox m_objIsTakable;
     private JButton m_undoButton;
@@ -72,6 +71,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JTextField m_objDispTextField;
     private JComboBox m_languageComboBox;
     private JTabbedPane m_tabbedPane1;
+    private JButton m_setTextColorButton;
+    private JButton m_setObjColorButton;
+    private JButton m_setBorderColorButton;
 
     public DialogObjProperties(
             final NonLinearBookFacade nlbFacade,
@@ -81,6 +83,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         setObjProperties(obj);
         setContentPane(contentPane);
         setModal(true);
+        setTitle("Obj properties");
         getRootPane().setDefaultButton(buttonOK);
 
         buttonOK.addActionListener(new ActionListener() {
@@ -448,17 +451,26 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.fill = GridBagConstraints.BOTH;
         panel14.add(panel17, gbc);
         final JPanel panel18 = new JPanel();
-        panel18.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-        panel17.add(panel18, BorderLayout.WEST);
-        m_button1 = new JButton();
-        m_button1.setText("Button");
-        panel18.add(m_button1);
-        final JPanel panel19 = new JPanel();
-        panel19.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel17.add(panel19, BorderLayout.EAST);
+        panel18.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel17.add(panel18, BorderLayout.EAST);
         m_modificationsButton = new JButton();
         m_modificationsButton.setText("Modifications...");
-        panel19.add(m_modificationsButton);
+        panel18.add(m_modificationsButton);
+        final JPanel panel19 = new JPanel();
+        panel19.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        panel17.add(panel19, BorderLayout.WEST);
+        m_setTextColorButton = new JButton();
+        m_setTextColorButton.setEnabled(false);
+        m_setTextColorButton.setText("Set text color");
+        panel19.add(m_setTextColorButton);
+        m_setObjColorButton = new JButton();
+        m_setObjColorButton.setEnabled(false);
+        m_setObjColorButton.setText("Set obj color");
+        panel19.add(m_setObjColorButton);
+        m_setBorderColorButton = new JButton();
+        m_setBorderColorButton.setEnabled(false);
+        m_setBorderColorButton.setText("Set border color");
+        panel19.add(m_setBorderColorButton);
         final JPanel spacer2 = new JPanel();
         gbc = new GridBagConstraints();
         gbc.gridx = 2;

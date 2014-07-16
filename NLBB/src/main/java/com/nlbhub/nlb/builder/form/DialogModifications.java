@@ -84,6 +84,7 @@ public class DialogModifications extends JDialog implements NLBObserver {
 
         setContentPane(contentPane);
         setModal(true);
+        setTitle("Modifications");
         getRootPane().setDefaultButton(buttonOK);
 
         buttonOK.addActionListener(new ActionListener() {

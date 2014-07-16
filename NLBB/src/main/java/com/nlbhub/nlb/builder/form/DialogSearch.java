@@ -74,6 +74,7 @@ public class DialogSearch extends JDialog {
         m_modulePageId = modulePageId;
         setContentPane(contentPane);
         setModal(true);
+        setTitle("Search");
         getRootPane().setDefaultButton(buttonOK);
 
         buttonOK.addActionListener(new ActionListener() {

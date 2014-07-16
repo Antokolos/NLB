@@ -178,6 +178,7 @@ public class DialogSearchResults extends JDialog {
         m_searchResults.setModel(m_tableModel);
 
         setModal(true);
+        setTitle("Search results");
         getRootPane().setDefaultButton(buttonOK);
 
         buttonOK.addActionListener(new ActionListener() {

@@ -331,18 +331,21 @@
                                               <component id="9bf8a" class="javax.swing.JButton" binding="m_setTextColorButton" default-binding="true">
                                                 <constraints/>
                                                 <properties>
+                                                  <enabled value="false"/>
                                                   <text value="Set text color"/>
                                                 </properties>
                                               </component>
                                               <component id="b497a" class="javax.swing.JButton" binding="m_setPageColorButton" default-binding="true">
                                                 <constraints/>
                                                 <properties>
+                                                  <enabled value="false"/>
                                                   <text value="Set page color"/>
                                                 </properties>
                                               </component>
                                               <component id="58307" class="javax.swing.JButton" binding="m_setBorderColorButton" default-binding="true">
                                                 <constraints/>
                                                 <properties>
+                                                  <enabled value="false"/>
                                                   <text value="Set border color"/>
                                                 </properties>
                                               </component>

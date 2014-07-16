@@ -62,7 +62,7 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
     private JButton buttonCancel;
     private JTextField m_linkIdTextField;
     private JTextField m_linkTextTextField;
-    private JButton m_button1;
+    private JButton m_linkColorButton;
     private JTextField m_linkConstraintsTextField;
     private JTextField m_linkVariableTextField;
     private JButton m_modificationsButton;
@@ -80,6 +80,7 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         setLinkProperties(link);
         setContentPane(contentPane);
         setModal(true);
+        setTitle("Link properties");
         getRootPane().setDefaultButton(buttonOK);
 
         buttonOK.addActionListener(new ActionListener() {
@@ -362,9 +363,10 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         final JPanel panel15 = new JPanel();
         panel15.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
         panel14.add(panel15, BorderLayout.WEST);
-        m_button1 = new JButton();
-        m_button1.setText("Button");
-        panel15.add(m_button1);
+        m_linkColorButton = new JButton();
+        m_linkColorButton.setEnabled(false);
+        m_linkColorButton.setText("Link color");
+        panel15.add(m_linkColorButton);
         final JPanel panel16 = new JPanel();
         panel16.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         panel14.add(panel16, BorderLayout.EAST);

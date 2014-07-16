@@ -53,6 +53,7 @@ public class DialogCommit extends JDialog {
     public DialogCommit() {
         setContentPane(contentPane);
         setModal(true);
+        setTitle("Commit to VCS");
         getRootPane().setDefaultButton(buttonOK);
 
         buttonOK.addActionListener(new ActionListener() {

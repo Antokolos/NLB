@@ -320,19 +320,6 @@
                                     <properties/>
                                     <border type="none"/>
                                     <children>
-                                      <grid id="5dea8" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
-                                        <constraints border-constraint="West"/>
-                                        <properties/>
-                                        <border type="none"/>
-                                        <children>
-                                          <component id="eb007" class="javax.swing.JButton" binding="m_button1" default-binding="true">
-                                            <constraints/>
-                                            <properties>
-                                              <text value="Button"/>
-                                            </properties>
-                                          </component>
-                                        </children>
-                                      </grid>
                                       <grid id="b62f7" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
                                         <constraints border-constraint="East"/>
                                         <properties/>
@@ -342,6 +329,34 @@
                                             <constraints/>
                                             <properties>
                                               <text value="Modifications..."/>
+                                            </properties>
+                                          </component>
+                                        </children>
+                                      </grid>
+                                      <grid id="867b7" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+                                        <constraints border-constraint="West"/>
+                                        <properties/>
+                                        <border type="none"/>
+                                        <children>
+                                          <component id="6ca4b" class="javax.swing.JButton" binding="m_setTextColorButton" default-binding="true">
+                                            <constraints/>
+                                            <properties>
+                                              <enabled value="false"/>
+                                              <text value="Set text color"/>
+                                            </properties>
+                                          </component>
+                                          <component id="5635c" class="javax.swing.JButton" binding="m_setObjColorButton">
+                                            <constraints/>
+                                            <properties>
+                                              <enabled value="false"/>
+                                              <text value="Set obj color"/>
+                                            </properties>
+                                          </component>
+                                          <component id="a4ee1" class="javax.swing.JButton" binding="m_setBorderColorButton" default-binding="true">
+                                            <constraints/>
+                                            <properties>
+                                              <enabled value="false"/>
+                                              <text value="Set border color"/>
                                             </properties>
                                           </component>
                                         </children>

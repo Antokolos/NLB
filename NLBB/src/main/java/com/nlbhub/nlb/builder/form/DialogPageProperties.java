@@ -591,12 +591,15 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         panel20.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
         panel19.add(panel20, BorderLayout.WEST);
         m_setTextColorButton = new JButton();
+        m_setTextColorButton.setEnabled(false);
         m_setTextColorButton.setText("Set text color");
         panel20.add(m_setTextColorButton);
         m_setPageColorButton = new JButton();
+        m_setPageColorButton.setEnabled(false);
         m_setPageColorButton.setText("Set page color");
         panel20.add(m_setPageColorButton);
         m_setBorderColorButton = new JButton();
+        m_setBorderColorButton.setEnabled(false);
         m_setBorderColorButton.setText("Set border color");
         panel20.add(m_setBorderColorButton);
         final JPanel panel21 = new JPanel();

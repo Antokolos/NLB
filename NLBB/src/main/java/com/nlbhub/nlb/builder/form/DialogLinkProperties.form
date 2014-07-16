@@ -205,10 +205,11 @@
                                         <properties/>
                                         <border type="none"/>
                                         <children>
-                                          <component id="eb007" class="javax.swing.JButton" binding="m_button1" default-binding="true">
+                                          <component id="eb007" class="javax.swing.JButton" binding="m_linkColorButton" default-binding="true">
                                             <constraints/>
                                             <properties>
-                                              <text value="Button"/>
+                                              <enabled value="false"/>
+                                              <text value="Link color"/>
                                             </properties>
                                           </component>
                                         </children>
