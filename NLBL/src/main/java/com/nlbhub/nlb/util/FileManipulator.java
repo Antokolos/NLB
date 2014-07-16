@@ -376,6 +376,7 @@ public class FileManipulator {
             if (rootDirExists && !mlsRootDir.isDirectory()) {
                 // TODO: Warning! Deleting old file when writing! This is done for backward compatibility and can be removed when all books will be converted.
                 deleteFileOrDir(mlsRootDir);
+                rootDirExists = false;
             }
             boolean isSubsetOfDefault = content.isSubsetOf(defaultContent);
             if (isSubsetOfDefault) {
