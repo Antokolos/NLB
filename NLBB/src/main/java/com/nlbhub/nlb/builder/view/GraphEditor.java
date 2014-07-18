@@ -624,7 +624,7 @@ public class GraphEditor extends PCanvas {
         });
     }
 
-    public void saveAsImage(File imageFile) throws IOException {
+    public void saveAsImage(final File imageFile, final ProgressData progressData) throws IOException {
         Rectangle rectangle = m_nodeLayer.getGlobalFullBounds().getBounds();
         double dx = rectangle.getX();
         double dy = rectangle.getY();
@@ -641,6 +641,8 @@ public class GraphEditor extends PCanvas {
         paintAll(graphics);
         setBounds(prevViewRect);
         getCamera().translateView(dx, dy);
+        progressData.setProgressValue(50);
+        progressData.setNoteText("Saving file...");
         ImageIO.write(image, "png", imageFile);
     }
 

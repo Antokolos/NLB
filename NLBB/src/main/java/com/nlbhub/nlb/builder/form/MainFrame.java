@@ -571,6 +571,33 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         }
     }
 
+    class SaveAsImageTask extends Task {
+        File m_imageFile;
+
+        SaveAsImageTask(File imageFile) {
+            m_imageFile = imageFile;
+        }
+
+        @Override
+        protected Void doInBackground() throws Exception {
+            try {
+                getSelectedPaneInfo().getPaneGraphEditor().saveAsImage(m_imageFile, this);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(
+                        m_mainFramePanel,
+                        "Error while exporting to PNG: " + ex.toString()
+                );
+            }
+            return null;
+        }
+
+        @Override
+        public void done() {
+            super.done();
+            m_exportPNG.setEnabled(true);
+        }
+    }
+
     /**
      * Invoked when task's progress property changes.
      */
@@ -926,16 +953,22 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_exportPNG.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    File exportFile = chooseExportFile("book.png");
-                    if (exportFile != null) {
-                        getSelectedPaneInfo().getPaneGraphEditor().saveAsImage(exportFile);
-                    }
-                } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(
-                            m_mainFramePanel,
-                            "Error while exporting to PNG: " + ex.toString()
+                File exportFile = chooseExportFile("book.png");
+                if (exportFile != null) {
+                    m_progressMonitor = new ProgressMonitor(
+                            $$$getRootComponent$$$(),
+                            "Exporting Non-Linear Book to PNG",
+                            "Initializing...",
+                            0,
+                            100
                     );
+                    m_progressMonitor.setProgress(0);
+                    m_progressMonitor.setMillisToDecideToPopup(200);
+                    m_progressMonitor.setMillisToPopup(200);
+                    m_task = new SaveAsImageTask(exportFile);
+                    m_task.addPropertyChangeListener(mainFrame);
+                    m_exportPNG.setEnabled(false);
+                    m_task.execute();
                 }
             }
         });
