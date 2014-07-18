@@ -61,13 +61,17 @@ import edu.umd.cs.piccolo.util.PBounds;
 import edu.umd.cs.piccolo.util.PNodeFilter;
 import edu.umd.cs.piccolo.util.PPaintContext;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
 import java.io.File;
 import java.io.IOException;
+import java.text.AttributedCharacterIterator;
 import java.util.*;
 import java.util.List;
 
@@ -618,6 +622,26 @@ public class GraphEditor extends PCanvas {
                 super.keyPressed(e);
             }
         });
+    }
+
+    public void saveAsImage(File imageFile) throws IOException {
+        Rectangle rectangle = m_nodeLayer.getGlobalFullBounds().getBounds();
+        double dx = rectangle.getX();
+        double dy = rectangle.getY();
+        double width = rectangle.width;
+        double height = rectangle.height;
+
+        BufferedImage image = new BufferedImage((int) width, (int) height, BufferedImage.TYPE_INT_RGB);
+        getCamera().translateView(-dx, -dy);
+        Rectangle prevViewRect = getBounds();
+        Rectangle viewRect = new Rectangle();
+        viewRect.setFrame(0, 0, width, height);
+        setBounds(viewRect);
+        Graphics graphics = image.getGraphics();
+        paintAll(graphics);
+        setBounds(prevViewRect);
+        getCamera().translateView(dx, dy);
+        ImageIO.write(image, "png", imageFile);
     }
 
     public void deselectAll() {

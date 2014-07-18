@@ -63,6 +63,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -126,6 +127,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     private JButton m_editPropertiesButton;
     private JButton m_editDeleteButton;
     private JButton m_editBookPropertiesButton;
+    private JButton m_exportPNG;
     private final Launcher m_launcher;
     final JFileChooser m_dirChooser;
     final JFileChooser m_fileChooser;
@@ -449,6 +451,14 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_exportASM.setRolloverEnabled(true);
         m_exportASM.setText("");
         toolBar5.add(m_exportASM);
+        m_exportPNG = new JButton();
+        m_exportPNG.setBorderPainted(false);
+        m_exportPNG.setEnabled(true);
+        m_exportPNG.setFocusPainted(false);
+        m_exportPNG.setIcon(new ImageIcon(getClass().getResource("/extras/export/exportPNG.png")));
+        m_exportPNG.setRolloverEnabled(true);
+        m_exportPNG.setText("");
+        toolBar5.add(m_exportPNG);
     }
 
     /**
@@ -804,7 +814,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    File exportFile = chooseExportFile();
+                    File exportFile = chooseExportFile("book.qsp");
                     if (exportFile != null) {
                         getMainPaneInfo().getPaneNlbFacade().exportToQSPTextFile(exportFile);
                     }
@@ -820,7 +830,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    File exportFile = chooseExportFile();
+                    File exportFile = chooseExportFile("book.qst");
                     if (exportFile != null) {
                         getMainPaneInfo().getPaneNlbFacade().exportToURQTextFile(exportFile);
                     }
@@ -836,7 +846,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    File exportFile = chooseExportFile();
+                    File exportFile = chooseExportFile("book.pdf");
                     if (exportFile != null) {
                         getMainPaneInfo().getPaneNlbFacade().exportToPDFFile(exportFile);
                     }
@@ -853,7 +863,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    File exportFile = chooseExportFile();
+                    File exportFile = chooseExportFile("index.htm");
                     if (exportFile != null) {
                         getMainPaneInfo().getPaneNlbFacade().exportToHTMLFile(exportFile);
                     }
@@ -869,7 +879,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    File exportFile = chooseExportFile();
+                    File exportFile = chooseExportFile("index.html");
                     if (exportFile != null) {
                         getMainPaneInfo().getPaneNlbFacade().exportToJSIQFile(exportFile);
                     }
@@ -885,7 +895,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    File exportFile = chooseExportFile();
+                    File exportFile = chooseExportFile("main.lua");
                     if (exportFile != null) {
                         getMainPaneInfo().getPaneNlbFacade().exportToSTEADFile(exportFile);
                     }
@@ -901,7 +911,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    File exportFile = chooseExportFile();
+                    File exportFile = chooseExportFile("book.sm");
                     if (exportFile != null) {
                         getMainPaneInfo().getPaneNlbFacade().exportToASMFile(exportFile);
                     }
@@ -909,6 +919,22 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                     JOptionPane.showMessageDialog(
                             m_mainFramePanel,
                             "Error while exporting to ASM: " + ex.toString()
+                    );
+                }
+            }
+        });
+        m_exportPNG.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    File exportFile = chooseExportFile("book.png");
+                    if (exportFile != null) {
+                        getSelectedPaneInfo().getPaneGraphEditor().saveAsImage(exportFile);
+                    }
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(
+                            m_mainFramePanel,
+                            "Error while exporting to PNG: " + ex.toString()
                     );
                 }
             }
@@ -1307,7 +1333,8 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         return null;
     }
 
-    private File chooseExportFile() {
+    private File chooseExportFile(final String defaultName) {
+        m_fileChooser.setSelectedFile(new File(defaultName));
         int returnVal = m_fileChooser.showSaveDialog(m_mainFramePanel);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             // Opening the book
