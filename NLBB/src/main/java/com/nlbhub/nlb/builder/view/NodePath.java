@@ -148,7 +148,7 @@ public abstract class NodePath extends ItemPath implements NLBObserver {
         return m_nodeRect;
     }
 
-    public double countPageRadius(@NotNull PNode nodeTo) {
+    public static double countPageRadius(@NotNull PNode nodeFrom, @NotNull PNode nodeTo) {
         // Using Pythagoras theorem and triangle similarity.
         // Count both possible radii and select the smallest to simplify orientation issues.
         double flRadiusHorz;    // "Horizontal radius"
@@ -164,7 +164,7 @@ public abstract class NodePath extends ItemPath implements NLBObserver {
         Point2D ptThis;    // Center of the "from" page (this page)
         Point2D ptTo;      // Center of the "to" page
 
-        final PBounds nodeFromFullBR = getFullBoundsReference();
+        final PBounds nodeFromFullBR = nodeFrom.getFullBoundsReference();
         final PBounds nodeToFullBR = nodeTo.getFullBoundsReference();
         flHorzKatetA = nodeFromFullBR.getWidth() / 2.0;
         flVertKatetA = nodeFromFullBR.getHeight() / 2.0;

@@ -53,7 +53,7 @@ import java.awt.geom.Point2D;
  * @version 1.0 8/9/12
  */
 public class LinkPath extends ItemPath implements NLBObserver {
-    private static final int MAX_CAPTION_CHARS_IN_LINK_TEXT = 330;
+    private static final int MAX_CAPTION_CHARS_IN_LINK_TEXT = 22;
     public static final Paint NORMAL_PAINT = Color.WHITE;
     public static final Paint NORMAL_STROKE_PAINT = Color.BLACK;
     public static final Paint SELECTED_PAINT = Color.GRAY;
@@ -172,10 +172,38 @@ public class LinkPath extends ItemPath implements NLBObserver {
     private Point2D getLinkOrigin() {
         final Point2D centerFrom = m_nodeFrom.getFullBoundsReference().getCenter2D();
         final Point2D centerTo = m_nodeTo.getFullBoundsReference().getCenter2D();
+
+        // Vector collinear to the link edge
+        Point2D lineVectorTo = new Point2D.Double(
+                centerTo.getX() - centerFrom.getX(), centerTo.getY() - centerFrom.getY()
+        );
+        // Find its norm (length of the edge)
+        double lineVectorNorm = (
+                Math.sqrt(
+                        lineVectorTo.getX() * lineVectorTo.getX() + lineVectorTo.getY() * lineVectorTo.getY()
+                )
+        );
+        // Normalize the vector
+        Point2D lineVector_1 = new Point2D.Double(
+                lineVectorTo.getX() / lineVectorNorm,
+                lineVectorTo.getY() / lineVectorNorm
+        );
+
+        double radiusFrom = NodePath.countPageRadius(m_nodeFrom, m_nodeTo);
+        double radiusTo = NodePath.countPageRadius(m_nodeTo, m_nodeFrom);
+        final Point2D boundaryFrom = new Point2D.Double(
+                centerFrom.getX() + lineVector_1.getX() * radiusFrom,
+                centerFrom.getY() + lineVector_1.getY() * radiusFrom
+        );
+        final Point2D boundaryTo = new Point2D.Double(
+                centerTo.getX() - lineVector_1.getX() * radiusTo,
+                centerTo.getY() - lineVector_1.getY() * radiusTo
+        );
+
         final Point2D result = new Point2D.Float();
         result.setLocation(
-                (float) ((centerFrom.getX() + centerTo.getX()) / 2.0),
-                (float) ((centerFrom.getY() + centerTo.getY()) / 2.0)
+                (float) ((boundaryFrom.getX() + boundaryTo.getX()) / 2.0),
+                (float) ((boundaryFrom.getY() + boundaryTo.getY()) / 2.0)
         );
         return result;
     }
@@ -348,8 +376,8 @@ public class LinkPath extends ItemPath implements NLBObserver {
                 m_nodeTo.getFullBoundsReference().getCenter2D().getX(),
                 m_nodeTo.getFullBoundsReference().getCenter2D().getY()
         );
-        int iRadiusFrom = (int) m_nodeFrom.countPageRadius(m_nodeTo);
-        int iRadiusTo = (int) m_nodeTo.countPageRadius(m_nodeFrom);
+        int iRadiusFrom = (int) NodePath.countPageRadius(m_nodeFrom, m_nodeTo);
+        int iRadiusTo = (int) NodePath.countPageRadius(m_nodeTo, m_nodeFrom);
 
         boolean somethingWasDrawed = (
                 drawArrow(ptBegin, ptEnd, positionAndTotalCount, iRadiusFrom, iRadiusTo, false, false)
