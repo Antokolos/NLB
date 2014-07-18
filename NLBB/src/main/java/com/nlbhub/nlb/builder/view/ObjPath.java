@@ -51,7 +51,7 @@ import java.awt.*;
  * @version 1.0 12/19/13
  */
 public class ObjPath extends NodePath {
-    private static final int MAX_NAME_CHARS_IN_NAME_TEXT = 9;
+    private static final int MAX_NAME_CHARS_IN_NAME_TEXT = 42;
     private static final String INFO_OBJ = "<Obj> ";
     private static final String INFO_CONTAINED = "<C> ";
     private final PText m_infoNode = new PText(INFO_OBJ);

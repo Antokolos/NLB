@@ -53,7 +53,7 @@ import java.awt.geom.Point2D;
  * @version 1.0 8/9/12
  */
 public class LinkPath extends ItemPath implements NLBObserver {
-    private static final int MAX_CAPTION_CHARS_IN_LINK_TEXT = 22;
+    private static final int MAX_CAPTION_CHARS_IN_LINK_TEXT = 330;
     public static final Paint NORMAL_PAINT = Color.WHITE;
     public static final Paint NORMAL_STROKE_PAINT = Color.BLACK;
     public static final Paint SELECTED_PAINT = Color.GRAY;

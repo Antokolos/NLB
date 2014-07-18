@@ -51,7 +51,7 @@ import java.awt.*;
  * @version 1.0 8/9/12
  */
 public class PagePath extends NodePath {
-    private static final int MAX_CAPTION_CHARS_IN_PAGE_TEXT = 42;
+    private static final int MAX_CAPTION_CHARS_IN_PAGE_TEXT = 330;
     private final PText m_startPointNode = new PText("<S>");
 
     public PagePath(
