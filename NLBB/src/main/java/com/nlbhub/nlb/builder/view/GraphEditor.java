@@ -624,8 +624,39 @@ public class GraphEditor extends PCanvas {
         });
     }
 
+    private Rectangle getBoundsUnion() {
+        Rectangle nodeBounds = m_nodeLayer.getGlobalFullBounds().getBounds();
+        Set<Rectangle> bounds = new HashSet<>();
+        bounds.add(m_objLayer.getGlobalFullBounds().getBounds());
+        bounds.add(m_edgeLayer.getGlobalFullBounds().getBounds());
+        double minX = nodeBounds.getX();
+        double maxX = nodeBounds.getMaxX();
+        double minY = nodeBounds.getY();
+        double maxY = nodeBounds.getMaxY();
+        for (Rectangle bound : bounds) {
+            if (bound.getX() < minX) {
+                minX = bound.getX();
+            }
+            double maxX1 = bound.getMaxX();
+            if (maxX1 > maxX) {
+                maxX = maxX1;
+            }
+            if (bound.getY() < minY) {
+                minY = bound.getY();
+            }
+            double maxY1 = bound.getMaxY();
+            if (maxY1 > maxY) {
+                maxY = maxY1;
+            }
+        }
+        Rectangle rectangle = new Rectangle();
+        rectangle.setFrame(minX, minY, maxX - minX, maxY - minY);
+        return rectangle;
+    }
+
     public void saveAsImage(final File imageFile, final ProgressData progressData) throws IOException {
-        Rectangle rectangle = m_nodeLayer.getGlobalFullBounds().getBounds();
+        Rectangle rectangle = getBoundsUnion();
+
         double dx = rectangle.getX();
         double dy = rectangle.getY();
         double width = rectangle.width;
