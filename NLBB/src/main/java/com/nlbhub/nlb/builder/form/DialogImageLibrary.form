@@ -113,7 +113,7 @@
             <border type="none"/>
             <children/>
           </grid>
-          <component id="cf9d" class="org.jdesktop.swingx.JXTable">
+          <component id="cf9d" class="org.jdesktop.swingx.JXTable" binding="m_imageFileList">
             <constraints border-constraint="Center"/>
             <properties/>
             <clientProperties>

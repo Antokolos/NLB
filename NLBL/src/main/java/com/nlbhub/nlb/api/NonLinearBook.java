@@ -249,6 +249,8 @@ public interface NonLinearBook {
 
     public File getRootDir();
 
+    public List<ImageFile> getImageFiles();
+
     public Map<String, Page> getPages();
 
     public Page getPageById(String id);

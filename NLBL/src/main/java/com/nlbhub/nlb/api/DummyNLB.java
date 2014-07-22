@@ -47,6 +47,7 @@ import javax.script.ScriptException;
 import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -95,6 +96,11 @@ public class DummyNLB implements NonLinearBook {
     @Override
     public File getRootDir() {
         return null;
+    }
+
+    @Override
+    public List<ImageFile> getImageFiles() {
+        return Collections.emptyList();
     }
 
     @Override

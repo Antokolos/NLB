@@ -74,6 +74,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     private static final String PAGES_DIR_NAME = "pages";
     private static final String OBJS_DIR_NAME = "objs";
     private static final String VARS_DIR_NAME = "vars";
+    private static final String IMAGES_DIR_NAME = "images";
     /**
      * Path to the directory on the disk where this book will be stored.
      */
@@ -89,6 +90,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     private Map<String, PageImpl> m_pages;
     private Map<String, ObjImpl> m_objs;
     private List<VariableImpl> m_variables;
+    private List<ImageFileImpl> m_imageFiles;
     private NonLinearBook m_parentNLB;
     private Page m_parentPage;
 
@@ -1069,6 +1071,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_pages = new HashMap<>();
         m_objs = new HashMap<>();
         m_variables = new ArrayList<>();
+        m_imageFiles = new ArrayList<>();
     }
 
     public NonLinearBookImpl(NonLinearBook parentNLB, Page parentPage) {
@@ -1081,6 +1084,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_pages = new HashMap<>();
         m_objs = new HashMap<>();
         m_variables = new ArrayList<>();
+        m_imageFiles = new ArrayList<>();
     }
 
     ChangeStartPointCommand createChangeStartPointCommand(final String startPoint) {
@@ -1254,6 +1258,13 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     public File getRootDir() {
         return m_rootDir;
+    }
+
+    @Override
+    public List<ImageFile> getImageFiles() {
+        List<ImageFile> imageFiles = new ArrayList<>();
+        imageFiles.addAll(m_imageFiles);
+        return imageFiles;
     }
 
     public void setRootDir(final File rootDir) {
@@ -1603,6 +1614,9 @@ public class NonLinearBookImpl implements NonLinearBook {
         progressData.setProgressValue(60);
         progressData.setNoteText("Reading variables...");
         readVariables(rootDir);
+        progressData.setProgressValue(60);
+        progressData.setNoteText("Reading image files...");
+        readImageFiles(rootDir);
         return true;
     }
 
@@ -1622,6 +1636,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         readObjs(rootDir);
         readPages(rootDir);
         readVariables(rootDir);
+        readImageFiles(rootDir);
         return true;
     }
 
@@ -1717,6 +1732,23 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
+    private void readImageFiles(File rootDir) throws NLBIOException, NLBConsistencyException {
+        m_imageFiles.clear();
+        final File imagesDir = new File(rootDir, IMAGES_DIR_NAME);
+        // imagesDir dir can be nonexistent, in this case there is no images in the book
+        if (imagesDir.exists()) {
+            File[] listFiles = imagesDir.listFiles();
+            if (listFiles == null) {
+                throw new NLBIOException("Error when enumerating images' directory contents");
+            }
+            for (File file : listFiles) {
+                final ImageFileImpl imageFile = new ImageFileImpl();
+                imageFile.setFileName(file.getName());
+                m_imageFiles.add(imageFile);
+            }
+        }
+    }
+
     public void save(
             final FileManipulator fileManipulator,
             final ProgressData progressData,
@@ -1729,6 +1761,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                     throw new NLBIOException("Cannot create NLB root directory");
                 }
             }
+            // There is no writeImageFiles() method, because all image files were already saved in the images folder
+            // (when image is added)
             progressData.setProgressValue(20);
             progressData.setNoteText("Writing variables...");
             writeVariables(fileManipulator, m_rootDir);
@@ -2720,5 +2754,9 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     public void addVariable(@NotNull VariableImpl variable) {
         m_variables.add(variable);
+    }
+
+    public void addImageFile(@NotNull ImageFileImpl imageFile) {
+        m_imageFiles.add(imageFile);
     }
 }

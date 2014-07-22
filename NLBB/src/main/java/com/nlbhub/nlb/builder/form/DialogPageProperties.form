@@ -819,6 +819,15 @@
                       <text value="Redo"/>
                     </properties>
                   </component>
+                  <component id="e3296" class="javax.swing.JButton" binding="m_setImageButton">
+                    <constraints/>
+                    <properties>
+                      <maximumSize width="87" height="36"/>
+                      <minimumSize width="87" height="36"/>
+                      <preferredSize width="87" height="36"/>
+                      <text value="Set image..."/>
+                    </properties>
+                  </component>
                 </children>
               </toolbar>
               <component id="4b8e2" class="javax.swing.JComboBox" binding="m_languageComboBox">

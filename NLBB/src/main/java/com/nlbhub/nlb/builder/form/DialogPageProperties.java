@@ -87,6 +87,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JCheckBox m_autoTraverseCheckBox;
     private JCheckBox m_autoReturnCheckBox;
     private JComboBox m_languageComboBox;
+    private JButton m_setImageButton;
 
     public DialogPageProperties(final NonLinearBookFacade nlbFacade, final Page page) {
         m_nlbFacade = nlbFacade;
@@ -157,6 +158,14 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
             public void actionPerformed(ActionEvent actionEvent) {
                 nlbFacade.redo(page.getId());
                 setPageProperties(page);
+            }
+        });
+
+        m_setImageButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                DialogImageLibrary dialog = new DialogImageLibrary(m_nlbFacade.getNlb());
+                dialog.showDialog();
             }
         });
 
@@ -883,6 +892,12 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_redoButton.setIcon(new ImageIcon(getClass().getResource("/common/redo.png")));
         m_redoButton.setText("Redo");
         toolBar1.add(m_redoButton);
+        m_setImageButton = new JButton();
+        m_setImageButton.setMaximumSize(new Dimension(87, 36));
+        m_setImageButton.setMinimumSize(new Dimension(87, 36));
+        m_setImageButton.setPreferredSize(new Dimension(87, 36));
+        m_setImageButton.setText("Set image...");
+        toolBar1.add(m_setImageButton);
         m_languageComboBox = new JComboBox();
         panel46.add(m_languageComboBox, BorderLayout.EAST);
         label4.setLabelFor(m_pageIdTextField);
