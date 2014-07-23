@@ -68,10 +68,8 @@ import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
 import java.io.File;
 import java.io.IOException;
-import java.text.AttributedCharacterIterator;
 import java.util.*;
 import java.util.List;
 
@@ -107,8 +105,9 @@ public class GraphEditor extends PCanvas {
     private BulkSelectionHandler m_bulkSelectionHandler = new BulkSelectionHandler();
 
     private class GraphDragEventHandlerLinks extends PDragEventHandler {
-        PNode m_selectedNode = null;
-        Point2D m_pickedNodeOrigin = null;
+        private PNode m_selectedNode = null;
+        private Point2D m_pickedNodeOrigin = null;
+        private boolean m_canDrag = false;
 
         @Override
         public void mousePressed(PInputEvent event) {
@@ -117,7 +116,15 @@ public class GraphEditor extends PCanvas {
             reselectNode(event.getPickedNode());
             if (event.getClickCount() > 1) {
                 editSelectedItemProperties();
+            } else {
+                m_canDrag = true;
             }
+        }
+
+        @Override
+        public void mouseReleased(PInputEvent event) {
+            super.mouseReleased(event);
+            m_canDrag = false;
         }
 
         private PNode reselectNode(PNode node) {
@@ -202,29 +209,31 @@ public class GraphEditor extends PCanvas {
         protected void endDrag(PInputEvent event) {
             super.endDrag(event);
 
-            // Links itself cannot be dragged, only its labels can.
-            if (!isLinkNode(m_selectedNode)) {
-                // Dragging only lastly selected node, not event.getPickedNode()
-                final PNode pickedNode = m_selectedNode;
-                Link link = getLink(pickedNode);
-                if (link == null) {
-                    link = getLink(pickedNode.getParent());
-                }
-                final Coords coords = link.getCoords();
-                final Point2D shiftedOrigin = m_selectedNode.getFullBoundsReference().getOrigin();
-                PAffineTransform transform = m_selectedNode.getInverseTransform();
-                Point2D ptShO = null;
-                ptShO = transform.transform(shiftedOrigin, ptShO);
-                Point2D ptO = null;
-                ptO = transform.transform(m_pickedNodeOrigin, ptO);
-                if (m_pickedNodeOrigin != null) {
-                    float oldLeft = coords.getLeft();
-                    float oldTop = coords.getTop();
-                    m_nlbFacade.updateLinkCoords(
-                            link,
-                            oldLeft + (float) (ptShO.getX() - ptO.getX()),
-                            oldTop + (float) (ptShO.getY() - ptO.getY())
-                    );
+            if (m_canDrag) {
+                // Links itself cannot be dragged, only its labels can.
+                if (!isLinkNode(m_selectedNode)) {
+                    // Dragging only lastly selected node, not event.getPickedNode()
+                    final PNode pickedNode = m_selectedNode;
+                    Link link = getLink(pickedNode);
+                    if (link == null) {
+                        link = getLink(pickedNode.getParent());
+                    }
+                    final Coords coords = link.getCoords();
+                    final Point2D shiftedOrigin = m_selectedNode.getFullBoundsReference().getOrigin();
+                    PAffineTransform transform = m_selectedNode.getInverseTransform();
+                    Point2D ptShO = null;
+                    ptShO = transform.transform(shiftedOrigin, ptShO);
+                    Point2D ptO = null;
+                    ptO = transform.transform(m_pickedNodeOrigin, ptO);
+                    if (m_pickedNodeOrigin != null) {
+                        float oldLeft = coords.getLeft();
+                        float oldTop = coords.getTop();
+                        m_nlbFacade.updateLinkCoords(
+                                link,
+                                oldLeft + (float) (ptShO.getX() - ptO.getX()),
+                                oldTop + (float) (ptShO.getY() - ptO.getY())
+                        );
+                    }
                 }
             }
         }
