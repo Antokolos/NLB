@@ -304,7 +304,12 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateObjInv(String invString) {
-        return "    inv = \"" + invString + "\"," + LINE_SEPARATOR;
+        return (
+                "    inv = function(s)" + LINE_SEPARATOR +
+                "        p \"" + invString + "\";" + LINE_SEPARATOR +
+                "        s.use(s, s);" + LINE_SEPARATOR +
+                "    end," + LINE_SEPARATOR
+        );
     }
 
     @Override
@@ -324,7 +329,10 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateObjUseEnd() {
-        return "    end," + LINE_SEPARATOR;
+        return  (
+                "        here().autos();" + LINE_SEPARATOR +
+                "    end," + LINE_SEPARATOR
+        );
     }
 
     @Override
