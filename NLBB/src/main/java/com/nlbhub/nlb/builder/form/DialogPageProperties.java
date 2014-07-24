@@ -164,7 +164,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_setImageButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                DialogImageLibrary dialog = new DialogImageLibrary(m_nlbFacade.getNlb());
+                DialogImageLibrary dialog = new DialogImageLibrary(m_nlbFacade);
                 dialog.showDialog();
             }
         });

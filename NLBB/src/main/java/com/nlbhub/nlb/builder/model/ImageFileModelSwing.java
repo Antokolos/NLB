@@ -52,17 +52,15 @@ import java.util.List;
  * @version 1.0
  */
 public class ImageFileModelSwing extends AbstractTableModel {
-    private List<String> m_imageFileNames = new ArrayList<>();
+    private NonLinearBook m_nonLinearBook;
 
     public ImageFileModelSwing(NonLinearBook nonLinearBook) {
-        for (ImageFile imageFile : nonLinearBook.getImageFiles()) {
-            m_imageFileNames.add(imageFile.getFileName());
-        }
+        m_nonLinearBook = nonLinearBook;
     }
 
     @Override
     public int getRowCount() {
-        return m_imageFileNames.size();
+        return m_nonLinearBook.getImageFiles().size();
     }
 
     @Override
@@ -72,6 +70,6 @@ public class ImageFileModelSwing extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        return m_imageFileNames.get(rowIndex);
+        return m_nonLinearBook.getImageFiles().get(rowIndex).getFileName();
     }
 }

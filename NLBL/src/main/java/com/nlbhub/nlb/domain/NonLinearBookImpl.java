@@ -66,6 +66,7 @@ import java.util.*;
  * @version 1.0 8/9/12
  */
 public class NonLinearBookImpl implements NonLinearBook {
+    private static final String IMAGE_FILE_NAME_TEMPLATE = "%s_%d%s";
     private static final String STARTPOINT_FILE_NAME = "startpoint";
     private static final String LANGUAGE_FILE_NAME = "language";
     private static final String LICENSE_FILE_NAME = "license";
@@ -2754,6 +2755,57 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     public void addVariable(@NotNull VariableImpl variable) {
         m_variables.add(variable);
+    }
+
+    public void copyAndAddImageFile(
+            final @NotNull FileManipulator fileManipulator,
+            final @NotNull File file
+    ) throws NLBFileManipulationException, NLBIOException, NLBVCSException {
+        File localFile = createUniqueImageFile(fileManipulator, file);
+        fileManipulator.copyFile(localFile, file, "Cannot copy image file " + localFile.getName());
+        ImageFileImpl imageFile = new ImageFileImpl();
+        imageFile.setFileName(localFile.getName());
+        addImageFile(imageFile);
+    }
+
+    private File createUniqueImageFile(
+            final @NotNull FileManipulator fileManipulator,
+            final @NotNull File newFile
+    ) throws NLBFileManipulationException, NLBIOException {
+        String uniqueFileName = newFile.getName().toLowerCase();
+        final File imagesDir = new File(m_rootDir, IMAGES_DIR_NAME);
+        fileManipulator.createDir(imagesDir, "Cannot create NLB images directory");
+        File localFile = new File(imagesDir, uniqueFileName);
+        int extIndex = uniqueFileName.lastIndexOf(".");
+        String namePart = uniqueFileName.substring(0, extIndex);
+        String extPart = uniqueFileName.substring(extIndex);
+        int counter = 1;
+        while (localFile.exists()) {
+            uniqueFileName = String.format(IMAGE_FILE_NAME_TEMPLATE, namePart, counter++, extPart);
+            localFile = new File(imagesDir, uniqueFileName);
+        }
+        return localFile;
+    }
+
+    public void removeImageFile(
+            final @NotNull FileManipulator fileManipulator,
+            final String imageFileName
+    ) throws NLBFileManipulationException, NLBIOException, NLBConsistencyException {
+        ListIterator<ImageFileImpl> imageFileIterator = m_imageFiles.listIterator();
+        while (imageFileIterator.hasNext()) {
+            ImageFileImpl imageFile = imageFileIterator.next();
+            if (imageFile.getFileName().equals(imageFileName)) {
+                final File imagesDir = new File(m_rootDir, IMAGES_DIR_NAME);
+                if (!imagesDir.exists()) {
+                    throw new NLBConsistencyException("NLB images dir does not exist");
+                }
+                fileManipulator.deleteFileOrDir(new File(imagesDir, imageFileName));
+                imageFileIterator.remove();
+                return;
+            }
+        }
+
+        throw new NLBConsistencyException("Specified image file does not exist in images dir");
     }
 
     public void addImageFile(@NotNull ImageFileImpl imageFile) {

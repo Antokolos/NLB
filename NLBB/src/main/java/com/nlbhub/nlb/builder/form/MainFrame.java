@@ -129,10 +129,10 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     private JButton m_editBookPropertiesButton;
     private JButton m_exportPNG;
     private final Launcher m_launcher;
-    final JFileChooser m_dirChooser;
-    final JFileChooser m_fileChooser;
+    private final JFileChooser m_dirChooser;
+    private final JFileChooser m_fileChooser;
     private Map<String, PaneEditorInfo> m_paneEditorInfoMap = new HashMap<>();
-    final PaneEditorInfo m_mainEditorInfo;
+    private final PaneEditorInfo m_mainEditorInfo;
 
     private ProgressMonitor m_progressMonitor;
     private Task m_task;
@@ -1370,7 +1370,6 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_fileChooser.setSelectedFile(new File(defaultName));
         int returnVal = m_fileChooser.showSaveDialog(m_mainFramePanel);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            // Opening the book
             return m_fileChooser.getSelectedFile();
         }
 

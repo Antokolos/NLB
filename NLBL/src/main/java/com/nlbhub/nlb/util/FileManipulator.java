@@ -235,18 +235,18 @@ public class FileManipulator {
     /**
      * Copies specified file to the target location.
      *
-     * @param sourcePath source file path.
-     * @param targetPath destination file path.
+     * @param source source file.
+     * @param target destination file.
      * @throws IOException if an I/O error occurs.
      */
     private void transfer(
-            File sourcePath, File targetPath
+            File source, File target
     ) throws IOException {
 
-        FileInputStream sourceStream = new FileInputStream(sourcePath);
+        FileInputStream sourceStream = new FileInputStream(source);
 
         try {
-            writeFile(targetPath, sourceStream);
+            writeFile(target, sourceStream);
         } finally {
             sourceStream.close();
         }
@@ -480,6 +480,23 @@ public class FileManipulator {
             throw new NLBIOException(
                     "Error while creating directory", e
             );
+        }
+    }
+
+    public void copyFile(
+            final File target,
+            final File source,
+            final String errorMessage
+    ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
+        try {
+            boolean exists = target.exists();
+            if (!exists) {
+                target.createNewFile();
+            }
+            writeFile(target, new FileInputStream(source));
+            addToVCS(target, exists);
+        } catch (IOException e) {
+            throw new NLBIOException(errorMessage, e);
         }
     }
 

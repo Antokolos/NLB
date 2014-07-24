@@ -309,6 +309,30 @@ public class NonLinearBookFacade implements NLBObservable {
         notifyObservers();
     }
 
+    public void addImageFile(
+            final File imageFile
+    ) throws NLBFileManipulationException, NLBIOException, NLBConsistencyException, NLBVCSException {
+        File rootDir = m_nlb.getRootDir();
+        if (rootDir != null) {
+            FileManipulator fileManipulator = new FileManipulator(m_vcsAdapter, rootDir);
+            m_nlb.copyAndAddImageFile(fileManipulator, imageFile);
+        } else {
+            throw new NLBConsistencyException("NLB root dir is undefined");
+        }
+    }
+
+    public void removeImageFile(
+            final String imageFileName
+    ) throws NLBFileManipulationException, NLBIOException, NLBConsistencyException {
+        File rootDir = m_nlb.getRootDir();
+        if (rootDir != null) {
+            FileManipulator fileManipulator = new FileManipulator(m_vcsAdapter, rootDir);
+            m_nlb.removeImageFile(fileManipulator, imageFileName);
+        } else {
+            throw new NLBConsistencyException("NLB root dir is undefined");
+        }
+    }
+
     public void resizeNode(
             NodeItem nodeItem,
             NodeItem.Orientation orientation,

@@ -2,13 +2,20 @@ package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.builder.model.ImageFileModelSwing;
+import com.nlbhub.nlb.domain.NonLinearBookFacade;
+import com.nlbhub.nlb.exception.NLBConsistencyException;
+import com.nlbhub.nlb.exception.NLBFileManipulationException;
+import com.nlbhub.nlb.exception.NLBIOException;
+import com.nlbhub.nlb.exception.NLBVCSException;
 import org.jdesktop.swingx.JXTable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 
 public class DialogImageLibrary extends JDialog {
+    private final JFileChooser m_fileChooser = new JFileChooser();
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -16,9 +23,10 @@ public class DialogImageLibrary extends JDialog {
     private JButton m_buttonAdd;
     private JXTable m_imageFileList;
 
-    public DialogImageLibrary(NonLinearBook nonLinearBook) {
+    public DialogImageLibrary(final NonLinearBookFacade nonLinearBookFacade) {
+        final DialogImageLibrary self = this;
         setContentPane(contentPane);
-        m_imageFileList.setModel(new ImageFileModelSwing(nonLinearBook));
+        m_imageFileList.setModel(new ImageFileModelSwing(nonLinearBookFacade.getNlb()));
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
@@ -31,6 +39,23 @@ public class DialogImageLibrary extends JDialog {
         buttonCancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCancel();
+            }
+        });
+
+        m_buttonAdd.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    File imageFile = chooseImageFile();
+                    if (imageFile != null) {
+                        nonLinearBookFacade.addImageFile(imageFile);
+                    }
+                    m_imageFileList.updateUI();
+                } catch (NLBFileManipulationException | NLBIOException | NLBConsistencyException | NLBVCSException ex) {
+                    JOptionPane.showMessageDialog(
+                            self,
+                            "Error while adding: " + ex.toString()
+                    );
+                }
             }
         });
 
@@ -48,6 +73,15 @@ public class DialogImageLibrary extends JDialog {
                 onCancel();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+    }
+
+    private File chooseImageFile() {
+        int returnVal = m_fileChooser.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            return m_fileChooser.getSelectedFile();
+        }
+
+        return null;
     }
 
     public void showDialog() {
