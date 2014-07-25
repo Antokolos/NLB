@@ -841,9 +841,9 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    File exportFile = chooseExportFile("book.qsp");
-                    if (exportFile != null) {
-                        getMainPaneInfo().getPaneNlbFacade().exportToQSPTextFile(exportFile);
+                    File exportDir = chooseExportDir();
+                    if (exportDir != null) {
+                        getMainPaneInfo().getPaneNlbFacade().exportToQSPTextFile(exportDir);
                     }
                 } catch (NLBExportException ex) {
                     JOptionPane.showMessageDialog(
@@ -857,9 +857,9 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    File exportFile = chooseExportFile("book.qst");
-                    if (exportFile != null) {
-                        getMainPaneInfo().getPaneNlbFacade().exportToURQTextFile(exportFile);
+                    File exportDir = chooseExportDir();
+                    if (exportDir != null) {
+                        getMainPaneInfo().getPaneNlbFacade().exportToURQTextFile(exportDir);
                     }
                 } catch (NLBExportException ex) {
                     JOptionPane.showMessageDialog(
@@ -890,9 +890,9 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    File exportFile = chooseExportFile("index.htm");
-                    if (exportFile != null) {
-                        getMainPaneInfo().getPaneNlbFacade().exportToHTMLFile(exportFile);
+                    File exportDir = chooseExportDir();
+                    if (exportDir != null) {
+                        getMainPaneInfo().getPaneNlbFacade().exportToHTMLFile(exportDir);
                     }
                 } catch (NLBExportException ex) {
                     JOptionPane.showMessageDialog(
@@ -906,9 +906,9 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    File exportFile = chooseExportFile("index.html");
-                    if (exportFile != null) {
-                        getMainPaneInfo().getPaneNlbFacade().exportToJSIQFile(exportFile);
+                    File exportDir = chooseExportDir();
+                    if (exportDir != null) {
+                        getMainPaneInfo().getPaneNlbFacade().exportToJSIQFile(exportDir);
                     }
                 } catch (NLBExportException ex) {
                     JOptionPane.showMessageDialog(
@@ -922,9 +922,9 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    File exportFile = chooseExportFile("main.lua");
-                    if (exportFile != null) {
-                        getMainPaneInfo().getPaneNlbFacade().exportToSTEADFile(exportFile);
+                    File exportDir = chooseExportDir();
+                    if (exportDir != null) {
+                        getMainPaneInfo().getPaneNlbFacade().exportToSTEADFile(exportDir);
                     }
                 } catch (NLBExportException ex) {
                     JOptionPane.showMessageDialog(
@@ -938,9 +938,9 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    File exportFile = chooseExportFile("book.sm");
-                    if (exportFile != null) {
-                        getMainPaneInfo().getPaneNlbFacade().exportToASMFile(exportFile);
+                    File exportDir = chooseExportDir();
+                    if (exportDir != null) {
+                        getMainPaneInfo().getPaneNlbFacade().exportToASMFile(exportDir);
                     }
                 } catch (NLBExportException ex) {
                     JOptionPane.showMessageDialog(
@@ -1360,6 +1360,15 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         int returnVal = m_dirChooser.showSaveDialog(m_mainFramePanel);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             // Opening the book
+            return m_dirChooser.getSelectedFile();
+        }
+
+        return null;
+    }
+
+    private File chooseExportDir() {
+        int returnVal = m_dirChooser.showSaveDialog(m_mainFramePanel);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
             return m_dirChooser.getSelectedFile();
         }
 

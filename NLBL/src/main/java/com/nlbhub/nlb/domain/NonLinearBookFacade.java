@@ -141,34 +141,34 @@ public class NonLinearBookFacade implements NLBObservable {
         notifyObservers();
     }
 
-    public void exportToQSPTextFile(File exportFile) throws NLBExportException {
-        m_nlb.exportToQSPTextFile(exportFile);
+    public void exportToQSPTextFile(File exportDir) throws NLBExportException {
+        m_nlb.exportToQSPTextFile(new File(exportDir, "book.qsp"));
     }
 
-    public void exportToURQTextFile(File exportFile) throws NLBExportException {
-        m_nlb.exportToURQTextFile(exportFile);
+    public void exportToURQTextFile(File exportDir) throws NLBExportException {
+        m_nlb.exportToURQTextFile(new File(exportDir, "book.qst"));
     }
 
     public void exportToPDFFile(File exportFile) throws NLBExportException {
         m_nlb.exportToPDFFile(exportFile);
     }
 
-    public void exportToHTMLFile(File exportFile) throws NLBExportException {
-        m_nlb.exportToHTMLFile(exportFile);
+    public void exportToHTMLFile(File exportDir) throws NLBExportException {
+        m_nlb.exportToHTMLFile(new File(exportDir, "index.html"));
     }
 
-    public void exportToJSIQFile(File exportFile) throws NLBExportException {
-        m_nlb.exportToJSIQFile(exportFile);
+    public void exportToJSIQFile(File exportDir) throws NLBExportException {
+        m_nlb.exportToJSIQFile(new File(exportDir, "example.xml"));
     }
 
-    public void exportToSTEADFile(File exportFile) throws NLBExportException {
-        m_nlb.exportToSTEADFile(exportFile);
-        File imagesExportDir = new File(exportFile.getParentFile(), "images");
+    public void exportToSTEADFile(File exportDir) throws NLBExportException {
+        m_nlb.exportToSTEADFile(new File(exportDir, "main.lua"));
+        File imagesExportDir = new File(exportDir, "images");
         m_nlb.exportImages(true, imagesExportDir);
     }
 
-    public void exportToASMFile(File exportFile) throws NLBExportException {
-        m_nlb.exportToASMFile(exportFile);
+    public void exportToASMFile(File exportDir) throws NLBExportException {
+        m_nlb.exportToASMFile(new File(exportDir, "book.sm"));
     }
 
     public void updateModifications(
