@@ -16,6 +16,8 @@ import java.io.File;
 
 public class DialogImageLibrary extends JDialog {
     private final JFileChooser m_fileChooser = new JFileChooser();
+    private ImageFileModelSwing m_imageFileModelSwing;
+    private String m_selectedFileName;
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -26,7 +28,8 @@ public class DialogImageLibrary extends JDialog {
     public DialogImageLibrary(final NonLinearBookFacade nonLinearBookFacade) {
         final DialogImageLibrary self = this;
         setContentPane(contentPane);
-        m_imageFileList.setModel(new ImageFileModelSwing(nonLinearBookFacade.getNlb()));
+        m_imageFileModelSwing = new ImageFileModelSwing(nonLinearBookFacade.getNlb());
+        m_imageFileList.setModel(m_imageFileModelSwing);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
@@ -97,13 +100,18 @@ public class DialogImageLibrary extends JDialog {
     }
 
     private void onOK() {
-        // add your code here
+        int selectedRow = m_imageFileList.getSelectedRow();
+        m_selectedFileName = (selectedRow == -1) ? null : (String) m_imageFileModelSwing.getValueAt(selectedRow, 0);
         dispose();
     }
 
     private void onCancel() {
-        // add your code here if necessary
+        m_selectedFileName = null;
         dispose();
+    }
+
+    public String getSelectedFileName() {
+        return m_selectedFileName;
     }
 
     {
@@ -185,9 +193,15 @@ public class DialogImageLibrary extends JDialog {
         m_imagePreviewPanel.setMinimumSize(new Dimension(100, 0));
         m_imagePreviewPanel.setPreferredSize(new Dimension(100, 0));
         panel9.add(m_imagePreviewPanel, BorderLayout.WEST);
+        final JPanel panel10 = new JPanel();
+        panel10.setLayout(new BorderLayout(0, 0));
+        panel9.add(panel10, BorderLayout.CENTER);
+        final JScrollPane scrollPane1 = new JScrollPane();
+        panel10.add(scrollPane1, BorderLayout.CENTER);
         m_imageFileList = new JXTable();
+        m_imageFileList.setVisibleRowCount(10);
         m_imageFileList.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
-        panel9.add(m_imageFileList, BorderLayout.CENTER);
+        scrollPane1.setViewportView(m_imageFileList);
     }
 
     /**

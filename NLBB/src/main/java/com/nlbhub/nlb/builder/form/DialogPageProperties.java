@@ -60,6 +60,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private MultiLangString m_traverseTexts;
     private MultiLangString m_returnTexts;
     private String m_selectedLanguage;
+    private String m_imageFileName;
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -88,6 +89,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JCheckBox m_autoReturnCheckBox;
     private JComboBox m_languageComboBox;
     private JButton m_setImageButton;
+    private JLabel m_imageFileNameLabel;
 
     public DialogPageProperties(final NonLinearBookFacade nlbFacade, final Page page) {
         m_nlbFacade = nlbFacade;
@@ -166,6 +168,10 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
             public void actionPerformed(ActionEvent actionEvent) {
                 DialogImageLibrary dialog = new DialogImageLibrary(m_nlbFacade);
                 dialog.showDialog();
+                if (dialog.getSelectedFileName() != null) {
+                    m_imageFileName = dialog.getSelectedFileName();
+                    m_imageFileNameLabel.setText(m_imageFileName);
+                }
             }
         });
 
@@ -247,6 +253,9 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         Variable moduleConstraint;
         m_page = page;
 
+        m_imageFileName = page.getImageFileName();
+        m_imageFileNameLabel.setText(m_imageFileName);
+
         DefaultComboBoxModel<String> languageComboboxModel = new DefaultComboBoxModel<>();
         languageComboboxModel.addElement(Constants.RU);
         languageComboboxModel.addElement(Constants.EN);
@@ -288,6 +297,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         refreshTextsForCurrentLanguage();
         m_nlbFacade.updatePage(
                 m_page,
+                m_imageFileName,
                 m_pageVariableTextField.getText(),
                 m_pageTexts,
                 m_pageCaptionTexts,
@@ -879,11 +889,34 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         scrollPane10.setViewportView(m_pageText);
         final JPanel panel46 = new JPanel();
         panel46.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel46, BorderLayout.NORTH);
+        panel44.add(panel46, BorderLayout.EAST);
+        final JPanel panel47 = new JPanel();
+        panel47.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel46.add(panel47, BorderLayout.NORTH);
+        m_setImageButton = new JButton();
+        m_setImageButton.setMaximumSize(new Dimension(120, 36));
+        m_setImageButton.setMinimumSize(new Dimension(120, 36));
+        m_setImageButton.setPreferredSize(new Dimension(120, 36));
+        m_setImageButton.setText("Set image...");
+        panel47.add(m_setImageButton);
+        final JPanel panel48 = new JPanel();
+        panel48.setLayout(new BorderLayout(0, 0));
+        panel46.add(panel48, BorderLayout.CENTER);
+        final JPanel panel49 = new JPanel();
+        panel49.setLayout(new BorderLayout(0, 0));
+        panel48.add(panel49, BorderLayout.NORTH);
+        m_imageFileNameLabel = new JLabel();
+        m_imageFileNameLabel.setHorizontalAlignment(0);
+        m_imageFileNameLabel.setHorizontalTextPosition(0);
+        m_imageFileNameLabel.setText("<NO IMAGE>");
+        panel49.add(m_imageFileNameLabel, BorderLayout.CENTER);
+        final JPanel panel50 = new JPanel();
+        panel50.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel50, BorderLayout.NORTH);
         final JToolBar toolBar1 = new JToolBar();
         toolBar1.setBorderPainted(false);
         toolBar1.setFloatable(false);
-        panel46.add(toolBar1, BorderLayout.CENTER);
+        panel50.add(toolBar1, BorderLayout.CENTER);
         m_undoButton = new JButton();
         m_undoButton.setIcon(new ImageIcon(getClass().getResource("/common/undo.png")));
         m_undoButton.setText("Undo");
@@ -892,14 +925,8 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_redoButton.setIcon(new ImageIcon(getClass().getResource("/common/redo.png")));
         m_redoButton.setText("Redo");
         toolBar1.add(m_redoButton);
-        m_setImageButton = new JButton();
-        m_setImageButton.setMaximumSize(new Dimension(87, 36));
-        m_setImageButton.setMinimumSize(new Dimension(87, 36));
-        m_setImageButton.setPreferredSize(new Dimension(87, 36));
-        m_setImageButton.setText("Set image...");
-        toolBar1.add(m_setImageButton);
         m_languageComboBox = new JComboBox();
-        panel46.add(m_languageComboBox, BorderLayout.EAST);
+        panel50.add(m_languageComboBox, BorderLayout.EAST);
         label4.setLabelFor(m_pageIdTextField);
     }
 

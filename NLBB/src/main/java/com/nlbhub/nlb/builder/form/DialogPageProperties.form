@@ -784,6 +784,51 @@
                               </scrollpane>
                             </children>
                           </grid>
+                          <grid id="7de29" layout-manager="BorderLayout" hgap="0" vgap="0">
+                            <constraints border-constraint="East"/>
+                            <properties/>
+                            <border type="none"/>
+                            <children>
+                              <grid id="50bf7" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                                <constraints border-constraint="North"/>
+                                <properties/>
+                                <border type="none"/>
+                                <children>
+                                  <component id="e3296" class="javax.swing.JButton" binding="m_setImageButton">
+                                    <constraints/>
+                                    <properties>
+                                      <maximumSize width="120" height="36"/>
+                                      <minimumSize width="120" height="36"/>
+                                      <preferredSize width="120" height="36"/>
+                                      <text value="Set image..."/>
+                                    </properties>
+                                  </component>
+                                </children>
+                              </grid>
+                              <grid id="68cdd" layout-manager="BorderLayout" hgap="0" vgap="0">
+                                <constraints border-constraint="Center"/>
+                                <properties/>
+                                <border type="none"/>
+                                <children>
+                                  <grid id="289c5" layout-manager="BorderLayout" hgap="0" vgap="0">
+                                    <constraints border-constraint="North"/>
+                                    <properties/>
+                                    <border type="none"/>
+                                    <children>
+                                      <component id="bf05" class="javax.swing.JLabel" binding="m_imageFileNameLabel">
+                                        <constraints border-constraint="Center"/>
+                                        <properties>
+                                          <horizontalAlignment value="0"/>
+                                          <horizontalTextPosition value="0"/>
+                                          <text value="&lt;NO IMAGE&gt;"/>
+                                        </properties>
+                                      </component>
+                                    </children>
+                                  </grid>
+                                </children>
+                              </grid>
+                            </children>
+                          </grid>
                         </children>
                       </grid>
                     </children>
@@ -817,15 +862,6 @@
                     <properties>
                       <icon value="common/redo.png"/>
                       <text value="Redo"/>
-                    </properties>
-                  </component>
-                  <component id="e3296" class="javax.swing.JButton" binding="m_setImageButton">
-                    <constraints/>
-                    <properties>
-                      <maximumSize width="87" height="36"/>
-                      <minimumSize width="87" height="36"/>
-                      <preferredSize width="87" height="36"/>
-                      <text value="Set image..."/>
                     </properties>
                   </component>
                 </children>

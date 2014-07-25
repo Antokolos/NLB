@@ -47,6 +47,7 @@ import com.nlbhub.nlb.util.MultiLangString;
  * @version 1.0 1/15/14
  */
 public interface Page extends NodeItem {
+    public static final String DEFAULT_IMAGE_FILE_NAME = Constants.EMPTY_STRING;
     public static final MultiLangString DEFAULT_TEXT = MultiLangString.createEmptyText();
     public static final String DEFAULT_VARID = Constants.EMPTY_STRING;
     public static final MultiLangString DEFAULT_CAPTION = MultiLangString.createEmptyText();
@@ -61,6 +62,8 @@ public interface Page extends NodeItem {
     public static final MultiLangString DEFAULT_RETURN_TEXT = MultiLangString.createEmptyText();
     public static final String DEFAULT_RETURN_PAGE_ID = Constants.EMPTY_STRING;
     public static final String DEFAULT_MODULE_CONSTR_ID = Constants.EMPTY_STRING;
+
+    public String getImageFileName();
 
     public String getText();
 

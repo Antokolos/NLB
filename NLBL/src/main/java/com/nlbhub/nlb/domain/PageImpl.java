@@ -66,6 +66,7 @@ import java.util.List;
 @XmlRootElement(name = "page")
 public class PageImpl extends AbstractNodeItem implements Page {
     private static final String TEXT_SUBDIR_NAME = "text";
+    private static final String IMAGE_FILE_NAME = "image";
     private static final String VARID_FILE_NAME = "varid";
     private static final String CAPTION_SUBDIR_NAME = "caption";
     private static final String USE_CAPT_FILE_NAME = "use_capt";
@@ -79,6 +80,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String MODCNSID_FILE_NAME = "modcnsid";
 
     private static final String DEFAULT_MODULE_NAME_FORMAT = "%s's submodule";
+    private String m_imageFileName = DEFAULT_IMAGE_FILE_NAME;
     private String m_varId = DEFAULT_VARID;
     private MultiLangString m_caption = DEFAULT_CAPTION;
     private boolean m_useCaption = DEFAULT_USE_CAPTION;
@@ -138,6 +140,15 @@ public class PageImpl extends AbstractNodeItem implements Page {
     public PageImpl(NonLinearBook currentNLB, float left, float top) {
         super(currentNLB, left, top);
         init();
+    }
+
+    public void setImageFileName(String imageFileName) {
+        m_imageFileName = imageFileName;
+    }
+
+    @Override
+    public String getImageFileName() {
+        return m_imageFileName;
     }
 
     public void setText(String text) {
@@ -348,6 +359,12 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     String.valueOf(m_useCaption),
                     String.valueOf(DEFAULT_USE_CAPTION)
             );
+            fileManipulator.writeOptionalString(
+                    pageDir,
+                    IMAGE_FILE_NAME,
+                    m_imageFileName,
+                    DEFAULT_IMAGE_FILE_NAME
+            );
             fileManipulator.writeOptionalMultiLangString(
                     new File(pageDir, TEXT_SUBDIR_NAME),
                     m_text,
@@ -425,6 +442,13 @@ public class PageImpl extends AbstractNodeItem implements Page {
                             pageDir,
                             USE_CAPT_FILE_NAME,
                             String.valueOf(DEFAULT_USE_CAPTION)
+                    )
+            );
+            m_imageFileName = (
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            IMAGE_FILE_NAME,
+                            DEFAULT_IMAGE_FILE_NAME
                     )
             );
             m_text = (

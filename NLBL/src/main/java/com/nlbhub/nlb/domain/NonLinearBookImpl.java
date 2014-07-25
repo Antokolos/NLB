@@ -338,6 +338,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private VariableTracker m_variableTracker;
         private VariableTracker m_moduleConstrIdTracker;
 
+        private final String m_existingImageFileName;
         private final MultiLangString m_existingPageText;
         private final MultiLangString m_existingPageCaptionText;
         private final boolean m_existingUseCaption;
@@ -347,6 +348,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_existingAutoTraverse;
         private final boolean m_existingAutoReturn;
         private final String m_existingReturnPageId;
+        private final String m_newImageFileName;
         private final MultiLangString m_newPageText;
         private final MultiLangString m_newPageCaptionText;
         private final boolean m_newUseCaption;
@@ -362,6 +364,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private UpdatePageCommand(
                 final NonLinearBook currentNLB,
                 final Page page,
+                final String imageFileName,
                 final String pageVariableName,
                 final MultiLangString pageText,
                 final MultiLangString pageCaptionText,
@@ -396,6 +399,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     moduleConsraintVariableName,
                     m_page.getFullId()
             );
+            m_existingImageFileName = m_page.getImageFileName();
             m_existingPageText = m_page.getTexts();
             m_existingPageCaptionText = m_page.getCaptions();
             m_existingUseCaption = m_page.isUseCaption();
@@ -405,6 +409,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingAutoReturn = m_page.isAutoReturn();
             m_existingReturnText = m_page.getReturnTexts();
             m_existingReturnPageId = m_page.getReturnPageId();
+            m_newImageFileName = imageFileName;
             m_newPageText = pageText;
             m_newPageCaptionText = pageCaptionText;
             m_newUseCaption = useCaption;
@@ -435,6 +440,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             for (AbstractNodeItem.DeleteLinkCommand command : m_deleteLinkCommands) {
                 command.execute();
             }
+            m_page.setImageFileName(m_newImageFileName);
             m_page.setVarId(m_variableTracker.execute());
             m_page.setModuleConstrId(m_moduleConstrIdTracker.execute());
             m_page.setTexts(m_newPageText);
@@ -455,6 +461,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 command.revert();
             }
             m_sortLinkCommand.revert();
+            m_page.setImageFileName(m_existingImageFileName);
             m_page.setVarId(m_variableTracker.revert());
             m_page.setModuleConstrId(m_moduleConstrIdTracker.revert());
             m_page.setTexts(m_existingPageText);
@@ -1098,6 +1105,7 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     UpdatePageCommand createUpdatePageCommand(
             final Page page,
+            final String imageFileName,
             final String pageVariableName,
             final MultiLangString pageText,
             final MultiLangString pageCaptionText,
@@ -1115,6 +1123,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 new UpdatePageCommand(
                         this,
                         page,
+                        imageFileName,
                         pageVariableName,
                         pageText,
                         pageCaptionText,

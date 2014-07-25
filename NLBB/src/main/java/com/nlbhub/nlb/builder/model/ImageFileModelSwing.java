@@ -72,4 +72,14 @@ public class ImageFileModelSwing extends AbstractTableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         return m_nonLinearBook.getImageFiles().get(rowIndex).getFileName();
     }
+
+    @Override
+    public String getColumnName(int column) {
+        switch (column) {
+            case 0:
+                return "Image file name";
+            default:
+                return super.getColumnName(column);
+        }
+    }
 }

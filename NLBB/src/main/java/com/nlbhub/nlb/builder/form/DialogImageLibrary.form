@@ -113,13 +113,29 @@
             <border type="none"/>
             <children/>
           </grid>
-          <component id="cf9d" class="org.jdesktop.swingx.JXTable" binding="m_imageFileList">
+          <grid id="2bada" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints border-constraint="Center"/>
             <properties/>
-            <clientProperties>
-              <terminateEditOnFocusLost class="java.lang.Boolean" value="true"/>
-            </clientProperties>
-          </component>
+            <border type="none"/>
+            <children>
+              <scrollpane id="8d227">
+                <constraints border-constraint="Center"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="cf9d" class="org.jdesktop.swingx.JXTable" binding="m_imageFileList">
+                    <constraints/>
+                    <properties>
+                      <visibleRowCount value="10"/>
+                    </properties>
+                    <clientProperties>
+                      <terminateEditOnFocusLost class="java.lang.Boolean" value="true"/>
+                    </clientProperties>
+                  </component>
+                </children>
+              </scrollpane>
+            </children>
+          </grid>
         </children>
       </grid>
     </children>

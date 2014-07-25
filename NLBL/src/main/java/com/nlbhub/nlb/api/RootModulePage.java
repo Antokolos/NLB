@@ -60,6 +60,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public String getImageFileName() {
+        return DEFAULT_IMAGE_FILE_NAME;
+    }
+
+    @Override
     public String getText() {
         return Constants.EMPTY_STRING;
     }
