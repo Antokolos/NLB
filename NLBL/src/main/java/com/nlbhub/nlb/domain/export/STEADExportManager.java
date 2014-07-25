@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.domain.export;
 
+import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
@@ -184,6 +185,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    forcedsc = true,").append(LINE_SEPARATOR);
         // Do not check pageBlocks.isUseCaption() here, because in INSTEAD all rooms must have name
         stringBuilder.append(pageBlocks.getPageCaption());
+        stringBuilder.append(pageBlocks.getPageImage());
         stringBuilder.append(pageBlocks.getPageTextStart());
         autosBuilder.append("    autos = function()").append(LINE_SEPARATOR);
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
@@ -533,6 +535,15 @@ public class STEADExportManager extends TextExportManager {
             return "    nam = \"" + caption + "\"," + LINE_SEPARATOR;
         } else {
             return "    nam = \"...\"," + LINE_SEPARATOR;
+        }
+    }
+
+    @Override
+    protected String decoratePageImage(String pageImagePath) {
+        if (StringHelper.isEmpty(pageImagePath)) {
+            return Constants.EMPTY_STRING;
+        } else {
+            return "    pic = '" + pageImagePath + "';" + LINE_SEPARATOR;
         }
     }
 

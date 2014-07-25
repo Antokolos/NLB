@@ -83,4 +83,10 @@ public class PDFExportManager extends HypertextExportManager<PDFParagraph, PDFAn
     protected PDFAnchor createHTAnchor(boolean decapitalize, String text, PDFFont font) throws HTDocumentException {
         return new PDFAnchor(decapitalize, text, font);
     }
+
+    @Override
+    protected String decoratePageImage(String pageImagePath) {
+        // TODO: implement and use
+        throw new UnsupportedOperationException("This operation is unsupported");
+    }
 }

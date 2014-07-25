@@ -222,6 +222,12 @@ public class URQExportManager extends TextExportManager {
         }
     }
 
+    @Override
+    protected String decoratePageImage(String pageImagePath) {
+        // TODO: implement and use
+        throw new UnsupportedOperationException("This operation is unsupported");
+    }
+
     /**
      * @param pageText
      * @return

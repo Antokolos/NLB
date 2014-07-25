@@ -163,6 +163,8 @@ public class NonLinearBookFacade implements NLBObservable {
 
     public void exportToSTEADFile(File exportFile) throws NLBExportException {
         m_nlb.exportToSTEADFile(exportFile);
+        File imagesExportDir = new File(exportFile.getParentFile(), "images");
+        m_nlb.exportImages(true, imagesExportDir);
     }
 
     public void exportToASMFile(File exportFile) throws NLBExportException {

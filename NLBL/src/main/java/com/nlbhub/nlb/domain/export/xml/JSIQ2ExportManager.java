@@ -420,6 +420,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
+    protected String decoratePageImage(String pageImagePath) {
+        // TODO: implement and use
+        throw new UnsupportedOperationException("This operation is unsupported");
+    }
+
+    @Override
     protected String decoratePageTextStart(String pageText) {
         StringBuilder result = new StringBuilder();
         /*

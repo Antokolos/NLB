@@ -2520,6 +2520,11 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     @Override
+    public Page getParentPage() {
+        return m_parentPage;
+    }
+
+    @Override
     public Map<String, Variable.DataType> getVariableDataTypes() throws NLBConsistencyException {
         Map<String, Variable.DataType> result = new HashMap<>();
         for (VariableImpl variable : m_variables) {
@@ -2819,5 +2824,42 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     public void addImageFile(@NotNull ImageFileImpl imageFile) {
         m_imageFiles.add(imageFile);
+    }
+
+    public void exportImages(final boolean isRoot, final File mainExportDir) throws NLBExportException {
+        if (getRootDir() == null) {
+            throw new NLBExportException("NLB root dir is undefined");
+        }
+        File exportDir = (isRoot) ? mainExportDir : new File(mainExportDir, getParentPage().getId());
+        if (!exportDir.exists() && !exportDir.mkdir()) {
+            if (isRoot) {
+                throw new NLBExportException(
+                        "Cannot create image export directory for main NLB module"
+                );
+            } else {
+                throw new NLBExportException(
+                        "Cannot create image export directory for module with module page id = " + getParentPage().getId()
+                );
+            }
+        }
+        try {
+            File imagesDir = new File(getRootDir(), IMAGES_DIR_NAME);
+            if (imagesDir.exists()) {
+                for (ImageFile imageFile : getImageFiles()) {
+                    String imageFileName = imageFile.getFileName();
+                    File targetImage = new File(exportDir, imageFileName);
+                    File sourceImage = new File(imagesDir, imageFileName);
+                    FileManipulator.transfer(sourceImage, targetImage);
+                }
+            }
+
+            for (Page page : m_pages.values()) {
+                if (!page.getModule().isEmpty()) {
+                    page.getModule().exportImages(false, mainExportDir);
+                }
+            }
+        } catch (IOException e) {
+            throw new NLBExportException("IOException when exporting images", e);
+        }
     }
 }

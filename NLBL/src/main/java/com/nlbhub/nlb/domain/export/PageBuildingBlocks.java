@@ -52,6 +52,7 @@ public class PageBuildingBlocks {
     private String m_pageNumber;
     private String m_pageComment;
     private String m_pageCaption;
+    private String m_pageImage;
     private boolean m_useCaption;
     private String m_pageTextStart;
     private String m_pageTextEnd;
@@ -96,6 +97,14 @@ public class PageBuildingBlocks {
 
     public void setPageCaption(String pageCaption) {
         m_pageCaption = pageCaption;
+    }
+
+    public String getPageImage() {
+        return m_pageImage;
+    }
+
+    public void setPageImage(String pageImage) {
+        m_pageImage = pageImage;
     }
 
     public boolean isUseCaption() {

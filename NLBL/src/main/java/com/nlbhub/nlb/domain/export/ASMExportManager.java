@@ -195,6 +195,12 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decoratePageImage(String pageImagePath) {
+        // TODO: implement and use
+        throw new UnsupportedOperationException("This operation is unsupported");
+    }
+
+    @Override
     protected String decoratePageTextStart(String pageText) {
         return pageText;
     }

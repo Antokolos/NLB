@@ -315,6 +315,12 @@ public abstract class ExportManager {
         blocks.setPageNumber(decoratePageNumber(pageNumber));
         blocks.setPageComment(decoratePageComment(page.getCaption()));
         blocks.setPageCaption(decoratePageCaption(page.getCaption()));
+        Page parentPage = page.getCurrentNLB().getParentPage();
+        blocks.setPageImage(
+                decoratePageImage(
+                        getPageImagePath((parentPage != null) ? parentPage.getId() : null, page.getImageFileName())
+                )
+        );
         blocks.setUseCaption(page.isUseCaption());
         blocks.setPageTextStart(decoratePageTextStart(page.getText()));
         blocks.setPageTextEnd(decoratePageTextEnd());
@@ -889,6 +895,20 @@ public abstract class ExportManager {
     protected abstract String decorateLinkModifications(final String modificationsText);
 
     protected abstract String decoratePageCaption(String caption);
+
+    protected abstract String decoratePageImage(String pageImagePath);
+
+    protected String getPageImagePath(String parentPageId, String imageFileName) {
+        if (StringHelper.isEmpty(imageFileName)) {
+            return Constants.EMPTY_STRING;
+        } else {
+            if (parentPageId == null) {
+                return "images/" + imageFileName;
+            } else {
+                return "images/" + parentPageId + "/" + imageFileName;
+            }
+        }
+    }
 
     protected abstract String decoratePageTextStart(String pageText);
 

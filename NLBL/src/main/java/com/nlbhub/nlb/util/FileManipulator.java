@@ -239,7 +239,7 @@ public class FileManipulator {
      * @param target destination file.
      * @throws IOException if an I/O error occurs.
      */
-    private void transfer(
+    public static void transfer(
             File source, File target
     ) throws IOException {
 
@@ -277,7 +277,7 @@ public class FileManipulator {
      * @param input input stream whose content is to be written to the file.
      * @throws IOException if an I/O error occurs.
      */
-    private void writeFile(
+    private static void writeFile(
             File file, InputStream input
     ) throws IOException {
         FileOutputStream output = new FileOutputStream(file);

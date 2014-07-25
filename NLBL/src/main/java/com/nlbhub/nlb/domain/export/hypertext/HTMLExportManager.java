@@ -105,4 +105,10 @@ public class HTMLExportManager extends HypertextExportManager<HTMLParagraph, HTM
         result.append(getLineSeparator());
         return result.toString();
     }
+
+    @Override
+    protected String decoratePageImage(String pageImagePath) {
+        // TODO: implement and use
+        throw new UnsupportedOperationException("This operation is unsupported");
+    }
 }

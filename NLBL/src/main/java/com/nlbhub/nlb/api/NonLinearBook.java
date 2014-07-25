@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.api;
 
 import com.nlbhub.nlb.exception.NLBConsistencyException;
+import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.exception.NLBIOException;
 import com.nlbhub.nlb.exception.NLBVCSException;
 import com.nlbhub.user.domain.History;
@@ -251,6 +252,8 @@ public interface NonLinearBook {
 
     public List<ImageFile> getImageFiles();
 
+    public void exportImages(final boolean isRoot, final File mainExportDir) throws NLBExportException;
+
     public Map<String, Page> getPages();
 
     public Page getPageById(String id);
@@ -290,6 +293,8 @@ public interface NonLinearBook {
     public VariableStatistics getVariableStatistics();
 
     public NonLinearBook getParentNLB();
+
+    public Page getParentPage();
 
     public Map<String, Variable.DataType> getVariableDataTypes() throws NLBConsistencyException;
 }

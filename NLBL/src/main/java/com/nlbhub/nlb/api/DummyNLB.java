@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.api;
 
 import com.nlbhub.nlb.exception.NLBConsistencyException;
+import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.exception.NLBIOException;
 import com.nlbhub.nlb.exception.NLBVCSException;
 import com.nlbhub.user.domain.History;
@@ -101,6 +102,11 @@ public class DummyNLB implements NonLinearBook {
     @Override
     public List<ImageFile> getImageFiles() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public void exportImages(boolean isRoot, File mainExportDir) throws NLBExportException {
+        // do nothing
     }
 
     @Override
@@ -188,6 +194,11 @@ public class DummyNLB implements NonLinearBook {
 
     @Override
     public NonLinearBook getParentNLB() {
+        return null;
+    }
+
+    @Override
+    public Page getParentPage() {
         return null;
     }
 
