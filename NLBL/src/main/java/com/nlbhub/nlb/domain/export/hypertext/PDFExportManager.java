@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.domain.export.hypertext;
 
+import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.export.hypertext.document.*;
 import com.nlbhub.nlb.exception.HTDocumentException;
@@ -86,7 +87,7 @@ public class PDFExportManager extends HypertextExportManager<PDFParagraph, PDFAn
 
     @Override
     protected String decoratePageImage(String pageImagePath) {
-        // TODO: implement and use
-        throw new UnsupportedOperationException("This operation is unsupported");
+        // TODO: implement images for PDF
+        return Constants.EMPTY_STRING;
     }
 }

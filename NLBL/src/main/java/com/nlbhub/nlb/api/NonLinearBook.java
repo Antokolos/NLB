@@ -57,6 +57,7 @@ import java.util.Map;
  * @version 1.0 1/15/14
  */
 public interface NonLinearBook {
+    public static final String IMAGES_DIR_NAME = "images";
     public static final String DEFAULT_STARTPOINT = Constants.EMPTY_STRING;
     public static final String DEFAULT_LANGUAGE = Constants.RU;
     public static final String DEFAULT_LICENSE = Constants.EMPTY_STRING;

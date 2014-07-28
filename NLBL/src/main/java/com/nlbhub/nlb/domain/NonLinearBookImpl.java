@@ -75,7 +75,6 @@ public class NonLinearBookImpl implements NonLinearBook {
     private static final String PAGES_DIR_NAME = "pages";
     private static final String OBJS_DIR_NAME = "objs";
     private static final String VARS_DIR_NAME = "vars";
-    private static final String IMAGES_DIR_NAME = "images";
     /**
      * Path to the directory on the disk where this book will be stored.
      */

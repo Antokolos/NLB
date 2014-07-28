@@ -38,10 +38,12 @@
  */
 package com.nlbhub.nlb.domain.export.hypertext;
 
+import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.export.hypertext.document.*;
 import com.nlbhub.nlb.exception.HTDocumentException;
 import com.nlbhub.nlb.exception.NLBExportException;
+import com.nlbhub.nlb.util.StringHelper;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -108,7 +110,10 @@ public class HTMLExportManager extends HypertextExportManager<HTMLParagraph, HTM
 
     @Override
     protected String decoratePageImage(String pageImagePath) {
-        // TODO: implement and use
-        throw new UnsupportedOperationException("This operation is unsupported");
+        if (StringHelper.isEmpty(pageImagePath)) {
+            return Constants.EMPTY_STRING;
+        } else {
+            return "<img src=\"" + pageImagePath + "\">" + getLineSeparator();
+        }
     }
 }

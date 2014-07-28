@@ -143,6 +143,8 @@ public class NonLinearBookFacade implements NLBObservable {
 
     public void exportToQSPTextFile(File exportDir) throws NLBExportException {
         m_nlb.exportToQSPTextFile(new File(exportDir, "book.qsp"));
+        File imagesExportDir = new File(exportDir, NonLinearBook.IMAGES_DIR_NAME);
+        m_nlb.exportImages(true, imagesExportDir);
     }
 
     public void exportToURQTextFile(File exportDir) throws NLBExportException {
@@ -155,6 +157,8 @@ public class NonLinearBookFacade implements NLBObservable {
 
     public void exportToHTMLFile(File exportDir) throws NLBExportException {
         m_nlb.exportToHTMLFile(new File(exportDir, "index.html"));
+        File imagesExportDir = new File(exportDir, NonLinearBook.IMAGES_DIR_NAME);
+        m_nlb.exportImages(true, imagesExportDir);
     }
 
     public void exportToJSIQFile(File exportDir) throws NLBExportException {
@@ -163,7 +167,7 @@ public class NonLinearBookFacade implements NLBObservable {
 
     public void exportToSTEADFile(File exportDir) throws NLBExportException {
         m_nlb.exportToSTEADFile(new File(exportDir, "main.lua"));
-        File imagesExportDir = new File(exportDir, "images");
+        File imagesExportDir = new File(exportDir, NonLinearBook.IMAGES_DIR_NAME);
         m_nlb.exportImages(true, imagesExportDir);
     }
 

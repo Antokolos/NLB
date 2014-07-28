@@ -142,6 +142,7 @@ public abstract class HypertextExportManager
         if (pageBlocks.isUseCaption()) {
             page.add(pageBlocks.getPageCaption());
         }
+        page.add(pageBlocks.getPageImage());
         page.add(pageBlocks.getPageTextStart());
         page.add(pageBlocks.getPageTextEnd());
         page.add(pageBlocks.getPageVariable());

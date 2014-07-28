@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.domain.export;
 
+import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
@@ -77,6 +78,7 @@ public class QSPExportManager extends TextExportManager {
         if (pageBlocks.isUseCaption()) {
             stringBuilder.append(pageBlocks.getPageCaption());
         }
+        stringBuilder.append(pageBlocks.getPageImage());
         stringBuilder.append(pageBlocks.getPageTextStart());
         stringBuilder.append(pageBlocks.getPageTextEnd());
         stringBuilder.append(pageBlocks.getPageVariable());
@@ -200,8 +202,16 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageImage(String pageImagePath) {
-        // TODO: implement and use
-        throw new UnsupportedOperationException("This operation is unsupported");
+        if (StringHelper.isEmpty(pageImagePath)) {
+            return Constants.EMPTY_STRING;
+        } else {
+            // TODO: maybe should set USEHTML on first page and do not touch it afterwards
+            return (
+                    "USEHTML = 1" + LINE_SEPARATOR +
+                            "'<img src=\"" + pageImagePath + "\">'" + LINE_SEPARATOR +
+                            "USEHTML = 0" + LINE_SEPARATOR
+            );
+        }
     }
 
     @Override
