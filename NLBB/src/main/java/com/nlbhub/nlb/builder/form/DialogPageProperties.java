@@ -45,6 +45,7 @@ import com.nlbhub.nlb.api.Variable;
 import com.nlbhub.nlb.builder.model.LinksTableModelSwing;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.util.MultiLangString;
+import com.nlbhub.nlb.util.StringHelper;
 import org.jdesktop.swingx.JXImageView;
 import org.jdesktop.swingx.JXTable;
 
@@ -172,7 +173,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
             public void actionPerformed(ActionEvent actionEvent) {
                 DialogImageLibrary dialog = new DialogImageLibrary(m_nlbFacade);
                 dialog.showDialog();
-                if (dialog.getSelectedFileName() != null) {
+                if (!dialog.isCanceled()) {
                     m_imageFileName = dialog.getSelectedFileName();
                     m_imageFileNameLabel.setText(m_imageFileName);
                     setPageImage(m_imageFileName);
@@ -302,7 +303,12 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
 
     private void setPageImage(final String imageFileName) {
         try {
-            m_imageView.setImage(new File(m_nlbFacade.getNlb().getImagesDir(), imageFileName));
+            if (StringHelper.isEmpty(m_imageFileName)) {
+                m_imageView.setVisible(false);
+            } else {
+                m_imageView.setImage(new File(m_nlbFacade.getNlb().getImagesDir(), imageFileName));
+                m_imageView.setVisible(true);
+            }
         } catch (IOException ignore) {
             // do nothing
         }
