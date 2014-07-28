@@ -113,7 +113,7 @@ public class HTMLExportManager extends HypertextExportManager<HTMLParagraph, HTM
         if (StringHelper.isEmpty(pageImagePath)) {
             return Constants.EMPTY_STRING;
         } else {
-            return "<img src=\"" + pageImagePath + "\">" + getLineSeparator();
+            return "<img style=\"display: block; margin-left: auto; margin-right: auto;\" src=\"" + pageImagePath + "\">" + getLineSeparator();
         }
     }
 }
