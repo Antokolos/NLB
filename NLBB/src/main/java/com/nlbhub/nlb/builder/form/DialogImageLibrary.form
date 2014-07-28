@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.nlbhub.nlb.builder.form.DialogImageLibrary">
   <grid id="cbd77" binding="contentPane" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="48" y="54" width="436" height="297"/>
+      <xy x="48" y="54" width="436" height="365"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -107,11 +107,16 @@
           <grid id="932e3" binding="m_imagePreviewPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints border-constraint="West"/>
             <properties>
-              <minimumSize width="100" height="0"/>
-              <preferredSize width="100" height="0"/>
+              <minimumSize width="220" height="220"/>
+              <preferredSize width="220" height="220"/>
             </properties>
             <border type="none"/>
-            <children/>
+            <children>
+              <component id="c8c68" class="org.jdesktop.swingx.JXImageView" binding="m_imageView">
+                <constraints border-constraint="Center"/>
+                <properties/>
+              </component>
+            </children>
           </grid>
           <grid id="2bada" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints border-constraint="Center"/>

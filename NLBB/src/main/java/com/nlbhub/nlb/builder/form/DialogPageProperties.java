@@ -45,11 +45,14 @@ import com.nlbhub.nlb.api.Variable;
 import com.nlbhub.nlb.builder.model.LinksTableModelSwing;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.util.MultiLangString;
+import org.jdesktop.swingx.JXImageView;
 import org.jdesktop.swingx.JXTable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
 
 public class DialogPageProperties extends JDialog implements NLBObserver {
     private final String m_observerId;
@@ -90,6 +93,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JComboBox m_languageComboBox;
     private JButton m_setImageButton;
     private JLabel m_imageFileNameLabel;
+    private JXImageView m_imageView;
 
     public DialogPageProperties(final NonLinearBookFacade nlbFacade, final Page page) {
         m_nlbFacade = nlbFacade;
@@ -171,6 +175,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 if (dialog.getSelectedFileName() != null) {
                     m_imageFileName = dialog.getSelectedFileName();
                     m_imageFileNameLabel.setText(m_imageFileName);
+                    setPageImage(m_imageFileName);
                 }
             }
         });
@@ -291,6 +296,16 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_returnPageIdTextField.setText(page.getReturnPageId());
 
         m_linksTable.setModel(new LinksTableModelSwing(m_page.getLinks()));
+
+        setPageImage(page.getImageFileName());
+    }
+
+    private void setPageImage(final String imageFileName) {
+        try {
+            m_imageView.setImage(new File(m_nlbFacade.getNlb().getImagesDir(), imageFileName));
+        } catch (IOException ignore) {
+            // do nothing
+        }
     }
 
     private void onOK() {
@@ -910,6 +925,8 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_imageFileNameLabel.setHorizontalTextPosition(0);
         m_imageFileNameLabel.setText("<NO IMAGE>");
         panel49.add(m_imageFileNameLabel, BorderLayout.CENTER);
+        m_imageView = new JXImageView();
+        panel48.add(m_imageView, BorderLayout.CENTER);
         final JPanel panel50 = new JPanel();
         panel50.setLayout(new BorderLayout(0, 0));
         panel1.add(panel50, BorderLayout.NORTH);

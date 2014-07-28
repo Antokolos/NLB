@@ -7,12 +7,18 @@ import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
 import com.nlbhub.nlb.exception.NLBVCSException;
+import org.jdesktop.swingx.JXImageView;
 import org.jdesktop.swingx.JXTable;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.IOException;
 
 public class DialogImageLibrary extends JDialog {
     private final JFileChooser m_fileChooser = new JFileChooser();
@@ -24,12 +30,43 @@ public class DialogImageLibrary extends JDialog {
     private JPanel m_imagePreviewPanel;
     private JButton m_buttonAdd;
     private JXTable m_imageFileList;
+    private JXImageView m_imageView;
 
     public DialogImageLibrary(final NonLinearBookFacade nonLinearBookFacade) {
         final DialogImageLibrary self = this;
         setContentPane(contentPane);
         m_imageFileModelSwing = new ImageFileModelSwing(nonLinearBookFacade.getNlb());
         m_imageFileList.setModel(m_imageFileModelSwing);
+        m_imageFileList.getSelectionModel().addListSelectionListener(
+                new ListSelectionListener() {
+                    @Override
+                    public void valueChanged(ListSelectionEvent e) {
+                        ListSelectionModel lsm = (ListSelectionModel) e.getSource();
+                        try {
+                            if (lsm.isSelectionEmpty()) {
+                                // TODO: should clear
+                            } else {
+                                // Find out which indexes are selected.
+                                int minIndex = lsm.getMinSelectionIndex();
+                                int maxIndex = lsm.getMaxSelectionIndex();
+                                for (int i = minIndex; i <= maxIndex; i++) {
+                                    if (lsm.isSelectedIndex(i)) {
+                                        m_imageView.setImage(
+                                                new File(
+                                                        nonLinearBookFacade.getNlb().getImagesDir(),
+                                                        (String) m_imageFileModelSwing.getValueAt(i, 0)
+                                                )
+                                        );
+                                        break;
+                                    }
+                                }
+                            }
+                        } catch (IOException ignore) {
+                            // ignore
+                        }
+                    }
+                }
+        );
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
@@ -190,9 +227,11 @@ public class DialogImageLibrary extends JDialog {
         contentPane.add(panel9, BorderLayout.CENTER);
         m_imagePreviewPanel = new JPanel();
         m_imagePreviewPanel.setLayout(new BorderLayout(0, 0));
-        m_imagePreviewPanel.setMinimumSize(new Dimension(100, 0));
-        m_imagePreviewPanel.setPreferredSize(new Dimension(100, 0));
+        m_imagePreviewPanel.setMinimumSize(new Dimension(220, 220));
+        m_imagePreviewPanel.setPreferredSize(new Dimension(220, 220));
         panel9.add(m_imagePreviewPanel, BorderLayout.WEST);
+        m_imageView = new JXImageView();
+        m_imagePreviewPanel.add(m_imageView, BorderLayout.CENTER);
         final JPanel panel10 = new JPanel();
         panel10.setLayout(new BorderLayout(0, 0));
         panel9.add(panel10, BorderLayout.CENTER);

@@ -250,6 +250,8 @@ public interface NonLinearBook {
 
     public File getRootDir();
 
+    public File getImagesDir();
+
     public List<ImageFile> getImageFiles();
 
     public void exportImages(final boolean isRoot, final File mainExportDir) throws NLBExportException;

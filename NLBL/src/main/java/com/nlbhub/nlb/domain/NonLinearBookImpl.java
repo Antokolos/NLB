@@ -1271,6 +1271,11 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     @Override
+    public File getImagesDir() {
+        return (m_rootDir == null) ? null : new File(m_rootDir, IMAGES_DIR_NAME);
+    }
+
+    @Override
     public List<ImageFile> getImageFiles() {
         List<ImageFile> imageFiles = new ArrayList<>();
         imageFiles.addAll(m_imageFiles);

@@ -100,6 +100,11 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
+    public File getImagesDir() {
+        return null;
+    }
+
+    @Override
     public List<ImageFile> getImageFiles() {
         return Collections.emptyList();
     }

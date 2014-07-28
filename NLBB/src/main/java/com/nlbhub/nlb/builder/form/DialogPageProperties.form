@@ -825,6 +825,10 @@
                                       </component>
                                     </children>
                                   </grid>
+                                  <component id="ae4f5" class="org.jdesktop.swingx.JXImageView" binding="m_imageView">
+                                    <constraints border-constraint="Center"/>
+                                    <properties/>
+                                  </component>
                                 </children>
                               </grid>
                             </children>
