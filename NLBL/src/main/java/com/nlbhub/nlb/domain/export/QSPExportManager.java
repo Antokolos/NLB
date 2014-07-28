@@ -205,11 +205,9 @@ public class QSPExportManager extends TextExportManager {
         if (StringHelper.isEmpty(pageImagePath)) {
             return Constants.EMPTY_STRING;
         } else {
-            // TODO: maybe should set USEHTML on first page and do not touch it afterwards
+            // TODO: should set USEHTML on first page and do not touch it afterwards
             return (
-                    "USEHTML = 1" + LINE_SEPARATOR +
-                            "'<img src=\"" + pageImagePath + "\">'" + LINE_SEPARATOR +
-                            "USEHTML = 0" + LINE_SEPARATOR
+                    "USEHTML = 1" + LINE_SEPARATOR + "'<img src=\"" + pageImagePath + "\">'" + LINE_SEPARATOR
             );
         }
     }
