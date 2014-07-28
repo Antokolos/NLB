@@ -2,6 +2,7 @@ package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.builder.model.ImageFileModelSwing;
+import com.nlbhub.nlb.builder.model.ListSingleSelectionModel;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
@@ -24,6 +25,7 @@ public class DialogImageLibrary extends JDialog {
     private final JFileChooser m_fileChooser = new JFileChooser();
     private ImageFileModelSwing m_imageFileModelSwing;
     private String m_selectedFileName;
+    private ListSingleSelectionModel m_listSingleSelectionModel = new ListSingleSelectionModel();
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -37,7 +39,7 @@ public class DialogImageLibrary extends JDialog {
         setContentPane(contentPane);
         m_imageFileModelSwing = new ImageFileModelSwing(nonLinearBookFacade.getNlb());
         m_imageFileList.setModel(m_imageFileModelSwing);
-        m_imageFileList.getSelectionModel().addListSelectionListener(
+        m_listSingleSelectionModel.addListSelectionListener(
                 new ListSelectionListener() {
                     @Override
                     public void valueChanged(ListSelectionEvent e) {
@@ -67,6 +69,7 @@ public class DialogImageLibrary extends JDialog {
                     }
                 }
         );
+        m_imageFileList.setSelectionModel(m_listSingleSelectionModel);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
