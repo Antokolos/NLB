@@ -685,58 +685,25 @@ public abstract class ExportManager {
                 )
                         : constraintText
         );
-        final Collection<String> constraintVars = VarFinder.findVariableNames(constraintBody);
-        for (final String constraintVar : constraintVars) {
-            constraintBody = (
-                    constraintBody.replaceAll(
-                            "\\b" + constraintVar + "\\b",
-                            Matcher.quoteReplacement(decorateVariable(constraintVar))
-                    )
-            );
-        }
-        constraintBody = (
-                constraintBody.replaceAll(
-                        "\\s*&&\\s*",
-                        " " + decorateAnd() + " "
-                )
-        );
-        constraintBody = (
-                constraintBody.replaceAll(
-                        "\\s*\\|\\|\\s*",
-                        " " + decorateOr() + " "
-                )
-        );
-        constraintBody = (
-                constraintBody.replaceAll(
-                        "\\s*!\\s*",
-                        " " + decorateNot() + " "
-                )
-        );
+        String translatedConstraint = translateExpressionBody(constraintBody);
         return (
                 isPositiveConstraint
-                        ? constraintBody
-                        : decorateNot() + " (" + constraintBody + ")"
+                        ? translatedConstraint
+                        : decorateNot() + " (" + translatedConstraint + ")"
         );
     }
 
     private String translateExpressionBody(String expressionText) {
         String expression = expressionText;
         final Collection<String> expressionVars = VarFinder.findVariableNames(expression);
-        for (final String expressionVar : expressionVars) {
-            expression = (
-                    expression.replaceAll(
-                            "\\b" + expressionVar + "\\b",
-                            Matcher.quoteReplacement(decorateVariable(expressionVar))
-                    )
-            );
-        }
+
         // Crude but effective translation code
         expression = expression.replaceAll("\\s*==\\s*", " " + EQ_PLACEHOLDER + " ");
         expression = expression.replaceAll("\\s*!=\\s*", " " + NEQ_PLACEHOLDER + " ");
-        expression = expression.replaceAll("\\s*>\\s*", " " + GT_PLACEHOLDER + " ");
         expression = expression.replaceAll("\\s*>=\\s*", " " + GTE_PLACEHOLDER + " ");
-        expression = expression.replaceAll("\\s*<\\s*", " " + LT_PLACEHOLDER + " ");
         expression = expression.replaceAll("\\s*<=\\s*", " " + LTE_PLACEHOLDER + " ");
+        expression = expression.replaceAll("\\s*>\\s*", " " + GT_PLACEHOLDER + " ");
+        expression = expression.replaceAll("\\s*<\\s*", " " + LT_PLACEHOLDER + " ");
         expression = expression.replaceAll("\\s*&&\\s*", " " + AND_PLACEHOLDER + " ");
         expression = expression.replaceAll("\\s*\\|\\|\\s*", " " + OR_PLACEHOLDER + " ");
         expression = expression.replaceAll("\\s*!\\s*", " " + NOT_PLACEHOLDER + " ");
@@ -750,6 +717,14 @@ public abstract class ExportManager {
         expression = expression.replaceAll(AND_PLACEHOLDER, decorateAnd());
         expression = expression.replaceAll(OR_PLACEHOLDER, decorateOr());
         expression = expression.replaceAll(NOT_PLACEHOLDER, decorateNot());
+        for (final String expressionVar : expressionVars) {
+            expression = (
+                    expression.replaceAll(
+                            "\\b" + expressionVar + "\\b",
+                            Matcher.quoteReplacement(decorateVariable(expressionVar))
+                    )
+            );
+        }
         return expression;
     }
 
