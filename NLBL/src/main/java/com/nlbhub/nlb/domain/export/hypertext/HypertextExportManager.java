@@ -187,6 +187,37 @@ public abstract class HypertextExportManager
         return "Положите в инвентарь  " + objectDisplayName;
     }
 
+
+    @Override
+    protected String decorateEq() {
+        return "РАВНО";
+    }
+
+    @Override
+    protected String decorateNEq() {
+        return "НЕ РАВНО";
+    }
+
+    @Override
+    protected String decorateGt() {
+        return ">";
+    }
+
+    @Override
+    protected String decorateGte() {
+        return ">=";
+    }
+
+    @Override
+    protected String decorateLt() {
+        return "<";
+    }
+
+    @Override
+    protected String decorateLte() {
+        return "<=";
+    }
+
     @Override
     protected String decorateNot() {
         return "НЕ ";

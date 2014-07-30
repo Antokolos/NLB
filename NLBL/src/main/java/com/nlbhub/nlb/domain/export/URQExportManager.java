@@ -120,6 +120,36 @@ public class URQExportManager extends TextExportManager {
         return "goto " + linkTarget + LINE_SEPARATOR + LINE_SEPARATOR;
     }
 
+    @Override
+    protected String decorateEq() {
+        return "=";
+    }
+
+    @Override
+    protected String decorateNEq() {
+        return "<>";
+    }
+
+    @Override
+    protected String decorateGt() {
+        return ">";
+    }
+
+    @Override
+    protected String decorateGte() {
+        return ">=";
+    }
+
+    @Override
+    protected String decorateLt() {
+        return "<";
+    }
+
+    @Override
+    protected String decorateLte() {
+        return "<=";
+    }
+
     /**
      * @return
      */

@@ -250,4 +250,34 @@ public class ASMExportManager extends TextExportManager {
         // TODO: make use of inventory module
         return EMPTY_STRING;
     }
+
+    @Override
+    protected String decorateEq() {
+        return "==";
+    }
+
+    @Override
+    protected String decorateNEq() {
+        return "<>";
+    }
+
+    @Override
+    protected String decorateGt() {
+        return ">";
+    }
+
+    @Override
+    protected String decorateGte() {
+        return ">=";
+    }
+
+    @Override
+    protected String decorateLt() {
+        return "<";
+    }
+
+    @Override
+    protected String decorateLte() {
+        return "<=";
+    }
 }

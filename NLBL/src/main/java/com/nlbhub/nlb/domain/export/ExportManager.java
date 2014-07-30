@@ -57,6 +57,16 @@ import java.util.regex.Matcher;
  * @version 1.0 12/4/13
  */
 public abstract class ExportManager {
+    private static final String EQ_PLACEHOLDER = "000369f3-943a-4696-9c20-f6471b5c131d";
+    private static final String NEQ_PLACEHOLDER = "211c47bf-dad2-49d1-9ab0-162082d2664c";
+    private static final String GT_PLACEHOLDER = "74ea093d-1918-4e02-b2bd-a929d7db4b0c";
+    private static final String GTE_PLACEHOLDER = "94e69065-f584-4d98-a6c9-667e2c6dc3ee";
+    private static final String LT_PLACEHOLDER = "c5549d03-b258-4f77-b760-5d13bf981780";
+    private static final String LTE_PLACEHOLDER = "17190e04-4537-414f-9c57-25676a99ad6e";
+    private static final String NOT_PLACEHOLDER = "2164a414-ba30-45b4-baa3-c32e194304db";
+    private static final String OR_PLACEHOLDER = "179ef88a-88b7-4ad2-8dfa-d2040debde73";
+    private static final String AND_PLACEHOLDER = "f0e77ec8-a270-4a3f-8b8f-1ade38988f37";
+
     public static final String EMPTY_STRING = "";
     public static final String UTF_8 = "UTF-8";
     public static final String UTF_16LE = "UTF-16LE";
@@ -720,24 +730,26 @@ public abstract class ExportManager {
                     )
             );
         }
-        expression = (
-                expression.replaceAll(
-                        "\\s*&&\\s*",
-                        " " + decorateAnd() + " "
-                )
-        );
-        expression = (
-                expression.replaceAll(
-                        "\\s*\\|\\|\\s*",
-                        " " + decorateOr() + " "
-                )
-        );
-        expression = (
-                expression.replaceAll(
-                        "\\s*!\\s*",
-                        " " + decorateNot() + " "
-                )
-        );
+        // Crude but effective translation code
+        expression = expression.replaceAll("\\s*==\\s*", " " + EQ_PLACEHOLDER + " ");
+        expression = expression.replaceAll("\\s*!=\\s*", " " + NEQ_PLACEHOLDER + " ");
+        expression = expression.replaceAll("\\s*>\\s*", " " + GT_PLACEHOLDER + " ");
+        expression = expression.replaceAll("\\s*>=\\s*", " " + GTE_PLACEHOLDER + " ");
+        expression = expression.replaceAll("\\s*<\\s*", " " + LT_PLACEHOLDER + " ");
+        expression = expression.replaceAll("\\s*<=\\s*", " " + LTE_PLACEHOLDER + " ");
+        expression = expression.replaceAll("\\s*&&\\s*", " " + AND_PLACEHOLDER + " ");
+        expression = expression.replaceAll("\\s*\\|\\|\\s*", " " + OR_PLACEHOLDER + " ");
+        expression = expression.replaceAll("\\s*!\\s*", " " + NOT_PLACEHOLDER + " ");
+
+        expression = expression.replaceAll(EQ_PLACEHOLDER, decorateEq());
+        expression = expression.replaceAll(NEQ_PLACEHOLDER, decorateNEq());
+        expression = expression.replaceAll(GT_PLACEHOLDER, decorateGt());
+        expression = expression.replaceAll(GTE_PLACEHOLDER, decorateGte());
+        expression = expression.replaceAll(LT_PLACEHOLDER, decorateLt());
+        expression = expression.replaceAll(LTE_PLACEHOLDER, decorateLte());
+        expression = expression.replaceAll(AND_PLACEHOLDER, decorateAnd());
+        expression = expression.replaceAll(OR_PLACEHOLDER, decorateOr());
+        expression = expression.replaceAll(NOT_PLACEHOLDER, decorateNot());
         return expression;
     }
 
@@ -854,6 +866,18 @@ public abstract class ExportManager {
     protected abstract String decorateDelObj(String objectId, String objectName, String objectDisplayName);
 
     protected abstract String decorateAddObj(String objectId, String objectName, String objectDisplayName);
+
+    protected abstract String decorateEq();
+
+    protected abstract String decorateNEq();
+
+    protected abstract String decorateGt();
+
+    protected abstract String decorateGte();
+
+    protected abstract String decorateLt();
+
+    protected abstract String decorateLte();
 
     protected abstract String decorateNot();
 

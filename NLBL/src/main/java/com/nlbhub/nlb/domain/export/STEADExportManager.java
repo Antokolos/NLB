@@ -419,6 +419,36 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateEq() {
+        return "==";
+    }
+
+    @Override
+    protected String decorateNEq() {
+        return "~=";
+    }
+
+    @Override
+    protected String decorateGt() {
+        return ">";
+    }
+
+    @Override
+    protected String decorateGte() {
+        return ">=";
+    }
+
+    @Override
+    protected String decorateLt() {
+        return "<";
+    }
+
+    @Override
+    protected String decorateLte() {
+        return "<=";
+    }
+
+    @Override
     protected String decorateNot() {
         return "not";
     }
