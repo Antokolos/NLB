@@ -71,5 +71,5 @@ public interface Variable extends IdentifiableItem {
         AUTO, BOOLEAN, NUMBER, STRING
     }
 
-    public enum Type {PAGE, OBJ, LINK, LINKCONSTRAINT, VAR, EXPRESSION, MODCONSTRAINT}
+    public enum Type {PAGE, OBJ, LINK, LINKCONSTRAINT, VAR, EXPRESSION, MODCONSTRAINT, AUTOWIRECONSTRAINT}
 }

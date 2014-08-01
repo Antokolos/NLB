@@ -95,6 +95,10 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JButton m_setImageButton;
     private JLabel m_imageFileNameLabel;
     private JXImageView m_imageView;
+    private JCheckBox m_autoInCheckBox;
+    private JCheckBox m_autoOutCheckBox;
+    private JCheckBox m_autowireCheckBox;
+    private JTextField m_autowireConstraintTextField;
 
     public DialogPageProperties(final NonLinearBookFacade nlbFacade, final Page page) {
         m_nlbFacade = nlbFacade;
@@ -257,6 +261,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private void setPageProperties(Page page) {
         Variable variable;
         Variable moduleConstraint;
+        Variable autowireConstraint;
         m_page = page;
 
         m_imageFileName = page.getImageFileName();
@@ -278,6 +283,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
 
         variable = m_nlbFacade.getNlb().getVariableById(page.getVarId());
         moduleConstraint = m_nlbFacade.getNlb().getVariableById(page.getModuleConstrId());
+        autowireConstraint = m_nlbFacade.getNlb().getVariableById(page.getAutowireConstrId());
         m_pageIdTextField.setText(page.getId());
         m_pageVariableTextField.setText(variable != null ? variable.getName() : "");
         m_moduleConstraintTextField.setText(
@@ -298,6 +304,10 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
 
         m_linksTable.setModel(new LinksTableModelSwing(m_page.getLinks()));
 
+        m_autowireCheckBox.setSelected(page.isAutowire());
+        m_autoInCheckBox.setSelected(page.isAutoIn());
+        m_autoOutCheckBox.setSelected(page.isAutoOut());
+        m_autowireConstraintTextField.setText(autowireConstraint != null ? autowireConstraint.getValue() : "");
         setPageImage(page.getImageFileName());
     }
 
@@ -330,6 +340,10 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 m_returnTexts,
                 m_returnPageIdTextField.getText(),
                 m_moduleConstraintTextField.getText(),
+                m_autowireCheckBox.isSelected(),
+                m_autoInCheckBox.isSelected(),
+                m_autoOutCheckBox.isSelected(),
+                m_autowireConstraintTextField.getText(),
                 ((LinksTableModelSwing) m_linksTable.getModel()).getTableModel()
         );
         m_nlbFacade.removeObserver(m_observerId);
@@ -878,68 +892,142 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         panel40.add(m_autoReturnCheckBox);
         final JPanel panel41 = new JPanel();
         panel41.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel41, BorderLayout.CENTER);
+        tabbedPane1.addTab("Autowire", panel41);
         final JPanel panel42 = new JPanel();
-        panel42.setLayout(new BorderLayout(0, 0));
+        panel42.setLayout(new GridBagLayout());
         panel41.add(panel42, BorderLayout.CENTER);
+        final JPanel spacer4 = new JPanel();
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.VERTICAL;
+        panel42.add(spacer4, gbc);
         final JPanel panel43 = new JPanel();
-        panel43.setLayout(new BorderLayout(0, 0));
-        panel42.add(panel43, BorderLayout.CENTER);
-        final JPanel panel44 = new JPanel();
-        panel44.setLayout(new BorderLayout(0, 0));
-        panel43.add(panel44, BorderLayout.CENTER);
-        final JPanel panel45 = new JPanel();
-        panel45.setLayout(new GridBagLayout());
-        panel45.setMinimumSize(new Dimension(10, 250));
-        panel44.add(panel45, BorderLayout.CENTER);
-        panel45.setBorder(BorderFactory.createTitledBorder("Page text"));
+        panel43.setLayout(new GridBagLayout());
+        panel43.setMinimumSize(new Dimension(56, 33));
+        panel43.setPreferredSize(new Dimension(505, 33));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(5, 5, 5, 0);
+        panel42.add(panel43, gbc);
         final JScrollPane scrollPane10 = new JScrollPane();
+        scrollPane10.setHorizontalScrollBarPolicy(31);
+        scrollPane10.setVerticalScrollBarPolicy(21);
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        panel45.add(scrollPane10, gbc);
+        panel43.add(scrollPane10, gbc);
+        m_autowireConstraintTextField = new JTextField();
+        m_autowireConstraintTextField.setColumns(42);
+        scrollPane10.setViewportView(m_autowireConstraintTextField);
+        final JLabel label9 = new JLabel();
+        label9.setHorizontalTextPosition(11);
+        label9.setText("Autowire constraint");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel42.add(label9, gbc);
+        final JPanel panel44 = new JPanel();
+        panel44.setLayout(new BorderLayout(0, 0));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel42.add(panel44, gbc);
+        final JPanel panel45 = new JPanel();
+        panel45.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        panel44.add(panel45, BorderLayout.CENTER);
+        m_autoInCheckBox = new JCheckBox();
+        m_autoInCheckBox.setText("Auto In");
+        panel45.add(m_autoInCheckBox);
+        m_autoOutCheckBox = new JCheckBox();
+        m_autoOutCheckBox.setText("Auto Out");
+        panel45.add(m_autoOutCheckBox);
+        final JPanel panel46 = new JPanel();
+        panel46.setLayout(new BorderLayout(0, 0));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel42.add(panel46, gbc);
+        final JPanel panel47 = new JPanel();
+        panel47.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        panel46.add(panel47, BorderLayout.CENTER);
+        m_autowireCheckBox = new JCheckBox();
+        m_autowireCheckBox.setText("Autowire");
+        panel47.add(m_autowireCheckBox);
+        final JPanel panel48 = new JPanel();
+        panel48.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel48, BorderLayout.CENTER);
+        final JPanel panel49 = new JPanel();
+        panel49.setLayout(new BorderLayout(0, 0));
+        panel48.add(panel49, BorderLayout.CENTER);
+        final JPanel panel50 = new JPanel();
+        panel50.setLayout(new BorderLayout(0, 0));
+        panel49.add(panel50, BorderLayout.CENTER);
+        final JPanel panel51 = new JPanel();
+        panel51.setLayout(new BorderLayout(0, 0));
+        panel50.add(panel51, BorderLayout.CENTER);
+        final JPanel panel52 = new JPanel();
+        panel52.setLayout(new GridBagLayout());
+        panel52.setMinimumSize(new Dimension(10, 250));
+        panel51.add(panel52, BorderLayout.CENTER);
+        panel52.setBorder(BorderFactory.createTitledBorder("Page text"));
+        final JScrollPane scrollPane11 = new JScrollPane();
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel52.add(scrollPane11, gbc);
         m_pageText = new JTextArea();
         m_pageText.setColumns(50);
         m_pageText.setFocusAccelerator('T');
         m_pageText.setLineWrap(true);
         m_pageText.setRows(10);
         m_pageText.setWrapStyleWord(true);
-        scrollPane10.setViewportView(m_pageText);
-        final JPanel panel46 = new JPanel();
-        panel46.setLayout(new BorderLayout(0, 0));
-        panel44.add(panel46, BorderLayout.EAST);
-        final JPanel panel47 = new JPanel();
-        panel47.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel46.add(panel47, BorderLayout.NORTH);
+        scrollPane11.setViewportView(m_pageText);
+        final JPanel panel53 = new JPanel();
+        panel53.setLayout(new BorderLayout(0, 0));
+        panel51.add(panel53, BorderLayout.EAST);
+        final JPanel panel54 = new JPanel();
+        panel54.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel53.add(panel54, BorderLayout.NORTH);
         m_setImageButton = new JButton();
         m_setImageButton.setMaximumSize(new Dimension(120, 36));
         m_setImageButton.setMinimumSize(new Dimension(120, 36));
         m_setImageButton.setPreferredSize(new Dimension(120, 36));
         m_setImageButton.setText("Set image...");
-        panel47.add(m_setImageButton);
-        final JPanel panel48 = new JPanel();
-        panel48.setLayout(new BorderLayout(0, 0));
-        panel46.add(panel48, BorderLayout.CENTER);
-        final JPanel panel49 = new JPanel();
-        panel49.setLayout(new BorderLayout(0, 0));
-        panel48.add(panel49, BorderLayout.NORTH);
+        panel54.add(m_setImageButton);
+        final JPanel panel55 = new JPanel();
+        panel55.setLayout(new BorderLayout(0, 0));
+        panel53.add(panel55, BorderLayout.CENTER);
+        final JPanel panel56 = new JPanel();
+        panel56.setLayout(new BorderLayout(0, 0));
+        panel55.add(panel56, BorderLayout.NORTH);
         m_imageFileNameLabel = new JLabel();
         m_imageFileNameLabel.setHorizontalAlignment(0);
         m_imageFileNameLabel.setHorizontalTextPosition(0);
         m_imageFileNameLabel.setText("<NO IMAGE>");
-        panel49.add(m_imageFileNameLabel, BorderLayout.CENTER);
+        panel56.add(m_imageFileNameLabel, BorderLayout.CENTER);
         m_imageView = new JXImageView();
-        panel48.add(m_imageView, BorderLayout.CENTER);
-        final JPanel panel50 = new JPanel();
-        panel50.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel50, BorderLayout.NORTH);
+        panel55.add(m_imageView, BorderLayout.CENTER);
+        final JPanel panel57 = new JPanel();
+        panel57.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel57, BorderLayout.NORTH);
         final JToolBar toolBar1 = new JToolBar();
         toolBar1.setBorderPainted(false);
         toolBar1.setFloatable(false);
-        panel50.add(toolBar1, BorderLayout.CENTER);
+        panel57.add(toolBar1, BorderLayout.CENTER);
         m_undoButton = new JButton();
         m_undoButton.setIcon(new ImageIcon(getClass().getResource("/common/undo.png")));
         m_undoButton.setText("Undo");
@@ -949,7 +1037,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_redoButton.setText("Redo");
         toolBar1.add(m_redoButton);
         m_languageComboBox = new JComboBox();
-        panel50.add(m_languageComboBox, BorderLayout.EAST);
+        panel57.add(m_languageComboBox, BorderLayout.EAST);
         label4.setLabelFor(m_pageIdTextField);
     }
 

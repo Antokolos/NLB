@@ -336,6 +336,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final PageImpl m_page;
         private VariableTracker m_variableTracker;
         private VariableTracker m_moduleConstrIdTracker;
+        private VariableTracker m_autowireConstrIdTracker;
 
         private final String m_existingImageFileName;
         private final MultiLangString m_existingPageText;
@@ -347,6 +348,9 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_existingAutoTraverse;
         private final boolean m_existingAutoReturn;
         private final String m_existingReturnPageId;
+        private final boolean m_existingAutowire;
+        private final boolean m_existingAutoIn;
+        private final boolean m_existingAutoOut;
         private final String m_newImageFileName;
         private final MultiLangString m_newPageText;
         private final MultiLangString m_newPageCaptionText;
@@ -357,6 +361,9 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_newAutoReturn;
         private final MultiLangString m_newReturnText;
         private final String m_newReturnPageId;
+        private final boolean m_newAutowire;
+        private final boolean m_newAutoIn;
+        private final boolean m_newAutoOut;
         private AbstractNodeItem.SortLinksCommand m_sortLinkCommand;
         private List<AbstractNodeItem.DeleteLinkCommand> m_deleteLinkCommands = new ArrayList<>();
 
@@ -374,7 +381,11 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final boolean autoReturn,
                 final MultiLangString returnText,
                 final String returnPageId,
-                final String moduleConsraintVariableName,
+                final String moduleConsraintVariableBody,
+                final boolean autowire,
+                final boolean autoIn,
+                final boolean autoOut,
+                final String autowireConstraintVariableBody,
                 final LinksTableModel linksTableModel
         ) {
             m_page = getPageImplById(page.getId());
@@ -391,11 +402,21 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_moduleConstrIdTracker = new VariableTracker(
                     currentNLB,
                     getVariableImplById(m_page.getModuleConstrId()),
-                    StringHelper.isEmpty(moduleConsraintVariableName),
+                    StringHelper.isEmpty(moduleConsraintVariableBody),
                     Variable.Type.MODCONSTRAINT,
                     Variable.DataType.BOOLEAN,
                     Variable.DEFAULT_NAME,
-                    moduleConsraintVariableName,
+                    moduleConsraintVariableBody,
+                    m_page.getFullId()
+            );
+            m_autowireConstrIdTracker = new VariableTracker(
+                    currentNLB,
+                    getVariableImplById(m_page.getAutowireConstrId()),
+                    StringHelper.isEmpty(autowireConstraintVariableBody),
+                    Variable.Type.AUTOWIRECONSTRAINT,
+                    Variable.DataType.BOOLEAN,
+                    Variable.DEFAULT_NAME,
+                    autowireConstraintVariableBody,
                     m_page.getFullId()
             );
             m_existingImageFileName = m_page.getImageFileName();
@@ -408,6 +429,9 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingAutoReturn = m_page.isAutoReturn();
             m_existingReturnText = m_page.getReturnTexts();
             m_existingReturnPageId = m_page.getReturnPageId();
+            m_existingAutowire = m_page.isAutowire();
+            m_existingAutoIn = m_page.isAutoIn();
+            m_existingAutoOut = m_page.isAutoOut();
             m_newImageFileName = imageFileName;
             m_newPageText = pageText;
             m_newPageCaptionText = pageCaptionText;
@@ -418,6 +442,9 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newAutoReturn = autoReturn;
             m_newReturnText = returnText;
             m_newReturnPageId = returnPageId;
+            m_newAutowire = autowire;
+            m_newAutoIn = autoIn;
+            m_newAutoOut = autoOut;
             for (final Link link : m_page.getLinks()) {
                 boolean absentInModel = true;
                 for (final Link modelLink : linksTableModel.getLinks()) {
@@ -442,6 +469,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setImageFileName(m_newImageFileName);
             m_page.setVarId(m_variableTracker.execute());
             m_page.setModuleConstrId(m_moduleConstrIdTracker.execute());
+            m_page.setAutowireConstrId(m_autowireConstrIdTracker.execute());
             m_page.setTexts(m_newPageText);
             m_page.setCaptions(m_newPageCaptionText);
             m_page.setUseCaption(m_newUseCaption);
@@ -451,6 +479,9 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setAutoReturn(m_newAutoReturn);
             m_page.setReturnTexts(m_newReturnText);
             m_page.setReturnPageId(m_newReturnPageId);
+            m_page.setAutowire(m_newAutowire);
+            m_page.setAutoIn(m_newAutoIn);
+            m_page.setAutoOut(m_newAutoOut);
             m_page.notifyObservers();
         }
 
@@ -463,6 +494,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setImageFileName(m_existingImageFileName);
             m_page.setVarId(m_variableTracker.revert());
             m_page.setModuleConstrId(m_moduleConstrIdTracker.revert());
+            m_page.setAutowireConstrId(m_autowireConstrIdTracker.revert());
             m_page.setTexts(m_existingPageText);
             m_page.setCaptions(m_existingPageCaptionText);
             m_page.setUseCaption(m_existingUseCaption);
@@ -472,6 +504,9 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setAutoReturn(m_existingAutoReturn);
             m_page.setReturnTexts(m_existingReturnText);
             m_page.setReturnPageId(m_existingReturnPageId);
+            m_page.setAutowire(m_existingAutowire);
+            m_page.setAutoIn(m_existingAutoIn);
+            m_page.setAutoOut(m_existingAutoOut);
             m_page.notifyObservers();
         }
     }
@@ -1116,6 +1151,10 @@ public class NonLinearBookImpl implements NonLinearBook {
             final MultiLangString returnText,
             final String returnPageId,
             final String moduleConsraintVariableName,
+            final boolean autowire,
+            final boolean autoIn,
+            final boolean autoOut,
+            final String autowireConstraint,
             final LinksTableModel linksTableModel
     ) {
         return (
@@ -1134,6 +1173,10 @@ public class NonLinearBookImpl implements NonLinearBook {
                         returnText,
                         returnPageId,
                         moduleConsraintVariableName,
+                        autowire,
+                        autoIn,
+                        autoOut,
+                        autowireConstraint,
                         linksTableModel
                 )
         );
@@ -1908,7 +1951,10 @@ public class NonLinearBookImpl implements NonLinearBook {
                     ) {
                 variable.setDeleted(true);
             }
-        } else if (variable.getType() == VariableImpl.Type.MODCONSTRAINT) {
+        } else if (
+                variable.getType() == VariableImpl.Type.MODCONSTRAINT
+                        || variable.getType() == VariableImpl.Type.AUTOWIRECONSTRAINT
+                ) {
             final Page page = getPageById(variable.getTarget());
             assert page != null;
             if (page.isDeleted()) {
@@ -2281,9 +2327,10 @@ public class NonLinearBookImpl implements NonLinearBook {
                     }
                     break;
                 case MODCONSTRAINT:
-                    Page modulePage = getPageById(variable.getTarget());
-                    if (!modulePage.isDeleted()) {
-                        searchResult.setId(modulePage.getId());
+                case AUTOWIRECONSTRAINT:
+                    Page targetPage = getPageById(variable.getTarget());
+                    if (!targetPage.isDeleted()) {
+                        searchResult.setId(targetPage.getId());
                         result.addSearchResult(searchResult);
                     }
                     break;
@@ -2369,12 +2416,13 @@ public class NonLinearBookImpl implements NonLinearBook {
                     }
                     break;
                 case MODCONSTRAINT:
-                    Page modulePage = getPageById(variable.getTarget());
-                    if (!modulePage.isDeleted()) {
+                case AUTOWIRECONSTRAINT:
+                    Page targetPage = getPageById(variable.getTarget());
+                    if (!targetPage.isDeleted()) {
                         final String error = checkFormula(variable.getValue().trim());
                         if (error != null) {
                             searchResult.addInformation(error);
-                            searchResult.setId(modulePage.getId());
+                            searchResult.setId(targetPage.getId());
                             result.addSearchResult(searchResult);
                         }
                     }
@@ -2511,6 +2559,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                 case MODCONSTRAINT:
                     result.incModuleConstraintCount();
                     break;
+                case AUTOWIRECONSTRAINT:
+                    result.incAutowireConstraintCount();
+                    break;
                 default:
                     // Do nothing
             }
@@ -2572,6 +2623,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 case LINKCONSTRAINT:
                 case EXPRESSION:
                 case MODCONSTRAINT:
+                case AUTOWIRECONSTRAINT:
                 default:
                     // Do nothing
             }

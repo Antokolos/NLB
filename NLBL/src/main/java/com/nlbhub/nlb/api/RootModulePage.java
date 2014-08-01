@@ -155,6 +155,26 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public boolean isAutowire() {
+        return DEFAULT_AUTOWIRE;
+    }
+
+    @Override
+    public boolean isAutoIn() {
+        return DEFAULT_AUTO_IN;
+    }
+
+    @Override
+    public boolean isAutoOut() {
+        return DEFAULT_AUTO_OUT;
+    }
+
+    @Override
+    public String getAutowireConstrId() {
+        return DEFAULT_AUTOWIRE_CONSTR_ID;
+    }
+
+    @Override
     public String getStroke() {
         return Constants.EMPTY_STRING;
     }

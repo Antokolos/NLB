@@ -1497,6 +1497,8 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         builder.append("\r\n");
         builder.append("Module constraint count: ").append(variableStats.getModuleConstraintCount());
         builder.append("\r\n");
+        builder.append("Autowire constraint count: ").append(variableStats.getAutowireConstraintCount());
+        builder.append("\r\n");
         m_bookInformationArea.setText(
                 builder.toString()
         );

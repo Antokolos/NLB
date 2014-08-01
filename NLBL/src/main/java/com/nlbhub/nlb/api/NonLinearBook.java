@@ -179,6 +179,7 @@ public interface NonLinearBook {
         private int m_plainVariablesCount = 0;
         private int m_expressionsCount = 0;
         private int m_moduleConstraintCount = 0;
+        private int m_autowireConstraintCount = 0;
 
         public int getPageVariablesCount() {
             return m_pageVariablesCount;
@@ -234,6 +235,14 @@ public interface NonLinearBook {
 
         public void incModuleConstraintCount() {
             m_moduleConstraintCount++;
+        }
+
+        public int getAutowireConstraintCount() {
+            return m_autowireConstraintCount;
+        }
+
+        public void incAutowireConstraintCount() {
+            m_autowireConstraintCount++;
         }
     }
 

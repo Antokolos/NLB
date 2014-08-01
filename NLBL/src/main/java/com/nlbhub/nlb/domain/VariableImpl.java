@@ -212,6 +212,9 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
             case "MODCONSTRAINT":
                 m_type = Type.MODCONSTRAINT;
                 break;
+            case "AUTOWIRECONSTRAINT":
+                m_type = Type.AUTOWIRECONSTRAINT;
+                break;
             default:
                 throw new NLBConsistencyException(
                         "Variable type '" + type
@@ -225,6 +228,7 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
             case LINK:
             case LINKCONSTRAINT:
             case MODCONSTRAINT:
+            case AUTOWIRECONSTRAINT:
                 m_dataType = DataType.BOOLEAN;
                 break;
             default:

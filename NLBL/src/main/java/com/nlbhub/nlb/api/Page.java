@@ -55,6 +55,10 @@ public interface Page extends NodeItem {
     public static final boolean DEFAULT_USE_CAPTION = false;
     public static final boolean DEFAULT_AUTO_TRAVERSE = false;
     public static final boolean DEFAULT_AUTO_RETURN = false;
+    public static final boolean DEFAULT_AUTOWIRE = false;
+    public static final boolean DEFAULT_AUTO_IN = false;
+    public static final boolean DEFAULT_AUTO_OUT = false;
+    public static final String DEFAULT_AUTOWIRE_CONSTR_ID = Constants.EMPTY_STRING;
     /**
      * Set to empty String.
      * This means that by default pages should not return to the parent module
@@ -106,4 +110,9 @@ public interface Page extends NodeItem {
     public String getModuleName();
 
     public NonLinearBook getModule();
+
+    public boolean isAutowire();
+    public boolean isAutoIn();
+    public boolean isAutoOut();
+    public String getAutowireConstrId();
 }

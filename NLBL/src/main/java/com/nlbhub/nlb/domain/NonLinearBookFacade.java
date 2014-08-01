@@ -219,6 +219,10 @@ public class NonLinearBookFacade implements NLBObservable {
             final MultiLangString returnText,
             final String returnPageId,
             final String moduleConsraintVariableName,
+            final boolean autowire,
+            final boolean autoIn,
+            final boolean autoOut,
+            final String autowireConstraint,
             final LinksTableModel linksTableModel
     ) {
         NonLinearBookImpl.UpdatePageCommand command = (
@@ -236,6 +240,10 @@ public class NonLinearBookFacade implements NLBObservable {
                         returnText,
                         returnPageId,
                         moduleConsraintVariableName,
+                        autowire,
+                        autoIn,
+                        autoOut,
+                        autowireConstraint,
                         linksTableModel
                 )
         );

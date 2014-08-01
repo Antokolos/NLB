@@ -78,6 +78,10 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String RETTEXT_SUBDIR_NAME = "rettext";
     private static final String RETPAGE_FILE_NAME = "retpage";
     private static final String MODCNSID_FILE_NAME = "modcnsid";
+    private static final String AUTOWIRE_FILE_NAME = "autowire";
+    private static final String AUTO_IN_FILE_NAME = "auto_in";
+    private static final String AUTO_OUT_FILE_NAME = "auto_out";
+    private static final String AUTOWIRE_CONSTRID_FILE_NAME = "autoid";
 
     private static final String DEFAULT_MODULE_NAME_FORMAT = "%s's submodule";
     private String m_imageFileName = DEFAULT_IMAGE_FILE_NAME;
@@ -95,6 +99,11 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private String m_moduleConstrId = DEFAULT_MODULE_CONSTR_ID;
 
     private NonLinearBookImpl m_module;
+
+    private boolean m_autowire = DEFAULT_AUTOWIRE;
+    private boolean m_autoIn = DEFAULT_AUTO_IN;
+    private boolean m_autoOut = DEFAULT_AUTO_OUT;
+    private String m_autowireConstrId = DEFAULT_AUTOWIRE_CONSTR_ID;
 
     /**
      * Default contructor. It is needed for JAXB conversion, do not remove!
@@ -305,6 +314,42 @@ public class PageImpl extends AbstractNodeItem implements Page {
         return m_module;
     }
 
+    public void setAutowire(boolean autowire) {
+        m_autowire = autowire;
+    }
+
+    public void setAutoIn(boolean autoIn) {
+        m_autoIn = autoIn;
+    }
+
+    public void setAutoOut(boolean autoOut) {
+        m_autoOut = autoOut;
+    }
+
+    public void setAutowireConstrId(String autowireConstrId) {
+        m_autowireConstrId = autowireConstrId;
+    }
+
+    @Override
+    public boolean isAutowire() {
+        return m_autowire;
+    }
+
+    @Override
+    public boolean isAutoIn() {
+        return m_autoIn;
+    }
+
+    @Override
+    public boolean isAutoOut() {
+        return m_autoOut;
+    }
+
+    @Override
+    public String getAutowireConstrId() {
+        return m_autowireConstrId;
+    }
+
     /**
      * For internal use only!
      *
@@ -410,6 +455,30 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     m_moduleConstrId,
                     DEFAULT_MODULE_CONSTR_ID
             );
+            fileManipulator.writeOptionalString(
+                    pageDir,
+                    AUTOWIRE_FILE_NAME,
+                    String.valueOf(m_autowire),
+                    String.valueOf(DEFAULT_AUTOWIRE)
+            );
+            fileManipulator.writeOptionalString(
+                    pageDir,
+                    AUTO_IN_FILE_NAME,
+                    String.valueOf(m_autoIn),
+                    String.valueOf(DEFAULT_AUTO_IN)
+            );
+            fileManipulator.writeOptionalString(
+                    pageDir,
+                    AUTO_OUT_FILE_NAME,
+                    String.valueOf(m_autoOut),
+                    String.valueOf(DEFAULT_AUTO_OUT)
+            );
+            fileManipulator.writeOptionalString(
+                    pageDir,
+                    AUTOWIRE_CONSTRID_FILE_NAME,
+                    m_autowireConstrId,
+                    DEFAULT_AUTOWIRE_CONSTR_ID
+            );
             writeModOrderFile(fileManipulator, pageDir);
             writeModifications(fileManipulator, pageDir);
             writeNodeItemProperties(fileManipulator, pageDir, nonLinearBook);
@@ -504,6 +573,34 @@ public class PageImpl extends AbstractNodeItem implements Page {
                             DEFAULT_MODULE_CONSTR_ID
                     )
             );
+            m_autowire = "true".equals(
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            AUTOWIRE_FILE_NAME,
+                            String.valueOf(DEFAULT_AUTOWIRE)
+                    )
+            );
+            m_autoIn = "true".equals(
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            AUTO_IN_FILE_NAME,
+                            String.valueOf(DEFAULT_AUTO_IN)
+                    )
+            );
+            m_autoOut = "true".equals(
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            AUTO_OUT_FILE_NAME,
+                            String.valueOf(DEFAULT_AUTO_OUT)
+                    )
+            );
+            m_autowireConstrId = (
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            AUTOWIRE_CONSTRID_FILE_NAME,
+                            DEFAULT_AUTOWIRE_CONSTR_ID
+                    )
+            );
             readNodeItemProperties(pageDir);
             readModifications(pageDir);
         } catch (IOException e) {
@@ -538,6 +635,10 @@ public class PageImpl extends AbstractNodeItem implements Page {
         result.setUseCaption(isUseCaption());
         result.setAutoTraverse(isAutoTraverse());
         result.setAutoReturn(isAutoReturn());
+        result.setAutowire(isAutowire());
+        result.setAutoIn(isAutoIn());
+        result.setAutoOut(isAutoOut());
+        result.setAutowireConstrId(getAutowireConstrId());
         result.setFill(getFill());
         result.setParent(getParent());
         result.setStroke(getStroke());
