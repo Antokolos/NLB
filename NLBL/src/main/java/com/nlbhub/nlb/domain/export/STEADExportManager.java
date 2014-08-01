@@ -113,12 +113,16 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append(objBlocks.getObjActEnd());
         List<UseBuildingBlocks> usesBuildingBlocks = objBlocks.getUseBuildingBlocks();
-        if (!objBlocks.isTakable()) {
+        final boolean hasUses = usesBuildingBlocks.size() != 0;
+        if (!objBlocks.isTakable() && hasUses) {
             // Not takable but usable => scene_use should be specified
             stringBuilder.append("    scene_use = true,").append(LINE_SEPARATOR);
         }
-        stringBuilder.append(objBlocks.getObjUseStart());
-        if (usesBuildingBlocks.size() != 0) {
+        if (objBlocks.isTakable() || hasUses) {
+            // If object is takable, then empty use function should be specified
+            stringBuilder.append(objBlocks.getObjUseStart());
+        }
+        if (hasUses) {
             for (int i = 0; i < usesBuildingBlocks.size(); i++) {
                 UseBuildingBlocks useBuildingBlocks = usesBuildingBlocks.get(i);
                 String padding = "        ";
@@ -160,7 +164,10 @@ public class STEADExportManager extends TextExportManager {
             }
             stringBuilder.append("        end;").append(LINE_SEPARATOR);
         }
-        stringBuilder.append(objBlocks.getObjUseEnd());
+        if (objBlocks.isTakable() || hasUses) {
+            // If object is takable, then empty use function should be specified
+            stringBuilder.append(objBlocks.getObjUseEnd());
+        }
         List<String> containedObjIds = objBlocks.getContainedObjIds();
         if (containedObjIds.size() != 0) {
             stringBuilder.append(objBlocks.getObjObjStart());
