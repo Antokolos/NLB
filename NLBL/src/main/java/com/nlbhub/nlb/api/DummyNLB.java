@@ -120,6 +120,16 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
+    public List<String> getAutowiredPagesIds() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public boolean isAutowired(String pageId) {
+        return false;
+    }
+
+    @Override
     public Page getPageById(String id) {
         return null;
     }

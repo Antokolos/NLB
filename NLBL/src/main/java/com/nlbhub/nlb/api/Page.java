@@ -55,7 +55,6 @@ public interface Page extends NodeItem {
     public static final boolean DEFAULT_USE_CAPTION = false;
     public static final boolean DEFAULT_AUTO_TRAVERSE = false;
     public static final boolean DEFAULT_AUTO_RETURN = false;
-    public static final boolean DEFAULT_AUTOWIRE = false;
     public static final boolean DEFAULT_AUTO_IN = false;
     public static final boolean DEFAULT_AUTO_OUT = false;
     public static final String DEFAULT_AUTOWIRE_CONSTR_ID = Constants.EMPTY_STRING;

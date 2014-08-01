@@ -156,7 +156,7 @@ public class RootModulePage implements Page {
 
     @Override
     public boolean isAutowire() {
-        return DEFAULT_AUTOWIRE;
+        return false;
     }
 
     @Override

@@ -75,6 +75,9 @@ public class NonLinearBookImpl implements NonLinearBook {
     private static final String PAGES_DIR_NAME = "pages";
     private static final String OBJS_DIR_NAME = "objs";
     private static final String VARS_DIR_NAME = "vars";
+    private static final String AUTOWIRED_PAGES_FILE_NAME = "autopgs";
+    private static final String AUTOWIRED_SEPARATOR = "\n";
+    private static final String DEFAULT_AUTOWIRED_PAGES = Constants.EMPTY_STRING;
     /**
      * Path to the directory on the disk where this book will be stored.
      */
@@ -88,6 +91,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     private String m_author;
     private String m_version;
     private Map<String, PageImpl> m_pages;
+    private List<String> m_autowiredPages;
     private Map<String, ObjImpl> m_objs;
     private List<VariableImpl> m_variables;
     private List<ImageFileImpl> m_imageFiles;
@@ -164,10 +168,12 @@ public class NonLinearBookImpl implements NonLinearBook {
      */
     class AddPageCommand implements NLBCommand {
         private PageImpl m_page;
+        private boolean m_autowired;
         private ChangeStartPointCommand m_changeStartPointCommand = null;
 
-        private AddPageCommand(PageImpl page) {
+        private AddPageCommand(PageImpl page, boolean isAutowired) {
             m_page = page;
+            m_autowired = isAutowired;
             m_page.setDeleted(true);  // Not fully exists for now
             if (getPages().values().size() == 0) {
                 m_changeStartPointCommand = (
@@ -183,6 +189,9 @@ public class NonLinearBookImpl implements NonLinearBook {
             if (m_changeStartPointCommand != null) {
                 m_changeStartPointCommand.execute();
             }
+            if (m_autowired) {
+                addAutowiredPageId(m_page.getId());
+            }
             m_page.notifyObservers();
         }
 
@@ -193,6 +202,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                 m_changeStartPointCommand.revert();
             }
             m_pages.remove(m_page.getId());
+            if (m_autowired) {
+                removeAutowiredPageId(m_page.getId());
+            }
             m_page.notifyObservers();
         }
     }
@@ -479,7 +491,12 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setAutoReturn(m_newAutoReturn);
             m_page.setReturnTexts(m_newReturnText);
             m_page.setReturnPageId(m_newReturnPageId);
-            m_page.setAutowire(m_newAutowire);
+            if (m_newAutowire) {
+                addAutowiredPageId(m_page.getId());
+            } else {
+                // just does nothing if page was not in autowired list
+                removeAutowiredPageId(m_page.getId());
+            }
             m_page.setAutoIn(m_newAutoIn);
             m_page.setAutoOut(m_newAutoOut);
             m_page.notifyObservers();
@@ -504,7 +521,12 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setAutoReturn(m_existingAutoReturn);
             m_page.setReturnTexts(m_existingReturnText);
             m_page.setReturnPageId(m_existingReturnPageId);
-            m_page.setAutowire(m_existingAutowire);
+            if (m_existingAutowire) {
+                addAutowiredPageId(m_page.getId());
+            } else {
+                // just does nothing if page was not in autowired list
+                removeAutowiredPageId(m_page.getId());
+            }
             m_page.setAutoIn(m_existingAutoIn);
             m_page.setAutoOut(m_existingAutoOut);
             m_page.notifyObservers();
@@ -1111,6 +1133,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_version = DEFAULT_VERSION;
         m_parentPage = null;
         m_pages = new HashMap<>();
+        m_autowiredPages = new ArrayList<>();
         m_objs = new HashMap<>();
         m_variables = new ArrayList<>();
         m_imageFiles = new ArrayList<>();
@@ -1124,6 +1147,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_version = parentNLB.getVersion();
         m_parentPage = parentPage;
         m_pages = new HashMap<>();
+        m_autowiredPages = new ArrayList<>();
         m_objs = new HashMap<>();
         m_variables = new ArrayList<>();
         m_imageFiles = new ArrayList<>();
@@ -1134,7 +1158,8 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     AddPageCommand createAddPageCommand(final PageImpl page) {
-        return new AddPageCommand(page);
+        // In current implementation newly added pages is NOT autowired
+        return new AddPageCommand(page, false);
     }
 
     UpdatePageCommand createUpdatePageCommand(
@@ -1335,8 +1360,38 @@ public class NonLinearBookImpl implements NonLinearBook {
         return result;
     }
 
+    @Override
+    public List<String> getAutowiredPagesIds() {
+        return m_autowiredPages;
+    }
+
     public void addPage(@NotNull PageImpl page) {
         m_pages.put(page.getId(), page);
+    }
+
+    public void addAutowiredPageId(final String pageId) {
+        for (String existingId : m_autowiredPages) {
+            if (existingId.equals(pageId)) {
+                // already exists
+                return;
+            }
+        }
+        m_autowiredPages.add(pageId);
+    }
+
+    public void removeAutowiredPageId(final String pageId) {
+        Iterator<String> iterator = m_autowiredPages.listIterator();
+        while (iterator.hasNext()) {
+            String existingId = iterator.next();
+            if (existingId.equals(pageId)) {
+                iterator.remove();
+                return;
+            }
+        }
+    }
+
+    public boolean isAutowired(final String pageId) {
+        return m_autowiredPages.contains(pageId);
     }
 
     public Page getPageById(String id) {
@@ -1660,9 +1715,12 @@ public class NonLinearBookImpl implements NonLinearBook {
             return false;
         }
         m_rootDir = rootDir;
+        progressData.setNoteText("Reading autowired pages...");
+        readAutowiredPagesFile(rootDir);
+        progressData.setProgressValue(20);
         progressData.setNoteText("Reading startpoint...");
         readBookProperties(rootDir);
-        progressData.setProgressValue(20);
+        progressData.setProgressValue(25);
         progressData.setNoteText("Reading objects...");
         readObjs(rootDir);
         progressData.setProgressValue(35);
@@ -1832,6 +1890,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             progressData.setProgressValue(95);
             progressData.setNoteText("Writing book properties...");
             writeBookProperties(fileManipulator, m_rootDir);
+            writeAutowiredPagesFile(fileManipulator, m_rootDir);
         } catch (IOException e) {
             throw new NLBIOException("IO exception occurred", e);
         }
@@ -1891,6 +1950,46 @@ public class NonLinearBookImpl implements NonLinearBook {
             }
         }
         removeDeletedVariables(deletedVarsIds);
+    }
+
+    protected void writeAutowiredPagesFile(
+            FileManipulator fileManipulator,
+            File rootDir
+    ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
+        StringBuilder sb = new StringBuilder();
+        final int lastElemIndex = m_autowiredPages.size() - 1;
+        if (lastElemIndex >= 0) {
+            for (int i = 0; i < lastElemIndex; i++) {
+                final String pageId = m_autowiredPages.get(i);
+                if (!getPageImplById(pageId).isDeleted()) {
+                    sb.append(pageId).append(AUTOWIRED_SEPARATOR);
+                }
+            }
+            String lastPageId = m_autowiredPages.get(lastElemIndex);
+            if (!getPageImplById(lastPageId).isDeleted()) {
+                sb.append(lastPageId);
+            }
+            fileManipulator.writeOptionalString(rootDir, AUTOWIRED_PAGES_FILE_NAME, String.valueOf(sb.toString()), DEFAULT_AUTOWIRED_PAGES);
+        } else {
+            fileManipulator.writeOptionalString(rootDir, AUTOWIRED_PAGES_FILE_NAME, Constants.EMPTY_STRING, DEFAULT_AUTOWIRED_PAGES);
+        }
+    }
+
+    protected void readAutowiredPagesFile(File rootDir) throws NLBIOException, NLBConsistencyException {
+        String autowiredPagesString = FileManipulator.getOptionalFileAsString(
+                rootDir,
+                AUTOWIRED_PAGES_FILE_NAME,
+                DEFAULT_AUTOWIRED_PAGES
+        );
+        if (autowiredPagesString.isEmpty()) {
+            // do nothing
+        } else {
+            m_autowiredPages.clear();
+            List<String> autowiredPages = Arrays.asList(autowiredPagesString.split(AUTOWIRED_SEPARATOR));
+            for (String pageId : autowiredPages) {
+                m_autowiredPages.add(pageId);
+            }
+        }
     }
 
     private void preprocessVariable(final VariableImpl variable) throws NLBConsistencyException {

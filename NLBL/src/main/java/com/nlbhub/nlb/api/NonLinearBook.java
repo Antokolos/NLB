@@ -268,6 +268,10 @@ public interface NonLinearBook {
 
     public Map<String, Page> getPages();
 
+    public List<String> getAutowiredPagesIds();
+
+    public boolean isAutowired(final String pageId);
+
     public Page getPageById(String id);
 
     public Map<String, Obj> getObjs();
