@@ -1718,7 +1718,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         progressData.setNoteText("Reading autowired pages...");
         readAutowiredPagesFile(rootDir);
         progressData.setProgressValue(20);
-        progressData.setNoteText("Reading startpoint...");
+        progressData.setNoteText("Reading book properties...");
         readBookProperties(rootDir);
         progressData.setProgressValue(25);
         progressData.setNoteText("Reading objects...");
@@ -1890,6 +1890,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             progressData.setProgressValue(95);
             progressData.setNoteText("Writing book properties...");
             writeBookProperties(fileManipulator, m_rootDir);
+            progressData.setNoteText("Writing autowired pages file...");
             writeAutowiredPagesFile(fileManipulator, m_rootDir);
         } catch (IOException e) {
             throw new NLBIOException("IO exception occurred", e);
