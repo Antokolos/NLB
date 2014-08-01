@@ -1729,7 +1729,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         progressData.setProgressValue(60);
         progressData.setNoteText("Reading variables...");
         readVariables(rootDir);
-        progressData.setProgressValue(60);
+        progressData.setProgressValue(65);
         progressData.setNoteText("Reading image files...");
         readImageFiles(rootDir);
         return true;
