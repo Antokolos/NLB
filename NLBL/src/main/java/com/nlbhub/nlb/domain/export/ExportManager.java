@@ -675,7 +675,7 @@ public abstract class ExportManager {
             boolean isPositiveConstraint,
             boolean shouldObeyToModuleConstraint,
             String moduleConstraintText
-    ) {
+    ) throws NLBConsistencyException {
         String constraintBody = (
                 (shouldObeyToModuleConstraint && !StringHelper.isEmpty(moduleConstraintText))
                         ? (
@@ -693,7 +693,7 @@ public abstract class ExportManager {
         );
     }
 
-    private String translateExpressionBody(String expressionText) {
+    private String translateExpressionBody(String expressionText) throws NLBConsistencyException {
         String expression = expressionText;
         final Collection<String> expressionVars = VarFinder.findVariableNames(expression);
 
@@ -728,8 +728,14 @@ public abstract class ExportManager {
         return expression;
     }
 
-    private String decorateVariable(String constraintVar) {
+    private String decorateVariable(String constraintVar) throws NLBConsistencyException {
         Variable.DataType dataType = m_dataTypeMap.get(constraintVar);
+        if (dataType == null) {
+            throw new NLBConsistencyException(
+                    "Datatype of the variable " + constraintVar +
+                            " cannot be determined. Please verify that this variable is defined."
+            );
+        }
         switch (dataType) {
             case BOOLEAN:
                 return decorateBooleanVar(constraintVar);

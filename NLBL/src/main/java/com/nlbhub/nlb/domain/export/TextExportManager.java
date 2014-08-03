@@ -73,9 +73,9 @@ public abstract class TextExportManager extends ExportManager {
                 }
             }
         } catch (FileNotFoundException | UnsupportedEncodingException | NLBConsistencyException e) {
-            throw new NLBExportException("Error while exporting NLB", e);
+            throw new NLBExportException("Error while exporting NLB: " + e.getMessage() , e);
         } catch (IOException e) {
-            throw new NLBExportException("Error while exporting NLB", e);
+            throw new NLBExportException("Error while exporting NLB: " + e.getMessage() , e);
         }
     }
 
