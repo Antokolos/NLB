@@ -207,9 +207,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 String selectedLanguage = (String) cb.getSelectedItem();
                 m_pageCaptionTextField.setText(m_pageCaptionTexts.get(selectedLanguage));
                 m_pageText.setText(m_pageTexts.get(selectedLanguage));
-                m_traverseTextTextField.setText(
-                        getTraverseTextInField(selectedLanguage, m_traverseTexts.get(selectedLanguage))
-                );
+                m_traverseTextTextField.setText(m_traverseTexts.get(selectedLanguage));
                 m_returnTextTextField.setText(m_returnTexts.get(selectedLanguage));
                 m_autowireInTextTextField.setText(m_autowireInTexts.get(selectedLanguage));
                 m_autowireOutTextTextField.setText(m_autowireOutTexts.get(selectedLanguage));
@@ -244,30 +242,10 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private void refreshTextsForCurrentLanguage() {
         m_pageCaptionTexts.put(m_selectedLanguage, m_pageCaptionTextField.getText());
         m_pageTexts.put(m_selectedLanguage, m_pageText.getText());
-        m_traverseTexts.put(
-                m_selectedLanguage,
-                getTraverseTextInPage(m_selectedLanguage, m_traverseTextTextField.getText())
-        );
+        m_traverseTexts.put(m_selectedLanguage, m_traverseTextTextField.getText());
         m_autowireInTexts.put(m_selectedLanguage, m_autowireInTextTextField.getText());
         m_autowireOutTexts.put(m_selectedLanguage, m_autowireOutTextTextField.getText());
         m_returnTexts.put(m_selectedLanguage, m_returnTextTextField.getText());
-    }
-
-    private String getTraverseTextInField(String langKey, String traverseTextInPage) {
-        boolean moduleIsEmpty = m_page.getModule().isEmpty();
-        if (moduleIsEmpty && Page.DEFAULT_TRAVERSE_TEXT.get(langKey).equals(traverseTextInPage)) {
-            return Constants.EMPTY_STRING;
-        } else {
-            return traverseTextInPage;
-        }
-    }
-
-    private String getTraverseTextInPage(String langKey, String traverseTextInField) {
-        if (Constants.EMPTY_STRING.equals(traverseTextInField)) {
-            return Page.DEFAULT_TRAVERSE_TEXT.get(langKey);
-        } else {
-            return traverseTextInField;
-        }
     }
 
     public void showDialog() {
@@ -319,13 +297,13 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_pageText.setText(page.getText());
 
         m_moduleNameTextField.setText(page.getModuleName());
-        m_traverseTextTextField.setText(
-                getTraverseTextInField(m_selectedLanguage, page.getTraverseText())
-        );
+        m_traverseTextTextField.setText(page.getTraverseText());
         m_autoTraverseCheckBox.setSelected(page.isAutoTraverse());
         m_autoReturnCheckBox.setSelected(page.isAutoReturn());
         m_returnTextTextField.setText(page.getReturnText());
         m_returnPageIdTextField.setText(page.getReturnPageId());
+        m_autowireInTextTextField.setText(page.getAutowireInText());
+        m_autowireOutTextTextField.setText(page.getAutowireOutText());
 
         m_linksTable.setModel(new LinksTableModelSwing(m_page.getLinks()));
 
