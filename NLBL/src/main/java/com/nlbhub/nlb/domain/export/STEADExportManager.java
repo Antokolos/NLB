@@ -620,16 +620,15 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageLabel(String labelText, int pageNumber) {
-        String roomName = (
-                (pageNumber == 1)
-                        ? "main"
-                        : (
-                        GOTO_PAGE_NUMBERS
-                                ? decorateId(String.valueOf(pageNumber))
-                                : decorateId(labelText)
-                )
-        );
-        return roomName + " = room {" + LINE_SEPARATOR;
+        StringBuilder roomBeginning = new StringBuilder();
+        String roomName = GOTO_PAGE_NUMBERS ? decorateId(String.valueOf(pageNumber)) : decorateId(labelText);
+        roomBeginning.append(roomName);
+        if (pageNumber == 1) {
+            roomBeginning.append(", main = room { nam = \"main\", enter = function(s) walk(main); end }, ");
+        } else {
+            roomBeginning.append(" = ");
+        }
+        return roomBeginning.toString() + "room {" + LINE_SEPARATOR;
     }
 
     @Override
