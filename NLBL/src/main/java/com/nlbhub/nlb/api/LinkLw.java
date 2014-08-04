@@ -191,7 +191,7 @@ public class LinkLw implements Link {
 
     @Override
     public String getId() {
-        return m_parent.getId() + "_" + m_type.name();
+        return m_parent.getId() + "_" + m_target + "_" + m_type.name();
     }
 
     @Override
