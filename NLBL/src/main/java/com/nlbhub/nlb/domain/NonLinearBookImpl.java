@@ -361,6 +361,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_existingAutoReturn;
         private final String m_existingReturnPageId;
         private final boolean m_existingAutowire;
+        private final MultiLangString m_existingAutowireInText;
+        private final MultiLangString m_existingAutowireOutText;
         private final boolean m_existingAutoIn;
         private final boolean m_existingAutoOut;
         private final String m_newImageFileName;
@@ -374,6 +376,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final MultiLangString m_newReturnText;
         private final String m_newReturnPageId;
         private final boolean m_newAutowire;
+        private final MultiLangString m_newAutowireInText;
+        private final MultiLangString m_newAutowireOutText;
         private final boolean m_newAutoIn;
         private final boolean m_newAutoOut;
         private AbstractNodeItem.SortLinksCommand m_sortLinkCommand;
@@ -395,6 +399,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String returnPageId,
                 final String moduleConsraintVariableBody,
                 final boolean autowire,
+                final MultiLangString autowireInText,
+                final MultiLangString autowireOutText,
                 final boolean autoIn,
                 final boolean autoOut,
                 final String autowireConstraintVariableBody,
@@ -442,6 +448,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingReturnText = m_page.getReturnTexts();
             m_existingReturnPageId = m_page.getReturnPageId();
             m_existingAutowire = m_page.isAutowire();
+            m_existingAutowireInText = m_page.getAutowireInTexts();
+            m_existingAutowireOutText = m_page.getAutowireOutTexts();
             m_existingAutoIn = m_page.isAutoIn();
             m_existingAutoOut = m_page.isAutoOut();
             m_newImageFileName = imageFileName;
@@ -455,6 +463,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newReturnText = returnText;
             m_newReturnPageId = returnPageId;
             m_newAutowire = autowire;
+            m_newAutowireInText = autowireInText;
+            m_newAutowireOutText = autowireOutText;
             m_newAutoIn = autoIn;
             m_newAutoOut = autoOut;
             for (final Link link : m_page.getLinks()) {
@@ -497,6 +507,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 // just does nothing if page was not in autowired list
                 removeAutowiredPageId(m_page.getId());
             }
+            m_page.setAutowireInTexts(m_newAutowireInText);
+            m_page.setAutowireOutTexts(m_newAutowireOutText);
             m_page.setAutoIn(m_newAutoIn);
             m_page.setAutoOut(m_newAutoOut);
             m_page.notifyObservers();
@@ -527,6 +539,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 // just does nothing if page was not in autowired list
                 removeAutowiredPageId(m_page.getId());
             }
+            m_page.setAutowireInTexts(m_existingAutowireInText);
+            m_page.setAutowireOutTexts(m_existingAutowireOutText);
             m_page.setAutoIn(m_existingAutoIn);
             m_page.setAutoOut(m_existingAutoOut);
             m_page.notifyObservers();
@@ -1177,6 +1191,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String returnPageId,
             final String moduleConsraintVariableName,
             final boolean autowire,
+            final MultiLangString autowireInText,
+            final MultiLangString autowireOutText,
             final boolean autoIn,
             final boolean autoOut,
             final String autowireConstraint,
@@ -1199,11 +1215,11 @@ public class NonLinearBookImpl implements NonLinearBook {
                         returnPageId,
                         moduleConsraintVariableName,
                         autowire,
+                        autowireInText,
+                        autowireOutText,
                         autoIn,
                         autoOut,
-                        autowireConstraint,
-                        linksTableModel
-                )
+                        autowireConstraint, linksTableModel)
         );
     }
 

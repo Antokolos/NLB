@@ -78,6 +78,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String RETTEXT_SUBDIR_NAME = "rettext";
     private static final String RETPAGE_FILE_NAME = "retpage";
     private static final String MODCNSID_FILE_NAME = "modcnsid";
+    private static final String AUTO_IN_TEXT_SUBDIR_NAME = "aintext";
+    private static final String AUTO_OUT_TEXT_SUBDIR_NAME = "aouttext";
     private static final String AUTO_IN_FILE_NAME = "auto_in";
     private static final String AUTO_OUT_FILE_NAME = "auto_out";
     private static final String AUTOWIRE_CONSTRID_FILE_NAME = "autoid";
@@ -98,6 +100,9 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private String m_moduleConstrId = DEFAULT_MODULE_CONSTR_ID;
 
     private NonLinearBookImpl m_module;
+
+    private MultiLangString m_autowireInText = DEFAULT_AUTOWIRE_IN_TEXT;
+    private MultiLangString m_autowireOutText = DEFAULT_AUTOWIRE_OUT_TEXT;
 
     private boolean m_autoIn = DEFAULT_AUTO_IN;
     private boolean m_autoOut = DEFAULT_AUTO_OUT;
@@ -330,6 +335,42 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     @Override
+    public String getAutowireInText() {
+        return m_autowireInText.get(getCurrentNLB().getLanguage());
+    }
+
+    @Override
+    public MultiLangString getAutowireInTexts() {
+        return MultiLangString.createCopy(m_autowireInText);
+    }
+
+    public void setAutowireInText(String autowireInText) {
+        m_autowireInText.put(getCurrentNLB().getLanguage(), autowireInText);
+    }
+
+    public void setAutowireInTexts(MultiLangString autowireInText) {
+        m_autowireInText = autowireInText;
+    }
+
+    @Override
+    public String getAutowireOutText() {
+        return m_autowireOutText.get(getCurrentNLB().getLanguage());
+    }
+
+    @Override
+    public MultiLangString getAutowireOutTexts() {
+        return MultiLangString.createCopy(m_autowireOutText);
+    }
+
+    public void setAutowireOutText(String autowireOutText) {
+        m_autowireOutText.put(getCurrentNLB().getLanguage(), autowireOutText);
+    }
+
+    public void setAutowireOutTexts(MultiLangString autowireOutText) {
+        m_autowireOutText = autowireOutText;
+    }
+
+    @Override
     public boolean isAutoIn() {
         return m_autoIn;
     }
@@ -449,6 +490,16 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     m_moduleConstrId,
                     DEFAULT_MODULE_CONSTR_ID
             );
+            fileManipulator.writeOptionalMultiLangString(
+                    new File(pageDir, AUTO_IN_TEXT_SUBDIR_NAME),
+                    m_autowireInText,
+                    DEFAULT_AUTOWIRE_IN_TEXT
+            );
+            fileManipulator.writeOptionalMultiLangString(
+                    new File(pageDir, AUTO_OUT_TEXT_SUBDIR_NAME),
+                    m_autowireOutText,
+                    DEFAULT_AUTOWIRE_OUT_TEXT
+            );
             fileManipulator.writeOptionalString(
                     pageDir,
                     AUTO_IN_FILE_NAME,
@@ -543,7 +594,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
             );
             m_returnText = (
                     FileManipulator.readOptionalMultiLangString(
-                            new File(pageDir,RETTEXT_SUBDIR_NAME),
+                            new File(pageDir, RETTEXT_SUBDIR_NAME),
                             DEFAULT_RETURN_TEXT
                     )
             );
@@ -559,6 +610,18 @@ public class PageImpl extends AbstractNodeItem implements Page {
                             pageDir,
                             MODCNSID_FILE_NAME,
                             DEFAULT_MODULE_CONSTR_ID
+                    )
+            );
+            m_autowireInText = (
+                    FileManipulator.readOptionalMultiLangString(
+                            new File(pageDir, AUTO_IN_TEXT_SUBDIR_NAME),
+                            DEFAULT_AUTOWIRE_IN_TEXT
+                    )
+            );
+            m_autowireOutText = (
+                    FileManipulator.readOptionalMultiLangString(
+                            new File(pageDir, AUTO_OUT_TEXT_SUBDIR_NAME),
+                            DEFAULT_AUTOWIRE_OUT_TEXT
                     )
             );
             m_autoIn = "true".equals(
@@ -616,6 +679,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
         result.setUseCaption(isUseCaption());
         result.setAutoTraverse(isAutoTraverse());
         result.setAutoReturn(isAutoReturn());
+        result.setAutowireInText(getAutowireInText());
+        result.setAutowireOutText(getAutowireOutText());
         result.setAutoIn(isAutoIn());
         result.setAutoOut(isAutoOut());
         result.setAutowireConstrId(getAutowireConstrId());

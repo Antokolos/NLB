@@ -160,6 +160,26 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public String getAutowireInText() {
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
+    public MultiLangString getAutowireInTexts() {
+        return MultiLangString.createCopy(DEFAULT_AUTOWIRE_IN_TEXT);
+    }
+
+    @Override
+    public String getAutowireOutText() {
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
+    public MultiLangString getAutowireOutTexts() {
+        return MultiLangString.createCopy(DEFAULT_AUTOWIRE_OUT_TEXT);
+    }
+
+    @Override
     public boolean isAutoIn() {
         return DEFAULT_AUTO_IN;
     }

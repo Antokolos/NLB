@@ -52,6 +52,8 @@ public interface Page extends NodeItem {
     public static final String DEFAULT_VARID = Constants.EMPTY_STRING;
     public static final MultiLangString DEFAULT_CAPTION = MultiLangString.createEmptyText();
     public static final MultiLangString DEFAULT_TRAVERSE_TEXT = MultiLangString.createDefaultTraverseText();
+    public static final MultiLangString DEFAULT_AUTOWIRE_IN_TEXT = MultiLangString.createDefaultLinkText();
+    public static final MultiLangString DEFAULT_AUTOWIRE_OUT_TEXT = MultiLangString.createDefaultLinkText();
     public static final boolean DEFAULT_USE_CAPTION = false;
     public static final boolean DEFAULT_AUTO_TRAVERSE = false;
     public static final boolean DEFAULT_AUTO_RETURN = false;
@@ -111,6 +113,10 @@ public interface Page extends NodeItem {
     public NonLinearBook getModule();
 
     public boolean isAutowire();
+    public String getAutowireInText();
+    public MultiLangString getAutowireInTexts();
+    public String getAutowireOutText();
+    public MultiLangString getAutowireOutTexts();
     public boolean isAutoIn();
     public boolean isAutoOut();
     public String getAutowireConstrId();
