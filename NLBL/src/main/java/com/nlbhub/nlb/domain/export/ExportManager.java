@@ -334,8 +334,9 @@ public abstract class ExportManager {
         blocks.setUseCaption(page.isUseCaption());
         blocks.setPageTextStart(decoratePageTextStart(page.getText()));
         blocks.setPageTextEnd(decoratePageTextEnd());
+        NonLinearBook nlb = exportData.getNlb();
         if (!StringHelper.isEmpty(page.getVarId())) {
-            Variable variable = exportData.getNlb().getVariableById(page.getVarId());
+            Variable variable = nlb.getVariableById(page.getVarId());
             // TODO: Add cases with deleted pages/links/variables etc. to the unit test
             if (!variable.isDeleted()) {
                 blocks.setPageVariable(decoratePageVariable(variable.getName()));
@@ -430,6 +431,46 @@ public abstract class ExportManager {
             );
             LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(link, exportData);
             blocks.addLinkBuildingBlocks(linkBuildingBlocks);
+        }
+        if (page.isAutowire()) {
+            // Add return autowired links on the fly
+            for (Page nlbPage : nlb.getPages().values()) {
+                if (!nlbPage.isAutowire()) {
+                    Link link = (
+                            new LinkLw(
+                                    LinkLw.Type.AutowiredOut,
+                                    nlbPage.getId(),
+                                    page,
+                                    page.getAutowireOutTexts(),
+                                    NonLinearBook.LC_VARID_PREFIX + nlbPage.getId(),
+                                    page.isAutoOut(),
+                                    true,
+                                    false
+                            )
+                    );
+                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(link, exportData);
+                    blocks.addLinkBuildingBlocks(linkBuildingBlocks);
+                }
+            }
+        } else {
+            // Please note, that we are not adding autowired inward links from autowired pages
+            for (String autowiredPageId : nlb.getAutowiredPagesIds()) {
+                // Add links for autowired pages on the fly
+                Link link = (
+                        new LinkLw(
+                                LinkLw.Type.AutowiredIn,
+                                autowiredPageId,
+                                page,
+                                nlb.getPageById(autowiredPageId).getAutowireInTexts(),
+                                Constants.EMPTY_STRING,
+                                page.isAutoIn(),
+                                true,
+                                false
+                        )
+                );
+                LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(link, exportData);
+                blocks.addLinkBuildingBlocks(linkBuildingBlocks);
+            }
         }
         return blocks;
     }

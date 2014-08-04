@@ -2260,7 +2260,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         } else if (m_parentNLB != null) {
             return m_parentNLB.getVariableById(varId);
         } else {
-            return null;
+            return getAutowiredVariable(varId);
         }
     }
 
@@ -2272,7 +2272,46 @@ public class NonLinearBookImpl implements NonLinearBook {
                 }
             }
         }
+        return getAutowiredVariable(varId);
+    }
+
+    private VariableImpl getAutowiredVariable(String varId) {
+        if (TRUE_VARID.equals(varId)) {
+            VariableImpl variable = new VariableImpl();
+            variable.setType(Variable.Type.EXPRESSION);
+            variable.setDataType(Variable.DataType.BOOLEAN);
+            variable.setValue("true");
+            return variable;
+        } else if (FALSE_VARID.equals(varId)) {
+            VariableImpl variable = new VariableImpl();
+            variable.setType(Variable.Type.EXPRESSION);
+            variable.setDataType(Variable.DataType.BOOLEAN);
+            variable.setValue("false");
+            return variable;
+        } else {
+            for (PageImpl page : m_pages.values()) {
+                if (varId.endsWith(page.getId())) {
+                    VariableImpl variable = new VariableImpl();
+                    boolean isLinkConstraint = varId.startsWith(LC_VARID_PREFIX);
+                    variable.setType(
+                            isLinkConstraint ? Variable.Type.LINKCONSTRAINT : Variable.Type.VAR
+                    );
+                    variable.setDataType(Variable.DataType.BOOLEAN);
+                    if (isLinkConstraint) {
+                        variable.setValue(decorateId(page.getId()));
+                    } else {
+                        variable.setName(decorateId(page.getId()));
+                    }
+
+                    return variable;
+                }
+            }
+        }
         return null;
+    }
+
+    public static String decorateId(String id) {
+        return "vl_" + id.replaceAll("-", "_");
     }
 
     @Override
@@ -2745,6 +2784,9 @@ public class NonLinearBookImpl implements NonLinearBook {
             }
         }
         for (Map.Entry<String, PageImpl> entry : m_pages.entrySet()) {
+            // For autowired vars
+            result.put(decorateId(entry.getKey()), Variable.DataType.BOOLEAN);
+
             final NonLinearBookImpl moduleImpl = entry.getValue().getModuleImpl();
             if (!moduleImpl.isEmpty()) {
                 result.putAll(

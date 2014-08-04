@@ -38,6 +38,8 @@
  */
 package com.nlbhub.nlb.api;
 
+import com.nlbhub.nlb.domain.ModificationImpl;
+import com.nlbhub.nlb.domain.VariableImpl;
 import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.StringHelper;
 import org.jetbrains.annotations.NotNull;
@@ -59,7 +61,7 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "link")
 public class LinkLw implements Link {
-    public static enum Type {Traverse, Return}
+    public static enum Type {Traverse, Return, AutowiredIn, AutowiredOut}
 
     private Type m_type;
     private String m_target;
@@ -69,6 +71,7 @@ public class LinkLw implements Link {
     private boolean m_auto;
     private boolean m_positiveConstraint;
     private boolean m_shouldObeyToModuleConstraint;
+    private List<Modification> m_modifications = new ArrayList<>();
 
     public LinkLw(
             Type type,
@@ -88,6 +91,17 @@ public class LinkLw implements Link {
         m_auto = auto;
         m_positiveConstraint = positiveConstraint;
         m_shouldObeyToModuleConstraint = shouldObeyToModuleConstraint;
+        if (m_type == Type.AutowiredIn || m_type == Type.AutowiredOut) {
+            ModificationImpl modification = new ModificationImpl();
+            modification.setType(Modification.Type.ASSIGN.name());
+            modification.setParent(this);
+            modification.setVarId(
+                    (m_type == Type.AutowiredIn) ? parent.getId() : target
+            );
+
+            modification.setExprId((m_type == Type.AutowiredIn) ? NonLinearBook.TRUE_VARID : NonLinearBook.FALSE_VARID);
+            m_modifications.add(modification);
+        }
     }
 
     @Override
@@ -162,11 +176,16 @@ public class LinkLw implements Link {
 
     @Override
     public List<Modification> getModifications() {
-        return new ArrayList<>();
+        return m_modifications;
     }
 
     @Override
     public Modification getModificationById(@NotNull String modId) {
+        for (Modification modification : m_modifications) {
+            if (modification.getId().equals(modId)) {
+                return modification;
+            }
+        }
         return null;
     }
 
@@ -207,5 +226,9 @@ public class LinkLw implements Link {
 
     @Override
     public void notifyObservers() {
+    }
+
+    public static String decorateId(String id) {
+        return "vl_" + id.replaceAll("-", "_");
     }
 }
