@@ -456,14 +456,15 @@ public abstract class ExportManager {
             // Please note, that we are not adding autowired inward links from autowired pages
             for (String autowiredPageId : nlb.getAutowiredPagesIds()) {
                 // Add links for autowired pages on the fly
+                final Page autowiredPage = nlb.getPageById(autowiredPageId);
                 Link link = (
                         new LinkLw(
                                 LinkLw.Type.AutowiredIn,
                                 autowiredPageId,
                                 page,
-                                nlb.getPageById(autowiredPageId).getAutowireInTexts(),
-                                Constants.EMPTY_STRING,
-                                page.isAutoIn(),
+                                autowiredPage.getAutowireInTexts(),
+                                autowiredPage.getAutowireConstrId(),
+                                autowiredPage.isAutoIn(),
                                 true,
                                 false
                         )
