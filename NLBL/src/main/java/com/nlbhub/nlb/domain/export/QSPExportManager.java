@@ -109,6 +109,16 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateTrue() {
+        return "1";
+    }
+
+    @Override
+    protected String decorateFalse() {
+        return "0";
+    }
+
+    @Override
     protected String decorateEq() {
         return "=";
     }

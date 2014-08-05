@@ -189,6 +189,16 @@ public abstract class HypertextExportManager
 
 
     @Override
+    protected String decorateTrue() {
+        return "ИСТИНА";
+    }
+
+    @Override
+    protected String decorateFalse() {
+        return "ЛОЖЬ";
+    }
+
+    @Override
     protected String decorateEq() {
         return "РАВНО";
     }

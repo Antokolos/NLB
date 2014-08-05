@@ -340,6 +340,16 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
+    protected String decorateTrue() {
+        return "true";
+    }
+
+    @Override
+    protected String decorateFalse() {
+        return "false";
+    }
+
+    @Override
     protected String decorateEq() {
         return "==";
     }

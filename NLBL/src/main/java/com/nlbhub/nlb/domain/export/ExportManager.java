@@ -767,6 +767,8 @@ public abstract class ExportManager {
                     )
             );
         }
+        expression = expression.replaceAll("\\b\\s*true\\s*\\b", " " + Matcher.quoteReplacement(decorateTrue()) + " ");
+        expression = expression.replaceAll("\\b\\s*false\\s*\\b", " " + Matcher.quoteReplacement(decorateFalse()) + " ");
         return expression;
     }
 
@@ -889,6 +891,10 @@ public abstract class ExportManager {
     protected abstract String decorateDelObj(String objectId, String objectName, String objectDisplayName);
 
     protected abstract String decorateAddObj(String objectId, String objectName, String objectDisplayName);
+
+    protected abstract String decorateTrue();
+
+    protected abstract String decorateFalse();
 
     protected abstract String decorateEq();
 
