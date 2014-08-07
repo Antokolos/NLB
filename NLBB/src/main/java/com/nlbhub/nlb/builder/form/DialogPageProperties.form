@@ -832,7 +832,7 @@
                                 <children>
                                   <vspacer id="76008">
                                     <constraints>
-                                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                                      <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
                                       <gridbag weightx="0.0" weighty="1.0"/>
                                     </constraints>
                                   </vspacer>
@@ -858,7 +858,7 @@
                                         </properties>
                                         <border type="none"/>
                                         <children>
-                                          <component id="43c31" class="javax.swing.JTextField" binding="m_autowireConstraintTextField">
+                                          <component id="43c31" class="javax.swing.JTextField" binding="m_autowireInConstraintTextField">
                                             <constraints/>
                                             <properties>
                                               <columns value="42"/>
@@ -876,12 +876,12 @@
                                     <properties>
                                       <horizontalTextPosition value="11"/>
                                       <labelFor value="43c31"/>
-                                      <text value="Autowire constraint"/>
+                                      <text value="Autowire in constraint"/>
                                     </properties>
                                   </component>
                                   <grid id="1f4b" layout-manager="BorderLayout" hgap="0" vgap="0">
                                     <constraints>
-                                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                       <gridbag weightx="0.0" weighty="0.0"/>
                                     </constraints>
                                     <properties/>
@@ -931,6 +931,49 @@
                                       </grid>
                                     </children>
                                   </grid>
+                                  <grid id="9a62b" layout-manager="GridBagLayout">
+                                    <constraints>
+                                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <minimumSize width="56" height="33"/>
+                                      <preferredSize width="505" height="33"/>
+                                    </properties>
+                                    <border type="none"/>
+                                    <children>
+                                      <scrollpane id="79a8e">
+                                        <constraints>
+                                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                          <gridbag weightx="1.0" weighty="1.0"/>
+                                        </constraints>
+                                        <properties>
+                                          <horizontalScrollBarPolicy value="31"/>
+                                          <verticalScrollBarPolicy value="21"/>
+                                        </properties>
+                                        <border type="none"/>
+                                        <children>
+                                          <component id="18876" class="javax.swing.JTextField" binding="m_autowireOutConstraintTextField">
+                                            <constraints/>
+                                            <properties>
+                                              <columns value="42"/>
+                                            </properties>
+                                          </component>
+                                        </children>
+                                      </scrollpane>
+                                    </children>
+                                  </grid>
+                                  <component id="42e4b" class="javax.swing.JLabel">
+                                    <constraints>
+                                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <horizontalTextPosition value="11"/>
+                                      <labelFor value="18876"/>
+                                      <text value="Autowire out constraint"/>
+                                    </properties>
+                                  </component>
                                 </children>
                               </grid>
                             </children>

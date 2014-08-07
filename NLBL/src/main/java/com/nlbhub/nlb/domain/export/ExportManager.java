@@ -442,7 +442,8 @@ public abstract class ExportManager {
                                     nlbPage.getId(),
                                     page,
                                     page.getAutowireOutTexts(),
-                                    NonLinearBook.LC_VARID_PREFIX + nlbPage.getId(),
+                                    NonLinearBook.LC_VARID_PREFIX
+                                            + page.getId() + NonLinearBook.LC_VARID_SEPARATOR_OUT + nlbPage.getId(),
                                     page.isAutoOut(),
                                     true,
                                     false
@@ -463,7 +464,7 @@ public abstract class ExportManager {
                                 autowiredPageId,
                                 page,
                                 autowiredPage.getAutowireInTexts(),
-                                autowiredPage.getAutowireConstrId(),
+                                autowiredPage.getAutowireInConstrId(),
                                 autowiredPage.isAutoIn(),
                                 true,
                                 false

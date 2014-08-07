@@ -190,8 +190,13 @@ public class RootModulePage implements Page {
     }
 
     @Override
-    public String getAutowireConstrId() {
-        return DEFAULT_AUTOWIRE_CONSTR_ID;
+    public String getAutowireInConstrId() {
+        return DEFAULT_AUTOWIRE_IN_CONSTR_ID;
+    }
+
+    @Override
+    public String getAutowireOutConstrId() {
+        return DEFAULT_AUTOWIRE_OUT_CONSTR_ID;
     }
 
     @Override

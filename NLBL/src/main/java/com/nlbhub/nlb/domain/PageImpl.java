@@ -82,7 +82,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String AUTO_OUT_TEXT_SUBDIR_NAME = "aouttext";
     private static final String AUTO_IN_FILE_NAME = "auto_in";
     private static final String AUTO_OUT_FILE_NAME = "auto_out";
-    private static final String AUTOWIRE_CONSTRID_FILE_NAME = "autoid";
+    private static final String AUTOWIRE_IN_CONSTRID_FILE_NAME = "autoid";
+    private static final String AUTOWIRE_OUT_CONSTRID_FILE_NAME = "autoutid";
 
     private static final String DEFAULT_MODULE_NAME_FORMAT = "%s's submodule";
     private String m_imageFileName = DEFAULT_IMAGE_FILE_NAME;
@@ -106,7 +107,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     private boolean m_autoIn = DEFAULT_AUTO_IN;
     private boolean m_autoOut = DEFAULT_AUTO_OUT;
-    private String m_autowireConstrId = DEFAULT_AUTOWIRE_CONSTR_ID;
+    private String m_autowireInConstrId = DEFAULT_AUTOWIRE_IN_CONSTR_ID;
+    private String m_autowireOutConstrId = DEFAULT_AUTOWIRE_OUT_CONSTR_ID;
 
     /**
      * Default contructor. It is needed for JAXB conversion, do not remove!
@@ -325,8 +327,12 @@ public class PageImpl extends AbstractNodeItem implements Page {
         m_autoOut = autoOut;
     }
 
-    public void setAutowireConstrId(String autowireConstrId) {
-        m_autowireConstrId = autowireConstrId;
+    public void setAutowireInConstrId(String autowireInConstrId) {
+        m_autowireInConstrId = autowireInConstrId;
+    }
+
+    public void setAutowireOutConstrId(String autowireOutConstrId) {
+        m_autowireOutConstrId = autowireOutConstrId;
     }
 
     @Override
@@ -381,8 +387,13 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     @Override
-    public String getAutowireConstrId() {
-        return m_autowireConstrId;
+    public String getAutowireInConstrId() {
+        return m_autowireInConstrId;
+    }
+
+    @Override
+    public String getAutowireOutConstrId() {
+        return m_autowireOutConstrId;
     }
 
     /**
@@ -514,9 +525,15 @@ public class PageImpl extends AbstractNodeItem implements Page {
             );
             fileManipulator.writeOptionalString(
                     pageDir,
-                    AUTOWIRE_CONSTRID_FILE_NAME,
-                    m_autowireConstrId,
-                    DEFAULT_AUTOWIRE_CONSTR_ID
+                    AUTOWIRE_IN_CONSTRID_FILE_NAME,
+                    m_autowireInConstrId,
+                    DEFAULT_AUTOWIRE_IN_CONSTR_ID
+            );
+            fileManipulator.writeOptionalString(
+                    pageDir,
+                    AUTOWIRE_OUT_CONSTRID_FILE_NAME,
+                    m_autowireOutConstrId,
+                    DEFAULT_AUTOWIRE_OUT_CONSTR_ID
             );
             writeModOrderFile(fileManipulator, pageDir);
             writeModifications(fileManipulator, pageDir);
@@ -638,11 +655,18 @@ public class PageImpl extends AbstractNodeItem implements Page {
                             String.valueOf(DEFAULT_AUTO_OUT)
                     )
             );
-            m_autowireConstrId = (
+            m_autowireInConstrId = (
                     FileManipulator.getOptionalFileAsString(
                             pageDir,
-                            AUTOWIRE_CONSTRID_FILE_NAME,
-                            DEFAULT_AUTOWIRE_CONSTR_ID
+                            AUTOWIRE_IN_CONSTRID_FILE_NAME,
+                            DEFAULT_AUTOWIRE_IN_CONSTR_ID
+                    )
+            );
+            m_autowireOutConstrId = (
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            AUTOWIRE_OUT_CONSTRID_FILE_NAME,
+                            DEFAULT_AUTOWIRE_OUT_CONSTR_ID
                     )
             );
             readNodeItemProperties(pageDir);
@@ -683,7 +707,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
         result.setAutowireOutText(getAutowireOutText());
         result.setAutoIn(isAutoIn());
         result.setAutoOut(isAutoOut());
-        result.setAutowireConstrId(getAutowireConstrId());
+        result.setAutowireInConstrId(getAutowireInConstrId());
+        result.setAutowireOutConstrId(getAutowireOutConstrId());
         result.setFill(getFill());
         result.setParent(getParent());
         result.setStroke(getStroke());

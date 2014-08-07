@@ -58,6 +58,8 @@ import javax.script.ScriptException;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The NonLinearBookImpl class represents the main storage for all Non-Linear Book entities.
@@ -66,6 +68,9 @@ import java.util.*;
  * @version 1.0 8/9/12
  */
 public class NonLinearBookImpl implements NonLinearBook {
+    private static final Pattern AUTOWIRED_OUT_PATTERN = (
+            Pattern.compile(LC_VARID_PREFIX + "(.*)" + LC_VARID_SEPARATOR_OUT)
+    );
     private static final String IMAGE_FILE_NAME_TEMPLATE = "%s_%d%s";
     private static final String STARTPOINT_FILE_NAME = "startpoint";
     private static final String LANGUAGE_FILE_NAME = "language";
@@ -348,7 +353,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final PageImpl m_page;
         private VariableTracker m_variableTracker;
         private VariableTracker m_moduleConstrIdTracker;
-        private VariableTracker m_autowireConstrIdTracker;
+        private VariableTracker m_autowireInConstrIdTracker;
+        private VariableTracker m_autowireOutConstrIdTracker;
 
         private final String m_existingImageFileName;
         private final MultiLangString m_existingPageText;
@@ -403,7 +409,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString autowireOutText,
                 final boolean autoIn,
                 final boolean autoOut,
-                final String autowireConstraintVariableBody,
+                final String autowireInConstraintVariableBody,
+                final String autowireOutConstraintVariableBody,
                 final LinksTableModel linksTableModel
         ) {
             m_page = getPageImplById(page.getId());
@@ -427,14 +434,24 @@ public class NonLinearBookImpl implements NonLinearBook {
                     moduleConsraintVariableBody,
                     m_page.getFullId()
             );
-            m_autowireConstrIdTracker = new VariableTracker(
+            m_autowireInConstrIdTracker = new VariableTracker(
                     currentNLB,
-                    getVariableImplById(m_page.getAutowireConstrId()),
-                    StringHelper.isEmpty(autowireConstraintVariableBody),
+                    getVariableImplById(m_page.getAutowireInConstrId()),
+                    StringHelper.isEmpty(autowireInConstraintVariableBody),
                     Variable.Type.AUTOWIRECONSTRAINT,
                     Variable.DataType.BOOLEAN,
                     Variable.DEFAULT_NAME,
-                    autowireConstraintVariableBody,
+                    autowireInConstraintVariableBody,
+                    m_page.getFullId()
+            );
+            m_autowireOutConstrIdTracker = new VariableTracker(
+                    currentNLB,
+                    getVariableImplById(m_page.getAutowireOutConstrId()),
+                    StringHelper.isEmpty(autowireOutConstraintVariableBody),
+                    Variable.Type.AUTOWIRECONSTRAINT,
+                    Variable.DataType.BOOLEAN,
+                    Variable.DEFAULT_NAME,
+                    autowireOutConstraintVariableBody,
                     m_page.getFullId()
             );
             m_existingImageFileName = m_page.getImageFileName();
@@ -491,7 +508,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setImageFileName(m_newImageFileName);
             m_page.setVarId(m_variableTracker.execute());
             m_page.setModuleConstrId(m_moduleConstrIdTracker.execute());
-            m_page.setAutowireConstrId(m_autowireConstrIdTracker.execute());
+            m_page.setAutowireInConstrId(m_autowireInConstrIdTracker.execute());
+            m_page.setAutowireOutConstrId(m_autowireOutConstrIdTracker.execute());
             m_page.setTexts(m_newPageText);
             m_page.setCaptions(m_newPageCaptionText);
             m_page.setUseCaption(m_newUseCaption);
@@ -523,7 +541,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setImageFileName(m_existingImageFileName);
             m_page.setVarId(m_variableTracker.revert());
             m_page.setModuleConstrId(m_moduleConstrIdTracker.revert());
-            m_page.setAutowireConstrId(m_autowireConstrIdTracker.revert());
+            m_page.setAutowireInConstrId(m_autowireInConstrIdTracker.revert());
+            m_page.setAutowireOutConstrId(m_autowireOutConstrIdTracker.revert());
             m_page.setTexts(m_existingPageText);
             m_page.setCaptions(m_existingPageCaptionText);
             m_page.setUseCaption(m_existingUseCaption);
@@ -1195,7 +1214,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             final MultiLangString autowireOutText,
             final boolean autoIn,
             final boolean autoOut,
-            final String autowireConstraint,
+            final String autowireInConstraint,
+            final String autowireOutConstraint,
             final LinksTableModel linksTableModel
     ) {
         return (
@@ -1219,7 +1239,10 @@ public class NonLinearBookImpl implements NonLinearBook {
                         autowireOutText,
                         autoIn,
                         autoOut,
-                        autowireConstraint, linksTableModel)
+                        autowireInConstraint,
+                        autowireOutConstraint,
+                        linksTableModel
+                )
         );
     }
 
@@ -2290,7 +2313,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             return variable;
         } else {
             for (PageImpl page : m_pages.values()) {
-                if (varId.endsWith(page.getId())) {
+                if (varId != null && varId.endsWith(page.getId())) {
                     VariableImpl variable = new VariableImpl();
                     boolean isLinkConstraint = varId.startsWith(LC_VARID_PREFIX);
                     variable.setType(
@@ -2298,7 +2321,21 @@ public class NonLinearBookImpl implements NonLinearBook {
                     );
                     variable.setDataType(Variable.DataType.BOOLEAN);
                     if (isLinkConstraint) {
-                        variable.setValue(decorateId(page.getId()));
+                        VariableImpl autowiredOutConstraint = null;
+                        Matcher matcher = AUTOWIRED_OUT_PATTERN.matcher(varId);
+                        if (matcher.find()) {
+                            String autowiredPageId = matcher.group(1);
+                            PageImpl autowiredPage = getPageImplById(autowiredPageId);
+                            autowiredOutConstraint = getVariableImplById(autowiredPage.getAutowireOutConstrId());
+                        }
+                        variable.setValue(
+                                decorateId(page.getId()) +
+                                        (
+                                                (autowiredOutConstraint != null)
+                                                        ? " && " + autowiredOutConstraint.getValue()
+                                                        : ""
+                                        )
+                        );
                     } else {
                         variable.setName(decorateId(page.getId()));
                     }
