@@ -203,6 +203,8 @@ public class STEADExportManager extends TextExportManager {
                 if (constrained) {
                     autosBuilder.append("if (").append(linkBlocks.getLinkConstraint()).append(") then ");
                 }
+                autosBuilder.append(linkBlocks.getLinkVariable());
+                autosBuilder.append(linkBlocks.getLinkModifications());
                 autosBuilder.append(linkBlocks.getLinkGoTo());
                 if (constrained) {
                     autosBuilder.append(" end;");
