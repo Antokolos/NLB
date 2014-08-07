@@ -1786,6 +1786,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_rootDir = rootDir;
         m_parentNLB = parentNLB;
         m_parentPage = parentPage;
+        readAutowiredPagesFile(rootDir);
         readBookProperties(rootDir);
         readObjs(rootDir);
         readPages(rootDir);
