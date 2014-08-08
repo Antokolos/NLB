@@ -997,11 +997,13 @@ public class NonLinearBookImpl implements NonLinearBook {
      */
     class DeletePageCommand extends DeleteNodeCommand implements NLBCommand {
         private PageImpl m_page;
+        private boolean m_isAutowired;
         private ChangeStartPointCommand m_changeStartPointCommand = null;
 
         private DeletePageCommand(PageImpl page, final List<Link> adjacentLinks) {
             super(adjacentLinks);
             m_page = page;
+            m_isAutowired = isAutowired(page.getId());
             if (page.getId().equals(getStartPoint())) {
                 // reset the StartPoint
                 m_changeStartPointCommand = new ChangeStartPointCommand("");
@@ -1018,6 +1020,9 @@ public class NonLinearBookImpl implements NonLinearBook {
             if (m_changeStartPointCommand != null) {
                 m_changeStartPointCommand.execute();
             }
+            if (m_isAutowired) {
+                removeAutowiredPageId(m_page.getId());
+            }
             m_page.notifyObservers();
         }
 
@@ -1027,6 +1032,9 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setDeleted(false);
             if (m_changeStartPointCommand != null) {
                 m_changeStartPointCommand.revert();
+            }
+            if (m_isAutowired) {
+                addAutowiredPageId(m_page.getId());
             }
             m_page.notifyObservers();
 

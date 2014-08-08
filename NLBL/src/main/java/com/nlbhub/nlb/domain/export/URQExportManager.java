@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.domain.export;
 
+import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
@@ -79,6 +80,7 @@ public class URQExportManager extends TextExportManager {
         if (pageBlocks.isUseCaption()) {
             stringBuilder.append(pageBlocks.getPageCaption());
         }
+        stringBuilder.append(pageBlocks.getPageImage());
         stringBuilder.append(pageBlocks.getPageTextStart());
         stringBuilder.append(pageBlocks.getPageTextEnd());
         stringBuilder.append(pageBlocks.getPageVariable());
@@ -264,8 +266,11 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageImage(String pageImagePath) {
-        // TODO: implement and use
-        throw new UnsupportedOperationException("This operation is unsupported");
+        if (!StringHelper.isEmpty(pageImagePath)) {
+            return "Image=" + pageImagePath + LINE_SEPARATOR;
+        } else {
+            return Constants.EMPTY_STRING;
+        }
     }
 
     /**

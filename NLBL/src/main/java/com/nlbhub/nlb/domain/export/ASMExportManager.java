@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.domain.export;
 
+import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
@@ -197,7 +198,7 @@ public class ASMExportManager extends TextExportManager {
     @Override
     protected String decoratePageImage(String pageImagePath) {
         // TODO: implement and use
-        throw new UnsupportedOperationException("This operation is unsupported");
+        return Constants.EMPTY_STRING;
     }
 
     @Override
