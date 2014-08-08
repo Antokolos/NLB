@@ -267,7 +267,7 @@ public class URQExportManager extends TextExportManager {
     @Override
     protected String decoratePageImage(String pageImagePath) {
         if (!StringHelper.isEmpty(pageImagePath)) {
-            return "Image=" + pageImagePath + LINE_SEPARATOR;
+            return "image " + pageImagePath + LINE_SEPARATOR;
         } else {
             return Constants.EMPTY_STRING;
         }
