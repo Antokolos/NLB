@@ -49,10 +49,7 @@ import com.nlbhub.nlb.vcs.VCSAdapter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * The NonLinearBookFacade class
@@ -375,13 +372,15 @@ public class NonLinearBookFacade implements NLBObservable {
 
     public void updateNodeCoords(
             final NodeItem nodeItem,
-            final float left,
-            final float top,
+            final Set<NodeItem> additionallyMovedItems,
             final float deltaX,
             final float deltaY
     ) {
         final CommandChainCommand commandChain = new CommandChainCommand();
-        updateNodeCoords(commandChain, nodeItem, left, top, deltaX, deltaY);
+        updateNodeCoords(commandChain, nodeItem, deltaX, deltaY);
+        for (NodeItem additionalNodeItem : additionallyMovedItems) {
+            updateNodeCoords(commandChain, additionalNodeItem, deltaX, deltaY);
+        }
         m_undoManager.executeAndStore(commandChain);
         notifyObservers();
     }
@@ -389,12 +388,10 @@ public class NonLinearBookFacade implements NLBObservable {
     private void updateNodeCoords(
             final CommandChainCommand commandChain,
             final NodeItem nodeItem,
-            final float left,
-            final float top,
             final float deltaX,
             final float deltaY
     ) {
-        final NLBCommand command = new UpdateNodeCoordsCommand(m_nlb, nodeItem, left, top);
+        final NLBCommand command = new UpdateNodeCoordsCommand(m_nlb, nodeItem, deltaX, deltaY);
         commandChain.addCommand(command);
         offsetContainedObjects(commandChain, nodeItem, deltaX, deltaY);
     }
@@ -411,8 +408,6 @@ public class NonLinearBookFacade implements NLBObservable {
             updateNodeCoords(
                     commandChain,
                     node,
-                    nodeCoords.getLeft() + deltaX,
-                    nodeCoords.getTop() + deltaY,
                     deltaX,
                     deltaY
             );

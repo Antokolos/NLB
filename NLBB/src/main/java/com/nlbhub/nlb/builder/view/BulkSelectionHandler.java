@@ -52,6 +52,7 @@ import java.util.*;
  * @author Anton P. Kolosov
  */
 public class BulkSelectionHandler {
+    public static final Set<String> EMPTY_SET = new HashSet<>();
     private Set<String> m_selectedPagesIds = new HashSet<>();
     private Set<String> m_selectedObjsIds = new HashSet<>();
 
@@ -60,12 +61,24 @@ public class BulkSelectionHandler {
         m_selectedObjsIds.clear();
     }
 
-    public Set<String> getSelectedPagesIds() {
-        return m_selectedPagesIds;
+    public Set<String> getSelectedPagesIds(Set<String> excludeIdsSet) {
+        Set<String> selectedPagesIds = new HashSet<>();
+        for (String pageId : m_selectedPagesIds) {
+            if (!excludeIdsSet.contains(pageId)) {
+                selectedPagesIds.add(pageId);
+            }
+        }
+        return selectedPagesIds;
     }
 
-    public Set<String> getSelectedObjsIds() {
-        return m_selectedObjsIds;
+    public Set<String> getSelectedObjsIds(Set<String> excludeIdsSet) {
+        Set<String> selectedObjsIds = new HashSet<>();
+        for (String objId : m_selectedObjsIds) {
+            if (!excludeIdsSet.contains(objId)) {
+                selectedObjsIds.add(objId);
+            }
+        }
+        return selectedObjsIds;
     }
 
     public void makeSelection(
@@ -123,10 +136,10 @@ public class BulkSelectionHandler {
     }
 
     public void recolor(final GraphItemsMapper graphItemsMapper, final Color color) {
-        for (String selectedPageId : getSelectedPagesIds()) {
+        for (String selectedPageId : getSelectedPagesIds(EMPTY_SET)) {
             graphItemsMapper.getPageById(selectedPageId).setPaint(color);
         }
-        for (String selectedObjId : getSelectedObjsIds()) {
+        for (String selectedObjId : getSelectedObjsIds(EMPTY_SET)) {
             graphItemsMapper.getObjById(selectedObjId).setPaint(color);
         }
     }

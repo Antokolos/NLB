@@ -78,14 +78,15 @@ public class UpdateNodeCoordsCommand implements NLBCommand {
     public UpdateNodeCoordsCommand(
             NonLinearBookImpl nonLinearBook,
             NodeItem node,
-            final float left,
-            final float top
+            final float deltaX,
+            final float deltaY
     ) {
         this(nonLinearBook, node);
         m_width = m_widthPrev;
         m_height = m_heightPrev;
-        m_left = left;
-        m_top = top;
+        final CoordsImpl coords = m_nodeItem.getCoords();
+        m_left = coords.getLeft() + deltaX;
+        m_top = coords.getTop() + deltaY;
     }
 
     public UpdateNodeCoordsCommand(

@@ -249,11 +249,12 @@ public class GraphEditor extends PCanvas {
 
     // Create event handler to move nodes and update edges
     private class GraphDragEventHandler<T extends NodePath> extends PDragEventHandler {
-        T m_prevNode = null;
-        T m_selectedNode = null;
-        PPath m_dragEdge = new PPath();
-        Color m_mouseOverColor;
-        String m_attributeName;
+        private T m_prevNode = null;
+        private T m_selectedNode = null;
+        private PPath m_dragEdge = new PPath();
+        private Color m_mouseOverColor;
+        private String m_attributeName;
+        private Set<NodeItem> m_additionallyMovedNodes = new HashSet<>();
 
         {
             m_dragEdge.setStrokePaint(LinkPath.NORMAL_STROKE_PAINT);
@@ -291,6 +292,7 @@ public class GraphEditor extends PCanvas {
         }
 
         protected void startDrag(PInputEvent e) {
+            m_additionallyMovedNodes = new HashSet<>();
             if (!isAddLinkMode()) {
                 super.startDrag(e);
                 e.setHandled(true);
@@ -311,18 +313,29 @@ public class GraphEditor extends PCanvas {
                 super.drag(e);
                 final PNode pickedNode = e.getPickedNode();
                 final Dimension2D delta = e.getDeltaRelativeTo(pickedNode);
-                offsetContainedObjects(pickedNode, (float) delta.getWidth(), (float) delta.getHeight());
+                Set<String> alreadyMovedObjsIds = (
+                        offsetContainedObjects(pickedNode, (float) delta.getWidth(), (float) delta.getHeight())
+                );
 
                 NodeItem nodeItem = (NodeItem) pickedNode.getAttribute(Constants.NLB_PAGE_ATTR);
                 if (nodeItem == null) {
                     nodeItem = (NodeItem) pickedNode.getAttribute(Constants.NLB_OBJ_ATTR);
                 }
                 m_nlbFacade.invalidateAssociatedLinks(nodeItem);
+                m_additionallyMovedNodes = (
+                        offsetSelectedObjects(
+                                nodeItem,
+                                alreadyMovedObjsIds,
+                                (float) delta.getWidth(),
+                                (float) delta.getHeight()
+                        )
+                );
                 e.setHandled(true);
             }
         }
 
-        private void offsetContainedObjects(PNode container, float deltaX, float deltaY) {
+        private Set<String> offsetContainedObjects(PNode container, float deltaX, float deltaY) {
+            Set<String> movedObjsIds = new HashSet<>();
             List<PNode> containedObjsNodes = m_graphItemsMapper.getContainedObjsNodes(container);
             for (PNode node : containedObjsNodes) {
                 node.moveInFrontOf(container);
@@ -331,9 +344,46 @@ public class GraphEditor extends PCanvas {
                 if (nodeItem == null) {
                     nodeItem = (NodeItem) node.getAttribute(Constants.NLB_OBJ_ATTR);
                 }
+                movedObjsIds.add(nodeItem.getId());
                 m_nlbFacade.invalidateAssociatedLinks(nodeItem);
-                offsetContainedObjects(node, deltaX, deltaY);
+                movedObjsIds.addAll(offsetContainedObjects(node, deltaX, deltaY));
             }
+            return movedObjsIds;
+        }
+
+        private Set<NodeItem> offsetSelectedObjects(
+                NodeItem originator,
+                Set<String> alreadyMovedObjsIds,
+                float deltaX,
+                float deltaY
+        ) {
+            Set<String> allAlreadyMovedObjsIds = new HashSet<>();
+            Set<String> additionalAlreadyMovedObjsIds = new HashSet<>();
+            allAlreadyMovedObjsIds.addAll(alreadyMovedObjsIds);
+            Set<NodeItem> changedNodes = new HashSet<>();
+            Set<String> selectedPagesIds = m_bulkSelectionHandler.getSelectedPagesIds(BulkSelectionHandler.EMPTY_SET);
+            for (String pageId : selectedPagesIds) {
+                if (!pageId.equals(originator.getId())) {
+                    PagePath pagePath = m_graphItemsMapper.getPageById(pageId);
+                    pagePath.offset(deltaX, deltaY);
+                    allAlreadyMovedObjsIds.addAll(offsetContainedObjects(pagePath, deltaX, deltaY));
+                    NodeItem nodeItem = (NodeItem) pagePath.getAttribute(Constants.NLB_PAGE_ATTR);
+                    changedNodes.add(nodeItem);
+                    m_nlbFacade.invalidateAssociatedLinks(nodeItem);
+                }
+            }
+            Set<String> selectedObjsIds = m_bulkSelectionHandler.getSelectedObjsIds(allAlreadyMovedObjsIds);
+            for (String objId : selectedObjsIds) {
+                if (!objId.equals(originator.getId()) && !additionalAlreadyMovedObjsIds.contains(objId)) {
+                    ObjPath objPath = m_graphItemsMapper.getObjById(objId);
+                    objPath.offset(deltaX, deltaY);
+                    additionalAlreadyMovedObjsIds.addAll(offsetContainedObjects(objPath, deltaX, deltaY));
+                    NodeItem nodeItem = (NodeItem) objPath.getAttribute(Constants.NLB_OBJ_ATTR);
+                    changedNodes.add(nodeItem);
+                    m_nlbFacade.invalidateAssociatedLinks(nodeItem);
+                }
+            }
+            return changedNodes;
         }
 
         @Override
@@ -360,8 +410,7 @@ public class GraphEditor extends PCanvas {
                         ) {
                     m_nlbFacade.updateNodeCoords(
                             nodeItem,
-                            (float) ptDst.getX(),
-                            (float) ptDst.getY(),
+                            m_additionallyMovedNodes,
                             deltaX,
                             deltaY
                     );
