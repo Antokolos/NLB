@@ -123,6 +123,44 @@ public class PageImpl extends AbstractNodeItem implements Page {
         init();
     }
 
+    /*
+    TODO: review this carefully! If copying entire page structure, new Pages should be created for link targets, and also all variables should be copied, too
+    public PageImpl(PageImpl source) {
+        this(source.getCurrentNLB());
+        setTexts(source.getTexts());
+        final Coords sourceCoords = source.getCoords();
+        final CoordsImpl resultCoords = getCoords();
+        resultCoords.setLeft(sourceCoords.getLeft());
+        resultCoords.setTop(sourceCoords.getTop());
+        resultCoords.setWidth(sourceCoords.getWidth());
+        resultCoords.setHeight(sourceCoords.getHeight());
+        setDeleted(source.isDeleted());
+        setReturnPageId(source.getReturnPageId());
+        setVarId(source.getVarId());
+        setCaptions(source.getCaptions());
+        setModuleConstrId(source.getModuleConstrId());
+        setModuleName(source.getModuleName());
+        setReturnTexts(source.getReturnTexts());
+        setTraverseTexts(source.getTraverseTexts());
+        setUseCaption(source.isUseCaption());
+        setAutoTraverse(source.isAutoTraverse());
+        setAutoReturn(source.isAutoReturn());
+        setAutowireInTexts(source.getAutowireInTexts());
+        setAutowireOutTexts(source.getAutowireOutTexts());
+        setAutoIn(source.isAutoIn());
+        setAutoOut(source.isAutoOut());
+        setAutowireInConstrId(source.getAutowireInConstrId());
+        setAutowireOutConstrId(source.getAutowireOutConstrId());
+        setFill(source.getFill());
+        setParent(source.getParent());
+        setStroke(source.getStroke());
+        setTextColor(source.getTextColor());
+        for (Link link : source.getLinks()) {
+            addLink(new LinkImpl(this, link));
+        }
+    }
+    */
+
     private void init() {
         m_module = new NonLinearBookImpl(getCurrentNLB(), this);
         resetDefaultModuleName();
@@ -681,7 +719,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     public PageImpl createFilteredClone(
             final List<String> linkIdsToBeExcluded,
-            List<Link> linksToBeAdded
+            final List<Link> linksToBeAdded
     ) {
         PageImpl result = new PageImpl(getCurrentNLB());
         result.setId(getId());

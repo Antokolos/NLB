@@ -1166,6 +1166,114 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
+    class CutCommand implements NLBCommand {
+        private NonLinearBookImpl m_prevClipboardData;
+        private NonLinearBookImpl m_newClipboardData;
+
+        CutCommand(final Collection<String> pageIds, final Collection<String> objIds) {
+            m_prevClipboardData = Clipboard.singleton().getNonLinearBook();
+            m_newClipboardData = new NonLinearBookImpl();
+            Set<String> allObjIds = new HashSet<>();
+            for (String pageId : pageIds) {
+                PageImpl page = getPageImplById(pageId);
+                if (page != null && !page.isDeleted()) {
+                    m_newClipboardData.addPage(page);
+                    copyModificationVariables(page, m_newClipboardData);
+                    // also we should move all related variables to the new NLB
+                    VariableImpl autowireInConstraint = getVariableImplById(page.getAutowireInConstrId());
+                    VariableImpl autowireOutConstraint = getVariableImplById(page.getAutowireOutConstrId());
+                    VariableImpl moduleConstraint = getVariableImplById(page.getModuleConstrId());
+                    VariableImpl pageVariable = getVariableImplById(page.getVarId());
+                    if (autowireInConstraint != null && !autowireInConstraint.isDeleted()) {
+                        m_newClipboardData.addVariable(autowireInConstraint);
+                    }
+                    if (autowireOutConstraint != null && !autowireOutConstraint.isDeleted()) {
+                        m_newClipboardData.addVariable(autowireOutConstraint);
+                    }
+                    if (moduleConstraint != null && !moduleConstraint.isDeleted()) {
+                        m_newClipboardData.addVariable(moduleConstraint);
+                    }
+                    if (pageVariable != null && !pageVariable.isDeleted()) {
+                        m_newClipboardData.addVariable(pageVariable);
+                    }
+                    allObjIds.addAll(copyLinksAndCheckContainedObjects(page, objIds, m_newClipboardData));
+                }
+            }
+            allObjIds.addAll(objIds);
+            for (String objId : allObjIds) {
+                ObjImpl obj = getObjImplById(objId);
+                if (obj != null && !obj.isDeleted()) {
+                    m_newClipboardData.addObj(obj);
+                    copyModificationVariables(obj, m_newClipboardData);
+                    // TODO: add other properties, like in Page
+                }
+            }
+        }
+
+        private Set<String> copyLinksAndCheckContainedObjects(
+                final AbstractNodeItem nodeItem,
+                final Collection<String> objIds,
+                final NonLinearBookImpl target
+        ) {
+            Set<String> nodeItemAdditionalObjIds = new HashSet<>();
+            // if some containing objects is not listed in objIds, add them
+            for (String containedObjId : nodeItem.getContainedObjIds()) {
+                if (!objIds.contains(containedObjId)) {
+                    ObjImpl obj = getObjImplById(containedObjId);
+                    if (!obj.isDeleted()) {
+                        nodeItemAdditionalObjIds.add(containedObjId);
+                    }
+                }
+            }
+            // Links will be moved automatically because they are contained inside nodes.
+            // One nasty thing: we should move related variables too, including variables inside modifications.
+            // Also please note that links pointing to items which is not inside our id list will be broken.
+            // We should take this into account when pasting.
+            for (LinkImpl link : nodeItem.getLinkImpls()) {
+                if (!link.isDeleted()) {
+                    copyModificationVariables(link, target);
+                    VariableImpl linkVariable = getVariableImplById(link.getVarId());
+                    VariableImpl linkConstraint = getVariableImplById(link.getConstrId());
+                    if (linkVariable != null && !linkVariable.isDeleted()) {
+                        target.addVariable(linkVariable);
+                    }
+                    if (linkConstraint != null && !linkConstraint.isDeleted()) {
+                        target.addVariable(linkConstraint);
+                    }
+                }
+            }
+            return nodeItemAdditionalObjIds;
+        }
+
+        private void copyModificationVariables(
+                final AbstractModifyingItem modifyingItem,
+                final NonLinearBookImpl target
+        ) {
+            for (ModificationImpl modification : modifyingItem.getModificationImpls()) {
+                if (!modification.isDeleted()) {
+                    VariableImpl modificationVariable = getVariableImplById(modification.getVarId());
+                    VariableImpl modificationExpression = getVariableImplById(modification.getExprId());
+                    if (modificationVariable != null && !modificationVariable.isDeleted()) {
+                        target.addVariable(modificationVariable);
+                    }
+                    if (modificationExpression != null && !modificationExpression.isDeleted()) {
+                        target.addVariable(modificationExpression);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void execute() {
+
+        }
+
+        @Override
+        public void revert() {
+            Clipboard.singleton().setNonLinearBook(m_prevClipboardData);
+        }
+    }
+
     public NonLinearBookImpl() {
         m_parentNLB = null;
         m_language = DEFAULT_LANGUAGE;
