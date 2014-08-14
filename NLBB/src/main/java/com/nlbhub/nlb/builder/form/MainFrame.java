@@ -827,8 +827,6 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_cutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                /*
-                Commented for now
                 PaneEditorInfo paneInfo = getSelectedPaneInfo();
                 BulkSelectionHandler bulkSelectionHandler = paneInfo.getPaneGraphEditor().getBulkSelectionHandler();
                 if (bulkSelectionHandler.hasSelection()) {
@@ -836,7 +834,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                             bulkSelectionHandler.getSelectedPagesIds(),
                             bulkSelectionHandler.getSelectedObjsIds()
                     );
-                }*/
+                }
             }
         });
         m_findButton.addActionListener(new ActionListener() {
@@ -1367,7 +1365,6 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     }
 
     private void disableNonimplementedControls() {
-        m_cutButton.setEnabled(false);
         m_copyButton.setEnabled(false);
         m_pasteButton.setEnabled(false);
     }

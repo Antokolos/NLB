@@ -123,43 +123,34 @@ public class PageImpl extends AbstractNodeItem implements Page {
         init();
     }
 
-    /*
-    TODO: review this carefully! If copying entire page structure, new Pages should be created for link targets, and also all variables should be copied, too
+    /**
+     * NB: Please take into account that it will create full copy, including ids and such
+     */
     public PageImpl(PageImpl source) {
-        this(source.getCurrentNLB());
-        setTexts(source.getTexts());
-        final Coords sourceCoords = source.getCoords();
-        final CoordsImpl resultCoords = getCoords();
-        resultCoords.setLeft(sourceCoords.getLeft());
-        resultCoords.setTop(sourceCoords.getTop());
-        resultCoords.setWidth(sourceCoords.getWidth());
-        resultCoords.setHeight(sourceCoords.getHeight());
-        setDeleted(source.isDeleted());
-        setReturnPageId(source.getReturnPageId());
+        super(source);
+        m_imageFileName = source.getImageFileName();
         setVarId(source.getVarId());
         setCaptions(source.getCaptions());
-        setModuleConstrId(source.getModuleConstrId());
-        setModuleName(source.getModuleName());
-        setReturnTexts(source.getReturnTexts());
-        setTraverseTexts(source.getTraverseTexts());
         setUseCaption(source.isUseCaption());
+        setTexts(source.getTexts());
+        setModuleName(source.getModuleName());
+        resetDefaultModuleName();
+        setTraverseTexts(source.getTraverseTexts());
         setAutoTraverse(source.isAutoTraverse());
         setAutoReturn(source.isAutoReturn());
+        setReturnTexts(source.getReturnTexts());
+        setReturnPageId(source.getReturnPageId());
+        setModuleConstrId(source.getModuleConstrId());
+        m_module = new NonLinearBookImpl(source.getCurrentNLB(), this);
+        m_module.append(source.getModuleImpl());
         setAutowireInTexts(source.getAutowireInTexts());
         setAutowireOutTexts(source.getAutowireOutTexts());
         setAutoIn(source.isAutoIn());
         setAutoOut(source.isAutoOut());
         setAutowireInConstrId(source.getAutowireInConstrId());
         setAutowireOutConstrId(source.getAutowireOutConstrId());
-        setFill(source.getFill());
-        setParent(source.getParent());
-        setStroke(source.getStroke());
-        setTextColor(source.getTextColor());
-        for (Link link : source.getLinks()) {
-            addLink(new LinkImpl(this, link));
-        }
+        init();
     }
-    */
 
     private void init() {
         m_module = new NonLinearBookImpl(getCurrentNLB(), this);

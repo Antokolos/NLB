@@ -102,6 +102,16 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         return null;
     }
 
+    public ObjImpl(ObjImpl source) {
+        super(source);
+        m_varId = source.getVarId();
+        m_name = source.getName();
+        setDisps(source.getDisps());
+        setTexts(source.getTexts());
+        m_takable = source.isTakable();
+        m_containerId = source.getContainerId();
+    }
+
     public ObjImpl(NonLinearBook currentNLB) {
         super(currentNLB);
     }

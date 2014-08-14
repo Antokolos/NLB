@@ -242,6 +242,24 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
         super();
     }
 
+    public AbstractNodeItem(final @NotNull NodeItem nodeItem) {
+        super(nodeItem);
+        m_stroke = nodeItem.getStroke();
+        m_fill = nodeItem.getFill();
+        m_textColor = nodeItem.getTextColor();
+        Coords coords = nodeItem.getCoords();
+        m_coords.setHeight(coords.getHeight());
+        m_coords.setWidth(coords.getWidth());
+        m_coords.setLeft(coords.getLeft());
+        m_coords.setTop(coords.getTop());
+        for (Link link : nodeItem.getLinks()) {
+            m_links.add(new LinkImpl(this, link));
+        }
+        for (String containedObjId : nodeItem.getContainedObjIds()) {
+            m_containedObjIds.add(containedObjId);
+        }
+    }
+
     ResizeNodeCommand createResizeNodeCommand(
             Orientation orientation,
             double deltaX,

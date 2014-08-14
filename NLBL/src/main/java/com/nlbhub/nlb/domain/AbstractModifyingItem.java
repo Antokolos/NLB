@@ -83,6 +83,14 @@ public abstract class AbstractModifyingItem extends AbstractIdentifiableItem imp
         super(currentNLB);
     }
 
+    protected AbstractModifyingItem(ModifyingItem modifyingItem) {
+        super(modifyingItem);
+        for (Modification modification : modifyingItem.getModifications()) {
+            ModificationImpl modificationImpl = new ModificationImpl(modification);
+            m_modifications.add(modificationImpl);
+        }
+    }
+
     @Override
     public List<Modification> getModifications() {
         List<Modification> result = new ArrayList<>();
