@@ -464,6 +464,12 @@ public class NonLinearBookFacade implements NLBObservable {
         notifyObservers();
     }
 
+    public void cut(final Collection<String> pageIds, final Collection<String> objIds) {
+        NonLinearBookImpl.CutCommand command = m_nlb.createCutCommand(pageIds, objIds);
+        m_undoManager.executeAndStore(command);
+        notifyObservers();
+    }
+
     /**
      * This method is not participating in undo. It pre-creates page.
      */

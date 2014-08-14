@@ -289,6 +289,8 @@ public interface NonLinearBook {
 
     public Variable getVariableById(String varId);
 
+    public List<Variable> getVariables();
+
     public SearchResultTableModel getLeafs(String modulePageId);
 
     public SearchResultTableModel searchText(

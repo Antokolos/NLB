@@ -361,7 +361,7 @@ public class GraphEditor extends PCanvas {
             Set<String> additionalAlreadyMovedObjsIds = new HashSet<>();
             allAlreadyMovedObjsIds.addAll(alreadyMovedObjsIds);
             Set<NodeItem> changedNodes = new HashSet<>();
-            Set<String> selectedPagesIds = m_bulkSelectionHandler.getSelectedPagesIds(BulkSelectionHandler.EMPTY_SET);
+            Set<String> selectedPagesIds = m_bulkSelectionHandler.getSelectedPagesIds();
             for (String pageId : selectedPagesIds) {
                 if (!pageId.equals(originator.getId())) {
                     PagePath pagePath = m_graphItemsMapper.getPageById(pageId);
@@ -1055,5 +1055,9 @@ public class GraphEditor extends PCanvas {
         if (rect != null) {
             getCamera().animateViewToCenterBounds(rect, false, ANIMATE_DURATION_MILLIS);
         }
+    }
+
+    public BulkSelectionHandler getBulkSelectionHandler() {
+        return m_bulkSelectionHandler;
     }
 }

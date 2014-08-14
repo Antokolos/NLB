@@ -52,13 +52,17 @@ import java.util.*;
  * @author Anton P. Kolosov
  */
 public class BulkSelectionHandler {
-    public static final Set<String> EMPTY_SET = new HashSet<>();
+    private static final Set<String> EMPTY_SET = new HashSet<>();
     private Set<String> m_selectedPagesIds = new HashSet<>();
     private Set<String> m_selectedObjsIds = new HashSet<>();
 
     public void clear() {
         m_selectedPagesIds.clear();
         m_selectedObjsIds.clear();
+    }
+
+    public Set<String> getSelectedPagesIds() {
+        return getSelectedPagesIds(EMPTY_SET);
     }
 
     public Set<String> getSelectedPagesIds(Set<String> excludeIdsSet) {
@@ -69,6 +73,10 @@ public class BulkSelectionHandler {
             }
         }
         return selectedPagesIds;
+    }
+
+    public Set<String> getSelectedObjsIds() {
+        return getSelectedObjsIds(EMPTY_SET);
     }
 
     public Set<String> getSelectedObjsIds(Set<String> excludeIdsSet) {
@@ -133,6 +141,10 @@ public class BulkSelectionHandler {
             }
         }
         return false;
+    }
+
+    public boolean hasSelection() {
+        return !(m_selectedPagesIds.isEmpty() && m_selectedObjsIds.isEmpty());
     }
 
     public void recolor(final GraphItemsMapper graphItemsMapper, final Color color) {

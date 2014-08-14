@@ -163,6 +163,11 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
+    public List<Variable> getVariables() {
+        return Collections.emptyList();
+    }
+
+    @Override
     public SearchResultTableModel getLeafs(String modulePageId) {
         return new SearchResultTableModel();
     }

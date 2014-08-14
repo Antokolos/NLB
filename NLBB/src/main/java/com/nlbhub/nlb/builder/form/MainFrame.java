@@ -41,6 +41,7 @@ package com.nlbhub.nlb.builder.form;
 import com.camick.swing.layout.WrapLayout;
 import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.builder.model.LinkSelectionData;
+import com.nlbhub.nlb.builder.view.BulkSelectionHandler;
 import com.nlbhub.nlb.builder.view.GraphEditor;
 import com.nlbhub.nlb.builder.view.TabComponent;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
@@ -821,6 +822,21 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 getSelectedPaneInfo().getPaneNlbFacade().redo();
+            }
+        });
+        m_cutButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                /*
+                Commented for now
+                PaneEditorInfo paneInfo = getSelectedPaneInfo();
+                BulkSelectionHandler bulkSelectionHandler = paneInfo.getPaneGraphEditor().getBulkSelectionHandler();
+                if (bulkSelectionHandler.hasSelection()) {
+                    paneInfo.getPaneNlbFacade().cut(
+                            bulkSelectionHandler.getSelectedPagesIds(),
+                            bulkSelectionHandler.getSelectedObjsIds()
+                    );
+                }*/
             }
         });
         m_findButton.addActionListener(new ActionListener() {

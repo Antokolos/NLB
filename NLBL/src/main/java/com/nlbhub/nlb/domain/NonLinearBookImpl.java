@@ -1081,7 +1081,24 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
-    class UpdateBookPropertiesCommand implements NLBCommand {
+    abstract class NotifyingCommand implements NLBCommand {
+        protected void notifyAllChildren() {
+            for (Page page : m_pages.values()) {
+                page.notifyObservers();
+                for (Link link : page.getLinks()) {
+                    link.notifyObservers();
+                }
+            }
+            for (Obj obj : m_objs.values()) {
+                obj.notifyObservers();
+                for (Link link : obj.getLinks()) {
+                    link.notifyObservers();
+                }
+            }
+        }
+    }
+
+    class UpdateBookPropertiesCommand extends NotifyingCommand {
 
         private final String m_prevLicense;
         private final String m_prevLanguage;
@@ -1126,21 +1143,6 @@ public class NonLinearBookImpl implements NonLinearBook {
             }
         }
 
-        private void notifyAllChildren() {
-            for (Page page : m_pages.values()) {
-                page.notifyObservers();
-                for (Link link : page.getLinks()) {
-                    link.notifyObservers();
-                }
-            }
-            for (Obj obj : m_objs.values()) {
-                obj.notifyObservers();
-                for (Link link : obj.getLinks()) {
-                    link.notifyObservers();
-                }
-            }
-        }
-
         @Override
         public void execute() {
             m_license = m_newLicense;
@@ -1166,13 +1168,46 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
-    class CutCommand implements NLBCommand {
+    class CutCommand extends NotifyingCommand {
         private NonLinearBookImpl m_prevClipboardData;
         private NonLinearBookImpl m_newClipboardData;
 
         CutCommand(final Collection<String> pageIds, final Collection<String> objIds) {
             m_prevClipboardData = Clipboard.singleton().getNonLinearBook();
             m_newClipboardData = new NonLinearBookImpl();
+            Set<String> allObjIds = processPages(pageIds, objIds);
+            allObjIds.addAll(objIds);
+            processObjs(allObjIds);
+        }
+
+        private void processObjs(Set<String> objIds) {
+            for (String objId : objIds) {
+                ObjImpl obj = getObjImplById(objId);
+                if (obj != null && !obj.isDeleted()) {
+                    m_newClipboardData.addObj(obj);
+                    copyModificationVariables(obj, m_newClipboardData);
+                    VariableImpl objVariable = getVariableImplById(obj.getVarId());
+                    if (objVariable != null && !objVariable.isDeleted()) {
+                        m_newClipboardData.addVariable(objVariable);
+                    }
+                    Set<String> additionalObjIds = new HashSet<>();
+                    Set<String> containedObjIds = copyLinksAndCheckContainedObjects(obj, objIds, m_newClipboardData);
+                    if (!objIds.contains(obj.getContainerId())) {
+                        additionalObjIds.add(obj.getContainerId());
+                    }
+                    for (String containedObjId : containedObjIds) {
+                        if (!objIds.contains(containedObjId)) {
+                            additionalObjIds.add(containedObjId);
+                        }
+                    }
+                    if (!additionalObjIds.isEmpty()) {
+                        processObjs(additionalObjIds);
+                    }
+                }
+            }
+        }
+
+        private Set<String> processPages(Collection<String> pageIds, Collection<String> objIds) {
             Set<String> allObjIds = new HashSet<>();
             for (String pageId : pageIds) {
                 PageImpl page = getPageImplById(pageId);
@@ -1199,15 +1234,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     allObjIds.addAll(copyLinksAndCheckContainedObjects(page, objIds, m_newClipboardData));
                 }
             }
-            allObjIds.addAll(objIds);
-            for (String objId : allObjIds) {
-                ObjImpl obj = getObjImplById(objId);
-                if (obj != null && !obj.isDeleted()) {
-                    m_newClipboardData.addObj(obj);
-                    copyModificationVariables(obj, m_newClipboardData);
-                    // TODO: add other properties, like in Page
-                }
-            }
+            return allObjIds;
         }
 
         private Set<String> copyLinksAndCheckContainedObjects(
@@ -1265,12 +1292,16 @@ public class NonLinearBookImpl implements NonLinearBook {
 
         @Override
         public void execute() {
-
+            Clipboard.singleton().setNonLinearBook(m_newClipboardData);
+            subtract(m_newClipboardData);
+            notifyAllChildren();
         }
 
         @Override
         public void revert() {
             Clipboard.singleton().setNonLinearBook(m_prevClipboardData);
+            append(m_newClipboardData);
+            notifyAllChildren();
         }
     }
 
@@ -1410,6 +1441,73 @@ public class NonLinearBookImpl implements NonLinearBook {
             final boolean propagateToSubmodules
     ) {
         return new UpdateBookPropertiesCommand(license, language, author, version, propagateToSubmodules);
+    }
+
+    CutCommand createCutCommand(final Collection<String> pageIds, final Collection<String> objIds) {
+        return new CutCommand(pageIds, objIds);
+    }
+
+    /**
+     * Removes items from this book which are contained in operand
+     * @param operand
+     */
+    private void subtract(final NonLinearBook operand) {
+        for (String key : operand.getPages().keySet()) {
+            PageImpl page = m_pages.get(key);
+            if (page != null) {
+                page.setDeleted(true);
+            }
+            if (isAutowired(key)) {
+                removeAutowiredPageId(key);
+            }
+        }
+
+        for (String key : operand.getObjs().keySet()) {
+            ObjImpl obj = m_objs.get(key);
+            if (obj != null) {
+                obj.setDeleted(true);
+            }
+        }
+
+        for (VariableImpl existingVariable : m_variables) {
+            for (Variable variable : operand.getVariables()) {
+                if (variable.getId().equals(existingVariable.getId())) {
+                    existingVariable.setDeleted(true);
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Appends items to this book which are contained in operand (with overwrite if needed)
+     * @param operand
+     */
+    private void append(final NonLinearBookImpl operand) {
+        for (Map.Entry<String, PageImpl> entry : operand.m_pages.entrySet()) {
+            m_pages.put(entry.getKey(), entry.getValue());
+            if (operand.isAutowired(entry.getKey())) {
+                addAutowiredPageId(entry.getKey());
+            }
+        }
+
+        for (Map.Entry<String, ObjImpl> entry : operand.m_objs.entrySet()) {
+            m_objs.put(entry.getKey(), entry.getValue());
+        }
+
+        // first, remove variables with the same ids
+        Iterator<VariableImpl> iterator = m_variables.iterator();
+        while (iterator.hasNext()) {
+            VariableImpl existingVariable = iterator.next();
+            for (Variable variable : operand.getVariables()) {
+                if (variable.getId().equals(existingVariable.getId())) {
+                    iterator.remove();
+                    break;
+                }
+            }
+        }
+        // second, use addAll()
+        m_variables.addAll(operand.m_variables);
     }
 
     public List<Link> getAssociatedLinks(NodeItem nodeItem) {
@@ -2402,6 +2500,13 @@ public class NonLinearBookImpl implements NonLinearBook {
         } else {
             return getAutowiredVariable(varId);
         }
+    }
+
+    @Override
+    public List<Variable> getVariables() {
+        List<Variable> result = new ArrayList<>();
+        result.addAll(m_variables);
+        return result;
     }
 
     private VariableImpl getVariableImplById(String varId) {
