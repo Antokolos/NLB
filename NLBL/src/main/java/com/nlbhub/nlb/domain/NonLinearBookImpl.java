@@ -951,10 +951,19 @@ public class NonLinearBookImpl implements NonLinearBook {
     abstract class DeleteNodeCommand implements NLBCommand {
         private List<LinkImpl> m_links = new ArrayList<>();
         private Map<String, Boolean> m_linksDeletionStates = new HashMap<>();
+        private AbstractNodeItem m_node;
+        private AbstractNodeItem m_container;
 
         protected DeleteNodeCommand(
+                final AbstractNodeItem node,
+                final String containerId,
                 final List<Link> adjacentLinks
         ) {
+            m_node = node;
+            m_container = getPageImplById(containerId);
+            if (m_container == null) {
+                m_container = getObjImplById(containerId);
+            }
             for (final Link linkToDelete : adjacentLinks) {
                 AbstractNodeItem parent = getPageImplById(linkToDelete.getParent().getId());
                 if (parent == null) {
@@ -974,6 +983,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                 link.setDeleted(true);
                 link.notifyObservers();
             }
+            if (m_container != null) {
+                m_container.removeContainedObjId(m_node.getId());
+            }
+            for (String containedObjId : m_node.getContainedObjIds()) {
+                ObjImpl objImpl = getObjImplById(containedObjId);
+                objImpl.setContainerId(Constants.EMPTY_STRING);
+                objImpl.notifyObservers();
+            }
         }
 
         @Override
@@ -982,6 +999,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                 // Please note that link is considered deleted if its parent page is deleted
                 link.setDeleted(m_linksDeletionStates.get(link.getId()));
                 link.notifyObservers();
+            }
+            if (m_container != null) {
+                m_container.addContainedObjId(m_node.getId());
+            }
+            for (String containedObjId : m_node.getContainedObjIds()) {
+                ObjImpl objImpl = getObjImplById(containedObjId);
+                objImpl.setContainerId(m_node.getId());
+                objImpl.notifyObservers();
             }
         }
     }
@@ -1001,7 +1026,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private ChangeStartPointCommand m_changeStartPointCommand = null;
 
         private DeletePageCommand(PageImpl page, final List<Link> adjacentLinks) {
-            super(adjacentLinks);
+            super(page, Constants.EMPTY_STRING, adjacentLinks);
             m_page = page;
             m_isAutowired = isAutowired(page.getId());
             if (page.getId().equals(getStartPoint())) {
@@ -1056,7 +1081,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private ObjImpl m_obj;
 
         private DeleteObjCommand(ObjImpl obj, final List<Link> adjacentLinks) {
-            super(adjacentLinks);
+            super(obj, obj.getContainerId(), adjacentLinks);
             m_obj = obj;
         }
 
