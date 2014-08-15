@@ -74,15 +74,11 @@ public class FileManipulator {
 
     /**
      * Deletes recursively file and directories.
-     * NB: if such file/directory does not exist, this method does nothing and returns true
      * @param file File or directory for delete
      * @return <code>true</code> if all files and subdirectories
      * successfully deleted.
      */
     public boolean deleteFileOrDir(File file) throws NLBFileManipulationException, NLBIOException {
-        if (!file.exists()) {
-            return true;
-        }
         try {
             boolean ret = true;
             if (file.isDirectory()) {

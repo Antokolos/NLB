@@ -589,6 +589,25 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
         }
     }
 
+    /**
+     * Dangerous method to use... Use it only when book does not contain any related information about this link
+     * (e.g. link variables, link modifications etc) and link files does not exist on disk. Also please note that
+     * if you remove link in this way, it will not be removed from the UI. If you want to safely
+     * delete link and its data, use {@link com.nlbhub.nlb.domain.AbstractIdentifiableItem#setDeleted(boolean)}
+     *
+     * @param linkId ID of the link to be removed from links list
+     */
+    public void removeLinkById(final String linkId) {
+        ListIterator<LinkImpl> iterator = m_links.listIterator();
+        while (iterator.hasNext()) {
+            LinkImpl temp = iterator.next();
+            if (temp.getId().equals(linkId)) {
+                iterator.remove();
+                break;
+            }
+        }
+    }
+
     void resizeNode(Orientation orientation, double deltaX, double deltaY) {
         final CoordsImpl coords = getCoords();
         float width;

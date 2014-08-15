@@ -1274,7 +1274,9 @@ public class NonLinearBookImpl implements NonLinearBook {
             // Links will be moved automatically because they are contained inside nodes.
             // One nasty thing: we should move related variables too, including variables inside modifications.
             // Also please note that links pointing to items which is not inside itemIds list will be broken.
-            // That's why we mark it as deleted.
+            // That's why we purge such malformed links. In this case we can use dangerous removeLinkById() method,
+            // because all this links exist only in memory for now.
+            List<String> malformedLinksIds = new ArrayList<>();
             for (LinkImpl link : nodeItem.getLinkImpls()) {
                 if (!link.isDeleted()) {
                     if (itemIds.contains(link.getTarget())) {
@@ -1292,9 +1294,12 @@ public class NonLinearBookImpl implements NonLinearBook {
                             );
                         }
                     } else {
-                        link.setDeleted(true);
+                        malformedLinksIds.add(link.getId());
                     }
                 }
+            }
+            for (String linkId : malformedLinksIds) {
+                nodeItem.removeLinkById(linkId);
             }
         }
 
