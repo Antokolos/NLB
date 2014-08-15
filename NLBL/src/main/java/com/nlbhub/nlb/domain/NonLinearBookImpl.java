@@ -1173,16 +1173,21 @@ public class NonLinearBookImpl implements NonLinearBook {
         private NonLinearBookImpl m_newClipboardData;
         private CommandChainCommand m_deletionCommandChain = new CommandChainCommand();
 
+        /**
+         * Please note: objIds collection will be processed as is, I.e. if it does not contain ids of some objects
+         * contained in the pages or if it does not contain some parent objects, then so be it. In such cases copied
+         * info will be corrected (missing object ids will be purged).
+         * @param pageIds
+         * @param objIds
+         */
         CutCommand(final Collection<String> pageIds, final Collection<String> objIds) {
             m_prevClipboardData = Clipboard.singleton().getNonLinearBook();
             m_newClipboardData = new NonLinearBookImpl();
-            Set<String> allObjIds = processPages(pageIds, objIds);
-            allObjIds.addAll(objIds);
-            allObjIds.addAll(processObjs(allObjIds));
+            processPages(pageIds, objIds);
+            processObjs(objIds);
         }
 
-        private Set<String> processObjs(Set<String> objIds) {
-            Set<String> additionalObjIds = new HashSet<>();
+        private void processObjs(Collection<String> objIds) {
             for (String objId : objIds) {
                 ObjImpl existingObj = getObjImplById(objId);
                 if (existingObj != null && !existingObj.isDeleted()) {
@@ -1196,25 +1201,16 @@ public class NonLinearBookImpl implements NonLinearBook {
                         m_newClipboardData.addVariable(objVariable);
                     }
 
-                    Set<String> containedObjIds = copyLinksAndCheckContainedObjects(obj, objIds, m_newClipboardData);
+                    checkContainedObjects(obj, objIds);
+                    copyLinks(obj, objIds, m_newClipboardData);
                     if (!objIds.contains(obj.getContainerId())) {
-                        additionalObjIds.add(obj.getContainerId());
-                    }
-                    for (String containedObjId : containedObjIds) {
-                        if (!objIds.contains(containedObjId)) {
-                            additionalObjIds.add(containedObjId);
-                        }
-                    }
-                    if (!additionalObjIds.isEmpty()) {
-                        additionalObjIds.addAll(processObjs(additionalObjIds));
+                        obj.setContainerId(Obj.DEFAULT_CONTAINER_ID);
                     }
                 }
             }
-            return additionalObjIds;
         }
 
-        private Set<String> processPages(Collection<String> pageIds, Collection<String> objIds) {
-            Set<String> allObjIds = new HashSet<>();
+        private void processPages(Collection<String> pageIds, Collection<String> objIds) {
             for (String pageId : pageIds) {
                 PageImpl existingPage = getPageImplById(pageId);
                 if (existingPage != null && !existingPage.isDeleted()) {
@@ -1248,55 +1244,58 @@ public class NonLinearBookImpl implements NonLinearBook {
                                 new VariableImpl(pageVariable)
                         );
                     }
-                    // Deleting links that point to nowhere in terms of our page subset
-                    for (LinkImpl link : page.getLinkImpls()) {
-                        if (!pageIds.contains(link.getTarget())) {
-                            link.setDeleted(true);
-                        }
-                    }
-                    allObjIds.addAll(copyLinksAndCheckContainedObjects(page, objIds, m_newClipboardData));
+                    checkContainedObjects(page, objIds);
+                    copyLinks(page, pageIds, m_newClipboardData);
                 }
             }
-            return allObjIds;
         }
 
-        private Set<String> copyLinksAndCheckContainedObjects(
+        private void checkContainedObjects(
                 final AbstractNodeItem nodeItem,
-                final Collection<String> objIds,
-                final NonLinearBookImpl target
+                final Collection<String> objIds
         ) {
-            Set<String> nodeItemAdditionalObjIds = new HashSet<>();
-            // if some containing objects is not listed in objIds, add them
+            // if some containing objects is not listed in objIds, remove them
+            List<String> objIdsToRemove = new ArrayList<>();
             for (String containedObjId : nodeItem.getContainedObjIds()) {
                 if (!objIds.contains(containedObjId)) {
-                    ObjImpl obj = getObjImplById(containedObjId);
-                    if (!obj.isDeleted()) {
-                        nodeItemAdditionalObjIds.add(containedObjId);
-                    }
+                    objIdsToRemove.add(containedObjId);
                 }
             }
+            for (String objIdToRemove : objIdsToRemove) {
+                nodeItem.removeContainedObjId(objIdToRemove);
+            }
+        }
+
+        private void copyLinks(
+                final AbstractNodeItem nodeItem,
+                final Collection<String> itemIds,
+                final NonLinearBookImpl target
+        ) {
             // Links will be moved automatically because they are contained inside nodes.
             // One nasty thing: we should move related variables too, including variables inside modifications.
-            // Also please note that links pointing to items which is not inside our id list will be broken.
-            // We should take this into account when pasting.
+            // Also please note that links pointing to items which is not inside itemIds list will be broken.
+            // That's why we mark it as deleted.
             for (LinkImpl link : nodeItem.getLinkImpls()) {
                 if (!link.isDeleted()) {
-                    copyModificationVariables(link, target);
-                    VariableImpl linkVariable = getVariableImplById(link.getVarId());
-                    VariableImpl linkConstraint = getVariableImplById(link.getConstrId());
-                    if (linkVariable != null && !linkVariable.isDeleted()) {
-                        target.addVariable(
-                                new VariableImpl(linkVariable)
-                        );
-                    }
-                    if (linkConstraint != null && !linkConstraint.isDeleted()) {
-                        target.addVariable(
-                                new VariableImpl(linkConstraint)
-                        );
+                    if (itemIds.contains(link.getTarget())) {
+                        copyModificationVariables(link, target);
+                        VariableImpl linkVariable = getVariableImplById(link.getVarId());
+                        VariableImpl linkConstraint = getVariableImplById(link.getConstrId());
+                        if (linkVariable != null && !linkVariable.isDeleted()) {
+                            target.addVariable(
+                                    new VariableImpl(linkVariable)
+                            );
+                        }
+                        if (linkConstraint != null && !linkConstraint.isDeleted()) {
+                            target.addVariable(
+                                    new VariableImpl(linkConstraint)
+                            );
+                        }
+                    } else {
+                        link.setDeleted(true);
                     }
                 }
             }
-            return nodeItemAdditionalObjIds;
         }
 
         private void copyModificationVariables(
