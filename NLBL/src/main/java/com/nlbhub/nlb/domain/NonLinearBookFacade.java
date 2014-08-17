@@ -465,7 +465,15 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void cut(final Collection<String> pageIds, final Collection<String> objIds) {
-        NonLinearBookImpl.CutCommand command = m_nlb.createCutCommand(pageIds, objIds);
+        CommandChainCommand command = new CommandChainCommand();
+        command.addCommand(m_nlb.createCopyCommand(pageIds, objIds));
+        command.addCommand(m_nlb.createDeleteCommand(pageIds, objIds));
+        m_undoManager.executeAndStore(command);
+        notifyObservers();
+    }
+
+    public void copy(final Collection<String> pageIds, final Collection<String> objIds) {
+        NonLinearBookImpl.CopyCommand command = m_nlb.createCopyCommand(pageIds, objIds);
         m_undoManager.executeAndStore(command);
         notifyObservers();
     }

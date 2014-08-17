@@ -689,7 +689,6 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_fileChooser = new JFileChooser();
         $$$setupUI$$$();
         rearrangeCustomComponents();
-        disableNonimplementedControls();
         m_graphEditorsPane.setTitleAt(0, "Main");
         m_graphEditorsPane.setComponentAt(0, m_mainEditorInfo.getPaneGraphEditor());
         m_graphEditorsPane.addChangeListener(
@@ -831,6 +830,19 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 BulkSelectionHandler bulkSelectionHandler = paneInfo.getPaneGraphEditor().getBulkSelectionHandler();
                 if (bulkSelectionHandler.hasSelection()) {
                     paneInfo.getPaneNlbFacade().cut(
+                            bulkSelectionHandler.getSelectedPagesIds(),
+                            bulkSelectionHandler.getSelectedObjsIds()
+                    );
+                }
+            }
+        });
+        m_copyButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                PaneEditorInfo paneInfo = getSelectedPaneInfo();
+                BulkSelectionHandler bulkSelectionHandler = paneInfo.getPaneGraphEditor().getBulkSelectionHandler();
+                if (bulkSelectionHandler.hasSelection()) {
+                    paneInfo.getPaneNlbFacade().copy(
                             bulkSelectionHandler.getSelectedPagesIds(),
                             bulkSelectionHandler.getSelectedObjsIds()
                     );
@@ -1370,10 +1382,6 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             }
         });
         paneEditorInfo.getPaneNlbFacade().addObserver(this);
-    }
-
-    private void disableNonimplementedControls() {
-        m_copyButton.setEnabled(false);
     }
 
     private File chooseSaveDir() {

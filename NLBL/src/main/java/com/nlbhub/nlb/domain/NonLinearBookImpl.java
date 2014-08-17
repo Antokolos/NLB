@@ -1405,10 +1405,9 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
-    class CutCommand extends NotifyingCommand {
+    class CopyCommand implements NLBCommand {
         private NonLinearBookImpl m_prevClipboardData;
         private NonLinearBookImpl m_newClipboardData;
-        private CommandChainCommand m_deletionCommandChain = new CommandChainCommand();
 
         /**
          * Please note: objIds collection will be processed as is, I.e. if it does not contain ids of some objects
@@ -1417,7 +1416,7 @@ public class NonLinearBookImpl implements NonLinearBook {
          * @param pageIds
          * @param objIds
          */
-        CutCommand(final Collection<String> pageIds, final Collection<String> objIds) {
+        CopyCommand(final Collection<String> pageIds, final Collection<String> objIds) {
             m_prevClipboardData = Clipboard.singleton().getNonLinearBook();
             m_newClipboardData = new NonLinearBookImpl();
             processPages(pageIds, objIds);
@@ -1428,8 +1427,6 @@ public class NonLinearBookImpl implements NonLinearBook {
             for (String objId : objIds) {
                 ObjImpl existingObj = getObjImplById(objId);
                 if (existingObj != null && !existingObj.isDeleted()) {
-                    List<Link> adjacentLinks = getAssociatedLinks(existingObj);
-                    m_deletionCommandChain.addCommand(new DeleteObjCommand(existingObj, adjacentLinks));
                     ObjImpl obj = new ObjImpl(existingObj);
                     m_newClipboardData.addObj(obj);
                     copyModificationVariables(obj, m_newClipboardData);
@@ -1451,8 +1448,6 @@ public class NonLinearBookImpl implements NonLinearBook {
             for (String pageId : pageIds) {
                 PageImpl existingPage = getPageImplById(pageId);
                 if (existingPage != null && !existingPage.isDeleted()) {
-                    List<Link> adjacentLinks = getAssociatedLinks(existingPage);
-                    m_deletionCommandChain.addCommand(new DeletePageCommand(existingPage, adjacentLinks));
                     PageImpl page = new PageImpl(existingPage);
                     m_newClipboardData.addPage(page);
                     copyModificationVariables(page, m_newClipboardData);
@@ -1565,13 +1560,42 @@ public class NonLinearBookImpl implements NonLinearBook {
         @Override
         public void execute() {
             Clipboard.singleton().setNonLinearBook(m_newClipboardData);
+        }
+
+        @Override
+        public void revert() {
+            Clipboard.singleton().setNonLinearBook(m_prevClipboardData);
+        }
+    }
+
+    class DeleteCommand extends NotifyingCommand {
+        private CommandChainCommand m_deletionCommandChain = new CommandChainCommand();
+
+        DeleteCommand(final Collection<String> pageIds, final Collection<String> objIds) {
+            for (String pageId : pageIds) {
+                PageImpl existingPage = getPageImplById(pageId);
+                if (existingPage != null && !existingPage.isDeleted()) {
+                    List<Link> adjacentLinks = getAssociatedLinks(existingPage);
+                    m_deletionCommandChain.addCommand(new DeletePageCommand(existingPage, adjacentLinks));
+                }
+            }
+            for (String objId : objIds) {
+                ObjImpl existingObj = getObjImplById(objId);
+                if (existingObj != null && !existingObj.isDeleted()) {
+                    List<Link> adjacentLinks = getAssociatedLinks(existingObj);
+                    m_deletionCommandChain.addCommand(new DeleteObjCommand(existingObj, adjacentLinks));
+                }
+            }
+        }
+
+        @Override
+        public void execute() {
             m_deletionCommandChain.execute();
             notifyAllChildren();
         }
 
         @Override
         public void revert() {
-            Clipboard.singleton().setNonLinearBook(m_prevClipboardData);
             m_deletionCommandChain.revert();
             notifyAllChildren();
         }
@@ -1715,8 +1739,18 @@ public class NonLinearBookImpl implements NonLinearBook {
         return new UpdateBookPropertiesCommand(license, language, author, version, propagateToSubmodules);
     }
 
-    CutCommand createCutCommand(final Collection<String> pageIds, final Collection<String> objIds) {
-        return new CutCommand(pageIds, objIds);
+    CopyCommand createCopyCommand(
+            final Collection<String> pageIds,
+            final Collection<String> objIds
+    ) {
+        return new CopyCommand(pageIds, objIds);
+    }
+
+    DeleteCommand createDeleteCommand(
+            final Collection<String> pageIds,
+            final Collection<String> objIds
+    ) {
+        return new DeleteCommand(pageIds, objIds);
     }
 
     PasteCommand createPasteCommand(final NonLinearBookImpl nlbToPaste) {
