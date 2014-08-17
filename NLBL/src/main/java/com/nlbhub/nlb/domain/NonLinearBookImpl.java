@@ -1300,12 +1300,19 @@ public class NonLinearBookImpl implements NonLinearBook {
             Map<String, PageImpl> newPages = new HashMap<>();
             Map<String, ObjImpl> newObjs = new HashMap<>();
             for (Map.Entry<String, PageImpl> entry : nlbToPaste.m_pages.entrySet()) {
-                Coords coords = entry.getValue().getCoords();
+                final PageImpl page = entry.getValue();
+                Coords coords = page.getCoords();
                 PageImpl newPage = new PageImpl(currentNLB, coords.getLeft(), coords.getTop());
                 idsMapping.put(entry.getKey(), newPage.getId());
                 newPages.put(newPage.getId(), newPage);
                 AddPageCommand command = createAddPageCommand(newPage);
                 m_commandChain.addCommand(command);
+                if (!page.getModule().isEmpty()) {
+                    PasteCommand pasteCommand = (
+                            newPage.getModuleImpl().createPasteCommand(page.getModuleImpl())
+                    );
+                    m_commandChain.addCommand(pasteCommand);
+                }
             }
             for (Map.Entry<String, ObjImpl> entry : nlbToPaste.m_objs.entrySet()) {
                 Coords coords = entry.getValue().getCoords();

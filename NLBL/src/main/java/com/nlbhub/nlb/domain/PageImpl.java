@@ -141,7 +141,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         setReturnTexts(source.getReturnTexts());
         setReturnPageId(source.getReturnPageId());
         setModuleConstrId(source.getModuleConstrId());
-        m_module = new NonLinearBookImpl(source.getCurrentNLB(), this);
+        m_module = new NonLinearBookImpl(getCurrentNLB(), this);
         m_module.append(source.getModuleImpl());
         setAutowireInTexts(source.getAutowireInTexts());
         setAutowireOutTexts(source.getAutowireOutTexts());
@@ -149,7 +149,6 @@ public class PageImpl extends AbstractNodeItem implements Page {
         setAutoOut(source.isAutoOut());
         setAutowireInConstrId(source.getAutowireInConstrId());
         setAutowireOutConstrId(source.getAutowireOutConstrId());
-        init();
     }
 
     private void init() {
