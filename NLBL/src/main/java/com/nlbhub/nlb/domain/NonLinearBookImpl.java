@@ -413,7 +413,57 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String autowireOutConstraintVariableBody,
                 final LinksTableModel linksTableModel
         ) {
-            m_page = getPageImplById(page.getId());
+            this(
+                    currentNLB,
+                    getPageImplById(page.getId()),
+                    imageFileName,
+                    pageVariableName,
+                    pageText,
+                    pageCaptionText,
+                    useCaption,
+                    moduleName,
+                    traverseText,
+                    autoTraverse,
+                    autoReturn,
+                    returnText,
+                    returnPageId,
+                    moduleConsraintVariableBody,
+                    autowire,
+                    autowireInText,
+                    autowireOutText,
+                    autoIn,
+                    autoOut,
+                    autowireInConstraintVariableBody,
+                    autowireOutConstraintVariableBody,
+                    linksTableModel
+            );
+        }
+
+        private UpdatePageCommand(
+                final NonLinearBook currentNLB,
+                final PageImpl page,
+                final String imageFileName,
+                final String pageVariableName,
+                final MultiLangString pageText,
+                final MultiLangString pageCaptionText,
+                final boolean useCaption,
+                final String moduleName,
+                final MultiLangString traverseText,
+                final boolean autoTraverse,
+                final boolean autoReturn,
+                final MultiLangString returnText,
+                final String returnPageId,
+                final String moduleConsraintVariableBody,
+                final boolean autowire,
+                final MultiLangString autowireInText,
+                final MultiLangString autowireOutText,
+                final boolean autoIn,
+                final boolean autoOut,
+                final String autowireInConstraintVariableBody,
+                final String autowireOutConstraintVariableBody,
+                final LinksTableModel linksTableModel
+        ) {
+            m_page = page;
             m_variableTracker = new VariableTracker(
                     currentNLB,
                     getVariableImplById(m_page.getVarId()),
@@ -596,7 +646,27 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString objText,
                 final boolean objIsTakable
         ) {
-            m_obj = getObjImplById(obj.getId());
+            this(
+                    currentNLB,
+                    getObjImplById(obj.getId()),
+                    objVariableName,
+                    objName,
+                    objDisp,
+                    objText,
+                    objIsTakable
+            );
+        }
+
+        private UpdateObjCommand(
+                final NonLinearBook currentNLB,
+                final ObjImpl obj,
+                final String objVariableName,
+                final String objName,
+                final MultiLangString objDisp,
+                final MultiLangString objText,
+                final boolean objIsTakable
+        ) {
+            m_obj = obj;
             m_variableTracker = new VariableTracker(
                     currentNLB,
                     getVariableImplById(m_obj.getVarId()),
@@ -646,19 +716,19 @@ public class NonLinearBookImpl implements NonLinearBook {
      * @version 1.0 1/23/14
      */
     class UpdateLinkCommand implements NLBCommand {
-        private final LinkImpl m_link;
+        private LinkImpl m_link;
         private VariableTracker m_variableTracker;
         private VariableTracker m_constraintTracker;
-        private final MultiLangString m_newLinkText;
-        private final MultiLangString m_existingLinkText;
-        private final boolean m_existingAuto;
-        private final boolean m_newAuto;
+        private MultiLangString m_newLinkText;
+        private MultiLangString m_existingLinkText;
+        private boolean m_existingAuto;
+        private boolean m_newAuto;
 
         private UpdateLinkCommand(
                 final NonLinearBook currentNLB,
                 final Link link,
                 final String linkVariableName,
-                final String linkConstraintName,
+                final String linkConstraintValue,
                 final MultiLangString linkText,
                 final boolean auto
         ) {
@@ -667,7 +737,36 @@ public class NonLinearBookImpl implements NonLinearBook {
             if (nodeItem == null) {
                 nodeItem = getObjImplById(parent.getId());
             }
-            m_link = nodeItem.getLinkById(link.getId());
+            init(
+                    currentNLB,
+                    nodeItem.getLinkById(link.getId()),
+                    linkVariableName,
+                    linkConstraintValue,
+                    linkText,
+                    auto
+            );
+        }
+
+        private UpdateLinkCommand(
+                final NonLinearBook currentNLB,
+                final LinkImpl link,
+                final String linkVariableName,
+                final String linkConstraintValue,
+                final MultiLangString linkText,
+                final boolean auto
+        ) {
+            init(currentNLB, link, linkVariableName, linkConstraintValue, linkText, auto);
+        }
+
+        private void init(
+                final NonLinearBook currentNLB,
+                final LinkImpl link,
+                final String linkVariableName,
+                final String linkConstraintValue,
+                final MultiLangString linkText,
+                final boolean auto
+        ) {
+            m_link = link;
             m_variableTracker = new VariableTracker(
                     currentNLB,
                     getVariableImplById(m_link.getVarId()),
@@ -681,11 +780,11 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_constraintTracker = new VariableTracker(
                     currentNLB,
                     getVariableImplById(m_link.getConstrId()),
-                    StringHelper.isEmpty(linkConstraintName),
+                    StringHelper.isEmpty(linkConstraintValue),
                     Variable.Type.LINKCONSTRAINT,
                     Variable.DataType.BOOLEAN,
                     Variable.DEFAULT_NAME,
-                    linkConstraintName,
+                    linkConstraintValue,
                     link.getFullId()
             );
             m_existingLinkText = link.getTexts();
@@ -1193,6 +1292,119 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
+    class PasteCommand extends NotifyingCommand {
+        private CommandChainCommand m_commandChain = new CommandChainCommand();
+
+        PasteCommand(NonLinearBookImpl currentNLB, NonLinearBookImpl nlbToPaste) {
+            Map<String, String> idsMapping = new HashMap<>();
+            Map<String, PageImpl> newPages = new HashMap<>();
+            Map<String, ObjImpl> newObjs = new HashMap<>();
+            for (Map.Entry<String, PageImpl> entry : nlbToPaste.m_pages.entrySet()) {
+                Coords coords = entry.getValue().getCoords();
+                PageImpl newPage = new PageImpl(currentNLB, coords.getLeft(), coords.getTop());
+                idsMapping.put(entry.getKey(), newPage.getId());
+                newPages.put(newPage.getId(), newPage);
+                AddPageCommand command = createAddPageCommand(newPage);
+                m_commandChain.addCommand(command);
+            }
+            for (Map.Entry<String, ObjImpl> entry : nlbToPaste.m_objs.entrySet()) {
+                Coords coords = entry.getValue().getCoords();
+                ObjImpl newObj = new ObjImpl(currentNLB, coords.getLeft(), coords.getTop());
+                idsMapping.put(entry.getKey(), newObj.getId());
+                newObjs.put(newObj.getId(), newObj);
+                AddObjCommand command = createAddObjCommand(newObj);
+                m_commandChain.addCommand(command);
+            }
+            for (Map.Entry<String, PageImpl> entry : nlbToPaste.m_pages.entrySet()) {
+                PageImpl page = entry.getValue();
+                PageImpl newPage = newPages.get(idsMapping.get(entry.getKey()));
+                final Variable pageVariable = nlbToPaste.getVariableById(page.getVarId());
+                final Variable modConstraint = nlbToPaste.getVariableById(page.getModuleConstrId());
+                final Variable autoInConstraint = nlbToPaste.getVariableById(page.getAutowireInConstrId());
+                final Variable autoOutConstraint = nlbToPaste.getVariableById(page.getAutowireOutConstrId());
+                UpdatePageCommand updatePageCommand = new UpdatePageCommand(
+                        currentNLB,
+                        newPage,
+                        page.getImageFileName(),
+                        (pageVariable != null) ? pageVariable.getName() : Constants.EMPTY_STRING,
+                        page.getTexts(),
+                        page.getCaptions(),
+                        page.isUseCaption(),
+                        page.getModuleName(),
+                        page.getTraverseTexts(),
+                        page.isAutoTraverse(),
+                        page.isAutoReturn(),
+                        page.getReturnTexts(),
+                        page.getReturnPageId(),
+                        (modConstraint != null) ? modConstraint.getName() : Constants.EMPTY_STRING,
+                        page.isAutowire(),
+                        page.getAutowireInTexts(),
+                        page.getAutowireOutTexts(),
+                        page.isAutoIn(),
+                        page.isAutoOut(),
+                        (autoInConstraint != null) ? autoInConstraint.getValue() : Constants.EMPTY_STRING,
+                        (autoOutConstraint != null) ? autoOutConstraint.getValue() : Constants.EMPTY_STRING,
+                        new LinksTableModel(new ArrayList<Link>())
+                );
+                m_commandChain.addCommand(updatePageCommand);
+                addLinks(currentNLB, nlbToPaste, idsMapping, page, newPage);
+            }
+            for (Map.Entry<String, ObjImpl> entry : nlbToPaste.m_objs.entrySet()) {
+                ObjImpl obj = entry.getValue();
+                ObjImpl newObj = newObjs.get(idsMapping.get(entry.getKey()));
+                final Variable objVariable = nlbToPaste.getVariableById(obj.getVarId());
+                UpdateObjCommand updateObjCommand = new UpdateObjCommand(
+                        currentNLB,
+                        newObj,
+                        (objVariable != null) ? objVariable.getName() : Constants.EMPTY_STRING,
+                        obj.getName(),
+                        obj.getDisps(),
+                        obj.getTexts(),
+                        obj.isTakable()
+                );
+                m_commandChain.addCommand(updateObjCommand);
+                addLinks(currentNLB, nlbToPaste, idsMapping, obj, newObj);
+            }
+        }
+
+        private void addLinks(
+                final NonLinearBookImpl currentNLB,
+                final NonLinearBookImpl nlbToPaste,
+                final Map<String, String> idsMapping,
+                final AbstractNodeItem node,
+                final AbstractNodeItem newNode
+        ) {
+            for (LinkImpl link : node.getLinkImpls()) {
+                LinkImpl newLink = new LinkImpl(newNode, idsMapping.get(link.getTarget()));
+                AbstractNodeItem.AddLinkCommand command = newNode.createAddLinkCommand(newLink);
+                m_commandChain.addCommand(command);
+                final Variable linkVariable = nlbToPaste.getVariableById(link.getVarId());
+                final Variable linkConstraint = nlbToPaste.getVariableById(link.getConstrId());
+                UpdateLinkCommand updateLinkCommand = new UpdateLinkCommand(
+                        currentNLB,
+                        newLink,
+                        (linkVariable != null) ? linkVariable.getName() : Constants.EMPTY_STRING,
+                        (linkConstraint != null) ? linkConstraint.getValue() : Constants.EMPTY_STRING,
+                        link.getTexts(),
+                        link.isAuto()
+                );
+                m_commandChain.addCommand(updateLinkCommand);
+            }
+        }
+
+        @Override
+        public void execute() {
+            m_commandChain.execute();
+            notifyAllChildren();
+        }
+
+        @Override
+        public void revert() {
+            m_commandChain.revert();
+            notifyAllChildren();
+        }
+    }
+
     class CutCommand extends NotifyingCommand {
         private NonLinearBookImpl m_prevClipboardData;
         private NonLinearBookImpl m_newClipboardData;
@@ -1467,11 +1679,11 @@ public class NonLinearBookImpl implements NonLinearBook {
     UpdateLinkCommand createUpdateLinkCommand(
             final Link link,
             final String linkVariableName,
-            final String linkConstraintName,
+            final String linkConstraintValue,
             final MultiLangString linkText,
             final boolean auto
     ) {
-        return new UpdateLinkCommand(this, link, linkVariableName, linkConstraintName, linkText, auto);
+        return new UpdateLinkCommand(this, link, linkVariableName, linkConstraintValue, linkText, auto);
     }
 
     UpdateModificationsCommand createUpdateModificationsCommand(
@@ -1505,6 +1717,10 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     CutCommand createCutCommand(final Collection<String> pageIds, final Collection<String> objIds) {
         return new CutCommand(pageIds, objIds);
+    }
+
+    PasteCommand createPasteCommand(final NonLinearBookImpl nlbToPaste) {
+        return new PasteCommand(this, nlbToPaste);
     }
 
     /**

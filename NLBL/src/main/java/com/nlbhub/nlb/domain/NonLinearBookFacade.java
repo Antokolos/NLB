@@ -257,7 +257,7 @@ public class NonLinearBookFacade implements NLBObservable {
     public void updateLink(
             final Link link,
             final String linkVariableName,
-            final String linkConstraintName,
+            final String linkConstraintValue,
             final MultiLangString linkText,
             final boolean auto
     ) {
@@ -265,7 +265,7 @@ public class NonLinearBookFacade implements NLBObservable {
                 m_nlb.createUpdateLinkCommand(
                         link,
                         linkVariableName,
-                        linkConstraintName,
+                        linkConstraintValue,
                         linkText,
                         auto
                 )
@@ -468,6 +468,15 @@ public class NonLinearBookFacade implements NLBObservable {
         NonLinearBookImpl.CutCommand command = m_nlb.createCutCommand(pageIds, objIds);
         m_undoManager.executeAndStore(command);
         notifyObservers();
+    }
+
+    public void paste() {
+        final NonLinearBookImpl nlbToPaste = Clipboard.singleton().getNonLinearBook();
+        if (nlbToPaste != null) {
+            NonLinearBookImpl.PasteCommand command = m_nlb.createPasteCommand(nlbToPaste);
+            m_undoManager.executeAndStore(command);
+            notifyObservers();
+        }
     }
 
     /**

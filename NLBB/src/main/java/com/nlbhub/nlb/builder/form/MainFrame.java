@@ -837,6 +837,14 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 }
             }
         });
+        m_pasteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                PaneEditorInfo paneInfo = getSelectedPaneInfo();
+                paneInfo.getPaneNlbFacade().paste();
+                paneInfo.getPaneGraphEditor().init();
+            }
+        });
         m_findButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1366,7 +1374,6 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
 
     private void disableNonimplementedControls() {
         m_copyButton.setEnabled(false);
-        m_pasteButton.setEnabled(false);
     }
 
     private File chooseSaveDir() {

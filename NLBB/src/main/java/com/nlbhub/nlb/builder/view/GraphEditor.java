@@ -946,7 +946,7 @@ public class GraphEditor extends PCanvas {
         }
     }
 
-    private void init() {
+    public void init() {
         clear();
         m_graphItemsMapper.init(
                 m_nlbFacade,
