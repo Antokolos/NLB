@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.nlbhub.nlb.builder.form.DialogBookProperties">
   <grid id="cbd77" binding="contentPane" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="48" y="54" width="802" height="415"/>
+      <xy x="48" y="54" width="802" height="418"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -131,7 +131,7 @@
                               </grid>
                               <vspacer id="9e52e">
                                 <constraints>
-                                  <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                                  <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
                                   <gridbag weightx="0.0" weighty="1.0"/>
                                 </constraints>
                               </vspacer>
@@ -248,7 +248,7 @@
                               </component>
                               <grid id="4c2b7" layout-manager="GridBagLayout">
                                 <constraints>
-                                  <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                  <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                   <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
                                 </constraints>
                                 <properties/>
@@ -270,6 +270,32 @@
                                         <properties>
                                           <selected value="true"/>
                                           <text value="Propagate to submodules"/>
+                                        </properties>
+                                      </component>
+                                    </children>
+                                  </scrollpane>
+                                </children>
+                              </grid>
+                              <grid id="c39b8" layout-manager="GridBagLayout">
+                                <constraints>
+                                  <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                  <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
+                                </constraints>
+                                <properties/>
+                                <border type="none"/>
+                                <children>
+                                  <scrollpane id="76daf">
+                                    <constraints>
+                                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="1.0" weighty="1.0"/>
+                                    </constraints>
+                                    <properties/>
+                                    <border type="none"/>
+                                    <children>
+                                      <component id="34fd9" class="javax.swing.JCheckBox" binding="m_fullAutowireCheckBox">
+                                        <constraints/>
+                                        <properties>
+                                          <text value="Full autowire"/>
                                         </properties>
                                       </component>
                                     </children>

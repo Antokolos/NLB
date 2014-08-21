@@ -57,6 +57,7 @@ public class DialogBookProperties extends JDialog {
     private JTextField m_authorTextField;
     private JTextField m_versionTextField;
     private JCheckBox m_propagateToSubmodulesCheckBox;
+    private JCheckBox m_fullAutowireCheckBox;
 
     public DialogBookProperties(final NonLinearBookFacade nlbFacade) {
         m_nlbFacade = nlbFacade;
@@ -100,6 +101,7 @@ public class DialogBookProperties extends JDialog {
         m_licenseTextArea.setText(nonLinearBook.getLicense());
         m_authorTextField.setText(nonLinearBook.getAuthor());
         m_versionTextField.setText(nonLinearBook.getVersion());
+        m_fullAutowireCheckBox.setSelected(nonLinearBook.isFullAutowire());
         m_languageComboboxModel = new DefaultComboBoxModel<>();
         m_languageComboboxModel.addElement(Constants.RU);
         m_languageComboboxModel.addElement(Constants.EN);
@@ -127,6 +129,7 @@ public class DialogBookProperties extends JDialog {
                 m_languageComboboxModel.getElementAt(m_languageComboBox.getSelectedIndex()),
                 m_authorTextField.getText(),
                 m_versionTextField.getText(),
+                m_fullAutowireCheckBox.isSelected(),
                 m_propagateToSubmodulesCheckBox.isSelected()
         );
         dispose();

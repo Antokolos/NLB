@@ -455,25 +455,28 @@ public abstract class ExportManager {
             }
         }
         // Please note, that we are adding autowired inward links even from autowired pages itself
-        for (String autowiredPageId : nlb.getAutowiredPagesIds()) {
-            // Do not creating links to self
-            if (!autowiredPageId.equals(page.getId())) {
-                // Add links for autowired pages on the fly
-                final Page autowiredPage = nlb.getPageById(autowiredPageId);
-                Link link = (
-                        new LinkLw(
-                                LinkLw.Type.AutowiredIn,
-                                autowiredPageId,
-                                page,
-                                autowiredPage.getAutowireInTexts(),
-                                autowiredPage.getAutowireInConstrId(),
-                                autowiredPage.isAutoIn(),
-                                true,
-                                false
-                        )
-                );
-                LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(link, exportData);
-                blocks.addLinkBuildingBlocks(linkBuildingBlocks);
+        // if book has full autowire property set to true
+        if (nlb.isFullAutowire() || !page.isAutowire()) {
+            for (String autowiredPageId : nlb.getAutowiredPagesIds()) {
+                // Do not creating links to self
+                if (!autowiredPageId.equals(page.getId())) {
+                    // Add links for autowired pages on the fly
+                    final Page autowiredPage = nlb.getPageById(autowiredPageId);
+                    Link link = (
+                            new LinkLw(
+                                    LinkLw.Type.AutowiredIn,
+                                    autowiredPageId,
+                                    page,
+                                    autowiredPage.getAutowireInTexts(),
+                                    autowiredPage.getAutowireInConstrId(),
+                                    autowiredPage.isAutoIn(),
+                                    true,
+                                    false
+                            )
+                    );
+                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(link, exportData);
+                    blocks.addLinkBuildingBlocks(linkBuildingBlocks);
+                }
             }
         }
 

@@ -66,6 +66,7 @@ public interface NonLinearBook {
     public static final String DEFAULT_STARTPOINT = Constants.EMPTY_STRING;
     public static final String DEFAULT_LANGUAGE = Constants.RU;
     public static final String DEFAULT_LICENSE = Constants.EMPTY_STRING;
+    public static final boolean DEFAULT_FULL_AUTOWIRE = false;
     public static final String DEFAULT_AUTHOR = Constants.EMPTY_STRING;
     public static final String DEFAULT_VERSION = Constants.EMPTY_STRING;
 
@@ -258,6 +259,8 @@ public interface NonLinearBook {
     public String getLanguage();
 
     public String getLicense();
+
+    public boolean isFullAutowire();
 
     public String getAuthor();
 
