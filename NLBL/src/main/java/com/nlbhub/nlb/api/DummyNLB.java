@@ -85,6 +85,11 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
+    public boolean isFullAutowire() {
+        return DEFAULT_FULL_AUTOWIRE;
+    }
+
+    @Override
     public String getAuthor() {
         return DEFAULT_AUTHOR;
     }
