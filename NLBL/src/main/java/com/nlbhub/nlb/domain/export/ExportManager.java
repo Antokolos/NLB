@@ -453,9 +453,11 @@ public abstract class ExportManager {
                     blocks.addLinkBuildingBlocks(linkBuildingBlocks);
                 }
             }
-        } else {
-            // Please note, that we are not adding autowired inward links from autowired pages
-            for (String autowiredPageId : nlb.getAutowiredPagesIds()) {
+        }
+        // Please note, that we are adding autowired inward links even from autowired pages itself
+        for (String autowiredPageId : nlb.getAutowiredPagesIds()) {
+            // Do not creating links to self
+            if (!autowiredPageId.equals(page.getId())) {
                 // Add links for autowired pages on the fly
                 final Page autowiredPage = nlb.getPageById(autowiredPageId);
                 Link link = (
@@ -474,6 +476,7 @@ public abstract class ExportManager {
                 blocks.addLinkBuildingBlocks(linkBuildingBlocks);
             }
         }
+
         return blocks;
     }
 

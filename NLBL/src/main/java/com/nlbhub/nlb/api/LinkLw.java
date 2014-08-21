@@ -76,7 +76,7 @@ public class LinkLw implements Link {
     public LinkLw(
             Type type,
             String target,
-            IdentifiableItem parent,
+            Page parent,
             MultiLangString text,
             String constrId,
             boolean auto,
@@ -91,7 +91,7 @@ public class LinkLw implements Link {
         m_auto = auto;
         m_positiveConstraint = positiveConstraint;
         m_shouldObeyToModuleConstraint = shouldObeyToModuleConstraint;
-        if (m_type == Type.AutowiredIn || m_type == Type.AutowiredOut) {
+        if (m_type == Type.AutowiredOut || (m_type == Type.AutowiredIn && !parent.isAutowire())) {
             ModificationImpl modification = new ModificationImpl();
             modification.setType(Modification.Type.ASSIGN.name());
             modification.setParent(this);
