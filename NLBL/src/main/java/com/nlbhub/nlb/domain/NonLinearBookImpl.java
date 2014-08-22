@@ -2066,31 +2066,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 linksToBeAdded.add(link);
             }
         }
-        if (m_parentNLB != null && m_parentPage != null && source.isLeaf()) {
-            // Create return link on the fly. Return links for leafs does not have any constraints,
-            // i.e. it is shown always
-            Link link = (
-                    new LinkLw(
-                            LinkLw.Type.Return,
-                            StringHelper.isEmpty(source.getReturnPageId())
-                                    ? m_parentPage.getId()
-                                    : source.getReturnPageId(),
-                            source,
-                            source.getReturnTexts(),
-                            Constants.EMPTY_STRING,
-                            source.isAutoReturn(),
-                            true,
-                            false
-                    )
-            );
-            if (!determineLinkExcludedStatus(factory, visitedVars, link)) {
-                linksToBeAdded.add(link);
-            }
-        } else if (
-                m_parentNLB != null
-                        && m_parentPage != null
-                        && !StringHelper.isEmpty(m_parentPage.getModuleConstrId())
-                ) {
+        if (m_parentNLB != null && m_parentPage != null && source.shouldReturn()) {
+            // Create return link on the fly.
             // If page has module constraint, than module return links should be added to the
             // each page of the module.
             // These links should have constraints in form of 'NOT (module_constraint)'
@@ -2105,7 +2082,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                             source.getReturnTexts(),
                             m_parentPage.getModuleConstrId(),
                             source.isAutoReturn(),
-                            false,
+                            StringHelper.isEmpty(m_parentPage.getModuleConstrId()),
                             false
                     )
             );

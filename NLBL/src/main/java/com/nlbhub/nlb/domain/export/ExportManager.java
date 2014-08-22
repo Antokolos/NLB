@@ -383,34 +383,8 @@ public abstract class ExportManager {
             LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(link, exportData);
             blocks.addLinkBuildingBlocks(linkBuildingBlocks);
         }
-        if (
-                page.isLeaf()
-                        && !exportData.getModulePage().getId().equals(MAIN_DATA_KEY)
-                        && page.shouldReturn()
-                ) {
-            // Create return link on the fly. Return links for leafs does not have any constraints,
-            // i.e. it is shown always
-            Link link = (
-                    new LinkLw(
-                            LinkLw.Type.Return,
-                            StringHelper.isEmpty(page.getReturnPageId())
-                                    ? exportData.getModulePage().getId()
-                                    : page.getReturnPageId(),
-                            page,
-                            page.getReturnTexts(),
-                            Constants.EMPTY_STRING,
-                            page.isAutoReturn(),
-                            true,
-                            false
-                    )
-            );
-            LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(link, exportData);
-            blocks.addLinkBuildingBlocks(linkBuildingBlocks);
-        } else if (
-                !StringHelper.isEmpty(exportData.getModulePage().getModuleConstrId())
-                        && !exportData.getModulePage().getId().equals(MAIN_DATA_KEY)
-                        && page.shouldReturn()
-                ) {
+        if (page.shouldReturn() && !exportData.getModulePage().getId().equals(MAIN_DATA_KEY)) {
+            // Create return link on the fly.
             // If page has module constraint, than module return links should be added to the
             // each page of the module.
             // These links should have constraints in form of 'NOT (module_constraint)'
@@ -425,7 +399,7 @@ public abstract class ExportManager {
                             page.getReturnTexts(),
                             exportData.getModulePage().getModuleConstrId(),
                             page.isAutoReturn(),
-                            false,
+                            StringHelper.isEmpty(exportData.getModulePage().getModuleConstrId()),
                             false
                     )
             );
