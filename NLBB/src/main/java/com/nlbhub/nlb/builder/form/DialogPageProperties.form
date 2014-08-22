@@ -98,22 +98,12 @@
                                 <children>
                                   <component id="c9e08" class="javax.swing.JLabel" binding="m_traverseTextLabel">
                                     <constraints>
-                                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                                       <gridbag weightx="0.0" weighty="0.0"/>
                                     </constraints>
                                     <properties>
                                       <labelFor value="dc8a5"/>
                                       <text value="Traverse text"/>
-                                    </properties>
-                                  </component>
-                                  <component id="8177c" class="javax.swing.JLabel" binding="m_returnTextLabel">
-                                    <constraints>
-                                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
-                                      <gridbag weightx="0.0" weighty="0.0"/>
-                                    </constraints>
-                                    <properties>
-                                      <labelFor value="30ba6"/>
-                                      <text value="Return text"/>
                                     </properties>
                                   </component>
                                   <component id="36c24" class="javax.swing.JLabel">
@@ -179,7 +169,7 @@
                                   </grid>
                                   <grid id="eacdc" binding="m_traverseTextPanel" layout-manager="GridBagLayout">
                                     <constraints>
-                                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                       <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
                                     </constraints>
                                     <properties>
@@ -200,38 +190,6 @@
                                         <border type="none"/>
                                         <children>
                                           <component id="dc8a5" class="javax.swing.JTextField" binding="m_traverseTextTextField">
-                                            <constraints/>
-                                            <properties>
-                                              <columns value="42"/>
-                                            </properties>
-                                          </component>
-                                        </children>
-                                      </scrollpane>
-                                    </children>
-                                  </grid>
-                                  <grid id="d3f1b" binding="m_returnTextPanel" layout-manager="GridBagLayout">
-                                    <constraints>
-                                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                                      <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
-                                    </constraints>
-                                    <properties>
-                                      <minimumSize width="56" height="33"/>
-                                      <preferredSize width="505" height="33"/>
-                                    </properties>
-                                    <border type="none"/>
-                                    <children>
-                                      <scrollpane id="8d0c2">
-                                        <constraints>
-                                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                                          <gridbag weightx="1.0" weighty="1.0"/>
-                                        </constraints>
-                                        <properties>
-                                          <horizontalScrollBarPolicy value="31"/>
-                                          <verticalScrollBarPolicy value="21"/>
-                                        </properties>
-                                        <border type="none"/>
-                                        <children>
-                                          <component id="30ba6" class="javax.swing.JTextField" binding="m_returnTextTextField">
                                             <constraints/>
                                             <properties>
                                               <columns value="42"/>
@@ -329,6 +287,48 @@
                                     <properties>
                                       <labelFor value="e7478"/>
                                       <text value="Autowire out text"/>
+                                    </properties>
+                                  </component>
+                                  <grid id="d3f1b" binding="m_returnTextPanel" layout-manager="GridBagLayout">
+                                    <constraints>
+                                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <minimumSize width="56" height="33"/>
+                                      <preferredSize width="505" height="33"/>
+                                    </properties>
+                                    <border type="none"/>
+                                    <children>
+                                      <scrollpane id="8d0c2">
+                                        <constraints>
+                                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                          <gridbag weightx="1.0" weighty="1.0"/>
+                                        </constraints>
+                                        <properties>
+                                          <horizontalScrollBarPolicy value="31"/>
+                                          <verticalScrollBarPolicy value="21"/>
+                                        </properties>
+                                        <border type="none"/>
+                                        <children>
+                                          <component id="30ba6" class="javax.swing.JTextField" binding="m_returnTextTextField">
+                                            <constraints/>
+                                            <properties>
+                                              <columns value="42"/>
+                                            </properties>
+                                          </component>
+                                        </children>
+                                      </scrollpane>
+                                    </children>
+                                  </grid>
+                                  <component id="8177c" class="javax.swing.JLabel" binding="m_returnTextLabel">
+                                    <constraints>
+                                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <labelFor value="30ba6"/>
+                                      <text value="Return text"/>
                                     </properties>
                                   </component>
                                 </children>
