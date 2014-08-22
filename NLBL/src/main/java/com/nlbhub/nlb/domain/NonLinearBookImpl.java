@@ -1230,12 +1230,12 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final String m_prevLanguage;
         private final String m_prevAuthor;
         private final String m_prevVersion;
-        private final boolean m_prevFullAutowire;
+        private final Boolean m_prevFullAutowire;
         private final String m_newLicense;
         private final String m_newLanguage;
         private final String m_newAuthor;
         private final String m_newVersion;
-        private final boolean m_newFullAutowire;
+        private final Boolean m_newFullAutowire;
         private List<UpdateBookPropertiesCommand> m_submodulesCommands = new ArrayList<>();
 
         UpdateBookPropertiesCommand(
@@ -1243,7 +1243,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String language,
                 final String author,
                 final String version,
-                final boolean fullAutowire,
+                final Boolean fullAutowire,
                 final boolean propagateToSubmodules
         ) {
             m_prevLicense = m_license;
@@ -1277,11 +1277,21 @@ public class NonLinearBookImpl implements NonLinearBook {
 
         @Override
         public void execute() {
-            m_license = m_newLicense;
-            m_language = m_newLanguage;
-            m_author = m_newAuthor;
-            m_version = m_newVersion;
-            m_fullAutowire = m_newFullAutowire;
+            if (m_newLicense != null) {
+                m_license = m_newLicense;
+            }
+            if (m_newLanguage != null) {
+                m_language = m_newLanguage;
+            }
+            if (m_newAuthor != null) {
+                m_author = m_newAuthor;
+            }
+            if (m_newVersion != null) {
+                m_version = m_newVersion;
+            }
+            if (m_newFullAutowire != null) {
+                m_fullAutowire = m_newFullAutowire;
+            }
             for (UpdateBookPropertiesCommand command : m_submodulesCommands) {
                 command.execute();
             }
@@ -1753,10 +1763,20 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String language,
             final String author,
             final String version,
-            final boolean fullAutowire,
+            final Boolean fullAutowire,
             final boolean propagateToSubmodules
     ) {
-        return new UpdateBookPropertiesCommand(license, language, author, version, fullAutowire, propagateToSubmodules);
+        // We are updating only properties which are actually changed.
+        // Thus we can, for example, change language in book and all its modules, leaving
+        // other properties intact.
+        return new UpdateBookPropertiesCommand(
+                m_license.equals(license) ? null : license,
+                m_language.equals(language) ? null : language,
+                m_author.equals(author) ? null : author,
+                m_version.equals(version) ? null : version,
+                ((fullAutowire != null) && (m_fullAutowire == fullAutowire)) ? null : fullAutowire,
+                propagateToSubmodules
+        );
     }
 
     CopyCommand createCopyCommand(
