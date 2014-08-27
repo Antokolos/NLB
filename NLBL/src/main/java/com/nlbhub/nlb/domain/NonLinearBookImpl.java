@@ -181,7 +181,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         private AddPageCommand(PageImpl page, boolean isAutowired) {
             m_page = page;
             m_autowired = isAutowired;
-            m_page.setDeleted(true);  // Not fully exists for now
+            // m_page.setDeleted(true);  Not fully exists for now, but don't do this, because it
+            // affects page object immediately
             if (getPages().values().size() == 0) {
                 m_changeStartPointCommand = (
                         new ChangeStartPointCommand(page.getId())
@@ -830,8 +831,22 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final ModifyingItem modifyingItem,
                 final ModificationsTableModel modificationsTableModel
         ) {
+            init(getModifyingItemImpl(modifyingItem), modificationsTableModel);
+        }
+
+        private UpdateModificationsCommand(
+                final AbstractModifyingItem modifyingItem,
+                final ModificationsTableModel modificationsTableModel
+        ) {
+            init(modifyingItem, modificationsTableModel);
+        }
+
+        private void init(
+                final AbstractModifyingItem modifyingItem,
+                final ModificationsTableModel modificationsTableModel
+        ) {
             // TODO: possibly inefficient code, please refactor
-            m_item = getModifyingItemImpl(modifyingItem);
+            m_item = modifyingItem;
             if (modifyingItem != null) {
                 for (Modification modification : modificationsTableModel.getModifications()) {
                     boolean toBeAdded = true;
@@ -1398,12 +1413,34 @@ public class NonLinearBookImpl implements NonLinearBook {
 
         private void copyModifications(
                 final NonLinearBookImpl currentNLB,
-                final ModifyingItem existingItem,
-                final ModifyingItem newItem
+                final AbstractModifyingItem existingItem,
+                final AbstractModifyingItem newItem
         ) {
-            ModificationsTableModel model = (
+            ModificationsTableModel existingModel = (
                     new ModificationsTableModel(currentNLB, existingItem.getModifications())
             );
+            ModificationsTableModel model = (
+                    new ModificationsTableModel(currentNLB, new ArrayList<Modification>())
+            );
+            // Should copy data from existing modifications model
+            int maxRow = existingModel.getRowCount();
+            int maxCol = existingModel.getColumnCount();
+            for (int row = 0; row < maxRow; row++) {
+                model.add(newItem);
+                // Please note, that we should copy from last column to the first, because
+                // in other case type column will not be changed properly
+                // (just like when editing manually)
+                for (int col = maxCol - 1; col > 0; col--) {
+                    final Object value = existingModel.getValueAt(row, col);
+                    String text;
+                    if (value instanceof Enum) {
+                        text = ((Enum) value).name();
+                    } else {
+                        text = value.toString();
+                    }
+                    model.setValueAt(text, row, col);
+                }
+            }
             UpdateModificationsCommand command = new UpdateModificationsCommand(newItem, model);
             m_commandChain.addCommand(command);
         }
