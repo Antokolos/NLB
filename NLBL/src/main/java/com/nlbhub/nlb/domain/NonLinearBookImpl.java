@@ -1374,6 +1374,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         new LinksTableModel(new ArrayList<Link>())
                 );
                 m_commandChain.addCommand(updatePageCommand);
+                copyModifications(currentNLB, page, newPage);
                 addLinks(currentNLB, nlbToPaste, idsMapping, page, newPage);
             }
             for (Map.Entry<String, ObjImpl> entry : nlbToPaste.m_objs.entrySet()) {
@@ -1390,8 +1391,21 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.isTakable()
                 );
                 m_commandChain.addCommand(updateObjCommand);
+                copyModifications(currentNLB, obj, newObj);
                 addLinks(currentNLB, nlbToPaste, idsMapping, obj, newObj);
             }
+        }
+
+        private void copyModifications(
+                final NonLinearBookImpl currentNLB,
+                final ModifyingItem existingItem,
+                final ModifyingItem newItem
+        ) {
+            ModificationsTableModel model = (
+                    new ModificationsTableModel(currentNLB, existingItem.getModifications())
+            );
+            UpdateModificationsCommand command = new UpdateModificationsCommand(newItem, model);
+            m_commandChain.addCommand(command);
         }
 
         private void addLinks(
@@ -1416,6 +1430,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         link.isAuto()
                 );
                 m_commandChain.addCommand(updateLinkCommand);
+                copyModifications(currentNLB, link, newLink);
             }
         }
 
