@@ -43,7 +43,10 @@ import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -593,13 +596,32 @@ public class STEADExportManager extends TextExportManager {
          * start- and end-of-line
          */
         Pattern pattern = Pattern.compile("(?m)^.*$");
+        // TODO: consider moving code related to variable replacement to the parent classes
+        Pattern variablePattern = Pattern.compile("\\$(\\S*)\\$");
         Matcher matcher = pattern.matcher(pageText);
         while (matcher.find()) {
             final String line = matcher.group().trim();
             if (line.isEmpty()) {
                 result.append("^");
             } else {
-                result.append(line);
+                Matcher variableMatcher = variablePattern.matcher(line);
+                Set<String> variableSet = new HashSet<>();
+                while (variableMatcher.find()) {
+                    final String variable = variableMatcher.group(1).trim();
+                    variableSet.add(variable);
+                }
+                String resultingLine = line;
+                for (final String variable : variableSet) {
+                    resultingLine = (
+                            resultingLine.replaceAll(
+                                    "\\$" + variable + "\\$",
+                                    "]];" + LINE_SEPARATOR +
+                                            "p(" + GLOBAL_VAR_PREFIX + variable + ");" + LINE_SEPARATOR +
+                                            "p [[" + LINE_SEPARATOR
+                            )
+                    );
+                }
+                result.append(resultingLine);
             }
             result.append(LINE_SEPARATOR);
         }
