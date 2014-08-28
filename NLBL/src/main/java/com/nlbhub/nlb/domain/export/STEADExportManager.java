@@ -54,6 +54,7 @@ import java.util.regex.Pattern;
  * @version 1.0 12/10/13
  */
 public class STEADExportManager extends TextExportManager {
+    private static final String GLOBAL_VAR_PREFIX = "_";
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
     /**
      * Use page numbers as destinations instead of page IDs.
@@ -361,12 +362,8 @@ public class STEADExportManager extends TextExportManager {
     }
 
     protected String decorateUseVariable(String variableName) {
-        return (
-                "    if not (" + variableName + ") then stead.add_var { "
-                        + variableName
-                        + " = true }; end;"
-                        + LINE_SEPARATOR
-        );
+        String globalVar = GLOBAL_VAR_PREFIX + variableName;
+        return globalVar + " = true;" + LINE_SEPARATOR;
     }
 
     protected String decorateUseModifications(String modificationsText) {
@@ -375,12 +372,8 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateObjVariable(String variableName) {
-        return (
-                "        if not (" + variableName + ") then stead.add_var { "
-                        + variableName
-                        + " = true }; end;"
-                        + LINE_SEPARATOR
-        );
+        String globalVar = GLOBAL_VAR_PREFIX + variableName;
+        return globalVar + " = true;" + LINE_SEPARATOR;
     }
 
     @Override
@@ -484,17 +477,17 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateBooleanVar(String constraintVar) {
-        return constraintVar;
+        return GLOBAL_VAR_PREFIX + constraintVar;
     }
 
     @Override
     protected String decorateStringVar(String constraintVar) {
-        return constraintVar;
+        return GLOBAL_VAR_PREFIX + constraintVar;
     }
 
     @Override
     protected String decorateNumberVar(String constraintVar) {
-        return constraintVar;
+        return GLOBAL_VAR_PREFIX +constraintVar;
     }
 
     @Override
@@ -550,22 +543,14 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateLinkVariable(String variableName) {
-        return (
-                "                if not (" + variableName + ") then stead.add_var { "
-                        + variableName
-                        + " = true }; end;"
-                        + LINE_SEPARATOR
-        );
+        String globalVar = GLOBAL_VAR_PREFIX + variableName;
+        return globalVar + " = true;" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decoratePageVariable(String variableName) {
-        return (
-                "        if not (" + variableName + ") then stead.add_var { "
-                        + variableName
-                        + " = true }; end;"
-                        + LINE_SEPARATOR
-        );
+        String globalVar = GLOBAL_VAR_PREFIX + variableName;
+        return globalVar + " = true;" + LINE_SEPARATOR;
     }
 
     @Override
