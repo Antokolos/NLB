@@ -40,6 +40,8 @@ package com.nlbhub.nlb.api;
 
 import com.nlbhub.nlb.util.MultiLangString;
 
+import java.util.List;
+
 /**
  * The Page class
  *
@@ -72,6 +74,8 @@ public interface Page extends NodeItem {
     public String getImageFileName();
 
     public String getText();
+
+    public List<TextChunk> getTextChunks();
 
     public MultiLangString getTexts();
 

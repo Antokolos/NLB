@@ -54,7 +54,10 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The PageImpl class
@@ -65,6 +68,14 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "page")
 public class PageImpl extends AbstractNodeItem implements Page {
+    /**
+     * This RegExp is used to extract multiple lines of text, separated by CR+LF or LF.
+     * By default, ^ and $ match the start- and end-of-input respectively.
+     * You'll need to enable MULTI-LINE mode with (?m), which causes ^ and $ to match the
+     * start- and end-of-line
+     */
+    private static final Pattern LINE_PATTERN = Pattern.compile("(?m)^.*$");
+    private static final Pattern VAR_PATTERN = Pattern.compile("\\$([^\\s\\$]*)\\$");
     private static final String TEXT_SUBDIR_NAME = "text";
     private static final String IMAGE_FILE_NAME = "image";
     private static final String VARID_FILE_NAME = "varid";
@@ -201,6 +212,47 @@ public class PageImpl extends AbstractNodeItem implements Page {
     @XmlElement(name = "text")
     public String getText() {
         return m_text.get(getCurrentNLB().getLanguage());
+    }
+
+    /**
+     * TODO: this method REALLY needs JUnit
+     * @return
+     */
+    @Override
+    public List<TextChunk> getTextChunks() {
+        List<TextChunk> result = new ArrayList<>();
+        String text = getText();
+
+        Matcher matcher = LINE_PATTERN.matcher(text);
+        int start = 0;
+        while (matcher.find()) {
+            final String line = matcher.group().trim();
+            if (line.isEmpty()) {
+                TextChunk textChunk = new TextChunk();
+                textChunk.setText(line);
+                textChunk.setType(TextChunk.ChunkType.TEXT);
+                result.add(textChunk);
+            } else {
+                Matcher variableMatcher = VAR_PATTERN.matcher(line);
+                while (variableMatcher.find()) {
+                    TextChunk textChunk = new TextChunk();
+                    final String variable = variableMatcher.group(1);
+                    textChunk.setText(line.substring(start, variableMatcher.start()));
+                    textChunk.setType(TextChunk.ChunkType.TEXT);
+                    result.add(textChunk);
+                    TextChunk variableChunk = new TextChunk();
+                    variableChunk.setText(variable);
+                    variableChunk.setType(TextChunk.ChunkType.VARIABLE);
+                    result.add(variableChunk);
+                    start = variableMatcher.end();
+                }
+            }
+            TextChunk newlineChunk = new TextChunk();
+            newlineChunk.setText(Constants.EMPTY_STRING);
+            newlineChunk.setType(TextChunk.ChunkType.NEWLINE);
+            result.add(newlineChunk);
+        }
+        return result;
     }
 
     @Override

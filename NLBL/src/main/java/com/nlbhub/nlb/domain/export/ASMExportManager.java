@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.Constants;
+import com.nlbhub.nlb.api.TextChunk;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
@@ -202,8 +203,8 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageTextStart(String pageText) {
-        return pageText;
+    protected String getLineSeparator() {
+        return LINE_SEPARATOR;
     }
 
     @Override

@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.Constants;
+import com.nlbhub.nlb.api.TextChunk;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
@@ -273,26 +274,27 @@ public class URQExportManager extends TextExportManager {
         }
     }
 
-    /**
-     * @param pageText
-     * @return
-     */
-    @Override
-    protected String decoratePageTextStart(String pageText) {
-        StringBuilder result = new StringBuilder();
-        /*
-         * This RegExp is used to extract multiple lines of text, separated by CR+LF or LF.
-         * By default, ^ and $ match the start- and end-of-input respectively.
-         * You'll need to enable MULTI-LINE mode with (?m), which causes ^ and $ to match the
-         * start- and end-of-line
-         */
-        Pattern pattern = Pattern.compile("(?m)^.*$");
-        Matcher matcher = pattern.matcher(pageText);
-        while (matcher.find()) {
-            final String line = matcher.group().trim();
-            result.append("pln ").append(line).append(LINE_SEPARATOR);
+    protected String decoratePageTextStart(List<TextChunk> pageTextChunks) {
+        StringBuilder pageText = new StringBuilder();
+        for (final TextChunk textChunk : pageTextChunks) {
+            switch (textChunk.getType()) {
+                case TEXT:
+                    pageText.append("pln ").append(textChunk.getText());
+                    break;
+                case VARIABLE:
+                    pageText.append("$").append(textChunk.getText()).append("$");
+                    break;
+                case NEWLINE:
+                    pageText.append(getLineSeparator());
+                    break;
+            }
         }
-        return result.toString();
+        return pageText.toString();
+    }
+
+    @Override
+    protected String getLineSeparator() {
+        return LINE_SEPARATOR;
     }
 
     @Override

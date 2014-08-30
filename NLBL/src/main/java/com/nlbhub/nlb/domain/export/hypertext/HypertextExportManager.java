@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.domain.export.hypertext;
 
+import com.nlbhub.nlb.api.TextChunk;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.export.ExportManager;
 import com.nlbhub.nlb.domain.export.LinkBuildingBlocks;
@@ -54,6 +55,7 @@ import com.nlbhub.nlb.util.StringHelper;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * The HypertextExportManager class
@@ -91,8 +93,6 @@ public abstract class HypertextExportManager
             throw new NLBExportException("Error while converting NLB to Hypertext", e);
         }
     }
-
-    protected abstract String getLineSeparator();
 
     protected abstract HTDocument<P> createDocument(String encoding, String lineSeparator);
 
@@ -334,11 +334,6 @@ public abstract class HypertextExportManager
     @Override
     protected String decoratePageCaption(String caption) {
         return caption + getLineSeparator();
-    }
-
-    @Override
-    protected String decoratePageTextStart(String pageText) {
-        return pageText;
     }
 
     @Override

@@ -332,7 +332,7 @@ public abstract class ExportManager {
                 )
         );
         blocks.setUseCaption(page.isUseCaption());
-        blocks.setPageTextStart(decoratePageTextStart(page.getText()));
+        blocks.setPageTextStart(decoratePageTextStart(page.getTextChunks()));
         blocks.setPageTextEnd(decoratePageTextEnd());
         NonLinearBook nlb = exportData.getNlb();
         if (!StringHelper.isEmpty(page.getVarId())) {
@@ -944,7 +944,25 @@ public abstract class ExportManager {
         }
     }
 
-    protected abstract String decoratePageTextStart(String pageText);
+    protected String decoratePageTextStart(List<TextChunk> pageTextChunks) {
+        StringBuilder pageText = new StringBuilder();
+        for (final TextChunk textChunk : pageTextChunks) {
+            switch (textChunk.getType()) {
+                case TEXT:
+                    pageText.append(textChunk.getText());
+                    break;
+                case VARIABLE:
+                    pageText.append("$").append(textChunk.getText()).append("$");
+                    break;
+                case NEWLINE:
+                    pageText.append(getLineSeparator());
+                    break;
+            }
+        }
+        return pageText.toString();
+    }
+
+    protected abstract String getLineSeparator();
 
     protected abstract String decoratePageTextEnd();
 

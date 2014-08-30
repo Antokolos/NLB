@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.Constants;
+import com.nlbhub.nlb.api.TextChunk;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
@@ -253,8 +254,13 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageTextStart(String pageText) {
-        return "'" + pageText;
+    protected String decoratePageTextStart(List<TextChunk> pageTextChunks) {
+        return "'" + super.decoratePageTextStart(pageTextChunks);
+    }
+
+    @Override
+    protected String getLineSeparator() {
+        return LINE_SEPARATOR;
     }
 
     @Override

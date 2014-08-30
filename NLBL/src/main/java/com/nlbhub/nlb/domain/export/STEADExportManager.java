@@ -39,16 +39,12 @@
 package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.Constants;
+import com.nlbhub.nlb.api.TextChunk;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * The STEADExportManager class
@@ -584,52 +580,35 @@ public class STEADExportManager extends TextExportManager {
         }
     }
 
-    @Override
-    protected String decoratePageTextStart(String pageText) {
-        StringBuilder result = new StringBuilder();
-        result.append("    dsc = function(s)").append(LINE_SEPARATOR).append("p [[");
-        result.append(LINE_SEPARATOR);
-        /*
-         * This RegExp is used to extract multiple lines of text, separated by CR+LF or LF.
-         * By default, ^ and $ match the start- and end-of-input respectively.
-         * You'll need to enable MULTI-LINE mode with (?m), which causes ^ and $ to match the
-         * start- and end-of-line
-         */
-        Pattern pattern = Pattern.compile("(?m)^.*$");
-        // TODO: consider moving code related to variable replacement to the parent classes
-        Pattern variablePattern = Pattern.compile("\\$(\\S*)\\$");
-        Matcher matcher = pattern.matcher(pageText);
-        while (matcher.find()) {
-            final String line = matcher.group().trim();
-            if (line.isEmpty()) {
-                result.append("^");
-            } else {
-                Matcher variableMatcher = variablePattern.matcher(line);
-                Set<String> variableSet = new HashSet<>();
-                while (variableMatcher.find()) {
-                    final String variable = variableMatcher.group(1).trim();
-                    variableSet.add(variable);
-                }
-                String resultingLine = line;
-                for (final String variable : variableSet) {
-                    resultingLine = (
-                            resultingLine.replaceAll(
-                                    "\\$" + variable + "\\$",
-                                    "]];" + LINE_SEPARATOR +
-                                            "p(" + GLOBAL_VAR_PREFIX + variable + ");" + LINE_SEPARATOR +
-                                            "p [[" + LINE_SEPARATOR
-                            )
-                    );
-                }
-                result.append(resultingLine);
+    protected String decoratePageTextStart(List<TextChunk> pageTextChunks) {
+        StringBuilder pageText = new StringBuilder();
+        pageText.append("    dsc = function(s)").append(LINE_SEPARATOR).append("p [[");
+        pageText.append(LINE_SEPARATOR);
+        for (final TextChunk textChunk : pageTextChunks) {
+            switch (textChunk.getType()) {
+                case TEXT:
+                    pageText.append(textChunk.getText());
+                    break;
+                case VARIABLE:
+                    pageText.append("]];").append(LINE_SEPARATOR).append("p(");
+                    pageText.append(GLOBAL_VAR_PREFIX).append(textChunk.getText()).append(");");
+                    pageText.append(LINE_SEPARATOR).append("p [[").append(LINE_SEPARATOR);
+                    break;
+                case NEWLINE:
+                    pageText.append("^").append(getLineSeparator());
+                    break;
             }
-            result.append(LINE_SEPARATOR);
         }
-        result.append("]];").append(LINE_SEPARATOR);
-        result.append("    end,").append(LINE_SEPARATOR);
-        result.append("    xdsc = function(s)").append(LINE_SEPARATOR);
-        result.append("        p \"^^\";").append(LINE_SEPARATOR);
-        return result.toString();
+        pageText.append("]];").append(LINE_SEPARATOR);
+        pageText.append("    end,").append(LINE_SEPARATOR);
+        pageText.append("    xdsc = function(s)").append(LINE_SEPARATOR);
+        pageText.append("        p \"^^\";").append(LINE_SEPARATOR);
+        return pageText.toString();
+    }
+
+    @Override
+    protected String getLineSeparator() {
+        return LINE_SEPARATOR;
     }
 
     @Override

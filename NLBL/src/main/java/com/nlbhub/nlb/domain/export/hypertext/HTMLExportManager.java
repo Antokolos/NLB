@@ -39,12 +39,14 @@
 package com.nlbhub.nlb.domain.export.hypertext;
 
 import com.nlbhub.nlb.api.Constants;
+import com.nlbhub.nlb.api.TextChunk;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.export.hypertext.document.*;
 import com.nlbhub.nlb.exception.HTDocumentException;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -90,20 +92,9 @@ public class HTMLExportManager extends HypertextExportManager<HTMLParagraph, HTM
     }
 
     @Override
-    protected String decoratePageTextStart(String pageText) {
+    protected String decoratePageTextStart(List<TextChunk> pageTextChunks) {
         StringBuilder result = new StringBuilder();
-        /*
-         * This RegExp is used to extract multiple lines of text, separated by CR+LF or LF.
-         * By default, ^ and $ match the start- and end-of-input respectively.
-         * You'll need to enable MULTI-LINE mode with (?m), which causes ^ and $ to match the
-         * start- and end-of-line
-         */
-        Pattern pattern = Pattern.compile("(?m)^.*$");
-        Matcher matcher = pattern.matcher(pageText);
-        while (matcher.find()) {
-            final String line = matcher.group().trim();
-            result.append(line).append(getLineSeparator());
-        }
+        result.append(super.decoratePageTextStart(pageTextChunks));
         result.append(getLineSeparator());
         return result.toString();
     }
