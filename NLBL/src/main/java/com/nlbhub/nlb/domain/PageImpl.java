@@ -221,31 +221,28 @@ public class PageImpl extends AbstractNodeItem implements Page {
     @Override
     public List<TextChunk> getTextChunks() {
         List<TextChunk> result = new ArrayList<>();
-        String text = getText();
-
-        Matcher matcher = LINE_PATTERN.matcher(text);
-        int start = 0;
+        Matcher matcher = LINE_PATTERN.matcher(getText());
         while (matcher.find()) {
             final String line = matcher.group().trim();
-            if (line.isEmpty()) {
+            int start = 0;
+            Matcher variableMatcher = VAR_PATTERN.matcher(line);
+            while (variableMatcher.find()) {
+                TextChunk textChunk = new TextChunk();
+                final String variable = variableMatcher.group(1);
+                textChunk.setText(line.substring(start, variableMatcher.start()));
+                textChunk.setType(TextChunk.ChunkType.TEXT);
+                result.add(textChunk);
+                TextChunk variableChunk = new TextChunk();
+                variableChunk.setText(variable);
+                variableChunk.setType(TextChunk.ChunkType.VARIABLE);
+                result.add(variableChunk);
+                start = variableMatcher.end();
+            }
+            if (start == 0) {
                 TextChunk textChunk = new TextChunk();
                 textChunk.setText(line);
                 textChunk.setType(TextChunk.ChunkType.TEXT);
                 result.add(textChunk);
-            } else {
-                Matcher variableMatcher = VAR_PATTERN.matcher(line);
-                while (variableMatcher.find()) {
-                    TextChunk textChunk = new TextChunk();
-                    final String variable = variableMatcher.group(1);
-                    textChunk.setText(line.substring(start, variableMatcher.start()));
-                    textChunk.setType(TextChunk.ChunkType.TEXT);
-                    result.add(textChunk);
-                    TextChunk variableChunk = new TextChunk();
-                    variableChunk.setText(variable);
-                    variableChunk.setType(TextChunk.ChunkType.VARIABLE);
-                    result.add(variableChunk);
-                    start = variableMatcher.end();
-                }
             }
             TextChunk newlineChunk = new TextChunk();
             newlineChunk.setText(Constants.EMPTY_STRING);
