@@ -45,8 +45,6 @@ import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * The URQExportManager class
@@ -343,14 +341,13 @@ public class URQExportManager extends TextExportManager {
         return "Inv- " + objectDisplayName + LINE_SEPARATOR;
     }
 
-    /**
-     * @param objectId
-     * @param objectName
-     * @param objectDisplayName
-     * @return
-     */
     @Override
-    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
-        return "Inv+ " + objectDisplayName + LINE_SEPARATOR;
+    protected String decorateAddObj(String listName, String objectId, String objectName, String objectDisplayName) {
+        if (StringHelper.isEmpty(listName)) {
+            return "Inv+ " + objectDisplayName + LINE_SEPARATOR;
+        } else {
+            // TODO: implement adding to the arbitrary list
+            return Constants.EMPTY_STRING;
+        }
     }
 }

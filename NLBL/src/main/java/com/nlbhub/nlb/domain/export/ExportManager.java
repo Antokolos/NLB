@@ -788,6 +788,11 @@ public abstract class ExportManager {
             if (!modification.isDeleted()) {
                 stringBuilder.append(indentString);
                 if (modification.getType().equals(ModificationImpl.Type.ADD)) {
+                    Variable listVar = (
+                            StringHelper.isEmpty(modification.getVarId())
+                                    ? null
+                                    : exportData.getNlb().getVariableById(modification.getVarId())
+                    );
                     Variable expression = (
                             exportData.getNlb().getVariableById(modification.getExprId())
                     );
@@ -799,8 +804,10 @@ public abstract class ExportManager {
                         );
                     }
                     final String objId = exportData.getObjId(expression.getValue());
+                    final String listName = (listVar != null) ? listVar.getName() : Constants.EMPTY_STRING;
                     stringBuilder.append(
                             decorateAddObj(
+                                    listName,
                                     objId,
                                     expression.getValue(),
                                     exportData.getNlb().getObjById(objId).getDisp()
@@ -871,7 +878,7 @@ public abstract class ExportManager {
 
     protected abstract String decorateDelObj(String objectId, String objectName, String objectDisplayName);
 
-    protected abstract String decorateAddObj(String objectId, String objectName, String objectDisplayName);
+    protected abstract String decorateAddObj(String listName, String objectId, String objectName, String objectDisplayName);
 
     protected abstract String decorateTrue();
 

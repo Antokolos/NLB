@@ -316,10 +316,10 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateObjInv(String invString) {
         return (
-                "    inv = function(s)" + LINE_SEPARATOR +
-                "        p \"" + invString + "\";" + LINE_SEPARATOR +
-                "        s.use(s, s);" + LINE_SEPARATOR +
-                "    end," + LINE_SEPARATOR
+                "    inv = function(s)" + LINE_SEPARATOR
+                        + "        p \"" + invString + "\";" + LINE_SEPARATOR
+                        + "        s.use(s, s);" + LINE_SEPARATOR
+                        + "    end," + LINE_SEPARATOR
         );
     }
 
@@ -340,9 +340,9 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateObjUseEnd() {
-        return  (
-                "        here().autos();" + LINE_SEPARATOR +
-                "    end," + LINE_SEPARATOR
+        return (
+                "        here().autos();" + LINE_SEPARATOR
+                        + "    end," + LINE_SEPARATOR
         );
     }
 
@@ -409,14 +409,22 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
-        return (
-                "            if not have(\""
-                        + objectName
-                        + "\") then take('"
-                        + decorateId(objectId)
-                        + "'); end;" + LINE_SEPARATOR
-        );
+    protected String decorateAddObj(String listName, String objectId, String objectName, String objectDisplayName) {
+        if (StringHelper.isEmpty(listName)) {
+            return (
+                    "            if not have(\""
+                            + objectName
+                            + "\") then take('"
+                            + decorateId(objectId)
+                            + "'); end;" + LINE_SEPARATOR
+            );
+        } else {
+            return (
+                    "        addToList("
+                            + listName + ", " + decorateId(objectId)
+                            + ");" + LINE_SEPARATOR
+            );
+        }
     }
 
     @Override
@@ -486,7 +494,7 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateNumberVar(String constraintVar) {
-        return GLOBAL_VAR_PREFIX +constraintVar;
+        return GLOBAL_VAR_PREFIX + constraintVar;
     }
 
     @Override

@@ -53,8 +53,6 @@ import com.nlbhub.nlb.util.StringHelper;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * The JSIQ2ExportManager class
@@ -335,9 +333,14 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
-        String id = decorateId(objectId);
-        return "if (!checkItem({'name': '" + id + "'})) { addItem({'name': '" + id + "'}); }; ";
+    protected String decorateAddObj(String listName, String objectId, String objectName, String objectDisplayName) {
+        if (StringHelper.isEmpty(listName)) {
+            String id = decorateId(objectId);
+            return "if (!checkItem({'name': '" + id + "'})) { addItem({'name': '" + id + "'}); }; ";
+        } else {
+            // TODO: implement adding to the arbitrary list
+            return Constants.EMPTY_STRING;
+        }
     }
 
     @Override

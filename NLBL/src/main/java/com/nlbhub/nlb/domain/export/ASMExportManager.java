@@ -39,7 +39,6 @@
 package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.Constants;
-import com.nlbhub.nlb.api.TextChunk;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
@@ -248,7 +247,7 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
+    protected String decorateAddObj(String listName, String objectId, String objectName, String objectDisplayName) {
         // TODO: make use of inventory module
         return EMPTY_STRING;
     }
