@@ -85,6 +85,22 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("game.inv = 'Hm.. This is strange thing..';").append(LINE_SEPARATOR);
         stringBuilder.append("game.use = 'Does not work...';").append(LINE_SEPARATOR);
         stringBuilder.append(LINE_SEPARATOR);
+        stringBuilder.append("global {").append(LINE_SEPARATOR);
+        stringBuilder.append("    _lists = {};").append(LINE_SEPARATOR);
+        stringBuilder.append("    add = function(listname, v)").append(LINE_SEPARATOR);
+        stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
+        stringBuilder.append("        _lists[listname] = {next = list, value = v};").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    pop = function(listname)").append(LINE_SEPARATOR);
+        stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
+        stringBuilder.append("        if list == nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("            return nil;").append(LINE_SEPARATOR);
+        stringBuilder.append("        else").append(LINE_SEPARATOR);
+        stringBuilder.append("            _lists[listname] = list.next;").append(LINE_SEPARATOR);
+        stringBuilder.append("            return list.value;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("}");
         return stringBuilder.toString();
     }
 
@@ -420,7 +436,7 @@ public class STEADExportManager extends TextExportManager {
             );
         } else {
             return (
-                    "        addToList("
+                    "        add("
                             + listName + ", " + decorateId(objectId)
                             + ");" + LINE_SEPARATOR
             );
