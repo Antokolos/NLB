@@ -856,10 +856,8 @@ public abstract class ExportManager {
                     // expression value is the name of the list to pop from
                     stringBuilder.append(
                             decoratePopList(
-                                    (variable.getDataType() == Variable.DataType.STRING)
-                                            ? decorateStringVar(variable.getName())
-                                            : decorateAutoVar(variable.getName()),
-                                    decorateAutoVar(expression.getValue())
+                                    decorateAutoVar(variable.getName()),
+                                    expression.getValue()
                             )
                     );
                 } else if (modification.getType().equals(ModificationImpl.Type.ASSIGN)) {
