@@ -189,6 +189,11 @@ public abstract class HypertextExportManager
         );
     }
 
+    @Override
+    protected String decoratePopList(String variableName, String listName) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
 
     @Override
     protected String decorateTrue() {

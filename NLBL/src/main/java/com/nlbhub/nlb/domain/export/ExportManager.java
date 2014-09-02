@@ -832,6 +832,36 @@ public abstract class ExportManager {
                                     exportData.getNlb().getObjById(objId).getDisp()
                             )
                     );
+                } else if (modification.getType().equals(ModificationImpl.Type.POP)) {
+                    Variable variable = (
+                            exportData.getNlb().getVariableById(modification.getVarId())
+                    );
+                    if (variable == null || variable.isDeleted()) {
+                        throw new NLBConsistencyException(
+                                "Variable with id = " + modification.getVarId()
+                                        + "cannot be found for modification"
+                                        + modification.getFullId()
+                        );
+                    }
+                    Variable expression = (
+                            exportData.getNlb().getVariableById(modification.getExprId())
+                    );
+                    if (expression == null || expression.isDeleted()) {
+                        throw new NLBConsistencyException(
+                                "Expression with id = " + modification.getExprId()
+                                        + "cannot be found for modification"
+                                        + modification.getFullId()
+                        );
+                    }
+                    // expression value is the name of the list to pop from
+                    stringBuilder.append(
+                            decoratePopList(
+                                    (variable.getDataType() == Variable.DataType.STRING)
+                                            ? decorateStringVar(variable.getName())
+                                            : decorateAutoVar(variable.getName()),
+                                    decorateAutoVar(expression.getValue())
+                            )
+                    );
                 } else if (modification.getType().equals(ModificationImpl.Type.ASSIGN)) {
                     Variable variable = (
                             exportData.getNlb().getVariableById(modification.getVarId())
@@ -879,6 +909,8 @@ public abstract class ExportManager {
     protected abstract String decorateDelObj(String objectId, String objectName, String objectDisplayName);
 
     protected abstract String decorateAddObj(String listName, String objectId, String objectName, String objectDisplayName);
+
+    protected abstract String decoratePopList(String variableName, String listName);
 
     protected abstract String decorateTrue();
 

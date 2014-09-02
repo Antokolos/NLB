@@ -302,4 +302,10 @@ public class QSPExportManager extends TextExportManager {
             return Constants.EMPTY_STRING;
         }
     }
+
+    @Override
+    protected String decoratePopList(String variableName, String listName) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
 }

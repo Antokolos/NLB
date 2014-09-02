@@ -100,7 +100,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            return list.value;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("}");
+        stringBuilder.append("}").append(LINE_SEPARATOR);
         return stringBuilder.toString();
     }
 
@@ -413,7 +413,7 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateAssignment(String variableName, String variableValue) {
-        return variableName + "=" + variableValue + ";" + LINE_SEPARATOR;
+        return variableName + " = " + variableValue + ";" + LINE_SEPARATOR;
     }
 
     @Override
@@ -441,6 +441,11 @@ public class STEADExportManager extends TextExportManager {
                             + ");" + LINE_SEPARATOR
             );
         }
+    }
+
+    @Override
+    protected String decoratePopList(String variableName, String listName) {
+        return variableName + " = pop('" + listName + "');" + LINE_SEPARATOR;
     }
 
     @Override
