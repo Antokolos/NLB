@@ -81,6 +81,7 @@ public class DialogModifications extends JDialog implements NLBObserver {
         comboBox.addItem(Modification.Type.ADD.name());
         comboBox.addItem(Modification.Type.REMOVE.name());
         comboBox.addItem(Modification.Type.POP.name());
+        comboBox.addItem(Modification.Type.USE.name());
         typeColumn.setCellEditor(new DefaultCellEditor(comboBox));
 
         setContentPane(contentPane);

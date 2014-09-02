@@ -436,8 +436,8 @@ public class STEADExportManager extends TextExportManager {
             );
         } else {
             return (
-                    "        add("
-                            + listName + ", " + decorateId(objectId)
+                    "        add('"
+                            + listName + "', " + decorateId(objectId)
                             + ");" + LINE_SEPARATOR
             );
         }
@@ -446,6 +446,13 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decoratePopList(String variableName, String listName) {
         return variableName + " = pop('" + listName + "');" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateUseOperation(String sourceVariable, String sourceId, String targetVariable, String targetId) {
+        String source = (sourceId != null) ? decorateId(sourceId) : sourceVariable;
+        String target = (targetId != null) ? decorateId(targetId) : targetVariable;
+        return source + ".use(" + source + ", " + target + ");";
     }
 
     @Override

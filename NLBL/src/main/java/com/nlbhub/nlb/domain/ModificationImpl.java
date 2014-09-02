@@ -129,6 +129,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.REMOVE;
         } else if (type.equals(Type.POP.name())) {
             m_type = Type.POP;
+        } else if (type.equals(Type.USE.name())) {
+            m_type = Type.USE;
         } else {
             m_type = Type.ASSIGN;
         }
@@ -183,6 +185,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "POP":
                 m_type = Type.POP;
+                break;
+            case "USE":
+                m_type = Type.USE;
                 break;
             default:
                 throw new NLBConsistencyException(

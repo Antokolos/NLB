@@ -218,15 +218,23 @@ public abstract class ExportManager {
         }
 
         private String getObjId(final String objName) throws NLBConsistencyException {
+            String result = getObjIdUnchecked(objName);
+            if (result == null) {
+                throw new NLBConsistencyException(
+                    "Obj Id cannot be determined for objName = " + objName
+                );
+            }
+            return result;
+        }
+
+        private String getObjIdUnchecked(final String objName) {
             if (m_objNamToIdMap.containsKey(objName)) {
                 return m_objNamToIdMap.get(objName);
             } else {
                 if (m_parentED != null) {
-                    return m_parentED.getObjId(objName);
+                    return m_parentED.getObjIdUnchecked(objName);
                 } else {
-                    throw new NLBConsistencyException(
-                            "Obj Id cannot be determined for objName = " + objName
-                    );
+                    return null;
                 }
             }
         }
@@ -860,6 +868,37 @@ public abstract class ExportManager {
                                     expression.getValue()
                             )
                     );
+                } else if (modification.getType().equals(ModificationImpl.Type.USE)) {
+                    Variable variable = (
+                            exportData.getNlb().getVariableById(modification.getVarId())
+                    );
+                    if (variable == null || variable.isDeleted()) {
+                        throw new NLBConsistencyException(
+                                "Variable with id = " + modification.getVarId()
+                                        + "cannot be found for modification"
+                                        + modification.getFullId()
+                        );
+                    }
+                    Variable expression = (
+                            exportData.getNlb().getVariableById(modification.getExprId())
+                    );
+                    if (expression == null || expression.isDeleted()) {
+                        throw new NLBConsistencyException(
+                                "Expression with id = " + modification.getExprId()
+                                        + "cannot be found for modification"
+                                        + modification.getFullId()
+                        );
+                    }
+                    final String sourceId = exportData.getObjIdUnchecked(variable.getName());
+                    final String targetId = exportData.getObjIdUnchecked(expression.getValue());
+                    stringBuilder.append(
+                            decorateUseOperation(
+                                    (sourceId != null) ? variable.getName() : decorateAutoVar(variable.getName()),
+                                    sourceId,
+                                    (targetId != null) ? expression.getValue() : decorateAutoVar(expression.getValue()),
+                                    targetId
+                            )
+                    );
                 } else if (modification.getType().equals(ModificationImpl.Type.ASSIGN)) {
                     Variable variable = (
                             exportData.getNlb().getVariableById(modification.getVarId())
@@ -909,6 +948,13 @@ public abstract class ExportManager {
     protected abstract String decorateAddObj(String listName, String objectId, String objectName, String objectDisplayName);
 
     protected abstract String decoratePopList(String variableName, String listName);
+
+    protected abstract String decorateUseOperation(
+            String sourceVariable,
+            String sourceId,
+            String targetVariable,
+            String targetId
+    );
 
     protected abstract String decorateTrue();
 
