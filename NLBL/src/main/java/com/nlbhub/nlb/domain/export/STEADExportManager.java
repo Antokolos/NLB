@@ -109,7 +109,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            repeat").append(LINE_SEPARATOR);
         stringBuilder.append("                list = list.next;").append(LINE_SEPARATOR);
         stringBuilder.append("                result = result + 1;").append(LINE_SEPARATOR);
-        stringBuilder.append("            until list ~= nil;").append(LINE_SEPARATOR);
+        stringBuilder.append("            until list == nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("        return result;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
