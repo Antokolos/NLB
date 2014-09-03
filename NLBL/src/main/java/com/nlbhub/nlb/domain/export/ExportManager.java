@@ -795,145 +795,103 @@ public abstract class ExportManager {
         for (final Modification modification : modifications) {
             if (!modification.isDeleted()) {
                 stringBuilder.append(indentString);
-                if (modification.getType().equals(ModificationImpl.Type.ADD)) {
-                    Variable listVar = (
-                            StringHelper.isEmpty(modification.getVarId())
-                                    ? null
-                                    : exportData.getNlb().getVariableById(modification.getVarId())
-                    );
-                    Variable expression = (
-                            exportData.getNlb().getVariableById(modification.getExprId())
-                    );
-                    if (expression == null || expression.isDeleted()) {
-                        throw new NLBConsistencyException(
-                                "Expression with id = " + modification.getExprId()
-                                        + "cannot be found for modification"
-                                        + modification.getFullId()
-                        );
-                    }
-                    final String objId = exportData.getObjId(expression.getValue());
-                    final String listName = (listVar != null) ? listVar.getName() : Constants.EMPTY_STRING;
-                    stringBuilder.append(
-                            decorateAddObj(
-                                    listName,
-                                    objId,
-                                    expression.getValue(),
-                                    exportData.getNlb().getObjById(objId).getDisp()
-                            )
-                    );
-                } else if (modification.getType().equals(ModificationImpl.Type.REMOVE)) {
-                    Variable expression = (
-                            exportData.getNlb().getVariableById(modification.getExprId())
-                    );
-                    if (expression == null || expression.isDeleted()) {
-                        throw new NLBConsistencyException(
-                                "Expression with id = " + modification.getExprId()
-                                        + "cannot be found for modification"
-                                        + modification.getFullId()
-                        );
-                    }
-                    final String objId = exportData.getObjId(expression.getValue());
-                    stringBuilder.append(
-                            decorateDelObj(
-                                    objId,
-                                    expression.getValue(),
-                                    exportData.getNlb().getObjById(objId).getDisp()
-                            )
-                    );
-                } else if (modification.getType().equals(ModificationImpl.Type.POP)) {
-                    Variable variable = (
-                            exportData.getNlb().getVariableById(modification.getVarId())
-                    );
-                    if (variable == null || variable.isDeleted()) {
-                        throw new NLBConsistencyException(
-                                "Variable with id = " + modification.getVarId()
-                                        + "cannot be found for modification"
-                                        + modification.getFullId()
-                        );
-                    }
-                    Variable expression = (
-                            exportData.getNlb().getVariableById(modification.getExprId())
-                    );
-                    if (expression == null || expression.isDeleted()) {
-                        throw new NLBConsistencyException(
-                                "Expression with id = " + modification.getExprId()
-                                        + "cannot be found for modification"
-                                        + modification.getFullId()
-                        );
-                    }
-                    // expression value is the name of the list to pop from
-                    stringBuilder.append(
-                            decoratePopList(
-                                    decorateAutoVar(variable.getName()),
-                                    expression.getValue()
-                            )
-                    );
-                } else if (modification.getType().equals(ModificationImpl.Type.USE)) {
-                    Variable variable = (
-                            exportData.getNlb().getVariableById(modification.getVarId())
-                    );
-                    if (variable == null || variable.isDeleted()) {
-                        throw new NLBConsistencyException(
-                                "Variable with id = " + modification.getVarId()
-                                        + "cannot be found for modification"
-                                        + modification.getFullId()
-                        );
-                    }
-                    Variable expression = (
-                            exportData.getNlb().getVariableById(modification.getExprId())
-                    );
-                    if (expression == null || expression.isDeleted()) {
-                        throw new NLBConsistencyException(
-                                "Expression with id = " + modification.getExprId()
-                                        + "cannot be found for modification"
-                                        + modification.getFullId()
-                        );
-                    }
-                    final String sourceId = exportData.getObjIdUnchecked(variable.getName());
-                    final String targetId = exportData.getObjIdUnchecked(expression.getValue());
-                    stringBuilder.append(
-                            decorateUseOperation(
-                                    (sourceId != null) ? variable.getName() : decorateAutoVar(variable.getName()),
-                                    sourceId,
-                                    (targetId != null) ? expression.getValue() : decorateAutoVar(expression.getValue()),
-                                    targetId
-                            )
-                    );
-                } else if (modification.getType().equals(ModificationImpl.Type.ASSIGN)) {
-                    Variable variable = (
-                            exportData.getNlb().getVariableById(modification.getVarId())
-                    );
-                    if (variable == null || variable.isDeleted()) {
-                        throw new NLBConsistencyException(
-                                "Variable with id = " + modification.getVarId()
-                                        + "cannot be found for modification"
-                                        + modification.getFullId()
-                        );
-                    }
-                    Variable expression = (
-                            exportData.getNlb().getVariableById(modification.getExprId())
-                    );
-                    if (expression == null || expression.isDeleted()) {
-                        throw new NLBConsistencyException(
-                                "Expression with id = " + modification.getExprId()
-                                        + "cannot be found for modification"
-                                        + modification.getFullId()
-                        );
-                    }
-                    // Left part of assignment should be decorated as ordinary variable, with the exception of String
-                    stringBuilder.append(
-                            decorateAssignment(
-                                    (variable.getDataType() == Variable.DataType.STRING)
-                                            ? decorateStringVar(variable.getName())
-                                            : decorateAutoVar(variable.getName()),
-                                    translateExpressionBody(expression.getValue())
-                            )
-                    );
-                } else {
+                Variable variable = (
+                        StringHelper.isEmpty(modification.getVarId())
+                                ? null
+                                : exportData.getNlb().getVariableById(modification.getVarId())
+                );
+                if (modification.returnsValue() && (variable == null || variable.isDeleted())) {
                     throw new NLBConsistencyException(
-                            "Operation has unknown type for modification with id = "
+                            "Variable with id = " + modification.getVarId()
+                                    + "cannot be found for modification"
                                     + modification.getFullId()
                     );
+                }
+                Variable expression = (
+                        exportData.getNlb().getVariableById(modification.getExprId())
+                );
+                if (expression == null || expression.isDeleted()) {
+                    throw new NLBConsistencyException(
+                            "Expression with id = " + modification.getExprId()
+                                    + "cannot be found for modification"
+                                    + modification.getFullId()
+                    );
+                }
+                switch (modification.getType()) {
+                    case ADD:
+                        final String objIdToAdd = exportData.getObjId(expression.getValue());
+                        final String listName = (variable != null) ? variable.getName() : Constants.EMPTY_STRING;
+                        stringBuilder.append(
+                                decorateAddObj(
+                                        listName,
+                                        objIdToAdd,
+                                        expression.getValue(),
+                                        exportData.getNlb().getObjById(objIdToAdd).getDisp()
+                                )
+                        );
+                        break;
+                    case REMOVE:
+                        final String objIdToRemove = exportData.getObjId(expression.getValue());
+                        stringBuilder.append(
+                                decorateDelObj(
+                                        objIdToRemove,
+                                        expression.getValue(),
+                                        exportData.getNlb().getObjById(objIdToRemove).getDisp()
+                                )
+                        );
+                        break;
+                    case POP:
+                        assert variable != null;
+                        // expression value is the name of the list to pop from
+                        stringBuilder.append(
+                                decoratePopList(
+                                        decorateAutoVar(variable.getName()),
+                                        expression.getValue()
+                                )
+                        );
+                        break;
+                    case USE:
+                        assert variable != null;
+                        final String sourceId = exportData.getObjIdUnchecked(variable.getName());
+                        final String targetId = exportData.getObjIdUnchecked(expression.getValue());
+                        stringBuilder.append(
+                                decorateUseOperation(
+                                        (sourceId != null) ? variable.getName() : decorateAutoVar(variable.getName()),
+                                        sourceId,
+                                        (targetId != null) ? expression.getValue() : decorateAutoVar(expression.getValue()),
+                                        targetId
+                                )
+                        );
+                        break;
+                    case ASSIGN:
+                        assert variable != null;
+                        // Left part of assignment should be decorated as ordinary variable, with the exception of String
+                        stringBuilder.append(
+                                decorateAssignment(
+                                        (variable.getDataType() == Variable.DataType.STRING)
+                                                ? decorateStringVar(variable.getName())
+                                                : decorateAutoVar(variable.getName()),
+                                        translateExpressionBody(expression.getValue())
+                                )
+                        );
+                        break;
+                    case SIZE:
+                        assert variable != null;
+                        // Left part of assignment should be always number.
+                        // TODO: throw exception if its datatype is not number???
+                        // Expression value is the name of the list which size will be returned.
+                        stringBuilder.append(
+                                decorateSizeOperation(
+                                        decorateNumberVar(variable.getName()),
+                                        expression.getValue()
+                                )
+                        );
+                        break;
+                    default:
+                        throw new NLBConsistencyException(
+                                "Operation has unknown type for modification with id = "
+                                        + modification.getFullId()
+                        );
                 }
             }
         }
@@ -948,6 +906,8 @@ public abstract class ExportManager {
     protected abstract String decorateAddObj(String listName, String objectId, String objectName, String objectDisplayName);
 
     protected abstract String decoratePopList(String variableName, String listName);
+
+    protected abstract String decorateSizeOperation(String variableName, String listName);
 
     protected abstract String decorateUseOperation(
             String sourceVariable,

@@ -100,6 +100,19 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            return list.value;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    size = function(listname)").append(LINE_SEPARATOR);
+        stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
+        stringBuilder.append("        local result = 0;").append(LINE_SEPARATOR);
+        stringBuilder.append("        if list == nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("            return 0;").append(LINE_SEPARATOR);
+        stringBuilder.append("        else").append(LINE_SEPARATOR);
+        stringBuilder.append("            repeat").append(LINE_SEPARATOR);
+        stringBuilder.append("                list = list.next;").append(LINE_SEPARATOR);
+        stringBuilder.append("                result = result + 1;").append(LINE_SEPARATOR);
+        stringBuilder.append("            until list ~= nil;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("        return result;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("}").append(LINE_SEPARATOR);
         return stringBuilder.toString();
     }
@@ -446,6 +459,11 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decoratePopList(String variableName, String listName) {
         return variableName + " = pop('" + listName + "');" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateSizeOperation(String variableName, String listName) {
+        return variableName + " = size('" + listName + "');" + LINE_SEPARATOR;
     }
 
     @Override

@@ -45,11 +45,19 @@ package com.nlbhub.nlb.api;
  * @version 1.0 1/15/14
  */
 public interface Modification extends IdentifiableItem {
-    public enum Type {ASSIGN, ADD, REMOVE, POP, USE}
+    public enum Type {ASSIGN, ADD, REMOVE, POP, USE, SIZE}
 
     public String getVarId();
 
     public String getExprId();
 
     public Type getType();
+
+    /**
+     * Determines whether this modification has void return type or not.
+     *
+     * @return <code>true</code> if this modification returns some result,
+     * <code>false</code> otherwise
+     */
+    public boolean returnsValue();
 }

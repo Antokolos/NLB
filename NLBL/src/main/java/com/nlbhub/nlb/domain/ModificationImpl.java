@@ -110,6 +110,19 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     }
 
     @Override
+    public boolean returnsValue() {
+        switch (m_type) {
+            case ASSIGN:
+            case POP:
+            case SIZE:
+                return true;
+            default:
+                // ADD, REMOVE, USE,
+                return false;
+        }
+    }
+
+    @Override
     public boolean isDeleted() {
         final IdentifiableItem parent = getParent();
         final boolean parentDeleted = (parent != null) && parent.isDeleted();
@@ -131,6 +144,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.POP;
         } else if (type.equals(Type.USE.name())) {
             m_type = Type.USE;
+        } else if (type.equals(Type.SIZE.name())) {
+            m_type = Type.SIZE;
         } else {
             m_type = Type.ASSIGN;
         }
@@ -188,6 +203,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "USE":
                 m_type = Type.USE;
+                break;
+            case "SIZE":
+                m_type = Type.SIZE;
                 break;
             default:
                 throw new NLBConsistencyException(
