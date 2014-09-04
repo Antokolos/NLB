@@ -868,7 +868,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                                 );
                                 m_modificationsToBeReplacedPrev.put(
                                         existingModification.getId(),
-                                        existingModification
+                                        new ModificationImpl(existingModification)
                                 );
                             }
                             toBeAdded = false;

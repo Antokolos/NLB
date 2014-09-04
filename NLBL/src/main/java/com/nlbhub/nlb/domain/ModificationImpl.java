@@ -41,6 +41,7 @@ package com.nlbhub.nlb.domain;
 import com.nlbhub.nlb.api.IdentifiableItem;
 import com.nlbhub.nlb.api.Modification;
 import com.nlbhub.nlb.api.ModifyingItem;
+import com.nlbhub.nlb.api.Variable;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
@@ -84,6 +85,13 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     public ModificationImpl(final ModifyingItem parent) {
         super(parent.getCurrentNLB());
         setParent(parent);
+    }
+
+    public void copy(Modification modification) {
+        super.copy(modification);
+        m_type = modification.getType();
+        m_varId = modification.getVarId();
+        m_exprId = modification.getExprId();
     }
 
     @Override
