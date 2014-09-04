@@ -821,6 +821,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private Map<String, Boolean> m_modificationsDeletionInitState = new HashMap<>();
         private Map<String, ModificationImpl> m_modificationsToBeReplaced = new HashMap<>();
         private Map<String, ModificationImpl> m_modificationsToBeReplacedPrev = new HashMap<>();
+        private List<String> m_modificationsToBeAddedIdsInCorrectOrder = new ArrayList<>();
         private Map<String, ModificationImpl> m_modificationsToBeAdded = new HashMap<>();
 
         private Map<String, VariableImpl> m_variablesToBeReplaced = new HashMap<>();
@@ -875,6 +876,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         }
                     }
                     if (toBeAdded) {
+                        m_modificationsToBeAddedIdsInCorrectOrder.add(modification.getId());
                         m_modificationsToBeAdded.put(
                                 modification.getId(),
                                 new ModificationImpl(modification)
@@ -921,8 +923,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                     }
                 }
 
-                for (Map.Entry<String, ModificationImpl> entry : m_modificationsToBeAdded.entrySet()) {
-                    m_item.addModification(entry.getValue());
+                for (String id : m_modificationsToBeAddedIdsInCorrectOrder) {
+                    m_item.addModification(m_modificationsToBeAdded.get(id));
                 }
 
                 for (Map.Entry<String, VariableImpl> entry : m_variablesToBeReplaced.entrySet()) {
