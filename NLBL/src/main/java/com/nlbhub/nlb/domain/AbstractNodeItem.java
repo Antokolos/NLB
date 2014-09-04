@@ -127,7 +127,8 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
 
         public AddLinkCommand(LinkImpl link) {
             m_link = link;
-            m_link.setDeleted(true);  // Not fully exists for now
+            // m_link.setDeleted(true);   Not fully exists for now, but don't do this, because it
+            // affects link object immediately
         }
 
         @Override

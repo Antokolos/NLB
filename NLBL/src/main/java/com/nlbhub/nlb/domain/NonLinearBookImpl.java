@@ -1046,7 +1046,8 @@ public class NonLinearBookImpl implements NonLinearBook {
 
         private AddObjCommand(ObjImpl obj) {
             m_obj = obj;
-            m_obj.setDeleted(true);  // Not fully exists for now
+            // m_obj.setDeleted(true);   Not fully exists for now, but don't do this, because it
+            // affects obj object immediately
         }
 
         @Override
