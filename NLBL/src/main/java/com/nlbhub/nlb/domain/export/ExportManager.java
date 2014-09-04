@@ -826,7 +826,9 @@ public abstract class ExportManager {
                                         listName,
                                         objIdToAdd,
                                         expression.getValue(),
-                                        exportData.getNlb().getObjById(objIdToAdd).getDisp()
+                                        (objIdToAdd == null)
+                                                ? null
+                                                : exportData.getNlb().getObjById(objIdToAdd).getDisp()
                                 )
                         );
                         break;
