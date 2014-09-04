@@ -294,13 +294,14 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAddObj(String listName, String objectId, String objectName, String objectDisplayName) {
-        if (StringHelper.isEmpty(listName)) {
-            return "ADDOBJ '" + objectDisplayName + "'" + LINE_SEPARATOR;
-        } else {
-            // TODO: implement adding to the arbitrary list
-            return Constants.EMPTY_STRING;
-        }
+    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
+        return "ADDOBJ '" + objectDisplayName + "'" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateAddToList(String listName, String objectId, String objectVar) {
+        // TODO: implement adding to the arbitrary list
+        return Constants.EMPTY_STRING;
     }
 
     @Override

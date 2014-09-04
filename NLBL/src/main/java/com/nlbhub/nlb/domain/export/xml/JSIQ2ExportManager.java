@@ -333,14 +333,15 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decorateAddObj(String listName, String objectId, String objectName, String objectDisplayName) {
-        if (StringHelper.isEmpty(listName)) {
-            String id = decorateId(objectId);
-            return "if (!checkItem({'name': '" + id + "'})) { addItem({'name': '" + id + "'}); }; ";
-        } else {
-            // TODO: implement adding to the arbitrary list
-            return Constants.EMPTY_STRING;
-        }
+    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
+        String id = decorateId(objectId);
+        return "if (!checkItem({'name': '" + id + "'})) { addItem({'name': '" + id + "'}); }; ";
+    }
+
+    @Override
+    protected String decorateAddToList(String listName, String objectId, String objectVar) {
+        // TODO: implement adding to the arbitrary list
+        return Constants.EMPTY_STRING;
     }
 
     @Override

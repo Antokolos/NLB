@@ -820,17 +820,25 @@ public abstract class ExportManager {
                 switch (modification.getType()) {
                     case ADD:
                         final String objIdToAdd = exportData.getObjIdUnchecked(expression.getValue());
-                        final String listName = (variable != null) ? variable.getName() : Constants.EMPTY_STRING;
-                        stringBuilder.append(
-                                decorateAddObj(
-                                        listName,
-                                        objIdToAdd,
-                                        expression.getValue(),
-                                        (objIdToAdd == null)
-                                                ? null
-                                                : exportData.getNlb().getObjById(objIdToAdd).getDisp()
-                                )
-                        );
+                        if (variable != null) {
+                            stringBuilder.append(
+                                    decorateAddToList(
+                                            variable.getName(),
+                                            objIdToAdd,
+                                            decorateAutoVar(expression.getValue())
+                                    )
+                            );
+                        } else {
+                            stringBuilder.append(
+                                    decorateAddObj(
+                                            objIdToAdd,
+                                            expression.getValue(),
+                                            (objIdToAdd == null)
+                                                    ? null
+                                                    : exportData.getNlb().getObjById(objIdToAdd).getDisp()
+                                    )
+                            );
+                        }
                         break;
                     case REMOVE:
                         final String objIdToRemove = exportData.getObjId(expression.getValue());
@@ -905,7 +913,9 @@ public abstract class ExportManager {
 
     protected abstract String decorateDelObj(String objectId, String objectName, String objectDisplayName);
 
-    protected abstract String decorateAddObj(String listName, String objectId, String objectName, String objectDisplayName);
+    protected abstract String decorateAddObj(String objectId, String objectName, String objectDisplayName);
+
+    protected abstract String decorateAddToList(String listName, String objectId, String objectVar);
 
     protected abstract String decoratePopList(String variableName, String listName);
 

@@ -438,22 +438,23 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAddObj(String listName, String objectId, String objectName, String objectDisplayName) {
-        if (StringHelper.isEmpty(listName)) {
-            return (
-                    "            if not have(\""
-                            + objectName
-                            + "\") then take('"
-                            + decorateId(objectId)
-                            + "'); end;" + LINE_SEPARATOR
-            );
-        } else {
-            return (
-                    "        add('"
-                            + listName + "', " + decorateId(objectId)
-                            + ");" + LINE_SEPARATOR
-            );
-        }
+    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
+        return (
+                "            if not have(\""
+                        + objectName
+                        + "\") then take('"
+                        + decorateId(objectId)
+                        + "'); end;" + LINE_SEPARATOR
+        );
+    }
+
+    @Override
+    protected String decorateAddToList(String listName, String objectId, String objectVar) {
+        return (
+                "        add('"
+                        + listName + "', " + ((objectId != null) ? decorateId(objectId) : objectVar)
+                        + ");" + LINE_SEPARATOR
+        );
     }
 
     @Override

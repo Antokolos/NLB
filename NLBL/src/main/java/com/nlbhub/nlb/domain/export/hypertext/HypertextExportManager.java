@@ -181,11 +181,16 @@ public abstract class HypertextExportManager
     }
 
     @Override
-    protected String decorateAddObj(String listName, String objectId, String objectName, String objectDisplayName) {
+    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
         return (
-                "Положите в "
-                        + ((StringHelper.isEmpty(listName)) ? "инвентарь" : listName)
-                        + " " + objectDisplayName
+                "Положите в инвентарь " + objectDisplayName
+        );
+    }
+
+    @Override
+    protected String decorateAddToList(String listName, String objectId, String objectVar) {
+        return (
+                "Положите в " + listName + " " + objectVar
         );
     }
 

@@ -247,7 +247,13 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAddObj(String listName, String objectId, String objectName, String objectDisplayName) {
+    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
+        // TODO: make use of inventory module
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateAddToList(String listName, String objectId, String objectVar) {
         // TODO: make use of inventory module
         return EMPTY_STRING;
     }
