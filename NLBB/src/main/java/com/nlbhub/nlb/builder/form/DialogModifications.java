@@ -61,6 +61,21 @@ public class DialogModifications extends JDialog implements NLBObserver {
     private ModificationsTableModelSwing m_modificationsTableModel;
     private ModifyingItem m_modifyingItem = null;
     private final NonLinearBookFacade m_nlbFacade;
+    private static final JComboBox<String> CB_DATA_TYPE = new JComboBox<String>() {{
+        addItem(Variable.DataType.AUTO.name());
+        addItem(Variable.DataType.STRING.name());
+        addItem(Variable.DataType.NUMBER.name());
+        addItem(Variable.DataType.BOOLEAN.name());
+    }};
+
+    private static final JComboBox<String> CB_MODIFICATION_TYPE = new JComboBox<String>() {{
+        addItem(Modification.Type.ASSIGN.name());
+        addItem(Modification.Type.ADD.name());
+        addItem(Modification.Type.REMOVE.name());
+        addItem(Modification.Type.POP.name());
+        addItem(Modification.Type.USE.name());
+        addItem(Modification.Type.SIZE.name());
+    }};
 
     public DialogModifications(
             final NonLinearBookFacade nlbFacade,
@@ -68,23 +83,6 @@ public class DialogModifications extends JDialog implements NLBObserver {
     ) {
         m_nlbFacade = nlbFacade;
         setModifyingItemProperties(modifyingItem);
-        TableColumnExt dataTypeColumn = m_modifications.getColumnExt(1);
-        JComboBox<String> comboBoxDataType = new JComboBox<>();
-        comboBoxDataType.addItem(Variable.DataType.AUTO.name());
-        comboBoxDataType.addItem(Variable.DataType.STRING.name());
-        comboBoxDataType.addItem(Variable.DataType.NUMBER.name());
-        comboBoxDataType.addItem(Variable.DataType.BOOLEAN.name());
-        dataTypeColumn.setCellEditor(new DefaultCellEditor(comboBoxDataType));
-        TableColumnExt typeColumn = m_modifications.getColumnExt(3);
-        JComboBox<String> comboBox = new JComboBox<>();
-        comboBox.addItem(Modification.Type.ASSIGN.name());
-        comboBox.addItem(Modification.Type.ADD.name());
-        comboBox.addItem(Modification.Type.REMOVE.name());
-        comboBox.addItem(Modification.Type.POP.name());
-        comboBox.addItem(Modification.Type.USE.name());
-        comboBox.addItem(Modification.Type.SIZE.name());
-        typeColumn.setCellEditor(new DefaultCellEditor(comboBox));
-
         setContentPane(contentPane);
         setModal(true);
         setTitle("Modifications");
@@ -168,6 +166,10 @@ public class DialogModifications extends JDialog implements NLBObserver {
                 new ModificationsTableModelSwing(m_nlbFacade.getNlb(), modifyingItem.getModifications())
         );
         m_modifications.setModel(m_modificationsTableModel);
+        TableColumnExt dataTypeColumn = m_modifications.getColumnExt(1);
+        dataTypeColumn.setCellEditor(new DefaultCellEditor(CB_DATA_TYPE));
+        TableColumnExt typeColumn = m_modifications.getColumnExt(3);
+        typeColumn.setCellEditor(new DefaultCellEditor(CB_MODIFICATION_TYPE));
     }
 
     private void onRemove() {
