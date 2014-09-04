@@ -819,7 +819,7 @@ public abstract class ExportManager {
                 }
                 switch (modification.getType()) {
                     case ADD:
-                        final String objIdToAdd = exportData.getObjId(expression.getValue());
+                        final String objIdToAdd = exportData.getObjIdUnchecked(expression.getValue());
                         final String listName = (variable != null) ? variable.getName() : Constants.EMPTY_STRING;
                         stringBuilder.append(
                                 decorateAddObj(
