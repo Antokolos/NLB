@@ -317,6 +317,12 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateShuffleOperation(String listName) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateActOperation(String actingObjVariable, String actingObjId) {
         // TODO: implement
         return EMPTY_STRING;

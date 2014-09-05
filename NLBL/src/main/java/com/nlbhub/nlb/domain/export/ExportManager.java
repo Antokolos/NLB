@@ -860,6 +860,11 @@ public abstract class ExportManager {
                                 )
                         );
                         break;
+                    case SHUFFLE:
+                        stringBuilder.append(
+                                decorateShuffleOperation(decorateAutoVar(expression.getValue()))
+                        );
+                        break;
                     case ACT:
                         final String actingObjId = exportData.getObjIdUnchecked(expression.getValue());
                         stringBuilder.append(
@@ -929,6 +934,8 @@ public abstract class ExportManager {
     protected abstract String decoratePopList(String variableName, String listName);
 
     protected abstract String decorateSizeOperation(String variableName, String listName);
+
+    protected abstract String decorateShuffleOperation(String listName);
 
     protected abstract String decorateActOperation(String actingObjVariable, String actingObjId);
 
