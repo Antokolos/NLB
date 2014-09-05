@@ -39,7 +39,6 @@
 package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.*;
-import com.nlbhub.nlb.domain.ModificationImpl;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBExportException;
@@ -217,22 +216,12 @@ public abstract class ExportManager {
             }
         }
 
-        private String getObjId(final String objName) throws NLBConsistencyException {
-            String result = getObjIdUnchecked(objName);
-            if (result == null) {
-                throw new NLBConsistencyException(
-                    "Obj Id cannot be determined for objName = " + objName
-                );
-            }
-            return result;
-        }
-
-        private String getObjIdUnchecked(final String objName) {
+        private String getObjId(final String objName) {
             if (m_objNamToIdMap.containsKey(objName)) {
                 return m_objNamToIdMap.get(objName);
             } else {
                 if (m_parentED != null) {
-                    return m_parentED.getObjIdUnchecked(objName);
+                    return m_parentED.getObjId(objName);
                 } else {
                     return null;
                 }
@@ -819,42 +808,60 @@ public abstract class ExportManager {
                 }
                 switch (modification.getType()) {
                     case ADD:
-                        final String objIdToAdd = exportData.getObjIdUnchecked(expression.getValue());
-                        if (variable != null) {
-                            stringBuilder.append(
-                                    decorateAddToList(
-                                            variable.getName(),
-                                            objIdToAdd,
-                                            decorateAutoVar(expression.getValue())
-                                    )
-                            );
-                        } else {
-                            stringBuilder.append(
-                                    decorateAddObj(
-                                            objIdToAdd,
-                                            expression.getValue(),
-                                            (objIdToAdd == null)
-                                                    ? null
-                                                    : exportData.getNlb().getObjById(objIdToAdd).getDisp()
-                                    )
-                            );
-                        }
+                        final String addDestinationId = (
+                                (variable != null)
+                                        ? exportData.getObjId(variable.getName())
+                                        : null
+                        );
+                        final String objIdToAdd = exportData.getObjId(expression.getValue());
+                        stringBuilder.append(
+                                decorateAddObj(
+                                        addDestinationId,
+                                        objIdToAdd,
+                                        expression.getValue(),
+                                        (objIdToAdd == null)
+                                                ? null
+                                                : exportData.getNlb().getObjById(objIdToAdd).getDisp()
+                                )
+                        );
                         break;
                     case REMOVE:
+                        final String removeDestinationId = (
+                                (variable != null)
+                                        ? exportData.getObjId(variable.getName())
+                                        : null
+                        );
                         final String objIdToRemove = exportData.getObjId(expression.getValue());
                         stringBuilder.append(
                                 decorateDelObj(
+                                        removeDestinationId,
                                         objIdToRemove,
                                         expression.getValue(),
                                         exportData.getNlb().getObjById(objIdToRemove).getDisp()
                                 )
                         );
                         break;
+                    case PUSH:
+                        final String objIdToPush = exportData.getObjId(expression.getValue());
+                        if (variable != null) {
+                            stringBuilder.append(
+                                    decoratePushOperation(
+                                            variable.getName(),
+                                            objIdToPush,
+                                            decorateAutoVar(expression.getValue())
+                                    )
+                            );
+                        } else {
+                            throw new NLBConsistencyException(
+                                    "Destination list name is not specified for push operation"
+                            );
+                        }
+                        break;
                     case POP:
                         assert variable != null;
                         // expression value is the name of the list to pop from
                         stringBuilder.append(
-                                decoratePopList(
+                                decoratePopOperation(
                                         decorateAutoVar(variable.getName()),
                                         expression.getValue()
                                 )
@@ -866,7 +873,7 @@ public abstract class ExportManager {
                         );
                         break;
                     case ACT:
-                        final String actingObjId = exportData.getObjIdUnchecked(expression.getValue());
+                        final String actingObjId = exportData.getObjId(expression.getValue());
                         stringBuilder.append(
                                 decorateActOperation(
                                         decorateAutoVar(expression.getValue()),
@@ -876,8 +883,8 @@ public abstract class ExportManager {
                         break;
                     case USE:
                         assert variable != null;
-                        final String sourceId = exportData.getObjIdUnchecked(variable.getName());
-                        final String targetId = exportData.getObjIdUnchecked(expression.getValue());
+                        final String sourceId = exportData.getObjId(variable.getName());
+                        final String targetId = exportData.getObjId(expression.getValue());
                         stringBuilder.append(
                                 decorateUseOperation(
                                         (sourceId != null) ? variable.getName() : decorateAutoVar(variable.getName()),
@@ -925,13 +932,13 @@ public abstract class ExportManager {
 
     protected abstract String decorateAssignment(String variableName, String variableValue);
 
-    protected abstract String decorateDelObj(String objectId, String objectName, String objectDisplayName);
+    protected abstract String decorateDelObj(String destinationId, String objectId, String objectName, String objectDisplayName);
 
-    protected abstract String decorateAddObj(String objectId, String objectName, String objectDisplayName);
+    protected abstract String decorateAddObj(String destinationId, String objectId, String objectName, String objectDisplayName);
 
-    protected abstract String decorateAddToList(String listName, String objectId, String objectVar);
+    protected abstract String decoratePushOperation(String listName, String objectId, String objectVar);
 
-    protected abstract String decoratePopList(String variableName, String listName);
+    protected abstract String decoratePopOperation(String variableName, String listName);
 
     protected abstract String decorateSizeOperation(String variableName, String listName);
 

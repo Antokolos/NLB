@@ -87,7 +87,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(LINE_SEPARATOR);
         stringBuilder.append("global {").append(LINE_SEPARATOR);
         stringBuilder.append("    _lists = {};").append(LINE_SEPARATOR);
-        stringBuilder.append("    add = function(listname, v)").append(LINE_SEPARATOR);
+        stringBuilder.append("    push = function(listname, v)").append(LINE_SEPARATOR);
         stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
         stringBuilder.append("        _lists[listname] = {next = list, value = v};").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
@@ -470,7 +470,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateDelObj(String objectId, String objectName, String objectDisplayName) {
+    protected String decorateDelObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
         return (
                 "            if have(\"" + objectName + "\") then remove(\""
                         + objectName + "\", " + "inv()); end;" + LINE_SEPARATOR
@@ -478,7 +478,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
+    protected String decorateAddObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
         return (
                 "            if not have(\""
                         + objectName
@@ -489,16 +489,16 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAddToList(String listName, String objectId, String objectVar) {
+    protected String decoratePushOperation(String listName, String objectId, String objectVar) {
         return (
-                "        add('"
+                "        push('"
                         + listName + "', " + ((objectId != null) ? decorateId(objectId) : objectVar)
                         + ");" + LINE_SEPARATOR
         );
     }
 
     @Override
-    protected String decoratePopList(String variableName, String listName) {
+    protected String decoratePopOperation(String variableName, String listName) {
         return variableName + " = pop('" + listName + "');" + LINE_SEPARATOR;
     }
 

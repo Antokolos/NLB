@@ -289,23 +289,23 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateDelObj(String objectId, String objectName, String objectDisplayName) {
+    protected String decorateDelObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
         return "DELOBJ '" + objectDisplayName + "'" + LINE_SEPARATOR;
     }
 
     @Override
-    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
+    protected String decorateAddObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
         return "ADDOBJ '" + objectDisplayName + "'" + LINE_SEPARATOR;
     }
 
     @Override
-    protected String decorateAddToList(String listName, String objectId, String objectVar) {
+    protected String decoratePushOperation(String listName, String objectId, String objectVar) {
         // TODO: implement adding to the arbitrary list
         return Constants.EMPTY_STRING;
     }
 
     @Override
-    protected String decoratePopList(String variableName, String listName) {
+    protected String decoratePopOperation(String variableName, String listName) {
         // TODO: implement
         return EMPTY_STRING;
     }

@@ -176,26 +176,26 @@ public abstract class HypertextExportManager
     }
 
     @Override
-    protected String decorateDelObj(String objectId, String objectName, String objectDisplayName) {
+    protected String decorateDelObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
         return "Вычеркните из инвентаря " + objectDisplayName;
     }
 
     @Override
-    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
+    protected String decorateAddObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
         return (
                 "Положите в инвентарь " + objectDisplayName
         );
     }
 
     @Override
-    protected String decorateAddToList(String listName, String objectId, String objectVar) {
+    protected String decoratePushOperation(String listName, String objectId, String objectVar) {
         return (
                 "Положите в " + listName + " " + objectVar
         );
     }
 
     @Override
-    protected String decoratePopList(String variableName, String listName) {
+    protected String decoratePopOperation(String variableName, String listName) {
         // TODO: implement
         return EMPTY_STRING;
     }

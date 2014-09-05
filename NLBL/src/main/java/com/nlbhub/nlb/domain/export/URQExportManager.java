@@ -331,29 +331,31 @@ public class URQExportManager extends TextExportManager {
     }
 
     /**
+     *
+     * @param destinationId
      * @param objectId
      * @param objectName
      * @param objectDisplayName
      * @return
      */
     @Override
-    protected String decorateDelObj(String objectId, String objectName, String objectDisplayName) {
+    protected String decorateDelObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
         return "Inv- " + objectDisplayName + LINE_SEPARATOR;
     }
 
     @Override
-    protected String decorateAddObj(String objectId, String objectName, String objectDisplayName) {
+    protected String decorateAddObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
         return "Inv+ " + objectDisplayName + LINE_SEPARATOR;
     }
 
     @Override
-    protected String decorateAddToList(String listName, String objectId, String objectVar) {
+    protected String decoratePushOperation(String listName, String objectId, String objectVar) {
         // TODO: implement adding to the arbitrary list
         return Constants.EMPTY_STRING;
     }
 
     @Override
-    protected String decoratePopList(String variableName, String listName) {
+    protected String decoratePopOperation(String variableName, String listName) {
         // TODO: implement
         return EMPTY_STRING;
     }

@@ -125,7 +125,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case SIZE:
                 return true;
             default:
-                // ADD, REMOVE, SHUFFLE, ACT, USE,
+                // ADD, REMOVE, PUSH, SHUFFLE, ACT, USE,
                 return false;
         }
     }
@@ -148,6 +148,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.ADD;
         } else if (type.equals(Type.REMOVE.name())) {
             m_type = Type.REMOVE;
+        } else if (type.equals(Type.PUSH.name())) {
+            m_type = Type.PUSH;
         } else if (type.equals(Type.POP.name())) {
             m_type = Type.POP;
         } else if (type.equals(Type.SHUFFLE.name())) {
@@ -209,6 +211,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case "SUBTRACT":
             case "REMOVE":
                 m_type = Type.REMOVE;
+                break;
+            case "PUSH":
+                m_type = Type.PUSH;
                 break;
             case "POP":
                 m_type = Type.POP;
