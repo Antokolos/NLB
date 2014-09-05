@@ -354,25 +354,34 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateObjActStart() {
-        return "    act = function(s)" + LINE_SEPARATOR;
+        return (
+                "    act = function(s)" + LINE_SEPARATOR +
+                        "        s.actf(s);" + LINE_SEPARATOR +
+                        "        here.autos();" + LINE_SEPARATOR +
+                        "    end," + LINE_SEPARATOR +
+                        "    actf = function(s)" + LINE_SEPARATOR
+        );
     }
 
     @Override
     protected String decorateObjActEnd() {
-        return "        here().autos();" + LINE_SEPARATOR + "    end," + LINE_SEPARATOR;
+        return "    end," + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateObjUseStart() {
-        return "    use = function(s, w)" + LINE_SEPARATOR;
+        return (
+                "    use = function(s, w)" + LINE_SEPARATOR +
+                        "        s.usef(s, w);" + LINE_SEPARATOR +
+                        "        here.autos();" + LINE_SEPARATOR +
+                        "    end," + LINE_SEPARATOR +
+                        "    usef = function(s, w)" + LINE_SEPARATOR
+        );
     }
 
     @Override
     protected String decorateObjUseEnd() {
-        return (
-                "        here().autos();" + LINE_SEPARATOR
-                        + "    end," + LINE_SEPARATOR
-        );
+        return "    end," + LINE_SEPARATOR;
     }
 
     @Override
@@ -471,7 +480,7 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateUseOperation(String sourceVariable, String sourceId, String targetVariable, String targetId) {
         String source = (sourceId != null) ? decorateId(sourceId) : sourceVariable;
         String target = (targetId != null) ? decorateId(targetId) : targetVariable;
-        return source + ".use(" + source + ", " + target + ");";
+        return source + ".usef(" + source + ", " + target + ");";
     }
 
     @Override
