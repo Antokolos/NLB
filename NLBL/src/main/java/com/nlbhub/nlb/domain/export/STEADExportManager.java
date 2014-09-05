@@ -124,7 +124,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        table.sort(order, function(a,b) return a.rnd < b.rnd end);").append(LINE_SEPARATOR);
         stringBuilder.append("        for i=1,n do res[i] = tab[order[i].idx] end;").append(LINE_SEPARATOR);
         stringBuilder.append("        return res;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    toArray = function(list)").append(LINE_SEPARATOR);
         stringBuilder.append("        local res = {}").append(LINE_SEPARATOR);
         stringBuilder.append("        local loclist = list;").append(LINE_SEPARATOR);
@@ -139,11 +139,11 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            until loclist == nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("        return res;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    addAll = function(listname, arr)").append(LINE_SEPARATOR);
         stringBuilder.append("        local n = #arr").append(LINE_SEPARATOR);
         stringBuilder.append("        for i=1,n do add(listname, arr[i]) end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("}").append(LINE_SEPARATOR);
         return stringBuilder.toString();
     }
@@ -388,7 +388,7 @@ public class STEADExportManager extends TextExportManager {
         return (
                 "    act = function(s)" + LINE_SEPARATOR +
                         "        s.actf(s);" + LINE_SEPARATOR +
-                        "        here.autos();" + LINE_SEPARATOR +
+                        "        here().autos();" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    actf = function(s)" + LINE_SEPARATOR
         );
@@ -404,7 +404,7 @@ public class STEADExportManager extends TextExportManager {
         return (
                 "    use = function(s, w)" + LINE_SEPARATOR +
                         "        s.usef(s, w);" + LINE_SEPARATOR +
-                        "        here.autos();" + LINE_SEPARATOR +
+                        "        here().autos();" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    usef = function(s, w)" + LINE_SEPARATOR
         );
@@ -471,21 +471,29 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateDelObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
-        return (
-                "            if have(\"" + objectName + "\") then remove(\""
-                        + objectName + "\", " + "inv()); end;" + LINE_SEPARATOR
-        );
+        if (destinationId == null) {
+            return (
+                    "            if have(\"" + objectName + "\") then remove(\""
+                            + objectName + "\", " + "inv()); end;" + LINE_SEPARATOR
+            );
+        } else {
+            return  "            objs(" + decorateId(destinationId) + "):del(" + decorateId(objectId) + ");" + LINE_SEPARATOR;
+        }
     }
 
     @Override
     protected String decorateAddObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
-        return (
-                "            if not have(\""
-                        + objectName
-                        + "\") then take('"
-                        + decorateId(objectId)
-                        + "'); end;" + LINE_SEPARATOR
-        );
+        if (destinationId == null) {
+            return (
+                    "            if not have(\""
+                            + objectName
+                            + "\") then take('"
+                            + decorateId(objectId)
+                            + "'); end;" + LINE_SEPARATOR
+            );
+        } else {
+            return  "            objs(" + decorateId(destinationId) + "):add(" + decorateId(objectId) + ");" + LINE_SEPARATOR;
+        }
     }
 
     @Override
