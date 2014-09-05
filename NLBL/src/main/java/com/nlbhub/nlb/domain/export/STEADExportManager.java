@@ -477,10 +477,16 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateActOperation(String actingObjVariable, String actingObjId) {
+        String source = (actingObjId != null) ? decorateId(actingObjId) : actingObjVariable;
+        return source + ".actf(" + source + ");" + LINE_SEPARATOR;
+    }
+
+    @Override
     protected String decorateUseOperation(String sourceVariable, String sourceId, String targetVariable, String targetId) {
         String source = (sourceId != null) ? decorateId(sourceId) : sourceVariable;
         String target = (targetId != null) ? decorateId(targetId) : targetVariable;
-        return source + ".usef(" + source + ", " + target + ");";
+        return source + ".usef(" + source + ", " + target + ");" + LINE_SEPARATOR;
     }
 
     @Override

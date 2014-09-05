@@ -860,6 +860,15 @@ public abstract class ExportManager {
                                 )
                         );
                         break;
+                    case ACT:
+                        final String actingObjId = exportData.getObjIdUnchecked(expression.getValue());
+                        stringBuilder.append(
+                                decorateActOperation(
+                                        decorateAutoVar(expression.getValue()),
+                                        actingObjId
+                                )
+                        );
+                        break;
                     case USE:
                         assert variable != null;
                         final String sourceId = exportData.getObjIdUnchecked(variable.getName());
@@ -920,6 +929,8 @@ public abstract class ExportManager {
     protected abstract String decoratePopList(String variableName, String listName);
 
     protected abstract String decorateSizeOperation(String variableName, String listName);
+
+    protected abstract String decorateActOperation(String actingObjVariable, String actingObjId);
 
     protected abstract String decorateUseOperation(
             String sourceVariable,
