@@ -846,11 +846,11 @@ public abstract class ExportManager {
                                 decorateDelObj(
                                         removeDestinationId,
                                         objIdToRemove,
+                                        decorateAutoVar(expression.getValue()),
                                         expression.getValue(),
                                         (objIdToRemove != null)
                                                 ? exportData.getNlb().getObjById(objIdToRemove).getDisp()
-                                                : null
-                                )
+                                                : null)
                         );
                         break;
                     case PUSH:
@@ -944,7 +944,7 @@ public abstract class ExportManager {
 
     protected abstract String decorateAssignment(String variableName, String variableValue);
 
-    protected abstract String decorateDelObj(String destinationId, String objectId, String objectName, String objectDisplayName);
+    protected abstract String decorateDelObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName);
 
     protected abstract String decorateAddObj(String destinationId, String objectId, String objectName, String objectDisplayName);
 

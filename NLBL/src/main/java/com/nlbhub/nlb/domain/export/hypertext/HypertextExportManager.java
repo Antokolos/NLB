@@ -176,7 +176,7 @@ public abstract class HypertextExportManager
     }
 
     @Override
-    protected String decorateDelObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
+    protected String decorateDelObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
         return (
                 "Вычеркните из " + ((destinationId != null) ? destinationId : "инвентаря") +
                         " " + objectDisplayName

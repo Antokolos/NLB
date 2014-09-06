@@ -334,12 +334,12 @@ public class URQExportManager extends TextExportManager {
      *
      * @param destinationId
      * @param objectId
-     * @param objectName
-     * @param objectDisplayName
-     * @return
+     * @param objectVar
+     *@param objectName
+     * @param objectDisplayName   @return
      */
     @Override
-    protected String decorateDelObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
+    protected String decorateDelObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
         return "Inv- " + objectDisplayName + LINE_SEPARATOR;
     }
 

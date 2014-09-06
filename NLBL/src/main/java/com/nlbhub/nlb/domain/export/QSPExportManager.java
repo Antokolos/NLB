@@ -289,7 +289,7 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateDelObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
+    protected String decorateDelObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
         return "DELOBJ '" + objectDisplayName + "'" + LINE_SEPARATOR;
     }
 

@@ -485,14 +485,18 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateDelObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
+    protected String decorateDelObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
         if (destinationId == null) {
             return (
                     "            if have(\"" + objectName + "\") then remove(\""
                             + objectName + "\", " + "inv()); end;" + LINE_SEPARATOR
             );
         } else {
-            return  "            objs(" + decorateId(destinationId) + "):del(" + decorateId(objectId) + ");" + LINE_SEPARATOR;
+            return  (
+                    "            objs(" + decorateId(destinationId) + "):del(" +
+                            ((objectId != null) ? decorateId(objectId) : objectVar) +
+                            ");" + LINE_SEPARATOR
+            );
         }
     }
 
