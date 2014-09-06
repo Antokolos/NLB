@@ -339,6 +339,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
+    protected String decorateAddAllOperation(String destinationId, String listName) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decoratePushOperation(String listName, String objectId, String objectVar) {
         // TODO: implement adding to the arbitrary list
         return Constants.EMPTY_STRING;

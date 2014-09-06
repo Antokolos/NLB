@@ -146,6 +146,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     public void setType(String type) {
         if (type.equals(Type.ADD.name())) {
             m_type = Type.ADD;
+        } else if (type.equals(Type.ADDALL.name())) {
+            m_type = Type.ADDALL;
         } else if (type.equals(Type.REMOVE.name())) {
             m_type = Type.REMOVE;
         } else if (type.equals(Type.PUSH.name())) {
@@ -207,6 +209,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "ADD":
                 m_type = Type.ADD;
+                break;
+            case "ADDALL":
+                m_type = Type.ADDALL;
                 break;
             case "SUBTRACT":
             case "REMOVE":

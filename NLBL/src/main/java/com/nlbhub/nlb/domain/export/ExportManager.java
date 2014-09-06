@@ -825,6 +825,16 @@ public abstract class ExportManager {
                                 )
                         );
                         break;
+                    case ADDALL:
+                        final String addAllDestinationId = (
+                                (variable != null)
+                                        ? exportData.getObjId(variable.getName())
+                                        : null
+                        );
+                        stringBuilder.append(
+                                decorateAddAllOperation(addAllDestinationId, expression.getValue())
+                        );
+                        break;
                     case REMOVE:
                         final String removeDestinationId = (
                                 (variable != null)
@@ -935,6 +945,8 @@ public abstract class ExportManager {
     protected abstract String decorateDelObj(String destinationId, String objectId, String objectName, String objectDisplayName);
 
     protected abstract String decorateAddObj(String destinationId, String objectId, String objectName, String objectDisplayName);
+
+    protected abstract String decorateAddAllOperation(String destinationId, String listName);
 
     protected abstract String decoratePushOperation(String listName, String objectId, String objectVar);
 

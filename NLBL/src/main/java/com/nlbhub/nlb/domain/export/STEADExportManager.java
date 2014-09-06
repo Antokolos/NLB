@@ -116,7 +116,22 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    shuffle = function(listname)").append(LINE_SEPARATOR);
         stringBuilder.append("        local arr = toArray(_lists[listname]);").append(LINE_SEPARATOR);
         stringBuilder.append("        _lists[listname] = nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("        addAll(listname, shuffled(arr));").append(LINE_SEPARATOR);
+        stringBuilder.append("        addArr(listname, shuffled(arr));").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    addAll = function(destination, listName)").append(LINE_SEPARATOR);
+        stringBuilder.append("        local loclist = _lists[listname];").append(LINE_SEPARATOR);
+        stringBuilder.append("        if loclist == nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("            return;").append(LINE_SEPARATOR);
+        stringBuilder.append("        else").append(LINE_SEPARATOR);
+        stringBuilder.append("            repeat").append(LINE_SEPARATOR);
+        stringBuilder.append("                if destination == nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("                    take(loclist.value);").append(LINE_SEPARATOR);
+        stringBuilder.append("                else").append(LINE_SEPARATOR);
+        stringBuilder.append("                    objs(destination):add(loclist.value);").append(LINE_SEPARATOR);
+        stringBuilder.append("                end;").append(LINE_SEPARATOR);
+        stringBuilder.append("                loclist = loclist.next;").append(LINE_SEPARATOR);
+        stringBuilder.append("            until loclist == nil;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    shuffled = function(tab)").append(LINE_SEPARATOR);
         stringBuilder.append("        local n, order, res = #tab, {}, {};").append(LINE_SEPARATOR);
@@ -140,7 +155,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("        return res;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    addAll = function(listname, arr)").append(LINE_SEPARATOR);
+        stringBuilder.append("    addArr = function(listname, arr)").append(LINE_SEPARATOR);
         stringBuilder.append("        local n = #arr").append(LINE_SEPARATOR);
         stringBuilder.append("        for i=1,n do add(listname, arr[i]) end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
@@ -494,6 +509,14 @@ public class STEADExportManager extends TextExportManager {
         } else {
             return  "            objs(" + decorateId(destinationId) + "):add(" + decorateId(objectId) + ");" + LINE_SEPARATOR;
         }
+    }
+
+    @Override
+    protected String decorateAddAllOperation(String destinationId, String listName) {
+        return (
+                "        addAll(" + ((destinationId != null) ? decorateId(destinationId) : "nil") +
+                        "'" + listName + "');" + LINE_SEPARATOR
+        );
     }
 
     @Override
