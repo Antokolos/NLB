@@ -847,7 +847,9 @@ public abstract class ExportManager {
                                         removeDestinationId,
                                         objIdToRemove,
                                         expression.getValue(),
-                                        exportData.getNlb().getObjById(objIdToRemove).getDisp()
+                                        (objIdToRemove != null)
+                                                ? exportData.getNlb().getObjById(objIdToRemove).getDisp()
+                                                : null
                                 )
                         );
                         break;
