@@ -333,7 +333,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decorateAddObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
+    protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
         String id = decorateId(objectId);
         return "if (!checkItem({'name': '" + id + "'})) { addItem({'name': '" + id + "'}); }; ";
     }

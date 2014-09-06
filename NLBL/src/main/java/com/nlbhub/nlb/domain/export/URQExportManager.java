@@ -344,7 +344,7 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAddObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
+    protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
         return "Inv+ " + objectDisplayName + LINE_SEPARATOR;
     }
 

@@ -294,7 +294,7 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAddObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
+    protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
         return "ADDOBJ '" + objectDisplayName + "'" + LINE_SEPARATOR;
     }
 

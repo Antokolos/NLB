@@ -818,11 +818,11 @@ public abstract class ExportManager {
                                 decorateAddObj(
                                         addDestinationId,
                                         objIdToAdd,
+                                        decorateAutoVar(expression.getValue()),
                                         expression.getValue(),
                                         (objIdToAdd == null)
                                                 ? null
-                                                : exportData.getNlb().getObjById(objIdToAdd).getDisp()
-                                )
+                                                : exportData.getNlb().getObjById(objIdToAdd).getDisp())
                         );
                         break;
                     case ADDALL:
@@ -946,7 +946,7 @@ public abstract class ExportManager {
 
     protected abstract String decorateDelObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName);
 
-    protected abstract String decorateAddObj(String destinationId, String objectId, String objectName, String objectDisplayName);
+    protected abstract String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName);
 
     protected abstract String decorateAddAllOperation(String destinationId, String listName);
 

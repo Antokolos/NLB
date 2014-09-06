@@ -501,7 +501,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAddObj(String destinationId, String objectId, String objectName, String objectDisplayName) {
+    protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
         if (destinationId == null) {
             return (
                     "            if not have(\""
@@ -511,7 +511,11 @@ public class STEADExportManager extends TextExportManager {
                             + "'); end;" + LINE_SEPARATOR
             );
         } else {
-            return  "            objs(" + decorateId(destinationId) + "):add(" + decorateId(objectId) + ");" + LINE_SEPARATOR;
+            return  (
+                    "            objs(" + decorateId(destinationId) + "):add(" +
+                            ((objectId != null) ? decorateId(objectId) : objectVar) +
+                            ");" + LINE_SEPARATOR
+            );
         }
     }
 
