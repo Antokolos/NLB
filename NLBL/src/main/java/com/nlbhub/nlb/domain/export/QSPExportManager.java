@@ -299,7 +299,7 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAddAllOperation(String destinationId, String listName) {
+    protected String decorateAddAllOperation(String destinationId, String destinationList, String listName) {
         // TODO: implement
         return EMPTY_STRING;
     }

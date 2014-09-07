@@ -832,7 +832,13 @@ public abstract class ExportManager {
                                         : null
                         );
                         stringBuilder.append(
-                                decorateAddAllOperation(addAllDestinationId, expression.getValue())
+                                decorateAddAllOperation(
+                                        addAllDestinationId,
+                                        ((addAllDestinationId == null) && (variable != null))
+                                                ? variable.getName()
+                                                : null,
+                                        expression.getValue()
+                                )
                         );
                         break;
                     case REMOVE:
@@ -881,7 +887,7 @@ public abstract class ExportManager {
                         break;
                     case SHUFFLE:
                         stringBuilder.append(
-                                decorateShuffleOperation(decorateAutoVar(expression.getValue()))
+                                decorateShuffleOperation(expression.getValue())
                         );
                         break;
                     case ACT:
@@ -948,7 +954,7 @@ public abstract class ExportManager {
 
     protected abstract String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName);
 
-    protected abstract String decorateAddAllOperation(String destinationId, String listName);
+    protected abstract String decorateAddAllOperation(String destinationId, String destinationList, String listName);
 
     protected abstract String decoratePushOperation(String listName, String objectId, String objectVar);
 
