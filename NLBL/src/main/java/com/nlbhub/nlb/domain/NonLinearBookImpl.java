@@ -1592,24 +1592,22 @@ public class NonLinearBookImpl implements NonLinearBook {
             // because all this links exist only in memory for now.
             List<String> malformedLinksIds = new ArrayList<>();
             for (LinkImpl link : nodeItem.getLinkImpls()) {
-                if (!link.isDeleted()) {
-                    if (itemIds.contains(link.getTarget())) {
-                        copyModificationVariables(link, target);
-                        VariableImpl linkVariable = getVariableImplById(link.getVarId());
-                        VariableImpl linkConstraint = getVariableImplById(link.getConstrId());
-                        if (linkVariable != null && !linkVariable.isDeleted()) {
-                            target.addVariable(
-                                    new VariableImpl(linkVariable)
-                            );
-                        }
-                        if (linkConstraint != null && !linkConstraint.isDeleted()) {
-                            target.addVariable(
-                                    new VariableImpl(linkConstraint)
-                            );
-                        }
-                    } else {
-                        malformedLinksIds.add(link.getId());
+                if (!link.isDeleted() && itemIds.contains(link.getTarget())) {
+                    copyModificationVariables(link, target);
+                    VariableImpl linkVariable = getVariableImplById(link.getVarId());
+                    VariableImpl linkConstraint = getVariableImplById(link.getConstrId());
+                    if (linkVariable != null && !linkVariable.isDeleted()) {
+                        target.addVariable(
+                                new VariableImpl(linkVariable)
+                        );
                     }
+                    if (linkConstraint != null && !linkConstraint.isDeleted()) {
+                        target.addVariable(
+                                new VariableImpl(linkConstraint)
+                        );
+                    }
+                } else {
+                    malformedLinksIds.add(link.getId());
                 }
             }
             for (String linkId : malformedLinksIds) {
