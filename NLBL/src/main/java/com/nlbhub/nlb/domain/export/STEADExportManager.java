@@ -161,6 +161,26 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        local n = #arr").append(LINE_SEPARATOR);
         stringBuilder.append("        for i=1,n do push(listname, arr[i]) end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    function table.deepcopy(t)").append(LINE_SEPARATOR);
+        stringBuilder.append("        local k; local v;").append(LINE_SEPARATOR);
+        stringBuilder.append("        if type(t) ~= \"table\" then return t end;").append(LINE_SEPARATOR);
+        stringBuilder.append("        local mt = getmetatable(t);").append(LINE_SEPARATOR);
+        stringBuilder.append("        local res = {};").append(LINE_SEPARATOR);
+        stringBuilder.append("        for k,v in pairs(t) do").append(LINE_SEPARATOR);
+        stringBuilder.append("            if type(v) == \"table\" then").append(LINE_SEPARATOR);
+        stringBuilder.append("                v = table.deepcopy(v)").append(LINE_SEPARATOR);
+        stringBuilder.append("            end;").append(LINE_SEPARATOR);
+        stringBuilder.append("            res[k] = v;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("        setmetatable(res,mt);").append(LINE_SEPARATOR);
+        stringBuilder.append("        return res;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    function clone(s)").append(LINE_SEPARATOR);
+        stringBuilder.append("        local ret = table.deepcopy(s);").append(LINE_SEPARATOR);
+        stringBuilder.append("        local r = tostring(rnd(1000));").append(LINE_SEPARATOR);
+        stringBuilder.append("        ret.nam = stead.deref(s)..r;").append(LINE_SEPARATOR);
+        stringBuilder.append("        return ret;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end").append(LINE_SEPARATOR);
         stringBuilder.append("}").append(LINE_SEPARATOR);
         return stringBuilder.toString();
     }
