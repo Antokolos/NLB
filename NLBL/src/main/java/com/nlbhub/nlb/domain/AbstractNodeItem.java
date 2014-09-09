@@ -270,6 +270,14 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
         return new ResizeNodeCommand(orientation, deltaX, deltaY, adjacentLinks);
     }
 
+    ResizeNodeCommand createResizeNodeCommand(
+            Orientation orientation,
+            double deltaX,
+            double deltaY
+    ) {
+        return new ResizeNodeCommand(orientation, deltaX, deltaY, new ArrayList<Link>());
+    }
+
     AddLinkCommand createAddLinkCommand(LinkImpl link) {
         return new AddLinkCommand(link);
     }

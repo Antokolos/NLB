@@ -1392,6 +1392,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                         new LinksTableModel(new ArrayList<Link>())
                 );
                 m_commandChain.addCommand(updatePageCommand);
+                Coords coords = page.getCoords();
+                Coords newCoords = newPage.getCoords();
+                resizeNode(newPage, coords, newCoords);
                 copyModifications(currentNLB, page, newPage);
                 addLinks(currentNLB, nlbToPaste, idsMapping, page, newPage);
             }
@@ -1409,9 +1412,25 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.isTakable()
                 );
                 m_commandChain.addCommand(updateObjCommand);
+                Coords coords = obj.getCoords();
+                Coords newCoords = newObj.getCoords();
+                resizeNode(newObj, coords, newCoords);
                 copyModifications(currentNLB, obj, newObj);
                 addLinks(currentNLB, nlbToPaste, idsMapping, obj, newObj);
             }
+        }
+
+        private void resizeNode(AbstractNodeItem nodeItem, Coords coords, Coords newCoords) {
+            double deltaX = coords.getWidth() - newCoords.getWidth();
+            double deltaY = coords.getHeight() - newCoords.getHeight();
+            AbstractNodeItem.ResizeNodeCommand rightResizeCommand = (
+                    nodeItem.createResizeNodeCommand(NodeItem.Orientation.RIGHT, deltaX, 0)
+            );
+            m_commandChain.addCommand(rightResizeCommand);
+            AbstractNodeItem.ResizeNodeCommand bottomResizeCommand = (
+                    nodeItem.createResizeNodeCommand(NodeItem.Orientation.BOTTOM, 0, deltaY)
+            );
+            m_commandChain.addCommand(bottomResizeCommand);
         }
 
         private void copyModifications(
