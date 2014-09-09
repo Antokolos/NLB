@@ -71,7 +71,7 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String generatePreambleText() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("instead_version \"1.9.1\"").append(LINE_SEPARATOR);
+        stringBuilder.append("instead_version \"2.1.1\"").append(LINE_SEPARATOR);
 
         stringBuilder.append("require \"xact\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"hideinv\"").append(LINE_SEPARATOR);
@@ -87,6 +87,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(LINE_SEPARATOR);
         stringBuilder.append("global {").append(LINE_SEPARATOR);
         stringBuilder.append("    _lists = {};").append(LINE_SEPARATOR);
+        stringBuilder.append("    _clones = {};").append(LINE_SEPARATOR);
         stringBuilder.append("    push = function(listname, v)").append(LINE_SEPARATOR);
         stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
         stringBuilder.append("        _lists[listname] = {next = list, value = v};").append(LINE_SEPARATOR);
@@ -125,11 +126,11 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        else").append(LINE_SEPARATOR);
         stringBuilder.append("            repeat").append(LINE_SEPARATOR);
         stringBuilder.append("                if destination ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("                    objs(destination):add(loclist.value);").append(LINE_SEPARATOR);
+        stringBuilder.append("                    addf(destination, loclist.value);").append(LINE_SEPARATOR);
         stringBuilder.append("                elseif destinationList ~= nil then").append(LINE_SEPARATOR);
         stringBuilder.append("                    push(destinationList, loclist.value);").append(LINE_SEPARATOR);
         stringBuilder.append("                else").append(LINE_SEPARATOR);
-        stringBuilder.append("                    take(loclist.value);").append(LINE_SEPARATOR);
+        stringBuilder.append("                    addf(nil, loclist.value);").append(LINE_SEPARATOR);
         stringBuilder.append("                end;").append(LINE_SEPARATOR);
         stringBuilder.append("                loclist = loclist.next;").append(LINE_SEPARATOR);
         stringBuilder.append("            until loclist == nil;").append(LINE_SEPARATOR);
@@ -176,27 +177,32 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            end;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    function table.deepcopy(t)").append(LINE_SEPARATOR);
+        stringBuilder.append("    deepcopy = function(t)").append(LINE_SEPARATOR);
         stringBuilder.append("        local k; local v;").append(LINE_SEPARATOR);
         stringBuilder.append("        if type(t) ~= \"table\" then return t end;").append(LINE_SEPARATOR);
         stringBuilder.append("        local mt = getmetatable(t);").append(LINE_SEPARATOR);
         stringBuilder.append("        local res = {};").append(LINE_SEPARATOR);
         stringBuilder.append("        for k,v in pairs(t) do").append(LINE_SEPARATOR);
         stringBuilder.append("            if type(v) == \"table\" then").append(LINE_SEPARATOR);
-        stringBuilder.append("                v = table.deepcopy(v)").append(LINE_SEPARATOR);
+        stringBuilder.append("                v = deepcopy(v)").append(LINE_SEPARATOR);
         stringBuilder.append("            end;").append(LINE_SEPARATOR);
         stringBuilder.append("            res[k] = v;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("        setmetatable(res,mt);").append(LINE_SEPARATOR);
         stringBuilder.append("        return res;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    function clone(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local ret = table.deepcopy(s);").append(LINE_SEPARATOR);
-        // TODO: generate truly unique numbers for each clone
-        stringBuilder.append("        local r = tostring(rnd(1000));").append(LINE_SEPARATOR);
+        stringBuilder.append("    clone = function(s)").append(LINE_SEPARATOR);
+        stringBuilder.append("        local ret = deepcopy(s);").append(LINE_SEPARATOR);
+        stringBuilder.append("        local r = _clones[s.nam];").append(LINE_SEPARATOR);
+        stringBuilder.append("        if r == nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("            r = 1;").append(LINE_SEPARATOR);
+        stringBuilder.append("        else").append(LINE_SEPARATOR);
+        stringBuilder.append("            r = r + 1;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("        _clones[s.nam] = r;").append(LINE_SEPARATOR);
         stringBuilder.append("        ret.nam = s.nam..r;").append(LINE_SEPARATOR);
         stringBuilder.append("        return ret;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("}").append(LINE_SEPARATOR);
         return stringBuilder.toString();
     }
