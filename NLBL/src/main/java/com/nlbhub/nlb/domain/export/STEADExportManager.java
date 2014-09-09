@@ -161,6 +161,21 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        local n = #arr").append(LINE_SEPARATOR);
         stringBuilder.append("        for i=1,n do push(listname, arr[i]) end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    addf = function(target, object)").append(LINE_SEPARATOR);
+        stringBuilder.append("        if target == nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("            if have(object) then").append(LINE_SEPARATOR);
+        stringBuilder.append("                take(clone(object));").append(LINE_SEPARATOR);
+        stringBuilder.append("            else").append(LINE_SEPARATOR);
+        stringBuilder.append("                take(object);").append(LINE_SEPARATOR);
+        stringBuilder.append("            end;").append(LINE_SEPARATOR);
+        stringBuilder.append("        else").append(LINE_SEPARATOR);
+        stringBuilder.append("            if exist(object, target) then").append(LINE_SEPARATOR);
+        stringBuilder.append("                objs(target):add(clone(object));").append(LINE_SEPARATOR);
+        stringBuilder.append("            else").append(LINE_SEPARATOR);
+        stringBuilder.append("                objs(target):add(object);").append(LINE_SEPARATOR);
+        stringBuilder.append("            end;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    function table.deepcopy(t)").append(LINE_SEPARATOR);
         stringBuilder.append("        local k; local v;").append(LINE_SEPARATOR);
         stringBuilder.append("        if type(t) ~= \"table\" then return t end;").append(LINE_SEPARATOR);
@@ -177,8 +192,9 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    function clone(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        local ret = table.deepcopy(s);").append(LINE_SEPARATOR);
+        // TODO: generate truly unique numbers for each clone
         stringBuilder.append("        local r = tostring(rnd(1000));").append(LINE_SEPARATOR);
-        stringBuilder.append("        ret.nam = stead.deref(s)..r;").append(LINE_SEPARATOR);
+        stringBuilder.append("        ret.nam = s.nam..r;").append(LINE_SEPARATOR);
         stringBuilder.append("        return ret;").append(LINE_SEPARATOR);
         stringBuilder.append("    end").append(LINE_SEPARATOR);
         stringBuilder.append("}").append(LINE_SEPARATOR);
@@ -524,21 +540,11 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
-        if (destinationId == null) {
-            return (
-                    "            if not have(\""
-                            + objectName
-                            + "\") then take('"
-                            + decorateId(objectId)
-                            + "'); end;" + LINE_SEPARATOR
-            );
-        } else {
-            return  (
-                    "            objs(" + decorateId(destinationId) + "):add(" +
-                            ((objectId != null) ? decorateId(objectId) : objectVar) +
-                            ");" + LINE_SEPARATOR
-            );
-        }
+        return  (
+                "            addf(" + ((destinationId != null) ? decorateId(destinationId) : "nil") +
+                        ", " + ((objectId != null) ? decorateId(objectId) : objectVar) +
+                        ");" + LINE_SEPARATOR
+        );
     }
 
     @Override
