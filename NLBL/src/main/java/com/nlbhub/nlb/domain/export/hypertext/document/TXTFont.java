@@ -1,5 +1,5 @@
 /**
- * @(#)HTAnchor.java
+ * @(#)TXTFont.java
  *
  * This file is part of the Non-Linear Book project.
  * Copyright (c) 2012-2014 Anton P. Kolosov
@@ -34,33 +34,15 @@
  * For more information, please contact Anton P. Kolosov at this
  * address: antokolos@gmail.com
  *
- * Copyright (c) 2013 Anton P. Kolosov All rights reserved.
+ * Copyright (c) 2014 Anton P. Kolosov All rights reserved.
  */
 package com.nlbhub.nlb.domain.export.hypertext.document;
 
 /**
- * The HTAnchor class
+ * The TXTFont class
  *
  * @author Anton P. Kolosov
- * @version 1.0 12/9/13
+ * @version 1.0
  */
-public abstract class HTAnchor<F extends HTFont> {
-    private boolean m_decapitalize;
-
-    public HTAnchor(final boolean decapitalize, final String text, final F font) {
-        m_decapitalize = decapitalize;
-    }
-
-    public boolean isDecapitalize() {
-        return m_decapitalize;
-    }
-
-    public String decapitalize(final String text) {
-        String firstLetter = text.substring(0, 1);
-        return firstLetter.toLowerCase() + text.substring(1);
-    }
-
-    public abstract void setName(String name);
-
-    public abstract void setReference(String reference);
+public class TXTFont implements HTFont {
 }

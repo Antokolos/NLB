@@ -1,5 +1,5 @@
 /**
- * @(#)HTAnchor.java
+ * @(#)TXTDocument.java
  *
  * This file is part of the Non-Linear Book project.
  * Copyright (c) 2012-2014 Anton P. Kolosov
@@ -34,33 +34,51 @@
  * For more information, please contact Anton P. Kolosov at this
  * address: antokolos@gmail.com
  *
- * Copyright (c) 2013 Anton P. Kolosov All rights reserved.
+ * Copyright (c) 2014 Anton P. Kolosov All rights reserved.
  */
 package com.nlbhub.nlb.domain.export.hypertext.document;
 
+import com.nlbhub.nlb.exception.HTDocumentException;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 /**
- * The HTAnchor class
+ * The TXTDocument class
  *
  * @author Anton P. Kolosov
- * @version 1.0 12/9/13
+ * @version 1.0
  */
-public abstract class HTAnchor<F extends HTFont> {
-    private boolean m_decapitalize;
+public class TXTDocument implements HTDocument<TXTParagraph> {
+    private String m_encoding;
+    private StringBuilder m_textBuilder = new StringBuilder();
+    private FileOutputStream m_fileOutputStream;
+    private String m_lineSeparator;
 
-    public HTAnchor(final boolean decapitalize, final String text, final F font) {
-        m_decapitalize = decapitalize;
+    public TXTDocument(String encoding, String lineSeparator) {
+        m_encoding = encoding;
+        m_lineSeparator = lineSeparator;
     }
 
-    public boolean isDecapitalize() {
-        return m_decapitalize;
+    @Override
+    public void initWriter(File targetFile) throws FileNotFoundException, HTDocumentException {
+        m_fileOutputStream = new FileOutputStream(targetFile);
     }
 
-    public String decapitalize(final String text) {
-        String firstLetter = text.substring(0, 1);
-        return firstLetter.toLowerCase() + text.substring(1);
+    @Override
+    public void open() {
     }
 
-    public abstract void setName(String name);
+    @Override
+    public void close() throws IOException {
+        final byte[] bytes = m_textBuilder.toString().getBytes(m_encoding);
+        m_fileOutputStream.write(bytes);
+    }
 
-    public abstract void setReference(String reference);
+    @Override
+    public void add(TXTParagraph paragraph) throws HTDocumentException {
+        m_textBuilder.append(paragraph.toString()).append(m_lineSeparator);
+    }
 }

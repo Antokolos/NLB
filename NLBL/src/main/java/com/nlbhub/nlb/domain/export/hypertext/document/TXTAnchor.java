@@ -1,5 +1,5 @@
 /**
- * @(#)HTAnchor.java
+ * @(#)TXTAnchor.java
  *
  * This file is part of the Non-Linear Book project.
  * Copyright (c) 2012-2014 Anton P. Kolosov
@@ -34,33 +34,58 @@
  * For more information, please contact Anton P. Kolosov at this
  * address: antokolos@gmail.com
  *
- * Copyright (c) 2013 Anton P. Kolosov All rights reserved.
+ * Copyright (c) 2014 Anton P. Kolosov All rights reserved.
  */
 package com.nlbhub.nlb.domain.export.hypertext.document;
 
+import com.nlbhub.nlb.api.Constants;
+import com.nlbhub.nlb.util.StringHelper;
+
 /**
- * The HTAnchor class
+ * The TXTAnchor class
  *
  * @author Anton P. Kolosov
- * @version 1.0 12/9/13
+ * @version 1.0
  */
-public abstract class HTAnchor<F extends HTFont> {
-    private boolean m_decapitalize;
+public class TXTAnchor extends HTAnchor<TXTFont> {
+    private String m_reference;
+    private String m_text;
 
-    public HTAnchor(final boolean decapitalize, final String text, final F font) {
-        m_decapitalize = decapitalize;
+    public TXTAnchor(boolean decapitalize, String text, TXTFont font) {
+        super(decapitalize, text, font);
+        m_text = text;
     }
 
-    public boolean isDecapitalize() {
-        return m_decapitalize;
+    public String getText() {
+        return m_text;
     }
 
-    public String decapitalize(final String text) {
-        String firstLetter = text.substring(0, 1);
-        return firstLetter.toLowerCase() + text.substring(1);
+    public String getName() {
+        return Constants.EMPTY_STRING;
     }
 
-    public abstract void setName(String name);
+    public void setName(String name) {
+    }
 
-    public abstract void setReference(String reference);
+    public String getReference() {
+        return m_reference;
+    }
+
+    public void setReference(String reference) {
+        m_reference = reference;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        if (isDecapitalize()) {
+            sb.append(decapitalize(m_text));
+        } else {
+            sb.append(m_text);
+        }
+        if (!StringHelper.isEmpty(m_reference)) {
+            sb.append(" [").append(m_reference).append(']');
+        }
+        return sb.toString();
+    }
 }

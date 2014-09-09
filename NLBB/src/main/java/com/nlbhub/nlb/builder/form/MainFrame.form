@@ -496,6 +496,17 @@
                   <text value=""/>
                 </properties>
               </component>
+              <component id="d5b92" class="javax.swing.JButton" binding="m_exportTXT">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <enabled value="true"/>
+                  <focusPainted value="false"/>
+                  <icon value="extras/export/exportTXT.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
             </children>
           </toolbar>
         </children>

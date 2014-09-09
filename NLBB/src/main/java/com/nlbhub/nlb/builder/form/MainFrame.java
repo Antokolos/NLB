@@ -129,6 +129,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     private JButton m_editDeleteButton;
     private JButton m_editBookPropertiesButton;
     private JButton m_exportPNG;
+    private JButton m_exportTXT;
     private final Launcher m_launcher;
     private final JFileChooser m_dirChooser;
     private final JFileChooser m_fileChooser;
@@ -460,6 +461,14 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_exportPNG.setRolloverEnabled(true);
         m_exportPNG.setText("");
         toolBar5.add(m_exportPNG);
+        m_exportTXT = new JButton();
+        m_exportTXT.setBorderPainted(false);
+        m_exportTXT.setEnabled(true);
+        m_exportTXT.setFocusPainted(false);
+        m_exportTXT.setIcon(new ImageIcon(getClass().getResource("/extras/export/exportTXT.png")));
+        m_exportTXT.setRolloverEnabled(true);
+        m_exportTXT.setText("");
+        toolBar5.add(m_exportTXT);
     }
 
     /**
@@ -916,6 +925,22 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                     JOptionPane.showMessageDialog(
                             m_mainFramePanel,
                             "Error while exporting to PDF: " + ex.toString()
+                    );
+                }
+            }
+        });
+        m_exportTXT.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    File exportDir = chooseExportDir();
+                    if (exportDir != null) {
+                        getMainPaneInfo().getPaneNlbFacade().exportToTXTFile(exportDir);
+                    }
+                } catch (NLBExportException ex) {
+                    JOptionPane.showMessageDialog(
+                            m_mainFramePanel,
+                            "Error while exporting to TXT: " + ex.toString()
                     );
                 }
             }

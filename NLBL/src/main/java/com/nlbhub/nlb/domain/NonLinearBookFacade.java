@@ -152,6 +152,10 @@ public class NonLinearBookFacade implements NLBObservable {
         m_nlb.exportToPDFFile(exportFile);
     }
 
+    public void exportToTXTFile(File exportDir) throws NLBExportException {
+        m_nlb.exportToTXTFile(new File(exportDir, "book.txt"));
+    }
+
     public void exportToHTMLFile(File exportDir) throws NLBExportException {
         m_nlb.exportToHTMLFile(new File(exportDir, "index.html"));
         File imagesExportDir = new File(exportDir, NonLinearBook.IMAGES_DIR_NAME);

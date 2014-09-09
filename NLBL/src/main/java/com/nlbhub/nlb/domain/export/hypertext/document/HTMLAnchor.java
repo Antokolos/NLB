@@ -87,8 +87,7 @@ public class HTMLAnchor extends HTAnchor<HTMLFont> {
         }
         sb.append(">");
         if (isDecapitalize()) {
-            String firstLetter = m_text.substring(0, 1);
-            sb.append(firstLetter.toLowerCase()).append(m_text.substring(1));
+            sb.append(decapitalize(m_text));
         } else {
             sb.append(m_text);
         }

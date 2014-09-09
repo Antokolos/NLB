@@ -109,7 +109,6 @@ public abstract class HypertextExportManager
             final F font
     ) throws HTDocumentException;
 
-
     private void generateHypertext(
             HTDocument<P> document,
             F paraFont,
@@ -162,12 +161,16 @@ public abstract class HypertextExportManager
             }
 
             A linkAnchor = createHTAnchor(hasConstraint, linkBlocks.getLinkStart(), linkFont);
-            linkAnchor.setReference("#" + linkBlocks.getLinkGoTo());
+            linkAnchor.setReference(getLinkReference(linkBlocks));
             page.add(linkAnchor);
             page.add(linkBlocks.getLinkVariable());
             page.add(linkBlocks.getLinkModifications());
         }
         return page;
+    }
+
+    protected String getLinkReference(LinkBuildingBlocks linkBlocks) {
+        return "#" + linkBlocks.getLinkGoTo();
     }
 
     @Override

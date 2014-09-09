@@ -111,7 +111,8 @@ public class NLBBMain implements Runnable {
         JComponent component = mf.$$$getRootComponent$$$();
         container.add(component);
         JMenuBar menuBar = createMenuBar();
-        frame.setJMenuBar(menuBar);
+        // TODO: uncomment the following line to use the menu
+        //frame.setJMenuBar(menuBar);
         mf.serrext();
         try {
             for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {

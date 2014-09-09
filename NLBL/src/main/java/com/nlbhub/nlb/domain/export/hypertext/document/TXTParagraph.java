@@ -1,5 +1,5 @@
 /**
- * @(#)HTAnchor.java
+ * @(#)TXTParagraph.java
  *
  * This file is part of the Non-Linear Book project.
  * Copyright (c) 2012-2014 Anton P. Kolosov
@@ -34,33 +34,38 @@
  * For more information, please contact Anton P. Kolosov at this
  * address: antokolos@gmail.com
  *
- * Copyright (c) 2013 Anton P. Kolosov All rights reserved.
+ * Copyright (c) 2014 Anton P. Kolosov All rights reserved.
  */
 package com.nlbhub.nlb.domain.export.hypertext.document;
 
 /**
- * The HTAnchor class
+ * The TXTParagraph class
  *
  * @author Anton P. Kolosov
- * @version 1.0 12/9/13
+ * @version 1.0
  */
-public abstract class HTAnchor<F extends HTFont> {
-    private boolean m_decapitalize;
+public class TXTParagraph extends HTParagraph<TXTFont, TXTAnchor> {
+    private StringBuilder m_textBuilder = new StringBuilder();
 
-    public HTAnchor(final boolean decapitalize, final String text, final F font) {
-        m_decapitalize = decapitalize;
+    public TXTParagraph(String text, TXTFont font) {
+        super(text, font);
+        m_textBuilder.append(text);
     }
 
-    public boolean isDecapitalize() {
-        return m_decapitalize;
+    @Override
+    public void add(String text) {
+        m_textBuilder.append(text);
     }
 
-    public String decapitalize(final String text) {
-        String firstLetter = text.substring(0, 1);
-        return firstLetter.toLowerCase() + text.substring(1);
+    @Override
+    public void add(TXTAnchor anchor) {
+        m_textBuilder.append(anchor.toString());
     }
 
-    public abstract void setName(String name);
-
-    public abstract void setReference(String reference);
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(m_textBuilder.toString());
+        return sb.toString();
+    }
 }

@@ -66,7 +66,7 @@ public abstract class ExportManager {
     private static final String OR_PLACEHOLDER = "179ef88a-88b7-4ad2-8dfa-d2040debde73";
     private static final String AND_PLACEHOLDER = "f0e77ec8-a270-4a3f-8b8f-1ade38988f37";
 
-    public static final String EMPTY_STRING = "";
+    public static final String EMPTY_STRING = Constants.EMPTY_STRING;
     public static final String UTF_8 = "UTF-8";
     public static final String UTF_16LE = "UTF-16LE";
     public static final String CP1251 = "CP1251";
