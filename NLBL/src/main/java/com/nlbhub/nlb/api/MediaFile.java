@@ -1,5 +1,5 @@
 /**
- * @(#)ImageFile.java
+ * @(#)MediaFile.java
  *
  * This file is part of the Non-Linear Book project.
  * Copyright (c) 2012-2014 Anton P. Kolosov
@@ -39,11 +39,13 @@
 package com.nlbhub.nlb.api;
 
 /**
- * The ImageFile class
+ * The MediaFile class
  *
  * @author Anton P. Kolosov
  * @version 1.0
  */
-public interface ImageFile {
+public interface MediaFile {
+    public enum Type {Image, Sound}
+
     public String getFileName();
 }

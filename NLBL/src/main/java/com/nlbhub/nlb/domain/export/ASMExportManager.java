@@ -202,6 +202,12 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decoratePageSound(String pageSoundPath) {
+        // TODO: implement and use
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
     protected String getLineSeparator() {
         return LINE_SEPARATOR;
     }

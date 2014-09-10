@@ -170,6 +170,8 @@ public class NonLinearBookFacade implements NLBObservable {
         m_nlb.exportToSTEADFile(new File(exportDir, "main.lua"));
         File imagesExportDir = new File(exportDir, NonLinearBook.IMAGES_DIR_NAME);
         m_nlb.exportImages(true, imagesExportDir);
+        File soundExportDir = new File(exportDir, NonLinearBook.SOUND_DIR_NAME);
+        m_nlb.exportSound(true, soundExportDir);
     }
 
     public void exportToASMFile(File exportDir) throws NLBExportException {
@@ -210,6 +212,7 @@ public class NonLinearBookFacade implements NLBObservable {
     public void updatePage(
             final Page page,
             final String imageFileName,
+            final String soundFileName,
             final String pageVariableName,
             final MultiLangString pageText,
             final MultiLangString pageCaptionText,
@@ -234,6 +237,7 @@ public class NonLinearBookFacade implements NLBObservable {
                 m_nlb.createUpdatePageCommand(
                         page,
                         imageFileName,
+                        soundFileName,
                         pageVariableName,
                         pageText,
                         pageCaptionText,
@@ -345,6 +349,18 @@ public class NonLinearBookFacade implements NLBObservable {
         }
     }
 
+    public void addSoundFile(
+            final File soundFile
+    ) throws NLBFileManipulationException, NLBIOException, NLBConsistencyException, NLBVCSException {
+        File rootDir = m_nlb.getRootDir();
+        if (rootDir != null) {
+            FileManipulator fileManipulator = new FileManipulator(m_vcsAdapter, rootDir);
+            m_nlb.copyAndAddSoundFile(fileManipulator, soundFile);
+        } else {
+            throw new NLBConsistencyException("NLB root dir is undefined");
+        }
+    }
+
     public void removeImageFile(
             final String imageFileName
     ) throws NLBFileManipulationException, NLBIOException, NLBConsistencyException {
@@ -352,6 +368,18 @@ public class NonLinearBookFacade implements NLBObservable {
         if (rootDir != null) {
             FileManipulator fileManipulator = new FileManipulator(m_vcsAdapter, rootDir);
             m_nlb.removeImageFile(fileManipulator, imageFileName);
+        } else {
+            throw new NLBConsistencyException("NLB root dir is undefined");
+        }
+    }
+
+    public void removeSoundFile(
+            final String soundFileName
+    ) throws NLBFileManipulationException, NLBIOException, NLBConsistencyException {
+        File rootDir = m_nlb.getRootDir();
+        if (rootDir != null) {
+            FileManipulator fileManipulator = new FileManipulator(m_vcsAdapter, rootDir);
+            m_nlb.removeSoundFile(fileManipulator, soundFileName);
         } else {
             throw new NLBConsistencyException("NLB root dir is undefined");
         }

@@ -62,6 +62,7 @@ public interface NonLinearBook {
     public static final String LC_VARID_PREFIX = "LC_";
     public static final String LC_VARID_SEPARATOR_OUT = "_OUT_";
 
+    public static final String SOUND_DIR_NAME = "sound";
     public static final String IMAGES_DIR_NAME = "images";
     public static final String DEFAULT_STARTPOINT = Constants.EMPTY_STRING;
     public static final String DEFAULT_LANGUAGE = Constants.RU;
@@ -270,9 +271,11 @@ public interface NonLinearBook {
 
     public File getImagesDir();
 
-    public List<ImageFile> getImageFiles();
+    public List<MediaFile> getImageFiles();
 
-    public void exportImages(final boolean isRoot, final File mainExportDir) throws NLBExportException;
+    public List<MediaFile> getSoundFiles();
+
+    public void exportMedia(boolean isRoot, File mainExportDir, String mediaDirName, List<MediaFile> mediaFiles) throws NLBExportException;
 
     public Map<String, Page> getPages();
 

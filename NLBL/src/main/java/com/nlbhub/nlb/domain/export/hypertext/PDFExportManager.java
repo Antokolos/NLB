@@ -90,4 +90,10 @@ public class PDFExportManager extends HypertextExportManager<PDFParagraph, PDFAn
         // TODO: implement images for PDF
         return Constants.EMPTY_STRING;
     }
+
+    @Override
+    protected String decoratePageSound(String pageSoundPath) {
+        // TODO: implement and use
+        return Constants.EMPTY_STRING;
+    }
 }

@@ -121,4 +121,9 @@ public class TaggedTextExportManager extends HypertextExportManager<TXTParagraph
     protected String decoratePageImage(String pageImagePath) {
         return Constants.EMPTY_STRING;
     }
+
+    @Override
+    protected String decoratePageSound(String pageSoundPath) {
+        return Constants.EMPTY_STRING;
+    }
 }

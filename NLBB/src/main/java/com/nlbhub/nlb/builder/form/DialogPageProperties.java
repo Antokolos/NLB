@@ -38,10 +38,7 @@
  */
 package com.nlbhub.nlb.builder.form;
 
-import com.nlbhub.nlb.api.Constants;
-import com.nlbhub.nlb.api.NLBObserver;
-import com.nlbhub.nlb.api.Page;
-import com.nlbhub.nlb.api.Variable;
+import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.builder.model.LinksTableModelSwing;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.util.MultiLangString;
@@ -67,6 +64,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private MultiLangString m_autowireOutTexts;
     private String m_selectedLanguage;
     private String m_imageFileName;
+    private String m_soundFileName;
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -112,6 +110,8 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JPanel m_returnTextPanel;
     private JPanel m_traverseTextPanel;
     private JTextField m_autowireOutConstraintTextField;
+    private JButton m_setSoundButton;
+    private JLabel m_soundFileNameLabel;
 
     public DialogPageProperties(final NonLinearBookFacade nlbFacade, final Page page) {
         m_nlbFacade = nlbFacade;
@@ -185,10 +185,26 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
             }
         });
 
+        m_setSoundButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                DialogMediaLibrary dialog = (
+                        new DialogMediaLibrary(m_nlbFacade, MediaFile.Type.Sound)
+                );
+                dialog.showDialog();
+                if (!dialog.isCanceled()) {
+                    m_soundFileName = dialog.getSelectedFileName();
+                    m_soundFileNameLabel.setText(m_soundFileName);
+                }
+            }
+        });
+
         m_setImageButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                DialogImageLibrary dialog = new DialogImageLibrary(m_nlbFacade);
+                DialogMediaLibrary dialog = (
+                        new DialogMediaLibrary(m_nlbFacade, MediaFile.Type.Image)
+                );
                 dialog.showDialog();
                 if (!dialog.isCanceled()) {
                     m_imageFileName = dialog.getSelectedFileName();
@@ -269,6 +285,9 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
 
         m_imageFileName = page.getImageFileName();
         m_imageFileNameLabel.setText(m_imageFileName);
+
+        m_soundFileName = page.getSoundFileName();
+        m_soundFileNameLabel.setText(m_soundFileName);
 
         DefaultComboBoxModel<String> languageComboboxModel = new DefaultComboBoxModel<>();
         languageComboboxModel.addElement(Constants.RU);
@@ -351,6 +370,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_nlbFacade.updatePage(
                 m_page,
                 m_imageFileName,
+                m_soundFileName,
                 m_pageVariableTextField.getText(),
                 m_pageTexts,
                 m_pageCaptionTexts,
@@ -1119,34 +1139,60 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         panel52.setLayout(new BorderLayout(0, 0));
         panel50.add(panel52, BorderLayout.EAST);
         final JPanel panel53 = new JPanel();
-        panel53.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel52.add(panel53, BorderLayout.NORTH);
+        panel53.setLayout(new BorderLayout(0, 0));
+        panel52.add(panel53, BorderLayout.CENTER);
+        final JPanel panel54 = new JPanel();
+        panel54.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel53.add(panel54, BorderLayout.NORTH);
         m_setImageButton = new JButton();
         m_setImageButton.setMaximumSize(new Dimension(120, 36));
         m_setImageButton.setMinimumSize(new Dimension(120, 36));
         m_setImageButton.setPreferredSize(new Dimension(120, 36));
         m_setImageButton.setText("Set image...");
-        panel53.add(m_setImageButton);
-        final JPanel panel54 = new JPanel();
-        panel54.setLayout(new BorderLayout(0, 0));
-        panel52.add(panel54, BorderLayout.CENTER);
+        panel54.add(m_setImageButton);
         final JPanel panel55 = new JPanel();
         panel55.setLayout(new BorderLayout(0, 0));
-        panel54.add(panel55, BorderLayout.NORTH);
+        panel53.add(panel55, BorderLayout.CENTER);
+        final JPanel panel56 = new JPanel();
+        panel56.setLayout(new BorderLayout(0, 0));
+        panel55.add(panel56, BorderLayout.NORTH);
         m_imageFileNameLabel = new JLabel();
         m_imageFileNameLabel.setHorizontalAlignment(0);
         m_imageFileNameLabel.setHorizontalTextPosition(0);
         m_imageFileNameLabel.setText("<NO IMAGE>");
-        panel55.add(m_imageFileNameLabel, BorderLayout.CENTER);
+        panel56.add(m_imageFileNameLabel, BorderLayout.CENTER);
         m_imageView = new JXImageView();
-        panel54.add(m_imageView, BorderLayout.CENTER);
-        final JPanel panel56 = new JPanel();
-        panel56.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel56, BorderLayout.NORTH);
+        panel55.add(m_imageView, BorderLayout.CENTER);
+        final JPanel panel57 = new JPanel();
+        panel57.setLayout(new BorderLayout(0, 0));
+        panel52.add(panel57, BorderLayout.NORTH);
+        final JPanel panel58 = new JPanel();
+        panel58.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel57.add(panel58, BorderLayout.NORTH);
+        m_setSoundButton = new JButton();
+        m_setSoundButton.setMaximumSize(new Dimension(120, 36));
+        m_setSoundButton.setMinimumSize(new Dimension(120, 36));
+        m_setSoundButton.setPreferredSize(new Dimension(120, 36));
+        m_setSoundButton.setText("Set sound...");
+        panel58.add(m_setSoundButton);
+        final JPanel panel59 = new JPanel();
+        panel59.setLayout(new BorderLayout(0, 0));
+        panel57.add(panel59, BorderLayout.CENTER);
+        final JPanel panel60 = new JPanel();
+        panel60.setLayout(new BorderLayout(0, 0));
+        panel59.add(panel60, BorderLayout.NORTH);
+        m_soundFileNameLabel = new JLabel();
+        m_soundFileNameLabel.setHorizontalAlignment(0);
+        m_soundFileNameLabel.setHorizontalTextPosition(0);
+        m_soundFileNameLabel.setText("<NO_SOUND>");
+        panel60.add(m_soundFileNameLabel, BorderLayout.CENTER);
+        final JPanel panel61 = new JPanel();
+        panel61.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel61, BorderLayout.NORTH);
         final JToolBar toolBar1 = new JToolBar();
         toolBar1.setBorderPainted(false);
         toolBar1.setFloatable(false);
-        panel56.add(toolBar1, BorderLayout.CENTER);
+        panel61.add(toolBar1, BorderLayout.CENTER);
         m_undoButton = new JButton();
         m_undoButton.setIcon(new ImageIcon(getClass().getResource("/common/undo.png")));
         m_undoButton.setText("Undo");
@@ -1156,7 +1202,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_redoButton.setText("Redo");
         toolBar1.add(m_redoButton);
         m_languageComboBox = new JComboBox();
-        panel56.add(m_languageComboBox, BorderLayout.EAST);
+        panel61.add(m_languageComboBox, BorderLayout.EAST);
         m_traverseTextLabel.setLabelFor(m_traverseTextTextField);
         label1.setLabelFor(m_pageCaptionTextField);
         m_autowireInTextLabel.setLabelFor(m_autowireInTextTextField);

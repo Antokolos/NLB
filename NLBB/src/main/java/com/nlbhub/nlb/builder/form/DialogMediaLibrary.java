@@ -1,8 +1,10 @@
 package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.Constants;
-import com.nlbhub.nlb.builder.model.ImageFileModelSwing;
+import com.nlbhub.nlb.api.MediaFile;
+import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.builder.model.ListSingleSelectionModel;
+import com.nlbhub.nlb.builder.model.MediaFileModelSwing;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
@@ -19,9 +21,10 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 
-public class DialogImageLibrary extends JDialog {
+public class DialogMediaLibrary extends JDialog {
+
     private final JFileChooser m_fileChooser = new JFileChooser();
-    private ImageFileModelSwing m_imageFileModelSwing;
+    private MediaFileModelSwing m_mediaFileModelSwing;
     private String m_selectedFileName;
     private ListSingleSelectionModel m_listSingleSelectionModel = new ListSingleSelectionModel();
     private boolean m_isCanceled = false;
@@ -30,21 +33,27 @@ public class DialogImageLibrary extends JDialog {
     private JButton buttonCancel;
     private JPanel m_imagePreviewPanel;
     private JButton m_buttonAdd;
-    private JXTable m_imageFileList;
+    private JXTable m_mediaFileList;
     private JXImageView m_imageView;
     private JButton m_buttonRemove;
     private JButton m_noneButton;
+    private JButton m_voidButton;
 
-    public DialogImageLibrary(final NonLinearBookFacade nonLinearBookFacade) {
-        final DialogImageLibrary self = this;
+    public DialogMediaLibrary(final NonLinearBookFacade nonLinearBookFacade, final MediaFile.Type mediaType) {
+        final DialogMediaLibrary self = this;
         setContentPane(contentPane);
-        m_imageFileModelSwing = new ImageFileModelSwing(nonLinearBookFacade.getNlb());
-        m_imageFileList.setModel(m_imageFileModelSwing);
+        m_mediaFileModelSwing = (
+                new MediaFileModelSwing(nonLinearBookFacade.getNlb(), mediaType)
+        );
+        m_mediaFileList.setModel(m_mediaFileModelSwing);
         m_listSingleSelectionModel.addListSelectionListener(
                 new ListSelectionListener() {
                     @Override
                     public void valueChanged(ListSelectionEvent e) {
                         ListSelectionModel lsm = (ListSelectionModel) e.getSource();
+                        if (mediaType != MediaFile.Type.Image) {
+                            return;
+                        }
                         try {
                             if (lsm.isSelectionEmpty()) {
                                 // TODO: should clear
@@ -57,7 +66,7 @@ public class DialogImageLibrary extends JDialog {
                                         m_imageView.setImage(
                                                 new File(
                                                         nonLinearBookFacade.getNlb().getImagesDir(),
-                                                        (String) m_imageFileModelSwing.getValueAt(i, 0)
+                                                        (String) m_mediaFileModelSwing.getValueAt(i, 0)
                                                 )
                                         );
                                         break;
@@ -70,7 +79,7 @@ public class DialogImageLibrary extends JDialog {
                     }
                 }
         );
-        m_imageFileList.setSelectionModel(m_listSingleSelectionModel);
+        m_mediaFileList.setSelectionModel(m_listSingleSelectionModel);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
@@ -86,6 +95,12 @@ public class DialogImageLibrary extends JDialog {
             }
         });
 
+        m_voidButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onVoid();
+            }
+        });
+
         buttonCancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCancel();
@@ -95,11 +110,18 @@ public class DialogImageLibrary extends JDialog {
         m_buttonAdd.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    File imageFile = chooseImageFile();
-                    if (imageFile != null) {
-                        nonLinearBookFacade.addImageFile(imageFile);
+                    File mediaFile = chooseMediaFile();
+                    if (mediaFile != null) {
+                        switch (mediaType) {
+                            case Image:
+                                nonLinearBookFacade.addImageFile(mediaFile);
+                                break;
+                            case Sound:
+                                nonLinearBookFacade.addSoundFile(mediaFile);
+                                break;
+                        }
                     }
-                    m_imageFileList.updateUI();
+                    m_mediaFileList.updateUI();
                 } catch (NLBFileManipulationException | NLBIOException | NLBConsistencyException | NLBVCSException ex) {
                     JOptionPane.showMessageDialog(
                             self,
@@ -112,10 +134,17 @@ public class DialogImageLibrary extends JDialog {
         m_buttonRemove.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    int selectedRow = m_imageFileList.getSelectedRow();
-                    String imageFileName = (String) m_imageFileModelSwing.getValueAt(selectedRow, 0);
-                    nonLinearBookFacade.removeImageFile(imageFileName);
-                    m_imageFileList.updateUI();
+                    int selectedRow = m_mediaFileList.getSelectedRow();
+                    String mediaFileName = (String) m_mediaFileModelSwing.getValueAt(selectedRow, 0);
+                    switch (mediaType) {
+                        case Image:
+                            nonLinearBookFacade.removeImageFile(mediaFileName);
+                            break;
+                        case Sound:
+                            nonLinearBookFacade.removeSoundFile(mediaFileName);
+                            break;
+                    }
+                    m_mediaFileList.updateUI();
                 } catch (NLBFileManipulationException | NLBIOException | NLBConsistencyException ex) {
                     JOptionPane.showMessageDialog(
                             self,
@@ -139,9 +168,18 @@ public class DialogImageLibrary extends JDialog {
                 onCancel();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        switch (mediaType) {
+            case Image:
+                m_voidButton.setVisible(false);
+                break;
+            case Sound:
+                m_imagePreviewPanel.setVisible(false);
+                break;
+        }
     }
 
-    private File chooseImageFile() {
+    private File chooseMediaFile() {
         int returnVal = m_fileChooser.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             return m_fileChooser.getSelectedFile();
@@ -163,13 +201,18 @@ public class DialogImageLibrary extends JDialog {
     }
 
     private void onOK() {
-        int selectedRow = m_imageFileList.getSelectedRow();
-        m_selectedFileName = (selectedRow == -1) ? null : (String) m_imageFileModelSwing.getValueAt(selectedRow, 0);
+        int selectedRow = m_mediaFileList.getSelectedRow();
+        m_selectedFileName = (selectedRow == -1) ? null : (String) m_mediaFileModelSwing.getValueAt(selectedRow, 0);
         dispose();
     }
 
     private void onNone() {
         m_selectedFileName = Constants.EMPTY_STRING;
+        dispose();
+    }
+
+    private void onVoid() {
+        m_selectedFileName = Constants.VOID;
         dispose();
     }
 
@@ -233,6 +276,12 @@ public class DialogImageLibrary extends JDialog {
         m_noneButton.setPreferredSize(new Dimension(85, 25));
         m_noneButton.setText("None");
         panel4.add(m_noneButton);
+        m_voidButton = new JButton();
+        m_voidButton.setMaximumSize(new Dimension(85, 25));
+        m_voidButton.setMinimumSize(new Dimension(85, 25));
+        m_voidButton.setPreferredSize(new Dimension(85, 25));
+        m_voidButton.setText("Void");
+        panel4.add(m_voidButton);
         buttonCancel = new JButton();
         buttonCancel.setMaximumSize(new Dimension(85, 25));
         buttonCancel.setMinimumSize(new Dimension(85, 25));
@@ -279,10 +328,10 @@ public class DialogImageLibrary extends JDialog {
         panel8.add(panel9, BorderLayout.CENTER);
         final JScrollPane scrollPane1 = new JScrollPane();
         panel9.add(scrollPane1, BorderLayout.CENTER);
-        m_imageFileList = new JXTable();
-        m_imageFileList.setVisibleRowCount(10);
-        m_imageFileList.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
-        scrollPane1.setViewportView(m_imageFileList);
+        m_mediaFileList = new JXTable();
+        m_mediaFileList.setVisibleRowCount(10);
+        m_mediaFileList.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+        scrollPane1.setViewportView(m_mediaFileList);
     }
 
     /**

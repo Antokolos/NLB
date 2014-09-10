@@ -72,7 +72,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     private static final Pattern AUTOWIRED_OUT_PATTERN = (
             Pattern.compile(LC_VARID_PREFIX + "(.*)" + LC_VARID_SEPARATOR_OUT)
     );
-    private static final String IMAGE_FILE_NAME_TEMPLATE = "%s_%d%s";
+    private static final String MEDIA_FILE_NAME_TEMPLATE = "%s_%d%s";
     private static final String STARTPOINT_FILE_NAME = "startpoint";
     private static final String LANGUAGE_FILE_NAME = "language";
     private static final String LICENSE_FILE_NAME = "license";
@@ -102,7 +102,8 @@ public class NonLinearBookImpl implements NonLinearBook {
     private List<String> m_autowiredPages;
     private Map<String, ObjImpl> m_objs;
     private List<VariableImpl> m_variables;
-    private List<ImageFileImpl> m_imageFiles;
+    private List<MediaFileImpl> m_imageFiles;
+    private List<MediaFileImpl> m_soundFiles;
     private NonLinearBook m_parentNLB;
     private Page m_parentPage;
 
@@ -361,6 +362,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private VariableTracker m_autowireOutConstrIdTracker;
 
         private final String m_existingImageFileName;
+        private final String m_existingSoundFileName;
         private final MultiLangString m_existingPageText;
         private final MultiLangString m_existingPageCaptionText;
         private final boolean m_existingUseCaption;
@@ -376,6 +378,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_existingAutoIn;
         private final boolean m_existingAutoOut;
         private final String m_newImageFileName;
+        private final String m_newSoundFileName;
         private final MultiLangString m_newPageText;
         private final MultiLangString m_newPageCaptionText;
         private final boolean m_newUseCaption;
@@ -397,6 +400,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final NonLinearBook currentNLB,
                 final Page page,
                 final String imageFileName,
+                final String soundFileName,
                 final String pageVariableName,
                 final MultiLangString pageText,
                 final MultiLangString pageCaptionText,
@@ -421,6 +425,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     currentNLB,
                     getPageImplById(page.getId()),
                     imageFileName,
+                    soundFileName,
                     pageVariableName,
                     pageText,
                     pageCaptionText,
@@ -447,6 +452,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final NonLinearBook currentNLB,
                 final PageImpl page,
                 final String imageFileName,
+                final String soundFileName,
                 final String pageVariableName,
                 final MultiLangString pageText,
                 final MultiLangString pageCaptionText,
@@ -509,6 +515,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     m_page.getFullId()
             );
             m_existingImageFileName = m_page.getImageFileName();
+            m_existingSoundFileName = m_page.getSoundFileName();
             m_existingPageText = m_page.getTexts();
             m_existingPageCaptionText = m_page.getCaptions();
             m_existingUseCaption = m_page.isUseCaption();
@@ -524,6 +531,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingAutoIn = m_page.isAutoIn();
             m_existingAutoOut = m_page.isAutoOut();
             m_newImageFileName = imageFileName;
+            m_newSoundFileName = soundFileName;
             m_newPageText = pageText;
             m_newPageCaptionText = pageCaptionText;
             m_newUseCaption = useCaption;
@@ -560,6 +568,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 command.execute();
             }
             m_page.setImageFileName(m_newImageFileName);
+            m_page.setSoundFileName(m_newSoundFileName);
             m_page.setVarId(m_variableTracker.execute());
             m_page.setModuleConstrId(m_moduleConstrIdTracker.execute());
             m_page.setAutowireInConstrId(m_autowireInConstrIdTracker.execute());
@@ -593,6 +602,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             }
             m_sortLinkCommand.revert();
             m_page.setImageFileName(m_existingImageFileName);
+            m_page.setSoundFileName(m_existingSoundFileName);
             m_page.setVarId(m_variableTracker.revert());
             m_page.setModuleConstrId(m_moduleConstrIdTracker.revert());
             m_page.setAutowireInConstrId(m_autowireInConstrIdTracker.revert());
@@ -1372,6 +1382,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         currentNLB,
                         newPage,
                         page.getImageFileName(),
+                        page.getSoundFileName(),
                         (pageVariable != null) ? pageVariable.getName() : Constants.EMPTY_STRING,
                         page.getTexts(),
                         page.getCaptions(),
@@ -1714,6 +1725,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_objs = new HashMap<>();
         m_variables = new ArrayList<>();
         m_imageFiles = new ArrayList<>();
+        m_soundFiles = new ArrayList<>();
     }
 
     public NonLinearBookImpl(NonLinearBook parentNLB, Page parentPage) {
@@ -1729,6 +1741,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_objs = new HashMap<>();
         m_variables = new ArrayList<>();
         m_imageFiles = new ArrayList<>();
+        m_soundFiles = new ArrayList<>();
     }
 
     ChangeStartPointCommand createChangeStartPointCommand(final String startPoint) {
@@ -1743,6 +1756,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     UpdatePageCommand createUpdatePageCommand(
             final Page page,
             final String imageFileName,
+            final String soundFileName,
             final String pageVariableName,
             final MultiLangString pageText,
             final MultiLangString pageCaptionText,
@@ -1768,6 +1782,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         this,
                         page,
                         imageFileName,
+                        soundFileName,
                         pageVariableName,
                         pageText,
                         pageCaptionText,
@@ -1997,10 +2012,17 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     @Override
-    public List<ImageFile> getImageFiles() {
-        List<ImageFile> imageFiles = new ArrayList<>();
+    public List<MediaFile> getImageFiles() {
+        List<MediaFile> imageFiles = new ArrayList<>();
         imageFiles.addAll(m_imageFiles);
         return imageFiles;
+    }
+
+    @Override
+    public List<MediaFile> getSoundFiles() {
+        List<MediaFile> soundFiles = new ArrayList<>();
+        soundFiles.addAll(m_soundFiles);
+        return soundFiles;
     }
 
     public void setRootDir(final File rootDir) {
@@ -2363,6 +2385,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         progressData.setProgressValue(65);
         progressData.setNoteText("Reading image files...");
         readImageFiles(rootDir);
+        readSoundFiles(rootDir);
         return true;
     }
 
@@ -2384,6 +2407,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         readPages(rootDir);
         readVariables(rootDir);
         readImageFiles(rootDir);
+        readSoundFiles(rootDir);
         return true;
     }
 
@@ -2496,9 +2520,26 @@ public class NonLinearBookImpl implements NonLinearBook {
                 throw new NLBIOException("Error when enumerating images' directory contents");
             }
             for (File file : listFiles) {
-                final ImageFileImpl imageFile = new ImageFileImpl();
+                final MediaFileImpl imageFile = new MediaFileImpl();
                 imageFile.setFileName(file.getName());
                 m_imageFiles.add(imageFile);
+            }
+        }
+    }
+
+    private void readSoundFiles(File rootDir) throws NLBIOException, NLBConsistencyException {
+        m_soundFiles.clear();
+        final File soundDir = new File(rootDir, SOUND_DIR_NAME);
+        // soundDir dir can be nonexistent, in this case there is no sound in the book
+        if (soundDir.exists()) {
+            File[] listFiles = soundDir.listFiles();
+            if (listFiles == null) {
+                throw new NLBIOException("Error when enumerating sound' directory contents");
+            }
+            for (File file : listFiles) {
+                final MediaFileImpl soundFile = new MediaFileImpl();
+                soundFile.setFileName(file.getName());
+                m_soundFiles.add(soundFile);
             }
         }
     }
@@ -3636,32 +3677,48 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_variables.add(variable);
     }
 
+    private MediaFileImpl copyMediaFile(
+            final @NotNull FileManipulator fileManipulator,
+            final @NotNull File file,
+            final @NotNull String mediaDirName
+    ) throws NLBFileManipulationException, NLBIOException, NLBVCSException {
+        File localFile = createUniqueMediaFile(fileManipulator, file, mediaDirName);
+        fileManipulator.copyFile(localFile, file, "Cannot copy media file " + localFile.getName());
+        MediaFileImpl mediaFile = new MediaFileImpl();
+        mediaFile.setFileName(localFile.getName());
+        return mediaFile;
+    }
+
     public void copyAndAddImageFile(
             final @NotNull FileManipulator fileManipulator,
             final @NotNull File file
     ) throws NLBFileManipulationException, NLBIOException, NLBVCSException {
-        File localFile = createUniqueImageFile(fileManipulator, file);
-        fileManipulator.copyFile(localFile, file, "Cannot copy image file " + localFile.getName());
-        ImageFileImpl imageFile = new ImageFileImpl();
-        imageFile.setFileName(localFile.getName());
-        addImageFile(imageFile);
+        addImageFile(copyMediaFile(fileManipulator, file, IMAGES_DIR_NAME));
     }
 
-    private File createUniqueImageFile(
+    public void copyAndAddSoundFile(
             final @NotNull FileManipulator fileManipulator,
-            final @NotNull File newFile
+            final @NotNull File file
+    ) throws NLBFileManipulationException, NLBIOException, NLBVCSException {
+        addSoundFile(copyMediaFile(fileManipulator, file, SOUND_DIR_NAME));
+    }
+
+    private File createUniqueMediaFile(
+            final @NotNull FileManipulator fileManipulator,
+            final @NotNull File newFile,
+            final @NotNull String mediaDirName
     ) throws NLBFileManipulationException, NLBIOException {
         String uniqueFileName = newFile.getName().toLowerCase();
-        final File imagesDir = new File(m_rootDir, IMAGES_DIR_NAME);
-        fileManipulator.createDir(imagesDir, "Cannot create NLB images directory");
-        File localFile = new File(imagesDir, uniqueFileName);
+        final File mediaDir = new File(m_rootDir, mediaDirName);
+        fileManipulator.createDir(mediaDir, "Cannot create NLB media directory");
+        File localFile = new File(mediaDir, uniqueFileName);
         int extIndex = uniqueFileName.lastIndexOf(".");
         String namePart = uniqueFileName.substring(0, extIndex);
         String extPart = uniqueFileName.substring(extIndex);
         int counter = 1;
         while (localFile.exists()) {
-            uniqueFileName = String.format(IMAGE_FILE_NAME_TEMPLATE, namePart, counter++, extPart);
-            localFile = new File(imagesDir, uniqueFileName);
+            uniqueFileName = String.format(MEDIA_FILE_NAME_TEMPLATE, namePart, counter++, extPart);
+            localFile = new File(mediaDir, uniqueFileName);
         }
         return localFile;
     }
@@ -3670,9 +3727,9 @@ public class NonLinearBookImpl implements NonLinearBook {
             final @NotNull FileManipulator fileManipulator,
             final String imageFileName
     ) throws NLBFileManipulationException, NLBIOException, NLBConsistencyException {
-        ListIterator<ImageFileImpl> imageFileIterator = m_imageFiles.listIterator();
+        ListIterator<MediaFileImpl> imageFileIterator = m_imageFiles.listIterator();
         while (imageFileIterator.hasNext()) {
-            ImageFileImpl imageFile = imageFileIterator.next();
+            MediaFileImpl imageFile = imageFileIterator.next();
             if (imageFile.getFileName().equals(imageFileName)) {
                 final File imagesDir = new File(m_rootDir, IMAGES_DIR_NAME);
                 if (!imagesDir.exists()) {
@@ -3687,11 +3744,49 @@ public class NonLinearBookImpl implements NonLinearBook {
         throw new NLBConsistencyException("Specified image file does not exist in images dir");
     }
 
-    public void addImageFile(@NotNull ImageFileImpl imageFile) {
+    public void removeSoundFile(
+            final @NotNull FileManipulator fileManipulator,
+            final String soundFileName
+    ) throws NLBFileManipulationException, NLBIOException, NLBConsistencyException {
+        ListIterator<MediaFileImpl> soundFileIterator = m_soundFiles.listIterator();
+        while (soundFileIterator.hasNext()) {
+            MediaFileImpl soundFile = soundFileIterator.next();
+            if (soundFile.getFileName().equals(soundFileName)) {
+                final File soundDir = new File(m_rootDir, SOUND_DIR_NAME);
+                if (!soundDir.exists()) {
+                    throw new NLBConsistencyException("NLB sound dir does not exist");
+                }
+                fileManipulator.deleteFileOrDir(new File(soundDir, soundFileName));
+                soundFileIterator.remove();
+                return;
+            }
+        }
+
+        throw new NLBConsistencyException("Specified sound file does not exist in sound dir");
+    }
+
+    public void addImageFile(@NotNull MediaFileImpl imageFile) {
         m_imageFiles.add(imageFile);
     }
 
+    public void addSoundFile(@NotNull MediaFileImpl soundFile) {
+        m_soundFiles.add(soundFile);
+    }
+
     public void exportImages(final boolean isRoot, final File mainExportDir) throws NLBExportException {
+        exportMedia(isRoot, mainExportDir, IMAGES_DIR_NAME, getImageFiles());
+    }
+
+    public void exportSound(final boolean isRoot, final File mainExportDir) throws NLBExportException {
+        exportMedia(isRoot, mainExportDir, SOUND_DIR_NAME, getSoundFiles());
+    }
+
+    public void exportMedia(
+            final boolean isRoot,
+            final File mainExportDir,
+            final String mediaDirName,
+            final List<MediaFile> mediaFiles
+    ) throws NLBExportException {
         if (getRootDir() == null) {
             throw new NLBExportException("NLB root dir is undefined");
         }
@@ -3699,32 +3794,32 @@ public class NonLinearBookImpl implements NonLinearBook {
         if (!exportDir.exists() && !exportDir.mkdir()) {
             if (isRoot) {
                 throw new NLBExportException(
-                        "Cannot create image export directory for main NLB module"
+                        "Cannot create media export directory for main NLB module"
                 );
             } else {
                 throw new NLBExportException(
-                        "Cannot create image export directory for module with module page id = " + getParentPage().getId()
+                        "Cannot create media export directory for module with module page id = " + getParentPage().getId()
                 );
             }
         }
         try {
-            File imagesDir = new File(getRootDir(), IMAGES_DIR_NAME);
-            if (imagesDir.exists()) {
-                for (ImageFile imageFile : getImageFiles()) {
-                    String imageFileName = imageFile.getFileName();
-                    File targetImage = new File(exportDir, imageFileName);
-                    File sourceImage = new File(imagesDir, imageFileName);
-                    FileManipulator.transfer(sourceImage, targetImage);
+            File mediaDir = new File(getRootDir(), mediaDirName);
+            if (mediaDir.exists()) {
+                for (MediaFile mediaFile : mediaFiles) {
+                    String mediaFileName = mediaFile.getFileName();
+                    File targetMedia = new File(exportDir, mediaFileName);
+                    File sourceMedia = new File(mediaDir, mediaFileName);
+                    FileManipulator.transfer(sourceMedia, targetMedia);
                 }
             }
 
             for (Page page : m_pages.values()) {
                 if (!page.getModule().isEmpty()) {
-                    page.getModule().exportImages(false, mainExportDir);
+                    page.getModule().exportMedia(false, mainExportDir, mediaDirName, mediaFiles);
                 }
             }
         } catch (IOException e) {
-            throw new NLBExportException("IOException when exporting images", e);
+            throw new NLBExportException("IOException when exporting media", e);
         }
     }
 }

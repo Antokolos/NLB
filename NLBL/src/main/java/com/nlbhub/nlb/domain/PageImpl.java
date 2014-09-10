@@ -78,6 +78,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final Pattern VAR_PATTERN = Pattern.compile("\\$([^\\s\\$]*)\\$");
     private static final String TEXT_SUBDIR_NAME = "text";
     private static final String IMAGE_FILE_NAME = "image";
+    private static final String SOUND_FILE_NAME = "sound";
     private static final String VARID_FILE_NAME = "varid";
     private static final String CAPTION_SUBDIR_NAME = "caption";
     private static final String USE_CAPT_FILE_NAME = "use_capt";
@@ -98,6 +99,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     private static final String DEFAULT_MODULE_NAME_FORMAT = "%s's submodule";
     private String m_imageFileName = DEFAULT_IMAGE_FILE_NAME;
+    private String m_soundFileName = DEFAULT_SOUND_FILE_NAME;
     private String m_varId = DEFAULT_VARID;
     private MultiLangString m_caption = DEFAULT_CAPTION;
     private boolean m_useCaption = DEFAULT_USE_CAPTION;
@@ -140,6 +142,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     public PageImpl(PageImpl source) {
         super(source);
         m_imageFileName = source.getImageFileName();
+        m_soundFileName = source.getSoundFileName();
         setVarId(source.getVarId());
         setCaptions(source.getCaptions());
         setUseCaption(source.isUseCaption());
@@ -202,6 +205,15 @@ public class PageImpl extends AbstractNodeItem implements Page {
     @Override
     public String getImageFileName() {
         return m_imageFileName;
+    }
+
+    public void setSoundFileName(String soundFileName) {
+        m_soundFileName = soundFileName;
+    }
+
+    @Override
+    public String getSoundFileName() {
+        return m_soundFileName;
     }
 
     public void setText(String text) {
@@ -533,6 +545,12 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     m_imageFileName,
                     DEFAULT_IMAGE_FILE_NAME
             );
+            fileManipulator.writeOptionalString(
+                    pageDir,
+                    SOUND_FILE_NAME,
+                    m_soundFileName,
+                    DEFAULT_SOUND_FILE_NAME
+            );
             fileManipulator.writeOptionalMultiLangString(
                     new File(pageDir, TEXT_SUBDIR_NAME),
                     m_text,
@@ -651,6 +669,13 @@ public class PageImpl extends AbstractNodeItem implements Page {
                             pageDir,
                             IMAGE_FILE_NAME,
                             DEFAULT_IMAGE_FILE_NAME
+                    )
+            );
+            m_soundFileName = (
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            SOUND_FILE_NAME,
+                            DEFAULT_SOUND_FILE_NAME
                     )
             );
             m_text = (

@@ -1,5 +1,5 @@
 /**
- * @(#)ImageFileModelSwing.java
+ * @(#)MediaFileModelSwing.java
  *
  * This file is part of the Non-Linear Book project.
  * Copyright (c) 2012-2014 Anton P. Kolosov
@@ -38,29 +38,37 @@
  */
 package com.nlbhub.nlb.builder.model;
 
-import com.nlbhub.nlb.api.ImageFile;
+import com.nlbhub.nlb.api.MediaFile;
 import com.nlbhub.nlb.api.NonLinearBook;
 
 import javax.swing.table.AbstractTableModel;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The ImageFileModelSwing class
+ * The MediaFileModelSwing class
  *
  * @author Anton P. Kolosov
  * @version 1.0
  */
-public class ImageFileModelSwing extends AbstractTableModel {
+public class MediaFileModelSwing extends AbstractTableModel {
     private NonLinearBook m_nonLinearBook;
+    private MediaFile.Type m_mediaType;
 
-    public ImageFileModelSwing(NonLinearBook nonLinearBook) {
+    public MediaFileModelSwing(NonLinearBook nonLinearBook, final MediaFile.Type mediaType) {
         m_nonLinearBook = nonLinearBook;
+        m_mediaType = mediaType;
     }
 
     @Override
     public int getRowCount() {
-        return m_nonLinearBook.getImageFiles().size();
+        switch (m_mediaType) {
+            case Image:
+                return m_nonLinearBook.getImageFiles().size();
+            case Sound:
+                return m_nonLinearBook.getSoundFiles().size();
+            default:
+                return -1;
+        }
     }
 
     @Override
@@ -70,14 +78,21 @@ public class ImageFileModelSwing extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        return m_nonLinearBook.getImageFiles().get(rowIndex).getFileName();
+        switch (m_mediaType) {
+            case Image:
+                return m_nonLinearBook.getImageFiles().get(rowIndex).getFileName();
+            case Sound:
+                return m_nonLinearBook.getSoundFiles().get(rowIndex).getFileName();
+            default:
+                return null;
+        }
     }
 
     @Override
     public String getColumnName(int column) {
         switch (column) {
             case 0:
-                return "Image file name";
+                return "Media file name";
             default:
                 return super.getColumnName(column);
         }

@@ -272,6 +272,11 @@ public class URQExportManager extends TextExportManager {
         }
     }
 
+    @Override
+    protected String decoratePageSound(String pageSoundPath) {
+        return Constants.EMPTY_STRING;
+    }
+
     protected String decoratePageTextStart(List<TextChunk> pageTextChunks) {
         StringBuilder pageText = new StringBuilder();
         for (final TextChunk textChunk : pageTextChunks) {

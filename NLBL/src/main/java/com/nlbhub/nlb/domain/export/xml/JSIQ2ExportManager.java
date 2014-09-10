@@ -506,6 +506,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
         return Constants.EMPTY_STRING;
     }
 
+    @Override
+    protected String decoratePageSound(String pageSoundPath) {
+        // TODO: implement and use
+        return Constants.EMPTY_STRING;
+    }
+
     protected String decoratePageTextStart(List<TextChunk> pageTextChunks) {
         StringBuilder pageText = new StringBuilder();
         for (final TextChunk textChunk : pageTextChunks) {

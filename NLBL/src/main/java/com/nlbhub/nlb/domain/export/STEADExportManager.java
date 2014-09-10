@@ -357,8 +357,10 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(pageBlocks.getPageVariable());
             stringBuilder.append(pageBlocks.getPageModifications());
         }
+        stringBuilder.append("        s.snd();").append(LINE_SEPARATOR);
         stringBuilder.append("        s.autos();").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
+        stringBuilder.append(pageBlocks.getPageSound());
 
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             if (!linkBlocks.isAuto()) {
@@ -757,6 +759,23 @@ public class STEADExportManager extends TextExportManager {
             return Constants.EMPTY_STRING;
         } else {
             return "    pic = '" + pageImagePath + "';" + LINE_SEPARATOR;
+        }
+    }
+
+    @Override
+    protected String decoratePageSound(String pageSoundPath) {
+        if (StringHelper.isEmpty(pageSoundPath)) {
+            return "    snd = function() end," + LINE_SEPARATOR;
+        } else {
+            return (
+                    "    snd = function() " + LINE_SEPARATOR +
+                            (
+                                    Constants.VOID.equals(pageSoundPath)
+                                            ? "        stop_music();"
+                                            : "        set_music('" + pageSoundPath + "', 1);"
+                            ) + LINE_SEPARATOR +
+                            "    end," + LINE_SEPARATOR
+            );
         }
     }
 

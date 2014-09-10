@@ -51,6 +51,7 @@ public interface Constants {
     String EN = "en";
     String MAIN_MODULE_NAME = "MAIN";
     String EMPTY_STRING = "";
+    String VOID = "VOID";
     String EOL_STRING = "\n";
     String MODIFICATIONS_UNDO_ID_POSTFIX = "_m";
     String NLB_MODULE_ATTR = "nlbmod";

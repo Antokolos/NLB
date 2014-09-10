@@ -254,6 +254,12 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decoratePageSound(String pageSoundPath) {
+        // TODO: implement and use
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
     protected String decoratePageTextStart(List<TextChunk> pageTextChunks) {
         return "'" + super.decoratePageTextStart(pageTextChunks);
     }

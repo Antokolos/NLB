@@ -107,4 +107,9 @@ public class HTMLExportManager extends HypertextExportManager<HTMLParagraph, HTM
             return "<img style=\"display: block; margin-left: auto; margin-right: auto;\" src=\"" + pageImagePath + "\">" + getLineSeparator();
         }
     }
+
+    @Override
+    protected String decoratePageSound(String pageSoundPath) {
+        return Constants.EMPTY_STRING;
+    }
 }

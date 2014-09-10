@@ -65,6 +65,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public String getSoundFileName() {
+        return DEFAULT_SOUND_FILE_NAME;
+    }
+
+    @Override
     public String getText() {
         return Constants.EMPTY_STRING;
     }

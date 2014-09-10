@@ -328,6 +328,11 @@ public abstract class ExportManager {
                         getPageImagePath((parentPage != null) ? parentPage.getId() : null, page.getImageFileName())
                 )
         );
+        blocks.setPageSound(
+                decoratePageSound(
+                        getPageSoundPath((parentPage != null) ? parentPage.getId() : null, page.getSoundFileName())
+                )
+        );
         blocks.setUseCaption(page.isUseCaption());
         blocks.setPageTextStart(decoratePageTextStart(page.getTextChunks()));
         blocks.setPageTextEnd(decoratePageTextEnd());
@@ -1032,14 +1037,32 @@ public abstract class ExportManager {
 
     protected abstract String decoratePageImage(String pageImagePath);
 
+    protected abstract String decoratePageSound(String pageSoundPath);
+
     protected String getPageImagePath(String parentPageId, String imageFileName) {
         if (StringHelper.isEmpty(imageFileName)) {
             return Constants.EMPTY_STRING;
         } else {
             if (parentPageId == null) {
-                return "images/" + imageFileName;
+                return NonLinearBook.IMAGES_DIR_NAME + "/" + imageFileName;
             } else {
-                return "images/" + parentPageId + "/" + imageFileName;
+                return NonLinearBook.IMAGES_DIR_NAME + "/" + parentPageId + "/" + imageFileName;
+            }
+        }
+    }
+
+    protected String getPageSoundPath(String parentPageId, String soundFileName) {
+        if (StringHelper.isEmpty(soundFileName)) {
+            return Constants.EMPTY_STRING;
+        } else {
+            if (Constants.VOID.equals(soundFileName)) {
+                return Constants.VOID;
+            } else {
+                if (parentPageId == null) {
+                    return NonLinearBook.SOUND_DIR_NAME + "/" + soundFileName;
+                } else {
+                    return NonLinearBook.SOUND_DIR_NAME + "/" + parentPageId + "/" + soundFileName;
+                }
             }
         }
     }

@@ -47,7 +47,6 @@ import com.nlbhub.user.domain.History;
 import javax.script.ScriptException;
 import java.io.File;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -110,12 +109,17 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
-    public List<ImageFile> getImageFiles() {
+    public List<MediaFile> getImageFiles() {
         return Collections.emptyList();
     }
 
     @Override
-    public void exportImages(boolean isRoot, File mainExportDir) throws NLBExportException {
+    public List<MediaFile> getSoundFiles() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void exportMedia(boolean isRoot, File mainExportDir, String mediaDirName, List<MediaFile> mediaFiles) throws NLBExportException {
         // do nothing
     }
 

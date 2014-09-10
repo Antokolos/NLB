@@ -1,5 +1,5 @@
 /**
- * @(#)ImageFileImpl.java
+ * @(#)MediaFileImpl.java
  *
  * This file is part of the Non-Linear Book project.
  * Copyright (c) 2012-2014 Anton P. Kolosov
@@ -38,16 +38,16 @@
  */
 package com.nlbhub.nlb.domain;
 
-import com.nlbhub.nlb.api.ImageFile;
+import com.nlbhub.nlb.api.MediaFile;
 
 
 /**
- * The ImageFileImpl class
+ * The MediaFileImpl class
  *
  * @author Anton P. Kolosov
  * @version 1.0
  */
-public class ImageFileImpl implements ImageFile {
+public class MediaFileImpl implements MediaFile {
     private String m_fileName;
 
     public String getFileName() {

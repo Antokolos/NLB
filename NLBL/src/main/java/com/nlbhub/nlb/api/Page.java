@@ -50,6 +50,7 @@ import java.util.List;
  */
 public interface Page extends NodeItem {
     public static final String DEFAULT_IMAGE_FILE_NAME = Constants.EMPTY_STRING;
+    public static final String DEFAULT_SOUND_FILE_NAME = Constants.EMPTY_STRING;
     public static final MultiLangString DEFAULT_TEXT = MultiLangString.createEmptyText();
     public static final String DEFAULT_VARID = Constants.EMPTY_STRING;
     public static final MultiLangString DEFAULT_CAPTION = MultiLangString.createEmptyText();
@@ -72,6 +73,8 @@ public interface Page extends NodeItem {
     public static final String DEFAULT_MODULE_CONSTR_ID = Constants.EMPTY_STRING;
 
     public String getImageFileName();
+
+    public String getSoundFileName();
 
     public String getText();
 
