@@ -303,7 +303,9 @@ public class NonLinearBookFacade implements NLBObservable {
             final String imageFileName,
             final MultiLangString objDisp,
             final MultiLangString objText,
-            final boolean objIsTakable
+            final boolean objIsTakable,
+            final boolean imageInScene,
+            final boolean imageInInventory
     ) {
         NonLinearBookImpl.UpdateObjCommand command = (
                 m_nlb.createUpdateObjCommand(
@@ -313,7 +315,9 @@ public class NonLinearBookFacade implements NLBObservable {
                         imageFileName,
                         objDisp,
                         objText,
-                        objIsTakable
+                        objIsTakable,
+                        imageInScene,
+                        imageInInventory
                 )
         );
         getUndoManagerByItemId(obj.getId()).executeAndStore(command);

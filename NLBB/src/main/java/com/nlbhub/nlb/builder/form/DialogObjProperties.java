@@ -79,6 +79,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JLabel m_imageFileNameLabel;
     private JXImageView m_imageView;
     private JTextArea m_objTextTextArea;
+    private JCheckBox m_imageInScene;
+    private JCheckBox m_imageInInventory;
 
     public DialogObjProperties(
             final NonLinearBookFacade nlbFacade,
@@ -198,6 +200,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objVariableTextField.setText(m_variable != null ? m_variable.getName() : "");
         m_objTextTextArea.setText(obj.getText());
         m_objIsTakable.setSelected(obj.isTakable());
+        m_imageInScene.setSelected(obj.isImageInScene());
+        m_imageInInventory.setSelected(obj.isImageInInventory());
 
         DefaultComboBoxModel<String> languageComboboxModel = new DefaultComboBoxModel<>();
         languageComboboxModel.addElement(Constants.RU);
@@ -224,7 +228,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_imageFileName,
                 m_objDisplayNames,
                 m_objTexts,
-                m_objIsTakable.isSelected()
+                m_objIsTakable.isSelected(),
+                m_imageInScene.isSelected(),
+                m_imageInInventory.isSelected()
         );
         m_nlbFacade.removeObserver(m_observerId);
         dispose();
@@ -579,16 +585,25 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objVariableTextField = new JTextField();
         m_objVariableTextField.setColumns(40);
         scrollPane5.setViewportView(m_objVariableTextField);
-        m_objIsTakable = new JCheckBox();
-        m_objIsTakable.setText("Can be taken to the inventory");
+        final JPanel panel25 = new JPanel();
+        panel25.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 3;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel18.add(m_objIsTakable, gbc);
-        final JPanel panel25 = new JPanel();
-        panel25.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel25, BorderLayout.CENTER);
+        gbc.fill = GridBagConstraints.BOTH;
+        panel18.add(panel25, gbc);
+        m_objIsTakable = new JCheckBox();
+        m_objIsTakable.setText("Can be taken to the inventory");
+        panel25.add(m_objIsTakable);
+        m_imageInScene = new JCheckBox();
+        m_imageInScene.setText("Image in scene");
+        panel25.add(m_imageInScene);
+        m_imageInInventory = new JCheckBox();
+        m_imageInInventory.setText("Image in inventory");
+        panel25.add(m_imageInInventory);
+        final JPanel panel26 = new JPanel();
+        panel26.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel26, BorderLayout.CENTER);
         label3.setLabelFor(m_objIdTextField);
         label4.setLabelFor(m_objNameTextField);
         label5.setLabelFor(m_objVariableTextField);

@@ -469,11 +469,19 @@ public abstract class ExportManager {
         blocks.setObjStart(decorateObjStart());
         blocks.setObjName(decorateObjName(obj.getName()));
         Page parentPage = obj.getCurrentNLB().getParentPage();
-        blocks.setObjImage(
-                decorateObjImage(getImagePath((parentPage != null) ? parentPage.getId() : null, obj.getImageFileName()))
+        final String objImage = (
+                decorateObjImage(
+                        getImagePath(
+                                (parentPage != null)
+                                        ? parentPage.getId()
+                                        : null, obj.getImageFileName()
+                        )
+                )
         );
-        blocks.setObjDisp(decorateObjDisp(obj.getDisp()));
-        blocks.setObjText(decorateObjText(obj.getText()));
+        final boolean hasImage = StringHelper.notEmpty(obj.getImageFileName());
+        blocks.setObjImage(objImage);
+        blocks.setObjDisp(decorateObjDisp(obj.getDisp(), hasImage && obj.isImageInInventory()));
+        blocks.setObjText(decorateObjText(obj.getText(), hasImage && obj.isImageInScene()));
         blocks.setTakable(obj.isTakable());
         blocks.setObjTak(decorateObjTak(obj.getName()));
         blocks.setObjInv(decorateObjInv(obj.getName()));
@@ -536,11 +544,11 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjDisp(String disp) {
+    protected String decorateObjDisp(String disp, boolean imageEnabled) {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjText(String text) {
+    protected String decorateObjText(String text, boolean imageEnabled) {
         return EMPTY_STRING;
     }
 

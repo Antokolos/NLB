@@ -55,6 +55,10 @@ public class StringHelper {
         return string == null || Constants.EMPTY_STRING.equals(string);
     }
 
+    public static boolean notEmpty(final String string) {
+        return !isEmpty(string);
+    }
+
     public static boolean isEmpty(final MultiLangString multiLangString) {
         for (final String text : multiLangString.values()) {
             if (!isEmpty(text)) {

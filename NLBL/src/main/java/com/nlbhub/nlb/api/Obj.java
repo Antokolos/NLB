@@ -53,6 +53,8 @@ public interface Obj extends NodeItem {
     public static final String DEFAULT_NAME = Constants.EMPTY_STRING;
     public static final MultiLangString DEFAULT_DISP = MultiLangString.createEmptyText();
     public static final boolean DEFAULT_TAKABLE = false;
+    public static final boolean DEFAULT_IMAGE_IN_SCENE = true;
+    public static final boolean DEFAULT_IMAGE_IN_INVENTORY = true;
     public static final String DEFAULT_CONTAINER_ID = Constants.EMPTY_STRING;
 
     public String getText();
@@ -74,6 +76,10 @@ public interface Obj extends NodeItem {
     public MultiLangString getDisps();
 
     public boolean isTakable();
+
+    public boolean isImageInScene();
+
+    public boolean isImageInInventory();
 
     public String getContainerId();
 }

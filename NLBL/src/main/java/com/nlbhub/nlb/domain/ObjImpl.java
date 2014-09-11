@@ -70,6 +70,8 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String IMAGE_FILE_NAME = "image";
     private static final String DISP_SUBDIR_NAME = "disp";
     private static final String TAKABLE_FILE_NAME = "takable";
+    private static final String IMAGE_IN_SCENE_FILE_NAME = "imgscene";
+    private static final String IMAGE_IN_INVENTORY_FILE_NAME = "imginv";
     private static final String CONTAINERID_FILE_NAME = "containerid";
 
     /**
@@ -85,6 +87,8 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private boolean m_takable = DEFAULT_TAKABLE;
     private String m_containerId = DEFAULT_CONTAINER_ID;
     private String m_imageFileName = DEFAULT_IMAGE_FILE_NAME;
+    private boolean m_imageInScene = DEFAULT_IMAGE_IN_SCENE;
+    private boolean m_imageInInventory = DEFAULT_IMAGE_IN_INVENTORY;
 
     @Override
     public SearchResult searchText(String searchText, boolean searchInId, boolean ignoreCase, boolean wholeWords) {
@@ -112,6 +116,8 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         setDisps(source.getDisps());
         setTexts(source.getTexts());
         m_takable = source.isTakable();
+        m_imageInScene = source.isImageInScene();
+        m_imageInInventory = source.isImageInInventory();
         m_containerId = source.getContainerId();
     }
 
@@ -201,6 +207,26 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    @XmlElement(name = "image-in-scene")
+    public boolean isImageInScene() {
+        return m_imageInScene;
+    }
+
+    public void setImageInScene(boolean imageInScene) {
+        m_imageInScene = imageInScene;
+    }
+
+    @Override
+    @XmlElement(name = "image-in-inventory")
+    public boolean isImageInInventory() {
+        return m_imageInInventory;
+    }
+
+    public void setImageInInventory(boolean imageInInventory) {
+        m_imageInInventory = imageInInventory;
+    }
+
+    @Override
     @XmlElement(name = "containerId")
     public String getContainerId() {
         return m_containerId;
@@ -255,6 +281,18 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(
                     objDir,
+                    IMAGE_IN_SCENE_FILE_NAME,
+                    String.valueOf(m_imageInScene),
+                    String.valueOf(DEFAULT_IMAGE_IN_SCENE)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
+                    IMAGE_IN_INVENTORY_FILE_NAME,
+                    String.valueOf(m_imageInInventory),
+                    String.valueOf(DEFAULT_IMAGE_IN_INVENTORY)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
                     CONTAINERID_FILE_NAME,
                     m_containerId,
                     DEFAULT_CONTAINER_ID
@@ -306,6 +344,20 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         TAKABLE_FILE_NAME,
                         String.valueOf(DEFAULT_TAKABLE)
+                )
+        );
+        m_imageInScene = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        IMAGE_IN_SCENE_FILE_NAME,
+                        String.valueOf(DEFAULT_IMAGE_IN_SCENE)
+                )
+        );
+        m_imageInInventory = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        IMAGE_IN_INVENTORY_FILE_NAME,
+                        String.valueOf(DEFAULT_IMAGE_IN_INVENTORY)
                 )
         );
         m_containerId = (

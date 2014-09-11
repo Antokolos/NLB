@@ -420,36 +420,40 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateObjImage(String objImagePath) {
-        return (
-                "    imgv = function() " +
-                        (
-                                (!StringHelper.isEmpty(objImagePath))
-                                        ? "return img('" + objImagePath + "'); "
-                                        : "return \"\";"
-                        ) +
-                        "end," + LINE_SEPARATOR
-        );
-    }
-
-    @Override
-    protected String decorateObjDisp(String disp) {
-        return "    disp = function(s) return \"" + disp + "\"..s.imgv() end," + LINE_SEPARATOR;
-    }
-
-    @Override
-    protected String decorateObjText(String text) {
-        StringBuilder stringBuilder = new StringBuilder();
-        Matcher matcher = STEAD_OBJ_PATTERN.matcher(text);
-        int start = 0;
-        stringBuilder.append("    dsc = function(s) p [[");
-        while (matcher.find()) {
-            stringBuilder.append(text.substring(start, matcher.start())).append("{");
-            stringBuilder.append(matcher.group(1)).append("]]; p(\"\"..s.imgv()); p [[").append("}");
-            start = matcher.end();
+        if (StringHelper.isEmpty(objImagePath)) {
+            return Constants.EMPTY_STRING;
+        } else {
+            return "    imgv = function() return img('" + objImagePath + "'); " + "end," + LINE_SEPARATOR;
         }
-        stringBuilder.append(text.substring(start, text.length()));
-        stringBuilder.append("]]; end,").append(LINE_SEPARATOR);
-        return stringBuilder.toString();
+    }
+
+    @Override
+    protected String decorateObjDisp(String disp, boolean imageEnabled) {
+        if (imageEnabled) {
+            return "    disp = function(s) return \"" + disp + "\"..s.imgv() end," + LINE_SEPARATOR;
+        } else {
+            return "    disp = \"" + disp + "\"," + LINE_SEPARATOR;
+        }
+    }
+
+    @Override
+    protected String decorateObjText(String text, boolean imageEnabled) {
+        if (imageEnabled) {
+            StringBuilder stringBuilder = new StringBuilder();
+            Matcher matcher = STEAD_OBJ_PATTERN.matcher(text);
+            int start = 0;
+            stringBuilder.append("    dsc = function(s) p [[");
+            while (matcher.find()) {
+                stringBuilder.append(text.substring(start, matcher.start())).append("{");
+                stringBuilder.append(matcher.group(1)).append("]]; p(\"\"..s.imgv()); p [[").append("}");
+                start = matcher.end();
+            }
+            stringBuilder.append(text.substring(start, text.length()));
+            stringBuilder.append("]]; end,").append(LINE_SEPARATOR);
+            return stringBuilder.toString();
+        } else {
+            return "    dsc = [[" + text + "]]," + LINE_SEPARATOR;
+        }
     }
 
     @Override

@@ -467,15 +467,34 @@
                                       </scrollpane>
                                     </children>
                                   </grid>
-                                  <component id="d887e" class="javax.swing.JCheckBox" binding="m_objIsTakable">
+                                  <grid id="3448c" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
                                     <constraints>
-                                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                       <gridbag weightx="0.0" weighty="0.0"/>
                                     </constraints>
-                                    <properties>
-                                      <text value="Can be taken to the inventory"/>
-                                    </properties>
-                                  </component>
+                                    <properties/>
+                                    <border type="none"/>
+                                    <children>
+                                      <component id="d887e" class="javax.swing.JCheckBox" binding="m_objIsTakable">
+                                        <constraints/>
+                                        <properties>
+                                          <text value="Can be taken to the inventory"/>
+                                        </properties>
+                                      </component>
+                                      <component id="66dbe" class="javax.swing.JCheckBox" binding="m_imageInScene">
+                                        <constraints/>
+                                        <properties>
+                                          <text value="Image in scene"/>
+                                        </properties>
+                                      </component>
+                                      <component id="6a188" class="javax.swing.JCheckBox" binding="m_imageInInventory">
+                                        <constraints/>
+                                        <properties>
+                                          <text value="Image in inventory"/>
+                                        </properties>
+                                      </component>
+                                    </children>
+                                  </grid>
                                 </children>
                               </grid>
                             </children>

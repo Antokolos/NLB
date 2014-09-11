@@ -647,11 +647,15 @@ public class NonLinearBookImpl implements NonLinearBook {
         private MultiLangString m_existingObjDisp;
         private MultiLangString m_existingObjText;
         private boolean m_existingObjIsTakable;
+        private boolean m_existingImageInScene;
+        private boolean m_existingImageInInventory;
         private String m_newObjName;
         private String m_newImageFileName;
         private MultiLangString m_newObjDisp;
         private MultiLangString m_newObjText;
         private boolean m_newObjIsTakable;
+        private boolean m_newImageInScene;
+        private boolean m_newImageInInventory;
 
         private UpdateObjCommand(
                 final NonLinearBook currentNLB,
@@ -661,7 +665,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String imageFileName,
                 final MultiLangString objDisp,
                 final MultiLangString objText,
-                final boolean objIsTakable
+                final boolean objIsTakable,
+                final boolean imageInScene,
+                final boolean imageInInventory
         ) {
             this(
                     currentNLB,
@@ -671,7 +677,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                     imageFileName,
                     objDisp,
                     objText,
-                    objIsTakable
+                    objIsTakable,
+                    imageInScene,
+                    imageInInventory
             );
         }
 
@@ -683,7 +691,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String imageFileName,
                 final MultiLangString objDisp,
                 final MultiLangString objText,
-                final boolean objIsTakable
+                final boolean objIsTakable,
+                final boolean imageInScene,
+                final boolean imageInInventory
         ) {
             m_obj = obj;
             m_variableTracker = new VariableTracker(
@@ -700,11 +710,15 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingObjDisp = obj.getDisps();
             m_existingObjText = obj.getTexts();
             m_existingObjIsTakable = obj.isTakable();
+            m_existingImageInScene = obj.isImageInScene();
+            m_existingImageInInventory = obj.isImageInInventory();
             m_newObjName = objName;
             m_newImageFileName = imageFileName;
             m_newObjDisp = objDisp;
             m_newObjText = objText;
             m_newObjIsTakable = objIsTakable;
+            m_newImageInScene = imageInScene;
+            m_newImageInInventory = imageInInventory;
         }
 
         @Override
@@ -715,6 +729,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setDisps(m_newObjDisp);
             m_obj.setTexts(m_newObjText);
             m_obj.setTakable(m_newObjIsTakable);
+            m_obj.setImageInScene(m_newImageInScene);
+            m_obj.setImageInInventory(m_newImageInInventory);
             m_obj.notifyObservers();
         }
 
@@ -726,6 +742,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setDisps(m_existingObjDisp);
             m_obj.setTexts(m_existingObjText);
             m_obj.setTakable(m_existingObjIsTakable);
+            m_obj.setImageInScene(m_existingImageInScene);
+            m_obj.setImageInInventory(m_existingImageInInventory);
             m_obj.notifyObservers();
         }
     }
@@ -1431,7 +1449,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.getImageFileName(),
                         obj.getDisps(),
                         obj.getTexts(),
-                        obj.isTakable()
+                        obj.isTakable(),
+                        obj.isImageInScene(),
+                        obj.isImageInInventory()
                 );
                 m_commandChain.addCommand(updateObjCommand);
                 Coords coords = obj.getCoords();
@@ -1823,9 +1843,24 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String imageFileName,
             final MultiLangString objDisp,
             final MultiLangString objText,
-            final boolean objIsTakable
+            final boolean objIsTakable,
+            final boolean imageInScene,
+            final boolean imageInInventory
     ) {
-        return new UpdateObjCommand(this, obj, objVariableName, objName, imageFileName, objDisp, objText, objIsTakable);
+        return (
+                new UpdateObjCommand(
+                        this,
+                        obj,
+                        objVariableName,
+                        objName,
+                        imageFileName,
+                        objDisp,
+                        objText,
+                        objIsTakable,
+                        imageInScene,
+                        imageInInventory
+                )
+        );
     }
 
     UpdateLinkCommand createUpdateLinkCommand(
