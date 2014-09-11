@@ -447,7 +447,8 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(matcher.group(1)).append("]]; p(\"\"..s.imgv()); p [[").append("}");
             start = matcher.end();
         }
-        stringBuilder.append("]]; end," + LINE_SEPARATOR);
+        stringBuilder.append(text.substring(start, text.length()));
+        stringBuilder.append("]]; end,").append(LINE_SEPARATOR);
         return stringBuilder.toString();
     }
 
