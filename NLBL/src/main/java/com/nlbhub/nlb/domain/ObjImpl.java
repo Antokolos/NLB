@@ -67,6 +67,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String TEXT_SUBDIR_NAME = "text";
     private static final String VARID_FILE_NAME = "varid";
     private static final String NAME_FILE_NAME = "name";
+    private static final String IMAGE_FILE_NAME = "image";
     private static final String DISP_SUBDIR_NAME = "disp";
     private static final String TAKABLE_FILE_NAME = "takable";
     private static final String CONTAINERID_FILE_NAME = "containerid";
@@ -83,6 +84,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
      */
     private boolean m_takable = DEFAULT_TAKABLE;
     private String m_containerId = DEFAULT_CONTAINER_ID;
+    private String m_imageFileName = DEFAULT_IMAGE_FILE_NAME;
 
     @Override
     public SearchResult searchText(String searchText, boolean searchInId, boolean ignoreCase, boolean wholeWords) {
@@ -106,6 +108,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         super(source);
         m_varId = source.getVarId();
         m_name = source.getName();
+        m_imageFileName = source.getImageFileName();
         setDisps(source.getDisps());
         setTexts(source.getTexts());
         m_takable = source.isTakable();
@@ -153,6 +156,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     @XmlElement(name = "name")
     public String getName() {
         return m_name;
+    }
+
+    @Override
+    public String getImageFileName() {
+        return m_imageFileName;
+    }
+
+    public void setImageFileName(String imageFileName) {
+        m_imageFileName = imageFileName;
     }
 
     public void setName(String name) {
@@ -219,6 +231,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                     m_name,
                     DEFAULT_NAME
             );
+            fileManipulator.writeOptionalString(
+                    objDir,
+                    IMAGE_FILE_NAME,
+                    m_imageFileName,
+                    DEFAULT_IMAGE_FILE_NAME
+            );
             fileManipulator.writeOptionalMultiLangString(
                     new File(objDir, DISP_SUBDIR_NAME),
                     m_disp,
@@ -262,6 +280,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         NAME_FILE_NAME,
                         DEFAULT_NAME
+                )
+        );
+        m_imageFileName = (
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        IMAGE_FILE_NAME,
+                        DEFAULT_IMAGE_FILE_NAME
                 )
         );
         m_disp = (

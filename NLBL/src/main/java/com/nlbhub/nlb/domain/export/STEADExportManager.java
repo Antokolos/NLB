@@ -45,6 +45,8 @@ import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The STEADExportManager class
@@ -55,6 +57,7 @@ import java.util.List;
 public class STEADExportManager extends TextExportManager {
     private static final String GLOBAL_VAR_PREFIX = "_";
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final Pattern STEAD_OBJ_PATTERN = Pattern.compile("\\{(.*)\\}");
     /**
      * Use page numbers as destinations instead of page IDs.
      */
@@ -237,6 +240,7 @@ public class STEADExportManager extends TextExportManager {
             // Not takable but usable => scene_use should be specified
             stringBuilder.append("    scene_use = true,").append(LINE_SEPARATOR);
         }
+        stringBuilder.append(objBlocks.getObjImage());
         if (objBlocks.isTakable() || hasUses) {
             // If object is takable, then empty use function should be specified
             stringBuilder.append(objBlocks.getObjUseStart());
@@ -415,13 +419,36 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateObjImage(String objImagePath) {
+        return (
+                "    imgv = function() " +
+                        (
+                                (!StringHelper.isEmpty(objImagePath))
+                                        ? "return img('" + objImagePath + "'); "
+                                        : "return \"\";"
+                        ) +
+                        "end," + LINE_SEPARATOR
+        );
+    }
+
+    @Override
     protected String decorateObjDisp(String disp) {
-        return "    disp = \"" + disp + "\"," + LINE_SEPARATOR;
+        return "    disp = function(s) return \"" + disp + "\"..s.imgv() end," + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateObjText(String text) {
-        return "    dsc = [[" + text + "]]," + LINE_SEPARATOR;
+        StringBuilder stringBuilder = new StringBuilder();
+        Matcher matcher = STEAD_OBJ_PATTERN.matcher(text);
+        int start = 0;
+        stringBuilder.append("    dsc = function(s) p [[");
+        while (matcher.find()) {
+            stringBuilder.append(text.substring(start, matcher.start())).append("{");
+            stringBuilder.append(matcher.group(1)).append("]]; p(\"\"..s.imgv()); p [[").append("}");
+            start = matcher.end();
+        }
+        stringBuilder.append("]]; end," + LINE_SEPARATOR);
+        return stringBuilder.toString();
     }
 
     @Override

@@ -325,7 +325,7 @@ public abstract class ExportManager {
         Page parentPage = page.getCurrentNLB().getParentPage();
         blocks.setPageImage(
                 decoratePageImage(
-                        getPageImagePath((parentPage != null) ? parentPage.getId() : null, page.getImageFileName())
+                        getImagePath((parentPage != null) ? parentPage.getId() : null, page.getImageFileName())
                 )
         );
         blocks.setPageSound(
@@ -468,6 +468,10 @@ public abstract class ExportManager {
         blocks.setObjComment(decorateObjComment(obj.getName()));
         blocks.setObjStart(decorateObjStart());
         blocks.setObjName(decorateObjName(obj.getName()));
+        Page parentPage = obj.getCurrentNLB().getParentPage();
+        blocks.setObjImage(
+                decorateObjImage(getImagePath((parentPage != null) ? parentPage.getId() : null, obj.getImageFileName()))
+        );
         blocks.setObjDisp(decorateObjDisp(obj.getDisp()));
         blocks.setObjText(decorateObjText(obj.getText()));
         blocks.setTakable(obj.isTakable());
@@ -525,6 +529,10 @@ public abstract class ExportManager {
     }
 
     protected String decorateObjName(String name) {
+        return EMPTY_STRING;
+    }
+
+    protected String decorateObjImage(String objImagePath) {
         return EMPTY_STRING;
     }
 
@@ -1039,7 +1047,7 @@ public abstract class ExportManager {
 
     protected abstract String decoratePageSound(String pageSoundPath);
 
-    protected String getPageImagePath(String parentPageId, String imageFileName) {
+    protected String getImagePath(String parentPageId, String imageFileName) {
         if (StringHelper.isEmpty(imageFileName)) {
             return Constants.EMPTY_STRING;
         } else {

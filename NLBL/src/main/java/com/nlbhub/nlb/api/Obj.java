@@ -47,6 +47,7 @@ import com.nlbhub.nlb.util.MultiLangString;
  * @version 1.0 1/15/14
  */
 public interface Obj extends NodeItem {
+    public static final String DEFAULT_IMAGE_FILE_NAME = Constants.EMPTY_STRING;
     public static final MultiLangString DEFAULT_TEXT = MultiLangString.createEmptyText();
     public static final String DEFAULT_VARID = Constants.EMPTY_STRING;
     public static final String DEFAULT_NAME = Constants.EMPTY_STRING;
@@ -61,6 +62,8 @@ public interface Obj extends NodeItem {
     public String getVarId();
 
     public String getName();
+
+    public String getImageFileName();
 
     /**
      * Returns display name of the object, which is used in the text, e.g. when inserted into the inventory

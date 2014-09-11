@@ -643,10 +643,12 @@ public class NonLinearBookImpl implements NonLinearBook {
         private VariableTracker m_variableTracker;
 
         private String m_existingObjName;
+        private String m_existingImageFileName;
         private MultiLangString m_existingObjDisp;
         private MultiLangString m_existingObjText;
         private boolean m_existingObjIsTakable;
         private String m_newObjName;
+        private String m_newImageFileName;
         private MultiLangString m_newObjDisp;
         private MultiLangString m_newObjText;
         private boolean m_newObjIsTakable;
@@ -656,6 +658,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final Obj obj,
                 final String objVariableName,
                 final String objName,
+                final String imageFileName,
                 final MultiLangString objDisp,
                 final MultiLangString objText,
                 final boolean objIsTakable
@@ -665,6 +668,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     getObjImplById(obj.getId()),
                     objVariableName,
                     objName,
+                    imageFileName,
                     objDisp,
                     objText,
                     objIsTakable
@@ -676,6 +680,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final ObjImpl obj,
                 final String objVariableName,
                 final String objName,
+                final String imageFileName,
                 final MultiLangString objDisp,
                 final MultiLangString objText,
                 final boolean objIsTakable
@@ -691,10 +696,12 @@ public class NonLinearBookImpl implements NonLinearBook {
                     Variable.DEFAULT_VALUE,
                     m_obj.getFullId());
             m_existingObjName = obj.getName();
+            m_existingImageFileName = obj.getImageFileName();
             m_existingObjDisp = obj.getDisps();
             m_existingObjText = obj.getTexts();
             m_existingObjIsTakable = obj.isTakable();
             m_newObjName = objName;
+            m_newImageFileName = imageFileName;
             m_newObjDisp = objDisp;
             m_newObjText = objText;
             m_newObjIsTakable = objIsTakable;
@@ -704,6 +711,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         public void execute() {
             m_obj.setVarId(m_variableTracker.execute());
             m_obj.setName(m_newObjName);
+            m_obj.setImageFileName(m_newImageFileName);
             m_obj.setDisps(m_newObjDisp);
             m_obj.setTexts(m_newObjText);
             m_obj.setTakable(m_newObjIsTakable);
@@ -714,6 +722,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         public void revert() {
             m_obj.setVarId(m_variableTracker.revert());
             m_obj.setName(m_existingObjName);
+            m_obj.setImageFileName(m_existingImageFileName);
             m_obj.setDisps(m_existingObjDisp);
             m_obj.setTexts(m_existingObjText);
             m_obj.setTakable(m_existingObjIsTakable);
@@ -1419,6 +1428,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         newObj,
                         (objVariable != null) ? objVariable.getName() : Constants.EMPTY_STRING,
                         obj.getName(),
+                        obj.getImageFileName(),
                         obj.getDisps(),
                         obj.getTexts(),
                         obj.isTakable()
@@ -1810,11 +1820,12 @@ public class NonLinearBookImpl implements NonLinearBook {
             final Obj obj,
             final String objVariableName,
             final String objName,
+            final String imageFileName,
             final MultiLangString objDisp,
             final MultiLangString objText,
             final boolean objIsTakable
     ) {
-        return new UpdateObjCommand(this, obj, objVariableName, objName, objDisp, objText, objIsTakable);
+        return new UpdateObjCommand(this, obj, objVariableName, objName, imageFileName, objDisp, objText, objIsTakable);
     }
 
     UpdateLinkCommand createUpdateLinkCommand(
