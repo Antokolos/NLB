@@ -483,8 +483,8 @@ public abstract class ExportManager {
         blocks.setObjDisp(decorateObjDisp(StringHelper.getTextChunks(obj.getDisp()), hasImage && obj.isImageInInventory()));
         blocks.setObjText(decorateObjText(StringHelper.getTextChunks(obj.getText()), hasImage && obj.isImageInScene()));
         blocks.setTakable(obj.isTakable());
-        blocks.setObjTak(decorateObjTak(obj.getName()));
-        blocks.setObjInv(decorateObjInv(obj.getName()));
+        blocks.setObjTak(decorateObjTak(StringHelper.getTextChunks(obj.getName())));
+        blocks.setObjInv(decorateObjInv());
         blocks.setObjActStart(decorateObjActStart(StringHelper.getTextChunks(obj.getActText())));
         if (!StringHelper.isEmpty(obj.getVarId())) {
             Variable variable = exportData.getNlb().getVariableById(obj.getVarId());
@@ -552,11 +552,11 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjTak(String takString) {
+    protected String decorateObjTak(List<TextChunk> takChunks) {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjInv(String invString) {
+    protected String decorateObjInv() {
         return EMPTY_STRING;
     }
 

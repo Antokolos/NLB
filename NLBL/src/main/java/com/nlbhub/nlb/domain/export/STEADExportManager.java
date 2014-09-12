@@ -467,20 +467,19 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjTak(String takString) {
+    protected String decorateObjTak(List<TextChunk> takChunks) {
         return (
                 "    tak = function(s)" + LINE_SEPARATOR +
-                        "        p \"" + takString + "\";" + LINE_SEPARATOR +
+                        "        p([[" + expandVariables(takChunks) + "]]);" + LINE_SEPARATOR +
                         "        s.act(s);" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR
         );
     }
 
     @Override
-    protected String decorateObjInv(String invString) {
+    protected String decorateObjInv() {
         return (
                 "    inv = function(s)" + LINE_SEPARATOR
-                        + "        p \"" + invString + "\";" + LINE_SEPARATOR
                         + "        s.use(s, s);" + LINE_SEPARATOR
                         + "    end," + LINE_SEPARATOR
         );
