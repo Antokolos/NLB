@@ -480,7 +480,7 @@ public abstract class ExportManager {
         );
         final boolean hasImage = StringHelper.notEmpty(obj.getImageFileName());
         blocks.setObjImage(objImage);
-        blocks.setObjDisp(decorateObjDisp(obj.getDisp(), hasImage && obj.isImageInInventory()));
+        blocks.setObjDisp(decorateObjDisp(StringHelper.getTextChunks(obj.getDisp()), hasImage && obj.isImageInInventory()));
         blocks.setObjText(decorateObjText(StringHelper.getTextChunks(obj.getText()), hasImage && obj.isImageInScene()));
         blocks.setTakable(obj.isTakable());
         blocks.setObjTak(decorateObjTak(obj.getName()));
@@ -544,7 +544,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjDisp(String disp, boolean imageEnabled) {
+    protected String decorateObjDisp(List<TextChunk> dispChunks, boolean imageEnabled) {
         return EMPTY_STRING;
     }
 
