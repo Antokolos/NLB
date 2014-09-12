@@ -78,8 +78,6 @@ public interface Page extends NodeItem {
 
     public String getText();
 
-    public List<TextChunk> getTextChunks();
-
     public MultiLangString getTexts();
 
     public String getVarId();

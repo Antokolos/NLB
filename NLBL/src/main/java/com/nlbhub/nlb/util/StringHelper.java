@@ -39,8 +39,12 @@
 package com.nlbhub.nlb.util;
 
 import com.nlbhub.nlb.api.Constants;
+import com.nlbhub.nlb.api.TextChunk;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The StringHelper class
@@ -49,7 +53,59 @@ import java.util.List;
  * @version 1.0 11/20/13
  */
 public class StringHelper {
+    /**
+     * This RegExp is used to extract multiple lines of text, separated by CR+LF or LF.
+     * By default, ^ and $ match the start- and end-of-input respectively.
+     * You'll need to enable MULTI-LINE mode with (?m), which causes ^ and $ to match the
+     * start- and end-of-line
+     */
+    private static final Pattern LINE_PATTERN = Pattern.compile("(?m)^.*$");
+    private static final Pattern VAR_PATTERN = Pattern.compile("\\$([^\\s\\$]*)\\$");
     private final static String DELIMITER = ";";
+
+    /**
+     * TODO: this method REALLY needs JUnit
+     * @return
+     */
+    public static List<TextChunk> getTextChunks(String text) {
+        List<TextChunk> result = new ArrayList<>();
+        Matcher matcher = LINE_PATTERN.matcher(text);
+        boolean notFirst = false;
+        while (matcher.find()) {
+            if (notFirst) {
+                TextChunk newlineChunk = new TextChunk();
+                newlineChunk.setText(Constants.EMPTY_STRING);
+                newlineChunk.setType(TextChunk.ChunkType.NEWLINE);
+                result.add(newlineChunk);
+            } else {
+                notFirst = true;
+            }
+
+            final String line = matcher.group().trim();
+            int start = 0;
+            Matcher variableMatcher = VAR_PATTERN.matcher(line);
+            while (variableMatcher.find()) {
+                TextChunk textChunk = new TextChunk();
+                final String variable = variableMatcher.group(1);
+                textChunk.setText(line.substring(start, variableMatcher.start()));
+                textChunk.setType(TextChunk.ChunkType.TEXT);
+                result.add(textChunk);
+                TextChunk variableChunk = new TextChunk();
+                variableChunk.setText(variable);
+                variableChunk.setType(TextChunk.ChunkType.VARIABLE);
+                result.add(variableChunk);
+                start = variableMatcher.end();
+            }
+            final int length = line.length();
+            if (start < length) {
+                TextChunk textChunk = new TextChunk();
+                textChunk.setText(line.substring(start, length));
+                textChunk.setType(TextChunk.ChunkType.TEXT);
+                result.add(textChunk);
+            }
+        }
+        return result;
+    }
 
     public static boolean isEmpty(final String string) {
         return string == null || Constants.EMPTY_STRING.equals(string);

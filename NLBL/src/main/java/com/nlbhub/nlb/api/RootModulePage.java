@@ -75,11 +75,6 @@ public class RootModulePage implements Page {
     }
 
     @Override
-    public List<TextChunk> getTextChunks() {
-        return new ArrayList<>();
-    }
-
-    @Override
     public MultiLangString getTexts() {
         return MultiLangString.createCopy(DEFAULT_TEXT);
     }

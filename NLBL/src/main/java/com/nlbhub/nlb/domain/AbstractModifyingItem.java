@@ -38,10 +38,7 @@
  */
 package com.nlbhub.nlb.domain;
 
-import com.nlbhub.nlb.api.Constants;
-import com.nlbhub.nlb.api.Modification;
-import com.nlbhub.nlb.api.ModifyingItem;
-import com.nlbhub.nlb.api.NonLinearBook;
+import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;

@@ -436,24 +436,30 @@ public class STEADExportManager extends TextExportManager {
         }
     }
 
-    @Override
-    protected String decorateObjText(String text, boolean imageEnabled) {
-        if (imageEnabled) {
-            StringBuilder stringBuilder = new StringBuilder();
-            Matcher matcher = STEAD_OBJ_PATTERN.matcher(text);
-            int start = 0;
-            stringBuilder.append("    dsc = function(s) p [[");
-            while (matcher.find()) {
-                stringBuilder.append(text.substring(start, matcher.start())).append("{");
-                stringBuilder.append(matcher.group(1)).append("]]; p(\"\"..s.imgv()); p [[").append("}");
-                start = matcher.end();
-            }
-            stringBuilder.append(text.substring(start, text.length()));
-            stringBuilder.append("]]; end,").append(LINE_SEPARATOR);
-            return stringBuilder.toString();
-        } else {
-            return "    dsc = [[" + text + "]]," + LINE_SEPARATOR;
+    private String expandInteractionMarks(String text) {
+        StringBuilder result = new StringBuilder();
+        Matcher matcher = STEAD_OBJ_PATTERN.matcher(text);
+        int start = 0;
+        while (matcher.find()) {
+            result.append(text.substring(start, matcher.start())).append("{");
+            result.append(matcher.group(1)).append("]]; p(\"\"..s.imgv()); p [[").append("}");
+            start = matcher.end();
         }
+        result.append(text.substring(start, text.length()));
+        return result.toString();
+    }
+
+    @Override
+    protected String decorateObjText(List<TextChunk> textChunks, boolean imageEnabled) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("    dsc = function(s) p [[");
+        if (imageEnabled) {
+            stringBuilder.append(expandInteractionMarks(expandVariables(textChunks)));
+        } else {
+            stringBuilder.append(expandVariables(textChunks));
+        }
+        stringBuilder.append("]]; end,").append(LINE_SEPARATOR);
+        return stringBuilder.toString();
     }
 
     @Override
@@ -477,10 +483,10 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjActStart(String actText) {
+    protected String decorateObjActStart(List<TextChunk> actTextChunks) {
         return (
                 "    act = function(s)" + LINE_SEPARATOR +
-                        "        p \"" + actText + "\";" + LINE_SEPARATOR +
+                        "        p [[" + expandVariables(actTextChunks) + "]];" + LINE_SEPARATOR +
                         "        s.actf(s);" + LINE_SEPARATOR +
                         "        here().autos();" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
@@ -812,25 +818,37 @@ public class STEADExportManager extends TextExportManager {
         }
     }
 
+    /**
+     * Expands varibles from text chunks.
+     *
+     * @param textChunks
+     * @return
+     */
+    private String expandVariables(List<TextChunk> textChunks) {
+        StringBuilder result = new StringBuilder();
+        for (final TextChunk textChunk : textChunks) {
+            switch (textChunk.getType()) {
+                case TEXT:
+                    result.append(textChunk.getText());
+                    break;
+                case VARIABLE:
+                    result.append("]];").append(LINE_SEPARATOR).append("p(");
+                    result.append(GLOBAL_VAR_PREFIX).append(textChunk.getText()).append(");");
+                    result.append(LINE_SEPARATOR).append("p [[").append(LINE_SEPARATOR);
+                    break;
+                case NEWLINE:
+                    result.append("^").append(getLineSeparator());
+                    break;
+            }
+        }
+        return result.toString();
+    }
+
     protected String decoratePageTextStart(List<TextChunk> pageTextChunks) {
         StringBuilder pageText = new StringBuilder();
         pageText.append("    dsc = function(s)").append(LINE_SEPARATOR).append("p [[");
         pageText.append(LINE_SEPARATOR);
-        for (final TextChunk textChunk : pageTextChunks) {
-            switch (textChunk.getType()) {
-                case TEXT:
-                    pageText.append(textChunk.getText());
-                    break;
-                case VARIABLE:
-                    pageText.append("]];").append(LINE_SEPARATOR).append("p(");
-                    pageText.append(GLOBAL_VAR_PREFIX).append(textChunk.getText()).append(");");
-                    pageText.append(LINE_SEPARATOR).append("p [[").append(LINE_SEPARATOR);
-                    break;
-                case NEWLINE:
-                    pageText.append("^").append(getLineSeparator());
-                    break;
-            }
-        }
+        pageText.append(expandVariables(pageTextChunks));
         pageText.append("]];").append(LINE_SEPARATOR);
         pageText.append("    end,").append(LINE_SEPARATOR);
         pageText.append("    xdsc = function(s)").append(LINE_SEPARATOR);

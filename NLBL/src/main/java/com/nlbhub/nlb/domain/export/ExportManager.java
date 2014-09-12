@@ -334,7 +334,7 @@ public abstract class ExportManager {
                 )
         );
         blocks.setUseCaption(page.isUseCaption());
-        blocks.setPageTextStart(decoratePageTextStart(page.getTextChunks()));
+        blocks.setPageTextStart(decoratePageTextStart(StringHelper.getTextChunks(page.getText())));
         blocks.setPageTextEnd(decoratePageTextEnd());
         NonLinearBook nlb = exportData.getNlb();
         if (!StringHelper.isEmpty(page.getVarId())) {
@@ -481,11 +481,11 @@ public abstract class ExportManager {
         final boolean hasImage = StringHelper.notEmpty(obj.getImageFileName());
         blocks.setObjImage(objImage);
         blocks.setObjDisp(decorateObjDisp(obj.getDisp(), hasImage && obj.isImageInInventory()));
-        blocks.setObjText(decorateObjText(obj.getText(), hasImage && obj.isImageInScene()));
+        blocks.setObjText(decorateObjText(StringHelper.getTextChunks(obj.getText()), hasImage && obj.isImageInScene()));
         blocks.setTakable(obj.isTakable());
         blocks.setObjTak(decorateObjTak(obj.getName()));
         blocks.setObjInv(decorateObjInv(obj.getName()));
-        blocks.setObjActStart(decorateObjActStart(obj.getActText()));
+        blocks.setObjActStart(decorateObjActStart(StringHelper.getTextChunks(obj.getActText())));
         if (!StringHelper.isEmpty(obj.getVarId())) {
             Variable variable = exportData.getNlb().getVariableById(obj.getVarId());
             // TODO: Add cases with deleted pages/links/variables etc. to the unit test
@@ -548,7 +548,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjText(String text, boolean imageEnabled) {
+    protected String decorateObjText(List<TextChunk> textChunks, boolean imageEnabled) {
         return EMPTY_STRING;
     }
 
@@ -568,7 +568,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjActStart(String actText) {
+    protected String decorateObjActStart(List<TextChunk> actTextChunks) {
         return EMPTY_STRING;
     }
 
