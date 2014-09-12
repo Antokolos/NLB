@@ -646,6 +646,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private String m_existingImageFileName;
         private MultiLangString m_existingObjDisp;
         private MultiLangString m_existingObjText;
+        private MultiLangString m_existingObjActText;
         private boolean m_existingObjIsTakable;
         private boolean m_existingImageInScene;
         private boolean m_existingImageInInventory;
@@ -653,6 +654,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private String m_newImageFileName;
         private MultiLangString m_newObjDisp;
         private MultiLangString m_newObjText;
+        private MultiLangString m_newObjActText;
         private boolean m_newObjIsTakable;
         private boolean m_newImageInScene;
         private boolean m_newImageInInventory;
@@ -665,6 +667,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String imageFileName,
                 final MultiLangString objDisp,
                 final MultiLangString objText,
+                final MultiLangString objActText,
                 final boolean objIsTakable,
                 final boolean imageInScene,
                 final boolean imageInInventory
@@ -677,6 +680,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     imageFileName,
                     objDisp,
                     objText,
+                    objActText,
                     objIsTakable,
                     imageInScene,
                     imageInInventory
@@ -691,6 +695,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String imageFileName,
                 final MultiLangString objDisp,
                 final MultiLangString objText,
+                final MultiLangString objActText,
                 final boolean objIsTakable,
                 final boolean imageInScene,
                 final boolean imageInInventory
@@ -709,6 +714,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingImageFileName = obj.getImageFileName();
             m_existingObjDisp = obj.getDisps();
             m_existingObjText = obj.getTexts();
+            m_existingObjActText = obj.getActTexts();
             m_existingObjIsTakable = obj.isTakable();
             m_existingImageInScene = obj.isImageInScene();
             m_existingImageInInventory = obj.isImageInInventory();
@@ -716,6 +722,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newImageFileName = imageFileName;
             m_newObjDisp = objDisp;
             m_newObjText = objText;
+            m_newObjActText = objActText;
             m_newObjIsTakable = objIsTakable;
             m_newImageInScene = imageInScene;
             m_newImageInInventory = imageInInventory;
@@ -728,6 +735,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setImageFileName(m_newImageFileName);
             m_obj.setDisps(m_newObjDisp);
             m_obj.setTexts(m_newObjText);
+            m_obj.setActTexts(m_newObjActText);
             m_obj.setTakable(m_newObjIsTakable);
             m_obj.setImageInScene(m_newImageInScene);
             m_obj.setImageInInventory(m_newImageInInventory);
@@ -741,6 +749,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setImageFileName(m_existingImageFileName);
             m_obj.setDisps(m_existingObjDisp);
             m_obj.setTexts(m_existingObjText);
+            m_obj.setActTexts(m_existingObjActText);
             m_obj.setTakable(m_existingObjIsTakable);
             m_obj.setImageInScene(m_existingImageInScene);
             m_obj.setImageInInventory(m_existingImageInInventory);
@@ -1449,6 +1458,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.getImageFileName(),
                         obj.getDisps(),
                         obj.getTexts(),
+                        obj.getActTexts(),
                         obj.isTakable(),
                         obj.isImageInScene(),
                         obj.isImageInInventory()
@@ -1843,6 +1853,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String imageFileName,
             final MultiLangString objDisp,
             final MultiLangString objText,
+            final MultiLangString objActText,
             final boolean objIsTakable,
             final boolean imageInScene,
             final boolean imageInInventory
@@ -1856,6 +1867,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         imageFileName,
                         objDisp,
                         objText,
+                        objActText,
                         objIsTakable,
                         imageInScene,
                         imageInInventory
@@ -3340,6 +3352,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
         for (Map.Entry<String, ObjImpl> objEntry : m_objs.entrySet()) {
             result += objEntry.getValue().getText().length();
+            result += objEntry.getValue().getActText().length();
             for (LinkImpl link : objEntry.getValue().getLinkImpls()) {
                 result += link.getText().length();
             }

@@ -65,6 +65,7 @@ import java.io.IOException;
 @XmlRootElement(name = "obj")
 public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String TEXT_SUBDIR_NAME = "text";
+    private static final String ACT_TEXT_SUBDIR_NAME = "acttext";
     private static final String VARID_FILE_NAME = "varid";
     private static final String NAME_FILE_NAME = "name";
     private static final String IMAGE_FILE_NAME = "image";
@@ -81,6 +82,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private String m_name = DEFAULT_NAME;
     private MultiLangString m_disp = DEFAULT_DISP;
     private MultiLangString m_text = DEFAULT_TEXT;
+    private MultiLangString m_actText = DEFAULT_ACT_TEXT;
     /**
      * Object can be taken to the inventory
      */
@@ -97,6 +99,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             return result;
         } else if (
                 textMatches(m_text, searchText, ignoreCase, wholeWords)
+                        || textMatches(m_actText, searchText, ignoreCase, wholeWords)
                         || textMatches(m_name, searchText, ignoreCase, wholeWords)
                         || textMatches(m_disp, searchText, ignoreCase, wholeWords)
                 ) {
@@ -115,6 +118,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         m_imageFileName = source.getImageFileName();
         setDisps(source.getDisps());
         setTexts(source.getTexts());
+        setActTexts(source.getActTexts());
         m_takable = source.isTakable();
         m_imageInScene = source.isImageInScene();
         m_imageInInventory = source.isImageInInventory();
@@ -139,6 +143,16 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         return m_text.get(getCurrentNLB().getLanguage());
     }
 
+    public void setActText(String actText) {
+        m_actText.put(getCurrentNLB().getLanguage(), actText);
+    }
+
+    @Override
+    @XmlElement(name = "acttext")
+    public String getActText() {
+        return m_actText.get(getCurrentNLB().getLanguage());
+    }
+
     @Override
     public MultiLangString getTexts() {
         return MultiLangString.createCopy(m_text);
@@ -146,6 +160,14 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
 
     public void setTexts(final MultiLangString text) {
         m_text = text;
+    }
+
+    public MultiLangString getActTexts() {
+        return m_actText;
+    }
+
+    public void setActTexts(MultiLangString actText) {
+        m_actText = actText;
     }
 
     @Override
@@ -273,6 +295,11 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                     m_text,
                     DEFAULT_TEXT
             );
+            fileManipulator.writeOptionalMultiLangString(
+                    new File(objDir, ACT_TEXT_SUBDIR_NAME),
+                    m_actText,
+                    DEFAULT_ACT_TEXT
+            );
             fileManipulator.writeOptionalString(
                     objDir,
                     TAKABLE_FILE_NAME,
@@ -337,6 +364,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                 FileManipulator.readOptionalMultiLangString(
                         new File(objDir, TEXT_SUBDIR_NAME),
                         DEFAULT_TEXT
+                )
+        );
+        m_actText = (
+                FileManipulator.readOptionalMultiLangString(
+                        new File(objDir, ACT_TEXT_SUBDIR_NAME),
+                        DEFAULT_ACT_TEXT
                 )
         );
         m_takable = "true".equals(

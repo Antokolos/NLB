@@ -477,9 +477,10 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjActStart() {
+    protected String decorateObjActStart(String actText) {
         return (
                 "    act = function(s)" + LINE_SEPARATOR +
+                        "        p \"" + actText + "\";" + LINE_SEPARATOR +
                         "        s.actf(s);" + LINE_SEPARATOR +
                         "        here().autos();" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +

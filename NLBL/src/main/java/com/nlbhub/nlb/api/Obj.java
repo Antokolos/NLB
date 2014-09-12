@@ -49,6 +49,7 @@ import com.nlbhub.nlb.util.MultiLangString;
 public interface Obj extends NodeItem {
     public static final String DEFAULT_IMAGE_FILE_NAME = Constants.EMPTY_STRING;
     public static final MultiLangString DEFAULT_TEXT = MultiLangString.createEmptyText();
+    public static final MultiLangString DEFAULT_ACT_TEXT = MultiLangString.createEmptyText();
     public static final String DEFAULT_VARID = Constants.EMPTY_STRING;
     public static final String DEFAULT_NAME = Constants.EMPTY_STRING;
     public static final MultiLangString DEFAULT_DISP = MultiLangString.createEmptyText();
@@ -59,7 +60,11 @@ public interface Obj extends NodeItem {
 
     public String getText();
 
+    public String getActText();
+
     public MultiLangString getTexts();
+
+    public MultiLangString getActTexts();
 
     public String getVarId();
 

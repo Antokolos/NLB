@@ -55,6 +55,7 @@ public class ObjBuildingBlocks {
     private String m_objImage;
     private String m_objDisp;
     private String m_objText;
+    private String m_objActText;
     private boolean m_takable;
     private String m_objTak;
     private String m_objInv;
@@ -129,6 +130,14 @@ public class ObjBuildingBlocks {
 
     public void setObjText(String objText) {
         m_objText = objText;
+    }
+
+    public String getObjActText() {
+        return m_objActText;
+    }
+
+    public void setObjActText(String objActText) {
+        m_objActText = objActText;
     }
 
     public boolean isTakable() {

@@ -485,7 +485,7 @@ public abstract class ExportManager {
         blocks.setTakable(obj.isTakable());
         blocks.setObjTak(decorateObjTak(obj.getName()));
         blocks.setObjInv(decorateObjInv(obj.getName()));
-        blocks.setObjActStart(decorateObjActStart());
+        blocks.setObjActStart(decorateObjActStart(obj.getActText()));
         if (!StringHelper.isEmpty(obj.getVarId())) {
             Variable variable = exportData.getNlb().getVariableById(obj.getVarId());
             // TODO: Add cases with deleted pages/links/variables etc. to the unit test
@@ -568,7 +568,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjActStart() {
+    protected String decorateObjActStart(String actText) {
         return EMPTY_STRING;
     }
 
