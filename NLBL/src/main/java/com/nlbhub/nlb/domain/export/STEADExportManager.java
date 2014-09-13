@@ -246,25 +246,29 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(objBlocks.getObjUseStart());
         }
         if (hasUses) {
+            StringBuilder usepBuilder = new StringBuilder();
+            usepBuilder.append("    usep = function(s, w)").append(LINE_SEPARATOR);
             for (int i = 0; i < usesBuildingBlocks.size(); i++) {
+                StringBuilder usesStartBuilder = new StringBuilder();
+                StringBuilder usesEndBuilder = new StringBuilder();
                 UseBuildingBlocks useBuildingBlocks = usesBuildingBlocks.get(i);
                 String padding = "        ";
                 if (i == 0) {
-                    stringBuilder.append(padding).append("if ");
-                    stringBuilder.append(useBuildingBlocks.getUseTarget());
-                    stringBuilder.append(" then").append(LINE_SEPARATOR);
+                    usesStartBuilder.append(padding).append("if ");
+                    usesStartBuilder.append(useBuildingBlocks.getUseTarget());
+                    usesStartBuilder.append(" then").append(LINE_SEPARATOR);
                 } else {
-                    stringBuilder.append(padding).append("elseif ");
-                    stringBuilder.append(useBuildingBlocks.getUseTarget());
-                    stringBuilder.append(" then").append(LINE_SEPARATOR);
+                    usesStartBuilder.append(padding).append("elseif ");
+                    usesStartBuilder.append(useBuildingBlocks.getUseTarget());
+                    usesStartBuilder.append(" then").append(LINE_SEPARATOR);
                 }
                 final boolean constrained = !StringHelper.isEmpty(useBuildingBlocks.getUseConstraint());
                 String extraPadding = constrained ? "    " : "";
                 if (constrained) {
-                    stringBuilder.append(padding).append("    if ").append(useBuildingBlocks.getUseConstraint());
-                    stringBuilder.append(" then").append(LINE_SEPARATOR);
+                    usesStartBuilder.append(padding).append("    if ").append(useBuildingBlocks.getUseConstraint());
+                    usesStartBuilder.append(" then").append(LINE_SEPARATOR);
                 }
-                stringBuilder.append(padding).append(extraPadding);
+                stringBuilder.append(usesStartBuilder).append(padding).append(extraPadding);
                 stringBuilder.append(useBuildingBlocks.getUseVariable()).append(LINE_SEPARATOR);
                 //stringBuilder.append(padding).append(extraPadding);
                 stringBuilder.append(useBuildingBlocks.getUseModifications()).append(LINE_SEPARATOR);
@@ -282,13 +286,21 @@ public class STEADExportManager extends TextExportManager {
                 stringBuilder.append("    walk(here());").append(LINE_SEPARATOR);
                 */
                 if (constrained) {
-                    stringBuilder.append(padding).append("    end;").append(LINE_SEPARATOR);
+                    usesEndBuilder.append(padding).append("    end;").append(LINE_SEPARATOR);
+                    stringBuilder.append(usesEndBuilder);
                 }
+
+                usepBuilder.append(usesStartBuilder);
+                usepBuilder.append("p \"").append(useBuildingBlocks.getUseSuccessText()).append("\";").append(LINE_SEPARATOR);
+                usepBuilder.append(usesEndBuilder);
             }
+            usepBuilder.append("        end;").append(LINE_SEPARATOR);
+            usepBuilder.append(objBlocks.getObjUseEnd());
             stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        }
-        if (objBlocks.isTakable() || hasUses) {
-            // If object is takable, then empty use function should be specified
+            stringBuilder.append(objBlocks.getObjUseEnd());
+            stringBuilder.append(usepBuilder);
+        } else if (objBlocks.isTakable()) {
+            // If object is takable, then empty use function should be specified anyway
             stringBuilder.append(objBlocks.getObjUseEnd());
         }
         List<String> containedObjIds = objBlocks.getContainedObjIds();
@@ -506,6 +518,7 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateObjUseStart() {
         return (
                 "    use = function(s, w)" + LINE_SEPARATOR +
+                        "        s.usep(s, w);" + LINE_SEPARATOR +
                         "        s.usef(s, w);" + LINE_SEPARATOR +
                         "        here().autos();" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +

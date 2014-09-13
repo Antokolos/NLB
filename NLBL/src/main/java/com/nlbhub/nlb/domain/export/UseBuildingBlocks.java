@@ -49,6 +49,7 @@ public class UseBuildingBlocks {
     private String m_useVariable;
     private String m_useConstraint;
     private String m_useModifications;
+    private String m_useSuccessText;
 
     public String getUseVariable() {
         return m_useVariable;
@@ -80,5 +81,13 @@ public class UseBuildingBlocks {
 
     public void setUseTarget(String useTarget) {
         m_useTarget = useTarget;
+    }
+
+    public String getUseSuccessText() {
+        return m_useSuccessText;
+    }
+
+    public void setUseSuccessText(String useSuccessText) {
+        m_useSuccessText = useSuccessText;
     }
 }

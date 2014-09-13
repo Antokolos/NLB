@@ -678,6 +678,7 @@ public abstract class ExportManager {
     ) throws NLBConsistencyException {
         UseBuildingBlocks blocks = new UseBuildingBlocks();
         blocks.setUseTarget(decorateUseTarget(link.getTarget()));
+        blocks.setUseSuccessText(link.getText());
         Variable variable = exportData.getNlb().getVariableById(link.getVarId());
         if (variable != null && !variable.isDeleted()) {
             blocks.setUseVariable(decorateUseVariable(variable.getName()));
