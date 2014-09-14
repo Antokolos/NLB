@@ -163,7 +163,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     }
 
     public MultiLangString getActTexts() {
-        return m_actText;
+        return MultiLangString.createCopy(m_actText);
     }
 
     public void setActTexts(MultiLangString actText) {
