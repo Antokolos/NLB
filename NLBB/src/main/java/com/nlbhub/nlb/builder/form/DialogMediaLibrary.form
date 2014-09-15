@@ -90,6 +90,15 @@
                     <properties/>
                     <border type="none"/>
                     <children>
+                      <component id="7f26" class="javax.swing.JButton" binding="m_buttonPlaceholder">
+                        <constraints/>
+                        <properties>
+                          <maximumSize width="110" height="25"/>
+                          <minimumSize width="110" height="25"/>
+                          <preferredSize width="110" height="25"/>
+                          <text value="Placeholder"/>
+                        </properties>
+                      </component>
                       <component id="70269" class="javax.swing.JButton" binding="m_buttonAdd">
                         <constraints/>
                         <properties>

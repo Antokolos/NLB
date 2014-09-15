@@ -52,6 +52,7 @@ import com.nlbhub.nlb.util.VarFinder;
 import com.nlbhub.user.domain.DecisionPoint;
 import com.nlbhub.user.domain.History;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -3739,9 +3740,10 @@ public class NonLinearBookImpl implements NonLinearBook {
     private MediaFileImpl copyMediaFile(
             final @NotNull FileManipulator fileManipulator,
             final @NotNull File file,
+            final @Nullable String fileName,
             final @NotNull String mediaDirName
     ) throws NLBFileManipulationException, NLBIOException, NLBVCSException {
-        File localFile = createUniqueMediaFile(fileManipulator, file, mediaDirName);
+        File localFile = createUniqueMediaFile(fileManipulator, file, fileName, mediaDirName);
         fileManipulator.copyFile(localFile, file, "Cannot copy media file " + localFile.getName());
         MediaFileImpl mediaFile = new MediaFileImpl();
         mediaFile.setFileName(localFile.getName());
@@ -3750,24 +3752,27 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     public void copyAndAddImageFile(
             final @NotNull FileManipulator fileManipulator,
-            final @NotNull File file
+            final @NotNull File file,
+            final @Nullable String fileName
     ) throws NLBFileManipulationException, NLBIOException, NLBVCSException {
-        addImageFile(copyMediaFile(fileManipulator, file, IMAGES_DIR_NAME));
+        addImageFile(copyMediaFile(fileManipulator, file, fileName, IMAGES_DIR_NAME));
     }
 
     public void copyAndAddSoundFile(
             final @NotNull FileManipulator fileManipulator,
-            final @NotNull File file
+            final @NotNull File file,
+            final @Nullable String fileName
     ) throws NLBFileManipulationException, NLBIOException, NLBVCSException {
-        addSoundFile(copyMediaFile(fileManipulator, file, SOUND_DIR_NAME));
+        addSoundFile(copyMediaFile(fileManipulator, file, fileName, SOUND_DIR_NAME));
     }
 
     private File createUniqueMediaFile(
             final @NotNull FileManipulator fileManipulator,
             final @NotNull File newFile,
+            final @Nullable String fileName,
             final @NotNull String mediaDirName
     ) throws NLBFileManipulationException, NLBIOException {
-        String uniqueFileName = newFile.getName().toLowerCase();
+        String uniqueFileName = (fileName != null) ? fileName.toLowerCase() : newFile.getName().toLowerCase();
         final File mediaDir = new File(m_rootDir, mediaDirName);
         fileManipulator.createDir(mediaDir, "Cannot create NLB media directory");
         File localFile = new File(mediaDir, uniqueFileName);

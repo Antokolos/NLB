@@ -46,6 +46,8 @@ import com.nlbhub.nlb.util.StringHelper;
 import com.nlbhub.nlb.vcs.Author;
 import com.nlbhub.nlb.vcs.GitAdapterWithPathDecoration;
 import com.nlbhub.nlb.vcs.VCSAdapter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -345,25 +347,47 @@ public class NonLinearBookFacade implements NLBObservable {
         notifyObservers();
     }
 
+    /**
+     * If imageFileName is null, then imageFile.getName() is used.
+     *
+     * @param imageFile
+     * @param imageFileName
+     * @throws NLBFileManipulationException
+     * @throws NLBIOException
+     * @throws NLBConsistencyException
+     * @throws NLBVCSException
+     */
     public void addImageFile(
-            final File imageFile
+            final @NotNull File imageFile,
+            final @Nullable String imageFileName
     ) throws NLBFileManipulationException, NLBIOException, NLBConsistencyException, NLBVCSException {
         File rootDir = m_nlb.getRootDir();
         if (rootDir != null) {
             FileManipulator fileManipulator = new FileManipulator(m_vcsAdapter, rootDir);
-            m_nlb.copyAndAddImageFile(fileManipulator, imageFile);
+            m_nlb.copyAndAddImageFile(fileManipulator, imageFile, imageFileName);
         } else {
             throw new NLBConsistencyException("NLB root dir is undefined");
         }
     }
 
+    /**
+     * If soundFileName is null, then soundFile.getName() is used.
+     *
+     * @param soundFile
+     * @param soundFileName
+     * @throws NLBFileManipulationException
+     * @throws NLBIOException
+     * @throws NLBConsistencyException
+     * @throws NLBVCSException
+     */
     public void addSoundFile(
-            final File soundFile
+            final @NotNull File soundFile,
+            final @Nullable String soundFileName
     ) throws NLBFileManipulationException, NLBIOException, NLBConsistencyException, NLBVCSException {
         File rootDir = m_nlb.getRootDir();
         if (rootDir != null) {
             FileManipulator fileManipulator = new FileManipulator(m_vcsAdapter, rootDir);
-            m_nlb.copyAndAddSoundFile(fileManipulator, soundFile);
+            m_nlb.copyAndAddSoundFile(fileManipulator, soundFile, soundFileName);
         } else {
             throw new NLBConsistencyException("NLB root dir is undefined");
         }

@@ -2,7 +2,6 @@ package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.MediaFile;
-import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.builder.model.ListSingleSelectionModel;
 import com.nlbhub.nlb.builder.model.MediaFileModelSwing;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
@@ -10,6 +9,7 @@ import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
 import com.nlbhub.nlb.exception.NLBVCSException;
+import com.nlbhub.nlb.util.StringHelper;
 import org.jdesktop.swingx.JXImageView;
 import org.jdesktop.swingx.JXTable;
 
@@ -22,7 +22,10 @@ import java.io.File;
 import java.io.IOException;
 
 public class DialogMediaLibrary extends JDialog {
-
+    private final static String PH_IMAGE_EXT = ".png";
+    private final static File PLACEHOLDER_IMAGE = new File("template/sample" + PH_IMAGE_EXT);
+    private final static String PH_SOUND_EXT = ".ogg";
+    private final static File PLACEHOLDER_SOUND = new File("template/sample" + PH_SOUND_EXT);
     private final JFileChooser m_fileChooser = new JFileChooser();
     private MediaFileModelSwing m_mediaFileModelSwing;
     private String m_selectedFileName;
@@ -38,6 +41,7 @@ public class DialogMediaLibrary extends JDialog {
     private JButton m_buttonRemove;
     private JButton m_noneButton;
     private JButton m_voidButton;
+    private JButton m_buttonPlaceholder;
 
     public DialogMediaLibrary(final NonLinearBookFacade nonLinearBookFacade, final MediaFile.Type mediaType) {
         final DialogMediaLibrary self = this;
@@ -107,6 +111,30 @@ public class DialogMediaLibrary extends JDialog {
             }
         });
 
+        m_buttonPlaceholder.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    String placeholderName = JOptionPane.showInputDialog("Placeholder name:");
+                    if (StringHelper.notEmpty(placeholderName)) {
+                        switch (mediaType) {
+                            case Image:
+                                nonLinearBookFacade.addImageFile(PLACEHOLDER_IMAGE, placeholderName + PH_IMAGE_EXT);
+                                break;
+                            case Sound:
+                                nonLinearBookFacade.addSoundFile(PLACEHOLDER_SOUND, placeholderName + PH_SOUND_EXT);
+                                break;
+                        }
+                        m_mediaFileList.updateUI();
+                    }
+                } catch (NLBConsistencyException | NLBIOException | NLBVCSException | NLBFileManipulationException ex) {
+                    JOptionPane.showMessageDialog(
+                            self,
+                            "Error while adding: " + ex.toString()
+                    );
+                }
+            }
+        });
+
         m_buttonAdd.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -114,10 +142,10 @@ public class DialogMediaLibrary extends JDialog {
                     if (mediaFile != null) {
                         switch (mediaType) {
                             case Image:
-                                nonLinearBookFacade.addImageFile(mediaFile);
+                                nonLinearBookFacade.addImageFile(mediaFile, null);
                                 break;
                             case Sound:
-                                nonLinearBookFacade.addSoundFile(mediaFile);
+                                nonLinearBookFacade.addSoundFile(mediaFile, null);
                                 break;
                         }
                     }
@@ -301,6 +329,12 @@ public class DialogMediaLibrary extends JDialog {
         gbc.gridy = 0;
         gbc.fill = GridBagConstraints.BOTH;
         panel6.add(panel7, gbc);
+        m_buttonPlaceholder = new JButton();
+        m_buttonPlaceholder.setMaximumSize(new Dimension(110, 25));
+        m_buttonPlaceholder.setMinimumSize(new Dimension(110, 25));
+        m_buttonPlaceholder.setPreferredSize(new Dimension(110, 25));
+        m_buttonPlaceholder.setText("Placeholder");
+        panel7.add(m_buttonPlaceholder);
         m_buttonAdd = new JButton();
         m_buttonAdd.setMaximumSize(new Dimension(85, 25));
         m_buttonAdd.setMinimumSize(new Dimension(85, 25));
