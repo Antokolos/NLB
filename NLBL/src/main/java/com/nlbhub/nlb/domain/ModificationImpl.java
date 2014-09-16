@@ -131,13 +131,6 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     }
 
     @Override
-    public boolean isDeleted() {
-        final IdentifiableItem parent = getParent();
-        final boolean parentDeleted = (parent != null) && parent.isDeleted();
-        return super.isDeleted() || parentDeleted;
-    }
-
-    @Override
     public SearchResult searchText(String searchText, boolean searchInId, boolean ignoreCase, boolean wholeWords) {
         // TODO: implement search in modifications
         return null;

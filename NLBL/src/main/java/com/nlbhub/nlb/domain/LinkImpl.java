@@ -136,13 +136,6 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     }
 
     @Override
-    public boolean isDeleted() {
-        final IdentifiableItem parent = getParent();
-        final boolean parentDeleted = (parent != null) && parent.isDeleted();
-        return super.isDeleted() || parentDeleted;
-    }
-
-    @Override
     public SearchResult searchText(
             String searchText,
             boolean searchInId,

@@ -1444,7 +1444,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 Coords coords = page.getCoords();
                 Coords newCoords = newPage.getCoords();
                 resizeNode(newPage, coords, newCoords);
-                copyModifications(currentNLB, page, newPage);
+                copyModifications(currentNLB, nlbToPaste, page, newPage);
                 addLinks(currentNLB, nlbToPaste, idsMapping, page, newPage);
             }
             for (Map.Entry<String, ObjImpl> entry : nlbToPaste.m_objs.entrySet()) {
@@ -1468,7 +1468,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 Coords coords = obj.getCoords();
                 Coords newCoords = newObj.getCoords();
                 resizeNode(newObj, coords, newCoords);
-                copyModifications(currentNLB, obj, newObj);
+                copyModifications(currentNLB, nlbToPaste, obj, newObj);
                 addLinks(currentNLB, nlbToPaste, idsMapping, obj, newObj);
             }
         }
@@ -1488,11 +1488,12 @@ public class NonLinearBookImpl implements NonLinearBook {
 
         private void copyModifications(
                 final NonLinearBookImpl currentNLB,
+                final NonLinearBookImpl nlbToPaste,
                 final AbstractModifyingItem existingItem,
                 final AbstractModifyingItem newItem
         ) {
             ModificationsTableModel existingModel = (
-                    new ModificationsTableModel(currentNLB, existingItem.getModifications())
+                    new ModificationsTableModel(nlbToPaste, existingItem.getModifications())
             );
             ModificationsTableModel model = (
                     new ModificationsTableModel(currentNLB, new ArrayList<Modification>())
@@ -1542,7 +1543,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         link.isAuto()
                 );
                 m_commandChain.addCommand(updateLinkCommand);
-                copyModifications(currentNLB, link, newLink);
+                copyModifications(currentNLB, nlbToPaste, link, newLink);
             }
         }
 
