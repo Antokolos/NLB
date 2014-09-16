@@ -2775,7 +2775,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             // TODO: check in what circumstances getLinkWithCheck() can return null
             final Link link = getLinkWithCheck(variable);
             assert link != null;
-            if (link.isDeleted()) {
+            if (link.isDeleted() || link.hasDeletedParent()) {
                 variable.setDeleted(true);
             }
         } else if (
@@ -2788,6 +2788,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             if (
                     itemAndModification.getModifyingItem().isDeleted()
                             || itemAndModification.getModification().isDeleted()
+                            || itemAndModification.getModification().hasDeletedParent()
                     ) {
                 variable.setDeleted(true);
             }

@@ -15,5 +15,7 @@ public interface IdentifiableItem {
 
     public IdentifiableItem getParent();
 
+    public boolean hasDeletedParent();
+
     public NonLinearBook getCurrentNLB();
 }

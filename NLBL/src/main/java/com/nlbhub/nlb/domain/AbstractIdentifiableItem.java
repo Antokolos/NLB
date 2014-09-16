@@ -117,6 +117,17 @@ public abstract class AbstractIdentifiableItem implements IdentifiableItem {
     }
 
     @Override
+    public boolean hasDeletedParent() {
+        IdentifiableItem item = this;
+        while ((item = item.getParent()) != null) {
+            if (item.isDeleted()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public String getFullId() {
         List<String> ids = new LinkedList<>();
         IdentifiableItem item = this;
