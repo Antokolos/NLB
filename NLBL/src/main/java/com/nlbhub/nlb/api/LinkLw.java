@@ -211,6 +211,17 @@ public class LinkLw implements Link {
     }
 
     @Override
+    public boolean hasDeletedParent() {
+        IdentifiableItem item = this;
+        while ((item = item.getParent()) != null) {
+            if (item.isDeleted()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public NonLinearBook getCurrentNLB() {
         return m_parent.getCurrentNLB();
     }

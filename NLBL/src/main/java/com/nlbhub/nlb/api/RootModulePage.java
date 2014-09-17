@@ -270,6 +270,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public boolean hasDeletedParent() {
+        return false;
+    }
+
+    @Override
     public NonLinearBook getCurrentNLB() {
         return m_nlb;
     }
