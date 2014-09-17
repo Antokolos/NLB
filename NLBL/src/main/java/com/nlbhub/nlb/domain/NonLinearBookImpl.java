@@ -127,6 +127,17 @@ public class NonLinearBookImpl implements NonLinearBook {
         private void setModification(Modification modification) {
             m_modification = modification;
         }
+
+        public boolean existsAndValid() {
+            return (
+                    m_modifyingItem != null
+                    && !m_modifyingItem.isDeleted()
+                    && !m_modifyingItem.hasDeletedParent()
+                    && m_modification != null
+                    && !m_modification.isDeleted()
+                    && !m_modification.hasDeletedParent()
+                    );
+        }
     }
 
     /**
@@ -2785,11 +2796,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final ModifyingItemAndModification itemAndModification = (
                     getModifyingItemAndModification(variable)
             );
-            if (
-                    itemAndModification.getModifyingItem().isDeleted()
-                            || itemAndModification.getModification().isDeleted()
-                            || itemAndModification.getModification().hasDeletedParent()
-                    ) {
+            if (!itemAndModification.existsAndValid()) {
                 variable.setDeleted(true);
             }
         } else if (
@@ -2858,16 +2865,6 @@ public class NonLinearBookImpl implements NonLinearBook {
 
         Modification modification;
         if (ids.length > 2) {
-            if (nodeItem.isDeleted()) {
-                throw new NLBConsistencyException(
-                        "Node item with id = "
-                                + ids[0]
-                                + " is deleted and cannot be origin for link with id = "
-                                + ids[1]
-                                + " when checking variable with id = "
-                                + variable.getId()
-                );
-            }
             link = nodeItem.getLinkById(ids[1]);
             if (link == null) {
                 throw new NLBConsistencyException(
@@ -3221,10 +3218,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     final ModifyingItemAndModification itemAndModification = (
                             getModifyingItemAndModification(variable)
                     );
-                    if (
-                            !itemAndModification.getModifyingItem().isDeleted()
-                                    && !itemAndModification.getModification().isDeleted()
-                            ) {
+                    if (itemAndModification.existsAndValid()) {
                         searchResult.setId(itemAndModification.getModifyingItem().getId());
                         result.addSearchResult(searchResult);
                     }
@@ -3306,10 +3300,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     final ModifyingItemAndModification itemAndModification = (
                             getModifyingItemAndModification(variable)
                     );
-                    if (
-                            !itemAndModification.getModifyingItem().isDeleted()
-                                    && !itemAndModification.getModification().isDeleted()
-                            ) {
+                    if (itemAndModification.existsAndValid()) {
                         final String error = checkFormula(variable.getValue().trim());
                         if (error != null) {
                             searchResult.addInformation(error);
@@ -3514,10 +3505,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     final ModifyingItemAndModification itemAndModification = (
                             getModifyingItemAndModification(variable)
                     );
-                    if (
-                            !itemAndModification.getModifyingItem().isDeleted()
-                                    && !itemAndModification.getModification().isDeleted()
-                            ) {
+                    if (itemAndModification.existsAndValid()) {
                         Variable modificationVariable = (
                                 getVariableById(itemAndModification.getModification().getVarId())
                         );
@@ -3626,13 +3614,10 @@ public class NonLinearBookImpl implements NonLinearBook {
                         final ModifyingItemAndModification itemAndModification = (
                                 getModifyingItemAndModification(variable)
                         );
-                        if (
-                                itemAndModification.getModifyingItem().isDeleted()
-                                        || itemAndModification.getModification().isDeleted()
-                                ) {
-                            continue;
-                        } else {
+                        if (itemAndModification.existsAndValid()) {
                             found = true;
+                        } else {
+                            continue;
                         }
                         break;
                     default:
