@@ -207,6 +207,43 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        return ret;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("}").append(LINE_SEPARATOR);
+        stringBuilder.append("listobj = obj {").append(LINE_SEPARATOR);
+        stringBuilder.append("    nam = \"listobj\",").append(LINE_SEPARATOR);
+        stringBuilder.append("    listnam = \"\",").append(LINE_SEPARATOR);
+        stringBuilder.append("    act = function(s)").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.actf(s)").append(LINE_SEPARATOR);
+        stringBuilder.append("    end,").append(LINE_SEPARATOR);
+        stringBuilder.append("    actf = function(s)").append(LINE_SEPARATOR);
+        stringBuilder.append("        local list = _lists[s.listnam];").append(LINE_SEPARATOR);
+        stringBuilder.append("        if list ~= nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("            repeat").append(LINE_SEPARATOR);
+        stringBuilder.append("                list.value.act(list.value);").append(LINE_SEPARATOR);
+        stringBuilder.append("                list = list.next;").append(LINE_SEPARATOR);
+        stringBuilder.append("            until list == nil;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end,").append(LINE_SEPARATOR);
+        stringBuilder.append("    use = function(s, w)").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.usef(s, w);").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    usef = function(s, w)").append(LINE_SEPARATOR);
+        stringBuilder.append("        local list = _lists[s.listnam];").append(LINE_SEPARATOR);
+        stringBuilder.append("        if list ~= nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("            repeat").append(LINE_SEPARATOR);
+        stringBuilder.append("                list.value.use(list.value, w);").append(LINE_SEPARATOR);
+        stringBuilder.append("                list = list.next;").append(LINE_SEPARATOR);
+        stringBuilder.append("            until list == nil;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    used = function(s, w)").append(LINE_SEPARATOR);
+        stringBuilder.append("        local list = _lists[s.listnam];").append(LINE_SEPARATOR);
+        stringBuilder.append("        if list ~= nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("            repeat").append(LINE_SEPARATOR);
+        stringBuilder.append("                w.use(w, list.value);").append(LINE_SEPARATOR);
+        stringBuilder.append("                list = list.next;").append(LINE_SEPARATOR);
+        stringBuilder.append("            until list == nil;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("}").append(LINE_SEPARATOR);
         return stringBuilder.toString();
     }
 
@@ -296,6 +333,10 @@ public class STEADExportManager extends TextExportManager {
             }
             usepBuilder.append("        end;").append(LINE_SEPARATOR);
             usepBuilder.append(objBlocks.getObjUseEnd());
+            stringBuilder.append("        else").append(LINE_SEPARATOR);
+            stringBuilder.append("            if w.used ~= nil then").append(LINE_SEPARATOR);
+            stringBuilder.append("                w.used(w, s);").append(LINE_SEPARATOR);
+            stringBuilder.append("            end;").append(LINE_SEPARATOR);
             stringBuilder.append("        end;").append(LINE_SEPARATOR);
             stringBuilder.append(objBlocks.getObjUseEnd());
             stringBuilder.append(usepBuilder);
@@ -593,7 +634,7 @@ public class STEADExportManager extends TextExportManager {
                             + objectName + "\", " + "inv()); end;" + LINE_SEPARATOR
             );
         } else {
-            return  (
+            return (
                     "            objs(" + decorateId(destinationId) + "):del(" +
                             ((objectId != null) ? decorateId(objectId) : objectVar) +
                             ");" + LINE_SEPARATOR
@@ -603,7 +644,7 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
-        return  (
+        return (
                 "            addf(" + ((destinationId != null) ? decorateId(destinationId) : "nil") +
                         ", " + ((objectId != null) ? decorateId(objectId) : objectVar) +
                         ");" + LINE_SEPARATOR
@@ -615,16 +656,27 @@ public class STEADExportManager extends TextExportManager {
         return (
                 "        addAll(" + ((destinationId != null) ? decorateId(destinationId) : "nil") +
                         ", " + ((destinationList != null) ? "'" + destinationList + "'" : "nil") +
-                        ", '" + listName + "');" + LINE_SEPARATOR
+                        ", '" + listName + "');" + LINE_SEPARATOR +
+                        createListObj(listName)
         );
     }
 
     @Override
     protected String decoratePushOperation(String listName, String objectId, String objectVar) {
         return (
-                "        push('"
-                        + listName + "', " + ((objectId != null) ? decorateId(objectId) : objectVar)
-                        + ");" + LINE_SEPARATOR
+                "        push('" +
+                        listName + "', " + ((objectId != null) ? decorateId(objectId) : objectVar) +
+                        ");" + LINE_SEPARATOR +
+                        createListObj(listName)
+        );
+    }
+
+    private String createListObj(String listName) {
+        return (
+                "        if _" + listName + " == nil then" +
+                        "            _" + listName + " = clone(listobj);" + LINE_SEPARATOR +
+                        "            _" + listName + ".listnam = \"" + listName + "\"" + LINE_SEPARATOR +
+                        "        end;" + LINE_SEPARATOR
         );
     }
 
