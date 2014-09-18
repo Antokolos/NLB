@@ -673,9 +673,9 @@ public class STEADExportManager extends TextExportManager {
 
     private String createListObj(String listName) {
         return (
-                "        if _" + listName + " == nil then" +
-                        "            _" + listName + " = clone(listobj);" + LINE_SEPARATOR +
-                        "            _" + listName + ".listnam = \"" + listName + "\"" + LINE_SEPARATOR +
+                "        if " + GLOBAL_VAR_PREFIX + listName + " == nil then" +
+                        "            " + GLOBAL_VAR_PREFIX + listName + " = clone(listobj);" + LINE_SEPARATOR +
+                        "            " + GLOBAL_VAR_PREFIX  + listName + ".listnam = \"" + listName + "\"" + LINE_SEPARATOR +
                         "        end;" + LINE_SEPARATOR
         );
     }
