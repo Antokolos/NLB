@@ -675,7 +675,7 @@ public class STEADExportManager extends TextExportManager {
         return (
                 "        if " + GLOBAL_VAR_PREFIX + listName + " == nil then" +
                         "            " + GLOBAL_VAR_PREFIX + listName + " = clone(listobj);" + LINE_SEPARATOR +
-                        "            " + GLOBAL_VAR_PREFIX  + listName + ".listnam = \"" + listName + "\"" + LINE_SEPARATOR +
+                        "            " + GLOBAL_VAR_PREFIX  + listName + ".listnam = \"" + listName + "\";" + LINE_SEPARATOR +
                         "        end;" + LINE_SEPARATOR
         );
     }
