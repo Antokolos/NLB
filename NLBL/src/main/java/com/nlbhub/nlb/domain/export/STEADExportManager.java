@@ -141,8 +141,8 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    shuffled = function(tab)").append(LINE_SEPARATOR);
         stringBuilder.append("        local n, order, res = #tab, {}, {};").append(LINE_SEPARATOR);
-        stringBuilder.append("        for i=1,n do order[i] = { rnd = math.random(), idx = i } end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        table.sort(order, function(a,b) return a.rnd < b.rnd end);").append(LINE_SEPARATOR);
+        stringBuilder.append("        for i=1,n do order[i] = { rand = rnd(n), idx = i } end;").append(LINE_SEPARATOR);
+        stringBuilder.append("        table.sort(order, function(a,b) return a.rand < b.rand end);").append(LINE_SEPARATOR);
         stringBuilder.append("        for i=1,n do res[i] = tab[order[i].idx] end;").append(LINE_SEPARATOR);
         stringBuilder.append("        return res;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
