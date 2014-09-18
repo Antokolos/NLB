@@ -149,7 +149,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    toArray = function(list)").append(LINE_SEPARATOR);
         stringBuilder.append("        local res = {}").append(LINE_SEPARATOR);
         stringBuilder.append("        local loclist = list;").append(LINE_SEPARATOR);
-        stringBuilder.append("        local i = 0;").append(LINE_SEPARATOR);
+        stringBuilder.append("        local i = 1;").append(LINE_SEPARATOR);
         stringBuilder.append("        if loclist == nil then").append(LINE_SEPARATOR);
         stringBuilder.append("            return nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        else").append(LINE_SEPARATOR);
@@ -211,37 +211,49 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    nam = \"listobj\",").append(LINE_SEPARATOR);
         stringBuilder.append("    listnam = \"\",").append(LINE_SEPARATOR);
         stringBuilder.append("    act = function(s)").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.acta(s)").append(LINE_SEPARATOR);
+        stringBuilder.append("        here().autos();").append(LINE_SEPARATOR);
+        stringBuilder.append("    end,").append(LINE_SEPARATOR);
+        stringBuilder.append("    acta = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.actf(s)").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    actf = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        local list = _lists[s.listnam];").append(LINE_SEPARATOR);
         stringBuilder.append("        if list ~= nil then").append(LINE_SEPARATOR);
         stringBuilder.append("            repeat").append(LINE_SEPARATOR);
-        stringBuilder.append("                list.value.act(list.value);").append(LINE_SEPARATOR);
+        stringBuilder.append("                list.value.acta(list.value);").append(LINE_SEPARATOR);
         stringBuilder.append("                list = list.next;").append(LINE_SEPARATOR);
         stringBuilder.append("            until list == nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    use = function(s, w)").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.usea(s, w);").append(LINE_SEPARATOR);
+        stringBuilder.append("        here().autos();").append(LINE_SEPARATOR);
+        stringBuilder.append("    end,").append(LINE_SEPARATOR);
+        stringBuilder.append("    usea = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.usef(s, w);").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    usef = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        local list = _lists[s.listnam];").append(LINE_SEPARATOR);
         stringBuilder.append("        if list ~= nil then").append(LINE_SEPARATOR);
         stringBuilder.append("            repeat").append(LINE_SEPARATOR);
-        stringBuilder.append("                list.value.usef(list.value, w);").append(LINE_SEPARATOR);
+        stringBuilder.append("                list.value.usea(list.value, w);").append(LINE_SEPARATOR);
         stringBuilder.append("                list = list.next;").append(LINE_SEPARATOR);
         stringBuilder.append("            until list == nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    used = function(s, w)").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.useda(s, w);").append(LINE_SEPARATOR);
+        stringBuilder.append("        here().autos();").append(LINE_SEPARATOR);
+        stringBuilder.append("    end,").append(LINE_SEPARATOR);
+        stringBuilder.append("    useda = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.usedf(s, w);").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    usedf = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        local list = _lists[s.listnam];").append(LINE_SEPARATOR);
         stringBuilder.append("        if list ~= nil then").append(LINE_SEPARATOR);
         stringBuilder.append("            repeat").append(LINE_SEPARATOR);
-        stringBuilder.append("                w.usef(w, list.value);").append(LINE_SEPARATOR);
+        stringBuilder.append("                w.usea(w, list.value);").append(LINE_SEPARATOR);
         stringBuilder.append("                list = list.next;").append(LINE_SEPARATOR);
         stringBuilder.append("            until list == nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
@@ -545,9 +557,12 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateObjActStart(List<TextChunk> actTextChunks) {
         return (
                 "    act = function(s)" + LINE_SEPARATOR +
+                        "        s.acta(s);" + LINE_SEPARATOR +
+                        "        here().autos();" + LINE_SEPARATOR +
+                        "    end," + LINE_SEPARATOR +
+                        "    acta = function(s)" + LINE_SEPARATOR +
                         "        p([[" + expandVariables(actTextChunks) + "]]);" + LINE_SEPARATOR +
                         "        s.actf(s);" + LINE_SEPARATOR +
-                        "        here().autos();" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    actf = function(s)" + LINE_SEPARATOR
         );
@@ -562,9 +577,12 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateObjUseStart() {
         return (
                 "    use = function(s, w)" + LINE_SEPARATOR +
+                        "        s.usea(s, w);" + LINE_SEPARATOR +
+                        "        here().autos();" + LINE_SEPARATOR +
+                        "    end," + LINE_SEPARATOR +
+                        "    usea = function(s, w)" + LINE_SEPARATOR +
                         "        s.usep(s, w);" + LINE_SEPARATOR +
                         "        s.usef(s, w);" + LINE_SEPARATOR +
-                        "        here().autos();" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    usef = function(s, w)" + LINE_SEPARATOR
         );
@@ -701,14 +719,14 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateActOperation(String actingObjVariable, String actingObjId) {
         String source = (actingObjId != null) ? decorateId(actingObjId) : actingObjVariable;
-        return source + ".actf(" + source + ");" + LINE_SEPARATOR;
+        return source + ".acta(" + source + ");" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateUseOperation(String sourceVariable, String sourceId, String targetVariable, String targetId) {
         String source = (sourceId != null) ? decorateId(sourceId) : sourceVariable;
         String target = (targetId != null) ? decorateId(targetId) : targetVariable;
-        return source + ".usef(" + source + ", " + target + ");" + LINE_SEPARATOR;
+        return source + ".usea(" + source + ", " + target + ");" + LINE_SEPARATOR;
     }
 
     @Override
