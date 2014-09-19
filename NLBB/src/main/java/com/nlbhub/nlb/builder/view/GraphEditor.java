@@ -486,6 +486,7 @@ public class GraphEditor extends PCanvas {
                 }
                 if (
                         nodeItem != null
+                                && !nodeItem.isDeleted()
                                 && !nodeItem.getId().equals(obj.getId())  // not self
                         ) {
                     m_nlbFacade.changeContainer(
