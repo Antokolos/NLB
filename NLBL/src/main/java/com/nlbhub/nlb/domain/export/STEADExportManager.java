@@ -210,6 +210,9 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("listobj = obj {").append(LINE_SEPARATOR);
         stringBuilder.append("    nam = \"listobj\",").append(LINE_SEPARATOR);
         stringBuilder.append("    listnam = \"\",").append(LINE_SEPARATOR);
+        stringBuilder.append("    clear = function(s)").append(LINE_SEPARATOR);
+        stringBuilder.append("        _lists[s.listnam] = nil;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    act = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.acta(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        here().autos();").append(LINE_SEPARATOR);
@@ -704,6 +707,17 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decoratePopOperation(String variableName, String listName) {
         return variableName + " = pop('" + listName + "');" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateClearOperation(String destinationId, String destinationVar) {
+        if (destinationId != null) {
+            return "objs("  + decorateId(destinationId) + "):zap();" + LINE_SEPARATOR;
+        } else if (destinationVar != null) {
+            return destinationVar + ".clear(" + destinationVar + ");" + LINE_SEPARATOR;
+        } else {
+            return "inv():zap();" + LINE_SEPARATOR;
+        }
     }
 
     @Override

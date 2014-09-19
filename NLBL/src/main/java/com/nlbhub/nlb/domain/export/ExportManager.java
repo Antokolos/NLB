@@ -821,10 +821,10 @@ public abstract class ExportManager {
                 Variable expression = (
                         exportData.getNlb().getVariableById(modification.getExprId())
                 );
-                if (expression == null || expression.isDeleted()) {
+                if (modification.isParametrized() && (expression == null || expression.isDeleted())) {
                     throw new NLBConsistencyException(
                             "Expression with id = " + modification.getExprId()
-                                    + "cannot be found for modification"
+                                    + " cannot be found for modification "
                                     + modification.getFullId()
                     );
                 }
@@ -880,6 +880,18 @@ public abstract class ExportManager {
                                                 ? exportData.getNlb().getObjById(objIdToRemove).getDisp()
                                                 : null)
                         );
+                        break;
+                    case CLEAR:
+                        final String destinationId = exportData.getObjId(expression.getValue());
+                        stringBuilder.append(
+                                decorateClearOperation(
+                                        destinationId,
+                                        decorateAutoVar(expression.getValue())
+                                )
+                        );
+                        break;
+                    case CLRINV:
+                        stringBuilder.append(decorateClearOperation(null, null));
                         break;
                     case PUSH:
                         final String objIdToPush = exportData.getObjId(expression.getValue());
@@ -981,6 +993,8 @@ public abstract class ExportManager {
     protected abstract String decoratePushOperation(String listName, String objectId, String objectVar);
 
     protected abstract String decoratePopOperation(String variableName, String listName);
+
+    protected abstract String decorateClearOperation(String destinationId, String destinationVar);
 
     protected abstract String decorateSizeOperation(String variableName, String listName);
 

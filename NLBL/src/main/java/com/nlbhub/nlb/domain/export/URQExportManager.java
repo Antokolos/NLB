@@ -372,6 +372,12 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateClearOperation(String destinationId, String destinationVar) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateSizeOperation(String variableName, String listName) {
         // TODO: implement
         return EMPTY_STRING;

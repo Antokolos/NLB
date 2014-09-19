@@ -357,6 +357,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
+    protected String decorateClearOperation(String destinationId, String destinationVar) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateSizeOperation(String variableName, String listName) {
         // TODO: implement
         return EMPTY_STRING;

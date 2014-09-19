@@ -45,7 +45,7 @@ package com.nlbhub.nlb.api;
  * @version 1.0 1/15/14
  */
 public interface Modification extends IdentifiableItem {
-    public enum Type {ASSIGN, ADD, ADDALL, REMOVE, PUSH, POP, SHUFFLE, ACT, USE, SIZE}
+    public enum Type {ASSIGN, ADD, ADDALL, REMOVE, CLEAR, CLRINV, PUSH, POP, SHUFFLE, ACT, USE, SIZE}
 
     public String getVarId();
 
@@ -60,4 +60,12 @@ public interface Modification extends IdentifiableItem {
      * <code>false</code> otherwise
      */
     public boolean returnsValue();
+
+    /**
+     * Determines whether this modification has parameters or not.
+     *
+     * @return <code>true</code> if this modification has parameters,
+     * <code>false</code> otherwise
+     */
+    public boolean isParametrized();
 }
