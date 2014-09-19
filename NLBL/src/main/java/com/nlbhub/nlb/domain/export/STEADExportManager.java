@@ -363,7 +363,6 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(objBlocks.getObjUseEnd());
             // TODO: make additional decorate method for usep function (something like decorateObjStart())
             stringBuilder.append("    usep = function(s, w)").append(LINE_SEPARATOR);
-            stringBuilder.append("        end;").append(LINE_SEPARATOR);
             stringBuilder.append(objBlocks.getObjUseEnd());
         }
         List<String> containedObjIds = objBlocks.getContainedObjIds();
