@@ -359,7 +359,11 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(objBlocks.getObjUseEnd());
             stringBuilder.append(usepBuilder);
         } else if (objBlocks.isTakable()) {
-            // If object is takable, then empty use function should be specified anyway
+            // If object is takable, then empty use and usep functions should be specified anyway
+            stringBuilder.append(objBlocks.getObjUseEnd());
+            // TODO: make additional decorate method for usep function (something like decorateObjStart())
+            stringBuilder.append("    usep = function(s, w)").append(LINE_SEPARATOR);
+            stringBuilder.append("        end;").append(LINE_SEPARATOR);
             stringBuilder.append(objBlocks.getObjUseEnd());
         }
         List<String> containedObjIds = objBlocks.getContainedObjIds();
