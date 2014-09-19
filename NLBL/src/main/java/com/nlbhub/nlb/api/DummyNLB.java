@@ -119,7 +119,7 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
-    public void exportMedia(boolean isRoot, File mainExportDir, String mediaDirName, List<MediaFile> mediaFiles) throws NLBExportException {
+    public void exportMedia(boolean isRoot, File mainExportDir, String mediaDirName, List<MediaFile> mediaFiles, MediaFile.Type mediaType) throws NLBExportException {
         // do nothing
     }
 

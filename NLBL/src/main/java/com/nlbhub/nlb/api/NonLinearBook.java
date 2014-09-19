@@ -275,7 +275,13 @@ public interface NonLinearBook {
 
     public List<MediaFile> getSoundFiles();
 
-    public void exportMedia(boolean isRoot, File mainExportDir, String mediaDirName, List<MediaFile> mediaFiles) throws NLBExportException;
+    public void exportMedia(
+            boolean isRoot,
+            File mainExportDir,
+            String mediaDirName,
+            List<MediaFile> mediaFiles,
+            final MediaFile.Type mediaType
+    ) throws NLBExportException;
 
     public Map<String, Page> getPages();
 

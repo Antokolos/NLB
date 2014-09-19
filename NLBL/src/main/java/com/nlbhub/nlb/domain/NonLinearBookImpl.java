@@ -57,9 +57,11 @@ import org.jetbrains.annotations.Nullable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -3825,18 +3827,19 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     public void exportImages(final boolean isRoot, final File mainExportDir) throws NLBExportException {
-        exportMedia(isRoot, mainExportDir, IMAGES_DIR_NAME, getImageFiles());
+        exportMedia(isRoot, mainExportDir, IMAGES_DIR_NAME, getImageFiles(), MediaFile.Type.Image);
     }
 
     public void exportSound(final boolean isRoot, final File mainExportDir) throws NLBExportException {
-        exportMedia(isRoot, mainExportDir, SOUND_DIR_NAME, getSoundFiles());
+        exportMedia(isRoot, mainExportDir, SOUND_DIR_NAME, getSoundFiles(), MediaFile.Type.Sound);
     }
 
     public void exportMedia(
             final boolean isRoot,
             final File mainExportDir,
             final String mediaDirName,
-            final List<MediaFile> mediaFiles
+            final List<MediaFile> mediaFiles,
+            final MediaFile.Type mediaType
     ) throws NLBExportException {
         if (getRootDir() == null) {
             throw new NLBExportException("NLB root dir is undefined");
@@ -3865,8 +3868,31 @@ public class NonLinearBookImpl implements NonLinearBook {
             }
 
             for (Page page : m_pages.values()) {
-                if (!page.getModule().isEmpty()) {
-                    page.getModule().exportMedia(false, mainExportDir, mediaDirName, mediaFiles);
+                final NonLinearBook module = page.getModule();
+                if (!module.isEmpty()) {
+                    switch (mediaType) {
+                         case Image:
+                             module.exportMedia(
+                                     false,
+                                     mainExportDir,
+                                     mediaDirName,
+                                     module.getImageFiles(),
+                                     mediaType
+                             );
+                             break;
+                        case Sound:
+                            module.exportMedia(
+                                    false,
+                                    mainExportDir,
+                                    mediaDirName,
+                                    module.getSoundFiles(),
+                                    mediaType
+                            );
+                            break;
+                        default:
+                            throw new NLBExportException("Unknown media type = " + mediaType.name());
+                    }
+
                 }
             }
         } catch (IOException e) {
