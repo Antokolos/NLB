@@ -322,17 +322,8 @@ public abstract class ExportManager {
         blocks.setPageNumber(decoratePageNumber(pageNumber));
         blocks.setPageComment(decoratePageComment(page.getCaption()));
         blocks.setPageCaption(decoratePageCaption(page.getCaption()));
-        Page parentPage = page.getCurrentNLB().getParentPage();
-        blocks.setPageImage(
-                decoratePageImage(
-                        getImagePath((parentPage != null) ? parentPage.getId() : null, page.getImageFileName())
-                )
-        );
-        blocks.setPageSound(
-                decoratePageSound(
-                        getPageSoundPath((parentPage != null) ? parentPage.getId() : null, page.getSoundFileName())
-                )
-        );
+        blocks.setPageImage(decoratePageImage(getImagePath(null, page.getImageFileName())));
+        blocks.setPageSound(decoratePageSound(getSoundPath(null, page.getSoundFileName())));
         blocks.setUseCaption(page.isUseCaption());
         blocks.setPageTextStart(decoratePageTextStart(StringHelper.getTextChunks(page.getText())));
         blocks.setPageTextEnd(decoratePageTextEnd());
@@ -468,16 +459,7 @@ public abstract class ExportManager {
         blocks.setObjComment(decorateObjComment(obj.getName()));
         blocks.setObjStart(decorateObjStart());
         blocks.setObjName(decorateObjName(obj.getName()));
-        Page parentPage = obj.getCurrentNLB().getParentPage();
-        final String objImage = (
-                decorateObjImage(
-                        getImagePath(
-                                (parentPage != null)
-                                        ? parentPage.getId()
-                                        : null, obj.getImageFileName()
-                        )
-                )
-        );
+        final String objImage = decorateObjImage(getImagePath(null, obj.getImageFileName()));
         final boolean hasImage = StringHelper.notEmpty(obj.getImageFileName());
         blocks.setObjImage(objImage);
         blocks.setObjDisp(decorateObjDisp(StringHelper.getTextChunks(obj.getDisp()), hasImage && obj.isImageInInventory()));
@@ -1070,29 +1052,36 @@ public abstract class ExportManager {
 
     protected abstract String decoratePageSound(String pageSoundPath);
 
-    protected String getImagePath(String parentPageId, String imageFileName) {
+    /**
+     * NB: in case of ordinary (inline) NLB modules moduleDir should be <code>null</code>
+     *
+     * @param moduleDir
+     * @param imageFileName
+     * @return
+     */
+    protected String getImagePath(String moduleDir, String imageFileName) {
         if (StringHelper.isEmpty(imageFileName)) {
             return Constants.EMPTY_STRING;
         } else {
-            if (parentPageId == null) {
+            if (moduleDir == null) {
                 return NonLinearBook.IMAGES_DIR_NAME + "/" + imageFileName;
             } else {
-                return NonLinearBook.IMAGES_DIR_NAME + "/" + parentPageId + "/" + imageFileName;
+                return NonLinearBook.IMAGES_DIR_NAME + "/" + moduleDir + "/" + imageFileName;
             }
         }
     }
 
-    protected String getPageSoundPath(String parentPageId, String soundFileName) {
+    protected String getSoundPath(String moduleDir, String soundFileName) {
         if (StringHelper.isEmpty(soundFileName)) {
             return Constants.EMPTY_STRING;
         } else {
             if (Constants.VOID.equals(soundFileName)) {
                 return Constants.VOID;
             } else {
-                if (parentPageId == null) {
+                if (moduleDir == null) {
                     return NonLinearBook.SOUND_DIR_NAME + "/" + soundFileName;
                 } else {
-                    return NonLinearBook.SOUND_DIR_NAME + "/" + parentPageId + "/" + soundFileName;
+                    return NonLinearBook.SOUND_DIR_NAME + "/" + moduleDir + "/" + soundFileName;
                 }
             }
         }

@@ -148,7 +148,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 DialogMediaLibrary dialog = (
-                        new DialogMediaLibrary(m_nlbFacade, MediaFile.Type.Image)
+                        new DialogMediaLibrary(m_nlbFacade.getMainFacade(), MediaFile.Type.Image)
                 );
                 dialog.showDialog();
                 if (!dialog.isCanceled()) {
@@ -260,7 +260,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
             if (StringHelper.isEmpty(m_imageFileName)) {
                 m_imageView.setVisible(false);
             } else {
-                m_imageView.setImage(new File(m_nlbFacade.getNlb().getImagesDir(), imageFileName));
+                m_imageView.setImage(
+                        new File(m_nlbFacade.getMainFacade().getNlb().getImagesDir(), imageFileName)
+                );
                 m_imageView.setVisible(true);
             }
         } catch (IOException ignore) {

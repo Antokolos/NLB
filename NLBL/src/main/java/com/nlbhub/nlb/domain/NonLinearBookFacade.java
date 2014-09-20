@@ -76,17 +76,25 @@ public class NonLinearBookFacade implements NLBObservable {
     private VCSAdapter m_vcsAdapter;
     private Author m_author;
     private boolean m_rootFacade;
+    private NonLinearBookFacade m_parentFacade;
     private List<NonLinearBookFacade> m_moduleFacades = new ArrayList<>();
 
     public NonLinearBookFacade() {
         m_rootFacade = true;
+        m_parentFacade = null;
         m_author = new Author("author", "author@example.com");
         m_vcsAdapter = new GitAdapterWithPathDecoration(m_author);
         // m_nlb should be initialized later
     }
 
-    private NonLinearBookFacade(Author author, VCSAdapter vcsAdapter, NonLinearBookImpl nlb) {
+    private NonLinearBookFacade(
+            NonLinearBookFacade parentFacade,
+            Author author,
+            VCSAdapter vcsAdapter,
+            NonLinearBookImpl nlb
+    ) {
         m_rootFacade = false;
+        m_parentFacade = parentFacade;
         m_author = author;
         m_vcsAdapter = vcsAdapter;
         m_nlb = nlb;
@@ -100,11 +108,23 @@ public class NonLinearBookFacade implements NLBObservable {
     public NonLinearBookFacade createModuleFacade(final String modulePageId) {
         PageImpl page = m_nlb.getPageImplById(modulePageId);
         NonLinearBookFacade facade = (
-                new NonLinearBookFacade(m_author, m_vcsAdapter, page.getModuleImpl())
+                new NonLinearBookFacade(this, m_author, m_vcsAdapter, page.getModuleImpl())
         );
         m_moduleFacades.add(facade);
         notifyObservers();
         return facade;
+    }
+
+    public NonLinearBookFacade getMainFacade() {
+        NonLinearBookFacade result = this;
+        while (result.getParentFacade() != null) {
+            result = result.getParentFacade();
+        }
+        return result;
+    }
+
+    public NonLinearBookFacade getParentFacade() {
+        return m_parentFacade;
     }
 
     public NonLinearBook getNlb() {
