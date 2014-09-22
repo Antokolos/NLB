@@ -165,6 +165,27 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        local n = #arr").append(LINE_SEPARATOR);
         stringBuilder.append("        for i=1,n do push(listname, arr[i]) end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    usea = function(actionObject, targetObject)").append(LINE_SEPARATOR);
+        stringBuilder.append("        if actionObject ~= nil and targetObject ~= nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("            if actionObject.usea ~= nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("                actionObject.usea(actionObject, targetObject);").append(LINE_SEPARATOR);
+        stringBuilder.append("            end;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    acta = function(object)").append(LINE_SEPARATOR);
+        stringBuilder.append("        if object ~= nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("            if object.acta ~= nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("                object.acta(object);").append(LINE_SEPARATOR);
+        stringBuilder.append("            end;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    clear = function(object)").append(LINE_SEPARATOR);
+        stringBuilder.append("        if object ~= nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("            if object.clear ~= nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("                object.clear(object);").append(LINE_SEPARATOR);
+        stringBuilder.append("            end;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    addf = function(target, object)").append(LINE_SEPARATOR);
         stringBuilder.append("        if target == nil then").append(LINE_SEPARATOR);
         stringBuilder.append("            if have(object) then").append(LINE_SEPARATOR);
@@ -717,7 +738,7 @@ public class STEADExportManager extends TextExportManager {
         if (destinationId != null) {
             return "objs("  + decorateId(destinationId) + "):zap();" + LINE_SEPARATOR;
         } else if (destinationVar != null) {
-            return destinationVar + ".clear(" + destinationVar + ");" + LINE_SEPARATOR;
+            return "clear(" + destinationVar + ");" + LINE_SEPARATOR;
         } else {
             return "inv():zap();" + LINE_SEPARATOR;
         }
@@ -736,14 +757,14 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateActOperation(String actingObjVariable, String actingObjId) {
         String source = (actingObjId != null) ? decorateId(actingObjId) : actingObjVariable;
-        return source + ".acta(" + source + ");" + LINE_SEPARATOR;
+        return "acta(" + source + ");" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateUseOperation(String sourceVariable, String sourceId, String targetVariable, String targetId) {
         String source = (sourceId != null) ? decorateId(sourceId) : sourceVariable;
         String target = (targetId != null) ? decorateId(targetId) : targetVariable;
-        return source + ".usea(" + source + ", " + target + ");" + LINE_SEPARATOR;
+        return "usea(" + source + ", " + target + ");" + LINE_SEPARATOR;
     }
 
     @Override
