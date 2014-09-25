@@ -136,16 +136,11 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     }
 
     @Override
-    public SearchResult searchText(
-            String searchText,
-            boolean searchInId,
-            boolean ignoreCase,
-            boolean wholeWords
-    ) {
-        SearchResult result = super.searchText(searchText, searchInId, ignoreCase, wholeWords);
+    public SearchResult searchText(SearchContract contract) {
+        SearchResult result = super.searchText(contract);
         if (result != null) {
             return result;
-        } else if (textMatches(m_text, searchText, ignoreCase, wholeWords)) {
+        } else if (textMatches(m_text, contract)) {
             result = new SearchResult();
             result.setId(getId());
             result.setInformation(getText());

@@ -306,15 +306,7 @@ public interface NonLinearBook {
     public SearchResultTableModel getLeafs(String modulePageId);
 
     public SearchResultTableModel searchText(
-            String modulePageId,
-            String searchText,
-            boolean searchInIds,
-            boolean searchInPages,
-            boolean searchInObjects,
-            boolean searchInLinks,
-            boolean searchInVars,
-            boolean ignoreCase,
-            boolean wholeWords
+            SearchContract searchContract, String modulePageId
     );
 
     public SearchResultTableModel getVariables(String modulePageId) throws NLBConsistencyException;

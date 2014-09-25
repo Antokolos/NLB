@@ -183,15 +183,7 @@ public class DummyNLB implements NonLinearBook {
 
     @Override
     public SearchResultTableModel searchText(
-            final String modulePageId,
-            final String searchText,
-            final boolean searchInIds,
-            final boolean searchInPages,
-            final boolean searchInObjects,
-            final boolean searchInLinks,
-            final boolean searchInVars,
-            final boolean ignoreCase,
-            final boolean wholeWords
+            SearchContract searchContract, final String modulePageId
     ) {
         return new SearchResultTableModel();
     }

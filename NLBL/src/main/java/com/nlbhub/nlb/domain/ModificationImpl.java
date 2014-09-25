@@ -38,10 +38,7 @@
  */
 package com.nlbhub.nlb.domain;
 
-import com.nlbhub.nlb.api.IdentifiableItem;
-import com.nlbhub.nlb.api.Modification;
-import com.nlbhub.nlb.api.ModifyingItem;
-import com.nlbhub.nlb.api.Variable;
+import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
@@ -136,7 +133,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     }
 
     @Override
-    public SearchResult searchText(String searchText, boolean searchInId, boolean ignoreCase, boolean wholeWords) {
+    public SearchResult searchText(SearchContract contract) {
         // TODO: implement search in modifications
         return null;
     }

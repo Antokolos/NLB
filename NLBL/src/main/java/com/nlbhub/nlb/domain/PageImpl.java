@@ -169,13 +169,17 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     @Override
-    public SearchResult searchText(String searchText, boolean searchInId, boolean ignoreCase, boolean wholeWords) {
-        SearchResult result = super.searchText(searchText, searchInId, ignoreCase, wholeWords);
+    public SearchResult searchText(SearchContract contract) {
+        SearchResult result = super.searchText(contract);
         if (result != null) {
             return result;
         } else if (
-                textMatches(m_text, searchText, ignoreCase, wholeWords)
-                        || textMatches(m_caption, searchText, ignoreCase, wholeWords)
+                textMatches(m_text, contract)
+                        || textMatches(m_caption, contract)
+                        || textMatches(m_returnText, contract)
+                        || textMatches(m_traverseText, contract)
+                        || textMatches(m_autowireInText, contract)
+                        || textMatches(m_autowireOutText, contract)
                 ) {
             result = new SearchResult();
             result.setId(getId());

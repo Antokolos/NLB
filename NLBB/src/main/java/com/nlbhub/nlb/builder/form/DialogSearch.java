@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.NonLinearBook;
+import com.nlbhub.nlb.api.SearchContract;
 import com.nlbhub.nlb.api.SearchResultTableModel;
 import com.nlbhub.nlb.builder.model.SearchResultsTableModelSwing;
 import org.jdesktop.swingx.JXTable;
@@ -116,15 +117,18 @@ public class DialogSearch extends JDialog {
 
     private void onOK() {
         SearchResultTableModel searchResultTableModel = m_nlb.searchText(
-                m_modulePageId,
-                m_searchText.getText(),
-                m_idsCheckBox.isSelected(),
-                m_pagesCheckBox.isSelected(),
-                m_objectsCheckBox.isSelected(),
-                m_linksCheckBox.isSelected(),
-                m_variablesCheckBox.isSelected(),
-                m_ignoreCaseCheckBox.isSelected(),
-                m_wholeWordsCheckBox.isSelected());
+                new SearchContract(
+                        m_searchText.getText(),
+                        m_idsCheckBox.isSelected(),
+                        m_pagesCheckBox.isSelected(),
+                        m_objectsCheckBox.isSelected(),
+                        m_linksCheckBox.isSelected(),
+                        m_variablesCheckBox.isSelected(),
+                        m_ignoreCaseCheckBox.isSelected(),
+                        m_wholeWordsCheckBox.isSelected()
+                ),
+                m_modulePageId
+        );
         m_tableModel = new SearchResultsTableModelSwing(searchResultTableModel);
         m_searchResultsTable.setModel(m_tableModel);
     }

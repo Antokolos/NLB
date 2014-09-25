@@ -41,6 +41,7 @@ package com.nlbhub.nlb.domain;
 import com.nlbhub.nlb.api.DummyNLB;
 import com.nlbhub.nlb.api.IdentifiableItem;
 import com.nlbhub.nlb.api.NonLinearBook;
+import com.nlbhub.nlb.api.SearchContract;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.StringHelper;
@@ -152,13 +153,8 @@ public abstract class AbstractIdentifiableItem implements IdentifiableItem {
         return m_currentNLB;
     }
 
-    public SearchResult searchText(
-            final String searchText,
-            boolean searchInId,
-            boolean ignoreCase,
-            boolean wholeWords
-    ) {
-        if (searchInId && textMatches(m_id, searchText, ignoreCase, wholeWords)) {
+    public SearchResult searchText(SearchContract contract) {
+        if (contract.isSearchInIds() && textMatches(m_id, contract)) {
             SearchResult result = new SearchResult();
             result.setId(m_id);
             result.setInformation(m_id);
@@ -168,36 +164,26 @@ public abstract class AbstractIdentifiableItem implements IdentifiableItem {
         }
     }
 
-    protected boolean textMatches(
-            final MultiLangString mlsToTest,
-            final String searchText,
-            boolean ignoreCase,
-            boolean wholeWords
-    ) {
+    protected boolean textMatches(final MultiLangString mlsToTest, final SearchContract contract) {
         for (String text : mlsToTest.values()) {
-            if (textMatches(text, searchText, ignoreCase, wholeWords)) {
+            if (textMatches(text, contract)) {
                 return true;
             }
         }
         return false;
     }
 
-    protected boolean textMatches(
-            final String stringToTest,
-            final String searchText,
-            boolean ignoreCase,
-            boolean wholeWords
-    ) {
+    protected boolean textMatches(final String stringToTest, final SearchContract contract) {
         StringBuilder patternText = new StringBuilder();
-        if (wholeWords) {
+        if (contract.isWholeWords()) {
             patternText.append("\\b");
         }
-        patternText.append(searchText);
-        if (wholeWords) {
+        patternText.append(contract.getSearchText());
+        if (contract.isWholeWords()) {
             patternText.append("\\b");
         }
         Pattern pattern = (
-                (ignoreCase)
+                (contract.isIgnoreCase())
                         ? (
                         Pattern.compile(
                                 patternText.toString(),
@@ -210,9 +196,7 @@ public abstract class AbstractIdentifiableItem implements IdentifiableItem {
         return matcher.find();
     }
 
-    protected List<File> createSortedDirList(
-            File[] dirs, List<String> orderList
-    ) throws NLBConsistencyException {
+    protected List<File> createSortedDirList(File[] dirs, List<String> orderList) throws NLBConsistencyException {
         List<File> dirsList = new LinkedList<File>();
         // Cannot use Arrays.asList(), because this list will be modified later
         //noinspection all

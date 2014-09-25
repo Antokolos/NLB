@@ -57,7 +57,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -3080,30 +3079,20 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     @Override
-    public SearchResultTableModel searchText(
-            final String modulePageId,
-            final String searchText,
-            final boolean searchInIds,
-            final boolean searchInPages,
-            final boolean searchInObjects,
-            final boolean searchInLinks,
-            final boolean searchInVars,
-            final boolean ignoreCase,
-            final boolean wholeWords
-    ) {
+    public SearchResultTableModel searchText(SearchContract contract, final String modulePageId) {
         SearchResultTableModel result = new SearchResultTableModel();
-        if (searchInPages) {
+        if (contract.isSearchInPages()) {
             for (Map.Entry<String, PageImpl> entry : m_pages.entrySet()) {
                 final SearchResult pageResult;
                 final SearchResult varResult;
                 final PageImpl page = entry.getValue();
-                if ((pageResult = page.searchText(searchText, searchInIds, ignoreCase, wholeWords)) != null) {
+                if ((pageResult = page.searchText(contract)) != null) {
                     pageResult.setModulePageId(modulePageId);
                     result.addSearchResult(pageResult);
                 } else {
                     final VariableImpl variable;
-                    if (searchInVars && ((variable = getVariableImplById(page.getVarId())) != null)) {
-                        varResult = variable.searchText(searchText, searchInIds, ignoreCase, wholeWords);
+                    if (contract.isSearchInVars() && ((variable = getVariableImplById(page.getVarId())) != null)) {
+                        varResult = variable.searchText(contract);
                         if (varResult != null) {
                             varResult.setId(page.getId());
                             varResult.setModulePageId(modulePageId);
@@ -3115,44 +3104,27 @@ public class NonLinearBookImpl implements NonLinearBook {
                 if (!moduleImpl.isEmpty()) {
                     result.addSearchResultTableModel(
                             moduleImpl.searchText(
-                                    page.getId(),
-                                    searchText,
-                                    searchInIds,
-                                    searchInPages,
-                                    searchInObjects,
-                                    searchInLinks,
-                                    searchInVars,
-                                    ignoreCase,
-                                    wholeWords
+                                    new SearchContract(contract.getSearchText(), contract.isSearchInIds(), contract.isSearchInPages(), contract.isSearchInObjects(), contract.isSearchInLinks(), contract.isSearchInVars(), contract.isIgnoreCase(), contract.isWholeWords()), page.getId()
                             )
                     );
                 }
-                if (searchInLinks) {
-                    searchLinks(
-                            modulePageId,
-                            page,
-                            result,
-                            searchText,
-                            searchInIds,
-                            searchInVars,
-                            ignoreCase,
-                            wholeWords
-                    );
+                if (contract.isSearchInLinks()) {
+                    searchLinks(modulePageId, page, result, contract);
                 }
             }
         }
-        if (searchInObjects) {
+        if (contract.isSearchInObjects()) {
             for (Map.Entry<String, ObjImpl> entry : m_objs.entrySet()) {
                 final SearchResult objResult;
                 final SearchResult varResult;
                 final ObjImpl obj = entry.getValue();
-                if ((objResult = obj.searchText(searchText, searchInIds, ignoreCase, wholeWords)) != null) {
+                if ((objResult = obj.searchText(contract)) != null) {
                     objResult.setModulePageId(modulePageId);
                     result.addSearchResult(objResult);
                 } else {
                     final VariableImpl variable;
-                    if (searchInVars && ((variable = getVariableImplById(obj.getVarId())) != null)) {
-                        varResult = variable.searchText(searchText, searchInIds, ignoreCase, wholeWords);
+                    if (contract.isSearchInVars() && ((variable = getVariableImplById(obj.getVarId())) != null)) {
+                        varResult = variable.searchText(contract);
                         if (varResult != null) {
                             varResult.setId(obj.getId());
                             varResult.setModulePageId(modulePageId);
@@ -3160,17 +3132,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                         }
                     }
                 }
-                if (searchInLinks) {
-                    searchLinks(
-                            modulePageId,
-                            obj,
-                            result,
-                            searchText,
-                            searchInIds,
-                            searchInVars,
-                            ignoreCase,
-                            wholeWords
-                    );
+                if (contract.isSearchInLinks()) {
+                    searchLinks(modulePageId, obj, result, contract);
                 }
             }
         }
@@ -3637,24 +3600,20 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String module,
             AbstractNodeItem nodeItem,
             SearchResultTableModel result,
-            final String searchText,
-            final boolean searchInIds,
-            final boolean searchInVars,
-            final boolean ignoreCase,
-            final boolean wholeWords
+            final SearchContract contract
     ) {
         for (LinkImpl link : nodeItem.getLinkImpls()) {
             final SearchResult linkResult;
             final SearchResult varResult;
             final SearchResult constraintsResult;
-            if ((linkResult = link.searchText(searchText, searchInIds, ignoreCase, wholeWords)) != null) {
+            if ((linkResult = link.searchText(contract)) != null) {
                 linkResult.setModulePageId(module);
                 result.addSearchResult(linkResult);
             } else {
-                if (searchInVars) {
+                if (contract.isSearchInVars()) {
                     final VariableImpl variable = getVariableImplById(link.getVarId());
                     if (variable != null) {
-                        varResult = variable.searchText(searchText, searchInIds, ignoreCase, wholeWords);
+                        varResult = variable.searchText(contract);
                     } else {
                         varResult = null;
                     }
@@ -3665,9 +3624,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     } else {
                         final VariableImpl constraint = getVariableImplById(link.getConstrId());
                         if (constraint != null) {
-                            constraintsResult = (
-                                    constraint.searchText(searchText, searchInIds, ignoreCase, wholeWords)
-                            );
+                            constraintsResult = constraint.searchText(contract);
                         } else {
                             constraintsResult = null;
                         }

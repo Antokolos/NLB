@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.domain;
 
 import com.nlbhub.nlb.api.NonLinearBook;
+import com.nlbhub.nlb.api.SearchContract;
 import com.nlbhub.nlb.api.Variable;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
@@ -67,23 +68,17 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
     private String m_value = DEFAULT_VALUE;
 
     @Override
-    public SearchResult searchText(String searchText, boolean searchInId, boolean ignoreCase, boolean wholeWords) {
-        SearchResult result = super.searchText(searchText, searchInId, ignoreCase, wholeWords);
+    public SearchResult searchText(SearchContract contract) {
+        SearchResult result = super.searchText(contract);
         if (result != null) {
             return result;
         } else {
             result = new SearchResult();
-            if (
-                    !DEFAULT_NAME.equals(m_name)
-                            && textMatches(m_name, searchText, ignoreCase, wholeWords)
-                    ) {
+            if (!DEFAULT_NAME.equals(m_name) && textMatches(m_name, contract)) {
                 result.setId(getId());
                 result.setInformation(m_name);
                 return result;
-            } else if (
-                    !DEFAULT_VALUE.equals(m_value)
-                            && textMatches(m_value, searchText, ignoreCase, wholeWords)
-                    ) {
+            } else if (!DEFAULT_VALUE.equals(m_value) && textMatches(m_value, contract)) {
                 result.setId(getId());
                 result.setInformation(m_value);
                 return result;

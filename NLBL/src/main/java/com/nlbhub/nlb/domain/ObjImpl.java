@@ -40,6 +40,7 @@ package com.nlbhub.nlb.domain;
 
 import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.api.Obj;
+import com.nlbhub.nlb.api.SearchContract;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
@@ -93,15 +94,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private boolean m_imageInInventory = DEFAULT_IMAGE_IN_INVENTORY;
 
     @Override
-    public SearchResult searchText(String searchText, boolean searchInId, boolean ignoreCase, boolean wholeWords) {
-        SearchResult result = super.searchText(searchText, searchInId, ignoreCase, wholeWords);
+    public SearchResult searchText(SearchContract contract) {
+        SearchResult result = super.searchText(contract);
         if (result != null) {
             return result;
         } else if (
-                textMatches(m_text, searchText, ignoreCase, wholeWords)
-                        || textMatches(m_actText, searchText, ignoreCase, wholeWords)
-                        || textMatches(m_name, searchText, ignoreCase, wholeWords)
-                        || textMatches(m_disp, searchText, ignoreCase, wholeWords)
+                textMatches(m_text, contract)
+                        || textMatches(m_actText, contract)
+                        || textMatches(m_name, contract)
+                        || textMatches(m_disp, contract)
                 ) {
             result = new SearchResult();
             result.setId(getId());
