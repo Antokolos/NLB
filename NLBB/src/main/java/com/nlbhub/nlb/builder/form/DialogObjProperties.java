@@ -85,6 +85,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JTextArea m_objActTextTextArea;
 
     public DialogObjProperties(
+            final MainFrame mainFrame,
             final NonLinearBookFacade nlbFacade,
             final Obj obj
     ) {
@@ -148,7 +149,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 DialogMediaLibrary dialog = (
-                        new DialogMediaLibrary(m_nlbFacade.getMainFacade(), MediaFile.Type.Image)
+                        new DialogMediaLibrary(mainFrame, m_nlbFacade.getMainFacade(), MediaFile.Type.Image)
                 );
                 dialog.showDialog();
                 if (!dialog.isCanceled()) {

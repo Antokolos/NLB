@@ -689,7 +689,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     public MainFrame(@NotNull NonLinearBookFacade nlbFacade, @NotNull Launcher launcher) {
         final MainFrame mainFrame = this;
         m_mainEditorInfo = (
-                new PaneEditorInfo(MAIN_PANE_KEY, nlbFacade, new GraphEditor(nlbFacade), 0)
+                new PaneEditorInfo(MAIN_PANE_KEY, nlbFacade, new GraphEditor(this, nlbFacade), 0)
         );
         m_paneEditorInfoMap.put(MAIN_PANE_KEY, m_mainEditorInfo);
         m_launcher = launcher;
@@ -874,7 +874,8 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                         new DialogSearch(
                                 mainFrame,
                                 editorInfo.getPaneNlbFacade().getNlb(),
-                                editorInfo.getModulePageId()
+                                editorInfo.getModulePageId(),
+                                Constants.EMPTY_STRING
                         )
                 );
                 dialog.showDialog();
@@ -1130,7 +1131,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 GraphEditor graphEditor = getSelectedPaneInfo().getPaneGraphEditor();
-                graphEditor.editSelectedItemProperties();
+                graphEditor.editSelectedItemProperties(mainFrame);
             }
         });
         m_editAllPagesButton.addActionListener(new ActionListener() {
@@ -1140,7 +1141,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 for (final Page page : editorInfo.getPaneNlbFacade().getNlb().getPages().values()) {
                     if (!page.isDeleted()) {
                         DialogPageProperties dialog = (
-                                new DialogPageProperties(editorInfo.getPaneNlbFacade(), page)
+                                new DialogPageProperties(mainFrame, editorInfo.getPaneNlbFacade(), page)
                         );
                         dialog.showDialog();
                         editorInfo.getPaneGraphEditor().updatePage(page);
@@ -1345,7 +1346,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             NonLinearBookFacade paneNlbFacade = (
                     editorInfo.getPaneNlbFacade().createModuleFacade(page.getId())
             );
-            paneGraphEditor = new GraphEditor(paneNlbFacade);
+            paneGraphEditor = new GraphEditor(this, paneNlbFacade);
             paneEditorInfo = (
                     new PaneEditorInfo(
                             page.getId(),

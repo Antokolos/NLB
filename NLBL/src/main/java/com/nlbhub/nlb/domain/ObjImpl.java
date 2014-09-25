@@ -103,6 +103,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         || textMatches(m_actText, contract)
                         || textMatches(m_name, contract)
                         || textMatches(m_disp, contract)
+                        || textMatches(m_imageFileName, contract)
                 ) {
             result = new SearchResult();
             result.setId(getId());

@@ -69,7 +69,8 @@ public class DialogSearch extends JDialog {
     public DialogSearch(
             final MainFrame mainFrame,
             final NonLinearBook nlb,
-            final String modulePageId
+            final String modulePageId,
+            final String searchText
     ) {
         m_nlb = nlb;
         m_modulePageId = modulePageId;
@@ -77,6 +78,8 @@ public class DialogSearch extends JDialog {
         setModal(true);
         setTitle("Search");
         getRootPane().setDefaultButton(buttonOK);
+
+        m_searchText.setText(searchText);
 
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

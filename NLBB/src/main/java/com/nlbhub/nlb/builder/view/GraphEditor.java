@@ -42,6 +42,7 @@ import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.builder.form.DialogLinkProperties;
 import com.nlbhub.nlb.builder.form.DialogObjProperties;
 import com.nlbhub.nlb.builder.form.DialogPageProperties;
+import com.nlbhub.nlb.builder.form.MainFrame;
 import com.nlbhub.nlb.builder.model.LinkSelectionData;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
@@ -103,6 +104,7 @@ public class GraphEditor extends PCanvas {
     private Point2D m_selectionStart = null;
     private PPath m_selectionFrame = new PPath();
     private BulkSelectionHandler m_bulkSelectionHandler = new BulkSelectionHandler();
+    private final MainFrame m_mainFrame;
 
     private class GraphDragEventHandlerLinks extends PDragEventHandler {
         private PNode m_selectedNode = null;
@@ -115,7 +117,7 @@ public class GraphEditor extends PCanvas {
             deselectAll();
             reselectNode(event.getPickedNode());
             if (event.getClickCount() > 1) {
-                editSelectedItemProperties();
+                editSelectedItemProperties(m_mainFrame);
             } else {
                 m_canDrag = true;
             }
@@ -530,7 +532,7 @@ public class GraphEditor extends PCanvas {
             m_selectedNode.setPaint(SELECTED_NODE_COLOR);
 
             if (event.getClickCount() > 1) {
-                editSelectedItemProperties();
+                editSelectedItemProperties(m_mainFrame);
             }
             // Adding of the pages should not be done here, because this handler does not work
             // if mouse isn't over the graph elements
@@ -599,12 +601,13 @@ public class GraphEditor extends PCanvas {
         }
     }
 
-    public GraphEditor(NonLinearBookFacade nlbFacade) {
-        this(nlbFacade, 500, 500);
+    public GraphEditor(final MainFrame mainFrame, final NonLinearBookFacade nlbFacade) {
+        this(mainFrame, nlbFacade, 500, 500);
         init();
     }
 
-    protected GraphEditor(NonLinearBookFacade nlbFacade, int width, int height) {
+    protected GraphEditor(MainFrame mainFrame, NonLinearBookFacade nlbFacade, int width, int height) {
+        m_mainFrame = mainFrame;
         m_nlbFacade = nlbFacade;
         m_nodeResizeExecutor = new NodeResizeExecutor(m_nlbFacade);
         setPreferredSize(new Dimension(width, height));
@@ -1004,15 +1007,15 @@ public class GraphEditor extends PCanvas {
         }
     }
 
-    public void editSelectedItemProperties() {
+    public void editSelectedItemProperties(final MainFrame mainFrame) {
         final Page selectedPage = getSelectedPage();
         final Obj selectedObj = getSelectedObj();
         if (selectedPage != null) {
-            DialogPageProperties dialog = new DialogPageProperties(m_nlbFacade, selectedPage);
+            DialogPageProperties dialog = new DialogPageProperties(mainFrame, m_nlbFacade, selectedPage);
             dialog.showDialog();
             updatePage(selectedPage);
         } else if (selectedObj != null) {
-            DialogObjProperties dialog = new DialogObjProperties(m_nlbFacade, selectedObj);
+            DialogObjProperties dialog = new DialogObjProperties(mainFrame, m_nlbFacade, selectedObj);
             dialog.showDialog();
             updateObj(selectedObj);
         } else {

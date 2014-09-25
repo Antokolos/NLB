@@ -54,10 +54,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * The PageImpl class
@@ -180,6 +177,9 @@ public class PageImpl extends AbstractNodeItem implements Page {
                         || textMatches(m_traverseText, contract)
                         || textMatches(m_autowireInText, contract)
                         || textMatches(m_autowireOutText, contract)
+                        || textMatches(m_imageFileName, contract)
+                        || textMatches(m_soundFileName, contract)
+                        || textMatches(m_moduleName, contract)
                 ) {
             result = new SearchResult();
             result.setId(getId());
@@ -638,7 +638,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
             );
             m_text = (
                     FileManipulator.readOptionalMultiLangString(
-                            new File(pageDir,TEXT_SUBDIR_NAME),
+                            new File(pageDir, TEXT_SUBDIR_NAME),
                             DEFAULT_TEXT
                     )
             );

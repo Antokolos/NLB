@@ -81,8 +81,13 @@ public class DialogMediaLibrary extends JDialog {
     private JButton m_noneButton;
     private JButton m_voidButton;
     private JButton m_buttonPlaceholder;
+    private JButton m_buttonSearchUsages;
 
-    public DialogMediaLibrary(final NonLinearBookFacade nonLinearBookFacade, final MediaFile.Type mediaType) {
+    public DialogMediaLibrary(
+            final MainFrame mainFrame,
+            final NonLinearBookFacade nonLinearBookFacade,
+            final MediaFile.Type mediaType
+    ) {
         final DialogMediaLibrary self = this;
         setContentPane(contentPane);
         m_mediaFileModelSwing = (
@@ -147,6 +152,23 @@ public class DialogMediaLibrary extends JDialog {
         buttonCancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCancel();
+            }
+        });
+
+        m_buttonSearchUsages.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = m_mediaFileList.getSelectedRow();
+                DialogSearch dialog = (
+                        new DialogSearch(
+                                mainFrame,
+                                nonLinearBookFacade.getNlb(),
+                                Constants.MAIN_MODULE_NAME,
+                                (selectedRow == -1)
+                                        ? Constants.EMPTY_STRING
+                                        : (String) m_mediaFileModelSwing.getValueAt(selectedRow, 0)
+                        )
+                );
+                dialog.showDialog();
             }
         });
 
@@ -392,6 +414,12 @@ public class DialogMediaLibrary extends JDialog {
         m_buttonRemove.setPreferredSize(new Dimension(85, 25));
         m_buttonRemove.setText("Remove");
         panel7.add(m_buttonRemove);
+        m_buttonSearchUsages = new JButton();
+        m_buttonSearchUsages.setMaximumSize(new Dimension(115, 25));
+        m_buttonSearchUsages.setMinimumSize(new Dimension(115, 25));
+        m_buttonSearchUsages.setPreferredSize(new Dimension(115, 25));
+        m_buttonSearchUsages.setText("Search usages...");
+        panel7.add(m_buttonSearchUsages);
         final JPanel panel8 = new JPanel();
         panel8.setLayout(new BorderLayout(0, 0));
         contentPane.add(panel8, BorderLayout.CENTER);

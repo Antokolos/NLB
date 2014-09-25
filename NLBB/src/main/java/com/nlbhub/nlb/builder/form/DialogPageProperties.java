@@ -113,7 +113,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JButton m_setSoundButton;
     private JLabel m_soundFileNameLabel;
 
-    public DialogPageProperties(final NonLinearBookFacade nlbFacade, final Page page) {
+    public DialogPageProperties(final MainFrame mainFrame, final NonLinearBookFacade nlbFacade, final Page page) {
         m_nlbFacade = nlbFacade;
         setPageProperties(page);
         setTitle("Page properties");
@@ -189,7 +189,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 DialogMediaLibrary dialog = (
-                        new DialogMediaLibrary(m_nlbFacade.getMainFacade(), MediaFile.Type.Sound)
+                        new DialogMediaLibrary(mainFrame, m_nlbFacade.getMainFacade(), MediaFile.Type.Sound)
                 );
                 dialog.showDialog();
                 if (!dialog.isCanceled()) {
@@ -203,7 +203,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 DialogMediaLibrary dialog = (
-                        new DialogMediaLibrary(m_nlbFacade.getMainFacade(), MediaFile.Type.Image)
+                        new DialogMediaLibrary(mainFrame, m_nlbFacade.getMainFacade(), MediaFile.Type.Image)
                 );
                 dialog.showDialog();
                 if (!dialog.isCanceled()) {
