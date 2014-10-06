@@ -61,6 +61,7 @@ public class ObjBuildingBlocks {
     private String m_objInv;
     private String m_objActStart;
     private String m_objVariable;
+    private String m_objConstraint;
     private String m_objModifications;
     private String m_objActEnd;
     private String m_objUseStart;
@@ -170,6 +171,14 @@ public class ObjBuildingBlocks {
 
     public void setObjVariable(String objVariable) {
         m_objVariable = objVariable;
+    }
+
+    public String getObjConstraint() {
+        return m_objConstraint;
+    }
+
+    public void setObjConstraint(String objConstraint) {
+        m_objConstraint = objConstraint;
     }
 
     public String getObjModifications() {

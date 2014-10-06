@@ -55,6 +55,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private Obj m_obj;
     private NonLinearBookFacade m_nlbFacade;
     private Variable m_variable;
+    private Variable m_constraint;
     private MultiLangString m_objDisplayNames;
     private MultiLangString m_objTexts;
     private MultiLangString m_objActTexts;
@@ -83,6 +84,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JCheckBox m_imageInScene;
     private JCheckBox m_imageInInventory;
     private JTextArea m_objActTextTextArea;
+    private JTextField m_objConstraintTextField;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -199,6 +201,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private void setObjProperties(final Obj obj) {
         m_obj = obj;
         m_variable = m_nlbFacade.getNlb().getVariableById(obj.getVarId());
+        m_constraint = m_nlbFacade.getNlb().getVariableById(obj.getConstrId());
         m_objIdTextField.setText(obj.getId());
         m_objNameTextField.setText(obj.getName());
         m_objDispTextField.setText(obj.getDisp());
@@ -231,6 +234,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_nlbFacade.updateObj(
                 m_obj,
                 m_objVariableTextField.getText(),
+                m_objConstraintTextField.getText(),
                 m_objNameTextField.getText(),
                 m_imageFileName,
                 m_objDisplayNames,
@@ -567,7 +571,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         panel22.setLayout(new BorderLayout(0, 0));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
@@ -635,7 +639,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         panel26.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.fill = GridBagConstraints.BOTH;
         panel19.add(panel26, gbc);
         m_objIsTakable = new JCheckBox();
@@ -648,14 +652,47 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_imageInInventory.setText("Image in inventory");
         panel26.add(m_imageInInventory);
         final JPanel panel27 = new JPanel();
-        panel27.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel27, BorderLayout.CENTER);
+        panel27.setLayout(new GridBagLayout());
+        panel27.setMinimumSize(new Dimension(468, 33));
+        panel27.setPreferredSize(new Dimension(468, 33));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(5, 5, 5, 0);
+        panel19.add(panel27, gbc);
+        final JScrollPane scrollPane7 = new JScrollPane();
+        scrollPane7.setHorizontalScrollBarPolicy(31);
+        scrollPane7.setVerticalScrollBarPolicy(21);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel27.add(scrollPane7, gbc);
+        m_objConstraintTextField = new JTextField();
+        m_objConstraintTextField.setColumns(40);
+        scrollPane7.setViewportView(m_objConstraintTextField);
+        final JLabel label7 = new JLabel();
+        label7.setText("Obj constraint");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel19.add(label7, gbc);
+        final JPanel panel28 = new JPanel();
+        panel28.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel28, BorderLayout.CENTER);
         label1.setLabelFor(m_objDispTextField);
         label2.setLabelFor(m_objTextTextArea);
         label3.setLabelFor(m_objActTextTextArea);
         label4.setLabelFor(m_objIdTextField);
         label5.setLabelFor(m_objNameTextField);
         label6.setLabelFor(m_objVariableTextField);
+        label7.setLabelFor(m_objConstraintTextField);
     }
 
     /**

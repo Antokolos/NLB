@@ -132,12 +132,12 @@ public class NonLinearBookImpl implements NonLinearBook {
         public boolean existsAndValid() {
             return (
                     m_modifyingItem != null
-                    && !m_modifyingItem.isDeleted()
-                    && !m_modifyingItem.hasDeletedParent()
-                    && m_modification != null
-                    && !m_modification.isDeleted()
-                    && !m_modification.hasDeletedParent()
-                    );
+                            && !m_modifyingItem.isDeleted()
+                            && !m_modifyingItem.hasDeletedParent()
+                            && m_modification != null
+                            && !m_modification.isDeleted()
+                            && !m_modification.hasDeletedParent()
+            );
         }
     }
 
@@ -654,6 +654,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     class UpdateObjCommand implements NLBCommand {
         private final ObjImpl m_obj;
         private VariableTracker m_variableTracker;
+        private VariableTracker m_constraintTracker;
 
         private String m_existingObjName;
         private String m_existingImageFileName;
@@ -676,6 +677,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final NonLinearBook currentNLB,
                 final Obj obj,
                 final String objVariableName,
+                final String objConstraintValue,
                 final String objName,
                 final String imageFileName,
                 final MultiLangString objDisp,
@@ -689,6 +691,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     currentNLB,
                     getObjImplById(obj.getId()),
                     objVariableName,
+                    objConstraintValue,
                     objName,
                     imageFileName,
                     objDisp,
@@ -704,6 +707,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final NonLinearBook currentNLB,
                 final ObjImpl obj,
                 final String objVariableName,
+                final String objConstraintValue,
                 final String objName,
                 final String imageFileName,
                 final MultiLangString objDisp,
@@ -722,7 +726,18 @@ public class NonLinearBookImpl implements NonLinearBook {
                     Variable.DataType.BOOLEAN,
                     objVariableName,
                     Variable.DEFAULT_VALUE,
-                    m_obj.getFullId());
+                    m_obj.getFullId()
+            );
+            m_constraintTracker = new VariableTracker(
+                    currentNLB,
+                    getVariableImplById(m_obj.getConstrId()),
+                    StringHelper.isEmpty(objConstraintValue),
+                    Variable.Type.OBJCONSTRAINT,
+                    Variable.DataType.BOOLEAN,
+                    Variable.DEFAULT_NAME,
+                    objConstraintValue,
+                    m_obj.getFullId()
+            );
             m_existingObjName = obj.getName();
             m_existingImageFileName = obj.getImageFileName();
             m_existingObjDisp = obj.getDisps();
@@ -744,6 +759,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         @Override
         public void execute() {
             m_obj.setVarId(m_variableTracker.execute());
+            m_obj.setConstrId(m_constraintTracker.execute());
             m_obj.setName(m_newObjName);
             m_obj.setImageFileName(m_newImageFileName);
             m_obj.setDisps(m_newObjDisp);
@@ -758,6 +774,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         @Override
         public void revert() {
             m_obj.setVarId(m_variableTracker.revert());
+            m_obj.setConstrId(m_constraintTracker.revert());
             m_obj.setName(m_existingObjName);
             m_obj.setImageFileName(m_existingImageFileName);
             m_obj.setDisps(m_existingObjDisp);
@@ -1463,10 +1480,12 @@ public class NonLinearBookImpl implements NonLinearBook {
                 ObjImpl obj = entry.getValue();
                 ObjImpl newObj = newObjs.get(idsMapping.get(entry.getKey()));
                 final Variable objVariable = nlbToPaste.getVariableById(obj.getVarId());
+                final Variable objConstraint = nlbToPaste.getVariableById(obj.getConstrId());
                 UpdateObjCommand updateObjCommand = new UpdateObjCommand(
                         currentNLB,
                         newObj,
                         (objVariable != null) ? objVariable.getName() : Constants.EMPTY_STRING,
+                        (objConstraint != null) ? objConstraint.getValue() : Constants.EMPTY_STRING,
                         obj.getName(),
                         obj.getImageFileName(),
                         obj.getDisps(),
@@ -1580,6 +1599,7 @@ public class NonLinearBookImpl implements NonLinearBook {
          * Please note: objIds collection will be processed as is, I.e. if it does not contain ids of some objects
          * contained in the pages or if it does not contain some parent objects, then so be it. In such cases copied
          * info will be corrected (missing object ids will be purged).
+         *
          * @param pageIds
          * @param objIds
          */
@@ -1600,6 +1620,10 @@ public class NonLinearBookImpl implements NonLinearBook {
                     VariableImpl objVariable = getVariableImplById(obj.getVarId());
                     if (objVariable != null && !objVariable.isDeleted()) {
                         m_newClipboardData.addVariable(objVariable);
+                    }
+                    VariableImpl objConstraint = getVariableImplById(obj.getConstrId());
+                    if (objConstraint != null && !objConstraint.isDeleted()) {
+                        m_newClipboardData.addVariable(objConstraint);
                     }
 
                     checkContainedObjects(obj, objIds);
@@ -1863,6 +1887,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     UpdateObjCommand createUpdateObjCommand(
             final Obj obj,
             final String objVariableName,
+            final String objConstraintValue,
             final String objName,
             final String imageFileName,
             final MultiLangString objDisp,
@@ -1877,6 +1902,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         this,
                         obj,
                         objVariableName,
+                        objConstraintValue,
                         objName,
                         imageFileName,
                         objDisp,
@@ -1959,6 +1985,7 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     /**
      * Appends items to this book which are contained in operand (with overwrite if needed)
+     *
      * @param operand
      */
     public void append(final NonLinearBookImpl operand) {
@@ -2763,11 +2790,14 @@ public class NonLinearBookImpl implements NonLinearBook {
             if (page.isDeleted()) {
                 variable.setDeleted(true);
             }
-        } else if (variable.getType() == VariableImpl.Type.OBJ) {
+        } else if (
+                variable.getType() == VariableImpl.Type.OBJ
+                        || variable.getType() == VariableImpl.Type.OBJCONSTRAINT
+                ) {
             final Obj obj = getObjById(variable.getTarget());
             if (variable.isDeleted()) {
                 // obj.getVarId() should be empty or set to another variable's Id
-                if (variable.getId().equals(obj.getVarId())) {
+                if (variable.getId().equals(obj.getVarId()) || variable.getId().equals(obj.getConstrId())) {
                     throw new NLBConsistencyException(
                             "Obj variable for obj with Id = "
                                     + obj.getId()
@@ -3117,18 +3147,30 @@ public class NonLinearBookImpl implements NonLinearBook {
             for (Map.Entry<String, ObjImpl> entry : m_objs.entrySet()) {
                 final SearchResult objResult;
                 final SearchResult varResult;
+                final SearchResult constrResult;
                 final ObjImpl obj = entry.getValue();
                 if ((objResult = obj.searchText(contract)) != null) {
                     objResult.setModulePageId(modulePageId);
                     result.addSearchResult(objResult);
                 } else {
-                    final VariableImpl variable;
-                    if (contract.isSearchInVars() && ((variable = getVariableImplById(obj.getVarId())) != null)) {
-                        varResult = variable.searchText(contract);
-                        if (varResult != null) {
-                            varResult.setId(obj.getId());
-                            varResult.setModulePageId(modulePageId);
-                            result.addSearchResult(varResult);
+                    final VariableImpl variable = getVariableImplById(obj.getVarId());
+                    final VariableImpl constraint = getVariableImplById(obj.getConstrId());
+                    if (contract.isSearchInVars()) {
+                        if (variable != null) {
+                            varResult = variable.searchText(contract);
+                            if (varResult != null) {
+                                varResult.setId(obj.getId());
+                                varResult.setModulePageId(modulePageId);
+                                result.addSearchResult(varResult);
+                            }
+                        }
+                        if (constraint != null) {
+                            constrResult = constraint.searchText(contract);
+                            if (constrResult != null) {
+                                constrResult.setId(obj.getId());
+                                constrResult.setModulePageId(modulePageId);
+                                result.addSearchResult(constrResult);
+                            }
                         }
                     }
                 }
@@ -3828,15 +3870,15 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final NonLinearBook module = page.getModule();
                 if (!module.isEmpty()) {
                     switch (mediaType) {
-                         case Image:
-                             module.exportMedia(
-                                     false,
-                                     mainExportDir,
-                                     mediaDirName,
-                                     module.getImageFiles(),
-                                     mediaType
-                             );
-                             break;
+                        case Image:
+                            module.exportMedia(
+                                    false,
+                                    mainExportDir,
+                                    mediaDirName,
+                                    module.getImageFiles(),
+                                    mediaType
+                            );
+                            break;
                         case Sound:
                             module.exportMedia(
                                     false,

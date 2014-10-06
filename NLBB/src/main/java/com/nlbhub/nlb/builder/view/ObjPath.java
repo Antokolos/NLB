@@ -96,6 +96,7 @@ public class ObjPath extends NodePath {
         Obj obj = (Obj) getAttribute(Constants.NLB_OBJ_ATTR);
         final NonLinearBook nonLinearBook = (NonLinearBook) getAttribute(Constants.NLB_MODULE_ATTR);
         final Variable variable = nonLinearBook.getVariableById(obj.getVarId());
+        final Variable constraint = nonLinearBook.getVariableById(obj.getConstrId());
         final StringBuilder text = new StringBuilder();
         if (!StringHelper.isEmpty(obj.getName())) {
             int nameSize = obj.getName().length();
@@ -105,12 +106,12 @@ public class ObjPath extends NodePath {
             } else {
                 text.append(obj.getName());
             }
-            if (variable != null) {
-                text.append(": ");
-            }
         }
         if (variable != null) {
-            text.append("[").append(variable.getName()).append("]");
+            text.append(": [").append(variable.getName()).append("]");
+        }
+        if (constraint != null) {
+            text.append(": /").append(constraint.getValue()).append("/");
         }
         return text.toString();
     }

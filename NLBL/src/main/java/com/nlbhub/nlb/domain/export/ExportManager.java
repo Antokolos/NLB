@@ -479,6 +479,17 @@ public abstract class ExportManager {
         } else {
             blocks.setObjVariable(EMPTY_STRING);
         }
+        if (!StringHelper.isEmpty(obj.getConstrId())) {
+            Variable constraint = exportData.getNlb().getVariableById(obj.getConstrId());
+            // TODO: Add cases with deleted pages/links/variables etc. to the unit test
+            if (!constraint.isDeleted()) {
+                blocks.setObjConstraint(decorateObjVariable(constraint.getValue()));
+            } else {
+                blocks.setObjConstraint(EMPTY_STRING);
+            }
+        } else {
+            blocks.setObjConstraint(EMPTY_STRING);
+        }
         blocks.setObjModifications(
                 decorateObjModifications(
                         buildModificationsText(EMPTY_STRING, obj.getModifications(), exportData)

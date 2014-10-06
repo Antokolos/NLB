@@ -68,6 +68,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String TEXT_SUBDIR_NAME = "text";
     private static final String ACT_TEXT_SUBDIR_NAME = "acttext";
     private static final String VARID_FILE_NAME = "varid";
+    private static final String CONSTRID_FILE_NAME = "constrid";
     private static final String NAME_FILE_NAME = "name";
     private static final String IMAGE_FILE_NAME = "image";
     private static final String DISP_SUBDIR_NAME = "disp";
@@ -80,6 +81,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
      * Object variable. Will be modified when object is used (act in INSTEAD)
      */
     private String m_varId = DEFAULT_VARID;
+    private String m_constrId = DEFAULT_CONSTRID;
     private String m_name = DEFAULT_NAME;
     private MultiLangString m_disp = DEFAULT_DISP;
     private MultiLangString m_text = DEFAULT_TEXT;
@@ -116,6 +118,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     public ObjImpl(ObjImpl source) {
         super(source);
         m_varId = source.getVarId();
+        m_constrId = source.getConstrId();
         m_name = source.getName();
         m_imageFileName = source.getImageFileName();
         setDisps(source.getDisps());
@@ -178,8 +181,18 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         return m_varId;
     }
 
+    @Override
+    @XmlElement(name = "constrid")
+    public String getConstrId() {
+        return m_constrId;
+    }
+
     public void setVarId(String varId) {
         m_varId = varId;
+    }
+
+    public void setConstrId(String constrId) {
+        m_constrId = constrId;
     }
 
     @Override
@@ -275,6 +288,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                     "Cannot create NLB obj directory for obj with Id = " + getId()
             );
             fileManipulator.writeOptionalString(objDir, VARID_FILE_NAME, m_varId, DEFAULT_VARID);
+            fileManipulator.writeOptionalString(objDir, CONSTRID_FILE_NAME, m_constrId, DEFAULT_CONSTRID);
             fileManipulator.writeOptionalString(
                     objDir,
                     NAME_FILE_NAME,
@@ -340,6 +354,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         VARID_FILE_NAME,
                         DEFAULT_VARID
+                )
+        );
+        m_constrId = (
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        CONSTRID_FILE_NAME,
+                        DEFAULT_CONSTRID
                 )
         );
         m_name = (

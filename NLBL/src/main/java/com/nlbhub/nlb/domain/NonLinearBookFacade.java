@@ -321,6 +321,7 @@ public class NonLinearBookFacade implements NLBObservable {
     public void updateObj(
             final Obj obj,
             final String objVariableName,
+            final String objConstraintValue,
             final String objName,
             final String imageFileName,
             final MultiLangString objDisp,
@@ -334,6 +335,7 @@ public class NonLinearBookFacade implements NLBObservable {
                 m_nlb.createUpdateObjCommand(
                         obj,
                         objVariableName,
+                        objConstraintValue,
                         objName,
                         imageFileName,
                         objDisp,
