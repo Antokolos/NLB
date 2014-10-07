@@ -1541,6 +1541,8 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         builder.append("\r\n");
         builder.append("Obj variable count: ").append(variableStats.getObjVariablesCount());
         builder.append("\r\n");
+        builder.append("Obj constraints count: ").append(variableStats.getObjConstraintsCount());
+        builder.append("\r\n");
         builder.append("Link variable count: ").append(variableStats.getLinkVariablesCount());
         builder.append("\r\n");
         builder.append("Link constraint count: ").append(variableStats.getLinkConstraintVariablesCount());

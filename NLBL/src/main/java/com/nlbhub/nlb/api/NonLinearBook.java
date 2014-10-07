@@ -205,6 +205,10 @@ public interface NonLinearBook {
             m_objVariablesCount++;
         }
 
+        public int getObjConstraintsCount() {
+            return m_objConstraintsCount;
+        }
+
         public void incObjConstraintsCount() {
             m_objConstraintsCount++;
         }
