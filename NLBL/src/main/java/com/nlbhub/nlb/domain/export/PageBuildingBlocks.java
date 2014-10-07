@@ -54,7 +54,6 @@ public class PageBuildingBlocks {
     private String m_pageCaption;
     private String m_pageImage;
     private String m_pageSound;
-    private boolean m_useCaption;
     private String m_pageTextStart;
     private String m_pageTextEnd;
     private String m_pageVariable;
@@ -114,14 +113,6 @@ public class PageBuildingBlocks {
 
     public void setPageSound(String pageSound) {
         m_pageSound = pageSound;
-    }
-
-    public boolean isUseCaption() {
-        return m_useCaption;
-    }
-
-    public void setUseCaption(boolean useCaption) {
-        m_useCaption = useCaption;
     }
 
     public String getPageTextStart() {

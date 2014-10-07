@@ -74,9 +74,7 @@ public class ASMExportManager extends TextExportManager {
         StringBuilder postPage = new StringBuilder();
         stringBuilder.append(pageBlocks.getPageComment());
         stringBuilder.append(pageBlocks.getPageLabel());
-        if (pageBlocks.isUseCaption()) {
-            stringBuilder.append(pageBlocks.getPageCaption());
-        }
+        stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageTextStart());
         stringBuilder.append(pageBlocks.getPageTextEnd());
         stringBuilder.append(pageBlocks.getPageVariable());
@@ -187,11 +185,11 @@ public class ASMExportManager extends TextExportManager {
         return modificationsText;
     }
 
-    protected String decoratePageCaption(String caption) {
-        if (!StringHelper.isEmpty(caption)) {
+    protected String decoratePageCaption(String caption, boolean useCaption) {
+        if (StringHelper.notEmpty(caption) && useCaption) {
             return "''" + caption.toUpperCase() + "''" + LINE_SEPARATOR;
         } else {
-            return "";
+            return Constants.EMPTY_STRING;
         }
     }
 

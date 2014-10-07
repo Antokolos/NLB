@@ -321,10 +321,9 @@ public abstract class ExportManager {
         blocks.setPageLabel(decoratePageLabel(page.getId(), pageNumber));
         blocks.setPageNumber(decoratePageNumber(pageNumber));
         blocks.setPageComment(decoratePageComment(page.getCaption()));
-        blocks.setPageCaption(decoratePageCaption(page.getCaption()));
+        blocks.setPageCaption(decoratePageCaption(page.getCaption(), page.isUseCaption()));
         blocks.setPageImage(decoratePageImage(getImagePath(null, page.getImageFileName())));
         blocks.setPageSound(decoratePageSound(getSoundPath(null, page.getSoundFileName())));
-        blocks.setUseCaption(page.isUseCaption());
         blocks.setPageTextStart(decoratePageTextStart(StringHelper.getTextChunks(page.getText())));
         blocks.setPageTextEnd(decoratePageTextEnd());
         NonLinearBook nlb = exportData.getNlb();
@@ -1061,7 +1060,7 @@ public abstract class ExportManager {
 
     protected abstract String decorateLinkModifications(final String modificationsText);
 
-    protected abstract String decoratePageCaption(String caption);
+    protected abstract String decoratePageCaption(String caption, boolean useCaption);
 
     protected abstract String decoratePageImage(String pageImagePath);
 

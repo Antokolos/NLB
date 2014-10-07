@@ -945,8 +945,8 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageCaption(String caption) {
-        if (!StringHelper.isEmpty(caption)) {
+    protected String decoratePageCaption(String caption, boolean useCaption) {
+        if (StringHelper.notEmpty(caption) && useCaption) {
             return "    nam = \"" + caption + "\"," + LINE_SEPARATOR;
         } else {
             return "    nam = \"...\"," + LINE_SEPARATOR;

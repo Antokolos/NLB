@@ -76,9 +76,7 @@ public class QSPExportManager extends TextExportManager {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(pageBlocks.getPageComment());
         stringBuilder.append(pageBlocks.getPageLabel());
-        if (pageBlocks.isUseCaption()) {
-            stringBuilder.append(pageBlocks.getPageCaption());
-        }
+        stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageImage());
         stringBuilder.append(pageBlocks.getPageTextStart());
         stringBuilder.append(pageBlocks.getPageTextEnd());
@@ -229,15 +227,15 @@ public class QSPExportManager extends TextExportManager {
         return modificationsText;
     }
 
-    protected String decoratePageCaption(String caption) {
-        if (!StringHelper.isEmpty(caption)) {
+    protected String decoratePageCaption(String caption, boolean useCaption) {
+        if (StringHelper.notEmpty(caption) && useCaption) {
             return (
                     "'" + caption.toUpperCase() + "'" + LINE_SEPARATOR
                             + "'" + StringHelper.createRepeatedString(caption.length(), "-") + "'" + LINE_SEPARATOR
                             + "''" + LINE_SEPARATOR
             );
         } else {
-            return "";
+            return Constants.EMPTY_STRING;
         }
     }
 

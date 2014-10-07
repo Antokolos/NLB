@@ -502,8 +502,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decoratePageCaption(String caption) {
-        return caption;
+    protected String decoratePageCaption(String caption, boolean useCaption) {
+        if (StringHelper.notEmpty(caption) && useCaption) {
+            return caption;
+        } else {
+            return Constants.EMPTY_STRING;
+        }
     }
 
     @Override

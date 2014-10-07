@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.domain.export.hypertext;
 
+import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.export.ExportManager;
 import com.nlbhub.nlb.domain.export.LinkBuildingBlocks;
@@ -136,9 +137,7 @@ public abstract class HypertextExportManager
         pageAnchor.setName(pageBlocks.getPageLabel());
         page.add(pageAnchor);
         page.add(getLineSeparator());
-        if (pageBlocks.isUseCaption()) {
-            page.add(pageBlocks.getPageCaption());
-        }
+        page.add(pageBlocks.getPageCaption());
         page.add(pageBlocks.getPageImage());
         page.add(pageBlocks.getPageTextStart());
         page.add(pageBlocks.getPageTextEnd());
@@ -387,8 +386,12 @@ public abstract class HypertextExportManager
     }
 
     @Override
-    protected String decoratePageCaption(String caption) {
-        return caption + getLineSeparator();
+    protected String decoratePageCaption(String caption, boolean useCaption) {
+        if (StringHelper.notEmpty(caption) && useCaption) {
+            return caption + getLineSeparator();
+        } else {
+            return Constants.EMPTY_STRING;
+        }
     }
 
     @Override

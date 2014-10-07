@@ -76,9 +76,7 @@ public class URQExportManager extends TextExportManager {
         StringBuilder postPage = new StringBuilder();
         stringBuilder.append(pageBlocks.getPageComment());
         stringBuilder.append(pageBlocks.getPageLabel());
-        if (pageBlocks.isUseCaption()) {
-            stringBuilder.append(pageBlocks.getPageCaption());
-        }
+        stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageImage());
         stringBuilder.append(pageBlocks.getPageTextStart());
         stringBuilder.append(pageBlocks.getPageTextEnd());
@@ -251,8 +249,8 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageCaption(String caption) {
-        if (!StringHelper.isEmpty(caption)) {
+    protected String decoratePageCaption(String caption, boolean useCaption) {
+        if (StringHelper.notEmpty(caption) && useCaption) {
             return (
                     "pln " + caption.toUpperCase() + LINE_SEPARATOR
                             + "pln " + StringHelper.createRepeatedString(caption.length(), "-") + LINE_SEPARATOR
