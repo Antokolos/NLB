@@ -192,6 +192,9 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
             case "OBJ":
                 m_type = Type.OBJ;
                 break;
+            case "OBJCONSTRAINT":
+                m_type = Type.OBJCONSTRAINT;
+                break;
             case "LINK":
                 m_type = Type.LINK;
                 break;
@@ -221,6 +224,7 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
             case PAGE:
             case OBJ:
             case LINK:
+            case OBJCONSTRAINT:
             case LINKCONSTRAINT:
             case MODCONSTRAINT:
             case AUTOWIRECONSTRAINT:

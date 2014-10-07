@@ -483,7 +483,7 @@ public abstract class ExportManager {
             Variable constraint = exportData.getNlb().getVariableById(obj.getConstrId());
             // TODO: Add cases with deleted pages/links/variables etc. to the unit test
             if (!constraint.isDeleted()) {
-                blocks.setObjConstraint(decorateObjVariable(constraint.getValue()));
+                blocks.setObjConstraint(decorateObjConstraint(translateExpressionBody(constraint.getValue())));
             } else {
                 blocks.setObjConstraint(EMPTY_STRING);
             }
@@ -554,6 +554,10 @@ public abstract class ExportManager {
     }
 
     protected String decorateObjVariable(String variableName) {
+        return EMPTY_STRING;
+    }
+
+    protected String decorateObjConstraint(String constraintValue) {
         return EMPTY_STRING;
     }
 

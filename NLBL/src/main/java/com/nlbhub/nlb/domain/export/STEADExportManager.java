@@ -91,6 +91,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("global {").append(LINE_SEPARATOR);
         stringBuilder.append("    _lists = {};").append(LINE_SEPARATOR);
         stringBuilder.append("    _clones = {};").append(LINE_SEPARATOR);
+        stringBuilder.append("    _filter = {};").append(LINE_SEPARATOR);
         stringBuilder.append("    push = function(listname, v)").append(LINE_SEPARATOR);
         stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
         stringBuilder.append("        _lists[listname] = {next = list, value = v};").append(LINE_SEPARATOR);
@@ -300,10 +301,11 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(objBlocks.getObjTak());
             stringBuilder.append(objBlocks.getObjInv());
         }
+        stringBuilder.append(objBlocks.getObjConstraint());
         stringBuilder.append(objBlocks.getObjActStart());
         boolean varsOrModsPresent = (
-                !StringHelper.isEmpty(objBlocks.getObjVariable())
-                        || !StringHelper.isEmpty(objBlocks.getObjModifications())
+                StringHelper.notEmpty(objBlocks.getObjVariable())
+                        || StringHelper.notEmpty(objBlocks.getObjModifications())
         );
         if (varsOrModsPresent) {
             stringBuilder.append(objBlocks.getObjVariable());
@@ -395,6 +397,9 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(objBlocks.getObjObjEnd());
         }
         stringBuilder.append(objBlocks.getObjEnd());
+        if (StringHelper.notEmpty(objBlocks.getObjConstraint())) {
+            stringBuilder.append("lifeon('").append(objBlocks.getObjLabel()).append("');").append(LINE_SEPARATOR);
+        }
         return stringBuilder.toString();
     }
 
@@ -413,6 +418,12 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageImage());
         stringBuilder.append(pageBlocks.getPageTextStart());
         autosBuilder.append("    autos = function()").append(LINE_SEPARATOR);
+        autosBuilder.append("        for k,v in pairs(_filter) do").append(LINE_SEPARATOR);
+        autosBuilder.append("            if v then").append(LINE_SEPARATOR);
+        autosBuilder.append("                local o = stead.ref(k);").append(LINE_SEPARATOR);
+        autosBuilder.append("                o.revive(o);").append(LINE_SEPARATOR);
+        autosBuilder.append("            end;").append(LINE_SEPARATOR);
+        autosBuilder.append("        end;").append(LINE_SEPARATOR);
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
@@ -531,7 +542,7 @@ public class STEADExportManager extends TextExportManager {
                             "]]..s.imgv() end," + LINE_SEPARATOR
             );
         } else {
-            return "    disp = [[" + expandVariables(dispChunks) + "]]," + LINE_SEPARATOR;
+            return "    disp = function(s) return [[" + expandVariables(dispChunks) + "]] end," + LINE_SEPARATOR;
         }
     }
 
@@ -647,6 +658,26 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateObjVariable(String variableName) {
         String globalVar = GLOBAL_VAR_PREFIX + variableName;
         return globalVar + " = true;" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateObjConstraint(String constraintValue) {
+        StringBuilder result = new StringBuilder();
+        if (StringHelper.notEmpty(constraintValue)) {
+            result.append("    life = function(s)").append(LINE_SEPARATOR);
+            result.append("        if not ").append(constraintValue).append(" then").append(LINE_SEPARATOR);
+            result.append("            _filter[").append("stead.deref(s)").append("] = true;").append(LINE_SEPARATOR);
+            result.append("            s:disable();").append(LINE_SEPARATOR);
+            result.append("        end;").append(LINE_SEPARATOR);
+            result.append("    end,").append(LINE_SEPARATOR);
+            result.append("    revive = function(s)").append(LINE_SEPARATOR);
+            result.append("        if ").append(constraintValue).append(" then").append(LINE_SEPARATOR);
+            result.append("            _filter[").append("stead.deref(s)").append("] = false;").append(LINE_SEPARATOR);
+            result.append("            s:enable();").append(LINE_SEPARATOR);
+            result.append("        end;").append(LINE_SEPARATOR);
+            result.append("    end,").append(LINE_SEPARATOR);
+        }
+        return result.toString();
     }
 
     @Override

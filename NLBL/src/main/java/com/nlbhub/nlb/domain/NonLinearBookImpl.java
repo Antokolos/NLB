@@ -3206,6 +3206,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     }
                     break;
                 case OBJ:
+                case OBJCONSTRAINT:
                     Obj obj = getObjById(variable.getTarget());
                     if (!obj.isDeleted()) {
                         searchResult.setId(obj.getId());
@@ -3446,6 +3447,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                 case OBJ:
                     result.incObjVariablesCount();
                     break;
+                case OBJCONSTRAINT:
+                    result.incObjConstraintsCount();
+                    break;
                 case LINK:
                     result.incLinkVariablesCount();
                     break;
@@ -3523,6 +3527,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 case EXPRESSION:
                 case MODCONSTRAINT:
                 case AUTOWIRECONSTRAINT:
+                case OBJCONSTRAINT:
                 default:
                     // Do nothing
             }
