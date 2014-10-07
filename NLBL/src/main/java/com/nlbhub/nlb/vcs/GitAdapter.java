@@ -41,10 +41,7 @@ package com.nlbhub.nlb.vcs;
 import com.nlbhub.nlb.exception.NLBVCSException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -76,7 +73,7 @@ public class GitAdapter implements VCSAdapter {
     public void initRepo(String path) throws NLBVCSException {
         try {
             m_localRepo = FileRepositoryBuilder.create(new File(path, ".git"));
-            enableLongPaths(m_localRepo);
+            enableLongPaths(m_localRepo, false);
             m_localRepo.create();
             m_git = new Git(m_localRepo);
             initStatuses(false);
@@ -88,8 +85,15 @@ public class GitAdapter implements VCSAdapter {
         }
     }
 
-    private static void enableLongPaths(final Repository repository) {
-        repository.getConfig().setString("core", null, "longpaths", "true");
+    private static void enableLongPaths(
+            final Repository repository,
+            final boolean save
+    ) throws IOException {
+        StoredConfig config = repository.getConfig();
+        config.setString("core", null, "longpaths", "true");
+        if (save) {
+            config.save();
+        }
     }
 
     @Override
@@ -102,7 +106,7 @@ public class GitAdapter implements VCSAdapter {
                             .setGitDir(new File(path, ".git")) // in fact, this can be omitted
                             .build()
             );
-            enableLongPaths(m_localRepo);
+            enableLongPaths(m_localRepo, true);
             m_git = new Git(m_localRepo);
             initStatuses(true);
         } catch (IOException e) {
