@@ -202,6 +202,14 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            end;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    revive = function()").append(LINE_SEPARATOR);
+        stringBuilder.append("        for k,v in pairs(_filter) do").append(LINE_SEPARATOR);
+        stringBuilder.append("            if v then").append(LINE_SEPARATOR);
+        stringBuilder.append("                local o = stead.ref(k);").append(LINE_SEPARATOR);
+        stringBuilder.append("                o.revive(o);").append(LINE_SEPARATOR);
+        stringBuilder.append("            end;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    deepcopy = function(t)").append(LINE_SEPARATOR);
         stringBuilder.append("        local k; local v;").append(LINE_SEPARATOR);
         stringBuilder.append("        if type(t) ~= \"table\" then return t end;").append(LINE_SEPARATOR);
@@ -418,12 +426,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageImage());
         stringBuilder.append(pageBlocks.getPageTextStart());
         autosBuilder.append("    autos = function()").append(LINE_SEPARATOR);
-        autosBuilder.append("        for k,v in pairs(_filter) do").append(LINE_SEPARATOR);
-        autosBuilder.append("            if v then").append(LINE_SEPARATOR);
-        autosBuilder.append("                local o = stead.ref(k);").append(LINE_SEPARATOR);
-        autosBuilder.append("                o.revive(o);").append(LINE_SEPARATOR);
-        autosBuilder.append("            end;").append(LINE_SEPARATOR);
-        autosBuilder.append("        end;").append(LINE_SEPARATOR);
+        autosBuilder.append("        revive();").append(LINE_SEPARATOR);
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
