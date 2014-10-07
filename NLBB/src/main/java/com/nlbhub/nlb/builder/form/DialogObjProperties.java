@@ -206,6 +206,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objNameTextField.setText(obj.getName());
         m_objDispTextField.setText(obj.getDisp());
         m_objVariableTextField.setText(m_variable != null ? m_variable.getName() : "");
+        m_objConstraintTextField.setText(m_constraint != null ? m_constraint.getValue() : "");
         m_objTextTextArea.setText(obj.getText());
         m_objActTextTextArea.setText(obj.getActText());
         m_objIsTakable.setSelected(obj.isTakable());
