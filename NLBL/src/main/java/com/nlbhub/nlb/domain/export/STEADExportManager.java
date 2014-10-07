@@ -668,7 +668,7 @@ public class STEADExportManager extends TextExportManager {
         StringBuilder result = new StringBuilder();
         if (StringHelper.notEmpty(constraintValue)) {
             result.append("    life = function(s)").append(LINE_SEPARATOR);
-            result.append("        if not ").append(constraintValue).append(" then").append(LINE_SEPARATOR);
+            result.append("        if not (").append(constraintValue).append(") then").append(LINE_SEPARATOR);
             result.append("            _filter[").append("stead.deref(s)").append("] = true;").append(LINE_SEPARATOR);
             result.append("            s:disable();").append(LINE_SEPARATOR);
             result.append("        end;").append(LINE_SEPARATOR);

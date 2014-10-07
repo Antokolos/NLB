@@ -76,6 +76,7 @@ public class GitAdapter implements VCSAdapter {
     public void initRepo(String path) throws NLBVCSException {
         try {
             m_localRepo = FileRepositoryBuilder.create(new File(path, ".git"));
+            enableLongPaths(m_localRepo);
             m_localRepo.create();
             m_git = new Git(m_localRepo);
             initStatuses(false);
@@ -85,6 +86,10 @@ public class GitAdapter implements VCSAdapter {
         } catch (IOException e) {
             throw new NLBVCSException("Error while Git repository initialization", e);
         }
+    }
+
+    private static void enableLongPaths(final Repository repository) {
+        repository.getConfig().setString("core", null, "longpaths", "true");
     }
 
     @Override
@@ -97,6 +102,7 @@ public class GitAdapter implements VCSAdapter {
                             .setGitDir(new File(path, ".git")) // in fact, this can be omitted
                             .build()
             );
+            enableLongPaths(m_localRepo);
             m_git = new Git(m_localRepo);
             initStatuses(true);
         } catch (IOException e) {
