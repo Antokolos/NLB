@@ -130,6 +130,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     private JButton m_editBookPropertiesButton;
     private JButton m_exportPNG;
     private JButton m_exportTXT;
+    private JButton m_pushButton;
     private final Launcher m_launcher;
     private final JFileChooser m_dirChooser;
     private final JFileChooser m_fileChooser;
@@ -222,6 +223,13 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_commitButton.setRolloverEnabled(true);
         m_commitButton.setText("");
         toolBar1.add(m_commitButton);
+        m_pushButton = new JButton();
+        m_pushButton.setBorderPainted(false);
+        m_pushButton.setFocusPainted(false);
+        m_pushButton.setIcon(new ImageIcon(getClass().getResource("/common/push.png")));
+        m_pushButton.setRolloverEnabled(true);
+        m_pushButton.setText("");
+        toolBar1.add(m_pushButton);
         final JToolBar toolBar2 = new JToolBar();
         toolBar2.setBorderPainted(false);
         m_toolbarPanel.add(toolBar2);
@@ -818,6 +826,25 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                             "Error while committing to VCS: " + ex.toString()
                     );
                 }
+            }
+        });
+        m_pushButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(m_mainFramePanel, "Not implemented yet");
+                /*try {
+                    DialogPush dialog = new DialogPush();
+                    dialog.showDialog();
+                    if (dialog.isOk()) {
+                        PaneEditorInfo editorInfo = getMainPaneInfo();
+                        editorInfo.getPaneNlbFacade().push(dialog.getUserName(), dialog.getPassword());
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(
+                            m_mainFramePanel,
+                            "Error while pushing: " + ex.toString()
+                    );
+                }*/
             }
         });
         m_undoButton.addActionListener(new ActionListener() {

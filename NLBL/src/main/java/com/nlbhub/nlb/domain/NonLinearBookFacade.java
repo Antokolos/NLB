@@ -155,8 +155,13 @@ public class NonLinearBookFacade implements NLBObservable {
         }
     }
 
-    public void commit(String commitMessageText) throws NLBVCSException {
+    public void commit(final String commitMessageText) throws NLBVCSException {
         m_vcsAdapter.commit(commitMessageText);
+        notifyObservers();
+    }
+
+    public void push(final String userName, final String password) throws NLBVCSException {
+        m_vcsAdapter.push(userName, password);
         notifyObservers();
     }
 

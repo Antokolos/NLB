@@ -138,6 +138,16 @@
                   <text value=""/>
                 </properties>
               </component>
+              <component id="101a8" class="javax.swing.JButton" binding="m_pushButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/push.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
             </children>
           </toolbar>
           <toolbar id="9a138">

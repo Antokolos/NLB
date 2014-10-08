@@ -97,6 +97,11 @@ public class HGAdapterWithPathDecoration implements VCSAdapter {
         m_hgAdapter.commit(message);
     }
 
+    @Override
+    public void push(String userName, String password) throws NLBVCSException {
+        m_hgAdapter.push(userName, password);
+    }
+
     private String decoratePath(final String path) {
         return path.replaceAll("\\\\", "/");
     }

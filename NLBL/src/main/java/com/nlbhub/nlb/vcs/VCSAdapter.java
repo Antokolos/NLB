@@ -77,4 +77,6 @@ public interface VCSAdapter {
     public void reset(String path) throws NLBVCSException;
 
     public void commit(String message) throws NLBVCSException;
+
+    public void push(String userName, String password) throws NLBVCSException;
 }

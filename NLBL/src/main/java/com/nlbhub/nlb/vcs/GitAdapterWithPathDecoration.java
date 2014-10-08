@@ -97,6 +97,11 @@ public class GitAdapterWithPathDecoration implements VCSAdapter {
         m_gitAdapter.commit(message);
     }
 
+    @Override
+    public void push(String userName, String password) throws NLBVCSException {
+        m_gitAdapter.push(userName, password);
+    }
+
     private String decoratePath(final String path) {
         return path.replaceAll("\\\\", "/");
     }

@@ -46,6 +46,8 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.TreeWalk;
 
 import java.io.File;
@@ -276,6 +278,20 @@ public class GitAdapter implements VCSAdapter {
                     .call();
         } catch (GitAPIException e) {
             throw new NLBVCSException("Error while committing to the Git repository", e);
+        }
+    }
+
+    @Override
+    public void push(String userName, String password) throws NLBVCSException {
+        CredentialsProvider provider = new UsernamePasswordCredentialsProvider(userName, password);
+        try {
+            m_git
+                    .push()
+                    .setRemote("origin")
+                    .setCredentialsProvider(provider)
+                    .call();
+        } catch (GitAPIException e) {
+            throw new NLBVCSException("Error while pushing to the Git repository", e);
         }
     }
 }

@@ -101,6 +101,10 @@ public class HGAdapter implements VCSAdapter {
     public void commit(String message) throws NLBVCSException {
     }
 
+    @Override
+    public void push(String userName, String password) throws NLBVCSException {
+    }
+
     /*
     private HgRepoFacade m_hgRepo = new HgRepoFacade();
     private Map<String, HgStatus.Kind> m_statuses = new HashMap<>();

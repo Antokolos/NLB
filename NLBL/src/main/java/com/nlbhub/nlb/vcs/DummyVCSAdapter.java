@@ -90,4 +90,8 @@ public class DummyVCSAdapter implements VCSAdapter {
     @Override
     public void commit(String message) throws NLBVCSException {
     }
+
+    @Override
+    public void push(String userName, String password) throws NLBVCSException {
+    }
 }
