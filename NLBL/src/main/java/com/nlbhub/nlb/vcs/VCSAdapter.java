@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.vcs;
 
+import com.nlbhub.nlb.api.ProgressData;
 import com.nlbhub.nlb.exception.NLBVCSException;
 
 /**
@@ -78,5 +79,5 @@ public interface VCSAdapter {
 
     public void commit(String message) throws NLBVCSException;
 
-    public void push(String userName, String password) throws NLBVCSException;
+    public void push(String userName, String password, ProgressData progressData) throws NLBVCSException;
 }

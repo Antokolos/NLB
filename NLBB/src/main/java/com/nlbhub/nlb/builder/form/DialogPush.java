@@ -215,6 +215,8 @@ public class DialogPush extends JDialog {
         gbc.fill = GridBagConstraints.BOTH;
         panel10.add(scrollPane1, gbc);
         m_passwordField = new JPasswordField();
+        m_passwordField.setMinimumSize(new Dimension(220, 23));
+        m_passwordField.setPreferredSize(new Dimension(220, 23));
         scrollPane1.setViewportView(m_passwordField);
         final JPanel spacer1 = new JPanel();
         gbc = new GridBagConstraints();
@@ -244,6 +246,8 @@ public class DialogPush extends JDialog {
         gbc.fill = GridBagConstraints.BOTH;
         panel11.add(scrollPane2, gbc);
         m_userNameField = new JTextField();
+        m_userNameField.setMinimumSize(new Dimension(220, 24));
+        m_userNameField.setPreferredSize(new Dimension(220, 24));
         scrollPane2.setViewportView(m_userNameField);
         final JLabel label2 = new JLabel();
         label2.setText("User name");

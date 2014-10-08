@@ -115,7 +115,10 @@
                                 <children>
                                   <component id="e3908" class="javax.swing.JPasswordField" binding="m_passwordField">
                                     <constraints/>
-                                    <properties/>
+                                    <properties>
+                                      <minimumSize width="220" height="23"/>
+                                      <preferredSize width="220" height="23"/>
+                                    </properties>
                                   </component>
                                 </children>
                               </scrollpane>
@@ -148,7 +151,10 @@
                                 <children>
                                   <component id="fdcdf" class="javax.swing.JTextField" binding="m_userNameField">
                                     <constraints/>
-                                    <properties/>
+                                    <properties>
+                                      <minimumSize width="220" height="24"/>
+                                      <preferredSize width="220" height="24"/>
+                                    </properties>
                                   </component>
                                 </children>
                               </scrollpane>

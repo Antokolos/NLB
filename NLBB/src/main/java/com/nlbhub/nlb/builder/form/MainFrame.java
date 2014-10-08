@@ -505,6 +505,38 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         }
     }
 
+    class PushTask extends Task {
+        private String m_userName;
+        private String m_password;
+
+        PushTask(String userName, String password) {
+            m_userName = userName;
+            m_password = password;
+        }
+
+        @Override
+        protected Void doInBackground() throws Exception {
+            setProgress(0);
+            try {
+                PaneEditorInfo editorInfo = getMainPaneInfo();
+                editorInfo.getPaneNlbFacade().push(m_userName, m_password, this);
+                setProgressValue(100);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                        m_mainFramePanel,
+                        "Error while pushing: " + ex.toString()
+                );
+            }
+            return null;
+        }
+
+        @Override
+        public void done() {
+            super.done();
+            m_pushButton.setEnabled(true);
+        }
+    }
+
     class OpenTask extends Task {
 
         @Override
@@ -831,20 +863,31 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_pushButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(m_mainFramePanel, "Not implemented yet");
-                /*try {
+                try {
                     DialogPush dialog = new DialogPush();
                     dialog.showDialog();
                     if (dialog.isOk()) {
-                        PaneEditorInfo editorInfo = getMainPaneInfo();
-                        editorInfo.getPaneNlbFacade().push(dialog.getUserName(), dialog.getPassword());
+                        m_progressMonitor = new ProgressMonitor(
+                                $$$getRootComponent$$$(),
+                                "Pushing Non-Linear Book",
+                                "Initializing...",
+                                0,
+                                100
+                        );
+                        m_progressMonitor.setProgress(0);
+                        m_progressMonitor.setMillisToDecideToPopup(200);
+                        m_progressMonitor.setMillisToPopup(200);
+                        m_task = new PushTask(dialog.getUserName(), dialog.getPassword());
+                        m_task.addPropertyChangeListener(mainFrame);
+                        m_pushButton.setEnabled(false);
+                        m_task.execute();
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(
                             m_mainFramePanel,
                             "Error while pushing: " + ex.toString()
                     );
-                }*/
+                }
             }
         });
         m_undoButton.addActionListener(new ActionListener() {

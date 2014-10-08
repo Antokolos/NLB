@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.vcs;
 
+import com.nlbhub.nlb.api.ProgressData;
 import com.nlbhub.nlb.exception.NLBVCSException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -282,16 +283,74 @@ public class GitAdapter implements VCSAdapter {
     }
 
     @Override
-    public void push(String userName, String password) throws NLBVCSException {
+    public void push(String userName, String password, final ProgressData progressData) throws NLBVCSException {
         CredentialsProvider provider = new UsernamePasswordCredentialsProvider(userName, password);
+        progressData.setNoteText("Pushing...");
+        ProgressMonitor monitor = new ProgressMonitor() {
+            /**
+             * Advise the monitor of the total number of subtasks.
+             * This should be invoked at most once per progress monitor interface.
+             *
+             * @param i - the total number of tasks the caller will need to complete their processing.
+             */
+            @Override
+            public void start(int i) {
+            }
+
+            /**
+             * Begin processing a single task.
+             *
+             * @param s title to describe the task. Callers should publish these as stable string constants that
+             *          implementations could match against for translation support.
+             * @param i total number of work units the application will perform; UNKNOWN if it cannot be predicted
+             *          in advance.
+             */
+            @Override
+            public void beginTask(String s, int i) {
+            }
+
+            /**
+             * Denote that some work units have been completed.
+             * This is an incremental update; if invoked once per work unit the correct value for our argument is 1, to
+             * indicate a single unit of work has been finished by the caller.
+             *
+             * @param i the number of work units completed since the last call.
+             */
+            @Override
+            public void update(int i) {
+                // TODO: more informative progress
+                progressData.setProgressValue(50);
+            }
+
+            /**
+             * Finish the current task, so the next can begin.
+             */
+            @Override
+            public void endTask() {
+            }
+
+            /**
+             * Check for user task cancellation.
+             *
+             * @return true if the user asked the process to stop working.
+             */
+            @Override
+            public boolean isCancelled() {
+                return false;
+            }
+        };
         try {
             m_git
                     .push()
                     .setRemote("origin")
                     .setCredentialsProvider(provider)
+                    .setProgressMonitor(monitor)
                     .call();
         } catch (GitAPIException e) {
-            throw new NLBVCSException("Error while pushing to the Git repository", e);
+            throw new NLBVCSException(
+                    "Error while pushing to the Git repository: " + e.getMessage(),
+                    e
+            );
         }
     }
 }

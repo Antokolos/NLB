@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.vcs;
 
+import com.nlbhub.nlb.api.ProgressData;
 import com.nlbhub.nlb.exception.NLBVCSException;
 
 public class HGAdapterWithPathDecoration implements VCSAdapter {
@@ -98,8 +99,8 @@ public class HGAdapterWithPathDecoration implements VCSAdapter {
     }
 
     @Override
-    public void push(String userName, String password) throws NLBVCSException {
-        m_hgAdapter.push(userName, password);
+    public void push(String userName, String password, ProgressData progressData) throws NLBVCSException {
+        m_hgAdapter.push(userName, password, progressData);
     }
 
     private String decoratePath(final String path) {
