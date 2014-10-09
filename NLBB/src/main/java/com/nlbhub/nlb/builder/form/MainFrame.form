@@ -128,6 +128,16 @@
                   <text value=""/>
                 </properties>
               </component>
+              <component id="acbb1" class="javax.swing.JButton" binding="m_pullButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/pull.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
               <component id="6b7da" class="javax.swing.JButton" binding="m_commitButton">
                 <constraints/>
                 <properties>

@@ -1,5 +1,5 @@
 /**
- * @(#)DummyVCSAdapter.java
+ * @(#)VCSProgressMonitor.java
  *
  * This file is part of the Non-Linear Book project.
  * Copyright (c) 2012-2014 Anton P. Kolosov
@@ -34,69 +34,75 @@
  * For more information, please contact Anton P. Kolosov at this
  * address: antokolos@gmail.com
  *
- * Copyright (c) 2013 Anton P. Kolosov All rights reserved.
+ * Copyright (c) 2014 Anton P. Kolosov All rights reserved.
  */
 package com.nlbhub.nlb.vcs;
 
 import com.nlbhub.nlb.api.ProgressData;
-import com.nlbhub.nlb.exception.NLBVCSException;
+import org.eclipse.jgit.lib.ProgressMonitor;
 
 /**
- * The DummyVCSAdapter class
+ * The VCSProgressMonitor class
  *
  * @author Anton P. Kolosov
- * @version 1.0 12/30/13
+ * @version 1.0
  */
-public class DummyVCSAdapter implements VCSAdapter {
-    @Override
-    public void initRepo(String path) throws NLBVCSException {
+public class VCSProgressMonitor implements ProgressMonitor {
+    final ProgressData m_progressData;
+
+    public VCSProgressMonitor(ProgressData progressData) {
+        m_progressData = progressData;
     }
 
+    /**
+     * Advise the monitor of the total number of subtasks.
+     * This should be invoked at most once per progress monitor interface.
+     *
+     * @param i - the total number of tasks the caller will need to complete their processing.
+     */
     @Override
-    public void openRepo(String path) throws NLBVCSException {
+    public void start(int i) {
     }
 
+    /**
+     * Begin processing a single task.
+     *
+     * @param s title to describe the task. Callers should publish these as stable string constants that
+     *          implementations could match against for translation support.
+     * @param i total number of work units the application will perform; UNKNOWN if it cannot be predicted
+     *          in advance.
+     */
     @Override
-    public void closeAdapter() throws NLBVCSException {
+    public void beginTask(String s, int i) {
     }
 
+    /**
+     * Denote that some work units have been completed.
+     * This is an incremental update; if invoked once per work unit the correct value for our argument is 1, to
+     * indicate a single unit of work has been finished by the caller.
+     *
+     * @param i the number of work units completed since the last call.
+     */
     @Override
-    public boolean getDirAddFlag() {
+    public void update(int i) {
+        // TODO: more informative progress
+        m_progressData.setProgressValue(50);
+    }
+
+    /**
+     * Finish the current task, so the next can begin.
+     */
+    @Override
+    public void endTask() {
+    }
+
+    /**
+     * Check for user task cancellation.
+     *
+     * @return true if the user asked the process to stop working.
+     */
+    @Override
+    public boolean isCancelled() {
         return false;
-    }
-
-    @Override
-    public boolean getAddModifiedFilesFlag() {
-        return false;
-    }
-
-    @Override
-    public Status getStatus(String path) throws NLBVCSException {
-        return Status.Unknown;
-    }
-
-    @Override
-    public void add(String path) throws NLBVCSException {
-    }
-
-    @Override
-    public boolean remove(String path) throws NLBVCSException {
-        return false;
-    }
-
-    @Override
-    public void reset(String path) throws NLBVCSException {
-    }
-
-    @Override
-    public void commit(String message) throws NLBVCSException {
-    }
-
-    @Override
-    public void pull(String userName, String password, ProgressData progressData) throws NLBVCSException {
-    }
-
-    @Override
-    public void push(String userName, String password, ProgressData progressData) throws NLBVCSException {
     }
 }

@@ -79,5 +79,7 @@ public interface VCSAdapter {
 
     public void commit(String message) throws NLBVCSException;
 
+    public void pull(String userName, String password, ProgressData progressData) throws NLBVCSException;
+
     public void push(String userName, String password, ProgressData progressData) throws NLBVCSException;
 }

@@ -160,6 +160,11 @@ public class NonLinearBookFacade implements NLBObservable {
         notifyObservers();
     }
 
+    public void pull(final String userName, final String password, final ProgressData progressData) throws NLBVCSException {
+        m_vcsAdapter.pull(userName, password, progressData);
+        notifyObservers();
+    }
+
     public void push(final String userName, final String password, final ProgressData progressData) throws NLBVCSException {
         m_vcsAdapter.push(userName, password, progressData);
         notifyObservers();

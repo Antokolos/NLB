@@ -99,6 +99,11 @@ public class HGAdapterWithPathDecoration implements VCSAdapter {
     }
 
     @Override
+    public void pull(String userName, String password, ProgressData progressData) throws NLBVCSException {
+        m_hgAdapter.pull(userName, password, progressData);
+    }
+
+    @Override
     public void push(String userName, String password, ProgressData progressData) throws NLBVCSException {
         m_hgAdapter.push(userName, password, progressData);
     }

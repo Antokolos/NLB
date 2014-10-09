@@ -131,6 +131,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     private JButton m_exportPNG;
     private JButton m_exportTXT;
     private JButton m_pushButton;
+    private JButton m_pullButton;
     private final Launcher m_launcher;
     private final JFileChooser m_dirChooser;
     private final JFileChooser m_fileChooser;
@@ -216,6 +217,13 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_saveFileAsButton.setRolloverEnabled(true);
         m_saveFileAsButton.setText("");
         toolBar1.add(m_saveFileAsButton);
+        m_pullButton = new JButton();
+        m_pullButton.setBorderPainted(false);
+        m_pullButton.setFocusPainted(false);
+        m_pullButton.setIcon(new ImageIcon(getClass().getResource("/common/pull.png")));
+        m_pullButton.setRolloverEnabled(true);
+        m_pullButton.setText("");
+        toolBar1.add(m_pullButton);
         m_commitButton = new JButton();
         m_commitButton.setBorderPainted(false);
         m_commitButton.setFocusPainted(false);
@@ -505,6 +513,44 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         }
     }
 
+    class PullTask extends Task {
+        private String m_userName;
+        private String m_password;
+        private PropertyChangeListener m_listener;
+
+        PullTask(String userName, String password, PropertyChangeListener listener) {
+            m_userName = userName;
+            m_password = password;
+            m_listener = listener;
+        }
+
+        @Override
+        protected Void doInBackground() throws Exception {
+            setProgress(0);
+            try {
+                PaneEditorInfo editorInfo = getMainPaneInfo();
+                editorInfo.getPaneNlbFacade().pull(m_userName, m_password, this);
+                setProgressValue(100);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                        m_mainFramePanel,
+                        "Error while pulling: " + ex.toString()
+                );
+            }
+            return null;
+        }
+
+        @Override
+        public void done() {
+            super.done();
+            m_pullButton.setEnabled(true);
+            m_task = new OpenTask(getMainPaneInfo().getPaneNlbFacade().getNlb().getRootDir());
+            m_task.addPropertyChangeListener(m_listener);
+            m_openFileButton.setEnabled(false);
+            m_task.execute();
+        }
+    }
+
     class PushTask extends Task {
         private String m_userName;
         private String m_password;
@@ -538,6 +584,11 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     }
 
     class OpenTask extends Task {
+        private File m_file;
+
+        OpenTask(File file) {
+            m_file = file;
+        }
 
         @Override
         public Void doInBackground() {
@@ -545,9 +596,8 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             try {
                 // Opening the book
                 clearAll();
-                File file = m_dirChooser.getSelectedFile();
                 PaneEditorInfo editorInfo = getMainPaneInfo();
-                editorInfo.getPaneGraphEditor().load(file, this);
+                editorInfo.getPaneGraphEditor().load(m_file, this);
                 setProgressValue(85);
                 setNoteText("Opening panes...");
                 openModulesPanes();
@@ -776,7 +826,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                         m_progressMonitor.setProgress(0);
                         m_progressMonitor.setMillisToDecideToPopup(200);
                         m_progressMonitor.setMillisToPopup(200);
-                        m_task = new OpenTask();
+                        m_task = new OpenTask(m_dirChooser.getSelectedFile());
                         m_task.addPropertyChangeListener(mainFrame);
                         m_openFileButton.setEnabled(false);
                         m_task.execute();
@@ -838,6 +888,36 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                     JOptionPane.showMessageDialog(
                             m_mainFramePanel,
                             "Error while saving: " + ex.toString()
+                    );
+                }
+            }
+        });
+        m_pullButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    DialogPull dialog = new DialogPull();
+                    dialog.showDialog();
+                    if (dialog.isOk()) {
+                        m_progressMonitor = new ProgressMonitor(
+                                $$$getRootComponent$$$(),
+                                "Pulling Non-Linear Book",
+                                "Initializing...",
+                                0,
+                                100
+                        );
+                        m_progressMonitor.setProgress(0);
+                        m_progressMonitor.setMillisToDecideToPopup(200);
+                        m_progressMonitor.setMillisToPopup(200);
+                        m_task = new PullTask(dialog.getUserName(), dialog.getPassword(), mainFrame);
+                        m_task.addPropertyChangeListener(mainFrame);
+                        m_pullButton.setEnabled(false);
+                        m_task.execute();
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(
+                            m_mainFramePanel,
+                            "Error while pulling: " + ex.toString()
                     );
                 }
             }
@@ -1547,9 +1627,11 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     @Override
     public void updateView() {
         PaneEditorInfo editorInfo = getSelectedPaneInfo();
-        m_undoButton.setEnabled(editorInfo.getPaneNlbFacade().canUndo());
-        m_redoButton.setEnabled(editorInfo.getPaneNlbFacade().canRedo());
-        NonLinearBook nlb = editorInfo.getPaneNlbFacade().getNlb();
+        NonLinearBookFacade facade = editorInfo.getPaneNlbFacade();
+        m_undoButton.setEnabled(facade.canUndo());
+        m_redoButton.setEnabled(facade.canRedo());
+        m_pullButton.setEnabled(!facade.hasChanges());
+        NonLinearBook nlb = facade.getNlb();
         NonLinearBook.BookStatistics bookStats = nlb.getBookStatistics();
         NonLinearBook.VariableStatistics variableStats = nlb.getVariableStatistics();
         for (final NonLinearBook.ModuleInfo info : bookStats.getModuleInfos()) {
