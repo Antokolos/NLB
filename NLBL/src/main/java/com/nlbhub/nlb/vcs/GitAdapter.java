@@ -294,6 +294,14 @@ public class GitAdapter implements VCSAdapter {
                     .setCredentialsProvider(provider)
                     .setProgressMonitor(monitor)
                     .call();
+            // Analogous to `git clean -fd` command. It is needed to remove empty directories that can remain after
+            // `git pull` command.
+            m_git
+                    .clean()
+                    .setCleanDirectories(true)
+                    .setDryRun(false)
+                    .setIgnore(true)
+                    .call();
         } catch (GitAPIException e) {
             throw new NLBVCSException(
                     "Error while pulling from the Git repository: " + e.getMessage(),
