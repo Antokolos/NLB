@@ -518,8 +518,12 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjStart() {
-        return " = obj {" + LINE_SEPARATOR;
+    protected String decorateObjStart(boolean menuObj) {
+        if (menuObj) {
+            return " = menu {" + LINE_SEPARATOR;
+        } else {
+            return " = obj {" + LINE_SEPARATOR;
+        }
     }
 
     @Override
@@ -586,12 +590,20 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjInv() {
-        return (
-                "    inv = function(s)" + LINE_SEPARATOR
-                        + "        s.use(s, s);" + LINE_SEPARATOR
-                        + "    end," + LINE_SEPARATOR
-        );
+    protected String decorateObjInv(boolean menuObj) {
+        if (menuObj) {
+            return (
+                    "    menu = function(s)" + LINE_SEPARATOR
+                            + "        s.act(s);" + LINE_SEPARATOR
+                            + "    end," + LINE_SEPARATOR
+            );
+        } else {
+            return (
+                    "    inv = function(s)" + LINE_SEPARATOR
+                            + "        s.use(s, s);" + LINE_SEPARATOR
+                            + "    end," + LINE_SEPARATOR
+            );
+        }
     }
 
     @Override

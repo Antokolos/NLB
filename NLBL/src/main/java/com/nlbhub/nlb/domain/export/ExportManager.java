@@ -454,9 +454,10 @@ public abstract class ExportManager {
             final ExportData exportData
     ) throws NLBConsistencyException {
         ObjBuildingBlocks blocks = new ObjBuildingBlocks();
+        final boolean menuObj = obj.getLinks().size() == 0;
         blocks.setObjLabel(decorateObjLabel(obj.getId()));
         blocks.setObjComment(decorateObjComment(obj.getName()));
-        blocks.setObjStart(decorateObjStart());
+        blocks.setObjStart(decorateObjStart(menuObj));
         blocks.setObjName(decorateObjName(obj.getName()));
         final String objImage = decorateObjImage(getImagePath(null, obj.getImageFileName()));
         final boolean hasImage = StringHelper.notEmpty(obj.getImageFileName());
@@ -465,7 +466,7 @@ public abstract class ExportManager {
         blocks.setObjText(decorateObjText(StringHelper.getTextChunks(obj.getText()), hasImage && obj.isImageInScene()));
         blocks.setTakable(obj.isTakable());
         blocks.setObjTak(decorateObjTak(StringHelper.getTextChunks(obj.getName())));
-        blocks.setObjInv(decorateObjInv());
+        blocks.setObjInv(decorateObjInv(menuObj));
         blocks.setObjActStart(decorateObjActStart(StringHelper.getTextChunks(obj.getActText())));
         if (!StringHelper.isEmpty(obj.getVarId())) {
             Variable variable = exportData.getNlb().getVariableById(obj.getVarId());
@@ -524,7 +525,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjStart() {
+    protected String decorateObjStart(boolean menuObj) {
         return EMPTY_STRING;
     }
 
@@ -548,7 +549,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjInv() {
+    protected String decorateObjInv(boolean menuObj) {
         return EMPTY_STRING;
     }
 
