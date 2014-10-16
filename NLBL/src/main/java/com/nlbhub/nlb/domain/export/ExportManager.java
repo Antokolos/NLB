@@ -967,6 +967,17 @@ public abstract class ExportManager {
                                 )
                         );
                         break;
+                    case RND:
+                        assert variable != null;
+                        // Left part of assignment should be always number.
+                        // TODO: throw exception if its datatype is not number???
+                        stringBuilder.append(
+                                decorateRndOperation(
+                                        decorateAutoVar(variable.getName()),
+                                        translateExpressionBody(expression.getValue())
+                                )
+                        );
+                        break;
                     default:
                         throw new NLBConsistencyException(
                                 "Operation has unknown type for modification with id = "
@@ -994,6 +1005,8 @@ public abstract class ExportManager {
     protected abstract String decorateClearOperation(String destinationId, String destinationVar);
 
     protected abstract String decorateSizeOperation(String variableName, String listName);
+
+    protected abstract String decorateRndOperation(String variableName, String maxValue);
 
     protected abstract String decorateShuffleOperation(String listName);
 

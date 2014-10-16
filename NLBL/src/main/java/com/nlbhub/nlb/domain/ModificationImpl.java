@@ -120,6 +120,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case ASSIGN:
             case POP:
             case SIZE:
+            case RND:
                 return true;
             default:
                 // ADD, REMOVE, CLEAR, CLRINV, PUSH, SHUFFLE, ACT, USE
@@ -161,6 +162,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.USE;
         } else if (type.equals(Type.SIZE.name())) {
             m_type = Type.SIZE;
+        } else if (type.equals(Type.RND.name())) {
+            m_type = Type.RND;
         } else {
             m_type = Type.ASSIGN;
         }
@@ -239,6 +242,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "SIZE":
                 m_type = Type.SIZE;
+                break;
+            case "RND":
+                m_type = Type.RND;
                 break;
             default:
                 throw new NLBConsistencyException(

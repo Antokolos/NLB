@@ -796,6 +796,11 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateRndOperation(String variableName, String maxValue) {
+        return variableName + " = rnd(" + maxValue + ");" + LINE_SEPARATOR;
+    }
+
+    @Override
     protected String decorateShuffleOperation(String listName) {
         return "        shuffle('" + listName + "');" + LINE_SEPARATOR;
     }

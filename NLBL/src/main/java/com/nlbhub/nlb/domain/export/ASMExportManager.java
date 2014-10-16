@@ -287,6 +287,12 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateRndOperation(String variableName, String maxValue) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateShuffleOperation(String listName) {
         // TODO: implement
         return EMPTY_STRING;
