@@ -42,8 +42,10 @@ import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBExportException;
+import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.StringHelper;
 import com.nlbhub.nlb.util.VarFinder;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.*;
@@ -296,13 +298,13 @@ public abstract class ExportManager {
         NLBBuildingBlocks blocks = new NLBBuildingBlocks();
         //stringBuilder.append("#mode quote").append(LINE_SEPARATOR);
         for (final Obj obj : exportData.getObjList()) {
-            blocks.addObjBuildingBlocks(createObjBuildingBlocks(obj, exportData));
+            blocks.addObjBuildingBlocks(createObjBuildingBlocks(createPreprocessedObj(obj), exportData));
         }
         for (final Page page : exportData.getPageList()) {
             if (page.getModule().isEmpty()) {
-                blocks.addPageBuildingBlocks(createPageBuildingBlocks(page, exportData));
+                blocks.addPageBuildingBlocks(createPageBuildingBlocks(createPreprocessedPage(page), exportData));
             } else {
-                blocks.addPageBuildingBlocks(createPageBuildingBlocks(page, exportData));
+                blocks.addPageBuildingBlocks(createPageBuildingBlocks(createPreprocessedPage(page), exportData));
                 blocks.addNLBBuildingBlocks(
                         createNLBBuildingBlocks(m_exportDataMap.get(page.getId()))
                 );
@@ -353,7 +355,7 @@ public abstract class ExportManager {
         List<Link> links = page.getLinks();
         for (final Link link : links) {
             if (!link.isDeleted()) {
-                LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(link, exportData);
+                LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
                 blocks.addLinkBuildingBlocks(linkBuildingBlocks);
             }
         }
@@ -372,7 +374,7 @@ public abstract class ExportManager {
                             false
                     )
             );
-            LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(link, exportData);
+            LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
             blocks.addLinkBuildingBlocks(linkBuildingBlocks);
         }
         if (page.shouldReturn() && !exportData.getModulePage().getId().equals(MAIN_DATA_KEY)) {
@@ -395,7 +397,7 @@ public abstract class ExportManager {
                             false
                     )
             );
-            LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(link, exportData);
+            LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
             blocks.addLinkBuildingBlocks(linkBuildingBlocks);
         }
         if (page.isAutowire()) {
@@ -415,7 +417,7 @@ public abstract class ExportManager {
                                     false
                             )
                     );
-                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(link, exportData);
+                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
                     blocks.addLinkBuildingBlocks(linkBuildingBlocks);
                 }
             }
@@ -440,7 +442,7 @@ public abstract class ExportManager {
                                     false
                             )
                     );
-                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(link, exportData);
+                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
                     blocks.addLinkBuildingBlocks(linkBuildingBlocks);
                 }
             }
@@ -510,11 +512,560 @@ public abstract class ExportManager {
         List<Link> links = obj.getLinks();
         for (final Link link : links) {
             if (!link.isDeleted()) {
-                UseBuildingBlocks useBuildingBlocks = createUseBuildingBlocks(link, exportData);
+                UseBuildingBlocks useBuildingBlocks = createUseBuildingBlocks(createPreprocessedLink(link), exportData);
                 blocks.addUseBuildingBlocks(useBuildingBlocks);
             }
         }
         return blocks;
+    }
+
+    /**
+     * Escapes some characters in text.
+     *
+     * @param text text to be escaped
+     * @return escaped text
+     */
+    protected String escapeText(String text) {
+        return text;
+    }
+
+    private MultiLangString escapeMultiLang(MultiLangString multiLangString) {
+        MultiLangString result = MultiLangString.createEmptyText();
+        Set<String> keySet = multiLangString.keySet();
+        for (String key : keySet) {
+            result.put(key, escapeText(multiLangString.get(key)));
+        }
+        return result;
+    }
+
+    private Link createPreprocessedLink(final Link link) {
+        return new Link() {
+            @Override
+            public String getVarId() {
+                return link.getVarId();
+            }
+
+            @Override
+            public String getTarget() {
+                return link.getTarget();
+            }
+
+            @Override
+            public String getText() {
+                return escapeText(link.getText());
+            }
+
+            @Override
+            public MultiLangString getTexts() {
+                return escapeMultiLang(link.getTexts());
+            }
+
+            @Override
+            public String getConstrId() {
+                return link.getConstrId();
+            }
+
+            @Override
+            public String getStroke() {
+                return link.getStroke();
+            }
+
+            @Override
+            public Coords getCoords() {
+                return link.getCoords();
+            }
+
+            @Override
+            public boolean isAuto() {
+                return link.isAuto();
+            }
+
+            @Override
+            public boolean isPositiveConstraint() {
+                return link.isPositiveConstraint();
+            }
+
+            @Override
+            public boolean isObeyToModuleConstraint() {
+                return link.isObeyToModuleConstraint();
+            }
+
+            @Override
+            public boolean isTraversalLink() {
+                return link.isTraversalLink();
+            }
+
+            @Override
+            public boolean isReturnLink() {
+                return link.isReturnLink();
+            }
+
+            @Override
+            public List<Modification> getModifications() {
+                return link.getModifications();
+            }
+
+            @Override
+            public Modification getModificationById(@NotNull String modId) {
+                return link.getModificationById(modId);
+            }
+
+            @Override
+            public String getId() {
+                return link.getId();
+            }
+
+            @Override
+            public String getFullId() {
+                return link.getFullId();
+            }
+
+            @Override
+            public boolean isDeleted() {
+                return link.isDeleted();
+            }
+
+            @Override
+            public IdentifiableItem getParent() {
+                return link.getParent();
+            }
+
+            @Override
+            public boolean hasDeletedParent() {
+                return link.hasDeletedParent();
+            }
+
+            @Override
+            public NonLinearBook getCurrentNLB() {
+                return link.getCurrentNLB();
+            }
+
+            @Override
+            public String addObserver(NLBObserver observer) {
+                throw new UnsupportedOperationException("Not supported during export");
+            }
+
+            @Override
+            public void removeObserver(String observerId) {
+                throw new UnsupportedOperationException("Not supported during export");
+            }
+
+            @Override
+            public void notifyObservers() {
+                throw new UnsupportedOperationException("Not supported during export");
+            }
+        };
+    }
+
+    private Page createPreprocessedPage(final Page page) {
+        return new Page() {
+            @Override
+            public String getImageFileName() {
+                return page.getImageFileName();
+            }
+
+            @Override
+            public String getSoundFileName() {
+                return page.getSoundFileName();
+            }
+
+            @Override
+            public String getText() {
+                return escapeText(page.getText());
+            }
+
+            @Override
+            public MultiLangString getTexts() {
+                return escapeMultiLang(page.getTexts());
+            }
+
+            @Override
+            public String getVarId() {
+                return page.getVarId();
+            }
+
+            @Override
+            public String getCaption() {
+                return escapeText(page.getCaption());
+            }
+
+            @Override
+            public MultiLangString getCaptions() {
+                return escapeMultiLang(page.getCaptions());
+            }
+
+            @Override
+            public boolean isUseCaption() {
+                return page.isUseCaption();
+            }
+
+            @Override
+            public boolean isLeaf() {
+                return page.isLeaf();
+            }
+
+            @Override
+            public String getTraverseText() {
+                // Not escaping, because this is the text of the autogenerated link, which will be escaped later
+                return page.getTraverseText();
+            }
+
+            @Override
+            public MultiLangString getTraverseTexts() {
+                // Not escaping, because this is the text of the autogenerated link, which will be escaped later
+                return page.getTraverseTexts();
+            }
+
+            @Override
+            public boolean isAutoTraverse() {
+                return page.isAutoTraverse();
+            }
+
+            @Override
+            public boolean isAutoReturn() {
+                return page.isAutoReturn();
+            }
+
+            @Override
+            public String getReturnText() {
+                // Not escaping, because this is the text of the autogenerated link, which will be escaped later
+                return page.getReturnText();
+            }
+
+            @Override
+            public MultiLangString getReturnTexts() {
+                // Not escaping, because this is the text of the autogenerated link, which will be escaped later
+                return page.getReturnTexts();
+            }
+
+            @Override
+            public String getReturnPageId() {
+                return page.getReturnPageId();
+            }
+
+            @Override
+            public boolean shouldReturn() {
+                return page.shouldReturn();
+            }
+
+            @Override
+            public String getModuleConstrId() {
+                return page.getModuleConstrId();
+            }
+
+            @Override
+            public String getModuleName() {
+                return page.getModuleName();
+            }
+
+            @Override
+            public NonLinearBook getModule() {
+                return page.getModule();
+            }
+
+            @Override
+            public boolean isAutowire() {
+                return page.isAutowire();
+            }
+
+            @Override
+            public String getAutowireInText() {
+                // Not escaping, because this is the text of the autogenerated link, which will be escaped later
+                return page.getAutowireInText();
+            }
+
+            @Override
+            public MultiLangString getAutowireInTexts() {
+                // Not escaping, because this is the text of the autogenerated link, which will be escaped later
+                return page.getAutowireInTexts();
+            }
+
+            @Override
+            public String getAutowireOutText() {
+                // Not escaping, because this is the text of the autogenerated link, which will be escaped later
+                return page.getAutowireOutText();
+            }
+
+            @Override
+            public MultiLangString getAutowireOutTexts() {
+                // Not escaping, because this is the text of the autogenerated link, which will be escaped later
+                return page.getAutowireOutTexts();
+            }
+
+            @Override
+            public boolean isAutoIn() {
+                return page.isAutoIn();
+            }
+
+            @Override
+            public boolean isAutoOut() {
+                return page.isAutoOut();
+            }
+
+            @Override
+            public String getAutowireInConstrId() {
+                return page.getAutowireInConstrId();
+            }
+
+            @Override
+            public String getAutowireOutConstrId() {
+                return page.getAutowireOutConstrId();
+            }
+
+            @Override
+            public String getStroke() {
+                return page.getStroke();
+            }
+
+            @Override
+            public String getFill() {
+                return page.getFill();
+            }
+
+            @Override
+            public String getTextColor() {
+                return page.getTextColor();
+            }
+
+            @Override
+            public List<String> getContainedObjIds() {
+                return page.getContainedObjIds();
+            }
+
+            @Override
+            public Coords getCoords() {
+                return page.getCoords();
+            }
+
+            @Override
+            public List<Link> getLinks() {
+                return page.getLinks();
+            }
+
+            @Override
+            public Link getLinkById(@NotNull String linkId) {
+                return page.getLinkById(linkId);
+            }
+
+            @Override
+            public List<Modification> getModifications() {
+                return page.getModifications();
+            }
+
+            @Override
+            public Modification getModificationById(@NotNull String modId) {
+                return page.getModificationById(modId);
+            }
+
+            @Override
+            public String getId() {
+                return page.getId();
+            }
+
+            @Override
+            public String getFullId() {
+                return page.getFullId();
+            }
+
+            @Override
+            public boolean isDeleted() {
+                return page.isDeleted();
+            }
+
+            @Override
+            public IdentifiableItem getParent() {
+                return page.getParent();
+            }
+
+            @Override
+            public boolean hasDeletedParent() {
+                return page.hasDeletedParent();
+            }
+
+            @Override
+            public NonLinearBook getCurrentNLB() {
+                return page.getCurrentNLB();
+            }
+
+            @Override
+            public String addObserver(NLBObserver observer) {
+                throw new UnsupportedOperationException("Not supported during export");
+            }
+
+            @Override
+            public void removeObserver(String observerId) {
+                throw new UnsupportedOperationException("Not supported during export");
+            }
+
+            @Override
+            public void notifyObservers() {
+                throw new UnsupportedOperationException("Not supported during export");
+            }
+        };
+    }
+
+    private Obj createPreprocessedObj(final Obj obj) {
+        return new Obj() {
+            @Override
+            public String getText() {
+                return escapeText(obj.getText());
+            }
+
+            @Override
+            public String getActText() {
+                return escapeText(obj.getActText());
+            }
+
+            @Override
+            public MultiLangString getTexts() {
+                return escapeMultiLang(obj.getTexts());
+            }
+
+            @Override
+            public MultiLangString getActTexts() {
+                return escapeMultiLang(obj.getActTexts());
+            }
+
+            @Override
+            public String getVarId() {
+                return obj.getVarId();
+            }
+
+            @Override
+            public String getConstrId() {
+                return obj.getConstrId();
+            }
+
+            @Override
+            public String getName() {
+                return obj.getName();
+            }
+
+            @Override
+            public String getImageFileName() {
+                return obj.getImageFileName();
+            }
+
+            @Override
+            public String getDisp() {
+                return escapeText(obj.getDisp());
+            }
+
+            @Override
+            public MultiLangString getDisps() {
+                return escapeMultiLang(obj.getDisps());
+            }
+
+            @Override
+            public boolean isTakable() {
+                return obj.isTakable();
+            }
+
+            @Override
+            public boolean isImageInScene() {
+                return obj.isImageInScene();
+            }
+
+            @Override
+            public boolean isImageInInventory() {
+                return obj.isImageInInventory();
+            }
+
+            @Override
+            public String getContainerId() {
+                return obj.getContainerId();
+            }
+
+            @Override
+            public String getStroke() {
+                return obj.getStroke();
+            }
+
+            @Override
+            public String getFill() {
+                return obj.getFill();
+            }
+
+            @Override
+            public String getTextColor() {
+                return obj.getTextColor();
+            }
+
+            @Override
+            public List<String> getContainedObjIds() {
+                return obj.getContainedObjIds();
+            }
+
+            @Override
+            public Coords getCoords() {
+                return obj.getCoords();
+            }
+
+            @Override
+            public List<Link> getLinks() {
+                return obj.getLinks();
+            }
+
+            @Override
+            public Link getLinkById(@NotNull String linkId) {
+                return obj.getLinkById(linkId);
+            }
+
+            @Override
+            public List<Modification> getModifications() {
+                return obj.getModifications();
+            }
+
+            @Override
+            public Modification getModificationById(@NotNull String modId) {
+                return obj.getModificationById(modId);
+            }
+
+            @Override
+            public String getId() {
+                return obj.getId();
+            }
+
+            @Override
+            public String getFullId() {
+                return obj.getFullId();
+            }
+
+            @Override
+            public boolean isDeleted() {
+                return obj.isDeleted();
+            }
+
+            @Override
+            public IdentifiableItem getParent() {
+                return obj.getParent();
+            }
+
+            @Override
+            public boolean hasDeletedParent() {
+                return obj.hasDeletedParent();
+            }
+
+            @Override
+            public NonLinearBook getCurrentNLB() {
+                return obj.getCurrentNLB();
+            }
+
+            @Override
+            public String addObserver(NLBObserver observer) {
+                throw new UnsupportedOperationException("Not supported during export");
+            }
+
+            @Override
+            public void removeObserver(String observerId) {
+                throw new UnsupportedOperationException("Not supported during export");
+            }
+
+            @Override
+            public void notifyObservers() {
+                throw new UnsupportedOperationException("Not supported during export");
+            }
+        };
     }
 
     protected String decorateObjLabel(String id) {
