@@ -78,10 +78,11 @@ public class STEADExportManager extends TextExportManager {
 
         stringBuilder.append("require \"xact\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"hideinv\"").append(LINE_SEPARATOR);
-        stringBuilder.append("require \"para\"").append(LINE_SEPARATOR);
+        stringBuilder.append("--require \"para\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"dash\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"quotes\" ").append(LINE_SEPARATOR);
         stringBuilder.append("game.codepage=\"UTF-8\";").append(LINE_SEPARATOR);
+        stringBuilder.append("stead.scene_delim = '^';").append(LINE_SEPARATOR);
         stringBuilder.append(LINE_SEPARATOR);
 
         stringBuilder.append("game.act = 'Nothing happens.';").append(LINE_SEPARATOR);
@@ -92,6 +93,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    _lists = {};").append(LINE_SEPARATOR);
         stringBuilder.append("    _clones = {};").append(LINE_SEPARATOR);
         stringBuilder.append("    _filter = {};").append(LINE_SEPARATOR);
+        stringBuilder.append("    _curloc = nil;").append(LINE_SEPARATOR);
         stringBuilder.append("    push = function(listname, v)").append(LINE_SEPARATOR);
         stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
         stringBuilder.append("        _lists[listname] = {next = list, value = v};").append(LINE_SEPARATOR);
@@ -236,6 +238,13 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        ret.nam = s.nam..r;").append(LINE_SEPARATOR);
         stringBuilder.append("        return ret;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    curloc = function()").append(LINE_SEPARATOR);
+        stringBuilder.append("        if _curloc == nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("            return here();").append(LINE_SEPARATOR);
+        stringBuilder.append("        else").append(LINE_SEPARATOR);
+        stringBuilder.append("            return _curloc;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("}").append(LINE_SEPARATOR);
         stringBuilder.append("listobj = obj {").append(LINE_SEPARATOR);
         stringBuilder.append("    nam = \"listobj\",").append(LINE_SEPARATOR);
@@ -245,7 +254,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    act = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.acta(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("        here().autos();").append(LINE_SEPARATOR);
+        stringBuilder.append("        curloc().autos();").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    acta = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.actf(s)").append(LINE_SEPARATOR);
@@ -261,7 +270,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    use = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.usea(s, w);").append(LINE_SEPARATOR);
-        stringBuilder.append("        here().autos();").append(LINE_SEPARATOR);
+        stringBuilder.append("        curloc().autos();").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    usea = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.usef(s, w);").append(LINE_SEPARATOR);
@@ -277,7 +286,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    used = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.useda(s, w);").append(LINE_SEPARATOR);
-        stringBuilder.append("        here().autos();").append(LINE_SEPARATOR);
+        stringBuilder.append("        curloc().autos();").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    useda = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.usedf(s, w);").append(LINE_SEPARATOR);
@@ -369,7 +378,7 @@ public class STEADExportManager extends TextExportManager {
                     ).append(LINE_SEPARATOR);
                 }
                 stringBuilder.append(padding).append(extraPadding);
-                stringBuilder.append("    walk(here());").append(LINE_SEPARATOR);
+                stringBuilder.append("    walk(curloc());").append(LINE_SEPARATOR);
                 */
                 if (constrained) {
                     usesEndBuilder.append(padding).append("    end;").append(LINE_SEPARATOR);
@@ -466,6 +475,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(autosBuilder.toString());
         // TODO: check that here() will not be used in modifications (for example, when automatically taking objects to the inventory)
         stringBuilder.append("    enter = function(s)").append(LINE_SEPARATOR);
+        stringBuilder.append("        _curloc = s;").append(LINE_SEPARATOR);
         if (varsOrModsPresent) {
             stringBuilder.append(pageBlocks.getPageVariable());
             stringBuilder.append(pageBlocks.getPageModifications());
@@ -623,7 +633,7 @@ public class STEADExportManager extends TextExportManager {
         return (
                 "    act = function(s)" + LINE_SEPARATOR +
                         "        s.acta(s);" + LINE_SEPARATOR +
-                        "        here().autos();" + LINE_SEPARATOR +
+                        "        curloc().autos();" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    acta = function(s)" + LINE_SEPARATOR +
                         "        p(\"" + expandVariables(actTextChunks) + "\");" + LINE_SEPARATOR +
@@ -643,7 +653,7 @@ public class STEADExportManager extends TextExportManager {
         return (
                 "    use = function(s, w)" + LINE_SEPARATOR +
                         "        s.usea(s, w);" + LINE_SEPARATOR +
-                        "        here().autos();" + LINE_SEPARATOR +
+                        "        curloc().autos();" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    usea = function(s, w)" + LINE_SEPARATOR +
                         "        s.usep(s, w);" + LINE_SEPARATOR +
