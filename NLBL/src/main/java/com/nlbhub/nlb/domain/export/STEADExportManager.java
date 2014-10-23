@@ -392,7 +392,10 @@ public class STEADExportManager extends TextExportManager {
                 }
 
                 usepBuilder.append(usesStartBuilder);
-                usepBuilder.append("p \"").append(useBuildingBlocks.getUseSuccessText()).append("\";").append(LINE_SEPARATOR);
+                String useSuccessText = useBuildingBlocks.getUseSuccessText();
+                if (StringHelper.notEmpty(useSuccessText)) {
+                    usepBuilder.append("p \"").append(useSuccessText).append("\";").append(LINE_SEPARATOR);
+                }
                 usepBuilder.append(usesEndBuilder);
             }
             usepBuilder.append("        end;").append(LINE_SEPARATOR);
