@@ -88,6 +88,8 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("game.act = 'Nothing happens.';").append(LINE_SEPARATOR);
         stringBuilder.append("game.inv = 'Hm.. This is strange thing..';").append(LINE_SEPARATOR);
         stringBuilder.append("game.use = 'Does not work...';").append(LINE_SEPARATOR);
+        stringBuilder.append("game.forcedsc = true;").append(LINE_SEPARATOR);
+
         stringBuilder.append(LINE_SEPARATOR);
         stringBuilder.append("global {").append(LINE_SEPARATOR);
         stringBuilder.append("    _lists = {};").append(LINE_SEPARATOR);
@@ -245,6 +247,10 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            return _curloc;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    nlbwalk = function(loc)").append(LINE_SEPARATOR);
+        stringBuilder.append("        _curloc = loc;").append(LINE_SEPARATOR);
+        stringBuilder.append("        walk(loc);").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("}").append(LINE_SEPARATOR);
         stringBuilder.append("listobj = obj {").append(LINE_SEPARATOR);
         stringBuilder.append("    nam = \"listobj\",").append(LINE_SEPARATOR);
@@ -373,12 +379,12 @@ public class STEADExportManager extends TextExportManager {
                 stringBuilder.append(padding).append(extraPadding);
                 if (ENABLE_COMMENTS) {
                     stringBuilder.append(
-                        "    -- walk to the current room again in order to "
+                        "    -- nlbwalk to the current room again in order to "
                         + "reflect changes in the variables"
                     ).append(LINE_SEPARATOR);
                 }
                 stringBuilder.append(padding).append(extraPadding);
-                stringBuilder.append("    walk(curloc());").append(LINE_SEPARATOR);
+                stringBuilder.append("    nlbwalk(curloc());").append(LINE_SEPARATOR);
                 */
                 if (constrained) {
                     usesEndBuilder.append(padding).append("    end;").append(LINE_SEPARATOR);
@@ -429,7 +435,6 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(pageBlocks.getPageComment());
         }
         stringBuilder.append(pageBlocks.getPageLabel());
-        stringBuilder.append("    forcedsc = true,").append(LINE_SEPARATOR);
         // Do not check pageBlocks.isUseCaption() here, because in INSTEAD all rooms must have name
         stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageImage());
@@ -475,7 +480,6 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(autosBuilder.toString());
         // TODO: check that here() will not be used in modifications (for example, when automatically taking objects to the inventory)
         stringBuilder.append("    enter = function(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("        _curloc = s;").append(LINE_SEPARATOR);
         if (varsOrModsPresent) {
             stringBuilder.append(pageBlocks.getPageVariable());
             stringBuilder.append(pageBlocks.getPageModifications());
@@ -591,13 +595,17 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateObjText(List<TextChunk> textChunks, boolean imageEnabled) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("    dsc = function(s) p(\"");
-        if (imageEnabled) {
-            stringBuilder.append(expandInteractionMarks(expandVariables(textChunks)));
-        } else {
-            stringBuilder.append(expandVariables(textChunks));
+        stringBuilder.append("    dsc = function(s) ");
+        if (textChunks.size() > 0) {
+            stringBuilder.append("p(\"");
+            if (imageEnabled) {
+                stringBuilder.append(expandInteractionMarks(expandVariables(textChunks)));
+            } else {
+                stringBuilder.append(expandVariables(textChunks));
+            }
+            stringBuilder.append("\"); ");
         }
-        stringBuilder.append("\"); end,").append(LINE_SEPARATOR);
+        stringBuilder.append("end,").append(LINE_SEPARATOR);
         return stringBuilder.toString();
     }
 
@@ -937,7 +945,7 @@ public class STEADExportManager extends TextExportManager {
             int targetPageNumber
     ) {
         return (
-                "                walk("
+                "                nlbwalk("
                         + (
                         GOTO_PAGE_NUMBERS
                                 ? decorateId(String.valueOf(targetPageNumber))
@@ -1046,9 +1054,12 @@ public class STEADExportManager extends TextExportManager {
 
     protected String decoratePageTextStart(List<TextChunk> pageTextChunks) {
         StringBuilder pageText = new StringBuilder();
-        pageText.append("    dsc = function(s)").append(LINE_SEPARATOR).append("p(\"");
-        pageText.append(expandVariables(pageTextChunks));
-        pageText.append("\");").append(LINE_SEPARATOR);
+        pageText.append("    dsc = function(s)").append(LINE_SEPARATOR);
+        if (pageTextChunks.size() > 0) {
+            pageText.append("p(\"");
+            pageText.append(expandVariables(pageTextChunks));
+            pageText.append("\");").append(LINE_SEPARATOR);
+        }
         pageText.append("    end,").append(LINE_SEPARATOR);
         pageText.append("    xdsc = function(s)").append(LINE_SEPARATOR);
         pageText.append("        p \"^\";").append(LINE_SEPARATOR);
@@ -1071,7 +1082,7 @@ public class STEADExportManager extends TextExportManager {
         String roomName = GOTO_PAGE_NUMBERS ? decorateId(String.valueOf(pageNumber)) : decorateId(labelText);
         roomBeginning.append(roomName);
         if (pageNumber == 1) {
-            roomBeginning.append(", main = room { nam = \"main\", enter = function(s) walk(main); end }, ");
+            roomBeginning.append(", main = room { nam = \"main\", enter = function(s) nlbwalk(main); end }, ");
         } else {
             roomBeginning.append(" = ");
         }
