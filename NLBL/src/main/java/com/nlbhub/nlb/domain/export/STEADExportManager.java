@@ -78,20 +78,24 @@ public class STEADExportManager extends TextExportManager {
 
         stringBuilder.append("require \"xact\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"hideinv\"").append(LINE_SEPARATOR);
-        stringBuilder.append("require \"para\"").append(LINE_SEPARATOR);
+        stringBuilder.append("--require \"para\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"dash\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"quotes\" ").append(LINE_SEPARATOR);
         stringBuilder.append("game.codepage=\"UTF-8\";").append(LINE_SEPARATOR);
+        stringBuilder.append("stead.scene_delim = '^';").append(LINE_SEPARATOR);
         stringBuilder.append(LINE_SEPARATOR);
 
         stringBuilder.append("game.act = 'Nothing happens.';").append(LINE_SEPARATOR);
         stringBuilder.append("game.inv = 'Hm.. This is strange thing..';").append(LINE_SEPARATOR);
         stringBuilder.append("game.use = 'Does not work...';").append(LINE_SEPARATOR);
+        stringBuilder.append("game.forcedsc = true;").append(LINE_SEPARATOR);
+
         stringBuilder.append(LINE_SEPARATOR);
         stringBuilder.append("global {").append(LINE_SEPARATOR);
         stringBuilder.append("    _lists = {};").append(LINE_SEPARATOR);
         stringBuilder.append("    _clones = {};").append(LINE_SEPARATOR);
         stringBuilder.append("    _filter = {};").append(LINE_SEPARATOR);
+        stringBuilder.append("    _curloc = nil;").append(LINE_SEPARATOR);
         stringBuilder.append("    push = function(listname, v)").append(LINE_SEPARATOR);
         stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
         stringBuilder.append("        _lists[listname] = {next = list, value = v};").append(LINE_SEPARATOR);
@@ -236,6 +240,17 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        ret.nam = s.nam..r;").append(LINE_SEPARATOR);
         stringBuilder.append("        return ret;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    curloc = function()").append(LINE_SEPARATOR);
+        stringBuilder.append("        if _curloc == nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("            return here();").append(LINE_SEPARATOR);
+        stringBuilder.append("        else").append(LINE_SEPARATOR);
+        stringBuilder.append("            return _curloc;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    nlbwalk = function(loc)").append(LINE_SEPARATOR);
+        stringBuilder.append("        _curloc = loc;").append(LINE_SEPARATOR);
+        stringBuilder.append("        walk(loc);").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("}").append(LINE_SEPARATOR);
         stringBuilder.append("listobj = obj {").append(LINE_SEPARATOR);
         stringBuilder.append("    nam = \"listobj\",").append(LINE_SEPARATOR);
@@ -245,7 +260,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    act = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.acta(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("        here().autos();").append(LINE_SEPARATOR);
+        stringBuilder.append("        curloc().autos();").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    acta = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.actf(s)").append(LINE_SEPARATOR);
@@ -261,7 +276,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    use = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.usea(s, w);").append(LINE_SEPARATOR);
-        stringBuilder.append("        here().autos();").append(LINE_SEPARATOR);
+        stringBuilder.append("        curloc().autos();").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    usea = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.usef(s, w);").append(LINE_SEPARATOR);
@@ -277,7 +292,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    used = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.useda(s, w);").append(LINE_SEPARATOR);
-        stringBuilder.append("        here().autos();").append(LINE_SEPARATOR);
+        stringBuilder.append("        curloc().autos();").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    useda = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.usedf(s, w);").append(LINE_SEPARATOR);
@@ -364,12 +379,12 @@ public class STEADExportManager extends TextExportManager {
                 stringBuilder.append(padding).append(extraPadding);
                 if (ENABLE_COMMENTS) {
                     stringBuilder.append(
-                        "    -- walk to the current room again in order to "
+                        "    -- nlbwalk to the current room again in order to "
                         + "reflect changes in the variables"
                     ).append(LINE_SEPARATOR);
                 }
                 stringBuilder.append(padding).append(extraPadding);
-                stringBuilder.append("    walk(here());").append(LINE_SEPARATOR);
+                stringBuilder.append("    nlbwalk(curloc());").append(LINE_SEPARATOR);
                 */
                 if (constrained) {
                     usesEndBuilder.append(padding).append("    end;").append(LINE_SEPARATOR);
@@ -420,7 +435,6 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(pageBlocks.getPageComment());
         }
         stringBuilder.append(pageBlocks.getPageLabel());
-        stringBuilder.append("    forcedsc = true,").append(LINE_SEPARATOR);
         // Do not check pageBlocks.isUseCaption() here, because in INSTEAD all rooms must have name
         stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageImage());
@@ -438,6 +452,8 @@ public class STEADExportManager extends TextExportManager {
                 autosBuilder.append(linkBlocks.getLinkVariable());
                 autosBuilder.append(linkBlocks.getLinkModifications());
                 autosBuilder.append(linkBlocks.getLinkGoTo());
+                // Should return immediately to prevent unwanted following of other auto links
+                autosBuilder.append(LINE_SEPARATOR).append("        return;").append(LINE_SEPARATOR);
                 if (constrained) {
                     autosBuilder.append(" end;");
                 }
@@ -586,13 +602,17 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateObjText(List<TextChunk> textChunks, boolean imageEnabled) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("    dsc = function(s) p(\"");
-        if (imageEnabled) {
-            stringBuilder.append(expandInteractionMarks(expandVariables(textChunks)));
-        } else {
-            stringBuilder.append(expandVariables(textChunks));
+        stringBuilder.append("    dsc = function(s) ");
+        if (textChunks.size() > 0) {
+            stringBuilder.append("p(\"");
+            if (imageEnabled) {
+                stringBuilder.append(expandInteractionMarks(expandVariables(textChunks)));
+            } else {
+                stringBuilder.append(expandVariables(textChunks));
+            }
+            stringBuilder.append("\"); ");
         }
-        stringBuilder.append("\"); end,").append(LINE_SEPARATOR);
+        stringBuilder.append("end,").append(LINE_SEPARATOR);
         return stringBuilder.toString();
     }
 
@@ -633,7 +653,7 @@ public class STEADExportManager extends TextExportManager {
         return (
                 "    act = function(s)" + LINE_SEPARATOR +
                         "        s.acta(s);" + LINE_SEPARATOR +
-                        "        here().autos();" + LINE_SEPARATOR +
+                        "        curloc().autos();" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    acta = function(s)" + LINE_SEPARATOR +
                         actText +
@@ -653,7 +673,7 @@ public class STEADExportManager extends TextExportManager {
         return (
                 "    use = function(s, w)" + LINE_SEPARATOR +
                         "        s.usea(s, w);" + LINE_SEPARATOR +
-                        "        here().autos();" + LINE_SEPARATOR +
+                        "        curloc().autos();" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    usea = function(s, w)" + LINE_SEPARATOR +
                         "        s.usep(s, w);" + LINE_SEPARATOR +
@@ -937,7 +957,7 @@ public class STEADExportManager extends TextExportManager {
             int targetPageNumber
     ) {
         return (
-                "                walk("
+                "                nlbwalk("
                         + (
                         GOTO_PAGE_NUMBERS
                                 ? decorateId(String.valueOf(targetPageNumber))
@@ -1046,9 +1066,12 @@ public class STEADExportManager extends TextExportManager {
 
     protected String decoratePageTextStart(List<TextChunk> pageTextChunks) {
         StringBuilder pageText = new StringBuilder();
-        pageText.append("    dsc = function(s)").append(LINE_SEPARATOR).append("p(\"");
-        pageText.append(expandVariables(pageTextChunks));
-        pageText.append("\");").append(LINE_SEPARATOR);
+        pageText.append("    dsc = function(s)").append(LINE_SEPARATOR);
+        if (pageTextChunks.size() > 0) {
+            pageText.append("p(\"");
+            pageText.append(expandVariables(pageTextChunks));
+            pageText.append("\");").append(LINE_SEPARATOR);
+        }
         pageText.append("    end,").append(LINE_SEPARATOR);
         pageText.append("    xdsc = function(s)").append(LINE_SEPARATOR);
         pageText.append("        p \"^\";").append(LINE_SEPARATOR);
@@ -1071,7 +1094,7 @@ public class STEADExportManager extends TextExportManager {
         String roomName = GOTO_PAGE_NUMBERS ? decorateId(String.valueOf(pageNumber)) : decorateId(labelText);
         roomBeginning.append(roomName);
         if (pageNumber == 1) {
-            roomBeginning.append(", main = room { nam = \"main\", enter = function(s) walk(main); end }, ");
+            roomBeginning.append(", main = room { nam = \"main\", enter = function(s) nlbwalk(main); end }, ");
         } else {
             roomBeginning.append(" = ");
         }
