@@ -452,6 +452,8 @@ public class STEADExportManager extends TextExportManager {
                 autosBuilder.append(linkBlocks.getLinkVariable());
                 autosBuilder.append(linkBlocks.getLinkModifications());
                 autosBuilder.append(linkBlocks.getLinkGoTo());
+                // Should return immediately to prevent unwanted following of other auto links
+                autosBuilder.append(LINE_SEPARATOR).append("        return;").append(LINE_SEPARATOR);
                 if (constrained) {
                     autosBuilder.append(" end;");
                 }
