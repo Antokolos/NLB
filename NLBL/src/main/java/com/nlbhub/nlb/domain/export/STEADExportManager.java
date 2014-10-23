@@ -561,7 +561,12 @@ public class STEADExportManager extends TextExportManager {
                             "\"..s.imgv() end," + LINE_SEPARATOR
             );
         } else {
-            return "    disp = function(s) return \"" + expandVariables(dispChunks) + "\" end," + LINE_SEPARATOR;
+            if (dispChunks.size() > 0) {
+                return "    disp = function(s) return \"" + expandVariables(dispChunks) + "\" end," + LINE_SEPARATOR;
+            } else {
+                return "    disp = function(s) end," + LINE_SEPARATOR;
+            }
+
         }
     }
 
@@ -620,13 +625,18 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateObjActStart(List<TextChunk> actTextChunks) {
+        String actText = (
+                (actTextChunks.size() > 0)
+                        ? "        p(\"" + expandVariables(actTextChunks) + "\");" + LINE_SEPARATOR
+                        : Constants.EMPTY_STRING
+        );
         return (
                 "    act = function(s)" + LINE_SEPARATOR +
                         "        s.acta(s);" + LINE_SEPARATOR +
                         "        here().autos();" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    acta = function(s)" + LINE_SEPARATOR +
-                        "        p(\"" + expandVariables(actTextChunks) + "\");" + LINE_SEPARATOR +
+                        actText +
                         "        s.actf(s);" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    actf = function(s)" + LINE_SEPARATOR
