@@ -13,7 +13,7 @@
         <border type="none"/>
         <children>
           <grid id="b1cd1" layout-manager="BorderLayout" hgap="0" vgap="0">
-            <constraints border-constraint="North"/>
+            <constraints border-constraint="Center"/>
             <properties/>
             <border type="none"/>
             <children>
@@ -43,9 +43,9 @@
                               <component id="e7465" class="javax.swing.JButton" binding="buttonOK">
                                 <constraints/>
                                 <properties>
-                                  <maximumSize width="85" height="25"/>
-                                  <minimumSize width="85" height="25"/>
-                                  <preferredSize width="85" height="25"/>
+                                  <maximumSize width="95" height="25"/>
+                                  <minimumSize width="95" height="25"/>
+                                  <preferredSize width="95" height="25"/>
                                   <text value="OK"/>
                                 </properties>
                               </component>
@@ -62,9 +62,9 @@
                               <component id="5723f" class="javax.swing.JButton" binding="buttonCancel">
                                 <constraints/>
                                 <properties>
-                                  <maximumSize width="85" height="25"/>
-                                  <minimumSize width="85" height="25"/>
-                                  <preferredSize width="85" height="25"/>
+                                  <maximumSize width="95" height="25"/>
+                                  <minimumSize width="95" height="25"/>
+                                  <preferredSize width="95" height="25"/>
                                   <text value="Cancel"/>
                                 </properties>
                               </component>
@@ -81,9 +81,9 @@
                               <component id="3bb57" class="javax.swing.JButton" binding="m_addButton" default-binding="true">
                                 <constraints/>
                                 <properties>
-                                  <maximumSize width="85" height="25"/>
-                                  <minimumSize width="85" height="25"/>
-                                  <preferredSize width="85" height="25"/>
+                                  <maximumSize width="95" height="25"/>
+                                  <minimumSize width="95" height="25"/>
+                                  <preferredSize width="95" height="25"/>
                                   <text value="Add"/>
                                 </properties>
                               </component>
@@ -100,10 +100,48 @@
                               <component id="88c54" class="javax.swing.JButton" binding="m_removeButton" default-binding="true">
                                 <constraints/>
                                 <properties>
-                                  <maximumSize width="85" height="25"/>
-                                  <minimumSize width="85" height="25"/>
-                                  <preferredSize width="85" height="25"/>
+                                  <maximumSize width="95" height="25"/>
+                                  <minimumSize width="95" height="25"/>
+                                  <preferredSize width="95" height="25"/>
                                   <text value="Remove"/>
+                                </properties>
+                              </component>
+                            </children>
+                          </grid>
+                          <grid id="cdffb" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                            <constraints>
+                              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                              <gridbag weightx="0.0" weighty="0.0"/>
+                            </constraints>
+                            <properties/>
+                            <border type="none"/>
+                            <children>
+                              <component id="60482" class="javax.swing.JButton" binding="m_moveUpButton">
+                                <constraints/>
+                                <properties>
+                                  <maximumSize width="95" height="25"/>
+                                  <minimumSize width="95" height="25"/>
+                                  <preferredSize width="95" height="25"/>
+                                  <text value="Move up"/>
+                                </properties>
+                              </component>
+                            </children>
+                          </grid>
+                          <grid id="39afe" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                            <constraints>
+                              <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                              <gridbag weightx="0.0" weighty="0.0"/>
+                            </constraints>
+                            <properties/>
+                            <border type="none"/>
+                            <children>
+                              <component id="eab02" class="javax.swing.JButton" binding="m_moveDownButton">
+                                <constraints/>
+                                <properties>
+                                  <maximumSize width="95" height="25"/>
+                                  <minimumSize width="95" height="25"/>
+                                  <preferredSize width="95" height="25"/>
+                                  <text value="Move down"/>
                                 </properties>
                               </component>
                             </children>
@@ -142,7 +180,7 @@
             </children>
           </grid>
           <grid id="b26a5" layout-manager="BorderLayout" hgap="0" vgap="0">
-            <constraints border-constraint="Center"/>
+            <constraints border-constraint="South"/>
             <properties/>
             <border type="none"/>
             <children/>

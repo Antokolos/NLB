@@ -894,6 +894,8 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     class UpdateModificationsCommand implements NLBCommand {
         private AbstractModifyingItem m_item;
+        private ModificationComparator m_initialComparator;
+        private ModificationComparator m_modifiedComparator;
         private Map<String, ModificationImpl> m_modificationsToBeDeleted = new HashMap<>();
         private Map<String, Boolean> m_modificationsDeletionInitState = new HashMap<>();
         private Map<String, ModificationImpl> m_modificationsToBeReplaced = new HashMap<>();
@@ -905,6 +907,20 @@ public class NonLinearBookImpl implements NonLinearBook {
         private Map<String, VariableImpl> m_variablesToBeReplacedPrev = new HashMap<>();
         private Map<String, VariableImpl> m_variablesToBeAdded = new HashMap<>();
 
+        private class ModificationComparator implements Comparator<ModificationImpl> {
+            private Map<String, Integer> m_indicesMap;
+
+            public ModificationComparator(Map<String, Integer> indicesMap) {
+                m_indicesMap = indicesMap;
+            }
+
+            @Override
+            public int compare(ModificationImpl o1, ModificationImpl o2) {
+                int idx1 = m_indicesMap.get(o1.getId());
+                int idx2 = m_indicesMap.get(o2.getId());
+                return idx1 - idx2;
+            }
+        }
         private UpdateModificationsCommand(
                 final ModifyingItem modifyingItem,
                 final ModificationsTableModel modificationsTableModel
@@ -923,10 +939,18 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final AbstractModifyingItem modifyingItem,
                 final ModificationsTableModel modificationsTableModel
         ) {
+            Map<String, Integer> initialIndicesMap = new HashMap<>();
+            Map<String, Integer> modifiedIndicesMap = new HashMap<>();
             // TODO: possibly inefficient code, please refactor
             m_item = modifyingItem;
             if (modifyingItem != null) {
+                int initIdx = 0;
+                for (ModificationImpl existingModification : m_item.getModificationImpls()) {
+                    initialIndicesMap.put(existingModification.getId(), initIdx++);
+                }
+                int modifiedIdx = 0;
                 for (Modification modification : modificationsTableModel.getModifications()) {
+                    modifiedIndicesMap.put(modification.getId(), modifiedIdx++);
                     boolean toBeAdded = true;
                     for (ModificationImpl existingModification : m_item.getModificationImpls()) {
                         if (existingModification.getId().equals(modification.getId())) {
@@ -981,6 +1005,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                     }
                 }
             }
+            m_initialComparator = new ModificationComparator(initialIndicesMap);
+            m_modifiedComparator = new ModificationComparator(modifiedIndicesMap);
         }
 
         @Override
@@ -1013,6 +1039,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 for (Map.Entry<String, VariableImpl> entry : m_variablesToBeAdded.entrySet()) {
                     addVariable(entry.getValue());
                 }
+                m_item.getModificationImpls().sort(m_modifiedComparator);
             }
         }
 
@@ -1052,6 +1079,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         }
                     }
                 }
+                m_item.getModificationImpls().sort(m_initialComparator);
             }
         }
 

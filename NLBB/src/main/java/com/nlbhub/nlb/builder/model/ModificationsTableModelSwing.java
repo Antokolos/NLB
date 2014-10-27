@@ -107,4 +107,12 @@ public class ModificationsTableModelSwing extends AbstractTableModel {
     public ModificationsTableModel getTableModel() {
         return m_tableModel;
     }
+
+    public void moveUp(int rowIndex) {
+        m_tableModel.moveUp(rowIndex);
+    }
+
+    public void moveDown(int rowIndex) {
+        m_tableModel.moveDown(rowIndex);
+    }
 }

@@ -58,6 +58,8 @@ public class DialogModifications extends JDialog implements NLBObserver {
     private JButton m_removeButton;
     private JButton m_undoButton;
     private JButton m_redoButton;
+    private JButton m_moveUpButton;
+    private JButton m_moveDownButton;
     private ModificationsTableModelSwing m_modificationsTableModel;
     private ModifyingItem m_modifyingItem = null;
     private final NonLinearBookFacade m_nlbFacade;
@@ -121,6 +123,20 @@ public class DialogModifications extends JDialog implements NLBObserver {
             }
         });
 
+        m_moveUpButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onMoveUpSelectedLink();
+                m_modifications.updateUI();
+            }
+        });
+
+        m_moveDownButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onMoveDownSelectedLink();
+                m_modifications.updateUI();
+            }
+        });
+
         m_undoButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -152,6 +168,24 @@ public class DialogModifications extends JDialog implements NLBObserver {
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         m_observerId = nlbFacade.addObserver(this);
+    }
+
+    private void onMoveUpSelectedLink() {
+        ModificationsTableModelSwing model = (ModificationsTableModelSwing) m_modifications.getModel();
+        final int selectedRow = m_modifications.getSelectedRow();
+        if (selectedRow > 0) {
+            model.moveUp(selectedRow);
+            m_modifications.setRowSelectionInterval(selectedRow - 1, selectedRow - 1);
+        }
+    }
+
+    private void onMoveDownSelectedLink() {
+        ModificationsTableModelSwing model = (ModificationsTableModelSwing) m_modifications.getModel();
+        final int selectedRow = m_modifications.getSelectedRow();
+        if (selectedRow < m_modifications.getRowCount() - 1) {
+            model.moveDown(selectedRow);
+            m_modifications.setRowSelectionInterval(selectedRow + 1, selectedRow + 1);
+        }
     }
 
     public void showDialog() {
@@ -235,7 +269,7 @@ public class DialogModifications extends JDialog implements NLBObserver {
         contentPane.add(panel1, BorderLayout.CENTER);
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel2, BorderLayout.NORTH);
+        panel1.add(panel2, BorderLayout.CENTER);
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new BorderLayout(0, 0));
         panel2.add(panel3, BorderLayout.CENTER);
@@ -254,9 +288,9 @@ public class DialogModifications extends JDialog implements NLBObserver {
         gbc.fill = GridBagConstraints.BOTH;
         panel5.add(panel6, gbc);
         buttonOK = new JButton();
-        buttonOK.setMaximumSize(new Dimension(85, 25));
-        buttonOK.setMinimumSize(new Dimension(85, 25));
-        buttonOK.setPreferredSize(new Dimension(85, 25));
+        buttonOK.setMaximumSize(new Dimension(95, 25));
+        buttonOK.setMinimumSize(new Dimension(95, 25));
+        buttonOK.setPreferredSize(new Dimension(95, 25));
         buttonOK.setText("OK");
         panel6.add(buttonOK);
         final JPanel panel7 = new JPanel();
@@ -267,9 +301,9 @@ public class DialogModifications extends JDialog implements NLBObserver {
         gbc.fill = GridBagConstraints.BOTH;
         panel5.add(panel7, gbc);
         buttonCancel = new JButton();
-        buttonCancel.setMaximumSize(new Dimension(85, 25));
-        buttonCancel.setMinimumSize(new Dimension(85, 25));
-        buttonCancel.setPreferredSize(new Dimension(85, 25));
+        buttonCancel.setMaximumSize(new Dimension(95, 25));
+        buttonCancel.setMinimumSize(new Dimension(95, 25));
+        buttonCancel.setPreferredSize(new Dimension(95, 25));
         buttonCancel.setText("Cancel");
         panel7.add(buttonCancel);
         final JPanel panel8 = new JPanel();
@@ -280,9 +314,9 @@ public class DialogModifications extends JDialog implements NLBObserver {
         gbc.fill = GridBagConstraints.BOTH;
         panel5.add(panel8, gbc);
         m_addButton = new JButton();
-        m_addButton.setMaximumSize(new Dimension(85, 25));
-        m_addButton.setMinimumSize(new Dimension(85, 25));
-        m_addButton.setPreferredSize(new Dimension(85, 25));
+        m_addButton.setMaximumSize(new Dimension(95, 25));
+        m_addButton.setMinimumSize(new Dimension(95, 25));
+        m_addButton.setPreferredSize(new Dimension(95, 25));
         m_addButton.setText("Add");
         panel8.add(m_addButton);
         final JPanel panel9 = new JPanel();
@@ -293,35 +327,61 @@ public class DialogModifications extends JDialog implements NLBObserver {
         gbc.fill = GridBagConstraints.BOTH;
         panel5.add(panel9, gbc);
         m_removeButton = new JButton();
-        m_removeButton.setMaximumSize(new Dimension(85, 25));
-        m_removeButton.setMinimumSize(new Dimension(85, 25));
-        m_removeButton.setPreferredSize(new Dimension(85, 25));
+        m_removeButton.setMaximumSize(new Dimension(95, 25));
+        m_removeButton.setMinimumSize(new Dimension(95, 25));
+        m_removeButton.setPreferredSize(new Dimension(95, 25));
         m_removeButton.setText("Remove");
         panel9.add(m_removeButton);
         final JPanel panel10 = new JPanel();
-        panel10.setLayout(new BorderLayout(0, 0));
-        panel3.add(panel10, BorderLayout.CENTER);
+        panel10.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel5.add(panel10, gbc);
+        m_moveUpButton = new JButton();
+        m_moveUpButton.setMaximumSize(new Dimension(95, 25));
+        m_moveUpButton.setMinimumSize(new Dimension(95, 25));
+        m_moveUpButton.setPreferredSize(new Dimension(95, 25));
+        m_moveUpButton.setText("Move up");
+        panel10.add(m_moveUpButton);
+        final JPanel panel11 = new JPanel();
+        panel11.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel5.add(panel11, gbc);
+        m_moveDownButton = new JButton();
+        m_moveDownButton.setMaximumSize(new Dimension(95, 25));
+        m_moveDownButton.setMinimumSize(new Dimension(95, 25));
+        m_moveDownButton.setPreferredSize(new Dimension(95, 25));
+        m_moveDownButton.setText("Move down");
+        panel11.add(m_moveDownButton);
+        final JPanel panel12 = new JPanel();
+        panel12.setLayout(new BorderLayout(0, 0));
+        panel3.add(panel12, BorderLayout.CENTER);
         final JScrollPane scrollPane1 = new JScrollPane();
-        panel10.add(scrollPane1, BorderLayout.CENTER);
+        panel12.add(scrollPane1, BorderLayout.CENTER);
         m_modifications = new JXTable();
         m_modifications.setCellSelectionEnabled(true);
         m_modifications.setColumnSelectionAllowed(true);
         m_modifications.setVisibleRowCount(5);
         m_modifications.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         scrollPane1.setViewportView(m_modifications);
-        final JPanel panel11 = new JPanel();
-        panel11.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel11, BorderLayout.CENTER);
-        final JPanel panel12 = new JPanel();
-        panel12.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-        contentPane.add(panel12, BorderLayout.NORTH);
+        final JPanel panel13 = new JPanel();
+        panel13.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel13, BorderLayout.SOUTH);
+        final JPanel panel14 = new JPanel();
+        panel14.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        contentPane.add(panel14, BorderLayout.NORTH);
         final JLabel label1 = new JLabel();
         label1.setText("Actions");
-        panel12.add(label1);
+        panel14.add(label1);
         final JToolBar toolBar1 = new JToolBar();
         toolBar1.setBorderPainted(false);
         toolBar1.setFloatable(false);
-        panel12.add(toolBar1);
+        panel14.add(toolBar1);
         m_undoButton = new JButton();
         m_undoButton.setIcon(new ImageIcon(getClass().getResource("/common/undo.png")));
         m_undoButton.setText("Undo");

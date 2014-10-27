@@ -295,4 +295,18 @@ public class ModificationsTableModel {
         result.putAll(m_variableMap);
         return result;
     }
+
+    public void moveUp(int rowIndex) {
+        if (rowIndex > 0) {
+            ModificationImpl item = m_modifications.remove(rowIndex - 1);
+            m_modifications.add(rowIndex, item);
+        }
+    }
+
+    public void moveDown(int rowIndex) {
+        if (rowIndex < m_modifications.size() - 1) {
+            ModificationImpl item = m_modifications.remove(rowIndex + 1);
+            m_modifications.add(rowIndex, item);
+        }
+    }
 }
