@@ -1039,7 +1039,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 for (Map.Entry<String, VariableImpl> entry : m_variablesToBeAdded.entrySet()) {
                     addVariable(entry.getValue());
                 }
-                m_item.getModificationImpls().sort(m_modifiedComparator);
+                Collections.sort(m_item.getModificationImpls(), m_modifiedComparator);
             }
         }
 
@@ -1079,7 +1079,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         }
                     }
                 }
-                m_item.getModificationImpls().sort(m_initialComparator);
+                Collections.sort(m_item.getModificationImpls(), m_initialComparator);
             }
         }
 
