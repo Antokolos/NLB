@@ -1030,7 +1030,7 @@ public class STEADExportManager extends TextExportManager {
                             (
                                     Constants.VOID.equals(pageSoundPath)
                                             ? "        stop_music();"
-                                            : "        set_music('" + pageSoundPath + "', 1);"
+                                            : "        set_music('" + pageSoundPath + "', 0);"
                             ) + LINE_SEPARATOR +
                             "    end," + LINE_SEPARATOR
             );
