@@ -5,12 +5,22 @@
     <groupId>com.nlbhub</groupId>
     <artifactId>NLB</artifactId>
     <packaging>pom</packaging>
-    <version>2.0-SNAPSHOT</version>
+    <version>0.5.1</version>
     <name>NLB</name>
     <url>http://maven.apache.org</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>autoincrement-versions-maven-plugin</id>
+            <name>autoincrement-versions-maven-plugin</name>
+            <url>http://autoincrement-versions-maven-plugin.googlecode.com/svn/repo</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
     <build>
         <plugins>
             <plugin>
@@ -26,6 +36,24 @@
                         <bootclasspath>${java.home}/lib/rt.jar</bootclasspath>
                     </compilerArguments>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>autoincrement-versions-maven-plugin</artifactId>
+                <version>2.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <id>update-pom-versions</id>
+                        <goals>
+                            <goal>increment</goal>
+                            <goal>commit</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <updateMatchingVersions>true</updateMatchingVersions>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
