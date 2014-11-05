@@ -1016,14 +1016,14 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decoratePageImage(String pageImagePath, final boolean imageBackground) {
         if (StringHelper.isEmpty(pageImagePath)) {
-            return Constants.EMPTY_STRING;
+            return "    bgimg = function() end," + LINE_SEPARATOR;
         } else {
             if (imageBackground) {
-                return "    bgimg = function() theme.gfx.bg('" + pageImagePath + "'); end;" + LINE_SEPARATOR;
+                return "    bgimg = function() theme.gfx.bg('" + pageImagePath + "'); end," + LINE_SEPARATOR;
             } else {
                 return (
-                        "    pic = '" + pageImagePath + "';" + LINE_SEPARATOR +
-                                "    bgimg = function() end;" + LINE_SEPARATOR
+                        "    pic = '" + pageImagePath + "'," + LINE_SEPARATOR +
+                                "    bgimg = function() end," + LINE_SEPARATOR
                 );
             }
         }
