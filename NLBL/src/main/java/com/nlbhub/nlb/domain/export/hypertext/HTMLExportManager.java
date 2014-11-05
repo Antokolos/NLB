@@ -47,8 +47,6 @@ import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * The HTMLExportManager class
@@ -100,7 +98,7 @@ public class HTMLExportManager extends HypertextExportManager<HTMLParagraph, HTM
     }
 
     @Override
-    protected String decoratePageImage(String pageImagePath) {
+    protected String decoratePageImage(String pageImagePath, final boolean imageBackground) {
         if (StringHelper.isEmpty(pageImagePath)) {
             return Constants.EMPTY_STRING;
         } else {

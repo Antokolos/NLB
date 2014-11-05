@@ -244,6 +244,7 @@ public class NonLinearBookFacade implements NLBObservable {
     public void updatePage(
             final Page page,
             final String imageFileName,
+            final boolean imageBackground,
             final String soundFileName,
             final String pageVariableName,
             final MultiLangString pageText,
@@ -269,6 +270,7 @@ public class NonLinearBookFacade implements NLBObservable {
                 m_nlb.createUpdatePageCommand(
                         page,
                         imageFileName,
+                        imageBackground,
                         soundFileName,
                         pageVariableName,
                         pageText,

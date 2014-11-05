@@ -324,7 +324,7 @@ public abstract class ExportManager {
         blocks.setPageNumber(decoratePageNumber(pageNumber));
         blocks.setPageComment(decoratePageComment(page.getCaption()));
         blocks.setPageCaption(decoratePageCaption(page.getCaption(), page.isUseCaption()));
-        blocks.setPageImage(decoratePageImage(getImagePath(null, page.getImageFileName())));
+        blocks.setPageImage(decoratePageImage(getImagePath(null, page.getImageFileName()), page.isImageBackground()));
         blocks.setPageSound(decoratePageSound(getSoundPath(null, page.getSoundFileName())));
         blocks.setPageTextStart(decoratePageTextStart(StringHelper.getTextChunks(page.getText())));
         blocks.setPageTextEnd(decoratePageTextEnd());
@@ -662,6 +662,11 @@ public abstract class ExportManager {
             @Override
             public String getImageFileName() {
                 return page.getImageFileName();
+            }
+
+            @Override
+            public boolean isImageBackground() {
+                return page.isImageBackground();
             }
 
             @Override
@@ -1627,7 +1632,7 @@ public abstract class ExportManager {
 
     protected abstract String decoratePageCaption(String caption, boolean useCaption);
 
-    protected abstract String decoratePageImage(String pageImagePath);
+    protected abstract String decoratePageImage(String pageImagePath, final boolean imageBackground);
 
     protected abstract String decoratePageSound(String pageSoundPath);
 

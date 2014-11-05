@@ -67,6 +67,7 @@ import java.util.List;
 public class PageImpl extends AbstractNodeItem implements Page {
     private static final String TEXT_SUBDIR_NAME = "text";
     private static final String IMAGE_FILE_NAME = "image";
+    private static final String IMAGEBG_FILE_NAME = "imagebg";
     private static final String SOUND_FILE_NAME = "sound";
     private static final String VARID_FILE_NAME = "varid";
     private static final String CAPTION_SUBDIR_NAME = "caption";
@@ -88,6 +89,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     private static final String DEFAULT_MODULE_NAME_FORMAT = "%s's submodule";
     private String m_imageFileName = DEFAULT_IMAGE_FILE_NAME;
+    private boolean m_imageBackground = DEFAULT_IMAGE_BACKGROUND;
     private String m_soundFileName = DEFAULT_SOUND_FILE_NAME;
     private String m_varId = DEFAULT_VARID;
     private MultiLangString m_caption = DEFAULT_CAPTION;
@@ -131,6 +133,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     public PageImpl(PageImpl source) {
         super(source);
         m_imageFileName = source.getImageFileName();
+        m_imageBackground = source.isImageBackground();
         m_soundFileName = source.getSoundFileName();
         setVarId(source.getVarId());
         setCaptions(source.getCaptions());
@@ -201,6 +204,15 @@ public class PageImpl extends AbstractNodeItem implements Page {
     @Override
     public String getImageFileName() {
         return m_imageFileName;
+    }
+
+    public void setImageBackground(final boolean imageBackground) {
+        m_imageBackground = imageBackground;
+    }
+
+    @Override
+    public boolean isImageBackground() {
+        return m_imageBackground;
     }
 
     public void setSoundFileName(String soundFileName) {
@@ -505,6 +517,12 @@ public class PageImpl extends AbstractNodeItem implements Page {
             );
             fileManipulator.writeOptionalString(
                     pageDir,
+                    IMAGEBG_FILE_NAME,
+                    String.valueOf(m_imageBackground),
+                    String.valueOf(DEFAULT_IMAGE_BACKGROUND)
+            );
+            fileManipulator.writeOptionalString(
+                    pageDir,
                     SOUND_FILE_NAME,
                     m_soundFileName,
                     DEFAULT_SOUND_FILE_NAME
@@ -627,6 +645,13 @@ public class PageImpl extends AbstractNodeItem implements Page {
                             pageDir,
                             IMAGE_FILE_NAME,
                             DEFAULT_IMAGE_FILE_NAME
+                    )
+            );
+            m_imageBackground = "true".equals(
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            IMAGEBG_FILE_NAME,
+                            String.valueOf(DEFAULT_IMAGE_BACKGROUND)
                     )
             );
             m_soundFileName = (

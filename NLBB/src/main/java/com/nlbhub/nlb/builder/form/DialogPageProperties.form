@@ -1079,6 +1079,12 @@
                                               <text value="&lt;NO IMAGE&gt;"/>
                                             </properties>
                                           </component>
+                                          <component id="69794" class="javax.swing.JCheckBox" binding="m_backgroundCheckBox">
+                                            <constraints border-constraint="North"/>
+                                            <properties>
+                                              <text value="Background"/>
+                                            </properties>
+                                          </component>
                                         </children>
                                       </grid>
                                       <component id="ae4f5" class="org.jdesktop.swingx.JXImageView" binding="m_imageView">

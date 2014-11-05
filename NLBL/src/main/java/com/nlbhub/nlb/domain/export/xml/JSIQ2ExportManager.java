@@ -517,7 +517,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decoratePageImage(String pageImagePath) {
+    protected String decoratePageImage(String pageImagePath, final boolean imageBackground) {
         // TODO: implement and use
         return Constants.EMPTY_STRING;
     }

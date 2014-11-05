@@ -112,6 +112,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JTextField m_autowireOutConstraintTextField;
     private JButton m_setSoundButton;
     private JLabel m_soundFileNameLabel;
+    private JCheckBox m_backgroundCheckBox;
 
     public DialogPageProperties(final MainFrame mainFrame, final NonLinearBookFacade nlbFacade, final Page page) {
         m_nlbFacade = nlbFacade;
@@ -284,6 +285,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_page = page;
 
         m_imageFileName = page.getImageFileName();
+        m_backgroundCheckBox.setSelected(page.isImageBackground());
         m_imageFileNameLabel.setText(m_imageFileName);
 
         m_soundFileName = page.getSoundFileName();
@@ -372,6 +374,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_nlbFacade.updatePage(
                 m_page,
                 m_imageFileName,
+                m_backgroundCheckBox.isSelected(),
                 m_soundFileName,
                 m_pageVariableTextField.getText(),
                 m_pageTexts,
@@ -1163,6 +1166,9 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_imageFileNameLabel.setHorizontalTextPosition(0);
         m_imageFileNameLabel.setText("<NO IMAGE>");
         panel56.add(m_imageFileNameLabel, BorderLayout.CENTER);
+        m_backgroundCheckBox = new JCheckBox();
+        m_backgroundCheckBox.setText("Background");
+        panel56.add(m_backgroundCheckBox, BorderLayout.NORTH);
         m_imageView = new JXImageView();
         panel55.add(m_imageView, BorderLayout.CENTER);
         final JPanel panel57 = new JPanel();

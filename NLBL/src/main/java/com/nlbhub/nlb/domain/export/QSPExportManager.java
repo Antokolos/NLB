@@ -240,7 +240,7 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageImage(String pageImagePath) {
+    protected String decoratePageImage(String pageImagePath, final boolean imageBackground) {
         if (StringHelper.isEmpty(pageImagePath)) {
             return Constants.EMPTY_STRING;
         } else {

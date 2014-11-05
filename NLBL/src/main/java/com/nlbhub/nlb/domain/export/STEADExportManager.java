@@ -81,6 +81,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("--require \"para\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"dash\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"quotes\" ").append(LINE_SEPARATOR);
+        stringBuilder.append("require \"theme\" ").append(LINE_SEPARATOR);
         stringBuilder.append("game.codepage=\"UTF-8\";").append(LINE_SEPARATOR);
         stringBuilder.append("stead.scene_delim = '^';").append(LINE_SEPARATOR);
         stringBuilder.append(LINE_SEPARATOR);
@@ -487,6 +488,7 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("        s.snd();").append(LINE_SEPARATOR);
         stringBuilder.append("        s.autos();").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.bgimg();").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append(pageBlocks.getPageSound());
 
@@ -1012,11 +1014,18 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageImage(String pageImagePath) {
+    protected String decoratePageImage(String pageImagePath, final boolean imageBackground) {
         if (StringHelper.isEmpty(pageImagePath)) {
             return Constants.EMPTY_STRING;
         } else {
-            return "    pic = '" + pageImagePath + "';" + LINE_SEPARATOR;
+            if (imageBackground) {
+                return "    bgimg = function() theme.gfx.bg('" + pageImagePath + "'); end;" + LINE_SEPARATOR;
+            } else {
+                return (
+                        "    pic = '" + pageImagePath + "';" + LINE_SEPARATOR +
+                                "    bgimg = function() end;" + LINE_SEPARATOR
+                );
+            }
         }
     }
 

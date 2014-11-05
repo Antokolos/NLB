@@ -65,6 +65,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public boolean isImageBackground() {
+        return DEFAULT_IMAGE_BACKGROUND;
+    }
+
+    @Override
     public String getSoundFileName() {
         return DEFAULT_SOUND_FILE_NAME;
     }

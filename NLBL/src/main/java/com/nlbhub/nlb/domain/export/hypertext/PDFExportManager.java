@@ -86,7 +86,7 @@ public class PDFExportManager extends HypertextExportManager<PDFParagraph, PDFAn
     }
 
     @Override
-    protected String decoratePageImage(String pageImagePath) {
+    protected String decoratePageImage(String pageImagePath, final boolean imageBackground) {
         // TODO: implement images for PDF
         return Constants.EMPTY_STRING;
     }
