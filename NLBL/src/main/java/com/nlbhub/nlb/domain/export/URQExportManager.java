@@ -183,6 +183,12 @@ public class URQExportManager extends TextExportManager {
         return "and";
     }
 
+    @Override
+    protected String decorateExistence(final String decoratedVariable) {
+        // TODO: implement and use
+        return Constants.EMPTY_STRING;
+    }
+
     /**
      * @param constraintVar
      * @return
@@ -262,10 +268,16 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageImage(String pageImagePath, final boolean imageBackground) {
-        if (!StringHelper.isEmpty(pageImagePath)) {
-            return "image " + pageImagePath + LINE_SEPARATOR;
+    protected String decoratePageImage(ImagePathData pageImagePathData, final boolean imageBackground) {
+        if (pageImagePathData.getMaxFrameNumber() == 0) {
+            String pageImagePath = pageImagePathData.getImagePath();
+            if (!StringHelper.isEmpty(pageImagePath)) {
+                return "image " + pageImagePath + LINE_SEPARATOR;
+            } else {
+                return Constants.EMPTY_STRING;
+            }
         } else {
+            // TODO: support animated images
             return Constants.EMPTY_STRING;
         }
     }

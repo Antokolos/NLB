@@ -85,6 +85,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JCheckBox m_imageInInventory;
     private JTextArea m_objActTextTextArea;
     private JTextField m_objConstraintTextField;
+    private JCheckBox m_animatedImageCheckBox;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -226,6 +227,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objActTexts = obj.getActTexts();
         m_selectedLanguage = (String) languageComboboxModel.getSelectedItem();
         m_imageFileName = obj.getImageFileName();
+        m_animatedImageCheckBox.setSelected(obj.isAnimatedImage());
         m_imageFileNameLabel.setText(m_imageFileName);
         setObjImage(obj.getImageFileName());
     }
@@ -238,6 +240,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_objConstraintTextField.getText(),
                 m_objNameTextField.getText(),
                 m_imageFileName,
+                m_animatedImageCheckBox.isSelected(),
                 m_objDisplayNames,
                 m_objTexts,
                 m_objActTexts,

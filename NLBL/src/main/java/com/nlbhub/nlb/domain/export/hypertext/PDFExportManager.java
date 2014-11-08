@@ -40,6 +40,7 @@ package com.nlbhub.nlb.domain.export.hypertext;
 
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
+import com.nlbhub.nlb.domain.export.ImagePathData;
 import com.nlbhub.nlb.domain.export.hypertext.document.*;
 import com.nlbhub.nlb.exception.HTDocumentException;
 import com.nlbhub.nlb.exception.NLBExportException;
@@ -53,6 +54,12 @@ import com.nlbhub.nlb.exception.NLBExportException;
 public class PDFExportManager extends HypertextExportManager<PDFParagraph, PDFAnchor, PDFFont> {
     public PDFExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
         super(nlb, encoding);
+    }
+
+    @Override
+    protected String decorateExistence(final String decoratedVariable) {
+        // TODO: implement and use
+        return Constants.EMPTY_STRING;
     }
 
     @Override
@@ -86,7 +93,7 @@ public class PDFExportManager extends HypertextExportManager<PDFParagraph, PDFAn
     }
 
     @Override
-    protected String decoratePageImage(String pageImagePath, final boolean imageBackground) {
+    protected String decoratePageImage(ImagePathData pageImagePathData, final boolean imageBackground) {
         // TODO: implement images for PDF
         return Constants.EMPTY_STRING;
     }

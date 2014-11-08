@@ -561,11 +561,17 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjImage(String objImagePath) {
-        if (StringHelper.isEmpty(objImagePath)) {
-            return Constants.EMPTY_STRING;
+    protected String decorateObjImage(ImagePathData objImagePathData) {
+        if (objImagePathData.getMaxFrameNumber() == 0) {
+            String objImagePath = objImagePathData.getImagePath();
+            if (StringHelper.isEmpty(objImagePath)) {
+                return Constants.EMPTY_STRING;
+            } else {
+                return "    imgv = function() return img('" + objImagePath + "'); " + "end," + LINE_SEPARATOR;
+            }
         } else {
-            return "    imgv = function() return img('" + objImagePath + "'); " + "end," + LINE_SEPARATOR;
+            // TODO: support animated images
+            return Constants.EMPTY_STRING;
         }
     }
 
@@ -917,6 +923,11 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateExistence(final String decoratedVariable) {
+        return "(" + decoratedVariable + " ~= nil)";
+    }
+
+    @Override
     protected String decorateBooleanVar(String constraintVar) {
         return GLOBAL_VAR_PREFIX + constraintVar;
     }
@@ -1014,18 +1025,24 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageImage(String pageImagePath, final boolean imageBackground) {
-        if (StringHelper.isEmpty(pageImagePath)) {
-            return "    bgimg = function() end," + LINE_SEPARATOR;
-        } else {
-            if (imageBackground) {
-                return "    bgimg = function() theme.gfx.bg('" + pageImagePath + "'); end," + LINE_SEPARATOR;
+    protected String decoratePageImage(ImagePathData pageImagePathData, final boolean imageBackground) {
+        if (pageImagePathData.getMaxFrameNumber() == 0) {
+            String pageImagePath = pageImagePathData.getImagePath();
+            if (StringHelper.isEmpty(pageImagePath)) {
+                return "    bgimg = function() end," + LINE_SEPARATOR;
             } else {
-                return (
-                        "    pic = '" + pageImagePath + "'," + LINE_SEPARATOR +
-                                "    bgimg = function() end," + LINE_SEPARATOR
-                );
+                if (imageBackground) {
+                    return "    bgimg = function() theme.gfx.bg('" + pageImagePath + "'); end," + LINE_SEPARATOR;
+                } else {
+                    return (
+                            "    pic = '" + pageImagePath + "'," + LINE_SEPARATOR +
+                                    "    bgimg = function() end," + LINE_SEPARATOR
+                    );
+                }
             }
+        } else {
+            // TODO: support animated images
+            return "    bgimg = function() end," + LINE_SEPARATOR;
         }
     }
 

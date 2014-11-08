@@ -41,10 +41,7 @@ package com.nlbhub.nlb.domain.export.xml;
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.TextChunk;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
-import com.nlbhub.nlb.domain.export.LinkBuildingBlocks;
-import com.nlbhub.nlb.domain.export.NLBBuildingBlocks;
-import com.nlbhub.nlb.domain.export.ObjBuildingBlocks;
-import com.nlbhub.nlb.domain.export.PageBuildingBlocks;
+import com.nlbhub.nlb.domain.export.*;
 import com.nlbhub.nlb.domain.export.xml.beans.jsiq2.*;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.JaxbMarshaller;
@@ -448,6 +445,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
+    protected String decorateExistence(final String decoratedVariable) {
+        // TODO: implement and use
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateBooleanVar(String constraintVar) {
         return "vars." + constraintVar;
     }
@@ -517,7 +520,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decoratePageImage(String pageImagePath, final boolean imageBackground) {
+    protected String decoratePageImage(ImagePathData pageImagePathData, final boolean imageBackground) {
         // TODO: implement and use
         return Constants.EMPTY_STRING;
     }

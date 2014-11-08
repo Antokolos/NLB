@@ -1,5 +1,5 @@
 /**
- * @(#)Obj.java
+ * @(#)ExpressionData.java
  *
  * This file is part of the Non-Linear Book project.
  * Copyright (c) 2012-2014 Anton P. Kolosov
@@ -36,61 +36,36 @@
  *
  * Copyright (c) 2014 Anton P. Kolosov All rights reserved.
  */
-package com.nlbhub.nlb.api;
-
-import com.nlbhub.nlb.util.MultiLangString;
+package com.nlbhub.nlb.domain.export;
 
 /**
- * The Obj class
+ * The ExpressionData class
  *
  * @author Anton P. Kolosov
- * @version 1.0 1/15/14
+ * @version 1.0
  */
-public interface Obj extends NodeItem {
-    public static final String DEFAULT_IMAGE_FILE_NAME = Constants.EMPTY_STRING;
-    public static final boolean DEFAULT_ANIMATED_IMAGE = false;
-    public static final MultiLangString DEFAULT_TEXT = MultiLangString.createEmptyText();
-    public static final MultiLangString DEFAULT_ACT_TEXT = MultiLangString.createEmptyText();
-    public static final String DEFAULT_VARID = Constants.EMPTY_STRING;
-    public static final String DEFAULT_CONSTRID = Constants.EMPTY_STRING;
-    public static final String DEFAULT_NAME = Constants.EMPTY_STRING;
-    public static final MultiLangString DEFAULT_DISP = MultiLangString.createEmptyText();
-    public static final boolean DEFAULT_TAKABLE = false;
-    public static final boolean DEFAULT_IMAGE_IN_SCENE = true;
-    public static final boolean DEFAULT_IMAGE_IN_INVENTORY = true;
-    public static final String DEFAULT_CONTAINER_ID = Constants.EMPTY_STRING;
+public class ExpressionData {
+    private String m_existencePart;
+    private String m_expressionPart;
 
-    public String getText();
+    public ExpressionData(final String existencePart, final String expressionPart) {
+        m_existencePart = existencePart;
+        m_expressionPart = expressionPart;
+    }
 
-    public String getActText();
+    public String getExistencePart() {
+        return m_existencePart;
+    }
 
-    public MultiLangString getTexts();
+    public void setExistencePart(final String existencePart) {
+        m_existencePart = existencePart;
+    }
 
-    public MultiLangString getActTexts();
+    public String getExpressionPart() {
+        return m_expressionPart;
+    }
 
-    public String getVarId();
-
-    public String getConstrId();
-
-    public String getName();
-
-    public String getImageFileName();
-
-    public boolean isAnimatedImage();
-
-    /**
-     * Returns display name of the object, which is used in the text, e.g. when inserted into the inventory
-     * @return display name of the object
-     */
-    public String getDisp();
-
-    public MultiLangString getDisps();
-
-    public boolean isTakable();
-
-    public boolean isImageInScene();
-
-    public boolean isImageInInventory();
-
-    public String getContainerId();
+    public void setExpressionPart(final String expressionPart) {
+        m_expressionPart = expressionPart;
+    }
 }

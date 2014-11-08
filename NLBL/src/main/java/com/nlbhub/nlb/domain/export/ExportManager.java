@@ -50,6 +50,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.util.*;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The ExportManager class
@@ -67,6 +68,7 @@ public abstract class ExportManager {
     private static final String NOT_PLACEHOLDER = "2164a414-ba30-45b4-baa3-c32e194304db";
     private static final String OR_PLACEHOLDER = "179ef88a-88b7-4ad2-8dfa-d2040debde73";
     private static final String AND_PLACEHOLDER = "f0e77ec8-a270-4a3f-8b8f-1ade38988f37";
+    private static final Pattern FILE_NAME_PATTERN = Pattern.compile("(^.*\\D|^)(\\d*)(\\..*)$");
 
     public static final String EMPTY_STRING = Constants.EMPTY_STRING;
     public static final String UTF_8 = "UTF-8";
@@ -288,13 +290,13 @@ public abstract class ExportManager {
     pages 1, 2 and 6 belongs to the main NLB module.
      */
 
-    protected NLBBuildingBlocks createNLBBuildingBlocks() throws NLBConsistencyException {
+    protected NLBBuildingBlocks createNLBBuildingBlocks() throws NLBConsistencyException, NLBExportException {
         return createNLBBuildingBlocks(m_exportDataMap.get(MAIN_DATA_KEY));
     }
 
     private NLBBuildingBlocks createNLBBuildingBlocks(
             final ExportData exportData
-    ) throws NLBConsistencyException {
+    ) throws NLBConsistencyException, NLBExportException {
         NLBBuildingBlocks blocks = new NLBBuildingBlocks();
         //stringBuilder.append("#mode quote").append(LINE_SEPARATOR);
         for (final Obj obj : exportData.getObjList()) {
@@ -317,14 +319,14 @@ public abstract class ExportManager {
     private PageBuildingBlocks createPageBuildingBlocks(
             final Page page,
             final ExportData exportData
-    ) throws NLBConsistencyException {
+    ) throws NLBConsistencyException, NLBExportException {
         PageBuildingBlocks blocks = new PageBuildingBlocks();
         final Integer pageNumber = exportData.getPageNumber(page.getId());
         blocks.setPageLabel(decoratePageLabel(page.getId(), pageNumber));
         blocks.setPageNumber(decoratePageNumber(pageNumber));
         blocks.setPageComment(decoratePageComment(page.getCaption()));
         blocks.setPageCaption(decoratePageCaption(page.getCaption(), page.isUseCaption()));
-        blocks.setPageImage(decoratePageImage(getImagePath(null, page.getImageFileName()), page.isImageBackground()));
+        blocks.setPageImage(decoratePageImage(getImagePath(null, page.getImageFileName(), false), page.isImageBackground()));
         blocks.setPageSound(decoratePageSound(getSoundPath(null, page.getSoundFileName())));
         blocks.setPageTextStart(decoratePageTextStart(StringHelper.getTextChunks(page.getText())));
         blocks.setPageTextEnd(decoratePageTextEnd());
@@ -454,14 +456,14 @@ public abstract class ExportManager {
     final ObjBuildingBlocks createObjBuildingBlocks(
             final Obj obj,
             final ExportData exportData
-    ) throws NLBConsistencyException {
+    ) throws NLBConsistencyException, NLBExportException {
         ObjBuildingBlocks blocks = new ObjBuildingBlocks();
         final boolean menuObj = obj.getLinks().size() == 0;
         blocks.setObjLabel(decorateObjLabel(obj.getId()));
         blocks.setObjComment(decorateObjComment(obj.getName()));
         blocks.setObjStart(decorateObjStart(menuObj));
         blocks.setObjName(decorateObjName(obj.getName()));
-        final String objImage = decorateObjImage(getImagePath(null, obj.getImageFileName()));
+        final String objImage = decorateObjImage(getImagePath(null, obj.getImageFileName(), obj.isAnimatedImage()));
         final boolean hasImage = StringHelper.notEmpty(obj.getImageFileName());
         blocks.setObjImage(objImage);
         blocks.setObjDisp(decorateObjDisp(StringHelper.getTextChunks(obj.getDisp()), hasImage && obj.isImageInInventory()));
@@ -485,7 +487,7 @@ public abstract class ExportManager {
             Variable constraint = exportData.getNlb().getVariableById(obj.getConstrId());
             // TODO: Add cases with deleted pages/links/variables etc. to the unit test
             if (!constraint.isDeleted()) {
-                blocks.setObjConstraint(decorateObjConstraint(translateExpressionBody(constraint.getValue())));
+                blocks.setObjConstraint(decorateObjConstraint(translateConstraintBody(constraint.getValue(), true, false, Constants.EMPTY_STRING)));
             } else {
                 blocks.setObjConstraint(EMPTY_STRING);
             }
@@ -952,6 +954,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public boolean isAnimatedImage() {
+                return obj.isAnimatedImage();
+            }
+
+            @Override
             public String getDisp() {
                 return escapeText(obj.getDisp());
             }
@@ -1089,7 +1096,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjImage(String objImagePath) {
+    protected String decorateObjImage(ImagePathData objImagePathData) {
         return EMPTY_STRING;
     }
 
@@ -1280,15 +1287,16 @@ public abstract class ExportManager {
                 )
                         : constraintText
         );
-        String translatedConstraint = translateExpressionBody(constraintBody);
+        ExpressionData expressionData = translateExpressionBody(constraintBody);
         return (
                 isPositiveConstraint
-                        ? translatedConstraint
-                        : decorateNot() + " (" + translatedConstraint + ")"
+                        ? expressionData.getExistencePart() + "(" + expressionData.getExpressionPart() + ")"
+                        : expressionData.getExistencePart() + "(" + decorateNot() + " (" + expressionData.getExpressionPart() + "))"
         );
     }
 
-    private String translateExpressionBody(String expressionText) throws NLBConsistencyException {
+    private ExpressionData translateExpressionBody(String expressionText) throws NLBConsistencyException {
+        StringBuilder existenceBuilder = new StringBuilder();
         String expression = expressionText;
         final Collection<String> expressionVars = VarFinder.findVariableNames(expression);
 
@@ -1313,16 +1321,21 @@ public abstract class ExportManager {
         expression = expression.replaceAll(OR_PLACEHOLDER, decorateOr());
         expression = expression.replaceAll(NOT_PLACEHOLDER, decorateNot());
         for (final String expressionVar : expressionVars) {
+            String decoratedVariable = decorateVariable(expressionVar);
+            Variable.DataType dataType = m_dataTypeMap.get(expressionVar);
+            if (dataType != Variable.DataType.BOOLEAN) {
+                existenceBuilder.append(decorateExistence(decoratedVariable)).append(" ").append(decorateAnd()).append(" ");
+            }
             expression = (
                     expression.replaceAll(
                             "\\b" + expressionVar + "\\b",
-                            Matcher.quoteReplacement(decorateVariable(expressionVar))
+                            Matcher.quoteReplacement(decoratedVariable)
                     )
             );
         }
         expression = expression.replaceAll("\\b\\s*true\\s*\\b", " " + Matcher.quoteReplacement(decorateTrue()) + " ");
         expression = expression.replaceAll("\\b\\s*false\\s*\\b", " " + Matcher.quoteReplacement(decorateFalse()) + " ");
-        return expression;
+        return new ExpressionData(existenceBuilder.toString(), expression);
     }
 
     private String decorateVariable(String constraintVar) throws NLBConsistencyException {
@@ -1507,7 +1520,7 @@ public abstract class ExportManager {
                                         (variable.getDataType() == Variable.DataType.STRING)
                                                 ? decorateStringVar(variable.getName())
                                                 : decorateAutoVar(variable.getName()),
-                                        translateExpressionBody(expression.getValue())
+                                        translateExpressionBody(expression.getValue()).getExpressionPart()
                                 )
                         );
                         break;
@@ -1530,7 +1543,7 @@ public abstract class ExportManager {
                         stringBuilder.append(
                                 decorateRndOperation(
                                         decorateAutoVar(variable.getName()),
-                                        translateExpressionBody(expression.getValue())
+                                        translateExpressionBody(expression.getValue()).getExpressionPart()
                                 )
                         );
                         break;
@@ -1597,6 +1610,8 @@ public abstract class ExportManager {
 
     protected abstract String decorateAnd();
 
+    protected abstract String decorateExistence(String decoratedVariable);
+
     protected abstract String decorateBooleanVar(String constraintVar);
 
     protected abstract String decorateStringVar(String constraintVar);
@@ -1632,7 +1647,7 @@ public abstract class ExportManager {
 
     protected abstract String decoratePageCaption(String caption, boolean useCaption);
 
-    protected abstract String decoratePageImage(String pageImagePath, final boolean imageBackground);
+    protected abstract String decoratePageImage(ImagePathData pageImagePathData, final boolean imageBackground);
 
     protected abstract String decoratePageSound(String pageSoundPath);
 
@@ -1643,14 +1658,33 @@ public abstract class ExportManager {
      * @param imageFileName
      * @return
      */
-    protected String getImagePath(String moduleDir, String imageFileName) {
+    protected ImagePathData getImagePath(
+            final String moduleDir,
+            final String imageFileName,
+            final boolean animatedImage
+    ) throws NLBExportException {
         if (StringHelper.isEmpty(imageFileName)) {
-            return Constants.EMPTY_STRING;
+            return ImagePathData.EMPTY;
         } else {
-            if (moduleDir == null) {
-                return NonLinearBook.IMAGES_DIR_NAME + "/" + imageFileName;
+            ImagePathData result = new ImagePathData();
+            Matcher matcher = FILE_NAME_PATTERN.matcher(imageFileName);
+            if (matcher.find()) {
+                if (moduleDir == null) {
+                    result.setParentFolderPath(NonLinearBook.IMAGES_DIR_NAME);
+                } else {
+                    result.setParentFolderPath(NonLinearBook.IMAGES_DIR_NAME + "/" + moduleDir);
+                }
+                if (animatedImage) {
+                    result.setFileName(matcher.group(1));
+                    result.setMaxFrameNumber(Integer.parseInt(matcher.group(2)));
+                } else {
+                    result.setFileName(matcher.group(1) + matcher.group(2));
+                    result.setMaxFrameNumber(0);
+                }
+                result.setFileExtension(matcher.group(3));
+                return result;
             } else {
-                return NonLinearBook.IMAGES_DIR_NAME + "/" + moduleDir + "/" + imageFileName;
+                throw new NLBExportException("Filename " + imageFileName + " is bad, please rename");
             }
         }
     }

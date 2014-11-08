@@ -667,6 +667,7 @@ public class NonLinearBookImpl implements NonLinearBook {
 
         private String m_existingObjName;
         private String m_existingImageFileName;
+        private boolean m_existingAnimatedImage;
         private MultiLangString m_existingObjDisp;
         private MultiLangString m_existingObjText;
         private MultiLangString m_existingObjActText;
@@ -675,6 +676,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private boolean m_existingImageInInventory;
         private String m_newObjName;
         private String m_newImageFileName;
+        private boolean m_newAnimatedImage;
         private MultiLangString m_newObjDisp;
         private MultiLangString m_newObjText;
         private MultiLangString m_newObjActText;
@@ -689,6 +691,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String objConstraintValue,
                 final String objName,
                 final String imageFileName,
+                final boolean animatedImage,
                 final MultiLangString objDisp,
                 final MultiLangString objText,
                 final MultiLangString objActText,
@@ -703,6 +706,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     objConstraintValue,
                     objName,
                     imageFileName,
+                    animatedImage,
                     objDisp,
                     objText,
                     objActText,
@@ -719,6 +723,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String objConstraintValue,
                 final String objName,
                 final String imageFileName,
+                final boolean animatedImage,
                 final MultiLangString objDisp,
                 final MultiLangString objText,
                 final MultiLangString objActText,
@@ -749,6 +754,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             );
             m_existingObjName = obj.getName();
             m_existingImageFileName = obj.getImageFileName();
+            m_existingAnimatedImage = obj.isAnimatedImage();
             m_existingObjDisp = obj.getDisps();
             m_existingObjText = obj.getTexts();
             m_existingObjActText = obj.getActTexts();
@@ -757,6 +763,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingImageInInventory = obj.isImageInInventory();
             m_newObjName = objName;
             m_newImageFileName = imageFileName;
+            m_newAnimatedImage = animatedImage;
             m_newObjDisp = objDisp;
             m_newObjText = objText;
             m_newObjActText = objActText;
@@ -771,6 +778,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setConstrId(m_constraintTracker.execute());
             m_obj.setName(m_newObjName);
             m_obj.setImageFileName(m_newImageFileName);
+            m_obj.setAnimatedImage(m_newAnimatedImage);
             m_obj.setDisps(m_newObjDisp);
             m_obj.setTexts(m_newObjText);
             m_obj.setActTexts(m_newObjActText);
@@ -786,6 +794,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setConstrId(m_constraintTracker.revert());
             m_obj.setName(m_existingObjName);
             m_obj.setImageFileName(m_existingImageFileName);
+            m_obj.setAnimatedImage(m_existingAnimatedImage);
             m_obj.setDisps(m_existingObjDisp);
             m_obj.setTexts(m_existingObjText);
             m_obj.setActTexts(m_existingObjActText);
@@ -1526,6 +1535,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         (objConstraint != null) ? objConstraint.getValue() : Constants.EMPTY_STRING,
                         obj.getName(),
                         obj.getImageFileName(),
+                        obj.isAnimatedImage(),
                         obj.getDisps(),
                         obj.getTexts(),
                         obj.getActTexts(),
@@ -1930,6 +1940,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String objConstraintValue,
             final String objName,
             final String imageFileName,
+            final boolean animatedImage,
             final MultiLangString objDisp,
             final MultiLangString objText,
             final MultiLangString objActText,
@@ -1945,6 +1956,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         objConstraintValue,
                         objName,
                         imageFileName,
+                        animatedImage,
                         objDisp,
                         objText,
                         objActText,

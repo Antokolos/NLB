@@ -541,6 +541,12 @@
                                           <text value="Image in inventory"/>
                                         </properties>
                                       </component>
+                                      <component id="46e99" class="javax.swing.JCheckBox" binding="m_animatedImageCheckBox" default-binding="true">
+                                        <constraints/>
+                                        <properties>
+                                          <text value="Animated image"/>
+                                        </properties>
+                                      </component>
                                     </children>
                                   </grid>
                                   <grid id="c282b" layout-manager="GridBagLayout">

@@ -163,6 +163,12 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateExistence(final String decoratedVariable) {
+        // TODO: implement and use
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateBooleanVar(String constraintVar) {
         return "(" + constraintVar + " = 1)";
     }
@@ -240,14 +246,20 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageImage(String pageImagePath, final boolean imageBackground) {
-        if (StringHelper.isEmpty(pageImagePath)) {
-            return Constants.EMPTY_STRING;
+    protected String decoratePageImage(ImagePathData pageImagePathData, final boolean imageBackground) {
+        if (pageImagePathData.getMaxFrameNumber() == 0) {
+            String pageImagePath = pageImagePathData.getImagePath();
+            if (StringHelper.isEmpty(pageImagePath)) {
+                return Constants.EMPTY_STRING;
+            } else {
+                // TODO: should set USEHTML on first page and do not touch it afterwards
+                return (
+                        "USEHTML = 1" + LINE_SEPARATOR + "'<img src=\"" + pageImagePath + "\">'" + LINE_SEPARATOR
+                );
+            }
         } else {
-            // TODO: should set USEHTML on first page and do not touch it afterwards
-            return (
-                    "USEHTML = 1" + LINE_SEPARATOR + "'<img src=\"" + pageImagePath + "\">'" + LINE_SEPARATOR
-            );
+            // TODO: support animated images
+            return Constants.EMPTY_STRING;
         }
     }
 

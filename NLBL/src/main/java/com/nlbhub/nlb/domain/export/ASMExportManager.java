@@ -121,6 +121,12 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateExistence(final String decoratedVariable) {
+        // TODO: implement and use
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateBooleanVar(String constraintVar) {
         return "($" + constraintVar + " eq 1)";
     }
@@ -194,7 +200,7 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageImage(String pageImagePath, final boolean imageBackground) {
+    protected String decoratePageImage(ImagePathData pageImagePathData, final boolean imageBackground) {
         // TODO: implement and use
         return Constants.EMPTY_STRING;
     }

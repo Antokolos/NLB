@@ -71,6 +71,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String CONSTRID_FILE_NAME = "constrid";
     private static final String NAME_FILE_NAME = "name";
     private static final String IMAGE_FILE_NAME = "image";
+    private static final String ANIMATED_FILE_NAME = "animated";
     private static final String DISP_SUBDIR_NAME = "disp";
     private static final String TAKABLE_FILE_NAME = "takable";
     private static final String IMAGE_IN_SCENE_FILE_NAME = "imgscene";
@@ -92,6 +93,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private boolean m_takable = DEFAULT_TAKABLE;
     private String m_containerId = DEFAULT_CONTAINER_ID;
     private String m_imageFileName = DEFAULT_IMAGE_FILE_NAME;
+    private boolean m_animatedImage = DEFAULT_ANIMATED_IMAGE;
     private boolean m_imageInScene = DEFAULT_IMAGE_IN_SCENE;
     private boolean m_imageInInventory = DEFAULT_IMAGE_IN_INVENTORY;
 
@@ -121,6 +123,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         m_constrId = source.getConstrId();
         m_name = source.getName();
         m_imageFileName = source.getImageFileName();
+        m_animatedImage = source.isAnimatedImage();
         setDisps(source.getDisps());
         setTexts(source.getTexts());
         setActTexts(source.getActTexts());
@@ -204,6 +207,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     @Override
     public String getImageFileName() {
         return m_imageFileName;
+    }
+
+    public void setAnimatedImage(final boolean animatedImage) {
+        m_animatedImage = animatedImage;
+    }
+
+    @Override
+    public boolean isAnimatedImage() {
+        return m_animatedImage;
     }
 
     public void setImageFileName(String imageFileName) {
@@ -301,6 +313,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                     m_imageFileName,
                     DEFAULT_IMAGE_FILE_NAME
             );
+            fileManipulator.writeOptionalString(
+                    objDir,
+                    ANIMATED_FILE_NAME,
+                    String.valueOf(m_animatedImage),
+                    String.valueOf(DEFAULT_ANIMATED_IMAGE)
+            );
             fileManipulator.writeOptionalMultiLangString(
                     new File(objDir, DISP_SUBDIR_NAME),
                     m_disp,
@@ -375,6 +393,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         IMAGE_FILE_NAME,
                         DEFAULT_IMAGE_FILE_NAME
+                )
+        );
+        m_animatedImage = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        ANIMATED_FILE_NAME,
+                        String.valueOf(DEFAULT_ANIMATED_IMAGE)
                 )
         );
         m_disp = (
