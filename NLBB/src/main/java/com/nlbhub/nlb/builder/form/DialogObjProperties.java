@@ -655,6 +655,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_imageInInventory = new JCheckBox();
         m_imageInInventory.setText("Image in inventory");
         panel26.add(m_imageInInventory);
+        m_animatedImageCheckBox = new JCheckBox();
+        m_animatedImageCheckBox.setText("Animated image");
+        panel26.add(m_animatedImageCheckBox);
         final JPanel panel27 = new JPanel();
         panel27.setLayout(new GridBagLayout());
         panel27.setMinimumSize(new Dimension(468, 33));
