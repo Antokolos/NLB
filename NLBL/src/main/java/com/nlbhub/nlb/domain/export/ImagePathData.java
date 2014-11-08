@@ -91,10 +91,14 @@ public class ImagePathData {
     }
 
     public String getImagePath() {
-        if (m_maxFrameNumber == 0) {
-            return m_parentFolderPath + "/" + m_fileName + m_fileExtension;
+        if (EMPTY.equals(this)) {
+            return Constants.EMPTY_STRING;
         } else {
-            return m_parentFolderPath + "/" + m_fileName + "%d" + m_fileExtension;
+            if (m_maxFrameNumber == 0) {
+                return m_parentFolderPath + "/" + m_fileName + m_fileExtension;
+            } else {
+                return m_parentFolderPath + "/" + m_fileName + "%d" + m_fileExtension;
+            }
         }
     }
 
