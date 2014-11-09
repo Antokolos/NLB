@@ -82,6 +82,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("require \"dash\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"quotes\" ").append(LINE_SEPARATOR);
         stringBuilder.append("require \"theme\" ").append(LINE_SEPARATOR);
+        stringBuilder.append("require \"timer\" ").append(LINE_SEPARATOR);
         stringBuilder.append("game.codepage=\"UTF-8\";").append(LINE_SEPARATOR);
         stringBuilder.append("stead.scene_delim = '^';").append(LINE_SEPARATOR);
         stringBuilder.append(LINE_SEPARATOR);
@@ -90,8 +91,13 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("game.inv = 'Hm.. This is strange thing..';").append(LINE_SEPARATOR);
         stringBuilder.append("game.use = 'Does not work...';").append(LINE_SEPARATOR);
         stringBuilder.append("game.forcedsc = true;").append(LINE_SEPARATOR);
+        stringBuilder.append("game.timer = function(s) _time = _time + 1; return _time; end;").append(LINE_SEPARATOR);
 
         stringBuilder.append(LINE_SEPARATOR);
+        stringBuilder.append("function init()").append(LINE_SEPARATOR);
+        stringBuilder.append("    timer:set(200);").append(LINE_SEPARATOR);
+        stringBuilder.append("    _time = 0;").append(LINE_SEPARATOR);
+        stringBuilder.append("end;").append(LINE_SEPARATOR);
         stringBuilder.append("global {").append(LINE_SEPARATOR);
         stringBuilder.append("    _lists = {};").append(LINE_SEPARATOR);
         stringBuilder.append("    _clones = {};").append(LINE_SEPARATOR);
@@ -562,16 +568,18 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateObjImage(ImagePathData objImagePathData) {
+        String objImagePath = objImagePathData.getImagePath();
         if (objImagePathData.getMaxFrameNumber() == 0) {
-            String objImagePath = objImagePathData.getImagePath();
             if (StringHelper.isEmpty(objImagePath)) {
                 return Constants.EMPTY_STRING;
             } else {
                 return "    imgv = function() return img('" + objImagePath + "'); " + "end," + LINE_SEPARATOR;
             }
         } else {
-            // TODO: support animated images
-            return Constants.EMPTY_STRING;
+            return (
+                    "    imgv = function() return img(string.format('" + objImagePath + "', _time % " +
+                            objImagePathData.getMaxFrameNumber() + " + 1)); " + "end," + LINE_SEPARATOR
+            );
         }
     }
 
