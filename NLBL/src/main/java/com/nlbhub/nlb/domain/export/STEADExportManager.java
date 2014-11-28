@@ -91,13 +91,8 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("game.inv = 'Hm.. This is strange thing..';").append(LINE_SEPARATOR);
         stringBuilder.append("game.use = 'Does not work...';").append(LINE_SEPARATOR);
         stringBuilder.append("game.forcedsc = true;").append(LINE_SEPARATOR);
-        stringBuilder.append("game.timer = function(s) _time = _time + 1; return _time; end;").append(LINE_SEPARATOR);
 
         stringBuilder.append(LINE_SEPARATOR);
-        stringBuilder.append("function init()").append(LINE_SEPARATOR);
-        stringBuilder.append("    timer:set(200);").append(LINE_SEPARATOR);
-        stringBuilder.append("    _time = 0;").append(LINE_SEPARATOR);
-        stringBuilder.append("end;").append(LINE_SEPARATOR);
         stringBuilder.append("global {").append(LINE_SEPARATOR);
         stringBuilder.append("    _lists = {};").append(LINE_SEPARATOR);
         stringBuilder.append("    _clones = {};").append(LINE_SEPARATOR);
@@ -448,6 +443,10 @@ public class STEADExportManager extends TextExportManager {
         // Do not check pageBlocks.isUseCaption() here, because in INSTEAD all rooms must have name
         stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageImage());
+        if (pageBlocks.isHasObjectsWithAnimatedImages()) {
+            stringBuilder.append("    var { time = 0; },").append(LINE_SEPARATOR);
+            stringBuilder.append("    timer = function(s) s.time = s.time + 1; return s.time; end,").append(LINE_SEPARATOR);
+        }
         stringBuilder.append(pageBlocks.getPageTextStart());
         autosBuilder.append("    autos = function()").append(LINE_SEPARATOR);
         autosBuilder.append("        revive();").append(LINE_SEPARATOR);
@@ -495,6 +494,10 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        s.snd();").append(LINE_SEPARATOR);
         stringBuilder.append("        s.autos();").append(LINE_SEPARATOR);
         stringBuilder.append("        s.bgimg();").append(LINE_SEPARATOR);
+        if (pageBlocks.isHasObjectsWithAnimatedImages()) {
+            stringBuilder.append("        s.time = 0;").append(LINE_SEPARATOR);
+            stringBuilder.append("        timer:set(1500);").append(LINE_SEPARATOR);
+        }
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append(pageBlocks.getPageSound());
 
@@ -577,7 +580,7 @@ public class STEADExportManager extends TextExportManager {
             }
         } else {
             return (
-                    "    imgv = function() return img(string.format('" + objImagePath + "', _time % " +
+                    "    imgv = function() return img(string.format('" + objImagePath + "', curloc().time % " +
                             objImagePathData.getMaxFrameNumber() + " + 1)); " + "end," + LINE_SEPARATOR
             );
         }

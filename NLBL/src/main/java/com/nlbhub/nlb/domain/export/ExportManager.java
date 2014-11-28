@@ -349,11 +349,15 @@ public abstract class ExportManager {
         );
         blocks.setPageEnd(decoratePageEnd());
         List<String> containedObjIds = page.getContainedObjIds();
+        boolean hasAnim = false;
         if (!containedObjIds.isEmpty()) {
             for (String containedObjId : containedObjIds) {
+                Obj obj = nlb.getObjById(containedObjId);
+                hasAnim = (hasAnim || obj.isAnimatedImage());
                 blocks.addContainedObjId(decorateContainedObjId(containedObjId));
             }
         }
+        blocks.setHasObjectsWithAnimatedImages(hasAnim);
         List<Link> links = page.getLinks();
         for (final Link link : links) {
             if (!link.isDeleted()) {
