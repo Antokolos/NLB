@@ -89,6 +89,11 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
+    public boolean isSuppressMedia() {
+        return DEFAULT_SUPPRESS_MEDIA;
+    }
+
+    @Override
     public String getAuthor() {
         return DEFAULT_AUTHOR;
     }

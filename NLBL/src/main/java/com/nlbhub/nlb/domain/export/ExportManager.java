@@ -320,17 +320,19 @@ public abstract class ExportManager {
             final Page page,
             final ExportData exportData
     ) throws NLBConsistencyException, NLBExportException {
+        NonLinearBook nlb = exportData.getNlb();
         PageBuildingBlocks blocks = new PageBuildingBlocks();
         final Integer pageNumber = exportData.getPageNumber(page.getId());
         blocks.setPageLabel(decoratePageLabel(page.getId(), pageNumber));
         blocks.setPageNumber(decoratePageNumber(pageNumber));
         blocks.setPageComment(decoratePageComment(page.getCaption()));
         blocks.setPageCaption(decoratePageCaption(page.getCaption(), page.isUseCaption()));
-        blocks.setPageImage(decoratePageImage(getImagePath(null, page.getImageFileName(), false), page.isImageBackground()));
-        blocks.setPageSound(decoratePageSound(getSoundPath(null, page.getSoundFileName())));
+        String imageFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_IMAGE_FILE_NAME: page.getImageFileName());
+        blocks.setPageImage(decoratePageImage(getImagePath(null, imageFileName, false), page.isImageBackground()));
+        String soundFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
+        blocks.setPageSound(decoratePageSound(getSoundPath(null, soundFileName)));
         blocks.setPageTextStart(decoratePageTextStart(StringHelper.getTextChunks(page.getText())));
         blocks.setPageTextEnd(decoratePageTextEnd());
-        NonLinearBook nlb = exportData.getNlb();
         if (!StringHelper.isEmpty(page.getVarId())) {
             Variable variable = nlb.getVariableById(page.getVarId());
             // TODO: Add cases with deleted pages/links/variables etc. to the unit test
@@ -461,14 +463,16 @@ public abstract class ExportManager {
             final Obj obj,
             final ExportData exportData
     ) throws NLBConsistencyException, NLBExportException {
+        NonLinearBook nlb = obj.getCurrentNLB();
         ObjBuildingBlocks blocks = new ObjBuildingBlocks();
         final boolean menuObj = obj.getLinks().size() == 0;
         blocks.setObjLabel(decorateObjLabel(obj.getId()));
         blocks.setObjComment(decorateObjComment(obj.getName()));
         blocks.setObjStart(decorateObjStart(menuObj));
         blocks.setObjName(decorateObjName(obj.getName()));
-        final String objImage = decorateObjImage(getImagePath(null, obj.getImageFileName(), obj.isAnimatedImage()));
-        final boolean hasImage = StringHelper.notEmpty(obj.getImageFileName());
+        String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
+        final String objImage = decorateObjImage(getImagePath(null, imageFileName, obj.isAnimatedImage()));
+        final boolean hasImage = StringHelper.notEmpty(imageFileName);
         blocks.setObjImage(objImage);
         blocks.setObjDisp(decorateObjDisp(StringHelper.getTextChunks(obj.getDisp()), hasImage && obj.isImageInInventory()));
         blocks.setObjText(decorateObjText(StringHelper.getTextChunks(obj.getText()), hasImage && obj.isImageInScene()));
