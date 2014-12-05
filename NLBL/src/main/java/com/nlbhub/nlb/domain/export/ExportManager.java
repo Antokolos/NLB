@@ -88,6 +88,7 @@ public abstract class ExportManager {
         private List<Obj> m_objList = new ArrayList<>();
         private Map<String, Integer> m_idToPageNumberMap = new HashMap<>();
         private Map<String, String> m_objNamToIdMap = new HashMap<>();
+        private Map<String, Boolean> m_inwardLinksMap = new HashMap<>();
         private ExportData m_parentED;
 
         private ExportData(
@@ -182,6 +183,9 @@ public abstract class ExportManager {
                     m_objList.add(obj);
                     m_objNamToIdMap.put(obj.getName(), obj.getId());
                 }
+                for (Link link : obj.getLinks()) {
+                    m_inwardLinksMap.put(link.getTarget(), true);
+                }
             }
             return result;
         }
@@ -219,6 +223,19 @@ public abstract class ExportManager {
                 }
             }
         }
+
+        private Boolean hasInwardLinks(final String objId) {
+            if (m_inwardLinksMap.containsKey(objId)) {
+                return m_inwardLinksMap.get(objId);
+            } else {
+                if (m_parentED != null) {
+                    return m_parentED.hasInwardLinks(objId);
+                } else {
+                    return false;
+                }
+            }
+        }
+
 
         private String getObjId(final String objName) {
             if (m_objNamToIdMap.containsKey(objName)) {
@@ -465,7 +482,7 @@ public abstract class ExportManager {
     ) throws NLBConsistencyException, NLBExportException {
         NonLinearBook nlb = obj.getCurrentNLB();
         ObjBuildingBlocks blocks = new ObjBuildingBlocks();
-        final boolean menuObj = obj.getLinks().size() == 0;
+        final boolean menuObj = (obj.getLinks().size() == 0) && !exportData.hasInwardLinks(obj.getId());
         blocks.setObjLabel(decorateObjLabel(obj.getId()));
         blocks.setObjComment(decorateObjComment(obj.getName()));
         blocks.setObjStart(decorateObjStart(menuObj));
