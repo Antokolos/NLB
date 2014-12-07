@@ -196,10 +196,16 @@ public abstract class HypertextExportManager
     }
 
     @Override
-    protected String decorateDelObj(String destinationId, final String destinationVar, String objectId, String objectVar, String objectName, String objectDisplayName) {
+    protected String decorateGetIdOperation(final String variableName, final String objId, final String objVar) {
+        // TODO: implement
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateDelObj(String destinationId, final String destinationName, String objectId, String objectVar, String objectName, String objectDisplayName) {
         return (
                 "Вычеркните из " +
-                        ((destinationId != null) ? destinationId : ((destinationVar != null) ? destinationVar : "инвентаря")) +
+                        ((destinationId != null) ? destinationId : ((destinationName != null) ? destinationName : "инвентаря")) +
                         " " + objectDisplayName
         );
     }

@@ -485,7 +485,7 @@ public abstract class ExportManager {
         final boolean menuObj = (obj.getLinks().size() == 0) && !exportData.hasInwardLinks(obj.getId());
         blocks.setObjLabel(decorateObjLabel(obj.getId()));
         blocks.setObjComment(decorateObjComment(obj.getName()));
-        blocks.setObjStart(decorateObjStart(menuObj));
+        blocks.setObjStart(decorateObjStart(obj.getId(), menuObj));
         blocks.setObjName(decorateObjName(obj.getName()));
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
         final String objImage = decorateObjImage(getImagePath(null, imageFileName, obj.isAnimatedImage()));
@@ -1113,7 +1113,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjStart(boolean menuObj) {
+    protected String decorateObjStart(final String id, boolean menuObj) {
         return EMPTY_STRING;
     }
 
@@ -1447,6 +1447,20 @@ public abstract class ExportManager {
                     case END:
                         stringBuilder.append(decorateEnd());
                         break;
+                    case ID:
+                        assert variable != null;
+                        final String objIdToGetId = exportData.getObjId(expression.getValue());
+                        // Datatype should be String
+                        stringBuilder.append(
+                                decorateGetIdOperation(
+                                        (variable.getDataType() == Variable.DataType.STRING)
+                                                ? decorateStringVar(variable.getName())
+                                                : decorateAutoVar(variable.getName()),
+                                        objIdToGetId,
+                                        decorateAutoVar(expression.getValue())
+                                )
+                        );
+                        break;
                     case ADD:
                         final String addDestinationId = (
                                 (variable != null)
@@ -1487,16 +1501,16 @@ public abstract class ExportManager {
                                         ? exportData.getObjId(variable.getName())
                                         : null
                         );
-                        final String removeDestinationVar = (
+                        final String removeDestinationName = (
                                 (variable != null && removeDestinationId == null)
-                                        ? decorateAutoVar(variable.getName())
+                                        ? variable.getName()
                                         : null
                         );
                         final String objIdToRemove = exportData.getObjId(expression.getValue());
                         stringBuilder.append(
                                 decorateDelObj(
                                         removeDestinationId,
-                                        removeDestinationVar,
+                                        removeDestinationName,
                                         objIdToRemove,
                                         decorateAutoVar(expression.getValue()),
                                         expression.getValue(), (objIdToRemove != null)
@@ -1615,7 +1629,6 @@ public abstract class ExportManager {
         return stringBuilder.toString();
     }
 
-
     protected abstract String decorateAssignment(String variableName, String variableValue);
 
     protected abstract String decorateWhile(String constraint);
@@ -1624,7 +1637,9 @@ public abstract class ExportManager {
 
     protected abstract String decorateEnd();
 
-    protected abstract String decorateDelObj(String destinationId, final String destinationVar, String objectId, String objectVar, String objectName, String objectDisplayName);
+    protected abstract String decorateGetIdOperation(String variableName, String objId, String objVar);
+
+    protected abstract String decorateDelObj(String destinationId, final String destinationName, String objectId, String objectVar, String objectName, String objectDisplayName);
 
     protected abstract String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName);
 

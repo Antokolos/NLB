@@ -114,13 +114,20 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    rmv = function(listname, v)").append(LINE_SEPARATOR);
         stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
         stringBuilder.append("        local val;").append(LINE_SEPARATOR);
+        stringBuilder.append("        local prevlist = nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        while list ~= nil do").append(LINE_SEPARATOR);
         stringBuilder.append("            val = list.value;").append(LINE_SEPARATOR);
-        stringBuilder.append("            if (val == v) then").append(LINE_SEPARATOR);
-        stringBuilder.append("            ").append(LINE_SEPARATOR);
+        stringBuilder.append("            if (val.nlbid == v.nlbid) then").append(LINE_SEPARATOR);
+        stringBuilder.append("                if (prevlist == nil) then").append(LINE_SEPARATOR);
+        stringBuilder.append("                    _lists[listname] = list.next;").append(LINE_SEPARATOR);
+        stringBuilder.append("                    return;").append(LINE_SEPARATOR);
+        stringBuilder.append("                else").append(LINE_SEPARATOR);
+        stringBuilder.append("                    prevlist.next = list.next").append(LINE_SEPARATOR);
+        stringBuilder.append("                    return;").append(LINE_SEPARATOR);
+        stringBuilder.append("                end;").append(LINE_SEPARATOR);
         stringBuilder.append("            end;").append(LINE_SEPARATOR);
+        stringBuilder.append("            prevlist = list;").append(LINE_SEPARATOR);
         stringBuilder.append("            list = list.next;").append(LINE_SEPARATOR);
-        stringBuilder.append("            result = result + 1;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    size = function(listname)").append(LINE_SEPARATOR);
@@ -568,12 +575,15 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjStart(boolean menuObj) {
+    protected String decorateObjStart(final String id, boolean menuObj) {
+        StringBuilder result = new StringBuilder();
         if (menuObj) {
-            return " = menu {" + LINE_SEPARATOR;
+            result.append(" = menu {").append(LINE_SEPARATOR);
         } else {
-            return " = obj {" + LINE_SEPARATOR;
+            result.append(" = obj {").append(LINE_SEPARATOR);
         }
+        result.append("    nlbid = '").append(id).append("',").append(LINE_SEPARATOR);
+        return result.toString();
     }
 
     @Override
@@ -731,7 +741,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     protected String decorateUseTarget(String targetId) {
-        return "w == " + decorateId(targetId);
+        return "w.nlbid == " + decorateId(targetId) + ".nlbid";
     }
 
     protected String decorateUseVariable(String variableName) {
@@ -810,11 +820,20 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateDelObj(String destinationId, final String destinationVar, String objectId, String objectVar, String objectName, String objectDisplayName) {
+    protected String decorateGetIdOperation(final String variableName, final String objId, final String objVar) {
+        if (objId != null) {
+            return variableName + " = '" + objId + "';" + LINE_SEPARATOR;
+        } else {
+            return variableName + " = " + objVar + ".nlbid;" + LINE_SEPARATOR;
+        }
+    }
+
+    @Override
+    protected String decorateDelObj(String destinationId, final String destinationName, String objectId, String objectVar, String objectName, String objectDisplayName) {
         if (destinationId == null) {
-            if (destinationVar != null) {
+            if (destinationName != null) {
                 return (
-                        "            rmv(\"" + destinationVar + "\", " + objectVar + ");" + LINE_SEPARATOR
+                        "            rmv(\"" + destinationName + "\", " + objectVar + ");" + LINE_SEPARATOR
                 );
             } else {
                 return (

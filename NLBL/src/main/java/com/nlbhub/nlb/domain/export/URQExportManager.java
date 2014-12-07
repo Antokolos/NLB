@@ -363,17 +363,22 @@ public class URQExportManager extends TextExportManager {
         return EMPTY_STRING;
     }
 
+    @Override
+    protected String decorateGetIdOperation(final String variableName, final String objId, final String objVar) {
+        // TODO: implement
+        return Constants.EMPTY_STRING;
+    }
+
     /**
-     *
-     * @param destinationId
-     * @param destinationVar
-     *@param objectId
+     *  @param destinationId
+     * @param destinationName
+     * @param objectId
      * @param objectVar
      * @param objectName
      * @param objectDisplayName     @return
-     */
+     * */
     @Override
-    protected String decorateDelObj(String destinationId, final String destinationVar, String objectId, String objectVar, String objectName, String objectDisplayName) {
+    protected String decorateDelObj(String destinationId, final String destinationName, String objectId, String objectVar, String objectName, String objectDisplayName) {
         // TODO: add support for destinationVar!!! Not supported for now
         return "Inv- " + objectDisplayName + LINE_SEPARATOR;
     }

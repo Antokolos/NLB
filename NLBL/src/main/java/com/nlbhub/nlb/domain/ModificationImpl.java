@@ -117,6 +117,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     @Override
     public boolean returnsValue() {
         switch (m_type) {
+            case ID:
             case ASSIGN:
             case POP:
             case SIZE:
@@ -130,7 +131,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
 
     @Override
     public boolean isParametrized() {
-        return m_type != Type.CLRINV;
+        return m_type != Type.CLRINV && m_type != Type.END;
     }
 
     @Override
@@ -146,6 +147,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.IF;
         } else if (type.equals(Type.END.name())) {
             m_type = Type.END;
+        } else if (type.equals(Type.ID.name())) {
+            m_type = Type.ID;
         } else if (type.equals(Type.ADD.name())) {
             m_type = Type.ADD;
         } else if (type.equals(Type.ADDALL.name())) {
@@ -223,6 +226,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "END":
                 m_type = Type.END;
+                break;
+            case "ID":
+                m_type = Type.ID;
                 break;
             case "ADD":
                 m_type = Type.ADD;
