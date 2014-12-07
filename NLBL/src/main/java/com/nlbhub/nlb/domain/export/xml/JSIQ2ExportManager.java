@@ -324,8 +324,27 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decorateDelObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
+    protected String decorateWhile(final String constraint) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateIf(final String constraint) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateEnd() {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateDelObj(String destinationId, final String destinationVar, String objectId, String objectVar, String objectName, String objectDisplayName) {
         String id = decorateId(objectId);
+        // TODO: add support for destinationVar!!! Not supported for now
         return "if (checkItem({'name': '" + id + "'})) { removeItem({'name': '" + id + "'}); }; ";
     }
 

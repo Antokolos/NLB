@@ -1420,6 +1420,33 @@ public abstract class ExportManager {
                     );
                 }
                 switch (modification.getType()) {
+                    case WHILE:
+                        stringBuilder.append(
+                                decorateWhile(
+                                        translateConstraintBody(
+                                                expression.getValue(),
+                                                true,
+                                                false,
+                                                Constants.EMPTY_STRING
+                                        )
+                                )
+                        );
+                        break;
+                    case IF:
+                        stringBuilder.append(
+                                decorateIf(
+                                        translateConstraintBody(
+                                                expression.getValue(),
+                                                true,
+                                                false,
+                                                Constants.EMPTY_STRING
+                                        )
+                                )
+                        );
+                        break;
+                    case END:
+                        stringBuilder.append(decorateEnd());
+                        break;
                     case ADD:
                         final String addDestinationId = (
                                 (variable != null)
@@ -1460,14 +1487,19 @@ public abstract class ExportManager {
                                         ? exportData.getObjId(variable.getName())
                                         : null
                         );
+                        final String removeDestinationVar = (
+                                (variable != null && removeDestinationId == null)
+                                        ? decorateAutoVar(variable.getName())
+                                        : null
+                        );
                         final String objIdToRemove = exportData.getObjId(expression.getValue());
                         stringBuilder.append(
                                 decorateDelObj(
                                         removeDestinationId,
+                                        removeDestinationVar,
                                         objIdToRemove,
                                         decorateAutoVar(expression.getValue()),
-                                        expression.getValue(),
-                                        (objIdToRemove != null)
+                                        expression.getValue(), (objIdToRemove != null)
                                                 ? exportData.getNlb().getObjById(objIdToRemove).getDisp()
                                                 : null)
                         );
@@ -1586,7 +1618,13 @@ public abstract class ExportManager {
 
     protected abstract String decorateAssignment(String variableName, String variableValue);
 
-    protected abstract String decorateDelObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName);
+    protected abstract String decorateWhile(String constraint);
+
+    protected abstract String decorateIf(String constraint);
+
+    protected abstract String decorateEnd();
+
+    protected abstract String decorateDelObj(String destinationId, final String destinationVar, String objectId, String objectVar, String objectName, String objectDisplayName);
 
     protected abstract String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName);
 

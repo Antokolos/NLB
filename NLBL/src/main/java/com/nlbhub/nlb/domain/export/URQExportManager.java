@@ -345,16 +345,36 @@ public class URQExportManager extends TextExportManager {
         return variableName + "=" + variableValue + LINE_SEPARATOR;
     }
 
+    @Override
+    protected String decorateWhile(final String constraint) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateIf(final String constraint) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateEnd() {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
     /**
      *
      * @param destinationId
-     * @param objectId
+     * @param destinationVar
+     *@param objectId
      * @param objectVar
-     *@param objectName
-     * @param objectDisplayName   @return
+     * @param objectName
+     * @param objectDisplayName     @return
      */
     @Override
-    protected String decorateDelObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
+    protected String decorateDelObj(String destinationId, final String destinationVar, String objectId, String objectVar, String objectName, String objectDisplayName) {
+        // TODO: add support for destinationVar!!! Not supported for now
         return "Inv- " + objectDisplayName + LINE_SEPARATOR;
     }
 

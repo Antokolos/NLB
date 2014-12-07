@@ -72,6 +72,9 @@ public class DialogModifications extends JDialog implements NLBObserver {
 
     private static final JComboBox<String> CB_MODIFICATION_TYPE = new JComboBox<String>() {{
         addItem(Modification.Type.ASSIGN.name());
+        addItem(Modification.Type.WHILE.name());
+        addItem(Modification.Type.IF.name());
+        addItem(Modification.Type.END.name());
         addItem(Modification.Type.ADD.name());
         addItem(Modification.Type.ADDALL.name());
         addItem(Modification.Type.REMOVE.name());

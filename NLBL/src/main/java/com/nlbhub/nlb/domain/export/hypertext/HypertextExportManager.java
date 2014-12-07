@@ -178,9 +178,28 @@ public abstract class HypertextExportManager
     }
 
     @Override
-    protected String decorateDelObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
+    protected String decorateWhile(final String constraint) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateIf(final String constraint) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateEnd() {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateDelObj(String destinationId, final String destinationVar, String objectId, String objectVar, String objectName, String objectDisplayName) {
         return (
-                "Вычеркните из " + ((destinationId != null) ? destinationId : "инвентаря") +
+                "Вычеркните из " +
+                        ((destinationId != null) ? destinationId : ((destinationVar != null) ? destinationVar : "инвентаря")) +
                         " " + objectDisplayName
         );
     }

@@ -111,6 +111,18 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            return list.value;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    rmv = function(listname, v)").append(LINE_SEPARATOR);
+        stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
+        stringBuilder.append("        local val;").append(LINE_SEPARATOR);
+        stringBuilder.append("        while list ~= nil do").append(LINE_SEPARATOR);
+        stringBuilder.append("            val = list.value;").append(LINE_SEPARATOR);
+        stringBuilder.append("            if (val == v) then").append(LINE_SEPARATOR);
+        stringBuilder.append("            ").append(LINE_SEPARATOR);
+        stringBuilder.append("            end;").append(LINE_SEPARATOR);
+        stringBuilder.append("            list = list.next;").append(LINE_SEPARATOR);
+        stringBuilder.append("            result = result + 1;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    size = function(listname)").append(LINE_SEPARATOR);
         stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
         stringBuilder.append("        local result = 0;").append(LINE_SEPARATOR);
@@ -688,8 +700,10 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateObjUseStart() {
+        // Before use, execute possible act commands (without printing act text) -> s.actf(s)
         return (
                 "    use = function(s, w)" + LINE_SEPARATOR +
+                        "        s.actf(s);" + LINE_SEPARATOR +
                         "        s.usea(s, w);" + LINE_SEPARATOR +
                         "        curloc().autos();" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
@@ -781,12 +795,33 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateDelObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
+    protected String decorateWhile(final String constraint) {
+        return "while (" + constraint + ") do" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateIf(final String constraint) {
+        return "if (" + constraint + ") then" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateEnd() {
+        return "end;" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateDelObj(String destinationId, final String destinationVar, String objectId, String objectVar, String objectName, String objectDisplayName) {
         if (destinationId == null) {
-            return (
-                    "            if have(\"" + objectName + "\") then remove(\""
-                            + objectName + "\", " + "inv()); end;" + LINE_SEPARATOR
-            );
+            if (destinationVar != null) {
+                return (
+                        "            rmv(\"" + destinationVar + "\", " + objectVar + ");" + LINE_SEPARATOR
+                );
+            } else {
+                return (
+                        "            if have(\"" + objectName + "\") then remove(\""
+                                + objectName + "\", " + "inv()); end;" + LINE_SEPARATOR
+                );
+            }
         } else {
             return (
                     "            objs(" + decorateId(destinationId) + "):del(" +

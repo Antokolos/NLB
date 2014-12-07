@@ -123,7 +123,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case RND:
                 return true;
             default:
-                // ADD, REMOVE, CLEAR, CLRINV, PUSH, SHUFFLE, ACT, USE
+                // WHILE, IF, END, ADD, REMOVE, CLEAR, CLRINV, PUSH, SHUFFLE, ACT, USE
                 return false;
         }
     }
@@ -140,7 +140,13 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     }
 
     public void setType(String type) {
-        if (type.equals(Type.ADD.name())) {
+        if (type.equals(Type.WHILE.name())) {
+            m_type = Type.WHILE;
+        } else if (type.equals(Type.IF.name())) {
+            m_type = Type.IF;
+        } else if (type.equals(Type.END.name())) {
+            m_type = Type.END;
+        } else if (type.equals(Type.ADD.name())) {
             m_type = Type.ADD;
         } else if (type.equals(Type.ADDALL.name())) {
             m_type = Type.ADDALL;
@@ -208,6 +214,15 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
         switch (type) {
             case "ASSIGN":
                 m_type = Type.ASSIGN;
+                break;
+            case "WHILE":
+                m_type = Type.WHILE;
+                break;
+            case "IF":
+                m_type = Type.IF;
+                break;
+            case "END":
+                m_type = Type.END;
                 break;
             case "ADD":
                 m_type = Type.ADD;
