@@ -55,6 +55,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The PageImpl class
@@ -764,13 +765,22 @@ public class PageImpl extends AbstractNodeItem implements Page {
         }
     }
 
-    public PageImpl createFilteredClone(
+    /**
+     * Creates clone of the current page, with $varName$ expressions substituted with current variable values, some
+     * links of which can be removed and some can be added
+     * @param linkIdsToBeExcluded
+     * @param linksToBeAdded
+     * @param visitedVars
+     * @return
+     */
+    public PageImpl createFilteredCloneWithSubstitutions(
             final List<String> linkIdsToBeExcluded,
-            final List<Link> linksToBeAdded
+            final List<Link> linksToBeAdded,
+            Map<String, Object> visitedVars
     ) {
         PageImpl result = new PageImpl(getCurrentNLB());
         result.setId(getId());
-        result.setText(getText());
+        result.setText(replaceVariables(getText(), visitedVars));
         final Coords sourceCoords = getCoords();
         final CoordsImpl resultCoords = result.getCoords();
         resultCoords.setLeft(sourceCoords.getLeft());
@@ -803,5 +813,29 @@ public class PageImpl extends AbstractNodeItem implements Page {
             result.addLink(new LinkImpl(this, link));
         }
         return result;
+    }
+
+    private static String replaceVariables(String pageText, Map<String, Object> visitedVars) {
+        StringBuilder result = new StringBuilder();
+        List<TextChunk> textChunks = StringHelper.getTextChunks(pageText);
+        for (TextChunk textChunk : textChunks) {
+            switch (textChunk.getType()) {
+                case TEXT:
+                    result.append(textChunk.getText());
+                    break;
+                case VARIABLE:
+                    Object mappedItem = visitedVars.get(textChunk.getText());
+                    if (mappedItem != null) {
+                        result.append(String.valueOf(mappedItem));
+                    } else {
+                        result.append("UNDEFINED");
+                    }
+                    break;
+                case NEWLINE:
+                    result.append(Constants.EOL_STRING);
+                    break;
+            }
+        }
+        return result.toString();
     }
 }

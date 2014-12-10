@@ -2358,7 +2358,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 linksToBeAdded.add(link);
             }
         }
-        return source.createFilteredClone(linkIdsToBeExcluded, linksToBeAdded);
+        return source.createFilteredCloneWithSubstitutions(linkIdsToBeExcluded, linksToBeAdded, visitedVars);
     }
 
     private void updateVisitedVars(
