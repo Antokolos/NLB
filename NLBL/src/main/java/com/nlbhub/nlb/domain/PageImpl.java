@@ -54,6 +54,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -826,7 +828,11 @@ public class PageImpl extends AbstractNodeItem implements Page {
                 case VARIABLE:
                     Object mappedItem = visitedVars.get(textChunk.getText());
                     if (mappedItem != null) {
-                        result.append(String.valueOf(mappedItem));
+                        if (mappedItem instanceof Number) {
+                            result.append(new DecimalFormat("#.###").format(mappedItem));
+                        } else {
+                            result.append(String.valueOf(mappedItem));
+                        }
                     } else {
                         result.append("UNDEFINED");
                     }
