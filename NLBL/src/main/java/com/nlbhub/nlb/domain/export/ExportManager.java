@@ -1014,6 +1014,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public String getCumulativeText(List<String> objIdsToBeExcluded) {
+                return obj.getCumulativeText(objIdsToBeExcluded);
+            }
+
+            @Override
             public String getStroke() {
                 return obj.getStroke();
             }

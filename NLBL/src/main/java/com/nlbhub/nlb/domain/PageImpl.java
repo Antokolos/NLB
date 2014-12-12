@@ -776,13 +776,14 @@ public class PageImpl extends AbstractNodeItem implements Page {
      * @return
      */
     public PageImpl createFilteredCloneWithSubstitutions(
+            final List<String> objIdsToBeExcluded,
             final List<String> linkIdsToBeExcluded,
             final List<Link> linksToBeAdded,
             Map<String, Object> visitedVars
     ) {
         PageImpl result = new PageImpl(getCurrentNLB());
         result.setId(getId());
-        result.setText(replaceVariables(getText(), visitedVars));
+        result.setText(replaceVariables(getText(), visitedVars) + generateObjText(objIdsToBeExcluded));
         final Coords sourceCoords = getCoords();
         final CoordsImpl resultCoords = result.getCoords();
         resultCoords.setLeft(sourceCoords.getLeft());
@@ -840,6 +841,19 @@ public class PageImpl extends AbstractNodeItem implements Page {
                 case NEWLINE:
                     result.append(Constants.EOL_STRING);
                     break;
+            }
+        }
+        return result.toString();
+    }
+
+    private String generateObjText(final List<String> objIdsToBeExcluded) {
+        StringBuilder result = new StringBuilder();
+        for (String objId : getContainedObjIds()) {
+            if (!objIdsToBeExcluded.contains(objId)) {
+                Obj obj = getCurrentNLB().getObjById(objId);
+                if (obj != null) {
+                    result.append(obj.getCumulativeText(objIdsToBeExcluded));
+                }
             }
         }
         return result.toString();

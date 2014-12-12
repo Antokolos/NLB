@@ -55,6 +55,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * The ObjImpl class
@@ -450,5 +451,19 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         );
         readNodeItemProperties(objDir);
         readModifications(objDir);
+    }
+
+    public String getCumulativeText(final List<String> objIdsToBeExcluded) {
+        StringBuilder result = new StringBuilder();
+        if (!objIdsToBeExcluded.contains(getId())) {
+            result.append(getText());
+            for (String objId : getContainedObjIds()) {
+                Obj obj = getCurrentNLB().getObjById(objId);
+                if (obj != null) {
+                    result.append(obj.getCumulativeText(objIdsToBeExcluded));
+                }
+            }
+        }
+        return result.toString();
     }
 }

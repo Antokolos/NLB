@@ -40,6 +40,8 @@ package com.nlbhub.nlb.api;
 
 import com.nlbhub.nlb.util.MultiLangString;
 
+import java.util.List;
+
 /**
  * The Obj class
  *
@@ -93,4 +95,6 @@ public interface Obj extends NodeItem {
     public boolean isImageInInventory();
 
     public String getContainerId();
+
+    public String getCumulativeText(final List<String> objIdsToBeExcluded);
 }
