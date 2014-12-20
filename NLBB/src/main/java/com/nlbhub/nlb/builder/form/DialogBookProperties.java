@@ -59,6 +59,7 @@ public class DialogBookProperties extends JDialog {
     private JCheckBox m_propagateToSubmodulesCheckBox;
     private JCheckBox m_fullAutowireCheckBox;
     private JCheckBox m_suppressMediaCheckBox;
+    private JCheckBox m_suppressSoundCheckBox;
 
     public DialogBookProperties(final NonLinearBookFacade nlbFacade) {
         m_nlbFacade = nlbFacade;
@@ -104,6 +105,7 @@ public class DialogBookProperties extends JDialog {
         m_versionTextField.setText(nonLinearBook.getVersion());
         m_fullAutowireCheckBox.setSelected(nonLinearBook.isFullAutowire());
         m_suppressMediaCheckBox.setSelected(nonLinearBook.isSuppressMedia());
+        m_suppressSoundCheckBox.setSelected(nonLinearBook.isSuppressSound());
         m_languageComboboxModel = new DefaultComboBoxModel<>();
         m_languageComboboxModel.addElement(Constants.RU);
         m_languageComboboxModel.addElement(Constants.EN);
@@ -133,6 +135,7 @@ public class DialogBookProperties extends JDialog {
                 m_versionTextField.getText(),
                 m_fullAutowireCheckBox.isSelected(),
                 m_suppressMediaCheckBox.isSelected(),
+                m_suppressSoundCheckBox.isSelected(),
                 m_propagateToSubmodulesCheckBox.isSelected()
         );
         dispose();
@@ -244,7 +247,7 @@ public class DialogBookProperties extends JDialog {
         final JPanel spacer1 = new JPanel();
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 7;
+        gbc.gridy = 8;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.VERTICAL;
         panel10.add(spacer1, gbc);
@@ -399,8 +402,31 @@ public class DialogBookProperties extends JDialog {
         m_suppressMediaCheckBox.setText("Suppress media");
         scrollPane7.setViewportView(m_suppressMediaCheckBox);
         final JPanel panel18 = new JPanel();
-        panel18.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel18, BorderLayout.CENTER);
+        panel18.setLayout(new GridBagLayout());
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 7;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(5, 5, 5, 0);
+        panel10.add(panel18, gbc);
+        final JScrollPane scrollPane8 = new JScrollPane();
+        scrollPane8.setHorizontalScrollBarPolicy(31);
+        scrollPane8.setVerticalScrollBarPolicy(21);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel18.add(scrollPane8, gbc);
+        m_suppressSoundCheckBox = new JCheckBox();
+        m_suppressSoundCheckBox.setSelected(false);
+        m_suppressSoundCheckBox.setText("Suppress sound");
+        scrollPane8.setViewportView(m_suppressSoundCheckBox);
+        final JPanel panel19 = new JPanel();
+        panel19.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel19, BorderLayout.CENTER);
         label1.setLabelFor(m_licenseTextArea);
         label2.setLabelFor(m_languageComboBox);
         label3.setLabelFor(m_authorTextField);

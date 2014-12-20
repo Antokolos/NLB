@@ -131,7 +131,7 @@
                               </grid>
                               <vspacer id="9e52e">
                                 <constraints>
-                                  <grid row="7" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                                  <grid row="8" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
                                   <gridbag weightx="0.0" weighty="1.0"/>
                                 </constraints>
                               </vspacer>
@@ -326,6 +326,36 @@
                                         <properties>
                                           <selected value="false"/>
                                           <text value="Suppress media"/>
+                                        </properties>
+                                      </component>
+                                    </children>
+                                  </scrollpane>
+                                </children>
+                              </grid>
+                              <grid id="b8118" layout-manager="GridBagLayout">
+                                <constraints>
+                                  <grid row="7" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                  <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
+                                </constraints>
+                                <properties/>
+                                <border type="none"/>
+                                <children>
+                                  <scrollpane id="2ddc5">
+                                    <constraints>
+                                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="1.0" weighty="1.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <horizontalScrollBarPolicy value="31"/>
+                                      <verticalScrollBarPolicy value="21"/>
+                                    </properties>
+                                    <border type="none"/>
+                                    <children>
+                                      <component id="1a780" class="javax.swing.JCheckBox" binding="m_suppressSoundCheckBox">
+                                        <constraints/>
+                                        <properties>
+                                          <selected value="false"/>
+                                          <text value="Suppress sound"/>
                                         </properties>
                                       </component>
                                     </children>

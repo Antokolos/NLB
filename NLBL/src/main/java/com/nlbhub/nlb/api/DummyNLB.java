@@ -94,6 +94,11 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
+    public boolean isSuppressSound() {
+        return DEFAULT_SUPPRESS_SOUND;
+    }
+
+    @Override
     public String getAuthor() {
         return DEFAULT_AUTHOR;
     }

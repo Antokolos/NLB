@@ -346,7 +346,7 @@ public abstract class ExportManager {
         blocks.setPageCaption(decoratePageCaption(page.getCaption(), page.isUseCaption()));
         String imageFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_IMAGE_FILE_NAME: page.getImageFileName());
         blocks.setPageImage(decoratePageImage(getImagePath(null, imageFileName, false), page.isImageBackground()));
-        String soundFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
+        String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
         blocks.setPageSound(decoratePageSound(getSoundPath(null, soundFileName)));
         blocks.setPageTextStart(decoratePageTextStart(StringHelper.getTextChunks(page.getText())));
         blocks.setPageTextEnd(decoratePageTextEnd());
