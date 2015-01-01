@@ -43,7 +43,7 @@ import javax.swing.*;
 public class ListSingleSelectionModel extends DefaultListSelectionModel {
 
     public ListSingleSelectionModel () {
-        setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        //setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     @Override

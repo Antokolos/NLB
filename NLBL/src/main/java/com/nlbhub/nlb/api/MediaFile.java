@@ -48,4 +48,5 @@ public interface MediaFile {
     public enum Type {Image, Sound}
 
     public String getFileName();
+    public String getConstraint();
 }

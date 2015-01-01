@@ -49,6 +49,7 @@ import com.nlbhub.nlb.api.MediaFile;
  */
 public class MediaFileImpl implements MediaFile {
     private String m_fileName;
+    private String m_constraint;
 
     public String getFileName() {
         return m_fileName;
@@ -56,5 +57,14 @@ public class MediaFileImpl implements MediaFile {
 
     public void setFileName(String fileName) {
         m_fileName = fileName;
+    }
+
+    @Override
+    public String getConstraint() {
+        return m_constraint;
+    }
+
+    public void setConstraint(final String constraint) {
+        m_constraint = constraint;
     }
 }

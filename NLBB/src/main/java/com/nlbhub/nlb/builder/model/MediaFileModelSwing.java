@@ -73,16 +73,30 @@ public class MediaFileModelSwing extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 1;
+        return 2;
     }
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        switch (m_mediaType) {
-            case Image:
-                return m_nonLinearBook.getImageFiles().get(rowIndex).getFileName();
-            case Sound:
-                return m_nonLinearBook.getSoundFiles().get(rowIndex).getFileName();
+        switch (columnIndex) {
+            case 0:
+                switch (m_mediaType) {
+                    case Image:
+                        return m_nonLinearBook.getImageFiles().get(rowIndex).getFileName();
+                    case Sound:
+                        return m_nonLinearBook.getSoundFiles().get(rowIndex).getFileName();
+                    default:
+                        return null;
+                }
+            case 1:
+                switch (m_mediaType) {
+                    case Image:
+                        return "";
+                    case Sound:
+                        return "";
+                    default:
+                        return null;
+                }
             default:
                 return null;
         }
@@ -93,6 +107,8 @@ public class MediaFileModelSwing extends AbstractTableModel {
         switch (column) {
             case 0:
                 return "Media file name";
+            case 1:
+                return "Constraint";
             default:
                 return super.getColumnName(column);
         }
