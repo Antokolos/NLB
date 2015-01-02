@@ -38,11 +38,18 @@
  */
 package com.nlbhub.nlb.builder.model;
 
+import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.MediaFile;
 import com.nlbhub.nlb.api.NonLinearBook;
+import com.nlbhub.nlb.api.Variable;
+import com.nlbhub.nlb.domain.NonLinearBookFacade;
+import com.nlbhub.nlb.util.StringHelper;
 
 import javax.swing.table.AbstractTableModel;
-import java.util.List;
+import java.util.*;
+
+import static com.nlbhub.nlb.api.Variable.Type.*;
+import static com.nlbhub.nlb.api.Variable.DataType.*;
 
 /**
  * The MediaFileModelSwing class
@@ -51,21 +58,43 @@ import java.util.List;
  * @version 1.0
  */
 public class MediaFileModelSwing extends AbstractTableModel {
-    private NonLinearBook m_nonLinearBook;
+    private NonLinearBookFacade m_nonLinearBookFacade;
     private MediaFile.Type m_mediaType;
+    private Map<String, String> m_namesToIdsMap;
 
-    public MediaFileModelSwing(NonLinearBook nonLinearBook, final MediaFile.Type mediaType) {
-        m_nonLinearBook = nonLinearBook;
+    public MediaFileModelSwing(NonLinearBookFacade nonLinearBookFacade, final MediaFile.Type mediaType) {
+        m_nonLinearBookFacade = nonLinearBookFacade;
         m_mediaType = mediaType;
+        m_namesToIdsMap = new HashMap<>();
+        m_namesToIdsMap.put("<N/C>", Constants.EMPTY_STRING);
+        for (final Variable variable : nonLinearBookFacade.getNlb().getVariables()) {
+            Variable.DataType dt = variable.getDataType();
+            Variable.Type t = variable.getType();
+            if (dt == BOOLEAN && (t == VAR || t == PAGE || t == OBJ || t == LINK)) {
+                // Only first variable with such name is used
+                if (!m_namesToIdsMap.containsKey(variable.getName())) {
+                    m_namesToIdsMap.put(variable.getName(), variable.getId());
+                }
+            }
+        }
+    }
+
+    public List<String> getConstraintsValues() {
+        List<String> result = new ArrayList<>();
+        for (String value : m_namesToIdsMap.keySet()) {
+            result.add(value);
+        }
+        Collections.sort(result);
+        return result;
     }
 
     @Override
     public int getRowCount() {
         switch (m_mediaType) {
             case Image:
-                return m_nonLinearBook.getImageFiles().size();
+                return m_nonLinearBookFacade.getNlb().getImageFiles().size();
             case Sound:
-                return m_nonLinearBook.getSoundFiles().size();
+                return m_nonLinearBookFacade.getNlb().getSoundFiles().size();
             default:
                 return -1;
         }
@@ -82,23 +111,54 @@ public class MediaFileModelSwing extends AbstractTableModel {
             case 0:
                 switch (m_mediaType) {
                     case Image:
-                        return m_nonLinearBook.getImageFiles().get(rowIndex).getFileName();
+                        return m_nonLinearBookFacade.getNlb().getImageFiles().get(rowIndex).getFileName();
                     case Sound:
-                        return m_nonLinearBook.getSoundFiles().get(rowIndex).getFileName();
+                        return m_nonLinearBookFacade.getNlb().getSoundFiles().get(rowIndex).getFileName();
                     default:
                         return null;
                 }
             case 1:
-                switch (m_mediaType) {
-                    case Image:
-                        return "";
-                    case Sound:
-                        return "";
-                    default:
-                        return null;
+                MediaFile mediaFile = getMediaFile(rowIndex);
+                final String constrId = (mediaFile != null) ? mediaFile.getConstrId() : null;
+                if (StringHelper.notEmpty(constrId)) {
+                    // Constraint is the named boolean variable that should be defined somewhere
+                    final Variable constraint = m_nonLinearBookFacade.getNlb().getVariableById(constrId);
+                    return constraint.getName();
+                } else {
+                    return Constants.EMPTY_STRING;
                 }
             default:
                 return null;
+        }
+    }
+
+    @Override
+    public void setValueAt(final Object aValue, final int rowIndex, final int columnIndex) {
+        switch (columnIndex) {
+            case 1:
+                String value = (String) aValue;
+                setMediaFileConstrId(rowIndex, m_namesToIdsMap.get(value));
+                break;
+            default:
+                super.setValueAt(aValue, rowIndex, columnIndex);
+        }
+    }
+
+    private MediaFile getMediaFile(int rowIndex) {
+        switch (m_mediaType) {
+            case Image:
+                return m_nonLinearBookFacade.getNlb().getImageFiles().get(rowIndex);
+            case Sound:
+                return m_nonLinearBookFacade.getNlb().getSoundFiles().get(rowIndex);
+            default:
+                return null;
+        }
+    }
+
+    private void setMediaFileConstrId(int rowIndex, String constrId) {
+        MediaFile mediaFile = getMediaFile(rowIndex);
+        if (mediaFile != null) {
+            m_nonLinearBookFacade.setMediaFileConstrId(m_mediaType, mediaFile.getFileName(), constrId);
         }
     }
 
@@ -112,5 +172,10 @@ public class MediaFileModelSwing extends AbstractTableModel {
             default:
                 return super.getColumnName(column);
         }
+    }
+
+    @Override
+    public boolean isCellEditable(final int rowIndex, final int columnIndex) {
+        return columnIndex == 1;
     }
 }

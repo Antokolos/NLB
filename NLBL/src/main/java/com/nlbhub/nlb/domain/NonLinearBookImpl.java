@@ -58,6 +58,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -75,6 +76,13 @@ public class NonLinearBookImpl implements NonLinearBook {
             Pattern.compile(LC_VARID_PREFIX + "(.*)" + LC_VARID_SEPARATOR_OUT)
     );
     private static final String MEDIA_FILE_NAME_TEMPLATE = "%s_%d%s";
+    private static final String CONSTRID_EXT = ".constrid";
+    private static final FilenameFilter NON_CONSTRID_FILTER = new FilenameFilter() {
+        @Override
+        public boolean accept(final File dir, final String name) {
+            return !name.endsWith(CONSTRID_EXT);
+        }
+    };
     private static final String STARTPOINT_FILE_NAME = "startpoint";
     private static final String LANGUAGE_FILE_NAME = "language";
     private static final String LICENSE_FILE_NAME = "license";
@@ -2220,6 +2228,27 @@ public class NonLinearBookImpl implements NonLinearBook {
         return soundFiles;
     }
 
+    public void setMediaFileConstrId(final MediaFile.Type mediaType, final String fileName, final String constrId) {
+        switch (mediaType) {
+            case Image:
+                for (MediaFileImpl mediaFile : m_imageFiles) {
+                    if (mediaFile.getFileName().equals(fileName)) {
+                        mediaFile.setConstrId(constrId);
+                        break;
+                    }
+                }
+                break;
+            case Sound:
+                for (MediaFileImpl mediaFile : m_soundFiles) {
+                    if (mediaFile.getFileName().equals(fileName)) {
+                        mediaFile.setConstrId(constrId);
+                        break;
+                    }
+                }
+                break;
+        }
+    }
+
     public void setRootDir(final File rootDir) {
         m_rootDir = rootDir;
     }
@@ -2724,13 +2753,20 @@ public class NonLinearBookImpl implements NonLinearBook {
         final File imagesDir = new File(rootDir, IMAGES_DIR_NAME);
         // imagesDir dir can be nonexistent, in this case there is no images in the book
         if (imagesDir.exists()) {
-            File[] listFiles = imagesDir.listFiles();
+            File[] listFiles = imagesDir.listFiles(NON_CONSTRID_FILTER);
             if (listFiles == null) {
                 throw new NLBIOException("Error when enumerating images' directory contents");
             }
             for (File file : listFiles) {
                 final MediaFileImpl imageFile = new MediaFileImpl();
                 imageFile.setFileName(file.getName());
+                imageFile.setConstrId(
+                        FileManipulator.getOptionalFileAsString(
+                                imagesDir,
+                                file.getName() + CONSTRID_EXT,
+                                Constants.EMPTY_STRING
+                        )
+                );
                 m_imageFiles.add(imageFile);
             }
         }
@@ -2741,14 +2777,70 @@ public class NonLinearBookImpl implements NonLinearBook {
         final File soundDir = new File(rootDir, SOUND_DIR_NAME);
         // soundDir dir can be nonexistent, in this case there is no sound in the book
         if (soundDir.exists()) {
-            File[] listFiles = soundDir.listFiles();
+            File[] listFiles = soundDir.listFiles(NON_CONSTRID_FILTER);
             if (listFiles == null) {
                 throw new NLBIOException("Error when enumerating sound' directory contents");
             }
             for (File file : listFiles) {
                 final MediaFileImpl soundFile = new MediaFileImpl();
                 soundFile.setFileName(file.getName());
+                soundFile.setConstrId(
+                        FileManipulator.getOptionalFileAsString(
+                                soundDir,
+                                file.getName() + CONSTRID_EXT,
+                                Constants.EMPTY_STRING
+                        )
+                );
                 m_soundFiles.add(soundFile);
+            }
+        }
+    }
+
+    private void writeImageFiles(
+            final @NotNull FileManipulator fileManipulator,
+            final File rootDir
+    ) throws NLBIOException, NLBConsistencyException, NLBFileManipulationException, NLBVCSException {
+        final File imagesDir = new File(rootDir, IMAGES_DIR_NAME);
+        // imagesDir dir can be nonexistent, in this case there is no images in the book
+        if (imagesDir.exists()) {
+            writeMediaFiles(m_imageFiles, fileManipulator, imagesDir);
+        }
+    }
+
+    private void writeSoundFiles(
+            final @NotNull FileManipulator fileManipulator,
+            final File rootDir
+    ) throws NLBIOException, NLBConsistencyException, NLBFileManipulationException, NLBVCSException {
+        final File soundDir = new File(rootDir, SOUND_DIR_NAME);
+        // soundDir dir can be nonexistent, in this case there is no sound in the book
+        if (soundDir.exists()) {
+            writeMediaFiles(m_soundFiles, fileManipulator, soundDir);
+        }
+    }
+
+    private void writeMediaFiles(
+            List<MediaFileImpl> mediaFiles,
+            final @NotNull FileManipulator fileManipulator,
+            final File mediaDir
+    ) throws NLBIOException, NLBConsistencyException, NLBFileManipulationException, NLBVCSException {
+        // Please note that all image/sound files were already saved in the images/sound folder
+        // (when image/sound is added), only metadata should be saved
+        if (mediaDir.exists()) {
+            for (MediaFile mediaFile : mediaFiles) {
+                File file = new File(mediaDir, mediaFile.getFileName() + CONSTRID_EXT);
+                if (StringHelper.isEmpty(mediaFile.getConstrId())) {
+                    if (file.exists()) {
+                        fileManipulator.deleteFileOrDir(file);
+                    }
+                } else {
+                    fileManipulator.writeOptionalString(
+                            mediaDir,
+                            file.getName(),
+                            mediaFile.getConstrId(),
+                            Constants.EMPTY_STRING
+                    );
+                }
+
             }
         }
     }
@@ -2765,8 +2857,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                     throw new NLBIOException("Cannot create NLB root directory");
                 }
             }
-            // There is no writeImageFiles() method, because all image files were already saved in the images folder
-            // (when image is added)
+            writeSoundFiles(fileManipulator, m_rootDir);
+            writeImageFiles(fileManipulator, m_rootDir);
             progressData.setProgressValue(20);
             progressData.setNoteText("Writing variables...");
             writeVariables(fileManipulator, m_rootDir);
@@ -3907,6 +3999,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     throw new NLBConsistencyException("NLB images dir does not exist");
                 }
                 fileManipulator.deleteFileOrDir(new File(imagesDir, imageFileName));
+                fileManipulator.deleteFileOrDir(new File(imagesDir, imageFileName + CONSTRID_EXT));
                 imageFileIterator.remove();
                 return;
             }
@@ -3928,6 +4021,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     throw new NLBConsistencyException("NLB sound dir does not exist");
                 }
                 fileManipulator.deleteFileOrDir(new File(soundDir, soundFileName));
+                fileManipulator.deleteFileOrDir(new File(soundDir, soundFileName + CONSTRID_EXT));
                 soundFileIterator.remove();
                 return;
             }

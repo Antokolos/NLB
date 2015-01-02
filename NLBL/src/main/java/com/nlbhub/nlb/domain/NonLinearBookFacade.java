@@ -226,6 +226,18 @@ public class NonLinearBookFacade implements NLBObservable {
         notifyObservers();
     }
 
+    /**
+     * This method does not have undo and immediately sets constraint id of the media file with the specified
+     * type and name.
+     *
+     * @param mediaType
+     * @param fileName
+     * @param constrId
+     */
+    public void setMediaFileConstrId(final MediaFile.Type mediaType, final String fileName, final String constrId) {
+        m_nlb.setMediaFileConstrId(mediaType, fileName, constrId);
+    }
+
     public void updateBookProperties(
             final String license,
             final String language,

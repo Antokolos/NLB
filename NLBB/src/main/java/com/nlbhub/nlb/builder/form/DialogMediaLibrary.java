@@ -40,6 +40,7 @@ package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.MediaFile;
+import com.nlbhub.nlb.api.Variable;
 import com.nlbhub.nlb.builder.model.ListSingleSelectionModel;
 import com.nlbhub.nlb.builder.model.MediaFileModelSwing;
 import com.nlbhub.nlb.builder.util.TextToGraphics;
@@ -51,10 +52,12 @@ import com.nlbhub.nlb.exception.NLBVCSException;
 import com.nlbhub.nlb.util.StringHelper;
 import org.jdesktop.swingx.JXImageView;
 import org.jdesktop.swingx.JXTable;
+import org.jdesktop.swingx.table.TableColumnExt;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.xml.bind.TypeConstraintException;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -90,9 +93,7 @@ public class DialogMediaLibrary extends JDialog {
     ) {
         final DialogMediaLibrary self = this;
         setContentPane(contentPane);
-        m_mediaFileModelSwing = (
-                new MediaFileModelSwing(nonLinearBookFacade.getNlb(), mediaType)
-        );
+        m_mediaFileModelSwing = new MediaFileModelSwing(nonLinearBookFacade, mediaType);
         m_mediaFileList.setModel(m_mediaFileModelSwing);
         m_listSingleSelectionModel.addListSelectionListener(
                 new ListSelectionListener() {
@@ -128,6 +129,12 @@ public class DialogMediaLibrary extends JDialog {
                 }
         );
         m_mediaFileList.setSelectionModel(m_listSingleSelectionModel);
+        TableColumnExt constraintColumn = m_mediaFileList.getColumnExt(1);
+        JComboBox<String> constraints = new JComboBox<>();
+        for (String value : m_mediaFileModelSwing.getConstraintsValues()) {
+            constraints.addItem(value);
+        }
+        constraintColumn.setCellEditor(new DefaultCellEditor(constraints));
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
