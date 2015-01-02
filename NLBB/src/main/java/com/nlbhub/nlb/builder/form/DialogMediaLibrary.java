@@ -302,9 +302,23 @@ public class DialogMediaLibrary extends JDialog {
         setVisible(true);
     }
 
+    private String getSelectedFileNames(int[] selectedRows) {
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+        for (int selectedRow : selectedRows) {
+            if (first) {
+                first = false;
+            } else {
+                result.append(";");
+            }
+            result.append((String) m_mediaFileModelSwing.getValueAt(selectedRow, 0));
+        }
+        return result.toString();
+    }
+
     private void onOK() {
-        int selectedRow = m_mediaFileList.getSelectedRow();
-        m_selectedFileName = (selectedRow == -1) ? null : (String) m_mediaFileModelSwing.getValueAt(selectedRow, 0);
+        int[] selectedRows = m_mediaFileList.getSelectedRows();
+        m_selectedFileName = (selectedRows.length == 0) ? null : getSelectedFileNames(selectedRows);
         dispose();
     }
 

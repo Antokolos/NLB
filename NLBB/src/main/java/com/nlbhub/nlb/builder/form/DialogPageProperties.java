@@ -359,10 +359,13 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
             if (StringHelper.isEmpty(m_imageFileName)) {
                 m_imageView.setVisible(false);
             } else {
-                m_imageView.setImage(
-                        new File(m_nlbFacade.getMainFacade().getNlb().getImagesDir(), imageFileName)
-                );
-                m_imageView.setVisible(true);
+                File file = new File(m_nlbFacade.getMainFacade().getNlb().getImagesDir(), imageFileName);
+                if (file.exists()) {
+                    m_imageView.setImage(file);
+                    m_imageView.setVisible(true);
+                } else {
+                    m_imageView.setVisible(false);
+                }
             }
         } catch (IOException ignore) {
             // do nothing
