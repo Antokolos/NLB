@@ -512,7 +512,7 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("        s.snd();").append(LINE_SEPARATOR);
         stringBuilder.append("        s.autos();").append(LINE_SEPARATOR);
-        stringBuilder.append("        s.bgimg();").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.bgimg(s);").append(LINE_SEPARATOR);
         if (pageBlocks.isHasObjectsWithAnimatedImages()) {
             stringBuilder.append("        s.time = 0;").append(LINE_SEPARATOR);
             stringBuilder.append("        timer:set(1500);").append(LINE_SEPARATOR);
@@ -593,21 +593,36 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateObjImage(List<ImagePathData> objImagePathDatas) {
-        // TODO: support image constraints
-        ImagePathData objImagePathData = objImagePathDatas.get(0);
-        String objImagePath = objImagePathData.getImagePath();
-        if (objImagePathData.getMaxFrameNumber() == 0) {
-            if (StringHelper.isEmpty(objImagePath)) {
-                return Constants.EMPTY_STRING;
+        StringBuilder resultBuilder = new StringBuilder();
+        boolean notFirst = false;
+        String ifTermination = Constants.EMPTY_STRING;
+        for (ImagePathData objImagePathData : objImagePathDatas) {
+            String objImagePath = objImagePathData.getImagePath();
+            StringBuilder tempBuilder = new StringBuilder();
+            tempBuilder.append("        ").append(notFirst ? "else" : Constants.EMPTY_STRING).append("if (");
+            String constraint = objImagePathData.getConstraint();
+            tempBuilder.append(StringHelper.notEmpty(constraint) ? "s.tag == '" + constraint + "'" : "true").append(") then");
+            tempBuilder.append(LINE_SEPARATOR);
+            if (objImagePathData.getMaxFrameNumber() == 0) {
+                if (StringHelper.notEmpty(objImagePath)) {
+                    ifTermination = "        end" + LINE_SEPARATOR;
+                    resultBuilder.append(tempBuilder).append("            ");
+                    resultBuilder.append("return img('").append(objImagePath).append("');").append(LINE_SEPARATOR);
+                }
             } else {
-                return "    imgv = function() return img('" + objImagePath + "'); " + "end," + LINE_SEPARATOR;
+                ifTermination = "        end" + LINE_SEPARATOR;
+                resultBuilder.append(tempBuilder).append("            ");
+                resultBuilder.append("return img(string.format('").append(objImagePath).append("', curloc().time % ");
+                resultBuilder.append(objImagePathData.getMaxFrameNumber()).append(" + 1)); ").append(LINE_SEPARATOR);
             }
-        } else {
-            return (
-                    "    imgv = function() return img(string.format('" + objImagePath + "', curloc().time % " +
-                            objImagePathData.getMaxFrameNumber() + " + 1)); " + "end," + LINE_SEPARATOR
-            );
+            notFirst = true;
         }
+        String result = resultBuilder.toString();
+        return (
+                StringHelper.isEmpty(result)
+                        ? Constants.EMPTY_STRING
+                        : "    imgv = function()" + LINE_SEPARATOR + result + LINE_SEPARATOR + ifTermination + "end," + LINE_SEPARATOR
+        );
     }
 
     @Override
@@ -1105,26 +1120,38 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground) {
-        // TODO: support image constraints
-        ImagePathData pageImagePathData = pageImagePathDatas.get(0);
-        if (pageImagePathData.getMaxFrameNumber() == 0) {
-            String pageImagePath = pageImagePathData.getImagePath();
-            if (StringHelper.isEmpty(pageImagePath)) {
-                return "    bgimg = function() end," + LINE_SEPARATOR;
-            } else {
-                if (imageBackground) {
-                    return "    bgimg = function() theme.gfx.bg('" + pageImagePath + "'); end," + LINE_SEPARATOR;
-                } else {
-                    return (
-                            "    pic = '" + pageImagePath + "'," + LINE_SEPARATOR +
-                                    "    bgimg = function() end," + LINE_SEPARATOR
-                    );
+        StringBuilder bgimgBuilder = new StringBuilder("    bgimg = function(s)" + LINE_SEPARATOR);
+        StringBuilder picBuilder = new StringBuilder("    pic = function(s)" + LINE_SEPARATOR);
+        boolean notFirst = false;
+        String bgimgIfTermination = Constants.EMPTY_STRING;
+        String picIfTermination = Constants.EMPTY_STRING;
+        for (ImagePathData pageImagePathData : pageImagePathDatas) {
+            if (pageImagePathData.getMaxFrameNumber() == 0) {
+                String pageImagePath = pageImagePathData.getImagePath();
+                if (StringHelper.notEmpty(pageImagePath)) {
+                    StringBuilder tempBuilder = new StringBuilder();
+                    tempBuilder.append("        ").append(notFirst ? "else" : Constants.EMPTY_STRING).append("if (");
+                    String constraint = pageImagePathData.getConstraint();
+                    tempBuilder.append(StringHelper.notEmpty(constraint) ? "s.tag == '" + constraint + "'" : "true").append(") then");
+                    tempBuilder.append(LINE_SEPARATOR);
+                    if (imageBackground) {
+                        bgimgIfTermination = "        end" + LINE_SEPARATOR;
+                        bgimgBuilder.append(tempBuilder).append("            ");
+                        bgimgBuilder.append("theme.gfx.bg('").append(pageImagePath).append("');").append(LINE_SEPARATOR);
+                    } else {
+                        picIfTermination = "        end" + LINE_SEPARATOR;
+                        picBuilder.append(tempBuilder).append("            ");
+                        picBuilder.append("return '").append(pageImagePath).append("';").append(LINE_SEPARATOR);
+                    }
                 }
+            } else {
+                // TODO: support animated images
             }
-        } else {
-            // TODO: support animated images
-            return "    bgimg = function() end," + LINE_SEPARATOR;
+            notFirst = true;
         }
+        bgimgBuilder.append(bgimgIfTermination).append("    end,").append(LINE_SEPARATOR);
+        picBuilder.append(picIfTermination).append("    end,").append(LINE_SEPARATOR);
+        return bgimgBuilder.toString() + picBuilder.toString();
     }
 
     @Override

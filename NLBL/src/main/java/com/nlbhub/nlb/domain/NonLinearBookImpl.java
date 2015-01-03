@@ -3767,13 +3767,13 @@ public class NonLinearBookImpl implements NonLinearBook {
         List<MediaFile> imageFiles = getImageFiles();
         for (MediaFile mediaFile : imageFiles) {
             if (StringHelper.notEmpty(mediaFile.getConstrId())) {
-                result.put(mediaFile.getFileName(), getVariableById(mediaFile.getConstrId()).getName());
+                result.put(mediaFile.getFileName(), getVariableById(mediaFile.getConstrId()).getValue());
             }
         }
         List<MediaFile> soundFiles = getSoundFiles();
         for (MediaFile mediaFile : soundFiles) {
             if (StringHelper.notEmpty(mediaFile.getConstrId())) {
-                result.put(mediaFile.getFileName(), getVariableById(mediaFile.getConstrId()).getName());
+                result.put(mediaFile.getFileName(), getVariableById(mediaFile.getConstrId()).getValue());
             }
         }
         return result;
