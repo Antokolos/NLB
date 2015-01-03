@@ -78,6 +78,7 @@ public abstract class ExportManager {
     private String m_encoding;
     private Map<String, ExportData> m_exportDataMap;
     private Map<String, Variable.DataType> m_dataTypeMap;
+    private Map<String, String> m_mediaToConstraintMap;
 
     private class ExportData {
         private NonLinearBook m_nlb;
@@ -268,6 +269,7 @@ public abstract class ExportManager {
             );
             m_exportDataMap = mainExportData.init();
             m_dataTypeMap = nlb.getVariableDataTypes();
+            m_mediaToConstraintMap = nlb.getMediaToConstraintMap();
         } catch (NLBConsistencyException e) {
             throw new NLBExportException("Export error", e);
         }
@@ -345,7 +347,7 @@ public abstract class ExportManager {
         blocks.setPageComment(decoratePageComment(page.getCaption()));
         blocks.setPageCaption(decoratePageCaption(page.getCaption(), page.isUseCaption()));
         String imageFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_IMAGE_FILE_NAME: page.getImageFileName());
-        blocks.setPageImage(decoratePageImage(getImagePath(null, imageFileName, false), page.isImageBackground()));
+        blocks.setPageImage(decoratePageImage(getImagePaths(null, imageFileName, false), page.isImageBackground()));
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
         blocks.setPageSound(decoratePageSound(getSoundPath(null, soundFileName)));
         blocks.setPageTextStart(decoratePageTextStart(StringHelper.getTextChunks(page.getText())));
@@ -488,7 +490,7 @@ public abstract class ExportManager {
         blocks.setObjStart(decorateObjStart(obj.getId(), menuObj));
         blocks.setObjName(decorateObjName(obj.getName()));
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
-        final String objImage = decorateObjImage(getImagePath(null, imageFileName, obj.isAnimatedImage()));
+        final String objImage = decorateObjImage(getImagePaths(null, imageFileName, obj.isAnimatedImage()));
         final boolean hasImage = StringHelper.notEmpty(imageFileName);
         blocks.setObjImage(objImage);
         blocks.setObjDisp(decorateObjDisp(StringHelper.getTextChunks(obj.getDisp()), hasImage && obj.isImageInInventory()));
@@ -1126,7 +1128,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjImage(ImagePathData objImagePathData) {
+    protected String decorateObjImage(List<ImagePathData> objImagePathDatas) {
         return EMPTY_STRING;
     }
 
@@ -1730,9 +1732,35 @@ public abstract class ExportManager {
 
     protected abstract String decoratePageCaption(String caption, boolean useCaption);
 
-    protected abstract String decoratePageImage(ImagePathData pageImagePathData, final boolean imageBackground);
+    protected abstract String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground);
 
     protected abstract String decoratePageSound(String pageSoundPath);
+
+    /**
+     * NB: in case of ordinary (inline) NLB modules moduleDir should be <code>null</code>
+     *
+     * @param moduleDir
+     * @param imageFileNames
+     * @return
+     */
+    protected List<ImagePathData> getImagePaths(
+            final String moduleDir,
+            final String imageFileNames,
+            final boolean animatedImage
+    ) throws NLBExportException {
+        if (StringHelper.isEmpty(imageFileNames)) {
+            return new ArrayList<ImagePathData>() {{
+                add(ImagePathData.EMPTY);
+            }};
+        } else {
+            List<ImagePathData> result = new ArrayList<>();
+            String[] fileNamesArr = imageFileNames.split(Constants.MEDIA_FILE_NAME_SEP);
+            for (String fileName : fileNamesArr) {
+                result.add(getImagePath(moduleDir, fileName, animatedImage));
+            }
+            return result;
+        }
+    }
 
     /**
      * NB: in case of ordinary (inline) NLB modules moduleDir should be <code>null</code>
@@ -1746,29 +1774,30 @@ public abstract class ExportManager {
             final String imageFileName,
             final boolean animatedImage
     ) throws NLBExportException {
-        if (StringHelper.isEmpty(imageFileName)) {
-            return ImagePathData.EMPTY;
-        } else {
-            ImagePathData result = new ImagePathData();
-            Matcher matcher = FILE_NAME_PATTERN.matcher(imageFileName);
-            if (matcher.find()) {
-                if (moduleDir == null) {
-                    result.setParentFolderPath(NonLinearBook.IMAGES_DIR_NAME);
-                } else {
-                    result.setParentFolderPath(NonLinearBook.IMAGES_DIR_NAME + "/" + moduleDir);
-                }
-                if (animatedImage) {
-                    result.setFileName(matcher.group(1));
-                    result.setMaxFrameNumber(Integer.parseInt(matcher.group(2)));
-                } else {
-                    result.setFileName(matcher.group(1) + matcher.group(2));
-                    result.setMaxFrameNumber(0);
-                }
-                result.setFileExtension(matcher.group(3));
-                return result;
+        ImagePathData result = new ImagePathData();
+        Matcher matcher = FILE_NAME_PATTERN.matcher(imageFileName);
+        if (matcher.find()) {
+            if (moduleDir == null) {
+                result.setParentFolderPath(NonLinearBook.IMAGES_DIR_NAME);
             } else {
-                throw new NLBExportException("Filename " + imageFileName + " is bad, please rename");
+                result.setParentFolderPath(NonLinearBook.IMAGES_DIR_NAME + "/" + moduleDir);
             }
+            if (animatedImage) {
+                result.setFileName(matcher.group(1));
+                result.setMaxFrameNumber(Integer.parseInt(matcher.group(2)));
+            } else {
+                result.setFileName(matcher.group(1) + matcher.group(2));
+                result.setMaxFrameNumber(0);
+            }
+            result.setFileExtension(matcher.group(3));
+            if (m_mediaToConstraintMap.containsKey(imageFileName)) {
+                result.setConstraint(m_mediaToConstraintMap.get(imageFileName));
+            } else {
+                result.setConstraint(Constants.EMPTY_STRING);
+            }
+            return result;
+        } else {
+            throw new NLBExportException("Filename " + imageFileName + " is bad, please rename");
         }
     }
 

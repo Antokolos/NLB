@@ -339,4 +339,6 @@ public interface NonLinearBook {
     public Page getParentPage();
 
     public Map<String, Variable.DataType> getVariableDataTypes() throws NLBConsistencyException;
+
+    public Map<String, String> getMediaToConstraintMap();
 }

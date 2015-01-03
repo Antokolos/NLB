@@ -3752,6 +3752,24 @@ public class NonLinearBookImpl implements NonLinearBook {
         return result;
     }
 
+    @Override
+    public Map<String, String> getMediaToConstraintMap() {
+        Map<String, String> result = new HashMap<>();
+        List<MediaFile> imageFiles = getImageFiles();
+        for (MediaFile mediaFile : imageFiles) {
+            if (StringHelper.notEmpty(mediaFile.getConstrId())) {
+                result.put(mediaFile.getFileName(), getVariableById(mediaFile.getConstrId()).getName());
+            }
+        }
+        List<MediaFile> soundFiles = getSoundFiles();
+        for (MediaFile mediaFile : soundFiles) {
+            if (StringHelper.notEmpty(mediaFile.getConstrId())) {
+                result.put(mediaFile.getFileName(), getVariableById(mediaFile.getConstrId()).getName());
+            }
+        }
+        return result;
+    }
+
     private NonLinearBook getMainNLB() {
         NonLinearBook result = this;
         while (result.getParentNLB() != null) {

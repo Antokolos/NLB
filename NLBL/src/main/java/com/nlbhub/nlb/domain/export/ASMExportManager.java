@@ -200,7 +200,7 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageImage(ImagePathData pageImagePathData, final boolean imageBackground) {
+    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground) {
         // TODO: implement and use
         return Constants.EMPTY_STRING;
     }

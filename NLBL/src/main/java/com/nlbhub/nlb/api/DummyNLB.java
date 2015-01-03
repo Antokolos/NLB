@@ -237,4 +237,9 @@ public class DummyNLB implements NonLinearBook {
     public Map<String, Variable.DataType> getVariableDataTypes() throws NLBConsistencyException {
         return Collections.emptyMap();
     }
+
+    @Override
+    public Map<String, String> getMediaToConstraintMap() {
+        return Collections.emptyMap();
+    }
 }

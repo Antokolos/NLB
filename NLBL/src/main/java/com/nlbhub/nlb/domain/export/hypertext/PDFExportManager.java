@@ -45,6 +45,8 @@ import com.nlbhub.nlb.domain.export.hypertext.document.*;
 import com.nlbhub.nlb.exception.HTDocumentException;
 import com.nlbhub.nlb.exception.NLBExportException;
 
+import java.util.List;
+
 /**
  * The PDFExportManager class
  *
@@ -93,7 +95,7 @@ public class PDFExportManager extends HypertextExportManager<PDFParagraph, PDFAn
     }
 
     @Override
-    protected String decoratePageImage(ImagePathData pageImagePathData, final boolean imageBackground) {
+    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground) {
         // TODO: implement images for PDF
         return Constants.EMPTY_STRING;
     }

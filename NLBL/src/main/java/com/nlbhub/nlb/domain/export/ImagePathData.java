@@ -50,11 +50,13 @@ public class ImagePathData {
     public static final ImagePathData EMPTY = new ImagePathData() {{
         setParentFolderPath(Constants.EMPTY_STRING);
         setFileName(Constants.EMPTY_STRING);
+        setConstraint(Constants.EMPTY_STRING);
         setMaxFrameNumber(0);
         setFileExtension(Constants.EMPTY_STRING);
     }};
     private String m_parentFolderPath;
     private String m_fileName;
+    private String m_constraint;
     private int m_maxFrameNumber;
     private String m_fileExtension;
 
@@ -100,6 +102,14 @@ public class ImagePathData {
                 return m_parentFolderPath + "/" + m_fileName + "%d" + m_fileExtension;
             }
         }
+    }
+
+    public String getConstraint() {
+        return m_constraint;
+    }
+
+    public void setConstraint(String constraint) {
+        m_constraint = constraint;
     }
 
     @Override

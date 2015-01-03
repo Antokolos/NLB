@@ -47,6 +47,7 @@ package com.nlbhub.nlb.api;
 public interface Constants {
     float FL_ZERO_TOLERANCE = (float) 1e-6;
     String UNICODE_ENCODING = "UTF-8";
+    String MEDIA_FILE_NAME_SEP = ";";
     String RU = "ru";
     String EN = "en";
     String MAIN_MODULE_NAME = "MAIN";

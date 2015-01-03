@@ -125,7 +125,7 @@ public class TaggedTextExportManager extends HypertextExportManager<TXTParagraph
     }
 
     @Override
-    protected String decoratePageImage(ImagePathData pageImagePathData, final boolean imageBackground) {
+    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground) {
         return Constants.EMPTY_STRING;
     }
 

@@ -105,7 +105,9 @@ public class HTMLExportManager extends HypertextExportManager<HTMLParagraph, HTM
     }
 
     @Override
-    protected String decoratePageImage(ImagePathData pageImagePathData, final boolean imageBackground) {
+    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground) {
+        // TODO: support image constraints
+        ImagePathData pageImagePathData = pageImagePathDatas.get(0);
         if (pageImagePathData.getMaxFrameNumber() == 0) {
             String pageImagePath = pageImagePathData.getImagePath();
             if (StringHelper.isEmpty(pageImagePath)) {

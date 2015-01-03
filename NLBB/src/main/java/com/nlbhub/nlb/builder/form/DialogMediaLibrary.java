@@ -40,7 +40,6 @@ package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.MediaFile;
-import com.nlbhub.nlb.api.Variable;
 import com.nlbhub.nlb.builder.model.ListSingleSelectionModel;
 import com.nlbhub.nlb.builder.model.MediaFileModelSwing;
 import com.nlbhub.nlb.builder.util.TextToGraphics;
@@ -57,7 +56,6 @@ import org.jdesktop.swingx.table.TableColumnExt;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.xml.bind.TypeConstraintException;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -309,7 +307,7 @@ public class DialogMediaLibrary extends JDialog {
             if (first) {
                 first = false;
             } else {
-                result.append(";");
+                result.append(Constants.MEDIA_FILE_NAME_SEP);
             }
             result.append((String) m_mediaFileModelSwing.getValueAt(selectedRow, 0));
         }

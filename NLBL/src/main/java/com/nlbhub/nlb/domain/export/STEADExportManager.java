@@ -592,7 +592,9 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjImage(ImagePathData objImagePathData) {
+    protected String decorateObjImage(List<ImagePathData> objImagePathDatas) {
+        // TODO: support image constraints
+        ImagePathData objImagePathData = objImagePathDatas.get(0);
         String objImagePath = objImagePathData.getImagePath();
         if (objImagePathData.getMaxFrameNumber() == 0) {
             if (StringHelper.isEmpty(objImagePath)) {
@@ -1090,7 +1092,9 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageImage(ImagePathData pageImagePathData, final boolean imageBackground) {
+    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground) {
+        // TODO: support image constraints
+        ImagePathData pageImagePathData = pageImagePathDatas.get(0);
         if (pageImagePathData.getMaxFrameNumber() == 0) {
             String pageImagePath = pageImagePathData.getImagePath();
             if (StringHelper.isEmpty(pageImagePath)) {
