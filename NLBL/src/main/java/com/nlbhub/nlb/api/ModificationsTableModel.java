@@ -180,6 +180,14 @@ public class ModificationsTableModel {
                 break;
             case 3:
                 modification.setType(cellValue);
+                VariableImpl expr = getExpression(modification);
+                if (expr != null) {
+                    if (modification.getType() == Modification.Type.TAG) {
+                        expr.setType(Variable.Type.TAG);
+                    } else {
+                        expr.setType(Variable.Type.EXPRESSION);
+                    }
+                }
                 break;
             case 4:
                 VariableImpl expression = getExpression(modification);
@@ -195,7 +203,9 @@ public class ModificationsTableModel {
                         expression = (
                                 new VariableImpl(
                                         m_currentNLB,
-                                        Variable.Type.EXPRESSION,
+                                        (modification.getType() == Modification.Type.TAG)
+                                                ? Variable.Type.TAG
+                                                : Variable.Type.EXPRESSION,
                                         Variable.DEFAULT_DATATYPE,
                                         Variable.DEFAULT_NAME,
                                         cellValue,

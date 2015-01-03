@@ -124,7 +124,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case RND:
                 return true;
             default:
-                // WHILE, IF, END, ADD, REMOVE, CLEAR, CLRINV, PUSH, SHUFFLE, ACT, USE
+                // TAG, WHILE, IF, END, ADD, REMOVE, CLEAR, CLRINV, PUSH, SHUFFLE, ACT, USE
                 return false;
         }
     }
@@ -143,6 +143,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     public void setType(String type) {
         if (type.equals(Type.WHILE.name())) {
             m_type = Type.WHILE;
+        } else if (type.equals(Type.TAG.name())) {
+            m_type = Type.TAG;
         } else if (type.equals(Type.IF.name())) {
             m_type = Type.IF;
         } else if (type.equals(Type.END.name())) {
@@ -217,6 +219,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
         switch (type) {
             case "ASSIGN":
                 m_type = Type.ASSIGN;
+                break;
+            case "TAG":
+                m_type = Type.TAG;
                 break;
             case "WHILE":
                 m_type = Type.WHILE;

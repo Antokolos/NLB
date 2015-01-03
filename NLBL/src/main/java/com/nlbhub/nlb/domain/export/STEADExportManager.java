@@ -462,8 +462,8 @@ public class STEADExportManager extends TextExportManager {
         // Do not check pageBlocks.isUseCaption() here, because in INSTEAD all rooms must have name
         stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageImage());
+        stringBuilder.append("    var { time = 0; tag = ''; },").append(LINE_SEPARATOR);
         if (pageBlocks.isHasObjectsWithAnimatedImages()) {
-            stringBuilder.append("    var { time = 0; },").append(LINE_SEPARATOR);
             stringBuilder.append("    timer = function(s) s.time = s.time + 1; return s.time; end,").append(LINE_SEPARATOR);
         }
         stringBuilder.append(pageBlocks.getPageTextStart());
@@ -804,6 +804,18 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateAssignment(String variableName, String variableValue) {
         return variableName + " = " + variableValue + ";" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateTag(final String variable, final String tag) {
+        StringBuilder result = new StringBuilder();
+        if (StringHelper.isEmpty(variable)) {
+            result.append("s.tag = ");
+        } else {
+            result.append(variable).append(".tag = ");
+        }
+        result.append("'").append(tag).append("';").append(LINE_SEPARATOR);
+        return result.toString();
     }
 
     @Override

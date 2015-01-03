@@ -1427,6 +1427,16 @@ public abstract class ExportManager {
                     );
                 }
                 switch (modification.getType()) {
+                    case TAG:
+                        boolean hasName = variable != null;
+                        String varName = (variable != null) ? variable.getName() : Constants.EMPTY_STRING;
+                        stringBuilder.append(
+                                decorateTag(
+                                        hasName ? decorateAutoVar(varName) : Constants.EMPTY_STRING,
+                                        expression.getValue()
+                                )
+                        );
+                        break;
                     case WHILE:
                         stringBuilder.append(
                                 decorateWhile(
@@ -1637,6 +1647,8 @@ public abstract class ExportManager {
     }
 
     protected abstract String decorateAssignment(String variableName, String variableValue);
+
+    protected abstract String decorateTag(String variable, String tag);
 
     protected abstract String decorateWhile(String constraint);
 

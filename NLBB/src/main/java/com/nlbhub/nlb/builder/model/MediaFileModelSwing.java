@@ -40,7 +40,6 @@ package com.nlbhub.nlb.builder.model;
 
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.MediaFile;
-import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.api.Variable;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.util.StringHelper;
@@ -48,8 +47,7 @@ import com.nlbhub.nlb.util.StringHelper;
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
 
-import static com.nlbhub.nlb.api.Variable.Type.*;
-import static com.nlbhub.nlb.api.Variable.DataType.*;
+import static com.nlbhub.nlb.api.Variable.Type.TAG;
 
 /**
  * The MediaFileModelSwing class
@@ -68,12 +66,10 @@ public class MediaFileModelSwing extends AbstractTableModel {
         m_namesToIdsMap = new HashMap<>();
         m_namesToIdsMap.put("<N/C>", Constants.EMPTY_STRING);
         for (final Variable variable : nonLinearBookFacade.getNlb().getVariables()) {
-            Variable.DataType dt = variable.getDataType();
-            Variable.Type t = variable.getType();
-            if (dt == BOOLEAN && (t == VAR || t == PAGE || t == OBJ || t == LINK)) {
+            if (variable.getType() == TAG) {
                 // Only first variable with such name is used
-                if (!m_namesToIdsMap.containsKey(variable.getName())) {
-                    m_namesToIdsMap.put(variable.getName(), variable.getId());
+                if (!m_namesToIdsMap.containsKey(variable.getValue())) {
+                    m_namesToIdsMap.put(variable.getValue(), variable.getId());
                 }
             }
         }
@@ -123,7 +119,7 @@ public class MediaFileModelSwing extends AbstractTableModel {
                 if (StringHelper.notEmpty(constrId)) {
                     // Constraint is the named boolean variable that should be defined somewhere
                     final Variable constraint = m_nonLinearBookFacade.getNlb().getVariableById(constrId);
-                    return constraint.getName();
+                    return constraint.getValue();
                 } else {
                     return Constants.EMPTY_STRING;
                 }

@@ -951,6 +951,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 return idx1 - idx2;
             }
         }
+
         private UpdateModificationsCommand(
                 final ModifyingItem modifyingItem,
                 final ModificationsTableModel modificationsTableModel
@@ -3025,6 +3026,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         } else if (
                 variable.getType() == VariableImpl.Type.VAR
                         || variable.getType() == VariableImpl.Type.EXPRESSION
+                        || variable.getType() == VariableImpl.Type.TAG
                 ) {
             final ModifyingItemAndModification itemAndModification = (
                     getModifyingItemAndModification(variable)
@@ -3144,7 +3146,10 @@ public class NonLinearBookImpl implements NonLinearBook {
                                     + " has been deleted"
                     );
                 }
-            } else if (variable.getType() == VariableImpl.Type.EXPRESSION) {
+            } else if (
+                    variable.getType() == VariableImpl.Type.EXPRESSION
+                            || variable.getType() == VariableImpl.Type.TAG
+                    ) {
                 // modification.getExprId() should be empty or set to another variable's Id
                 if (variable.getId().equals(modification.getExprId())) {
                     throw new NLBConsistencyException(
@@ -3428,6 +3433,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     }
                     break;
                 case VAR:
+                case TAG:
                 case EXPRESSION:
                     final ModifyingItemAndModification itemAndModification = (
                             getModifyingItemAndModification(variable)
@@ -3510,6 +3516,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         }
                     }
                     break;
+                case TAG:
                 case EXPRESSION:
                     final ModifyingItemAndModification itemAndModification = (
                             getModifyingItemAndModification(variable)
@@ -3665,6 +3672,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 case VAR:
                     result.incPlainVariablesCount();
                     break;
+                case TAG:
                 case EXPRESSION:
                     result.incExpressionsCount();
                     break;
@@ -3730,6 +3738,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     }
                     break;
                 case LINKCONSTRAINT:
+                case TAG:
                 case EXPRESSION:
                 case MODCONSTRAINT:
                 case AUTOWIRECONSTRAINT:

@@ -204,6 +204,9 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
             case "VAR":
                 m_type = Type.VAR;
                 break;
+            case "TAG":
+                m_type = Type.TAG;
+                break;
             case "EXPRESSION":
                 m_type = Type.EXPRESSION;
                 break;

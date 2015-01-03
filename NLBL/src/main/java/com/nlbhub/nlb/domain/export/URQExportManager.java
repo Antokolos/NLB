@@ -348,6 +348,12 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateTag(final String variable, final String tag) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateWhile(final String constraint) {
         // TODO: implement
         return EMPTY_STRING;
