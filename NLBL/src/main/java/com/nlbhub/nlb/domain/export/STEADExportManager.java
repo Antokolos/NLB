@@ -621,7 +621,7 @@ public class STEADExportManager extends TextExportManager {
         return (
                 StringHelper.isEmpty(result)
                         ? Constants.EMPTY_STRING
-                        : "    imgv = function()" + LINE_SEPARATOR + result + LINE_SEPARATOR + ifTermination + "end," + LINE_SEPARATOR
+                        : "    imgv = function(s)" + LINE_SEPARATOR + result + LINE_SEPARATOR + ifTermination + "end," + LINE_SEPARATOR
         );
     }
 
@@ -631,7 +631,7 @@ public class STEADExportManager extends TextExportManager {
             return (
                     "    disp = function(s) return \"" +
                             expandVariables(dispChunks) +
-                            "\"..s.imgv() end," + LINE_SEPARATOR
+                            "\"..s.imgv(s) end," + LINE_SEPARATOR
             );
         } else {
             if (dispChunks.size() > 0) {
@@ -649,7 +649,7 @@ public class STEADExportManager extends TextExportManager {
         int start = 0;
         while (matcher.find()) {
             result.append(text.substring(start, matcher.start())).append("{");
-            result.append(matcher.group(1)).append("\"..s.imgv()..\"").append("}");
+            result.append(matcher.group(1)).append("\"..s.imgv(s)..\"").append("}");
             start = matcher.end();
         }
         result.append(text.substring(start, text.length()));
