@@ -117,6 +117,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     @Override
     public boolean returnsValue() {
         switch (m_type) {
+            case CLONE:
             case ID:
             case ASSIGN:
             case POP:
@@ -149,6 +150,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.IF;
         } else if (type.equals(Type.END.name())) {
             m_type = Type.END;
+        } else if (type.equals(Type.CLONE.name())) {
+            m_type = Type.CLONE;
         } else if (type.equals(Type.ID.name())) {
             m_type = Type.ID;
         } else if (type.equals(Type.ADD.name())) {
@@ -231,6 +234,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "END":
                 m_type = Type.END;
+                break;
+            case "CLONE":
+                m_type = Type.CLONE;
                 break;
             case "ID":
                 m_type = Type.ID;

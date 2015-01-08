@@ -1430,9 +1430,11 @@ public abstract class ExportManager {
                     case TAG:
                         boolean hasName = variable != null;
                         String varName = (variable != null) ? variable.getName() : Constants.EMPTY_STRING;
+                        final String objIdToTag = exportData.getObjId(variable.getName());
                         stringBuilder.append(
                                 decorateTag(
                                         hasName ? decorateAutoVar(varName) : Constants.EMPTY_STRING,
+                                        objIdToTag,
                                         expression.getValue()
                                 )
                         );
@@ -1463,6 +1465,17 @@ public abstract class ExportManager {
                         break;
                     case END:
                         stringBuilder.append(decorateEnd());
+                        break;
+                    case CLONE:
+                        assert variable != null;
+                        final String objIdToClone = exportData.getObjId(expression.getValue());
+                        stringBuilder.append(
+                                decorateCloneOperation(
+                                        decorateAutoVar(variable.getName()),
+                                        objIdToClone,
+                                        decorateAutoVar(expression.getValue())
+                                )
+                        );
                         break;
                     case ID:
                         assert variable != null;
@@ -1648,13 +1661,15 @@ public abstract class ExportManager {
 
     protected abstract String decorateAssignment(String variableName, String variableValue);
 
-    protected abstract String decorateTag(String variable, String tag);
+    protected abstract String decorateTag(String variable, final String objId, String tag);
 
     protected abstract String decorateWhile(String constraint);
 
     protected abstract String decorateIf(String constraint);
 
     protected abstract String decorateEnd();
+
+    protected abstract String decorateCloneOperation(String variableName, String objId, String objVar);
 
     protected abstract String decorateGetIdOperation(String variableName, String objId, String objVar);
 

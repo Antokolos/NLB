@@ -822,12 +822,16 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateTag(final String variable, final String tag) {
+    protected String decorateTag(final String variable, final String objId, final String tag) {
         StringBuilder result = new StringBuilder();
-        if (StringHelper.isEmpty(variable)) {
+        if (StringHelper.isEmpty(variable) && objId == null) {
             result.append("s.tag = ");
         } else {
-            result.append(variable).append(".tag = ");
+            if (objId != null) {
+                result.append(decorateId(objId)).append(".tag = ");
+            } else {
+                result.append(variable).append(".tag = ");
+            }
         }
         result.append("'").append(tag).append("';").append(LINE_SEPARATOR);
         return result.toString();
@@ -846,6 +850,15 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateEnd() {
         return "end;" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateCloneOperation(final String variableName, final String objId, final String objVar) {
+        if (objId != null) {
+            return variableName + " = clone(" + decorateId(objId) + ");" + LINE_SEPARATOR;
+        } else {
+            return variableName + " = clone(" + objVar + ");" + LINE_SEPARATOR;
+        }
     }
 
     @Override

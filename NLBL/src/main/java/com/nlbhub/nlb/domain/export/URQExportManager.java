@@ -348,7 +348,7 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateTag(final String variable, final String tag) {
+    protected String decorateTag(final String variable, final String objId, final String tag) {
         // TODO: implement
         return EMPTY_STRING;
     }
@@ -369,6 +369,12 @@ public class URQExportManager extends TextExportManager {
     protected String decorateEnd() {
         // TODO: implement
         return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateCloneOperation(final String variableName, final String objId, final String objVar) {
+        // TODO: implement
+        return Constants.EMPTY_STRING;
     }
 
     @Override
