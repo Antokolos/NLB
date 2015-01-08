@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>NLBL</artifactId>
     <packaging>jar</packaging>
-    <version>0.5.13</version>
+    <version>0.5.14</version>
     <name>NLBL</name>
     <url>http://maven.apache.org</url>
     <repositories>
@@ -21,7 +21,7 @@
     <parent>
         <groupId>com.nlbhub</groupId>
         <artifactId>NLB</artifactId>
-        <version>0.5.13</version>
+        <version>0.5.14</version>
     </parent>
     <dependencies>
         <dependency>
