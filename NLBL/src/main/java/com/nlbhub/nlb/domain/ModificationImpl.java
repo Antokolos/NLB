@@ -121,11 +121,12 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case ID:
             case ASSIGN:
             case POP:
+            case EJECT:
             case SIZE:
             case RND:
                 return true;
             default:
-                // TAG, WHILE, IF, END, ADD, REMOVE, CLEAR, CLRINV, PUSH, SHUFFLE, ACT, USE
+                // TAG, WHILE, IF, END, ADD, REMOVE, CLEAR, CLRINV, PUSH, INJECT, SHUFFLE, ACT, USE
                 return false;
         }
     }
@@ -168,6 +169,10 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.PUSH;
         } else if (type.equals(Type.POP.name())) {
             m_type = Type.POP;
+        } else if (type.equals(Type.INJECT.name())) {
+            m_type = Type.INJECT;
+        } else if (type.equals(Type.EJECT.name())) {
+            m_type = Type.EJECT;
         } else if (type.equals(Type.SHUFFLE.name())) {
             m_type = Type.SHUFFLE;
         } else if (type.equals(Type.ACT.name())) {
@@ -262,6 +267,12 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "POP":
                 m_type = Type.POP;
+                break;
+            case "INJECT":
+                m_type = Type.INJECT;
+                break;
+            case "EJECT":
+                m_type = Type.EJECT;
                 break;
             case "SHUFFLE":
                 m_type = Type.SHUFFLE;

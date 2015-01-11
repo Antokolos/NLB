@@ -306,12 +306,24 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decoratePushOperation(String listName, String objectId, String objectVar) {
-        // TODO: make use of inventory module
+        // TODO: implement
         return EMPTY_STRING;
     }
 
     @Override
     protected String decoratePopOperation(String variableName, String listName) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateInjectOperation(String listName, String objectId, String objectVar) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateEjectOperation(String variableName, String listName) {
         // TODO: implement
         return EMPTY_STRING;
     }

@@ -372,6 +372,18 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateInjectOperation(String listName, String objectId, String objectVar) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateEjectOperation(String variableName, String listName) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateClearOperation(String destinationId, String destinationVar) {
         // TODO: implement
         return EMPTY_STRING;

@@ -1586,6 +1586,32 @@ public abstract class ExportManager {
                                 )
                         );
                         break;
+                    case INJECT:
+                        final String objIdToInject = exportData.getObjId(expression.getValue());
+                        if (variable != null) {
+                            stringBuilder.append(
+                                    decorateInjectOperation(
+                                            variable.getName(),
+                                            objIdToInject,
+                                            decorateAutoVar(expression.getValue())
+                                    )
+                            );
+                        } else {
+                            throw new NLBConsistencyException(
+                                    "Destination list name is not specified for inject operation"
+                            );
+                        }
+                        break;
+                    case EJECT:
+                        assert variable != null;
+                        // expression value is the name of the list to eject from
+                        stringBuilder.append(
+                                decorateEjectOperation(
+                                        decorateAutoVar(variable.getName()),
+                                        expression.getValue()
+                                )
+                        );
+                        break;
                     case SHUFFLE:
                         stringBuilder.append(
                                 decorateShuffleOperation(expression.getValue())
@@ -1682,6 +1708,10 @@ public abstract class ExportManager {
     protected abstract String decoratePushOperation(String listName, String objectId, String objectVar);
 
     protected abstract String decoratePopOperation(String variableName, String listName);
+
+    protected abstract String decorateInjectOperation(String listName, String objectId, String objectVar);
+
+    protected abstract String decorateEjectOperation(String variableName, String listName);
 
     protected abstract String decorateClearOperation(String destinationId, String destinationVar);
 

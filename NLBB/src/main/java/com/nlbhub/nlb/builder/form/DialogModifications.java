@@ -85,6 +85,8 @@ public class DialogModifications extends JDialog implements NLBObserver {
         addItem(Modification.Type.CLRINV.name());
         addItem(Modification.Type.PUSH.name());
         addItem(Modification.Type.POP.name());
+        addItem(Modification.Type.INJECT.name());
+        addItem(Modification.Type.EJECT.name());
         addItem(Modification.Type.SHUFFLE.name());
         addItem(Modification.Type.ACT.name());
         addItem(Modification.Type.USE.name());

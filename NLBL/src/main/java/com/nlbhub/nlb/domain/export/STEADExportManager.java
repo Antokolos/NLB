@@ -111,6 +111,31 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            return list.value;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    inject = function(listname, v)").append(LINE_SEPARATOR);
+        stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
+        stringBuilder.append("        if list == nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("            _lists[listname] = {next = nil, value = v};").append(LINE_SEPARATOR);
+        stringBuilder.append("        else").append(LINE_SEPARATOR);
+        stringBuilder.append("            while list.next ~= nil do").append(LINE_SEPARATOR);
+        stringBuilder.append("                list = list.next").append(LINE_SEPARATOR);
+        stringBuilder.append("            end;").append(LINE_SEPARATOR);
+        stringBuilder.append("            list.next = {next = nil, value = v};").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    eject = function(listname)").append(LINE_SEPARATOR);
+        stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
+        stringBuilder.append("        local prevlist = list;").append(LINE_SEPARATOR);
+        stringBuilder.append("        if list == nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("            return nil;").append(LINE_SEPARATOR);
+        stringBuilder.append("        else").append(LINE_SEPARATOR);
+        stringBuilder.append("            while list.next ~= nil do").append(LINE_SEPARATOR);
+        stringBuilder.append("                prevlist = list").append(LINE_SEPARATOR);
+        stringBuilder.append("                list = list.next").append(LINE_SEPARATOR);
+        stringBuilder.append("            end;").append(LINE_SEPARATOR);
+        stringBuilder.append("            prevlist.next = nil;").append(LINE_SEPARATOR);
+        stringBuilder.append("            return list.value;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    rmv = function(listname, v)").append(LINE_SEPARATOR);
         stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
         stringBuilder.append("        local val;").append(LINE_SEPARATOR);
@@ -933,6 +958,21 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decoratePopOperation(String variableName, String listName) {
         return variableName + " = pop('" + listName + "');" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateInjectOperation(String listName, String objectId, String objectVar) {
+        return (
+                "        inject('" +
+                        listName + "', " + ((objectId != null) ? decorateId(objectId) : objectVar) +
+                        ");" + LINE_SEPARATOR +
+                        createListObj(listName)
+        );
+    }
+
+    @Override
+    protected String decorateEjectOperation(String variableName, String listName) {
+        return variableName + " = eject('" + listName + "');" + LINE_SEPARATOR;
     }
 
     @Override
