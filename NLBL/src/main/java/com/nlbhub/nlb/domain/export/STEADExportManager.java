@@ -537,11 +537,11 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("        s.snd();").append(LINE_SEPARATOR);
         stringBuilder.append("        s.bgimg(s);").append(LINE_SEPARATOR);
-        stringBuilder.append("        s.autos();").append(LINE_SEPARATOR);
         if (pageBlocks.isHasObjectsWithAnimatedImages()) {
             stringBuilder.append("        s.time = 0;").append(LINE_SEPARATOR);
             stringBuilder.append("        timer:set(1500);").append(LINE_SEPARATOR);
         }
+        stringBuilder.append("        s.autos();").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append(pageBlocks.getPageSound());
 

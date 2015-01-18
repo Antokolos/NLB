@@ -378,7 +378,8 @@ public abstract class ExportManager {
                 blocks.addContainedObjId(decorateContainedObjId(containedObjId));
             }
         }
-        blocks.setHasObjectsWithAnimatedImages(hasAnim);
+        // TODO: NLB-24: workaround should be corrected
+        blocks.setHasObjectsWithAnimatedImages(true);//hasAnim);
         List<Link> links = page.getLinks();
         for (final Link link : links) {
             if (!link.isDeleted()) {
