@@ -536,8 +536,8 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(pageBlocks.getPageModifications());
         }
         stringBuilder.append("        s.snd();").append(LINE_SEPARATOR);
-        stringBuilder.append("        s.autos();").append(LINE_SEPARATOR);
         stringBuilder.append("        s.bgimg(s);").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.autos();").append(LINE_SEPARATOR);
         if (pageBlocks.isHasObjectsWithAnimatedImages()) {
             stringBuilder.append("        s.time = 0;").append(LINE_SEPARATOR);
             stringBuilder.append("        timer:set(1500);").append(LINE_SEPARATOR);
@@ -1239,7 +1239,7 @@ public class STEADExportManager extends TextExportManager {
                     break;
                 case VARIABLE:
                     result.append("\"..");
-                    result.append(GLOBAL_VAR_PREFIX).append(textChunk.getText());
+                    result.append("tostring(").append(GLOBAL_VAR_PREFIX).append(textChunk.getText()).append(")");
                     result.append("..\"");
                     break;
                 case NEWLINE:
