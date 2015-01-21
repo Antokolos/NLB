@@ -126,14 +126,15 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case RND:
                 return true;
             default:
-                // TAG, WHILE, IF, END, ADD, REMOVE, CLEAR, CLRINV, PUSH, INJECT, SHUFFLE, ACT, USE
+                // TAG, WHILE, IF, END, RETURN, ADD, REMOVE, CLEAR, CLRINV, PUSH, INJECT, SHUFFLE, ACT, USE
+                // It is funny, but RETURN operation currently does not actually return anything :)
                 return false;
         }
     }
 
     @Override
     public boolean isParametrized() {
-        return m_type != Type.CLRINV && m_type != Type.END;
+        return m_type != Type.CLRINV && m_type != Type.END && m_type != Type.RETURN;
     }
 
     @Override
@@ -151,6 +152,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.IF;
         } else if (type.equals(Type.END.name())) {
             m_type = Type.END;
+        } else if (type.equals(Type.RETURN.name())) {
+            m_type = Type.RETURN;
         } else if (type.equals(Type.CLONE.name())) {
             m_type = Type.CLONE;
         } else if (type.equals(Type.ID.name())) {
@@ -239,6 +242,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "END":
                 m_type = Type.END;
+                break;
+            case "RETURN":
+                m_type = Type.RETURN;
                 break;
             case "CLONE":
                 m_type = Type.CLONE;

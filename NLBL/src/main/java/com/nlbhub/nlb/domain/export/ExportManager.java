@@ -1467,6 +1467,9 @@ public abstract class ExportManager {
                     case END:
                         stringBuilder.append(decorateEnd());
                         break;
+                    case RETURN:
+                        stringBuilder.append(decorateReturn());
+                        break;
                     case CLONE:
                         assert variable != null;
                         final String objIdToClone = exportData.getObjId(expression.getValue());
@@ -1695,6 +1698,8 @@ public abstract class ExportManager {
     protected abstract String decorateIf(String constraint);
 
     protected abstract String decorateEnd();
+
+    protected abstract String decorateReturn();
 
     protected abstract String decorateCloneOperation(String variableName, String objId, String objVar);
 

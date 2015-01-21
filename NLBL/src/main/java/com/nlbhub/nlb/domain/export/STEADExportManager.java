@@ -878,6 +878,11 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateReturn() {
+        return "return;" + LINE_SEPARATOR;
+    }
+
+    @Override
     protected String decorateCloneOperation(final String variableName, final String objId, final String objVar) {
         if (objId != null) {
             return variableName + " = clone(" + decorateId(objId) + ");" + LINE_SEPARATOR;

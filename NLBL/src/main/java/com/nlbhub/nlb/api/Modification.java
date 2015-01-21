@@ -45,7 +45,7 @@ package com.nlbhub.nlb.api;
  * @version 1.0 1/15/14
  */
 public interface Modification extends IdentifiableItem {
-    public enum Type {ASSIGN, TAG, WHILE, IF, END, CLONE, ID, ADD, ADDALL, REMOVE, CLEAR, CLRINV, PUSH, POP, INJECT, EJECT, SHUFFLE, ACT, USE, SIZE, RND}
+    public enum Type {ASSIGN, TAG, WHILE, IF, END, RETURN, CLONE, ID, ADD, ADDALL, REMOVE, CLEAR, CLRINV, PUSH, POP, INJECT, EJECT, SHUFFLE, ACT, USE, SIZE, RND}
 
     public String getVarId();
 

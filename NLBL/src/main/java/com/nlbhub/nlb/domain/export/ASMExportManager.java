@@ -275,6 +275,12 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateReturn() {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateCloneOperation(final String variableName, final String objId, final String objVar) {
         // TODO: implement
         return Constants.EMPTY_STRING;
