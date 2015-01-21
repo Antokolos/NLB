@@ -1464,6 +1464,21 @@ public abstract class ExportManager {
                                 )
                         );
                         break;
+                    case ELSE:
+                        stringBuilder.append(decorateElse());
+                        break;
+                    case ELSEIF:
+                        stringBuilder.append(
+                                decorateElseIf(
+                                        translateConstraintBody(
+                                                expression.getValue(),
+                                                true,
+                                                false,
+                                                Constants.EMPTY_STRING
+                                        )
+                                )
+                        );
+                        break;
                     case END:
                         stringBuilder.append(decorateEnd());
                         break;
@@ -1696,6 +1711,10 @@ public abstract class ExportManager {
     protected abstract String decorateWhile(String constraint);
 
     protected abstract String decorateIf(String constraint);
+
+    protected abstract String decorateElse();
+
+    protected abstract String decorateElseIf(String constraint);
 
     protected abstract String decorateEnd();
 

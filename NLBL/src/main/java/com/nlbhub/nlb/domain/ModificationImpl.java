@@ -48,6 +48,8 @@ import com.nlbhub.nlb.util.FileManipulator;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * The ModificationImpl class
@@ -60,6 +62,13 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     private static final String VARID_FILE_NAME = "varid";
     private static final String TYPE_FILE_NAME = "type";
     private static final String EXPRID_FILE_NAME = "exprid";
+    private static final Set<Type> UNPARAMETRIZED_TYPES = new HashSet<Type>() {{
+        add(Type.CLRINV);
+        add(Type.ELSE);
+        add(Type.ELSEIF);
+        add(Type.END);
+        add(Type.RETURN);
+    }};
     private Type m_type = Type.ASSIGN;
     private String m_varId;
     private String m_exprId;
@@ -126,7 +135,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case RND:
                 return true;
             default:
-                // TAG, WHILE, IF, END, RETURN, ADD, REMOVE, CLEAR, CLRINV, PUSH, INJECT, SHUFFLE, ACT, USE
+                // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, ADD, REMOVE, CLEAR, CLRINV, PUSH, INJECT, SHUFFLE, ACT, USE
                 // It is funny, but RETURN operation currently does not actually return anything :)
                 return false;
         }
@@ -134,7 +143,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
 
     @Override
     public boolean isParametrized() {
-        return m_type != Type.CLRINV && m_type != Type.END && m_type != Type.RETURN;
+        return !UNPARAMETRIZED_TYPES.contains(m_type);
     }
 
     @Override
@@ -150,6 +159,10 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.TAG;
         } else if (type.equals(Type.IF.name())) {
             m_type = Type.IF;
+        } else if (type.equals(Type.ELSE.name())) {
+            m_type = Type.ELSE;
+        } else if (type.equals(Type.ELSEIF.name())) {
+            m_type = Type.ELSEIF;
         } else if (type.equals(Type.END.name())) {
             m_type = Type.END;
         } else if (type.equals(Type.RETURN.name())) {
@@ -239,6 +252,12 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "IF":
                 m_type = Type.IF;
+                break;
+            case "ELSE":
+                m_type = Type.ELSE;
+                break;
+            case "ELSEIF":
+                m_type = Type.ELSEIF;
                 break;
             case "END":
                 m_type = Type.END;

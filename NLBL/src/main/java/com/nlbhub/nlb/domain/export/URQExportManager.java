@@ -366,6 +366,18 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateElse() {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateElseIf(final String constraint) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateEnd() {
         // TODO: implement
         return EMPTY_STRING;

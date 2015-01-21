@@ -873,6 +873,16 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateElse() {
+        return "else" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateElseIf(final String constraint) {
+        return "elseif (" + constraint + ") then" + LINE_SEPARATOR;
+    }
+
+    @Override
     protected String decorateEnd() {
         return "end;" + LINE_SEPARATOR;
     }
