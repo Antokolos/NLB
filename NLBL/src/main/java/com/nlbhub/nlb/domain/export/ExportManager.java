@@ -1549,6 +1549,19 @@ public abstract class ExportManager {
                                                 : exportData.getNlb().getObjById(objIdToAdd).getDisp())
                         );
                         break;
+                    case ADDINV:
+                        final String objIdToAddInv = exportData.getObjId(expression.getValue());
+                        stringBuilder.append(
+                                decorateAddInvObj(
+                                        objIdToAddInv,
+                                        decorateAutoVar(expression.getValue()),
+                                        expression.getValue(),
+                                        (objIdToAddInv == null)
+                                                ? null
+                                                : exportData.getNlb().getObjById(objIdToAddInv).getDisp()
+                                )
+                        );
+                        break;
                     case ADDALL:
                         final String addAllDestinationId = (
                                 (variable != null)
@@ -1583,9 +1596,23 @@ public abstract class ExportManager {
                                         removeDestinationName,
                                         objIdToRemove,
                                         decorateAutoVar(expression.getValue()),
-                                        expression.getValue(), (objIdToRemove != null)
+                                        expression.getValue(),
+                                        (objIdToRemove != null)
                                                 ? exportData.getNlb().getObjById(objIdToRemove).getDisp()
                                                 : null)
+                        );
+                        break;
+                    case RMINV:
+                        final String objIdToRmInv = exportData.getObjId(expression.getValue());
+                        stringBuilder.append(
+                                decorateDelInvObj(
+                                        objIdToRmInv,
+                                        decorateAutoVar(expression.getValue()),
+                                        expression.getValue(),
+                                        (objIdToRmInv != null)
+                                                ? exportData.getNlb().getObjById(objIdToRmInv).getDisp()
+                                                : null
+                                )
                         );
                         break;
                     case CLEAR:
@@ -1751,7 +1778,11 @@ public abstract class ExportManager {
 
     protected abstract String decorateDelObj(String destinationId, final String destinationName, String objectId, String objectVar, String objectName, String objectDisplayName);
 
+    protected abstract String decorateDelInvObj(String objectId, String objectVar, String objectName, String objectDisplayName);
+
     protected abstract String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName);
+
+    protected abstract String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName);
 
     protected abstract String decorateAddAllOperation(String destinationId, String destinationList, String listName);
 

@@ -318,12 +318,24 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateDelObj(String destinationId, final String destinationName, String objectId, String objectVar, String objectName, String objectDisplayName) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateDelInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
         // TODO: make use of inventory module
         return EMPTY_STRING;
     }
 
     @Override
     protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
         // TODO: make use of inventory module
         return EMPTY_STRING;
     }

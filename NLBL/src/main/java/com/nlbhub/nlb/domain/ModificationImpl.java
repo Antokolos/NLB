@@ -44,6 +44,7 @@ import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
 import com.nlbhub.nlb.exception.NLBVCSException;
 import com.nlbhub.nlb.util.FileManipulator;
+import com.nlbhub.nlb.util.StringHelper;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -179,10 +180,14 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.ID;
         } else if (type.equals(Type.ADD.name())) {
             m_type = Type.ADD;
+        } else if (type.equals(Type.ADDINV.name())) {
+            m_type = Type.ADDINV;
         } else if (type.equals(Type.ADDALL.name())) {
             m_type = Type.ADDALL;
         } else if (type.equals(Type.REMOVE.name())) {
             m_type = Type.REMOVE;
+        } else if (type.equals(Type.RMINV.name())) {
+            m_type = Type.RMINV;
         } else if (type.equals(Type.CLEAR.name())) {
             m_type = Type.CLEAR;
         } else if (type.equals(Type.CLRINV.name())) {
@@ -284,14 +289,30 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 m_type = Type.ID;
                 break;
             case "ADD":
-                m_type = Type.ADD;
+                if (StringHelper.notEmpty(m_varId)) {
+                    m_type = Type.ADD;
+                } else {
+                    // TODO: Temporary hack for converting release 0.6, SHOULD BE REMOVED ASAP!!!
+                    m_type = Type.ADDINV;
+                }
+                break;
+            case "ADDINV":
+                m_type = Type.ADDINV;
                 break;
             case "ADDALL":
                 m_type = Type.ADDALL;
                 break;
             case "SUBTRACT":
             case "REMOVE":
-                m_type = Type.REMOVE;
+                if (StringHelper.notEmpty(m_varId)) {
+                    m_type = Type.REMOVE;
+                } else {
+                    // TODO: Temporary hack for converting release 0.6, SHOULD BE REMOVED ASAP!!!
+                    m_type = Type.RMINV;
+                }
+                break;
+            case "RMINV":
+                m_type = Type.RMINV;
                 break;
             case "CLEAR":
                 m_type = Type.CLEAR;

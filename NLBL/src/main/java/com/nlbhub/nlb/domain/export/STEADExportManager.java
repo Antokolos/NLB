@@ -936,8 +936,9 @@ public class STEADExportManager extends TextExportManager {
                 );
             } else {
                 return (
-                        "            if have(\"" + objectName + "\") then remove(\""
-                                + objectName + "\", " + "inv()); end;" + LINE_SEPARATOR
+                        "            objs():del(" +
+                                ((objectId != null) ? decorateId(objectId) : objectVar) +
+                                ");" + LINE_SEPARATOR
                 );
             }
         } else {
@@ -950,11 +951,26 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateDelInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
+        return (
+                "            if have(\"" + objectName + "\") then remove(\""
+                        + objectName + "\", " + "inv()); end;" + LINE_SEPARATOR
+        );
+    }
+
+    @Override
     protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
         return (
-                "            addf(" + ((destinationId != null) ? decorateId(destinationId) : "nil") +
+                "            addf(" + ((destinationId != null) ? decorateId(destinationId) : "s") +
                         ", " + ((objectId != null) ? decorateId(objectId) : objectVar) +
                         ");" + LINE_SEPARATOR
+        );
+    }
+
+    @Override
+    protected String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
+        return (
+                "            addf(nil, " + ((objectId != null) ? decorateId(objectId) : objectVar) + ");" + LINE_SEPARATOR
         );
     }
 
