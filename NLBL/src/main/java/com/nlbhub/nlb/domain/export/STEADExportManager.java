@@ -699,10 +699,9 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjTak(List<TextChunk> takChunks) {
+    protected String decorateObjTak(final String objName) {
         return (
                 "    tak = function(s)" + LINE_SEPARATOR +
-                        "        p(\"" + expandVariables(takChunks) + "\");" + LINE_SEPARATOR +
                         "        s.act(s);" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR
         );
