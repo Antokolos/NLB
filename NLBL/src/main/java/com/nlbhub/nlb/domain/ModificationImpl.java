@@ -129,13 +129,15 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case CLONE:
             case ID:
             case ASSIGN:
+            case HAVE:
             case POP:
             case EJECT:
             case SIZE:
             case RND:
                 return true;
             default:
-                // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, ADD, REMOVE, CLEAR, CLRINV, PUSH, INJECT, SHUFFLE, ACT, USE
+                // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, IFHAVE, ADD, REMOVE, CLEAR, CLRINV, PUSH, INJECT,
+                // SHUFFLE, ACT, USE
                 // It is funny, but RETURN operation currently does not actually return anything :)
                 return false;
         }
@@ -159,6 +161,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.TAG;
         } else if (type.equals(Type.IF.name())) {
             m_type = Type.IF;
+        } else if (type.equals(Type.IFHAVE.name())) {
+            m_type = Type.IFHAVE;
         } else if (type.equals(Type.ELSE.name())) {
             m_type = Type.ELSE;
         } else if (type.equals(Type.ELSEIF.name())) {
@@ -167,6 +171,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.END;
         } else if (type.equals(Type.RETURN.name())) {
             m_type = Type.RETURN;
+        } else if (type.equals(Type.HAVE.name())) {
+            m_type = Type.HAVE;
         } else if (type.equals(Type.CLONE.name())) {
             m_type = Type.CLONE;
         } else if (type.equals(Type.ID.name())) {
@@ -253,6 +259,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case "IF":
                 m_type = Type.IF;
                 break;
+            case "IFHAVE":
+                m_type = Type.IFHAVE;
+                break;
             case "ELSE":
                 m_type = Type.ELSE;
                 break;
@@ -264,6 +273,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "RETURN":
                 m_type = Type.RETURN;
+                break;
+            case "HAVE":
+                m_type = Type.HAVE;
                 break;
             case "CLONE":
                 m_type = Type.CLONE;

@@ -75,10 +75,12 @@ public class DialogModifications extends JDialog implements NLBObserver {
         addItem(Modification.Type.TAG.name());
         addItem(Modification.Type.WHILE.name());
         addItem(Modification.Type.IF.name());
+        addItem(Modification.Type.IFHAVE.name());
         addItem(Modification.Type.ELSE.name());
         addItem(Modification.Type.ELSEIF.name());
         addItem(Modification.Type.END.name());
         addItem(Modification.Type.RETURN.name());
+        addItem(Modification.Type.HAVE.name());
         addItem(Modification.Type.CLONE.name());
         addItem(Modification.Type.ID.name());
         addItem(Modification.Type.ADD.name());

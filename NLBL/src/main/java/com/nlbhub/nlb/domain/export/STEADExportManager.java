@@ -873,6 +873,15 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateIfHave(String objId, String objVar) {
+        if (objId != null) {
+            return "if have(" + decorateId(objId) + ") then" + LINE_SEPARATOR;
+        } else {
+            return "if have(stead.deref(" + objVar + ")) then" + LINE_SEPARATOR;
+        }
+    }
+
+    @Override
     protected String decorateElse() {
         return "else" + LINE_SEPARATOR;
     }
@@ -890,6 +899,15 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateReturn() {
         return "return;" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateHaveOperation(String variableName, String objId, String objVar) {
+        if (objId != null) {
+            return variableName + " = have(" + decorateId(objId) + ");" + LINE_SEPARATOR;
+        } else {
+            return variableName + " = have(stead.deref(" + objVar + "));" + LINE_SEPARATOR;
+        }
     }
 
     @Override

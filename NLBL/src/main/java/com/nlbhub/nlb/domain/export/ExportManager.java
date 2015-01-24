@@ -1464,6 +1464,16 @@ public abstract class ExportManager {
                                 )
                         );
                         break;
+                    case IFHAVE:
+                        assert variable != null;
+                        final String objIdForIfHave = exportData.getObjId(expression.getValue());
+                        stringBuilder.append(
+                                decorateIfHave(
+                                        objIdForIfHave,
+                                        decorateAutoVar(expression.getValue())
+                                )
+                        );
+                        break;
                     case ELSE:
                         stringBuilder.append(decorateElse());
                         break;
@@ -1484,6 +1494,17 @@ public abstract class ExportManager {
                         break;
                     case RETURN:
                         stringBuilder.append(decorateReturn());
+                        break;
+                    case HAVE:
+                        assert variable != null;
+                        final String objIdToCheck = exportData.getObjId(expression.getValue());
+                        stringBuilder.append(
+                                decorateHaveOperation(
+                                        decorateBooleanVar(variable.getName()),
+                                        objIdToCheck,
+                                        decorateAutoVar(expression.getValue())
+                                )
+                        );
                         break;
                     case CLONE:
                         assert variable != null;
@@ -1712,6 +1733,8 @@ public abstract class ExportManager {
 
     protected abstract String decorateIf(String constraint);
 
+    protected abstract String decorateIfHave(String objId, String objVar);
+
     protected abstract String decorateElse();
 
     protected abstract String decorateElseIf(String constraint);
@@ -1719,6 +1742,8 @@ public abstract class ExportManager {
     protected abstract String decorateEnd();
 
     protected abstract String decorateReturn();
+
+    protected abstract String decorateHaveOperation(String variableName, String objId, String objVar);
 
     protected abstract String decorateCloneOperation(String variableName, String objId, String objVar);
 

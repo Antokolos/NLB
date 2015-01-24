@@ -269,6 +269,12 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateIfHave(String objId, String objVar) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateElse() {
         // TODO: implement
         return EMPTY_STRING;
@@ -288,6 +294,12 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateReturn() {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateHaveOperation(String variableName, String objId, String objVar) {
         // TODO: implement
         return EMPTY_STRING;
     }

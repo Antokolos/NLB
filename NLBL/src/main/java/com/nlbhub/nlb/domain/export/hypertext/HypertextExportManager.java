@@ -196,6 +196,12 @@ public abstract class HypertextExportManager
     }
 
     @Override
+    protected String decorateIfHave(String objId, String objVar) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateElse() {
         // TODO: implement
         return EMPTY_STRING;
@@ -215,6 +221,12 @@ public abstract class HypertextExportManager
 
     @Override
     protected String decorateReturn() {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateHaveOperation(String variableName, String objId, String objVar) {
         // TODO: implement
         return EMPTY_STRING;
     }
