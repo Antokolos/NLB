@@ -44,7 +44,6 @@ import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
 import com.nlbhub.nlb.exception.NLBVCSException;
 import com.nlbhub.nlb.util.FileManipulator;
-import com.nlbhub.nlb.util.StringHelper;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
