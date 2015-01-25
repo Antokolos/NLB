@@ -137,8 +137,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case RND:
                 return true;
             default:
-                // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, IFHAVE, ADD, REMOVE, CLEAR, CLRINV, PUSH, INJECT,
-                // SHUFFLE, ACT, USE
+                // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, IFHAVE, ADD, ADDINV, REMOVE, RMINV, CLEAR, CLRINV,
+                // PUSH, INJECT, SHUFFLE, ACT, USE
                 // It is funny, but RETURN operation currently does not actually return anything :)
                 return false;
         }
@@ -250,7 +250,6 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 TYPE_FILE_NAME,
                 "Error while reading modification type for modification with Id = " + getId()
         );
-        // TODO: SUBTRACT is the deprecated alias of REMOVE, this case should be deleted when all books are updated
         switch (type) {
             case "ASSIGN":
                 m_type = Type.ASSIGN;
@@ -289,12 +288,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 m_type = Type.ID;
                 break;
             case "ADD":
-                if (StringHelper.notEmpty(m_varId)) {
-                    m_type = Type.ADD;
-                } else {
-                    // TODO: Temporary hack for converting release 0.6, SHOULD BE REMOVED ASAP!!!
-                    m_type = Type.ADDINV;
-                }
+                m_type = Type.ADD;
                 break;
             case "ADDINV":
                 m_type = Type.ADDINV;
@@ -302,14 +296,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case "ADDALL":
                 m_type = Type.ADDALL;
                 break;
-            case "SUBTRACT":
             case "REMOVE":
-                if (StringHelper.notEmpty(m_varId)) {
-                    m_type = Type.REMOVE;
-                } else {
-                    // TODO: Temporary hack for converting release 0.6, SHOULD BE REMOVED ASAP!!!
-                    m_type = Type.RMINV;
-                }
+                m_type = Type.REMOVE;
                 break;
             case "RMINV":
                 m_type = Type.RMINV;
