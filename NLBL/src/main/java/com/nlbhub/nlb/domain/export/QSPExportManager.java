@@ -90,10 +90,15 @@ public class QSPExportManager extends TextExportManager {
                 stringBuilder.append("IF ").append(linkBlocks.getLinkConstraint()).append(":");
                 stringBuilder.append(LINE_SEPARATOR);
             }
-            stringBuilder.append(linkBlocks.getLinkStart());
+            if (!linkBlocks.isAuto()) {
+                stringBuilder.append(linkBlocks.getLinkStart());
+            }
             stringBuilder.append(linkBlocks.getLinkVariable());
             stringBuilder.append(linkBlocks.getLinkModifications());
             stringBuilder.append(linkBlocks.getLinkGoTo());
+            if (!linkBlocks.isAuto()) {
+                stringBuilder.append(linkBlocks.getLinkEnd());
+            }
             if (hasConstraint) {
                 stringBuilder.append("END").append(LINE_SEPARATOR);
             }
@@ -205,7 +210,12 @@ public class QSPExportManager extends TextExportManager {
             String linkTarget,
             int targetPageNumber
     ) {
-        return "    GOTO '" + linkTarget + "'" + LINE_SEPARATOR + "  END" + LINE_SEPARATOR;
+        return "    GOTO '" + linkTarget + "'" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateLinkEnd() {
+        return "  END" + LINE_SEPARATOR;
     }
 
     @Override
