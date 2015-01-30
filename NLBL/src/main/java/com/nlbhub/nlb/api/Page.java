@@ -58,6 +58,7 @@ public interface Page extends NodeItem {
     public static final MultiLangString DEFAULT_AUTOWIRE_IN_TEXT = MultiLangString.createDefaultLinkText();
     public static final MultiLangString DEFAULT_AUTOWIRE_OUT_TEXT = MultiLangString.createDefaultLinkText();
     public static final boolean DEFAULT_USE_CAPTION = false;
+    public static final boolean DEFAULT_USE_MPL = false;
     public static final boolean DEFAULT_IMAGE_BACKGROUND = false;
     public static final boolean DEFAULT_AUTO_TRAVERSE = false;
     public static final boolean DEFAULT_AUTO_RETURN = false;
@@ -90,6 +91,8 @@ public interface Page extends NodeItem {
     public MultiLangString getCaptions();
 
     public boolean isUseCaption();
+
+    public boolean isUseMPL();
 
     public boolean isLeaf();
 

@@ -101,7 +101,12 @@ public class RootModulePage implements Page {
 
     @Override
     public boolean isUseCaption() {
-        return false;
+        return DEFAULT_USE_CAPTION;
+    }
+
+    @Override
+    public boolean isUseMPL() {
+        return DEFAULT_USE_MPL;
     }
 
     @Override

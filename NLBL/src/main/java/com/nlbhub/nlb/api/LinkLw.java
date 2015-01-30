@@ -68,46 +68,72 @@ public class LinkLw implements Link {
     private IdentifiableItem m_parent;
     private MultiLangString m_text;
     private String m_constrId;
+    private String m_varId;
     private boolean m_auto;
     private boolean m_positiveConstraint;
     private boolean m_shouldObeyToModuleConstraint;
     private List<Modification> m_modifications = new ArrayList<>();
 
+    /**
+     * @param type
+     * @param target
+     * @param parent
+     * @param text
+     * @param constrId
+     * @param varId has meaning only for MPL links; represent ID of the MPL link variable
+     * @param auto
+     * @param positiveConstraint
+     * @param shouldObeyToModuleConstraint
+     * @param mplLink should be true if link is MPL, false otherwise
+     * @param modifications modifications to be added or null. Will be completely ignored for autowired links.
+     */
     public LinkLw(
             Type type,
             String target,
             Page parent,
             MultiLangString text,
             String constrId,
+            String varId,
             boolean auto,
             boolean positiveConstraint,
-            boolean shouldObeyToModuleConstraint
+            boolean shouldObeyToModuleConstraint,
+            boolean mplLink,
+            List<Modification> modifications
     ) {
         m_type = type;
         m_target = target;
         m_parent = parent;
         m_text = text;
         m_constrId = constrId;
+        m_varId = varId;
         m_auto = auto;
         m_positiveConstraint = positiveConstraint;
         m_shouldObeyToModuleConstraint = shouldObeyToModuleConstraint;
-        if (m_type == Type.AutowiredOut || (m_type == Type.AutowiredIn && !parent.isAutowire())) {
-            ModificationImpl modification = new ModificationImpl();
-            modification.setType(Modification.Type.ASSIGN.name());
-            modification.setParent(this);
-            modification.setVarId(
-                    (m_type == Type.AutowiredIn) ? parent.getId() : target
-            );
+        if (mplLink) {
+            if (modifications != null) {
+                for (Modification modification : modifications) {
+                    m_modifications.add(modification);
+                }
+            }
+        } else {
+            if (m_type == Type.AutowiredOut || (m_type == Type.AutowiredIn && !parent.isAutowire())) {
+                ModificationImpl modification = new ModificationImpl();
+                modification.setType(Modification.Type.ASSIGN.name());
+                modification.setParent(this);
+                modification.setVarId(
+                        (m_type == Type.AutowiredIn) ? parent.getId() : target
+                );
 
-            modification.setExprId((m_type == Type.AutowiredIn) ? NonLinearBook.TRUE_VARID : NonLinearBook.FALSE_VARID);
-            m_modifications.add(modification);
+                modification.setExprId((m_type == Type.AutowiredIn) ? NonLinearBook.TRUE_VARID : NonLinearBook.FALSE_VARID);
+                m_modifications.add(modification);
+            }
         }
     }
 
     @Override
     @XmlElement(name = "varid")
     public String getVarId() {
-        return Constants.EMPTY_STRING;
+        return m_varId;
     }
 
     @Override

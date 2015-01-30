@@ -158,7 +158,7 @@
                                           <component id="efe79" class="javax.swing.JTextField" binding="m_pageCaptionTextField" default-binding="true">
                                             <constraints/>
                                             <properties>
-                                              <columns value="42"/>
+                                              <columns value="32"/>
                                               <focusAccelerator value="C"/>
                                               <horizontalAlignment value="10"/>
                                             </properties>
@@ -192,7 +192,7 @@
                                           <component id="dc8a5" class="javax.swing.JTextField" binding="m_traverseTextTextField">
                                             <constraints/>
                                             <properties>
-                                              <columns value="42"/>
+                                              <columns value="32"/>
                                             </properties>
                                           </component>
                                         </children>
@@ -230,7 +230,7 @@
                                           <component id="c74e7" class="javax.swing.JTextField" binding="m_autowireInTextTextField">
                                             <constraints/>
                                             <properties>
-                                              <columns value="42"/>
+                                              <columns value="32"/>
                                             </properties>
                                           </component>
                                         </children>
@@ -262,7 +262,7 @@
                                           <component id="e7478" class="javax.swing.JTextField" binding="m_autowireOutTextTextField">
                                             <constraints/>
                                             <properties>
-                                              <columns value="42"/>
+                                              <columns value="32"/>
                                             </properties>
                                           </component>
                                         </children>
@@ -314,7 +314,7 @@
                                           <component id="30ba6" class="javax.swing.JTextField" binding="m_returnTextTextField">
                                             <constraints/>
                                             <properties>
-                                              <columns value="42"/>
+                                              <columns value="32"/>
                                             </properties>
                                           </component>
                                         </children>
@@ -331,6 +331,22 @@
                                       <text value="Return text"/>
                                     </properties>
                                   </component>
+                                  <grid id="ab834" layout-manager="BorderLayout" hgap="0" vgap="0">
+                                    <constraints>
+                                      <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties/>
+                                    <border type="none"/>
+                                    <children>
+                                      <component id="d7095" class="javax.swing.JCheckBox" binding="m_useMPLCheckBox">
+                                        <constraints border-constraint="Center"/>
+                                        <properties>
+                                          <text value="Use MPL"/>
+                                        </properties>
+                                      </component>
+                                    </children>
+                                  </grid>
                                 </children>
                               </grid>
                             </children>

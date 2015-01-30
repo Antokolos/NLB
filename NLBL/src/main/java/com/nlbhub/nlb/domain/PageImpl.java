@@ -75,6 +75,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String VARID_FILE_NAME = "varid";
     private static final String CAPTION_SUBDIR_NAME = "caption";
     private static final String USE_CAPT_FILE_NAME = "use_capt";
+    private static final String USE_MPL_FILE_NAME = "use_mpl";
     private static final String MODULE_SUBDIR_NAME = "module";
     private static final String MODNAME_FILE_NAME = "modname";
     private static final String TRAVTEXT_FILE_NAME = "travtext";
@@ -97,6 +98,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private String m_varId = DEFAULT_VARID;
     private MultiLangString m_caption = DEFAULT_CAPTION;
     private boolean m_useCaption = DEFAULT_USE_CAPTION;
+    private boolean m_useMPL = DEFAULT_USE_MPL;
     private MultiLangString m_text = DEFAULT_TEXT;
     private String m_moduleName;
     private String m_defaultModuleName;
@@ -141,6 +143,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         setVarId(source.getVarId());
         setCaptions(source.getCaptions());
         setUseCaption(source.isUseCaption());
+        setUseMPL(source.isUseMPL());
         setTexts(source.getTexts());
         setModuleName(source.getModuleName());
         resetDefaultModuleName();
@@ -292,6 +295,12 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     @Override
+    @XmlElement(name = "usempl")
+    public boolean isUseMPL() {
+        return m_useMPL;
+    }
+
+    @Override
     public boolean isLeaf() {
         return getLinkCount() == 0;
     }
@@ -356,7 +365,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     @Override
     public boolean shouldReturn() {
-        return !StringHelper.isEmpty(m_returnText) || m_autoReturn;
+        return !StringHelper.isEmpty(m_returnText) || m_autoReturn || m_useMPL;
     }
 
     @Override
@@ -471,6 +480,10 @@ public class PageImpl extends AbstractNodeItem implements Page {
         m_useCaption = useCaption;
     }
 
+    public void setUseMPL(boolean useMPL) {
+        m_useMPL = useMPL;
+    }
+
     public void writePage(
             final @NotNull FileManipulator fileManipulator,
             final @NotNull File pagesDir,
@@ -511,6 +524,12 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     USE_CAPT_FILE_NAME,
                     String.valueOf(m_useCaption),
                     String.valueOf(DEFAULT_USE_CAPTION)
+            );
+            fileManipulator.writeOptionalString(
+                    pageDir,
+                    USE_MPL_FILE_NAME,
+                    String.valueOf(m_useMPL),
+                    String.valueOf(DEFAULT_USE_MPL)
             );
             fileManipulator.writeOptionalString(
                     pageDir,
@@ -641,6 +660,13 @@ public class PageImpl extends AbstractNodeItem implements Page {
                             pageDir,
                             USE_CAPT_FILE_NAME,
                             String.valueOf(DEFAULT_USE_CAPTION)
+                    )
+            );
+            m_useMPL = "true".equals(
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            USE_MPL_FILE_NAME,
+                            String.valueOf(DEFAULT_USE_MPL)
                     )
             );
             m_imageFileName = (
@@ -799,6 +825,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         result.setReturnText(getReturnText());
         result.setTraverseText(getTraverseText());
         result.setUseCaption(isUseCaption());
+        result.setUseMPL(isUseMPL());
         result.setAutoTraverse(isAutoTraverse());
         result.setAutoReturn(isAutoReturn());
         result.setAutowireInText(getAutowireInText());

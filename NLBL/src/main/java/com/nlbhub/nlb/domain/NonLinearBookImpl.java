@@ -392,6 +392,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final MultiLangString m_existingPageText;
         private final MultiLangString m_existingPageCaptionText;
         private final boolean m_existingUseCaption;
+        private final boolean m_existingUseMPL;
         private final String m_existingModuleName;
         private final MultiLangString m_existingTraverseText;
         private final MultiLangString m_existingReturnText;
@@ -409,6 +410,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final MultiLangString m_newPageText;
         private final MultiLangString m_newPageCaptionText;
         private final boolean m_newUseCaption;
+        private final boolean m_newUseMPL;
         private final String m_newModuleName;
         private final MultiLangString m_newTraverseText;
         private final boolean m_newAutoTraverse;
@@ -433,6 +435,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString pageText,
                 final MultiLangString pageCaptionText,
                 final boolean useCaption,
+                final boolean useMPL,
                 final String moduleName,
                 final MultiLangString traverseText,
                 final boolean autoTraverse,
@@ -459,6 +462,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     pageText,
                     pageCaptionText,
                     useCaption,
+                    useMPL,
                     moduleName,
                     traverseText,
                     autoTraverse,
@@ -487,6 +491,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString pageText,
                 final MultiLangString pageCaptionText,
                 final boolean useCaption,
+                final boolean useMPL,
                 final String moduleName,
                 final MultiLangString traverseText,
                 final boolean autoTraverse,
@@ -550,6 +555,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingPageText = m_page.getTexts();
             m_existingPageCaptionText = m_page.getCaptions();
             m_existingUseCaption = m_page.isUseCaption();
+            m_existingUseMPL = m_page.isUseMPL();
             m_existingModuleName = m_page.getModuleName();
             m_existingTraverseText = m_page.getTraverseTexts();
             m_existingAutoTraverse = m_page.isAutoTraverse();
@@ -567,6 +573,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newPageText = pageText;
             m_newPageCaptionText = pageCaptionText;
             m_newUseCaption = useCaption;
+            m_newUseMPL = useMPL;
             m_newModuleName = moduleName;
             m_newTraverseText = traverseText;
             m_newAutoTraverse = autoTraverse;
@@ -609,6 +616,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setTexts(m_newPageText);
             m_page.setCaptions(m_newPageCaptionText);
             m_page.setUseCaption(m_newUseCaption);
+            m_page.setUseMPL(m_newUseMPL);
             m_page.setModuleName(m_newModuleName);
             m_page.setTraverseTexts(m_newTraverseText);
             m_page.setAutoTraverse(m_newAutoTraverse);
@@ -644,6 +652,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setTexts(m_existingPageText);
             m_page.setCaptions(m_existingPageCaptionText);
             m_page.setUseCaption(m_existingUseCaption);
+            m_page.setUseMPL(m_existingUseMPL);
             m_page.setModuleName(m_existingModuleName);
             m_page.setTraverseTexts(m_existingTraverseText);
             m_page.setAutoTraverse(m_existingAutoTraverse);
@@ -1533,6 +1542,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         page.getTexts(),
                         page.getCaptions(),
                         page.isUseCaption(),
+                        page.isUseMPL(),
                         page.getModuleName(),
                         page.getTraverseTexts(),
                         page.isAutoTraverse(),
@@ -1925,6 +1935,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final MultiLangString pageText,
             final MultiLangString pageCaptionText,
             final boolean useCaption,
+            final boolean useMPL,
             final String moduleName,
             final MultiLangString traverseText,
             final boolean autoTraverse,
@@ -1952,6 +1963,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         pageText,
                         pageCaptionText,
                         useCaption,
+                        useMPL,
                         moduleName,
                         traverseText,
                         autoTraverse,
@@ -2377,9 +2389,12 @@ public class NonLinearBookImpl implements NonLinearBook {
                             source,
                             source.getTraverseTexts(),
                             source.getModuleConstrId(),
+                            Constants.EMPTY_STRING,
                             source.isAutoTraverse(),
                             true,
-                            false
+                            false,
+                            false,
+                            null
                     )
             );
             if (!determineLinkExcludedStatus(factory, visitedVars, link)) {
@@ -2387,27 +2402,53 @@ public class NonLinearBookImpl implements NonLinearBook {
             }
         }
         if (m_parentNLB != null && m_parentPage != null && source.shouldReturn()) {
-            // Create return link on the fly.
-            // If page has module constraint, than module return links should be added to the
-            // each page of the module.
-            // These links should have constraints in form of 'NOT (module_constraint)'
-            // (i.e. negative constraints)
-            Link link = (
-                    new LinkLw(
-                            LinkLw.Type.Return,
-                            StringHelper.isEmpty(source.getReturnPageId())
-                                    ? m_parentPage.getId()
-                                    : source.getReturnPageId(),
-                            source,
-                            source.getReturnTexts(),
-                            m_parentPage.getModuleConstrId(),
-                            source.isAutoReturn(),
-                            StringHelper.isEmpty(m_parentPage.getModuleConstrId()),
-                            false
-                    )
-            );
-            if (!determineLinkExcludedStatus(factory, visitedVars, link)) {
-                linksToBeAdded.add(link);
+            if (source.isUseMPL()) {
+                for (Link link : m_parentPage.getLinks()) {
+                    Link linklw = (
+                            new LinkLw(
+                                    LinkLw.Type.Return,
+                                    link.getTarget(),
+                                    source,
+                                    link.getTexts(),
+                                    link.getConstrId(),
+                                    link.getVarId(),
+                                    link.isAuto(),
+                                    link.isPositiveConstraint(),
+                                    false,
+                                    true,
+                                    link.getModifications()
+                            )
+                    );
+                    if (!determineLinkExcludedStatus(factory, visitedVars, linklw)) {
+                        linksToBeAdded.add(linklw);
+                    }
+                }
+            } else {
+                // Create return link on the fly.
+                // If page has module constraint, than module return links should be added to the
+                // each page of the module.
+                // These links should have constraints in form of 'NOT (module_constraint)'
+                // (i.e. negative constraints)
+                Link link = (
+                        new LinkLw(
+                                LinkLw.Type.Return,
+                                StringHelper.isEmpty(source.getReturnPageId())
+                                        ? m_parentPage.getId()
+                                        : source.getReturnPageId(),
+                                source,
+                                source.getReturnTexts(),
+                                m_parentPage.getModuleConstrId(),
+                                Constants.EMPTY_STRING,
+                                source.isAutoReturn(),
+                                StringHelper.isEmpty(m_parentPage.getModuleConstrId()),
+                                false,
+                                false,
+                                null
+                        )
+                );
+                if (!determineLinkExcludedStatus(factory, visitedVars, link)) {
+                    linksToBeAdded.add(link);
+                }
             }
         }
         return source.createFilteredCloneWithSubstitutions(new ArrayList<String>(), linkIdsToBeExcluded, linksToBeAdded, visitedVars);

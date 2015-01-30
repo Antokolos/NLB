@@ -397,36 +397,64 @@ public abstract class ExportManager {
                             page,
                             page.getTraverseTexts(),
                             page.getModuleConstrId(),
+                            Constants.EMPTY_STRING,
                             page.isAutoTraverse(),
                             true,
-                            false
+                            false,
+                            false,
+                            null
                     )
             );
             LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
             blocks.addLinkBuildingBlocks(linkBuildingBlocks);
         }
         if (page.shouldReturn() && !exportData.getModulePage().getId().equals(MAIN_DATA_KEY)) {
-            // Create return link on the fly.
-            // If page has module constraint, than module return links should be added to the
-            // each page of the module.
-            // These links should have constraints in form of 'NOT (module_constraint)'
-            // (i.e. negative constraints)
-            Link link = (
-                    new LinkLw(
-                            LinkLw.Type.Return,
-                            StringHelper.isEmpty(page.getReturnPageId())
-                                    ? exportData.getModulePage().getId()
-                                    : page.getReturnPageId(),
-                            page,
-                            page.getReturnTexts(),
-                            exportData.getModulePage().getModuleConstrId(),
-                            page.isAutoReturn(),
-                            StringHelper.isEmpty(exportData.getModulePage().getModuleConstrId()),
-                            false
-                    )
-            );
-            LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
-            blocks.addLinkBuildingBlocks(linkBuildingBlocks);
+            if (page.isUseMPL()) {
+                for (Link link : page.getCurrentNLB().getParentPage().getLinks()) {
+                    Link linklw = (
+                            new LinkLw(
+                                    LinkLw.Type.Return,
+                                    link.getTarget(),
+                                    page,
+                                    link.getTexts(),
+                                    link.getConstrId(),
+                                    link.getVarId(),
+                                    link.isAuto(),
+                                    link.isPositiveConstraint(),
+                                    false,
+                                    true,
+                                    link.getModifications()
+                            )
+                    );
+                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(linklw), exportData);
+                    blocks.addLinkBuildingBlocks(linkBuildingBlocks);
+                }
+            } else {
+                // Create return link on the fly.
+                // If page has module constraint, than module return links should be added to the
+                // each page of the module.
+                // These links should have constraints in form of 'NOT (module_constraint)'
+                // (i.e. negative constraints)
+                Link link = (
+                        new LinkLw(
+                                LinkLw.Type.Return,
+                                StringHelper.isEmpty(page.getReturnPageId())
+                                        ? exportData.getModulePage().getId()
+                                        : page.getReturnPageId(),
+                                page,
+                                page.getReturnTexts(),
+                                exportData.getModulePage().getModuleConstrId(),
+                                Constants.EMPTY_STRING,
+                                page.isAutoReturn(),
+                                StringHelper.isEmpty(exportData.getModulePage().getModuleConstrId()),
+                                false,
+                                false,
+                                null
+                        )
+                );
+                LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
+                blocks.addLinkBuildingBlocks(linkBuildingBlocks);
+            }
         }
         if (page.isAutowire()) {
             // Add return autowired links on the fly
@@ -440,9 +468,12 @@ public abstract class ExportManager {
                                     page.getAutowireOutTexts(),
                                     NonLinearBook.LC_VARID_PREFIX
                                             + page.getId() + NonLinearBook.LC_VARID_SEPARATOR_OUT + nlbPage.getId(),
+                                    Constants.EMPTY_STRING,
                                     page.isAutoOut(),
                                     true,
-                                    false
+                                    false,
+                                    false,
+                                    null
                             )
                     );
                     LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
@@ -465,9 +496,12 @@ public abstract class ExportManager {
                                     page,
                                     autowiredPage.getAutowireInTexts(),
                                     autowiredPage.getAutowireInConstrId(),
+                                    Constants.EMPTY_STRING,
                                     autowiredPage.isAutoIn(),
                                     true,
-                                    false
+                                    false,
+                                    false,
+                                    null
                             )
                     );
                     LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
@@ -732,6 +766,11 @@ public abstract class ExportManager {
             @Override
             public boolean isUseCaption() {
                 return page.isUseCaption();
+            }
+
+            @Override
+            public boolean isUseMPL() {
+                return page.isUseMPL();
             }
 
             @Override
