@@ -1290,12 +1290,14 @@ public abstract class ExportManager {
                         buildModificationsText("    ", link.getModifications(), exportData)
                 )
         );
+        int targetPageNumber = exportData.getPageNumber(link.getTarget());
+        blocks.setTargetPageNumber(targetPageNumber);
         blocks.setLinkGoTo(
                 decorateLinkGoTo(
                         link.getId(),
                         link.getText(),
                         link.getTarget(),
-                        exportData.getPageNumber(link.getTarget())
+                        targetPageNumber
                 )
         );
         blocks.setLinkEnd(

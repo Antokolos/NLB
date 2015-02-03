@@ -140,66 +140,87 @@ public class JSIQ2ExportManager extends XMLExportManager {
             pageModificationsScript.setValue(pageBlocks.getPageModifications());
             article.addScript(pageModificationsScript);
         }
-        if (hasPageVariable || hasPageModifications) {
+        boolean hasAutoLinks = false;
+        StringBuilder autosStringBuilder = new StringBuilder();
+        List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
+        for (int i = 0; i < linksBlocks.size(); i++) {
+            final LinkBuildingBlocks linkBlocks = linksBlocks.get(i);
+            final boolean hasConstraint = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
+            if (linkBlocks.isAuto()) {
+                hasAutoLinks = true;
+                if (hasConstraint) {
+                    autosStringBuilder.append("if (").append(linkBlocks.getLinkConstraint()).append(") {");
+                }
+                // See decorateLinkGoTo() to understand why -1 is needed
+                autosStringBuilder.append("go(").append(linkBlocks.getTargetPageNumber() - 1).append("); ");
+                if (hasConstraint) {
+                    autosStringBuilder.append("}; ");
+                }
+            } else {
+                Action action = new Action();
+                if (hasConstraint) {
+                    Script actionConditionScript = new Script();
+                    actionConditionScript.setType("condition_" + i);
+                    actionConditionScript.setValue(
+                            //"<![CDATA[return (" + linkBlocks.getLinkConstraint() + ");]]>"
+                            "return (" + linkBlocks.getLinkConstraint() + ");"
+                    );
+                    article.addScript(actionConditionScript);
+                    action.setIf("condition_" + i);
+                }
+                action.setGoto(linkBlocks.getLinkGoTo());
+                action.setValue(linkBlocks.getLinkStart());
+                boolean hasLinkVariable = !StringHelper.isEmpty(linkBlocks.getLinkVariable());
+                if (hasLinkVariable) {
+                    Script actionVariableScript = new Script();
+                    actionVariableScript.setType("var_" + i);
+                    actionVariableScript.setValue(
+                            //"<![CDATA[" + linkBlocks.getLinkVariable() + "]]>"
+                            linkBlocks.getLinkVariable()
+                    );
+                    article.addScript(actionVariableScript);
+                }
+
+                boolean hasLinkModifications = !StringHelper.isEmpty(linkBlocks.getLinkModifications());
+                if (hasLinkModifications) {
+                    Script actionModificationScript = new Script();
+                    actionModificationScript.setType("mod_" + i);
+                    actionModificationScript.setValue(
+                            //"<![CDATA[" + linkBlocks.getLinkModifications() + "]]>"
+                            linkBlocks.getLinkModifications()
+                    );
+                    article.addScript(actionModificationScript);
+                }
+                if (hasLinkVariable || hasLinkModifications) {
+                    Script actionDoScript = new Script();
+                    actionDoScript.setType("do_" + i);
+                    actionDoScript.setValue(
+                            //"<![CDATA[" + "var_" + i + "(); " + "mod_" + i + "(); ]]>"
+                            (hasLinkVariable ? "var_" + i + "(); " : Constants.EMPTY_STRING)
+                                    + (hasLinkModifications ? "mod_" + i + "(); " : Constants.EMPTY_STRING)
+                    );
+                    article.addScript(actionDoScript);
+                    action.setDo("do_" + i);
+                }
+                article.addAction(action);
+            }
+        }
+        if (hasAutoLinks) {
+            Script autoLinkScript = new Script();
+            autoLinkScript.setType("autos");
+            autoLinkScript.setValue(autosStringBuilder.toString());
+            article.addScript(autoLinkScript);
+        }
+        if (hasPageVariable || hasPageModifications || hasAutoLinks) {
             Script onLoadScript = new Script();
             onLoadScript.setType("onload");
             onLoadScript.setValue(
                     //"<![CDATA[pvar(); pmod(); ]]>"
                     (hasPageVariable ? "pvar(); " : Constants.EMPTY_STRING)
                             + (hasPageModifications ? "pmod(); " : Constants.EMPTY_STRING)
+                            + (hasAutoLinks ? "autos(); " : Constants.EMPTY_STRING)
             );
             article.addScript(onLoadScript);
-        }
-        List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
-        for (int i = 0; i < linksBlocks.size(); i++) {
-            Action action = new Action();
-            final LinkBuildingBlocks linkBlocks = linksBlocks.get(i);
-            final boolean hasConstraint = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
-            if (hasConstraint) {
-                Script actionConditionScript = new Script();
-                actionConditionScript.setType("condition_" + i);
-                actionConditionScript.setValue(
-                        //"<![CDATA[return (" + linkBlocks.getLinkConstraint() + ");]]>"
-                        "return (" + linkBlocks.getLinkConstraint() + ");"
-                );
-                article.addScript(actionConditionScript);
-                action.setIf("condition_" + i);
-            }
-            action.setGoto(linkBlocks.getLinkGoTo());
-            action.setValue(linkBlocks.getLinkStart());
-            boolean hasLinkVariable = !StringHelper.isEmpty(linkBlocks.getLinkVariable());
-            if (hasLinkVariable) {
-                Script actionVariableScript = new Script();
-                actionVariableScript.setType("var_" + i);
-                actionVariableScript.setValue(
-                        //"<![CDATA[" + linkBlocks.getLinkVariable() + "]]>"
-                        linkBlocks.getLinkVariable()
-                );
-                article.addScript(actionVariableScript);
-            }
-
-            boolean hasLinkModifications = !StringHelper.isEmpty(linkBlocks.getLinkModifications());
-            if (hasLinkModifications) {
-                Script actionModificationScript = new Script();
-                actionModificationScript.setType("mod_" + i);
-                actionModificationScript.setValue(
-                        //"<![CDATA[" + linkBlocks.getLinkModifications() + "]]>"
-                        linkBlocks.getLinkModifications()
-                );
-                article.addScript(actionModificationScript);
-            }
-            if (hasLinkVariable || hasLinkModifications) {
-                Script actionDoScript = new Script();
-                actionDoScript.setType("do_" + i);
-                actionDoScript.setValue(
-                        //"<![CDATA[" + "var_" + i + "(); " + "mod_" + i + "(); ]]>"
-                        (hasLinkVariable ? "var_" + i + "(); " : Constants.EMPTY_STRING)
-                                + (hasLinkModifications ? "mod_" + i + "(); " : Constants.EMPTY_STRING)
-                );
-                article.addScript(actionDoScript);
-                action.setDo("do_" + i);
-            }
-            article.addAction(action);
         }
         return article;
     }
@@ -306,6 +327,17 @@ public class JSIQ2ExportManager extends XMLExportManager {
         }
         builder.append("'dummy': 'dummy'").append(LINE_SEPARATOR).append("}");
         return builder.toString();
+    }
+
+    @Override
+    protected String decorateObjDisp(List<TextChunk> dispChunks, boolean imageEnabled) {
+        // TODO: resolve imageEnabled case
+        // TODO: resolve variables output
+        StringBuilder result = new StringBuilder();
+        for (TextChunk textChunk : dispChunks) {
+            result.append(textChunk.getText());
+        }
+        return result.toString();
     }
 
     @Override

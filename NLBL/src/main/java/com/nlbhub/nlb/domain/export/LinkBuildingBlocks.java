@@ -52,6 +52,7 @@ public class LinkBuildingBlocks {
     private String m_linkConstraint;
     private String m_linkModifications;
     private String m_linkGoTo;
+    private int m_targetPageNumber;
     private String m_linkEnd;
     private boolean m_auto;
 
@@ -104,6 +105,14 @@ public class LinkBuildingBlocks {
 
     public void setLinkModifications(String linkModifications) {
         m_linkModifications = linkModifications;
+    }
+
+    public int getTargetPageNumber() {
+        return m_targetPageNumber;
+    }
+
+    public void setTargetPageNumber(int targetPageNumber) {
+        m_targetPageNumber = targetPageNumber;
     }
 
     public String getLinkGoTo() {
