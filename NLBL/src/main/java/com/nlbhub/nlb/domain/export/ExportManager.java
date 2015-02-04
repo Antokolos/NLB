@@ -1398,7 +1398,10 @@ public abstract class ExportManager {
             String decoratedVariable = decorateVariable(expressionVar);
             Variable.DataType dataType = m_dataTypeMap.get(expressionVar);
             if (dataType != Variable.DataType.BOOLEAN) {
-                existenceBuilder.append(decorateExistence(decoratedVariable)).append(" ").append(decorateAnd()).append(" ");
+                String existenceExpression = decorateExistence(decoratedVariable);
+                if (!StringHelper.isEmpty(existenceExpression)) {
+                    existenceBuilder.append(existenceExpression).append(" ").append(decorateAnd()).append(" ");
+                }
             }
             expression = (
                     expression.replaceAll(
