@@ -377,8 +377,8 @@ public class STEADExportManager extends TextExportManager {
                         || StringHelper.notEmpty(objBlocks.getObjModifications())
         );
         if (varsOrModsPresent) {
-            stringBuilder.append(objBlocks.getObjVariable());
             stringBuilder.append(objBlocks.getObjModifications());
+            stringBuilder.append(objBlocks.getObjVariable());
         }
         stringBuilder.append(objBlocks.getObjActEnd());
         List<UseBuildingBlocks> usesBuildingBlocks = objBlocks.getUseBuildingBlocks();
@@ -416,9 +416,9 @@ public class STEADExportManager extends TextExportManager {
                     usesStartBuilder.append(" then").append(LINE_SEPARATOR);
                 }
                 stringBuilder.append(usesStartBuilder).append(padding).append(extraPadding);
-                stringBuilder.append(useBuildingBlocks.getUseVariable()).append(LINE_SEPARATOR);
-                //stringBuilder.append(padding).append(extraPadding);
                 stringBuilder.append(useBuildingBlocks.getUseModifications()).append(LINE_SEPARATOR);
+                //stringBuilder.append(padding).append(extraPadding);
+                stringBuilder.append(useBuildingBlocks.getUseVariable()).append(LINE_SEPARATOR);
                 /*
                 The following code does not needed. INSTEAD handles changes in variables
                 automatically. But I will keep the code to show my intention :)
@@ -500,8 +500,8 @@ public class STEADExportManager extends TextExportManager {
             if (linkBlocks.isAuto()) {
                 autosBuilder.append("        ");
                 autosBuilder.append("if (").append((constrained) ? linkBlocks.getLinkConstraint() : "true").append(") then ");
-                autosBuilder.append(linkBlocks.getLinkVariable());
                 autosBuilder.append(linkBlocks.getLinkModifications());
+                autosBuilder.append(linkBlocks.getLinkVariable());
                 autosBuilder.append(linkBlocks.getLinkGoTo());
                 // Should return immediately to prevent unwanted following of other auto links
                 autosBuilder.append(LINE_SEPARATOR).append("        return;").append(LINE_SEPARATOR);
@@ -532,8 +532,8 @@ public class STEADExportManager extends TextExportManager {
         // TODO: check that here() will not be used in modifications (for example, when automatically taking objects to the inventory)
         stringBuilder.append("    enter = function(s)").append(LINE_SEPARATOR);
         if (varsOrModsPresent) {
-            stringBuilder.append(pageBlocks.getPageVariable());
             stringBuilder.append(pageBlocks.getPageModifications());
+            stringBuilder.append(pageBlocks.getPageVariable());
         }
         stringBuilder.append("        s.snd();").append(LINE_SEPARATOR);
         stringBuilder.append("        s.bgimg(s);").append(LINE_SEPARATOR);
@@ -551,8 +551,8 @@ public class STEADExportManager extends TextExportManager {
                 if (ENABLE_COMMENTS) {
                     linksBuilder.append(linkBlocks.getLinkComment());
                 }
-                linksBuilder.append(linkBlocks.getLinkVariable());
                 linksBuilder.append(linkBlocks.getLinkModifications());
+                linksBuilder.append(linkBlocks.getLinkVariable());
                 linksBuilder.append(linkBlocks.getLinkGoTo());
                 linksBuilder.append(linkBlocks.getLinkEnd());
             }

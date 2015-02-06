@@ -80,8 +80,8 @@ public class QSPExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageImage());
         stringBuilder.append(pageBlocks.getPageTextStart());
         stringBuilder.append(pageBlocks.getPageTextEnd());
-        stringBuilder.append(pageBlocks.getPageVariable());
         stringBuilder.append(pageBlocks.getPageModifications());
+        stringBuilder.append(pageBlocks.getPageVariable());
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             final boolean hasConstraint = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
@@ -93,8 +93,8 @@ public class QSPExportManager extends TextExportManager {
             if (!linkBlocks.isAuto()) {
                 stringBuilder.append(linkBlocks.getLinkStart());
             }
-            stringBuilder.append(linkBlocks.getLinkVariable());
             stringBuilder.append(linkBlocks.getLinkModifications());
+            stringBuilder.append(linkBlocks.getLinkVariable());
             stringBuilder.append(linkBlocks.getLinkGoTo());
             if (!linkBlocks.isAuto()) {
                 stringBuilder.append(linkBlocks.getLinkEnd());

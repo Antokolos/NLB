@@ -126,19 +126,19 @@ public class JSIQ2ExportManager extends XMLExportManager {
                 article.addScript(script);
             }
         }
-        boolean hasPageVariable = !StringHelper.isEmpty(pageBlocks.getPageVariable());
-        if (hasPageVariable) {
-            Script pageVariableScript = new Script();
-            pageVariableScript.setType("pvar");
-            pageVariableScript.setValue(pageBlocks.getPageVariable());
-            article.addScript(pageVariableScript);
-        }
         boolean hasPageModifications = !StringHelper.isEmpty(pageBlocks.getPageModifications());
         if (hasPageModifications) {
             Script pageModificationsScript = new Script();
             pageModificationsScript.setType("pmod");
             pageModificationsScript.setValue(pageBlocks.getPageModifications());
             article.addScript(pageModificationsScript);
+        }
+        boolean hasPageVariable = !StringHelper.isEmpty(pageBlocks.getPageVariable());
+        if (hasPageVariable) {
+            Script pageVariableScript = new Script();
+            pageVariableScript.setType("pvar");
+            pageVariableScript.setValue(pageBlocks.getPageVariable());
+            article.addScript(pageVariableScript);
         }
         boolean hasAutoLinks = false;
         StringBuilder autosStringBuilder = new StringBuilder();
@@ -170,17 +170,6 @@ public class JSIQ2ExportManager extends XMLExportManager {
                 }
                 action.setGoto(linkBlocks.getLinkGoTo());
                 action.setValue(linkBlocks.getLinkStart());
-                boolean hasLinkVariable = !StringHelper.isEmpty(linkBlocks.getLinkVariable());
-                if (hasLinkVariable) {
-                    Script actionVariableScript = new Script();
-                    actionVariableScript.setType("var_" + i);
-                    actionVariableScript.setValue(
-                            //"<![CDATA[" + linkBlocks.getLinkVariable() + "]]>"
-                            linkBlocks.getLinkVariable()
-                    );
-                    article.addScript(actionVariableScript);
-                }
-
                 boolean hasLinkModifications = !StringHelper.isEmpty(linkBlocks.getLinkModifications());
                 if (hasLinkModifications) {
                     Script actionModificationScript = new Script();
@@ -191,13 +180,23 @@ public class JSIQ2ExportManager extends XMLExportManager {
                     );
                     article.addScript(actionModificationScript);
                 }
+                boolean hasLinkVariable = !StringHelper.isEmpty(linkBlocks.getLinkVariable());
+                if (hasLinkVariable) {
+                    Script actionVariableScript = new Script();
+                    actionVariableScript.setType("var_" + i);
+                    actionVariableScript.setValue(
+                            //"<![CDATA[" + linkBlocks.getLinkVariable() + "]]>"
+                            linkBlocks.getLinkVariable()
+                    );
+                    article.addScript(actionVariableScript);
+                }
                 if (hasLinkVariable || hasLinkModifications) {
                     Script actionDoScript = new Script();
                     actionDoScript.setType("do_" + i);
                     actionDoScript.setValue(
                             //"<![CDATA[" + "var_" + i + "(); " + "mod_" + i + "(); ]]>"
-                            (hasLinkVariable ? "var_" + i + "(); " : Constants.EMPTY_STRING)
-                                    + (hasLinkModifications ? "mod_" + i + "(); " : Constants.EMPTY_STRING)
+                            (hasLinkModifications ? "mod_" + i + "(); " : Constants.EMPTY_STRING)
+                                    + (hasLinkVariable ? "var_" + i + "(); " : Constants.EMPTY_STRING)
                     );
                     article.addScript(actionDoScript);
                     action.setDo("do_" + i);
@@ -216,8 +215,8 @@ public class JSIQ2ExportManager extends XMLExportManager {
             onLoadScript.setType("onload");
             onLoadScript.setValue(
                     //"<![CDATA[pvar(); pmod(); ]]>"
-                    (hasPageVariable ? "pvar(); " : Constants.EMPTY_STRING)
-                            + (hasPageModifications ? "pmod(); " : Constants.EMPTY_STRING)
+                    (hasPageModifications ? "pmod(); " : Constants.EMPTY_STRING)
+                            + (hasPageVariable ? "pvar(); " : Constants.EMPTY_STRING)
                             + (hasAutoLinks ? "autos(); " : Constants.EMPTY_STRING)
             );
             article.addScript(onLoadScript);

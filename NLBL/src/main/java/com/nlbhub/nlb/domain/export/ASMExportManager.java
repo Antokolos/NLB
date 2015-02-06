@@ -77,8 +77,8 @@ public class ASMExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageTextStart());
         stringBuilder.append(pageBlocks.getPageTextEnd());
-        stringBuilder.append(pageBlocks.getPageVariable());
         stringBuilder.append(pageBlocks.getPageModifications());
+        stringBuilder.append(pageBlocks.getPageVariable());
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             final boolean hasConstraint = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
@@ -91,8 +91,8 @@ public class ASMExportManager extends TextExportManager {
             }
             postPage.append(linkBlocks.getLinkComment());
             postPage.append(linkBlocks.getLinkLabel());
-            postPage.append(linkBlocks.getLinkVariable());
             postPage.append(linkBlocks.getLinkModifications());
+            postPage.append(linkBlocks.getLinkVariable());
             postPage.append(linkBlocks.getLinkGoTo());
         }
         stringBuilder.append(decoratePageEnd());

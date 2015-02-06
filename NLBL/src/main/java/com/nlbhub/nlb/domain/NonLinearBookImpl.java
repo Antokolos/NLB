@@ -2582,16 +2582,12 @@ public class NonLinearBookImpl implements NonLinearBook {
         if (decisionPoint.isLinkInfo()) {
             final Page pageFrom = decisionModule.getPageById(decisionPoint.getFromPageId());
             final Link linkToBeFollowedCur = findLink(pageFrom, decisionPoint.getLinkId());
-            Variable variableLinkCur = (
-                    decisionModule.getVariableById(linkToBeFollowedCur.getVarId())
-            );
-            if (
-                    variableLinkCur != null
-                            && !StringHelper.isEmpty(variableLinkCur.getName())
-                    ) {
+
+            updateVisitedVars(decisionModule, linkToBeFollowedCur, factory, visitedVars);
+            Variable variableLinkCur = decisionModule.getVariableById(linkToBeFollowedCur.getVarId());
+            if (variableLinkCur != null && !StringHelper.isEmpty(variableLinkCur.getName())) {
                 visitedVars.put(variableLinkCur.getName(), true);
             }
-            updateVisitedVars(decisionModule, linkToBeFollowedCur, factory, visitedVars);
 
             makeVariableChangesForVisitedPage(decisionModule, linkToBeFollowedCur.getTarget(), factory, visitedVars);
         } else {
@@ -2607,11 +2603,11 @@ public class NonLinearBookImpl implements NonLinearBook {
     ) throws ScriptException {
         if (!StringHelper.isEmpty(pageId)) {
             final Page page = decisionModule.getPageById(pageId);
+            updateVisitedVars(decisionModule, page, factory, visitedVars);
             Variable variable = decisionModule.getVariableById(page.getVarId());
             if (variable != null && !StringHelper.isEmpty(variable.getName())) {
                 visitedVars.put(variable.getName(), true);
             }
-            updateVisitedVars(decisionModule, page, factory, visitedVars);
         }
     }
 

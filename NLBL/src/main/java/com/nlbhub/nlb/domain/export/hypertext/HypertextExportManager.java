@@ -141,8 +141,8 @@ public abstract class HypertextExportManager
         page.add(pageBlocks.getPageImage());
         page.add(pageBlocks.getPageTextStart());
         page.add(pageBlocks.getPageTextEnd());
-        page.add(pageBlocks.getPageVariable());
         page.add(pageBlocks.getPageModifications());
+        page.add(pageBlocks.getPageVariable());
         java.util.List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         boolean first = true;
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
@@ -162,8 +162,8 @@ public abstract class HypertextExportManager
             A linkAnchor = createHTAnchor(hasConstraint, linkBlocks.getLinkStart(), linkFont);
             linkAnchor.setReference(getLinkReference(linkBlocks));
             page.add(linkAnchor);
-            page.add(linkBlocks.getLinkVariable());
             page.add(linkBlocks.getLinkModifications());
+            page.add(linkBlocks.getLinkVariable());
         }
         return page;
     }
