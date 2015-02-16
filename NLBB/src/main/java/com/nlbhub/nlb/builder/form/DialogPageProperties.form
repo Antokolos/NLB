@@ -414,13 +414,13 @@
                                       </component>
                                       <vspacer id="8a828">
                                         <constraints>
-                                          <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                                          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
                                           <gridbag weightx="0.0" weighty="1.0"/>
                                         </constraints>
                                       </vspacer>
                                       <grid id="a4e3c" layout-manager="BorderLayout" hgap="0" vgap="0">
                                         <constraints>
-                                          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                          <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                           <gridbag weightx="1.0" weighty="0.0"/>
                                         </constraints>
                                         <properties/>
@@ -501,6 +501,51 @@
                                           <text value="Page variable"/>
                                         </properties>
                                       </component>
+                                      <component id="c8877" class="javax.swing.JLabel">
+                                        <constraints>
+                                          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                          <gridbag weightx="0.0" weighty="0.0"/>
+                                        </constraints>
+                                        <properties>
+                                          <horizontalAlignment value="10"/>
+                                          <horizontalTextPosition value="11"/>
+                                          <labelFor value="56f70"/>
+                                          <text value="Timer variable"/>
+                                        </properties>
+                                      </component>
+                                      <grid id="dcf4b" layout-manager="GridBagLayout">
+                                        <constraints>
+                                          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                          <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
+                                        </constraints>
+                                        <properties>
+                                          <minimumSize width="56" height="33"/>
+                                          <preferredSize width="518" height="33"/>
+                                        </properties>
+                                        <border type="none"/>
+                                        <children>
+                                          <scrollpane id="ce47e">
+                                            <constraints>
+                                              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                              <gridbag weightx="1.0" weighty="1.0"/>
+                                            </constraints>
+                                            <properties>
+                                              <horizontalScrollBarPolicy value="31"/>
+                                              <verticalScrollBarPolicy value="21"/>
+                                            </properties>
+                                            <border type="none"/>
+                                            <children>
+                                              <component id="13c7d" class="javax.swing.JTextField" binding="m_timerVariableTextField">
+                                                <constraints/>
+                                                <properties>
+                                                  <columns value="42"/>
+                                                  <focusAccelerator value="V"/>
+                                                </properties>
+                                              </component>
+                                            </children>
+                                          </scrollpane>
+                                        </children>
+                                      </grid>
                                     </children>
                                   </grid>
                                 </children>

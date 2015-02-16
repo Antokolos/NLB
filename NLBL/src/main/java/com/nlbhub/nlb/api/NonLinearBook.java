@@ -182,6 +182,7 @@ public interface NonLinearBook {
 
     public class VariableStatistics {
         private int m_pageVariablesCount = 0;
+        private int m_pageTimerVariablesCount = 0;
         private int m_objVariablesCount = 0;
         private int m_objConstraintsCount = 0;
         private int m_linkVariablesCount = 0;
@@ -197,6 +198,14 @@ public interface NonLinearBook {
 
         public void incPageVariablesCount() {
             m_pageVariablesCount++;
+        }
+
+        public int getPageTimerVariablesCount() {
+            return m_pageTimerVariablesCount;
+        }
+
+        public void incPageTimerVariablesCount() {
+            m_pageTimerVariablesCount++;
         }
 
         public int getObjVariablesCount() {

@@ -53,6 +53,7 @@ public interface Page extends NodeItem {
     public static final String DEFAULT_SOUND_FILE_NAME = Constants.EMPTY_STRING;
     public static final MultiLangString DEFAULT_TEXT = MultiLangString.createEmptyText();
     public static final String DEFAULT_VARID = Constants.EMPTY_STRING;
+    public static final String DEFAULT_TVARID = Constants.EMPTY_STRING;
     public static final MultiLangString DEFAULT_CAPTION = MultiLangString.createEmptyText();
     public static final MultiLangString DEFAULT_TRAVERSE_TEXT = MultiLangString.createDefaultTraverseText();
     public static final MultiLangString DEFAULT_AUTOWIRE_IN_TEXT = MultiLangString.createDefaultLinkText();
@@ -85,6 +86,8 @@ public interface Page extends NodeItem {
     public MultiLangString getTexts();
 
     public String getVarId();
+
+    public String getTimerVarId();
 
     public String getCaption();
 

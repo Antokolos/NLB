@@ -61,7 +61,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -382,6 +381,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     class UpdatePageCommand implements NLBCommand {
         private final PageImpl m_page;
         private VariableTracker m_variableTracker;
+        private VariableTracker m_timerVariableTracker;
         private VariableTracker m_moduleConstrIdTracker;
         private VariableTracker m_autowireInConstrIdTracker;
         private VariableTracker m_autowireOutConstrIdTracker;
@@ -432,6 +432,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final boolean imageBackground,
                 final String soundFileName,
                 final String pageVariableName,
+                final String pageTimerVariableName,
                 final MultiLangString pageText,
                 final MultiLangString pageCaptionText,
                 final boolean useCaption,
@@ -459,6 +460,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     imageBackground,
                     soundFileName,
                     pageVariableName,
+                    pageTimerVariableName,
                     pageText,
                     pageCaptionText,
                     useCaption,
@@ -488,6 +490,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final boolean imageBackground,
                 final String soundFileName,
                 final String pageVariableName,
+                final String pageTimerVariableName,
                 final MultiLangString pageText,
                 final MultiLangString pageCaptionText,
                 final boolean useCaption,
@@ -516,6 +519,16 @@ public class NonLinearBookImpl implements NonLinearBook {
                     Variable.Type.PAGE,
                     Variable.DataType.BOOLEAN,
                     pageVariableName,
+                    Variable.DEFAULT_VALUE,
+                    m_page.getFullId()
+            );
+            m_timerVariableTracker = new VariableTracker(
+                    currentNLB,
+                    getVariableImplById(m_page.getTimerVarId()),
+                    StringHelper.isEmpty(pageTimerVariableName),
+                    Variable.Type.TIMER,
+                    Variable.DataType.NUMBER,
+                    pageTimerVariableName,
                     Variable.DEFAULT_VALUE,
                     m_page.getFullId()
             );
@@ -610,6 +623,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setImageBackground(m_newImageBackground);
             m_page.setSoundFileName(m_newSoundFileName);
             m_page.setVarId(m_variableTracker.execute());
+            m_page.setTimerVarId(m_timerVariableTracker.execute());
             m_page.setModuleConstrId(m_moduleConstrIdTracker.execute());
             m_page.setAutowireInConstrId(m_autowireInConstrIdTracker.execute());
             m_page.setAutowireOutConstrId(m_autowireOutConstrIdTracker.execute());
@@ -646,6 +660,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setImageBackground(m_existingImageBackground);
             m_page.setSoundFileName(m_existingSoundFileName);
             m_page.setVarId(m_variableTracker.revert());
+            m_page.setTimerVarId(m_timerVariableTracker.revert());
             m_page.setModuleConstrId(m_moduleConstrIdTracker.revert());
             m_page.setAutowireInConstrId(m_autowireInConstrIdTracker.revert());
             m_page.setAutowireOutConstrId(m_autowireOutConstrIdTracker.revert());
@@ -1529,6 +1544,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 PageImpl page = entry.getValue();
                 PageImpl newPage = newPages.get(idsMapping.get(entry.getKey()));
                 final Variable pageVariable = nlbToPaste.getVariableById(page.getVarId());
+                final Variable pageTimerVariable = nlbToPaste.getVariableById(page.getTimerVarId());
                 final Variable modConstraint = nlbToPaste.getVariableById(page.getModuleConstrId());
                 final Variable autoInConstraint = nlbToPaste.getVariableById(page.getAutowireInConstrId());
                 final Variable autoOutConstraint = nlbToPaste.getVariableById(page.getAutowireOutConstrId());
@@ -1539,6 +1555,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         page.isImageBackground(),
                         page.getSoundFileName(),
                         (pageVariable != null) ? pageVariable.getName() : Constants.EMPTY_STRING,
+                        (pageTimerVariable != null) ? pageTimerVariable.getName() : Constants.EMPTY_STRING,
                         page.getTexts(),
                         page.getCaptions(),
                         page.isUseCaption(),
@@ -1738,6 +1755,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     VariableImpl autowireOutConstraint = getVariableImplById(page.getAutowireOutConstrId());
                     VariableImpl moduleConstraint = getVariableImplById(page.getModuleConstrId());
                     VariableImpl pageVariable = getVariableImplById(page.getVarId());
+                    VariableImpl pageTimerVariable = getVariableImplById(page.getTimerVarId());
                     if (autowireInConstraint != null && !autowireInConstraint.isDeleted()) {
                         m_newClipboardData.addVariable(
                                 new VariableImpl(autowireInConstraint)
@@ -1756,6 +1774,11 @@ public class NonLinearBookImpl implements NonLinearBook {
                     if (pageVariable != null && !pageVariable.isDeleted()) {
                         m_newClipboardData.addVariable(
                                 new VariableImpl(pageVariable)
+                        );
+                    }
+                    if (pageTimerVariable != null && !pageTimerVariable.isDeleted()) {
+                        m_newClipboardData.addVariable(
+                                new VariableImpl(pageTimerVariable)
                         );
                     }
                     checkContainedObjects(page, objIds);
@@ -1932,6 +1955,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final boolean imageBackground,
             final String soundFileName,
             final String pageVariableName,
+            final String pageTimerVariableName,
             final MultiLangString pageText,
             final MultiLangString pageCaptionText,
             final boolean useCaption,
@@ -1960,6 +1984,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         imageBackground,
                         soundFileName,
                         pageVariableName,
+                        pageTimerVariableName,
                         pageText,
                         pageCaptionText,
                         useCaption,
@@ -2605,6 +2630,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final Page page = decisionModule.getPageById(pageId);
             updateVisitedVars(decisionModule, page, factory, visitedVars);
             Variable variable = decisionModule.getVariableById(page.getVarId());
+            // TODO: page timer???
             if (variable != null && !StringHelper.isEmpty(variable.getName())) {
                 visitedVars.put(variable.getName(), true);
             }
@@ -3013,13 +3039,13 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     private void preprocessVariable(final VariableImpl variable) throws NLBConsistencyException {
-        if (variable.getType() == VariableImpl.Type.PAGE) {
+        if ((variable.getType() == VariableImpl.Type.PAGE) || (variable.getType() == VariableImpl.Type.TIMER)) {
             final PageImpl page = getPageImplById(variable.getTarget());
             if (variable.isDeleted()) {
                 // page.getVarId() should be empty or set to another variable's Id
                 if (variable.getId().equals(page.getVarId())) {
                     throw new NLBConsistencyException(
-                            "Page variable for page with Id = "
+                            "Page (or timer) variable for page with Id = "
                                     + page.getId()
                                     + " is incorrect, because the corresponding variable with Id = "
                                     + variable.getId()
@@ -3362,15 +3388,24 @@ public class NonLinearBookImpl implements NonLinearBook {
         if (contract.isSearchInPages()) {
             for (Map.Entry<String, PageImpl> entry : m_pages.entrySet()) {
                 final SearchResult pageResult;
-                final SearchResult varResult;
                 final PageImpl page = entry.getValue();
                 if ((pageResult = page.searchText(contract)) != null) {
                     pageResult.setModulePageId(modulePageId);
                     result.addSearchResult(pageResult);
                 } else {
-                    final VariableImpl variable;
-                    if (contract.isSearchInVars() && ((variable = getVariableImplById(page.getVarId())) != null)) {
-                        varResult = variable.searchText(contract);
+                    final boolean searchInVars = contract.isSearchInVars();
+                    final VariableImpl variable = (searchInVars) ? getVariableImplById(page.getVarId()) : null;
+                    final VariableImpl variableTimer = (searchInVars) ? getVariableImplById(page.getTimerVarId()) : null;
+                    if (variable != null) {
+                        final SearchResult varResult = variable.searchText(contract);
+                        if (varResult != null) {
+                            varResult.setId(page.getId());
+                            varResult.setModulePageId(modulePageId);
+                            result.addSearchResult(varResult);
+                        }
+                    }
+                    if (variableTimer != null) {
+                        final SearchResult varResult = variableTimer.searchText(contract);
                         if (varResult != null) {
                             varResult.setId(page.getId());
                             varResult.setModulePageId(modulePageId);
@@ -3447,6 +3482,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             searchResult.addInformation(variable.getValue());
             switch (type) {
                 case PAGE:
+                case TIMER:
                     Page page = getPageById(variable.getTarget());
                     if (!page.isDeleted()) {
                         searchResult.setId(page.getId());
@@ -3694,6 +3730,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                 case PAGE:
                     result.incPageVariablesCount();
                     break;
+                case TIMER:
+                    result.incPageTimerVariablesCount();
+                    break;
                 case OBJ:
                     result.incObjVariablesCount();
                     break;
@@ -3746,6 +3785,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             Variable.Type type = variable.getType();
             switch (type) {
                 case PAGE:
+                case TIMER:
                     Page page = getPageById(variable.getTarget());
                     if (!page.isDeleted()) {
                         result.put(variable.getName(), variable.getDataType());
@@ -3869,6 +3909,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 Variable.Type type = variable.getType();
                 switch (type) {
                     case PAGE:
+                    case TIMER:
                         Page page = getPageById(variable.getTarget());
                         if (page.isDeleted()) {
                             continue;

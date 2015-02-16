@@ -73,6 +73,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String IMAGEBG_FILE_NAME = "imagebg";
     private static final String SOUND_FILE_NAME = "sound";
     private static final String VARID_FILE_NAME = "varid";
+    private static final String TVARID_FILE_NAME = "tvarid";
     private static final String CAPTION_SUBDIR_NAME = "caption";
     private static final String USE_CAPT_FILE_NAME = "use_capt";
     private static final String USE_MPL_FILE_NAME = "use_mpl";
@@ -96,6 +97,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private boolean m_imageBackground = DEFAULT_IMAGE_BACKGROUND;
     private String m_soundFileName = DEFAULT_SOUND_FILE_NAME;
     private String m_varId = DEFAULT_VARID;
+    private String m_timerVarId = DEFAULT_TVARID;
     private MultiLangString m_caption = DEFAULT_CAPTION;
     private boolean m_useCaption = DEFAULT_USE_CAPTION;
     private boolean m_useMPL = DEFAULT_USE_MPL;
@@ -141,6 +143,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         m_imageBackground = source.isImageBackground();
         m_soundFileName = source.getSoundFileName();
         setVarId(source.getVarId());
+        setTimerVarId(source.getTimerVarId());
         setCaptions(source.getCaptions());
         setUseCaption(source.isUseCaption());
         setUseMPL(source.isUseMPL());
@@ -255,8 +258,18 @@ public class PageImpl extends AbstractNodeItem implements Page {
         return m_varId;
     }
 
+    @Override
+    @XmlElement(name = "tvarid")
+    public String getTimerVarId() {
+        return m_timerVarId;
+    }
+
     public void setVarId(String varId) {
         m_varId = varId;
+    }
+
+    public void setTimerVarId(String timerVarId) {
+        m_timerVarId = timerVarId;
     }
 
     @Override
@@ -514,6 +527,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
                 m_module.save(fileManipulator, new DummyProgressData(), partialProgressData);
             }
             fileManipulator.writeOptionalString(pageDir, VARID_FILE_NAME, m_varId, DEFAULT_VARID);
+            fileManipulator.writeOptionalString(pageDir, TVARID_FILE_NAME, m_timerVarId, DEFAULT_TVARID);
             fileManipulator.writeOptionalMultiLangString(
                     new File(pageDir, CAPTION_SUBDIR_NAME),
                     m_caption,
@@ -647,6 +661,13 @@ public class PageImpl extends AbstractNodeItem implements Page {
                             pageDir,
                             VARID_FILE_NAME,
                             DEFAULT_VARID
+                    )
+            );
+            m_timerVarId = (
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            TVARID_FILE_NAME,
+                            DEFAULT_TVARID
                     )
             );
             m_caption = (
@@ -819,6 +840,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         result.setDeleted(isDeleted());
         result.setReturnPageId(getReturnPageId());
         result.setVarId(getVarId());
+        result.setTimerVarId(getTimerVarId());
         result.setCaption(getCaption());
         result.setModuleConstrId(getModuleConstrId());
         result.setModuleName(getModuleName());

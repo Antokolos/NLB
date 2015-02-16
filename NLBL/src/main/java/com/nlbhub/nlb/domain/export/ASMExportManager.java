@@ -182,6 +182,12 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decoratePageTimerVariable(final String variableName) {
+        // TODO: implement and use
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
     protected String decoratePageModifications(String modificationsText) {
         return modificationsText;
     }

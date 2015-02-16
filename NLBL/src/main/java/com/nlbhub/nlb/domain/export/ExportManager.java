@@ -363,6 +363,17 @@ public abstract class ExportManager {
         } else {
             blocks.setPageVariable(EMPTY_STRING);
         }
+        if (!StringHelper.isEmpty(page.getTimerVarId())) {
+            Variable timerVariable = nlb.getVariableById(page.getTimerVarId());
+            // TODO: Add cases with deleted pages/links/variables etc. to the unit test
+            if (!timerVariable.isDeleted()) {
+                blocks.setPageTimerVariable(decoratePageTimerVariable(timerVariable.getName()));
+            } else {
+                blocks.setPageTimerVariable(EMPTY_STRING);
+            }
+        } else {
+            blocks.setPageTimerVariable(EMPTY_STRING);
+        }
         blocks.setPageModifications(
                 decoratePageModifications(
                         buildModificationsText(EMPTY_STRING, page.getModifications(), exportData)
@@ -751,6 +762,11 @@ public abstract class ExportManager {
             @Override
             public String getVarId() {
                 return page.getVarId();
+            }
+
+            @Override
+            public String getTimerVarId() {
+                return page.getTimerVarId();
             }
 
             @Override
@@ -1907,6 +1923,8 @@ public abstract class ExportManager {
     protected abstract String decorateLinkVariable(String variableName);
 
     protected abstract String decoratePageVariable(final String variableName);
+
+    protected abstract String decoratePageTimerVariable(final String variableName);
 
     protected abstract String decoratePageModifications(final String modificationsText);
 

@@ -57,6 +57,7 @@ public class PageBuildingBlocks {
     private String m_pageTextStart;
     private String m_pageTextEnd;
     private String m_pageVariable;
+    private String m_pageTimerVariable;
     private String m_pageModifications;
     private String m_pageEnd;
     private boolean m_hasObjectsWithAnimatedImages;
@@ -146,6 +147,14 @@ public class PageBuildingBlocks {
 
     public void setPageVariable(String pageVariable) {
         m_pageVariable = pageVariable;
+    }
+
+    public String getPageTimerVariable() {
+        return m_pageTimerVariable;
+    }
+
+    public void setPageTimerVariable(String pageTimerVariable) {
+        m_pageTimerVariable = pageTimerVariable;
     }
 
     public String getPageModifications() {

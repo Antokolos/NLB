@@ -455,6 +455,12 @@ public abstract class HypertextExportManager
     }
 
     @Override
+    protected String decoratePageTimerVariable(final String variableName) {
+        // TODO: implement and use
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
     protected String decoratePageModifications(String modificationsText) {
         if (StringHelper.isEmpty(modificationsText)) {
             return "";

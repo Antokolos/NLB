@@ -86,7 +86,12 @@ public class RootModulePage implements Page {
 
     @Override
     public String getVarId() {
-        return Constants.EMPTY_STRING;
+        return DEFAULT_VARID;
+    }
+
+    @Override
+    public String getTimerVarId() {
+        return DEFAULT_TVARID;
     }
 
     @Override

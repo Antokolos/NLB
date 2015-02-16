@@ -74,7 +74,7 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String generatePreambleText() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("instead_version \"2.1.1\"").append(LINE_SEPARATOR);
+        stringBuilder.append("instead_version \"1.9.1\"").append(LINE_SEPARATOR);
 
         stringBuilder.append("require \"xact\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"hideinv\"").append(LINE_SEPARATOR);
@@ -306,7 +306,8 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    act = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.acta(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("        curloc().autos();").append(LINE_SEPARATOR);
+        stringBuilder.append("        local loc = curloc();").append(LINE_SEPARATOR);
+        stringBuilder.append("        loc.autos(loc);").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    acta = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.actf(s)").append(LINE_SEPARATOR);
@@ -322,7 +323,8 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    use = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.usea(s, w);").append(LINE_SEPARATOR);
-        stringBuilder.append("        curloc().autos();").append(LINE_SEPARATOR);
+        stringBuilder.append("        local loc = curloc();").append(LINE_SEPARATOR);
+        stringBuilder.append("        loc.autos(loc);").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    usea = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.usef(s, w);").append(LINE_SEPARATOR);
@@ -338,7 +340,8 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    used = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.useda(s, w);").append(LINE_SEPARATOR);
-        stringBuilder.append("        curloc().autos();").append(LINE_SEPARATOR);
+        stringBuilder.append("        local loc = curloc();").append(LINE_SEPARATOR);
+        stringBuilder.append("        loc.autos(loc);").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    useda = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.usedf(s, w);").append(LINE_SEPARATOR);
@@ -488,11 +491,17 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageImage());
         stringBuilder.append("    var { time = 0; tag = ''; },").append(LINE_SEPARATOR);
-        if (pageBlocks.isHasObjectsWithAnimatedImages()) {
-            stringBuilder.append("    timer = function(s) s.time = s.time + 1; return s.time; end,").append(LINE_SEPARATOR);
+        boolean hasPageTimer = StringHelper.notEmpty(pageBlocks.getPageTimerVariable());
+        boolean timerSet = pageBlocks.isHasObjectsWithAnimatedImages() || hasPageTimer;
+        if (timerSet) {
+            stringBuilder.append("    timer = function(s) s.time = s.time + 1; ");
+            if (hasPageTimer) {
+                stringBuilder.append(pageBlocks.getPageTimerVariable()).append("s.autos(s); ");
+            }
+            stringBuilder.append("return s.time; end,").append(LINE_SEPARATOR);
         }
         stringBuilder.append(pageBlocks.getPageTextStart());
-        autosBuilder.append("    autos = function()").append(LINE_SEPARATOR);
+        autosBuilder.append("    autos = function(s)").append(LINE_SEPARATOR);
         autosBuilder.append("        revive();").append(LINE_SEPARATOR);
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
@@ -530,19 +539,24 @@ public class STEADExportManager extends TextExportManager {
 
         stringBuilder.append(autosBuilder.toString());
         // TODO: check that here() will not be used in modifications (for example, when automatically taking objects to the inventory)
-        stringBuilder.append("    enter = function(s)").append(LINE_SEPARATOR);
+        stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
         if (varsOrModsPresent) {
             stringBuilder.append(pageBlocks.getPageModifications());
             stringBuilder.append(pageBlocks.getPageVariable());
         }
         stringBuilder.append("        s.snd();").append(LINE_SEPARATOR);
         stringBuilder.append("        s.bgimg(s);").append(LINE_SEPARATOR);
-        if (pageBlocks.isHasObjectsWithAnimatedImages()) {
+        if (timerSet) {
             stringBuilder.append("        s.time = 0;").append(LINE_SEPARATOR);
-            stringBuilder.append("        timer:set(1500);").append(LINE_SEPARATOR);
+            stringBuilder.append("        timer:set(200);").append(LINE_SEPARATOR);
         }
-        stringBuilder.append("        s.autos();").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
+        if (timerSet) {
+            stringBuilder.append("    exit = function(s, t)").append(LINE_SEPARATOR);
+            stringBuilder.append("        timer:stop();").append(LINE_SEPARATOR);
+            stringBuilder.append("    end,").append(LINE_SEPARATOR);
+        }
         stringBuilder.append(pageBlocks.getPageSound());
 
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
@@ -734,7 +748,8 @@ public class STEADExportManager extends TextExportManager {
         return (
                 "    act = function(s)" + LINE_SEPARATOR +
                         "        s.acta(s);" + LINE_SEPARATOR +
-                        "        curloc().autos();" + LINE_SEPARATOR +
+                        "        local loc = curloc();" + LINE_SEPARATOR +
+                        "        loc.autos(loc);" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    acta = function(s)" + LINE_SEPARATOR +
                         actText +
@@ -756,7 +771,8 @@ public class STEADExportManager extends TextExportManager {
                 "    use = function(s, w)" + LINE_SEPARATOR +
                         "        s.actf(s);" + LINE_SEPARATOR +
                         "        s.usea(s, w);" + LINE_SEPARATOR +
-                        "        curloc().autos();" + LINE_SEPARATOR +
+                        "        local loc = curloc();" + LINE_SEPARATOR +
+                        "        loc.autos(loc);" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    usea = function(s, w)" + LINE_SEPARATOR +
                         "        s.usep(s, w);" + LINE_SEPARATOR +
@@ -1198,6 +1214,12 @@ public class STEADExportManager extends TextExportManager {
     protected String decoratePageVariable(String variableName) {
         String globalVar = GLOBAL_VAR_PREFIX + variableName;
         return globalVar + " = true;" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decoratePageTimerVariable(final String variableName) {
+        String globalVar = GLOBAL_VAR_PREFIX + variableName;
+        return globalVar + " = s.time; ";
     }
 
     @Override

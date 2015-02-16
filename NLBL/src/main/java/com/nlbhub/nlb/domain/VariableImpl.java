@@ -189,6 +189,9 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
             case "PAGE":
                 m_type = Type.PAGE;
                 break;
+            case "TIMER":
+                m_type = Type.TIMER;
+                break;
             case "OBJ":
                 m_type = Type.OBJ;
                 break;
@@ -232,6 +235,9 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
             case MODCONSTRAINT:
             case AUTOWIRECONSTRAINT:
                 m_dataType = DataType.BOOLEAN;
+                break;
+            case TIMER:
+                m_dataType = DataType.NUMBER;
                 break;
             default:
                 String dataType = FileManipulator.getOptionalFileAsString(
