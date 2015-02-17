@@ -1284,37 +1284,20 @@ public class STEADExportManager extends TextExportManager {
         for (SoundPathData pageSoundPathData : pageSoundPathDatas) {
             String pageSoundPath = pageSoundPathData.getSoundPath();
             if (StringHelper.notEmpty(pageSoundPath)) {
-                StringBuilder tempBuilder = new StringBuilder();
-                tempBuilder.append("        ").append(notFirst ? "else" : Constants.EMPTY_STRING).append("if (");
+                result.append("        ").append(notFirst ? "else" : Constants.EMPTY_STRING).append("if (");
                 String constraint = pageSoundPathData.getConstraint();
-                tempBuilder.append(StringHelper.notEmpty(constraint) ? "s.tag == '" + constraint + "'" : "true").append(") then");
-                tempBuilder.append(LINE_SEPARATOR);
-                /*if (imageBackground) {
-                    bgimgIfTermination = "        end" + LINE_SEPARATOR;
-                    bgimgBuilder.append(tempBuilder).append("            ");
-                    bgimgBuilder.append("theme.gfx.bg('").append(pageImagePath).append("');").append(LINE_SEPARATOR);
+                result.append(StringHelper.notEmpty(constraint) ? "s.tag == '" + constraint + "'" : "true").append(") then");
+                result.append(LINE_SEPARATOR);
+                if (Constants.VOID.equals(pageSoundPath)) {
+                    result.append("            stop_music();").append(LINE_SEPARATOR);
                 } else {
-                    picIfTermination = "        end" + LINE_SEPARATOR;
-                    picBuilder.append(tempBuilder).append("            ");
-                    picBuilder.append("return '").append(pageImagePath).append("';").append(LINE_SEPARATOR);
-                }*/
+                    result.append("            set_music('").append(pageSoundPath).append("', 0);").append(LINE_SEPARATOR);
+                }
             }
+            notFirst = true;
         }
-        result.append("    end,").append(LINE_SEPARATOR);
+        result.append("        end").append(LINE_SEPARATOR). append("    end,").append(LINE_SEPARATOR);
         return result.toString();
-        /*if (StringHelper.isEmpty(pageSoundPath)) {
-            return "    snd = function() end," + LINE_SEPARATOR;
-        } else {
-            return (
-                    "    snd = function() " + LINE_SEPARATOR +
-                            (
-                                    Constants.VOID.equals(pageSoundPath)
-                                            ? "        stop_music();"
-                                            : "        set_music('" + pageSoundPath + "', 0);"
-                            ) + LINE_SEPARATOR +
-
-            );
-        }*/
     }
 
     /**
