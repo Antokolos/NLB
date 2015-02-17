@@ -1281,9 +1281,11 @@ public class STEADExportManager extends TextExportManager {
     protected String decoratePageSound(List<SoundPathData> pageSoundPathDatas) {
         StringBuilder result = new StringBuilder("    snd = function() " + LINE_SEPARATOR);
         boolean notFirst = false;
+        String ifTermination = Constants.EMPTY_STRING;
         for (SoundPathData pageSoundPathData : pageSoundPathDatas) {
             String pageSoundPath = pageSoundPathData.getSoundPath();
             if (StringHelper.notEmpty(pageSoundPath)) {
+                ifTermination = "        end" + LINE_SEPARATOR;
                 result.append("        ").append(notFirst ? "else" : Constants.EMPTY_STRING).append("if (");
                 String constraint = pageSoundPathData.getConstraint();
                 result.append(StringHelper.notEmpty(constraint) ? "s.tag == '" + constraint + "'" : "true").append(") then");
@@ -1296,7 +1298,7 @@ public class STEADExportManager extends TextExportManager {
             }
             notFirst = true;
         }
-        result.append("        end").append(LINE_SEPARATOR). append("    end,").append(LINE_SEPARATOR);
+        result.append(ifTermination). append("    end,").append(LINE_SEPARATOR);
         return result.toString();
     }
 
