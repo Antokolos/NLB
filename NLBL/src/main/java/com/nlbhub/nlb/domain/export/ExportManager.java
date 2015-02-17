@@ -1491,7 +1491,7 @@ public abstract class ExportManager {
                     case TAG:
                         boolean hasName = variable != null;
                         String varName = (variable != null) ? variable.getName() : Constants.EMPTY_STRING;
-                        final String objIdToTag = exportData.getObjId(variable.getName());
+                        final String objIdToTag = (hasName) ? exportData.getObjId(varName) : null;
                         stringBuilder.append(
                                 decorateTag(
                                         hasName ? decorateAutoVar(varName) : Constants.EMPTY_STRING,
