@@ -544,7 +544,7 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(pageBlocks.getPageModifications());
             stringBuilder.append(pageBlocks.getPageVariable());
         }
-        stringBuilder.append("        s.snd();").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.snd(s);").append(LINE_SEPARATOR);
         stringBuilder.append("        s.bgimg(s);").append(LINE_SEPARATOR);
         if (timerSet) {
             stringBuilder.append("        s.time = 0;").append(LINE_SEPARATOR);
@@ -1279,7 +1279,7 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageSound(List<SoundPathData> pageSoundPathDatas) {
-        StringBuilder result = new StringBuilder("    snd = function() " + LINE_SEPARATOR);
+        StringBuilder result = new StringBuilder("    snd = function(s) " + LINE_SEPARATOR);
         boolean notFirst = false;
         String ifTermination = Constants.EMPTY_STRING;
         for (SoundPathData pageSoundPathData : pageSoundPathDatas) {
