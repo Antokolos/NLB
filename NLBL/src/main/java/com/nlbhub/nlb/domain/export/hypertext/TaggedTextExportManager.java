@@ -43,6 +43,7 @@ import com.nlbhub.nlb.api.TextChunk;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.export.ImagePathData;
 import com.nlbhub.nlb.domain.export.LinkBuildingBlocks;
+import com.nlbhub.nlb.domain.export.SoundPathData;
 import com.nlbhub.nlb.domain.export.hypertext.document.*;
 import com.nlbhub.nlb.exception.HTDocumentException;
 import com.nlbhub.nlb.exception.NLBExportException;
@@ -130,7 +131,7 @@ public class TaggedTextExportManager extends HypertextExportManager<TXTParagraph
     }
 
     @Override
-    protected String decoratePageSound(String pageSoundPath) {
+    protected String decoratePageSound(List<SoundPathData> pageSoundPathDatas) {
         return Constants.EMPTY_STRING;
     }
 }

@@ -349,7 +349,7 @@ public abstract class ExportManager {
         String imageFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_IMAGE_FILE_NAME: page.getImageFileName());
         blocks.setPageImage(decoratePageImage(getImagePaths(null, imageFileName, false), page.isImageBackground()));
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
-        blocks.setPageSound(decoratePageSound(getSoundPath(null, soundFileName)));
+        blocks.setPageSound(decoratePageSound(getSoundPaths(null, soundFileName)));
         blocks.setPageTextStart(decoratePageTextStart(StringHelper.getTextChunks(page.getText())));
         blocks.setPageTextEnd(decoratePageTextEnd());
         if (!StringHelper.isEmpty(page.getVarId())) {
@@ -1934,7 +1934,7 @@ public abstract class ExportManager {
 
     protected abstract String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground);
 
-    protected abstract String decoratePageSound(String pageSoundPath);
+    protected abstract String decoratePageSound(List<SoundPathData> pageSoundPathDatas);
 
     /**
      * NB: in case of ordinary (inline) NLB modules moduleDir should be <code>null</code>
@@ -2001,18 +2001,41 @@ public abstract class ExportManager {
         }
     }
 
-    protected String getSoundPath(String moduleDir, String soundFileName) {
+    protected List<SoundPathData> getSoundPaths(String moduleDir, String soundFileNames) {
+        if (StringHelper.isEmpty(soundFileNames)) {
+            return new ArrayList<SoundPathData>() {{
+                add(SoundPathData.EMPTY);
+            }};
+        } else {
+            List<SoundPathData> result = new ArrayList<>();
+            String[] fileNamesArr = soundFileNames.split(Constants.MEDIA_FILE_NAME_SEP);
+            for (String fileName : fileNamesArr) {
+                result.add(getSoundPath(moduleDir, fileName));
+            }
+            return result;
+        }
+    }
+
+    protected SoundPathData getSoundPath(String moduleDir, String soundFileName) {
         if (StringHelper.isEmpty(soundFileName)) {
-            return Constants.EMPTY_STRING;
+            return SoundPathData.EMPTY;
         } else {
             if (Constants.VOID.equals(soundFileName)) {
-                return Constants.VOID;
+                return SoundPathData.VOID;
             } else {
+                SoundPathData result = new SoundPathData();
                 if (moduleDir == null) {
-                    return NonLinearBook.SOUND_DIR_NAME + "/" + soundFileName;
+                    result.setParentFolderPath(NonLinearBook.SOUND_DIR_NAME);
                 } else {
-                    return NonLinearBook.SOUND_DIR_NAME + "/" + moduleDir + "/" + soundFileName;
+                    result.setParentFolderPath(NonLinearBook.SOUND_DIR_NAME + "/" + moduleDir);
                 }
+                result.setFileName(soundFileName);
+                if (m_mediaToConstraintMap.containsKey(soundFileName)) {
+                    result.setConstraint(m_mediaToConstraintMap.get(soundFileName));
+                } else {
+                    result.setConstraint(Constants.EMPTY_STRING);
+                }
+                return result;
             }
         }
     }

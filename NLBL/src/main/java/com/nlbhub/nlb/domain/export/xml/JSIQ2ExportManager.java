@@ -653,7 +653,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decoratePageSound(String pageSoundPath) {
+    protected String decoratePageSound(List<SoundPathData> pageSoundPathDatas) {
         // TODO: implement and use
         return Constants.EMPTY_STRING;
     }

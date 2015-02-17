@@ -291,7 +291,7 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageSound(String pageSoundPath) {
+    protected String decoratePageSound(List<SoundPathData> pageSoundPathDatas) {
         return Constants.EMPTY_STRING;
     }
 
