@@ -71,8 +71,6 @@ import java.util.regex.Pattern;
  * @version 1.0 8/9/12
  */
 public class NonLinearBookImpl implements NonLinearBook {
-    private static final float PASTE_SHIFT_X = (float) NodeItem.DEFAULT_NODE_WIDTH;
-    private static final float PASTE_SHIFT_Y = (float) NodeItem.DEFAULT_NODE_HEIGHT;
     private static final Pattern AUTOWIRED_OUT_PATTERN = (
             Pattern.compile(LC_VARID_PREFIX + "(.*)" + LC_VARID_SEPARATOR_OUT)
     );
@@ -1522,7 +1520,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             for (Map.Entry<String, PageImpl> entry : nlbToPaste.m_pages.entrySet()) {
                 final PageImpl page = entry.getValue();
                 Coords coords = page.getCoords();
-                PageImpl newPage = new PageImpl(currentNLB, coords.getLeft() + PASTE_SHIFT_X, coords.getTop() + PASTE_SHIFT_Y);
+                PageImpl newPage = new PageImpl(currentNLB, coords.getLeft() + coords.getWidth(), coords.getTop() + coords.getHeight());
                 idsMapping.put(entry.getKey(), newPage.getId());
                 newPages.put(newPage.getId(), newPage);
                 AddPageCommand command = createAddPageCommand(newPage);
@@ -1536,7 +1534,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             }
             for (Map.Entry<String, ObjImpl> entry : nlbToPaste.m_objs.entrySet()) {
                 Coords coords = entry.getValue().getCoords();
-                ObjImpl newObj = new ObjImpl(currentNLB, coords.getLeft() + PASTE_SHIFT_X, coords.getTop() + PASTE_SHIFT_Y);
+                ObjImpl newObj = new ObjImpl(currentNLB, coords.getLeft() + coords.getWidth(), coords.getTop() + coords.getHeight());
                 idsMapping.put(entry.getKey(), newObj.getId());
                 newObjs.put(newObj.getId(), newObj);
                 AddObjCommand command = createAddObjCommand(newObj);
