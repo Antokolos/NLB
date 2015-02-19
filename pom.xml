@@ -5,7 +5,7 @@
     <groupId>com.nlbhub</groupId>
     <artifactId>NLB</artifactId>
     <packaging>pom</packaging>
-    <version>0.6.8</version>
+    <version>0.6.9</version>
     <name>NLB</name>
     <url>http://maven.apache.org</url>
     <properties>
