@@ -1012,12 +1012,16 @@ public class STEADExportManager extends TextExportManager {
     }
 
     private String createListObj(String listVariableName) {
-        return (
-                "        if " + listVariableName + " == nil then" +
-                        "            " + listVariableName + " = clone(listobj);" + LINE_SEPARATOR +
-                        "            " + listVariableName + ".listnam = \"" + listVariableName + "\";" + LINE_SEPARATOR +
-                        "        end;" + LINE_SEPARATOR
-        );
+        if (listVariableName != null) {
+            return (
+                    "        if " + listVariableName + " == nil then" +
+                            "            " + listVariableName + " = clone(listobj);" + LINE_SEPARATOR +
+                            "            " + listVariableName + ".listnam = \"" + listVariableName + "\";" + LINE_SEPARATOR +
+                            "        end;" + LINE_SEPARATOR
+            );
+        } else {
+            return Constants.EMPTY_STRING;
+        }
     }
 
     @Override
