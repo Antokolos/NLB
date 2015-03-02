@@ -1632,9 +1632,9 @@ public abstract class ExportManager {
                                 decorateAddAllOperation(
                                         addAllDestinationId,
                                         ((addAllDestinationId == null) && (variable != null))
-                                                ? variable.getName()
+                                                ? decorateAutoVar(variable.getName())
                                                 : null,
-                                        expression.getValue()
+                                        decorateAutoVar(expression.getValue())
                                 )
                         );
                         break;
@@ -1692,14 +1692,14 @@ public abstract class ExportManager {
                         if (variable != null) {
                             stringBuilder.append(
                                     decoratePushOperation(
-                                            variable.getName(),
+                                            decorateAutoVar(variable.getName()),
                                             objIdToPush,
                                             decorateAutoVar(expression.getValue())
                                     )
                             );
                         } else {
                             throw new NLBConsistencyException(
-                                    "Destination list name is not specified for push operation"
+                                    "Destination list variable name is not specified for push operation"
                             );
                         }
                         break;
@@ -1709,7 +1709,7 @@ public abstract class ExportManager {
                         stringBuilder.append(
                                 decoratePopOperation(
                                         decorateAutoVar(variable.getName()),
-                                        expression.getValue()
+                                        decorateAutoVar(expression.getValue())
                                 )
                         );
                         break;
@@ -1718,14 +1718,14 @@ public abstract class ExportManager {
                         if (variable != null) {
                             stringBuilder.append(
                                     decorateInjectOperation(
-                                            variable.getName(),
+                                            decorateAutoVar(variable.getName()),
                                             objIdToInject,
                                             decorateAutoVar(expression.getValue())
                                     )
                             );
                         } else {
                             throw new NLBConsistencyException(
-                                    "Destination list name is not specified for inject operation"
+                                    "Destination list variable name is not specified for inject operation"
                             );
                         }
                         break;
@@ -1735,13 +1735,13 @@ public abstract class ExportManager {
                         stringBuilder.append(
                                 decorateEjectOperation(
                                         decorateAutoVar(variable.getName()),
-                                        expression.getValue()
+                                        decorateAutoVar(expression.getValue())
                                 )
                         );
                         break;
                     case SHUFFLE:
                         stringBuilder.append(
-                                decorateShuffleOperation(expression.getValue())
+                                decorateShuffleOperation(decorateAutoVar(expression.getValue()))
                         );
                         break;
                     case ACT:
@@ -1786,7 +1786,7 @@ public abstract class ExportManager {
                         stringBuilder.append(
                                 decorateSizeOperation(
                                         decorateNumberVar(variable.getName()),
-                                        expression.getValue()
+                                        decorateAutoVar(expression.getValue())
                                 )
                         );
                         break;
@@ -1844,23 +1844,23 @@ public abstract class ExportManager {
 
     protected abstract String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName);
 
-    protected abstract String decorateAddAllOperation(String destinationId, String destinationList, String listName);
+    protected abstract String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName);
 
-    protected abstract String decoratePushOperation(String listName, String objectId, String objectVar);
+    protected abstract String decoratePushOperation(String listVariableName, String objectId, String objectVar);
 
-    protected abstract String decoratePopOperation(String variableName, String listName);
+    protected abstract String decoratePopOperation(String variableName, String listVariableName);
 
-    protected abstract String decorateInjectOperation(String listName, String objectId, String objectVar);
+    protected abstract String decorateInjectOperation(String listVariableName, String objectId, String objectVar);
 
-    protected abstract String decorateEjectOperation(String variableName, String listName);
+    protected abstract String decorateEjectOperation(String variableName, String listVariableName);
 
     protected abstract String decorateClearOperation(String destinationId, String destinationVar);
 
-    protected abstract String decorateSizeOperation(String variableName, String listName);
+    protected abstract String decorateSizeOperation(String variableName, String listVariableName);
 
     protected abstract String decorateRndOperation(String variableName, String maxValue);
 
-    protected abstract String decorateShuffleOperation(String listName);
+    protected abstract String decorateShuffleOperation(String listVariableName);
 
     protected abstract String decorateActOperation(String actingObjVariable, String actingObjId);
 

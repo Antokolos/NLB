@@ -991,52 +991,55 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAddAllOperation(String destinationId, String destinationList, String listName) {
+    protected String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName) {
         return (
-                "        addAll(" + ((destinationId != null) ? decorateId(destinationId) : "nil") +
-                        ", " + ((destinationList != null) ? "'" + destinationList + "'" : "nil") +
-                        ", '" + listName + "');" + LINE_SEPARATOR +
-                        createListObj(listName)
+                createListObj(destinationListVariableName) +
+                createListObj(sourceListVariableName) +
+                        "        addAll(" + ((destinationId != null) ? decorateId(destinationId) : "nil") +
+                        ", " + ((destinationListVariableName != null) ? "(" + destinationListVariableName + " ~= nil) and " + destinationListVariableName + ".listnam or \"\"" : "nil") +
+                        ", " + "(" + sourceListVariableName + " ~= nil) and " + sourceListVariableName + ".listnam or \"\");" + LINE_SEPARATOR
         );
     }
 
     @Override
-    protected String decoratePushOperation(String listName, String objectId, String objectVar) {
+    protected String decoratePushOperation(String listVariableName, String objectId, String objectVar) {
         return (
-                "        push('" +
-                        listName + "', " + ((objectId != null) ? decorateId(objectId) : objectVar) +
-                        ");" + LINE_SEPARATOR +
-                        createListObj(listName)
+                createListObj(listVariableName) +
+                "        push(" +
+                        listVariableName + ".listnam, " + ((objectId != null) ? decorateId(objectId) : objectVar) +
+                        ");" + LINE_SEPARATOR
         );
     }
 
-    private String createListObj(String listName) {
+    private String createListObj(String listVariableName) {
         return (
-                "        if " + GLOBAL_VAR_PREFIX + listName + " == nil then" +
-                        "            " + GLOBAL_VAR_PREFIX + listName + " = clone(listobj);" + LINE_SEPARATOR +
-                        "            " + GLOBAL_VAR_PREFIX + listName + ".listnam = \"" + listName + "\";" + LINE_SEPARATOR +
+                "        if " + listVariableName + " == nil then" +
+                        "            " + listVariableName + " = clone(listobj);" + LINE_SEPARATOR +
+                        "            " + listVariableName + ".listnam = \"" + listVariableName + "\";" + LINE_SEPARATOR +
                         "        end;" + LINE_SEPARATOR
         );
     }
 
     @Override
-    protected String decoratePopOperation(String variableName, String listName) {
-        return variableName + " = pop('" + listName + "');" + LINE_SEPARATOR;
+    protected String decoratePopOperation(String variableName, String listVariableName) {
+        // TODO: handle pops from nonexistent lists
+        return variableName + " = pop(" + listVariableName + ".listnam);" + LINE_SEPARATOR;
     }
 
     @Override
-    protected String decorateInjectOperation(String listName, String objectId, String objectVar) {
+    protected String decorateInjectOperation(String listVariableName, String objectId, String objectVar) {
         return (
-                "        inject('" +
-                        listName + "', " + ((objectId != null) ? decorateId(objectId) : objectVar) +
-                        ");" + LINE_SEPARATOR +
-                        createListObj(listName)
+                createListObj(listVariableName) +
+                        "        inject(" +
+                        listVariableName + ".listnam, " + ((objectId != null) ? decorateId(objectId) : objectVar) +
+                        ");" + LINE_SEPARATOR
         );
     }
 
     @Override
-    protected String decorateEjectOperation(String variableName, String listName) {
-        return variableName + " = eject('" + listName + "');" + LINE_SEPARATOR;
+    protected String decorateEjectOperation(String variableName, String listVariableName) {
+        // TODO: handle ejects from nonexistent lists
+        return variableName + " = eject(" + listVariableName + ".listnam);" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1051,8 +1054,8 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateSizeOperation(String variableName, String listName) {
-        return variableName + " = size('" + listName + "');" + LINE_SEPARATOR;
+    protected String decorateSizeOperation(String variableName, String listVariableName) {
+        return "if " + listVariableName + " ~= nil then " + variableName + " = size(" + listVariableName + ".listnam) else " + variableName + " = 0 end;" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1061,8 +1064,12 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateShuffleOperation(String listName) {
-        return "        shuffle('" + listName + "');" + LINE_SEPARATOR;
+    protected String decorateShuffleOperation(String listVariableName) {
+        return (
+                "        if (" + listVariableName + " ~= nil) then" + LINE_SEPARATOR +
+                        "            shuffle(" + listVariableName + ".listnam);" + LINE_SEPARATOR +
+                        "        end;" + LINE_SEPARATOR
+        );
     }
 
     @Override

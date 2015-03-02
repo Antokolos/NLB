@@ -442,31 +442,31 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAddAllOperation(String destinationId, String destinationList, String listName) {
+    protected String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName) {
         // TODO: implement
         return EMPTY_STRING;
     }
 
     @Override
-    protected String decoratePushOperation(String listName, String objectId, String objectVar) {
+    protected String decoratePushOperation(String listVariableName, String objectId, String objectVar) {
         // TODO: implement adding to the arbitrary list
         return Constants.EMPTY_STRING;
     }
 
     @Override
-    protected String decoratePopOperation(String variableName, String listName) {
+    protected String decoratePopOperation(String variableName, String listVariableName) {
         // TODO: implement
         return EMPTY_STRING;
     }
 
     @Override
-    protected String decorateInjectOperation(String listName, String objectId, String objectVar) {
+    protected String decorateInjectOperation(String listVariableName, String objectId, String objectVar) {
         // TODO: implement
         return EMPTY_STRING;
     }
 
     @Override
-    protected String decorateEjectOperation(String variableName, String listName) {
+    protected String decorateEjectOperation(String variableName, String listVariableName) {
         // TODO: implement
         return EMPTY_STRING;
     }
@@ -478,7 +478,7 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateSizeOperation(String variableName, String listName) {
+    protected String decorateSizeOperation(String variableName, String listVariableName) {
         // TODO: implement
         return EMPTY_STRING;
     }
@@ -490,7 +490,7 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateShuffleOperation(String listName) {
+    protected String decorateShuffleOperation(String listVariableName) {
         // TODO: implement
         return EMPTY_STRING;
     }
