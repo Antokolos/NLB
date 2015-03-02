@@ -173,7 +173,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        _lists[listname] = nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        addArr(listname, shuffled(arr));").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    addAll = function(destination, destinationList, listName)").append(LINE_SEPARATOR);
+        stringBuilder.append("    addAll = function(s, destination, destinationList, listName)").append(LINE_SEPARATOR);
         stringBuilder.append("        local loclist = _lists[listName];").append(LINE_SEPARATOR);
         stringBuilder.append("        if loclist == nil then").append(LINE_SEPARATOR);
         stringBuilder.append("            return;").append(LINE_SEPARATOR);
@@ -184,7 +184,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("                elseif destinationList ~= nil then").append(LINE_SEPARATOR);
         stringBuilder.append("                    push(destinationList, loclist.value);").append(LINE_SEPARATOR);
         stringBuilder.append("                else").append(LINE_SEPARATOR);
-        stringBuilder.append("                    addf(nil, loclist.value);").append(LINE_SEPARATOR);
+        stringBuilder.append("                    addf(s, loclist.value);").append(LINE_SEPARATOR);
         stringBuilder.append("                end;").append(LINE_SEPARATOR);
         stringBuilder.append("                loclist = loclist.next;").append(LINE_SEPARATOR);
         stringBuilder.append("            until loclist == nil;").append(LINE_SEPARATOR);
@@ -995,7 +995,7 @@ public class STEADExportManager extends TextExportManager {
         return (
                 createListObj(destinationListVariableName) +
                 createListObj(sourceListVariableName) +
-                        "        addAll(" + ((destinationId != null) ? decorateId(destinationId) : "nil") +
+                        "        addAll(s, " + ((destinationId != null) ? decorateId(destinationId) : "nil") +
                         ", " + ((destinationListVariableName != null) ? "(" + destinationListVariableName + " ~= nil) and " + destinationListVariableName + ".listnam or \"\"" : "nil") +
                         ", " + "(" + sourceListVariableName + " ~= nil) and " + sourceListVariableName + ".listnam or \"\");" + LINE_SEPARATOR
         );
