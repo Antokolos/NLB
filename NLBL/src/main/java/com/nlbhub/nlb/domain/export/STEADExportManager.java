@@ -298,7 +298,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        walk(loc);").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("}").append(LINE_SEPARATOR);
-        stringBuilder.append("listobj = obj {").append(LINE_SEPARATOR);
+        stringBuilder.append("listobj = {").append(LINE_SEPARATOR);
         stringBuilder.append("    nam = \"listobj\",").append(LINE_SEPARATOR);
         stringBuilder.append("    listnam = \"\",").append(LINE_SEPARATOR);
         stringBuilder.append("    clear = function(s)").append(LINE_SEPARATOR);
@@ -366,6 +366,7 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(objBlocks.getObjComment());
         }
         stringBuilder.append(objBlocks.getObjLabel()).append(objBlocks.getObjStart());
+        stringBuilder.append("    var { tag = ''; },").append(LINE_SEPARATOR);
         stringBuilder.append(objBlocks.getObjName());
         stringBuilder.append(objBlocks.getObjDisp());
         stringBuilder.append(objBlocks.getObjText());
