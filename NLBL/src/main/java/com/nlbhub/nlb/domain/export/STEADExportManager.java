@@ -275,6 +275,17 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        return res;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    clone = function(s)").append(LINE_SEPARATOR);
+        stringBuilder.append("        if s.nam == \"listobj\" then").append(LINE_SEPARATOR);
+        stringBuilder.append("            return clonefd(s);").append(LINE_SEPARATOR);
+        stringBuilder.append("        else").append(LINE_SEPARATOR);
+        stringBuilder.append("            return new('clonef(\\''..stead.deref(s)..'\\')');").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    clonef = function(s_nam)").append(LINE_SEPARATOR);
+        stringBuilder.append("        local s = stead.ref(s_nam);").append(LINE_SEPARATOR);
+        stringBuilder.append("        return clonefd(s);").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    clonefd = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        local ret = deepcopy(s);").append(LINE_SEPARATOR);
         stringBuilder.append("        local r = _clones[s.nam];").append(LINE_SEPARATOR);
         stringBuilder.append("        if r == nil then").append(LINE_SEPARATOR);
