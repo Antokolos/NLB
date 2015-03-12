@@ -275,7 +275,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        return res;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    clone = function(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("        if s.nam == \"listobj\" then").append(LINE_SEPARATOR);
+        stringBuilder.append("        if s.nlbobj == \"listobj\" then").append(LINE_SEPARATOR);
         stringBuilder.append("            return clonefd(s);").append(LINE_SEPARATOR);
         stringBuilder.append("        else").append(LINE_SEPARATOR);
         stringBuilder.append("            return new('clonef(\\''..stead.deref(s)..'\\')');").append(LINE_SEPARATOR);
@@ -311,6 +311,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("}").append(LINE_SEPARATOR);
         stringBuilder.append("listobj = {").append(LINE_SEPARATOR);
         stringBuilder.append("    nam = \"listobj\",").append(LINE_SEPARATOR);
+        stringBuilder.append("    nlbobj = \"listobj\",").append(LINE_SEPARATOR);
         stringBuilder.append("    listnam = \"\",").append(LINE_SEPARATOR);
         stringBuilder.append("    clear = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        _lists[s.listnam] = nil;").append(LINE_SEPARATOR);
