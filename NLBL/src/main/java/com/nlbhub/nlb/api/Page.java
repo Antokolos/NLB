@@ -61,6 +61,7 @@ public interface Page extends NodeItem {
     public static final boolean DEFAULT_USE_CAPTION = false;
     public static final boolean DEFAULT_USE_MPL = false;
     public static final boolean DEFAULT_IMAGE_BACKGROUND = false;
+    public static final boolean DEFAULT_SOUND_SFX = false;
     public static final boolean DEFAULT_AUTO_TRAVERSE = false;
     public static final boolean DEFAULT_AUTO_RETURN = false;
     public static final boolean DEFAULT_AUTO_IN = false;
@@ -80,6 +81,8 @@ public interface Page extends NodeItem {
     public boolean isImageBackground();
 
     public String getSoundFileName();
+
+    public boolean isSoundSFX();
 
     public String getText();
 

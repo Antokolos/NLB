@@ -1195,6 +1195,12 @@
                                               <text value="&lt;NO_SOUND&gt;"/>
                                             </properties>
                                           </component>
+                                          <component id="bbbc5" class="javax.swing.JCheckBox" binding="m_soundSFXCheckBox">
+                                            <constraints border-constraint="North"/>
+                                            <properties>
+                                              <text value="SFX"/>
+                                            </properties>
+                                          </component>
                                         </children>
                                       </grid>
                                     </children>

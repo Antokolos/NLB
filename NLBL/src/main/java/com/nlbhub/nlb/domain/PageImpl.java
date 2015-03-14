@@ -72,6 +72,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String IMAGE_FILE_NAME = "image";
     private static final String IMAGEBG_FILE_NAME = "imagebg";
     private static final String SOUND_FILE_NAME = "sound";
+    private static final String SOUND_SFX_FILE_NAME = "soundsfx";
     private static final String VARID_FILE_NAME = "varid";
     private static final String TVARID_FILE_NAME = "tvarid";
     private static final String CAPTION_SUBDIR_NAME = "caption";
@@ -96,6 +97,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private String m_imageFileName = DEFAULT_IMAGE_FILE_NAME;
     private boolean m_imageBackground = DEFAULT_IMAGE_BACKGROUND;
     private String m_soundFileName = DEFAULT_SOUND_FILE_NAME;
+    private boolean m_soundSFX;
     private String m_varId = DEFAULT_VARID;
     private String m_timerVarId = DEFAULT_TVARID;
     private MultiLangString m_caption = DEFAULT_CAPTION;
@@ -142,6 +144,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         m_imageFileName = source.getImageFileName();
         m_imageBackground = source.isImageBackground();
         m_soundFileName = source.getSoundFileName();
+        setSoundSFX(source.isSoundSFX());
         setVarId(source.getVarId());
         setTimerVarId(source.getTimerVarId());
         setCaptions(source.getCaptions());
@@ -231,6 +234,15 @@ public class PageImpl extends AbstractNodeItem implements Page {
     @Override
     public String getSoundFileName() {
         return m_soundFileName;
+    }
+
+    @Override
+    public boolean isSoundSFX() {
+        return m_soundSFX;
+    }
+
+    public void setSoundSFX(boolean soundSFX) {
+        m_soundSFX = soundSFX;
     }
 
     public void setText(String text) {
@@ -563,6 +575,12 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     m_soundFileName,
                     DEFAULT_SOUND_FILE_NAME
             );
+            fileManipulator.writeOptionalString(
+                    pageDir,
+                    SOUND_SFX_FILE_NAME,
+                    String.valueOf(m_soundSFX),
+                    String.valueOf(DEFAULT_SOUND_SFX)
+            );
             fileManipulator.writeOptionalMultiLangString(
                     new File(pageDir, TEXT_SUBDIR_NAME),
                     m_text,
@@ -709,6 +727,13 @@ public class PageImpl extends AbstractNodeItem implements Page {
                             pageDir,
                             SOUND_FILE_NAME,
                             DEFAULT_SOUND_FILE_NAME
+                    )
+            );
+            m_soundSFX = "true".equals(
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            SOUND_SFX_FILE_NAME,
+                            String.valueOf(DEFAULT_SOUND_SFX)
                     )
             );
             m_text = (

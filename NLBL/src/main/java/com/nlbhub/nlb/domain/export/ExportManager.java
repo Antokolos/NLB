@@ -349,7 +349,7 @@ public abstract class ExportManager {
         String imageFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_IMAGE_FILE_NAME: page.getImageFileName());
         blocks.setPageImage(decoratePageImage(getImagePaths(null, imageFileName, false), page.isImageBackground()));
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
-        blocks.setPageSound(decoratePageSound(getSoundPaths(null, soundFileName)));
+        blocks.setPageSound(decoratePageSound(getSoundPaths(null, soundFileName), page.isSoundSFX()));
         blocks.setPageTextStart(decoratePageTextStart(StringHelper.getTextChunks(page.getText())));
         blocks.setPageTextEnd(decoratePageTextEnd());
         if (!StringHelper.isEmpty(page.getVarId())) {
@@ -747,6 +747,11 @@ public abstract class ExportManager {
             @Override
             public String getSoundFileName() {
                 return page.getSoundFileName();
+            }
+
+            @Override
+            public boolean isSoundSFX() {
+                return page.isSoundSFX();
             }
 
             @Override
@@ -1934,7 +1939,7 @@ public abstract class ExportManager {
 
     protected abstract String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground);
 
-    protected abstract String decoratePageSound(List<SoundPathData> pageSoundPathDatas);
+    protected abstract String decoratePageSound(List<SoundPathData> pageSoundPathDatas, boolean soundSFX);
 
     /**
      * NB: in case of ordinary (inline) NLB modules moduleDir should be <code>null</code>

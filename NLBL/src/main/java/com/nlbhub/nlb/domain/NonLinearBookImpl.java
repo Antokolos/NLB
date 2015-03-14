@@ -389,6 +389,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final String m_existingImageFileName;
         private final boolean m_existingImageBackground;
         private final String m_existingSoundFileName;
+        private final boolean m_existingSoundSFX;
         private final MultiLangString m_existingPageText;
         private final MultiLangString m_existingPageCaptionText;
         private final boolean m_existingUseCaption;
@@ -407,6 +408,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final String m_newImageFileName;
         private final boolean m_newImageBackground;
         private final String m_newSoundFileName;
+        private final boolean m_newSoundSFX;
         private final MultiLangString m_newPageText;
         private final MultiLangString m_newPageCaptionText;
         private final boolean m_newUseCaption;
@@ -431,6 +433,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String imageFileName,
                 final boolean imageBackground,
                 final String soundFileName,
+                final boolean soundSFX,
                 final String pageVariableName,
                 final String pageTimerVariableName,
                 final MultiLangString pageText,
@@ -459,6 +462,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     imageFileName,
                     imageBackground,
                     soundFileName,
+                    soundSFX,
                     pageVariableName,
                     pageTimerVariableName,
                     pageText,
@@ -489,6 +493,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String imageFileName,
                 final boolean imageBackground,
                 final String soundFileName,
+                final boolean soundSFX,
                 final String pageVariableName,
                 final String pageTimerVariableName,
                 final MultiLangString pageText,
@@ -565,6 +570,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingImageFileName = m_page.getImageFileName();
             m_existingImageBackground = m_page.isImageBackground();
             m_existingSoundFileName = m_page.getSoundFileName();
+            m_existingSoundSFX = m_page.isSoundSFX();
             m_existingPageText = m_page.getTexts();
             m_existingPageCaptionText = m_page.getCaptions();
             m_existingUseCaption = m_page.isUseCaption();
@@ -583,6 +589,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newImageFileName = imageFileName;
             m_newImageBackground = imageBackground;
             m_newSoundFileName = soundFileName;
+            m_newSoundSFX = soundSFX;
             m_newPageText = pageText;
             m_newPageCaptionText = pageCaptionText;
             m_newUseCaption = useCaption;
@@ -622,6 +629,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setImageFileName(m_newImageFileName);
             m_page.setImageBackground(m_newImageBackground);
             m_page.setSoundFileName(m_newSoundFileName);
+            m_page.setSoundSFX(m_newSoundSFX);
             m_page.setVarId(m_variableTracker.execute());
             m_page.setTimerVarId(m_timerVariableTracker.execute());
             m_page.setModuleConstrId(m_moduleConstrIdTracker.execute());
@@ -659,6 +667,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setImageFileName(m_existingImageFileName);
             m_page.setImageBackground(m_existingImageBackground);
             m_page.setSoundFileName(m_existingSoundFileName);
+            m_page.setSoundSFX(m_existingSoundSFX);
             m_page.setVarId(m_variableTracker.revert());
             m_page.setTimerVarId(m_timerVariableTracker.revert());
             m_page.setModuleConstrId(m_moduleConstrIdTracker.revert());
@@ -1554,6 +1563,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         page.getImageFileName(),
                         page.isImageBackground(),
                         page.getSoundFileName(),
+                        page.isSoundSFX(),
                         (pageVariable != null) ? pageVariable.getName() : Constants.EMPTY_STRING,
                         (pageTimerVariable != null) ? pageTimerVariable.getName() : Constants.EMPTY_STRING,
                         page.getTexts(),
@@ -1954,6 +1964,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String imageFileName,
             final boolean imageBackground,
             final String soundFileName,
+            final boolean soundSFX,
             final String pageVariableName,
             final String pageTimerVariableName,
             final MultiLangString pageText,
@@ -1983,6 +1994,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         imageFileName,
                         imageBackground,
                         soundFileName,
+                        soundSFX,
                         pageVariableName,
                         pageTimerVariableName,
                         pageText,

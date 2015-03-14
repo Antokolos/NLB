@@ -115,6 +115,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JCheckBox m_backgroundCheckBox;
     private JCheckBox m_useMPLCheckBox;
     private JTextField m_timerVariableTextField;
+    private JCheckBox m_soundSFXCheckBox;
 
     public DialogPageProperties(final MainFrame mainFrame, final NonLinearBookFacade nlbFacade, final Page page) {
         m_nlbFacade = nlbFacade;
@@ -292,6 +293,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_imageFileNameLabel.setText(m_imageFileName);
 
         m_soundFileName = page.getSoundFileName();
+        m_soundSFXCheckBox.setSelected(page.isSoundSFX());
         m_soundFileNameLabel.setText(m_soundFileName);
 
         DefaultComboBoxModel<String> languageComboboxModel = new DefaultComboBoxModel<>();
@@ -385,6 +387,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 m_imageFileName,
                 m_backgroundCheckBox.isSelected(),
                 m_soundFileName,
+                m_soundSFXCheckBox.isSelected(),
                 m_pageVariableTextField.getText(),
                 m_timerVariableTextField.getText(),
                 m_pageTexts,
@@ -1249,6 +1252,9 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_soundFileNameLabel.setHorizontalTextPosition(0);
         m_soundFileNameLabel.setText("<NO_SOUND>");
         panel62.add(m_soundFileNameLabel, BorderLayout.CENTER);
+        m_soundSFXCheckBox = new JCheckBox();
+        m_soundSFXCheckBox.setText("SFX");
+        panel62.add(m_soundSFXCheckBox, BorderLayout.NORTH);
         final JPanel panel63 = new JPanel();
         panel63.setLayout(new BorderLayout(0, 0));
         panel1.add(panel63, BorderLayout.NORTH);

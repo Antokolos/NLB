@@ -1302,7 +1302,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageSound(List<SoundPathData> pageSoundPathDatas) {
+    protected String decoratePageSound(List<SoundPathData> pageSoundPathDatas, boolean soundSFX) {
         StringBuilder result = new StringBuilder("    snd = function(s) " + LINE_SEPARATOR);
         boolean notFirst = false;
         String ifTermination = Constants.EMPTY_STRING;
@@ -1317,7 +1317,11 @@ public class STEADExportManager extends TextExportManager {
                 if (Constants.VOID.equals(pageSoundPath)) {
                     result.append("            stop_music();").append(LINE_SEPARATOR);
                 } else {
-                    result.append("            set_music('").append(pageSoundPath).append("', 0);").append(LINE_SEPARATOR);
+                    if (soundSFX) {
+                        result.append("            set_sound('").append(pageSoundPath).append("');").append(LINE_SEPARATOR);
+                    } else {
+                        result.append("            set_music('").append(pageSoundPath).append("', 0);").append(LINE_SEPARATOR);
+                    }
                 }
             }
             notFirst = true;

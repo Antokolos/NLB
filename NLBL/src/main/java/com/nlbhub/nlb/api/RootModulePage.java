@@ -75,6 +75,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public boolean isSoundSFX() {
+        return DEFAULT_SOUND_SFX;
+    }
+
+    @Override
     public String getText() {
         return Constants.EMPTY_STRING;
     }

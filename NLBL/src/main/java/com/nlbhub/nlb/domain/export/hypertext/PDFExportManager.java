@@ -102,7 +102,7 @@ public class PDFExportManager extends HypertextExportManager<PDFParagraph, PDFAn
     }
 
     @Override
-    protected String decoratePageSound(List<SoundPathData> pageSoundPathDatas) {
+    protected String decoratePageSound(List<SoundPathData> pageSoundPathDatas, boolean soundSFX) {
         // TODO: implement and use
         return Constants.EMPTY_STRING;
     }
