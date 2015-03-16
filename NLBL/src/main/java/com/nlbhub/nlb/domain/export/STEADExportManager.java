@@ -1320,7 +1320,7 @@ public class STEADExportManager extends TextExportManager {
                 } else {
                     if (soundSFX) {
                         hasSFX = true;
-                        result.append("            set_sound('").append(pageSoundPath).append("');").append(LINE_SEPARATOR);
+                        result.append("            add_sound('").append(pageSoundPath).append("');").append(LINE_SEPARATOR);
                     } else {
                         result.append("            set_music('").append(pageSoundPath).append("', 0);").append(LINE_SEPARATOR);
                     }
@@ -1330,7 +1330,7 @@ public class STEADExportManager extends TextExportManager {
         }
         result.append(ifTermination). append("    end,").append(LINE_SEPARATOR);
         if (hasSFX) {
-            result.append("    left = function(s) stop_sound(); end,").append(LINE_SEPARATOR);
+            result.append("    exit = function(s) stop_sound(); end,").append(LINE_SEPARATOR);
         }
         return result.toString();
     }
