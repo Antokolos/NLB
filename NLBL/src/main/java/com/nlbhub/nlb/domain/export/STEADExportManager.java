@@ -505,7 +505,8 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageImage());
         stringBuilder.append("    var { time = 0; tag = ''; },").append(LINE_SEPARATOR);
         boolean hasPageTimer = StringHelper.notEmpty(pageBlocks.getPageTimerVariable());
-        boolean timerSet = pageBlocks.isHasObjectsWithAnimatedImages() || hasPageTimer;
+        boolean hasAnim = pageBlocks.isHasObjectsWithAnimatedImages();
+        boolean timerSet = hasAnim || hasPageTimer;
         if (timerSet) {
             stringBuilder.append("    timer = function(s) s.time = s.time + 1; ");
             if (hasPageTimer) {
@@ -561,7 +562,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        s.bgimg(s);").append(LINE_SEPARATOR);
         if (timerSet) {
             stringBuilder.append("        s.time = 0;").append(LINE_SEPARATOR);
-            stringBuilder.append("        timer:set(200);").append(LINE_SEPARATOR);
+            stringBuilder.append("        timer:set(").append(hasAnim ? 20 : 200).append(");").append(LINE_SEPARATOR);
         }
         stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
