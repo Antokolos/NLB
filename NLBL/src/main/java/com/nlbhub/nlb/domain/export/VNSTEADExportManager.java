@@ -72,6 +72,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         stringBuilder.append("stead.scene_delim = '^';").append(lineSep);
         stringBuilder.append(lineSep);
 
+        stringBuilder.append("f1 = font('fonts/STEINEMU.ttf', 32);").append(lineSep);
         stringBuilder.append("function pname(n, c)").append(lineSep);
         stringBuilder.append("    return function()").append(lineSep);
         stringBuilder.append("        pn(img 'blank:8x1',f1:txt(n, c, 1))").append(lineSep);
@@ -109,6 +110,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         pageText.append("        nam = \"").append(roomName).append("_choices\",").append(lineSep);
         pageText.append("        entered = function(s) ").append(lineSep);
         pageText.append("            theme.win.geom(320, 320, 1280, 480);").append(lineSep);
+        pageText.append("            vn:start('dissolve');").append(lineSep);
         pageText.append("            vn:commit();").append(lineSep);
         pageText.append("        end,").append(lineSep);
         pageText.append("        phr = {").append(lineSep);

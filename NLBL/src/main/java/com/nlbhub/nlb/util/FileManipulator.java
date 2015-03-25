@@ -276,7 +276,7 @@ public class FileManipulator {
      * @param input input stream whose content is to be written to the file.
      * @throws IOException if an I/O error occurs.
      */
-    private static void writeFile(
+    public static void writeFile(
             File file, InputStream input
     ) throws IOException {
         FileOutputStream output = new FileOutputStream(file);

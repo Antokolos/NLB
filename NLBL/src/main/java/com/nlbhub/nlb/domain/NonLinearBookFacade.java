@@ -51,6 +51,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -206,6 +207,31 @@ public class NonLinearBookFacade implements NLBObservable {
     public void exportToVNSTEADFile(File exportDir) throws NLBExportException {
         m_nlb.exportToVNSTEADFile(new File(exportDir, "main.lua"));
         exportMedia(exportDir);
+
+        File fontsDir = new File(exportDir, "fonts");
+        if (fontsDir.mkdir()) {
+            exportBundledFile(fontsDir, true, "STEINEMU.ttf");
+        }
+        File modulesDir = new File(exportDir, "modules");
+        if (modulesDir.mkdir()) {
+            exportBundledFile(modulesDir, true, "fonts.lua");
+            exportBundledFile(modulesDir, true, "paginator.lua");
+            exportBundledFile(modulesDir, true, "vn.lua");
+        }
+        exportBundledFile(exportDir, false, "theme.ini");
+    }
+
+    private void exportBundledFile(File targetDir, boolean fromSubdir, String fname) throws NLBExportException {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        File file = new File(targetDir, fname);
+        try {
+            String resname = "vnstead/" + ((fromSubdir) ? targetDir.getName() + "/" : Constants.EMPTY_STRING) + fname;
+            try (InputStream is = classLoader.getResourceAsStream(resname)) {
+                FileManipulator.writeFile(file, is);
+            }
+        } catch (IOException e) {
+            throw new NLBExportException("Error exporting bundled file", e);
+        }
     }
 
     private void exportMedia(File exportDir) throws NLBExportException {
