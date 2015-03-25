@@ -200,6 +200,15 @@ public class NonLinearBookFacade implements NLBObservable {
 
     public void exportToSTEADFile(File exportDir) throws NLBExportException {
         m_nlb.exportToSTEADFile(new File(exportDir, "main.lua"));
+        exportMedia(exportDir);
+    }
+
+    public void exportToVNSTEADFile(File exportDir) throws NLBExportException {
+        m_nlb.exportToVNSTEADFile(new File(exportDir, "main.lua"));
+        exportMedia(exportDir);
+    }
+
+    private void exportMedia(File exportDir) throws NLBExportException {
         File imagesExportDir = new File(exportDir, NonLinearBook.IMAGES_DIR_NAME);
         m_nlb.exportImages(true, imagesExportDir);
         File soundExportDir = new File(exportDir, NonLinearBook.SOUND_DIR_NAME);

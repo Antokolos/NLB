@@ -132,6 +132,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     private JButton m_exportTXT;
     private JButton m_pushButton;
     private JButton m_pullButton;
+    private JButton m_exportVNSTEAD;
     private final Launcher m_launcher;
     private final JFileChooser m_dirChooser;
     private final JFileChooser m_fileChooser;
@@ -461,6 +462,13 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_exportSTEAD.setRolloverEnabled(true);
         m_exportSTEAD.setText("");
         toolBar5.add(m_exportSTEAD);
+        m_exportVNSTEAD = new JButton();
+        m_exportVNSTEAD.setBorderPainted(false);
+        m_exportVNSTEAD.setFocusPainted(false);
+        m_exportVNSTEAD.setIcon(new ImageIcon(getClass().getResource("/extras/export/exportVNSTEAD.png")));
+        m_exportVNSTEAD.setRolloverEnabled(true);
+        m_exportVNSTEAD.setText("");
+        toolBar5.add(m_exportVNSTEAD);
         m_exportASM = new JButton();
         m_exportASM.setBorderPainted(false);
         m_exportASM.setEnabled(true);
@@ -1140,6 +1148,22 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                     JOptionPane.showMessageDialog(
                             m_mainFramePanel,
                             "Error while exporting to STEAD: " + ex.toString()
+                    );
+                }
+            }
+        });
+        m_exportVNSTEAD.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    File exportDir = chooseExportDir();
+                    if (exportDir != null) {
+                        getMainPaneInfo().getPaneNlbFacade().exportToVNSTEADFile(exportDir);
+                    }
+                } catch (NLBExportException ex) {
+                    JOptionPane.showMessageDialog(
+                            m_mainFramePanel,
+                            "Error while exporting to VNSTEAD: " + ex.toString()
                     );
                 }
             }

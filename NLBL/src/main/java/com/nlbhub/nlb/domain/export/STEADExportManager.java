@@ -92,6 +92,12 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("game.use = 'Does not work...';").append(LINE_SEPARATOR);
         stringBuilder.append("game.forcedsc = true;").append(LINE_SEPARATOR);
 
+        stringBuilder.append(generateLibraryMethods());
+        return stringBuilder.toString();
+    }
+
+    protected String generateLibraryMethods() {
+        StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(LINE_SEPARATOR);
         stringBuilder.append("global {").append(LINE_SEPARATOR);
         stringBuilder.append("    _lists = {};").append(LINE_SEPARATOR);
@@ -494,7 +500,6 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String generatePageText(PageBuildingBlocks pageBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
-        StringBuilder linksBuilder = new StringBuilder();
         StringBuilder autosBuilder = new StringBuilder();
         if (ENABLE_COMMENTS) {
             stringBuilder.append(pageBlocks.getPageComment());
@@ -519,28 +524,10 @@ public class STEADExportManager extends TextExportManager {
         autosBuilder.append("        revive();").append(LINE_SEPARATOR);
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
-            final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
             if (linkBlocks.isAuto()) {
-                autosBuilder.append("        ");
-                autosBuilder.append("if (").append((constrained) ? linkBlocks.getLinkConstraint() : "true").append(") then ");
-                autosBuilder.append(linkBlocks.getLinkModifications());
-                autosBuilder.append(linkBlocks.getLinkVariable());
-                autosBuilder.append(linkBlocks.getLinkGoTo());
-                // Should return immediately to prevent unwanted following of other auto links
-                autosBuilder.append(LINE_SEPARATOR).append("        return;").append(LINE_SEPARATOR);
-                autosBuilder.append(" end;"); // matching end for if (...)
-                autosBuilder.append(LINE_SEPARATOR);
+                autosBuilder.append(generateAutoLinkCode(linkBlocks));
             } else {
-                stringBuilder.append("        p ");
-                if (constrained) {
-                    stringBuilder.append("((").append(linkBlocks.getLinkConstraint()).append(") and ");
-                }
-                stringBuilder.append("\"").append(linkBlocks.getLinkLabel()).append("\"");
-                if (constrained) {
-                    stringBuilder.append(" or ");
-                    stringBuilder.append("\"\")");
-                }
-                stringBuilder.append(";").append(LINE_SEPARATOR);
+                stringBuilder.append(generateOrdinaryLinkCode(linkBlocks));
             }
         }
         autosBuilder.append("    end,").append(LINE_SEPARATOR);
@@ -573,6 +560,14 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append(pageBlocks.getPageSound());
 
+        stringBuilder.append(generateObjsCollection(pageBlocks, linksBlocks));
+        stringBuilder.append(decoratePageEnd());
+        return stringBuilder.toString();
+    }
+
+    protected String generateObjsCollection(PageBuildingBlocks pageBlocks, List<LinkBuildingBlocks> linksBlocks) {
+        StringBuilder result = new StringBuilder();
+        StringBuilder linksBuilder = new StringBuilder();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             if (!linkBlocks.isAuto()) {
                 linksBuilder.append(linkBlocks.getLinkStart());
@@ -589,20 +584,50 @@ public class STEADExportManager extends TextExportManager {
         final boolean containedObjIdsIsEmpty = pageBlocks.getContainedObjIds().isEmpty();
         final boolean linksTextIsEmpty = StringHelper.isEmpty(linksText);
         if (!linksTextIsEmpty || !containedObjIdsIsEmpty) {
-            stringBuilder.append("    obj = { ").append(LINE_SEPARATOR);
+            result.append("    obj = { ").append(LINE_SEPARATOR);
             if (!containedObjIdsIsEmpty) {
                 for (String containedObjId : pageBlocks.getContainedObjIds()) {
-                    stringBuilder.append(containedObjId);
+                    result.append(containedObjId);
                 }
             }
-            stringBuilder.append("        xdsc(),").append(LINE_SEPARATOR);
+            result.append("        xdsc(),").append(LINE_SEPARATOR);
             if (!linksTextIsEmpty) {
-                stringBuilder.append(linksText).append(LINE_SEPARATOR);
+                result.append(linksText).append(LINE_SEPARATOR);
             }
-            stringBuilder.append("    },").append(LINE_SEPARATOR);
+            result.append("    },").append(LINE_SEPARATOR);
         }
-        stringBuilder.append(decoratePageEnd());
-        return stringBuilder.toString();
+        return result.toString();
+    }
+
+    protected String generateOrdinaryLinkCode(LinkBuildingBlocks linkBlocks) {
+        final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
+        StringBuilder result = new StringBuilder();
+        result.append("        p ");
+        if (constrained) {
+            result.append("((").append(linkBlocks.getLinkConstraint()).append(") and ");
+        }
+        result.append("\"").append(linkBlocks.getLinkLabel()).append("\"");
+        if (constrained) {
+            result.append(" or ");
+            result.append("\"\")");
+        }
+        result.append(";").append(LINE_SEPARATOR);
+        return result.toString();
+    }
+
+    protected String generateAutoLinkCode(LinkBuildingBlocks linkBlocks) {
+        final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
+        StringBuilder result = new StringBuilder();
+        result.append("        ");
+        result.append("if (").append((constrained) ? linkBlocks.getLinkConstraint() : "true").append(") then ");
+        result.append(linkBlocks.getLinkModifications());
+        result.append(linkBlocks.getLinkVariable());
+        result.append(linkBlocks.getLinkGoTo());
+        // Should return immediately to prevent unwanted following of other auto links
+        result.append(LINE_SEPARATOR).append("        return;").append(LINE_SEPARATOR);
+        result.append(" end;"); // matching end for if (...)
+        result.append(LINE_SEPARATOR);
+        return result.toString();
     }
 
     @Override
@@ -1207,7 +1232,7 @@ public class STEADExportManager extends TextExportManager {
         return (
                 "                nlbwalk("
                         + (
-                        GOTO_PAGE_NUMBERS
+                        getGoToPageNumbers()
                                 ? decorateId(String.valueOf(targetPageNumber))
                                 : decorateId(linkTarget)
                 )
@@ -1342,7 +1367,7 @@ public class STEADExportManager extends TextExportManager {
      * @param textChunks
      * @return
      */
-    private String expandVariables(List<TextChunk> textChunks) {
+    protected String expandVariables(List<TextChunk> textChunks) {
         StringBuilder result = new StringBuilder();
         for (final TextChunk textChunk : textChunks) {
             switch (textChunk.getType()) {
@@ -1362,7 +1387,7 @@ public class STEADExportManager extends TextExportManager {
         return result.toString();
     }
 
-    protected String decoratePageTextStart(List<TextChunk> pageTextChunks) {
+    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {
         StringBuilder pageText = new StringBuilder();
         pageText.append("    dsc = function(s)").append(LINE_SEPARATOR);
         if (pageTextChunks.size() > 0) {
@@ -1389,7 +1414,7 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decoratePageLabel(String labelText, int pageNumber) {
         StringBuilder roomBeginning = new StringBuilder();
-        String roomName = GOTO_PAGE_NUMBERS ? decorateId(String.valueOf(pageNumber)) : decorateId(labelText);
+        String roomName = getGoToPageNumbers() ? decorateId(String.valueOf(pageNumber)) : decorateId(labelText);
         roomBeginning.append(roomName);
         if (pageNumber == 1) {
             roomBeginning.append(", main = room { nam = \"main\", enter = function(s) nlbwalk(main); end }, ");
@@ -1397,6 +1422,10 @@ public class STEADExportManager extends TextExportManager {
             roomBeginning.append(" = ");
         }
         return roomBeginning.toString() + "room {" + LINE_SEPARATOR;
+    }
+
+    protected boolean getGoToPageNumbers() {
+        return GOTO_PAGE_NUMBERS;
     }
 
     @Override
@@ -1409,7 +1438,7 @@ public class STEADExportManager extends TextExportManager {
         return "-- " + comment + LINE_SEPARATOR;
     }
 
-    private String decorateId(String id) {
+    protected String decorateId(String id) {
         return "v_" + id.replaceAll("-", "_");
     }
 }

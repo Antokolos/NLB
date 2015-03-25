@@ -350,7 +350,7 @@ public abstract class ExportManager {
         blocks.setPageImage(decoratePageImage(getImagePaths(null, imageFileName, false), page.isImageBackground()));
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
         blocks.setPageSound(decoratePageSound(getSoundPaths(null, soundFileName), page.isSoundSFX()));
-        blocks.setPageTextStart(decoratePageTextStart(StringHelper.getTextChunks(page.getText())));
+        blocks.setPageTextStart(decoratePageTextStart(page.getId(), pageNumber, StringHelper.getTextChunks(page.getText())));
         blocks.setPageTextEnd(decoratePageTextEnd());
         if (!StringHelper.isEmpty(page.getVarId())) {
             Variable variable = nlb.getVariableById(page.getVarId());
@@ -2045,7 +2045,7 @@ public abstract class ExportManager {
         }
     }
 
-    protected String decoratePageTextStart(List<TextChunk> pageTextChunks) {
+    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {
         StringBuilder pageText = new StringBuilder();
         for (final TextChunk textChunk : pageTextChunks) {
             switch (textChunk.getType()) {

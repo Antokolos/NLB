@@ -494,6 +494,16 @@
                   <text value=""/>
                 </properties>
               </component>
+              <component id="1fff" class="javax.swing.JButton" binding="m_exportVNSTEAD">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="extras/export/exportVNSTEAD.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
               <component id="10917" class="javax.swing.JButton" binding="m_exportASM">
                 <constraints/>
                 <properties>

@@ -4044,6 +4044,11 @@ public class NonLinearBookImpl implements NonLinearBook {
         manager.exportToFile(targetFile);
     }
 
+    public void exportToVNSTEADFile(final File targetFile) throws NLBExportException {
+        ExportManager manager = new VNSTEADExportManager(this, ExportManager.UTF_8);
+        manager.exportToFile(targetFile);
+    }
+
     public void exportToASMFile(final File targetFile) throws NLBExportException {
         ExportManager manager = new ASMExportManager(this, ExportManager.UTF_8);
         manager.exportToFile(targetFile);

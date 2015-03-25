@@ -295,7 +295,7 @@ public class URQExportManager extends TextExportManager {
         return Constants.EMPTY_STRING;
     }
 
-    protected String decoratePageTextStart(List<TextChunk> pageTextChunks) {
+    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {
         StringBuilder pageText = new StringBuilder();
         for (final TextChunk textChunk : pageTextChunks) {
             switch (textChunk.getType()) {

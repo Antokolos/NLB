@@ -288,8 +288,8 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageTextStart(List<TextChunk> pageTextChunks) {
-        return "'" + super.decoratePageTextStart(pageTextChunks);
+    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {
+        return "'" + super.decoratePageTextStart(labelText, pageNumber, pageTextChunks);
     }
 
     @Override

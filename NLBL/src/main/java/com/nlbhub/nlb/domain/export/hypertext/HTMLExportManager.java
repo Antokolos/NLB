@@ -98,9 +98,9 @@ public class HTMLExportManager extends HypertextExportManager<HTMLParagraph, HTM
     }
 
     @Override
-    protected String decoratePageTextStart(List<TextChunk> pageTextChunks) {
+    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {
         StringBuilder result = new StringBuilder();
-        result.append(super.decoratePageTextStart(pageTextChunks));
+        result.append(super.decoratePageTextStart(labelText, pageNumber, pageTextChunks));
         result.append(getLineSeparator());
         return result.toString();
     }
