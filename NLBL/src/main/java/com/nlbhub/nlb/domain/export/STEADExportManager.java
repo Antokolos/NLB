@@ -708,17 +708,21 @@ public class STEADExportManager extends TextExportManager {
         if (imageEnabled) {
             return (
                     "    disp = function(s) return \"" +
-                            expandVariables(dispChunks) +
+                            getDispText(dispChunks) +
                             "\"..s.imgv(s) end," + LINE_SEPARATOR
             );
         } else {
             if (dispChunks.size() > 0) {
-                return "    disp = function(s) return \"" + expandVariables(dispChunks) + "\" end," + LINE_SEPARATOR;
+                return "    disp = function(s) return \"" + getDispText(dispChunks) + "\" end," + LINE_SEPARATOR;
             } else {
                 return "    disp = function(s) end," + LINE_SEPARATOR;
             }
 
         }
+    }
+
+    protected String getDispText(List<TextChunk> dispChunks) {
+        return expandVariables(dispChunks);
     }
 
     private String expandInteractionMarks(String text) {
@@ -741,14 +745,18 @@ public class STEADExportManager extends TextExportManager {
         if (textChunks.size() > 0) {
             stringBuilder.append("p(\"");
             if (imageEnabled) {
-                stringBuilder.append(expandInteractionMarks(expandVariables(textChunks)));
+                stringBuilder.append(expandInteractionMarks(getObjText(textChunks)));
             } else {
-                stringBuilder.append(expandVariables(textChunks));
+                stringBuilder.append(getObjText(textChunks));
             }
             stringBuilder.append("\"); ");
         }
         stringBuilder.append("end,").append(LINE_SEPARATOR);
         return stringBuilder.toString();
+    }
+
+    protected String getObjText(List<TextChunk> textChunks) {
+        return expandVariables(textChunks);
     }
 
     @Override
@@ -779,11 +787,7 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateObjActStart(List<TextChunk> actTextChunks) {
-        String actText = (
-                (actTextChunks.size() > 0)
-                        ? "        p(\"" + expandVariables(actTextChunks) + "\");" + LINE_SEPARATOR
-                        : Constants.EMPTY_STRING
-        );
+        String actText = getActText(actTextChunks);
         return (
                 "    act = function(s)" + LINE_SEPARATOR +
                         "        s.acta(s);" + LINE_SEPARATOR +
@@ -795,6 +799,14 @@ public class STEADExportManager extends TextExportManager {
                         "        s.actf(s);" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    actf = function(s)" + LINE_SEPARATOR
+        );
+    }
+
+    protected String getActText(List<TextChunk> actTextChunks) {
+        return (
+                (actTextChunks.size() > 0)
+                        ? "        p(\"" + expandVariables(actTextChunks) + "\");" + LINE_SEPARATOR
+                        : Constants.EMPTY_STRING
         );
     }
 
@@ -1362,7 +1374,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     /**
-     * Expands varibles from text chunks.
+     * Expands variables from text chunks.
      *
      * @param textChunks
      * @return
@@ -1385,6 +1397,9 @@ public class STEADExportManager extends TextExportManager {
             }
         }
         return result.toString();
+    }
+    protected String getGlobalVarPrefix() {
+        return GLOBAL_VAR_PREFIX;
     }
 
     protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {

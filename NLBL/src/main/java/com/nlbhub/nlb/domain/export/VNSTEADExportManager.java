@@ -45,6 +45,8 @@ import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The VNSTEADExportManager class
@@ -53,6 +55,9 @@ import java.util.List;
  * @version 1.0 03/25/15
  */
 public class VNSTEADExportManager extends STEADExportManager {
+    private static final Pattern SENTENCE_PATTERN = Pattern.compile("((?:^|[^\\.\\?\\!]+)(?:[\\.\\?\\!]+|$))");
+    private static final int PARAGRAPH_THRESHOLD = 100;
+
     public VNSTEADExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
         super(nlb, encoding);
     }
@@ -86,6 +91,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         stringBuilder.append("end").append(lineSep);
 
         stringBuilder.append("function init()").append(lineSep);
+        stringBuilder.append("    vn:scene ('box:1920x1080,gray');").append(lineSep);
         stringBuilder.append("    vn.fading = 8").append(lineSep);
         stringBuilder.append("end").append(lineSep);
 
@@ -103,7 +109,7 @@ public class VNSTEADExportManager extends STEADExportManager {
             pageText.append("pn(\"");
             pageText.append(expandVariables(pageTextChunks));
             pageText.append("\");").append(lineSep);
-            pageText.append("pn();");
+            pageText.append("pn();").append(lineSep);
         }
         pageText.append("    end,").append(lineSep);
         pageText.append("    walk_to = dlg {").append(lineSep);
@@ -227,10 +233,74 @@ public class VNSTEADExportManager extends STEADExportManager {
             }
             notFirst = true;
         }
-        bgimgBuilder.append(bgimgIfTermination);
-        bgimgBuilder.append("vn:start('dissolve');").append(lineSep);
-        bgimgBuilder.append("vn:commit();").append(lineSep);
+        bgimgBuilder.append(bgimgIfTermination).append(lineSep);
+        bgimgBuilder.append("        vn:start('dissolve');").append(lineSep);
+        bgimgBuilder.append("        vn:commit();").append(lineSep);
         bgimgBuilder.append("    end,").append(lineSep);
         return bgimgBuilder.toString();
+    }
+
+    /**
+     * Expands variables from text chunks.
+     *
+     * @param textChunks
+     * @return
+     */
+    protected String expandVariables(List<TextChunk> textChunks) {
+        StringBuilder result = new StringBuilder();
+        for (final TextChunk textChunk : textChunks) {
+            switch (textChunk.getType()) {
+                case TEXT:
+                    result.append(preprocessText(textChunk.getText()));
+                    break;
+                case VARIABLE:
+                    result.append("\"..");
+                    result.append("tostring(").append(getGlobalVarPrefix()).append(textChunk.getText()).append(")");
+                    result.append("..\"");
+                    break;
+                case NEWLINE:
+                    // ignore
+                    break;
+            }
+        }
+        return result.toString();
+    }
+
+    protected String preprocessText(String text) {
+        StringBuilder result = new StringBuilder();
+        String intermediateText = Constants.EMPTY_STRING;
+        String lineSep = getLineSeparator();
+        Matcher matcher = SENTENCE_PATTERN.matcher(text);
+        while (matcher.find()) {
+            intermediateText = intermediateText + matcher.group(1);
+            if (intermediateText.length() > PARAGRAPH_THRESHOLD) {
+                result.append(intermediateText);
+                intermediateText = Constants.EMPTY_STRING;
+                result.append("\");").append(lineSep);
+                result.append("pn();").append(lineSep);
+                result.append("pn(\"");
+            }
+        }
+        if (intermediateText.length() > 0) {
+            result.append(intermediateText);
+        }
+        return result.toString();
+    }
+
+    @Override
+    protected String getActText(List<TextChunk> actTextChunks) {
+        return (
+                (actTextChunks.size() > 0)
+                        ? "        p(\"" + super.expandVariables(actTextChunks) + "\");" + getLineSeparator()
+                        : Constants.EMPTY_STRING
+        );
+    }
+
+    protected String getDispText(List<TextChunk> dispChunks) {
+        return super.expandVariables(dispChunks);
+    }
+
+    protected String getObjText(List<TextChunk> textChunks) {
+        return super.expandVariables(textChunks);
     }
 }
