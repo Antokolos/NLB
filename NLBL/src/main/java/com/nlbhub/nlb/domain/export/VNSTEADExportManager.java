@@ -112,21 +112,20 @@ public class VNSTEADExportManager extends STEADExportManager {
             pageText.append("pn();").append(lineSep);
         }
         pageText.append("    end,").append(lineSep);
-        pageText.append("    walk_to = dlg {").append(lineSep);
+        pageText.append("    walk_to = room {").append(lineSep);
         pageText.append("        nam = \"").append(roomName).append("_choices\",").append(lineSep);
         pageText.append("        entered = function(s) ").append(lineSep);
         pageText.append("            theme.win.geom(320, 320, 1280, 480);").append(lineSep);
         pageText.append("            vn:start('dissolve');").append(lineSep);
         pageText.append("            vn:commit();").append(lineSep);
-        pageText.append("        end,").append(lineSep);
-        pageText.append("        phr = {").append(lineSep);
+        pageText.append("            objs():zap();").append(lineSep);
         return pageText.toString();
     }
 
     @Override
     protected String decoratePageTextEnd() {
         String lineSep = getLineSeparator();
-        return "        }" + lineSep + "    }," + lineSep;
+        return "        end" + lineSep + "    }," + lineSep;
     }
 
     @Override
@@ -149,7 +148,7 @@ public class VNSTEADExportManager extends STEADExportManager {
 
     @Override
     protected String decorateLinkStart(String linkId, String linkText, int pageNumber) {
-        return "            {tag = '" + decorateId(linkId) + "', ";
+        return "            put( menu {nam = '" + decorateId(linkId) + "', ";
     }
 
     @Override
@@ -159,22 +158,20 @@ public class VNSTEADExportManager extends STEADExportManager {
             String linkTarget,
             int targetPageNumber
     ) {
-        String lineSep = getLineSeparator();
         return (
-                "                nlbwalk("
+                " nlbwalk("
                         + (
                         getGoToPageNumbers()
                                 ? decorateId(String.valueOf(targetPageNumber))
                                 : decorateId(linkTarget)
                 )
                         + "); "
-                        + lineSep
         );
     }
 
     @Override
     protected String decorateLinkEnd() {
-        return "            }," + getLineSeparator();
+        return " });" + getLineSeparator();
     }
 
     @Override
@@ -182,17 +179,21 @@ public class VNSTEADExportManager extends STEADExportManager {
         String lineSep = getLineSeparator();
         final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
         StringBuilder result = new StringBuilder();
-        result.append(linkBlocks.getLinkStart());
         if (constrained) {
-            result.append(linkBlocks.getLinkConstraint()).append(", ");
+            result.append("if ").append(linkBlocks.getLinkConstraint()).append(" then").append(lineSep);
         }
-        result.append("always = true, ");
-        result.append("\"").append(linkBlocks.getLinkLabel()).append("\", nil, ").append(lineSep);
-        result.append("function(s)").append(lineSep);
+        result.append(linkBlocks.getLinkStart());
+        result.append("dsc = function(s) ");
+        result.append("return \"{").append(linkBlocks.getLinkLabel()).append("}^\" end, ");
+        result.append("act = function(s) ").append(lineSep);
         result.append(linkBlocks.getLinkModifications());
         result.append(linkBlocks.getLinkVariable());
-        result.append(linkBlocks.getLinkGoTo()).append(" end").append(lineSep);
+        result.append(linkBlocks.getLinkGoTo());
+        result.append("end").append(lineSep);
         result.append(linkBlocks.getLinkEnd());
+        if (constrained) {
+            result.append("end;").append(lineSep);
+        }
         return result.toString();
     }
 
