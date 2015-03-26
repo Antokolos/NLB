@@ -149,7 +149,7 @@ public class VNSTEADExportManager extends STEADExportManager {
 
     @Override
     protected String decorateLinkStart(String linkId, String linkText, int pageNumber) {
-        return "            {";
+        return "            {tag = '" + decorateId(linkId) + "', ";
     }
 
     @Override
@@ -161,16 +161,13 @@ public class VNSTEADExportManager extends STEADExportManager {
     ) {
         String lineSep = getLineSeparator();
         return (
-                "code [["
-                        + lineSep
-                        + "                nlbwalk("
+                "                nlbwalk("
                         + (
                         getGoToPageNumbers()
                                 ? decorateId(String.valueOf(targetPageNumber))
                                 : decorateId(linkTarget)
                 )
                         + "); "
-                        + "]];"
                         + lineSep
         );
     }
@@ -189,10 +186,12 @@ public class VNSTEADExportManager extends STEADExportManager {
         if (constrained) {
             result.append(linkBlocks.getLinkConstraint()).append(", ");
         }
+        result.append("always = true, ");
         result.append("\"").append(linkBlocks.getLinkLabel()).append("\", nil, ").append(lineSep);
+        result.append("function(s)").append(lineSep);
         result.append(linkBlocks.getLinkModifications());
         result.append(linkBlocks.getLinkVariable());
-        result.append(linkBlocks.getLinkGoTo()).append(lineSep);
+        result.append(linkBlocks.getLinkGoTo()).append(" end").append(lineSep);
         result.append(linkBlocks.getLinkEnd());
         return result.toString();
     }
@@ -248,6 +247,7 @@ public class VNSTEADExportManager extends STEADExportManager {
      */
     protected String expandVariables(List<TextChunk> textChunks) {
         StringBuilder result = new StringBuilder();
+        String lineSep = getLineSeparator();
         for (final TextChunk textChunk : textChunks) {
             switch (textChunk.getType()) {
                 case TEXT:
@@ -259,7 +259,9 @@ public class VNSTEADExportManager extends STEADExportManager {
                     result.append("..\"");
                     break;
                 case NEWLINE:
-                    // ignore
+                    result.append("\");").append(lineSep);
+                    result.append("pn();").append(lineSep);
+                    result.append("pn(\"");
                     break;
             }
         }
