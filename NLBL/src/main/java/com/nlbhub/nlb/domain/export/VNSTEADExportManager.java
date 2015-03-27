@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.Constants;
+import com.nlbhub.nlb.api.Link;
 import com.nlbhub.nlb.api.TextChunk;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
@@ -114,18 +115,20 @@ public class VNSTEADExportManager extends STEADExportManager {
         pageText.append("    end,").append(lineSep);
         pageText.append("    walk_to = room {").append(lineSep);
         pageText.append("        nam = \"").append(roomName).append("_choices\",").append(lineSep);
-        pageText.append("        entered = function(s) ").append(lineSep);
-        pageText.append("            theme.win.geom(320, 320, 1280, 480);").append(lineSep);
-        pageText.append("            vn:start('dissolve');").append(lineSep);
-        pageText.append("            vn:commit();").append(lineSep);
+        pageText.append("        enter = function(s) ").append(lineSep);
         pageText.append("            objs():zap();").append(lineSep);
         return pageText.toString();
     }
 
     @Override
     protected String decoratePageTextEnd() {
+        StringBuilder pageText = new StringBuilder();
         String lineSep = getLineSeparator();
-        return "        end" + lineSep + "    }," + lineSep;
+        pageText.append("            theme.win.geom(320, 320, 1280, 480);").append(lineSep);
+        pageText.append("            vn:start('dissolve');").append(lineSep);
+        pageText.append("            vn:commit();").append(lineSep);
+        pageText.append("        end").append(lineSep).append("    },").append(lineSep);
+        return  pageText.toString();
     }
 
     @Override
@@ -179,20 +182,26 @@ public class VNSTEADExportManager extends STEADExportManager {
         String lineSep = getLineSeparator();
         final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
         StringBuilder result = new StringBuilder();
-        if (constrained) {
-            result.append("if ").append(linkBlocks.getLinkConstraint()).append(" then").append(lineSep);
-        }
-        result.append(linkBlocks.getLinkStart());
-        result.append("dsc = function(s) ");
-        result.append("return \"{").append(linkBlocks.getLinkLabel()).append("}^\" end, ");
-        result.append("act = function(s) ").append(lineSep);
-        result.append(linkBlocks.getLinkModifications());
-        result.append(linkBlocks.getLinkVariable());
-        result.append(linkBlocks.getLinkGoTo());
-        result.append("end").append(lineSep);
-        result.append(linkBlocks.getLinkEnd());
-        if (constrained) {
-            result.append("end;").append(lineSep);
+        if (linkBlocks.isTrivial()) {
+            result.append(linkBlocks.getLinkModifications());
+            result.append(linkBlocks.getLinkVariable());
+            result.append(linkBlocks.getLinkGoTo());
+        } else {
+            if (constrained) {
+                result.append("if ").append(linkBlocks.getLinkConstraint()).append(" then").append(lineSep);
+            }
+            result.append(linkBlocks.getLinkStart());
+            result.append("dsc = function(s) ");
+            result.append("return \"{").append(linkBlocks.getLinkLabel()).append("}^\" end, ");
+            result.append("act = function(s) ").append(lineSep);
+            result.append(linkBlocks.getLinkModifications());
+            result.append(linkBlocks.getLinkVariable());
+            result.append(linkBlocks.getLinkGoTo());
+            result.append("end").append(lineSep);
+            result.append(linkBlocks.getLinkEnd());
+            if (constrained) {
+                result.append("end;").append(lineSep);
+            }
         }
         return result.toString();
     }

@@ -124,4 +124,21 @@ public class MultiLangString {
         }
         return true;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MultiLangString that = (MultiLangString) o;
+
+        if (m_content != null ? !m_content.equals(that.m_content) : that.m_content != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return m_content != null ? m_content.hashCode() : 0;
+    }
 }

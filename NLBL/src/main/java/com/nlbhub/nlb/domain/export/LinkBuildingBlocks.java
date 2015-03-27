@@ -45,6 +45,7 @@ package com.nlbhub.nlb.domain.export;
  * @version 1.0 12/5/13
  */
 public class LinkBuildingBlocks {
+    private boolean m_trivial;
     private String m_linkLabel;
     private String m_linkComment;
     private String m_linkStart;
@@ -57,6 +58,14 @@ public class LinkBuildingBlocks {
     private boolean m_auto;
 
     public LinkBuildingBlocks() {
+    }
+
+    public boolean isTrivial() {
+        return m_trivial;
+    }
+
+    public void setTrivial(boolean trivial) {
+        m_trivial = trivial;
     }
 
     public String getLinkLabel() {
