@@ -447,6 +447,12 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateClearInvOperation() {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateSizeOperation(String variableName, String listVariableName) {
         // TODO: implement
         return EMPTY_STRING;

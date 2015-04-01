@@ -1697,16 +1697,16 @@ public abstract class ExportManager {
                         );
                         break;
                     case CLEAR:
-                        final String destinationId = exportData.getObjId(expression.getValue());
+                        final String destinationId = (expression != null) ? exportData.getObjId(expression.getValue()) : null;
                         stringBuilder.append(
                                 decorateClearOperation(
                                         destinationId,
-                                        decorateAutoVar(expression.getValue())
+                                        (expression != null) ? decorateAutoVar(expression.getValue()) : null
                                 )
                         );
                         break;
                     case CLRINV:
-                        stringBuilder.append(decorateClearOperation(null, null));
+                        stringBuilder.append(decorateClearInvOperation());
                         break;
                     case PUSH:
                         final String objIdToPush = exportData.getObjId(expression.getValue());
@@ -1876,6 +1876,8 @@ public abstract class ExportManager {
     protected abstract String decorateEjectOperation(String variableName, String listVariableName);
 
     protected abstract String decorateClearOperation(String destinationId, String destinationVar);
+
+    protected abstract String decorateClearInvOperation();
 
     protected abstract String decorateSizeOperation(String variableName, String listVariableName);
 

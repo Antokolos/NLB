@@ -1118,8 +1118,13 @@ public class STEADExportManager extends TextExportManager {
         } else if (destinationVar != null) {
             return "clear(" + destinationVar + ");" + LINE_SEPARATOR;
         } else {
-            return "inv():zap();" + LINE_SEPARATOR;
+            return "objs():zap();" + LINE_SEPARATOR;
         }
+    }
+
+    @Override
+    protected String decorateClearInvOperation() {
+        return "inv():zap();" + LINE_SEPARATOR;
     }
 
     @Override

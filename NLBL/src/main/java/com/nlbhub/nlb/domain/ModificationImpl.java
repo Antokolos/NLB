@@ -63,6 +63,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     private static final String TYPE_FILE_NAME = "type";
     private static final String EXPRID_FILE_NAME = "exprid";
     private static final Set<Type> UNPARAMETRIZED_TYPES = new HashSet<Type>() {{
+        add(Type.CLEAR);
         add(Type.CLRINV);
         add(Type.ELSE);
         add(Type.ELSEIF);
