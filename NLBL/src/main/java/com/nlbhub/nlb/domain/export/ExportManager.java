@@ -1708,6 +1708,9 @@ public abstract class ExportManager {
                     case CLRINV:
                         stringBuilder.append(decorateClearInvOperation());
                         break;
+                    case SPUSH:
+                        stringBuilder.append(decorateSPushOperation(decorateAutoVar(expression.getValue())));
+                        break;
                     case PUSH:
                         final String objIdToPush = exportData.getObjId(expression.getValue());
                         if (variable != null) {
@@ -1733,6 +1736,9 @@ public abstract class ExportManager {
                                         decorateAutoVar(expression.getValue())
                                 )
                         );
+                        break;
+                    case SINJECT:
+                        stringBuilder.append(decorateSInjectOperation(decorateAutoVar(expression.getValue())));
                         break;
                     case INJECT:
                         final String objIdToInject = exportData.getObjId(expression.getValue());
@@ -1867,9 +1873,13 @@ public abstract class ExportManager {
 
     protected abstract String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName);
 
+    protected abstract String decorateSPushOperation(String listVariableName);
+
     protected abstract String decoratePushOperation(String listVariableName, String objectId, String objectVar);
 
     protected abstract String decoratePopOperation(String variableName, String listVariableName);
+
+    protected abstract String decorateSInjectOperation(String listVariableName);
 
     protected abstract String decorateInjectOperation(String listVariableName, String objectId, String objectVar);
 

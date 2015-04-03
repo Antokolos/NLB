@@ -276,6 +276,12 @@ public abstract class HypertextExportManager
     }
 
     @Override
+    protected String decorateSPushOperation(String listVariableName) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decoratePushOperation(String listVariableName, String objectId, String objectVar) {
         return (
                 "Положите в " + listVariableName + " " + objectVar
@@ -284,6 +290,12 @@ public abstract class HypertextExportManager
 
     @Override
     protected String decoratePopOperation(String variableName, String listVariableName) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateSInjectOperation(String listVariableName) {
         // TODO: implement
         return EMPTY_STRING;
     }

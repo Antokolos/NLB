@@ -66,7 +66,6 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
         add(Type.CLEAR);
         add(Type.CLRINV);
         add(Type.ELSE);
-        add(Type.ELSEIF);
         add(Type.END);
         add(Type.RETURN);
     }};
@@ -138,7 +137,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 return true;
             default:
                 // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, IFHAVE, ADD, ADDINV, REMOVE, RMINV, CLEAR, CLRINV,
-                // PUSH, INJECT, SHUFFLE, ACT, USE
+                // SPUSH, PUSH, SINJECT, INJECT, SHUFFLE, ACT, USE
                 // It is funny, but RETURN operation currently does not actually return anything :)
                 return false;
         }
@@ -192,10 +191,14 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.CLEAR;
         } else if (type.equals(Type.CLRINV.name())) {
             m_type = Type.CLRINV;
+        } else if (type.equals(Type.SPUSH.name())) {
+            m_type = Type.SPUSH;
         } else if (type.equals(Type.PUSH.name())) {
             m_type = Type.PUSH;
         } else if (type.equals(Type.POP.name())) {
             m_type = Type.POP;
+        } else if (type.equals(Type.SINJECT.name())) {
+            m_type = Type.SINJECT;
         } else if (type.equals(Type.INJECT.name())) {
             m_type = Type.INJECT;
         } else if (type.equals(Type.EJECT.name())) {
@@ -308,11 +311,17 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case "CLRINV":
                 m_type = Type.CLRINV;
                 break;
+            case "SPUSH":
+                m_type = Type.SPUSH;
+                break;
             case "PUSH":
                 m_type = Type.PUSH;
                 break;
             case "POP":
                 m_type = Type.POP;
+                break;
+            case "SINJECT":
+                m_type = Type.SINJECT;
                 break;
             case "INJECT":
                 m_type = Type.INJECT;

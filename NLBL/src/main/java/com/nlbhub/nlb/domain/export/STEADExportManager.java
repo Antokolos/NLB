@@ -1067,6 +1067,11 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateSPushOperation(String listVariableName) {
+        return createListObj(listVariableName) + "        push(" + listVariableName + ".listnam, s);" + LINE_SEPARATOR;
+    }
+
+    @Override
     protected String decoratePushOperation(String listVariableName, String objectId, String objectVar) {
         return (
                 createListObj(listVariableName) +
@@ -1093,6 +1098,11 @@ public class STEADExportManager extends TextExportManager {
     protected String decoratePopOperation(String variableName, String listVariableName) {
         // TODO: handle pops from nonexistent lists
         return variableName + " = pop(" + listVariableName + ".listnam);" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateSInjectOperation(String listVariableName) {
+        return createListObj(listVariableName) + "        inject(" + listVariableName + ".listnam, s);" + LINE_SEPARATOR;
     }
 
     @Override

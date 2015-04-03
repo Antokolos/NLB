@@ -451,6 +451,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
+    protected String decorateSPushOperation(String listVariableName) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decoratePushOperation(String listVariableName, String objectId, String objectVar) {
         // TODO: implement adding to the arbitrary list
         return Constants.EMPTY_STRING;
@@ -458,6 +464,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decoratePopOperation(String variableName, String listVariableName) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateSInjectOperation(String listVariableName) {
         // TODO: implement
         return EMPTY_STRING;
     }
