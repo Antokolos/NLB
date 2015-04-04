@@ -350,4 +350,6 @@ public interface NonLinearBook {
     public Map<String, Variable.DataType> getVariableDataTypes() throws NLBConsistencyException;
 
     public Map<String, String> getMediaToConstraintMap();
+
+    public Map<String, String> getMediaRedirectsMap();
 }

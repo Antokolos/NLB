@@ -76,6 +76,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     );
     private static final String MEDIA_FILE_NAME_TEMPLATE = "%s_%d%s";
     private static final String CONSTRID_EXT = ".constrid";
+    private static final String REDIRECT_EXT = ".redirect";
     private static final FilenameFilter NON_CONSTRID_FILTER = new FilenameFilter() {
         @Override
         public boolean accept(final File dir, final String name) {
@@ -2299,6 +2300,27 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
+    public void setMediaFileRedirect(final MediaFile.Type mediaType, final String fileName, final String redirect) {
+        switch (mediaType) {
+            case Image:
+                for (MediaFileImpl mediaFile : m_imageFiles) {
+                    if (mediaFile.getFileName().equals(fileName)) {
+                        mediaFile.setRedirect(redirect);
+                        break;
+                    }
+                }
+                break;
+            case Sound:
+                for (MediaFileImpl mediaFile : m_soundFiles) {
+                    if (mediaFile.getFileName().equals(fileName)) {
+                        mediaFile.setRedirect(redirect);
+                        break;
+                    }
+                }
+                break;
+        }
+    }
+
     public void setRootDir(final File rootDir) {
         m_rootDir = rootDir;
     }
@@ -2836,6 +2858,13 @@ public class NonLinearBookImpl implements NonLinearBook {
             for (File file : listFiles) {
                 final MediaFileImpl imageFile = new MediaFileImpl();
                 imageFile.setFileName(file.getName());
+                imageFile.setRedirect(
+                        FileManipulator.getOptionalFileAsString(
+                                imagesDir,
+                                file.getName() + REDIRECT_EXT,
+                                Constants.EMPTY_STRING
+                        )
+                );
                 imageFile.setConstrId(
                         FileManipulator.getOptionalFileAsString(
                                 imagesDir,
@@ -2860,6 +2889,13 @@ public class NonLinearBookImpl implements NonLinearBook {
             for (File file : listFiles) {
                 final MediaFileImpl soundFile = new MediaFileImpl();
                 soundFile.setFileName(file.getName());
+                soundFile.setRedirect(
+                        FileManipulator.getOptionalFileAsString(
+                                soundDir,
+                                file.getName() + REDIRECT_EXT,
+                                Constants.EMPTY_STRING
+                        )
+                );
                 soundFile.setConstrId(
                         FileManipulator.getOptionalFileAsString(
                                 soundDir,
@@ -3868,6 +3904,24 @@ public class NonLinearBookImpl implements NonLinearBook {
         return result;
     }
 
+    @Override
+    public Map<String, String> getMediaRedirectsMap() {
+        Map<String, String> result = new HashMap<>();
+        List<MediaFile> imageFiles = getImageFiles();
+        for (MediaFile mediaFile : imageFiles) {
+            if (StringHelper.notEmpty(mediaFile.getRedirect())) {
+                result.put(mediaFile.getFileName(), mediaFile.getRedirect());
+            }
+        }
+        List<MediaFile> soundFiles = getSoundFiles();
+        for (MediaFile mediaFile : soundFiles) {
+            if (StringHelper.notEmpty(mediaFile.getRedirect())) {
+                result.put(mediaFile.getFileName(), mediaFile.getRedirect());
+            }
+        }
+        return result;
+    }
+
     private NonLinearBook getMainNLB() {
         NonLinearBook result = this;
         while (result.getParentNLB() != null) {
@@ -4121,6 +4175,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     throw new NLBConsistencyException("NLB images dir does not exist");
                 }
                 fileManipulator.deleteFileOrDir(new File(imagesDir, imageFileName));
+                fileManipulator.deleteFileOrDir(new File(imagesDir, imageFileName + REDIRECT_EXT));
                 fileManipulator.deleteFileOrDir(new File(imagesDir, imageFileName + CONSTRID_EXT));
                 imageFileIterator.remove();
                 return;
@@ -4143,6 +4198,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     throw new NLBConsistencyException("NLB sound dir does not exist");
                 }
                 fileManipulator.deleteFileOrDir(new File(soundDir, soundFileName));
+                fileManipulator.deleteFileOrDir(new File(soundDir, soundFileName + REDIRECT_EXT));
                 fileManipulator.deleteFileOrDir(new File(soundDir, soundFileName + CONSTRID_EXT));
                 soundFileIterator.remove();
                 return;

@@ -48,5 +48,6 @@ public interface MediaFile {
     public enum Type {Image, Sound}
 
     public String getFileName();
+    public String getRedirect();
     public String getConstrId();
 }

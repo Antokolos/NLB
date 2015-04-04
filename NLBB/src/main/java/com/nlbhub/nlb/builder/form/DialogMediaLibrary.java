@@ -127,7 +127,13 @@ public class DialogMediaLibrary extends JDialog {
                 }
         );
         m_mediaFileList.setSelectionModel(m_listSingleSelectionModel);
-        TableColumnExt constraintColumn = m_mediaFileList.getColumnExt(1);
+        TableColumnExt redirectColumn = m_mediaFileList.getColumnExt(1);
+        JComboBox<String> redirects = new JComboBox<>();
+        for (String value : m_mediaFileModelSwing.getRedirectsValues()) {
+            redirects.addItem(value);
+        }
+        redirectColumn.setCellEditor(new DefaultCellEditor(redirects));
+        TableColumnExt constraintColumn = m_mediaFileList.getColumnExt(2);
         JComboBox<String> constraints = new JComboBox<>();
         for (String value : m_mediaFileModelSwing.getConstraintsValues()) {
             constraints.addItem(value);

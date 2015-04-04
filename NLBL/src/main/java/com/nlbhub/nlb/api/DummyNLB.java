@@ -242,4 +242,9 @@ public class DummyNLB implements NonLinearBook {
     public Map<String, String> getMediaToConstraintMap() {
         return Collections.emptyMap();
     }
+
+    @Override
+    public Map<String, String> getMediaRedirectsMap() {
+        return Collections.emptyMap();
+    }
 }

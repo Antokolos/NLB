@@ -75,6 +75,28 @@ public class MediaFileModelSwing extends AbstractTableModel {
         }
     }
 
+    public List<String> getRedirectsValues() {
+        List<String> result = new ArrayList<>();
+        List<MediaFile> mediaFiles = null;
+        switch (m_mediaType) {
+            case Image:
+                mediaFiles = m_nonLinearBookFacade.getNlb().getImageFiles();
+                break;
+            case Sound:
+                mediaFiles = m_nonLinearBookFacade.getNlb().getSoundFiles();
+                break;
+        }
+        if (mediaFiles != null) {
+            for (MediaFile mediaFile : mediaFiles) {
+                if (StringHelper.isEmpty(mediaFile.getRedirect())) {
+                    result.add(mediaFile.getFileName());
+                }
+            }
+        }
+        Collections.sort(result);
+        return result;
+    }
+
     public List<String> getConstraintsValues() {
         List<String> result = new ArrayList<>();
         for (String value : m_namesToIdsMap.keySet()) {
@@ -98,7 +120,7 @@ public class MediaFileModelSwing extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 2;
+        return 3;
     }
 
     @Override
@@ -115,7 +137,15 @@ public class MediaFileModelSwing extends AbstractTableModel {
                 }
             case 1:
                 MediaFile mediaFile = getMediaFile(rowIndex);
-                final String constrId = (mediaFile != null) ? mediaFile.getConstrId() : null;
+                final String redirect = (mediaFile != null) ? mediaFile.getRedirect() : null;
+                if (StringHelper.notEmpty(redirect)) {
+                    return redirect;
+                } else {
+                    return Constants.EMPTY_STRING;
+                }
+            case 2:
+                MediaFile mediaFile1 = getMediaFile(rowIndex);
+                final String constrId = (mediaFile1 != null) ? mediaFile1.getConstrId() : null;
                 if (StringHelper.notEmpty(constrId)) {
                     // Constraint is the named boolean variable that should be defined somewhere
                     final Variable constraint = m_nonLinearBookFacade.getNlb().getVariableById(constrId);
@@ -130,9 +160,11 @@ public class MediaFileModelSwing extends AbstractTableModel {
 
     @Override
     public void setValueAt(final Object aValue, final int rowIndex, final int columnIndex) {
+        String value = (String) aValue;
         switch (columnIndex) {
             case 1:
-                String value = (String) aValue;
+                setMediaFileRedirect(rowIndex, value);
+            case 2:
                 setMediaFileConstrId(rowIndex, m_namesToIdsMap.get(value));
                 break;
             default:
@@ -158,12 +190,21 @@ public class MediaFileModelSwing extends AbstractTableModel {
         }
     }
 
+    private void setMediaFileRedirect(int rowIndex, String redirect) {
+        MediaFile mediaFile = getMediaFile(rowIndex);
+        if (mediaFile != null) {
+            m_nonLinearBookFacade.setMediaFileRedirect(m_mediaType, mediaFile.getFileName(), redirect);
+        }
+    }
+
     @Override
     public String getColumnName(int column) {
         switch (column) {
             case 0:
                 return "Media file name";
             case 1:
+                return "Redirect";
+            case 2:
                 return "Constraint";
             default:
                 return super.getColumnName(column);
@@ -172,6 +213,6 @@ public class MediaFileModelSwing extends AbstractTableModel {
 
     @Override
     public boolean isCellEditable(final int rowIndex, final int columnIndex) {
-        return columnIndex == 1;
+        return columnIndex > 0;
     }
 }

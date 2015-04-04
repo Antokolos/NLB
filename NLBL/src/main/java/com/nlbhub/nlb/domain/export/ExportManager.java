@@ -79,6 +79,7 @@ public abstract class ExportManager {
     private Map<String, ExportData> m_exportDataMap;
     private Map<String, Variable.DataType> m_dataTypeMap;
     private Map<String, String> m_mediaToConstraintMap;
+    private Map<String, String> m_mediaRedirectsMap;
 
     private class ExportData {
         private NonLinearBook m_nlb;
@@ -270,6 +271,7 @@ public abstract class ExportManager {
             m_exportDataMap = mainExportData.init();
             m_dataTypeMap = nlb.getVariableDataTypes();
             m_mediaToConstraintMap = nlb.getMediaToConstraintMap();
+            m_mediaRedirectsMap = nlb.getMediaRedirectsMap();
         } catch (NLBConsistencyException e) {
             throw new NLBExportException("Export error", e);
         }
@@ -1970,6 +1972,20 @@ public abstract class ExportManager {
     protected abstract String decoratePageSound(List<SoundPathData> pageSoundPathDatas, boolean soundSFX);
 
     /**
+     * Returns the name of the media file to which mediaFileName is redirected, or mediaFileName
+     * if no redirect was found.
+     * @param mediaFileName media file name
+     * @return the name of the media file to which mediaFileName is redirected, or mediaFileName
+     * if no redirect was found.
+     */
+    private String getRedirectMediaOrSelf(final String mediaFileName) {
+        if (m_mediaRedirectsMap.containsKey(mediaFileName)) {
+            return m_mediaRedirectsMap.get(mediaFileName);
+        }
+        return mediaFileName;
+    }
+
+    /**
      * NB: in case of ordinary (inline) NLB modules moduleDir should be <code>null</code>
      *
      * @param moduleDir
@@ -2008,7 +2024,8 @@ public abstract class ExportManager {
             final boolean animatedImage
     ) throws NLBExportException {
         ImagePathData result = new ImagePathData();
-        Matcher matcher = FILE_NAME_PATTERN.matcher(imageFileName);
+        // Please note that here we use redirected file name.
+        Matcher matcher = FILE_NAME_PATTERN.matcher(getRedirectMediaOrSelf(imageFileName));
         if (matcher.find()) {
             if (moduleDir == null) {
                 result.setParentFolderPath(NonLinearBook.IMAGES_DIR_NAME);
@@ -2023,6 +2040,8 @@ public abstract class ExportManager {
                 result.setMaxFrameNumber(0);
             }
             result.setFileExtension(matcher.group(3));
+            // Please note that here we use initial file name, not redirected.
+            // Thus we can use constraint for this initial file name.
             if (m_mediaToConstraintMap.containsKey(imageFileName)) {
                 result.setConstraint(m_mediaToConstraintMap.get(imageFileName));
             } else {
@@ -2062,7 +2081,12 @@ public abstract class ExportManager {
                 } else {
                     result.setParentFolderPath(NonLinearBook.SOUND_DIR_NAME + "/" + moduleDir);
                 }
-                result.setFileName(soundFileName);
+
+                // Please note that here we use redirected file name.
+                result.setFileName(getRedirectMediaOrSelf(soundFileName));
+
+                // Please note that here we use initial file name, not redirected.
+                // Thus we can use constraint for this initial file name.
                 if (m_mediaToConstraintMap.containsKey(soundFileName)) {
                     result.setConstraint(m_mediaToConstraintMap.get(soundFileName));
                 } else {

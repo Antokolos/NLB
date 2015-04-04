@@ -273,6 +273,18 @@ public class NonLinearBookFacade implements NLBObservable {
         m_nlb.setMediaFileConstrId(mediaType, fileName, constrId);
     }
 
+    /**
+     * This method does not have undo and immediately sets redirect of the media file with the specified
+     * type and name.
+     *
+     * @param mediaType
+     * @param fileName
+     * @param redirect
+     */
+    public void setMediaFileRedirect(final MediaFile.Type mediaType, final String fileName, final String redirect) {
+        m_nlb.setMediaFileRedirect(mediaType, fileName, redirect);
+    }
+
     public void updateBookProperties(
             final String license,
             final String language,

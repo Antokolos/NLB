@@ -49,14 +49,25 @@ import com.nlbhub.nlb.api.MediaFile;
  */
 public class MediaFileImpl implements MediaFile {
     private String m_fileName;
+    private String m_redirect;
     private String m_constrId;
 
+    @Override
     public String getFileName() {
         return m_fileName;
     }
 
     public void setFileName(String fileName) {
         m_fileName = fileName;
+    }
+
+    @Override
+    public String getRedirect() {
+        return m_redirect;
+    }
+
+    public void setRedirect(String redirect) {
+        m_redirect = redirect;
     }
 
     @Override
