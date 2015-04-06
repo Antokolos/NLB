@@ -2939,20 +2939,32 @@ public class NonLinearBookImpl implements NonLinearBook {
         // (when image/sound is added), only metadata should be saved
         if (mediaDir.exists()) {
             for (MediaFile mediaFile : mediaFiles) {
-                File file = new File(mediaDir, mediaFile.getFileName() + CONSTRID_EXT);
+                File constrIdFile = new File(mediaDir, mediaFile.getFileName() + CONSTRID_EXT);
                 if (StringHelper.isEmpty(mediaFile.getConstrId())) {
-                    if (file.exists()) {
-                        fileManipulator.deleteFileOrDir(file);
+                    if (constrIdFile.exists()) {
+                        fileManipulator.deleteFileOrDir(constrIdFile);
                     }
                 } else {
                     fileManipulator.writeOptionalString(
                             mediaDir,
-                            file.getName(),
+                            constrIdFile.getName(),
                             mediaFile.getConstrId(),
                             Constants.EMPTY_STRING
                     );
                 }
-
+                File redirectFile = new File(mediaDir, mediaFile.getFileName() + REDIRECT_EXT);
+                if (StringHelper.isEmpty(mediaFile.getRedirect())) {
+                    if (redirectFile.exists()) {
+                        fileManipulator.deleteFileOrDir(redirectFile);
+                    }
+                } else {
+                    fileManipulator.writeOptionalString(
+                            mediaDir,
+                            redirectFile.getName(),
+                            mediaFile.getRedirect(),
+                            Constants.EMPTY_STRING
+                    );
+                }
             }
         }
     }

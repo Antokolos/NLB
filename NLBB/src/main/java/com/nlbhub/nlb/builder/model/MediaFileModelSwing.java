@@ -56,6 +56,7 @@ import static com.nlbhub.nlb.api.Variable.Type.TAG;
  * @version 1.0
  */
 public class MediaFileModelSwing extends AbstractTableModel {
+    private static final String NC = "<N/C>";
     private NonLinearBookFacade m_nonLinearBookFacade;
     private MediaFile.Type m_mediaType;
     private Map<String, String> m_namesToIdsMap;
@@ -64,7 +65,7 @@ public class MediaFileModelSwing extends AbstractTableModel {
         m_nonLinearBookFacade = nonLinearBookFacade;
         m_mediaType = mediaType;
         m_namesToIdsMap = new HashMap<>();
-        m_namesToIdsMap.put("<N/C>", Constants.EMPTY_STRING);
+        m_namesToIdsMap.put(NC, Constants.EMPTY_STRING);
         for (final Variable variable : nonLinearBookFacade.getNlb().getVariables()) {
             if (variable.getType() == TAG) {
                 // Only first variable with such name is used
@@ -93,6 +94,7 @@ public class MediaFileModelSwing extends AbstractTableModel {
                 }
             }
         }
+        result.add(NC);
         Collections.sort(result);
         return result;
     }
@@ -163,7 +165,12 @@ public class MediaFileModelSwing extends AbstractTableModel {
         String value = (String) aValue;
         switch (columnIndex) {
             case 1:
-                setMediaFileRedirect(rowIndex, value);
+                if (NC.equalsIgnoreCase(value)) {
+                    setMediaFileRedirect(rowIndex, Constants.EMPTY_STRING);
+                } else {
+                    setMediaFileRedirect(rowIndex, value);
+                }
+                break;
             case 2:
                 setMediaFileConstrId(rowIndex, m_namesToIdsMap.get(value));
                 break;
