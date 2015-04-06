@@ -77,10 +77,10 @@ public class NonLinearBookImpl implements NonLinearBook {
     private static final String MEDIA_FILE_NAME_TEMPLATE = "%s_%d%s";
     private static final String CONSTRID_EXT = ".constrid";
     private static final String REDIRECT_EXT = ".redirect";
-    private static final FilenameFilter NON_CONSTRID_FILTER = new FilenameFilter() {
+    private static final FilenameFilter NON_SPECIAL_FILTER = new FilenameFilter() {
         @Override
         public boolean accept(final File dir, final String name) {
-            return !name.endsWith(CONSTRID_EXT);
+            return !name.endsWith(CONSTRID_EXT) && !name.endsWith(REDIRECT_EXT);
         }
     };
     private static final String STARTPOINT_FILE_NAME = "startpoint";
@@ -2851,7 +2851,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         final File imagesDir = new File(rootDir, IMAGES_DIR_NAME);
         // imagesDir dir can be nonexistent, in this case there is no images in the book
         if (imagesDir.exists()) {
-            File[] listFiles = imagesDir.listFiles(NON_CONSTRID_FILTER);
+            File[] listFiles = imagesDir.listFiles(NON_SPECIAL_FILTER);
             if (listFiles == null) {
                 throw new NLBIOException("Error when enumerating images' directory contents");
             }
@@ -2882,7 +2882,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         final File soundDir = new File(rootDir, SOUND_DIR_NAME);
         // soundDir dir can be nonexistent, in this case there is no sound in the book
         if (soundDir.exists()) {
-            File[] listFiles = soundDir.listFiles(NON_CONSTRID_FILTER);
+            File[] listFiles = soundDir.listFiles(NON_SPECIAL_FILTER);
             if (listFiles == null) {
                 throw new NLBIOException("Error when enumerating sound' directory contents");
             }
