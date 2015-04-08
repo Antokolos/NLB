@@ -60,6 +60,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.*;
+import java.util.List;
 
 public class DialogMediaLibrary extends JDialog {
     private final static String PH_IMAGE_EXT = ".png";
@@ -69,7 +71,6 @@ public class DialogMediaLibrary extends JDialog {
     private final JFileChooser m_fileChooser = new JFileChooser();
     private MediaFileModelSwing m_mediaFileModelSwing;
     private String m_selectedFileName;
-    private ListSingleSelectionModel m_listSingleSelectionModel = new ListSingleSelectionModel();
     private boolean m_isCanceled = false;
     private JPanel contentPane;
     private JButton buttonOK;
@@ -87,13 +88,15 @@ public class DialogMediaLibrary extends JDialog {
     public DialogMediaLibrary(
             final MainFrame mainFrame,
             final NonLinearBookFacade nonLinearBookFacade,
-            final MediaFile.Type mediaType
+            final MediaFile.Type mediaType,
+            String[] itemsSelectedByDefault
     ) {
         final DialogMediaLibrary self = this;
         setContentPane(contentPane);
         m_mediaFileModelSwing = new MediaFileModelSwing(nonLinearBookFacade, mediaType);
         m_mediaFileList.setModel(m_mediaFileModelSwing);
-        m_listSingleSelectionModel.addListSelectionListener(
+        ListSingleSelectionModel listSingleSelectionModel = new ListSingleSelectionModel();
+        listSingleSelectionModel.addListSelectionListener(
                 new ListSelectionListener() {
                     @Override
                     public void valueChanged(ListSelectionEvent e) {
@@ -126,7 +129,7 @@ public class DialogMediaLibrary extends JDialog {
                     }
                 }
         );
-        m_mediaFileList.setSelectionModel(m_listSingleSelectionModel);
+        m_mediaFileList.setSelectionModel(listSingleSelectionModel);
         TableColumnExt redirectColumn = m_mediaFileList.getColumnExt(1);
         JComboBox<String> redirects = new JComboBox<>();
         for (String value : m_mediaFileModelSwing.getRedirectsValues()) {
@@ -139,6 +142,7 @@ public class DialogMediaLibrary extends JDialog {
             constraints.addItem(value);
         }
         constraintColumn.setCellEditor(new DefaultCellEditor(constraints));
+        selectItems(itemsSelectedByDefault);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
@@ -283,6 +287,32 @@ public class DialogMediaLibrary extends JDialog {
                 m_imagePreviewPanel.setVisible(false);
                 break;
         }
+    }
+
+    private void selectItems(String[] itemsSelectedByDefault) {
+        m_mediaFileList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        //select needed lines
+        ListSelectionModel model = m_mediaFileList.getSelectionModel();
+        model.clearSelection();
+        Integer[] focusedLines = getFocusedLines(Arrays.asList(itemsSelectedByDefault));
+        for (Integer actualRow : focusedLines) {
+            model.addSelectionInterval(actualRow, actualRow);
+        }
+        //then select column if needed
+        //table.setColumnSelectionInterval(from, to)
+        //at the end request focus
+        m_mediaFileList.requestFocusInWindow();
+    }
+
+    private Integer[] getFocusedLines(Collection<String> itemsSelectedByDefault) {
+        List<Integer> selectedLines = new ArrayList<>();
+        for (int i = 0; i < m_mediaFileModelSwing.getRowCount(); i++) {
+            String value = (String) m_mediaFileModelSwing.getValueAt(i, 0);
+            if (itemsSelectedByDefault.contains(value)) {
+                selectedLines.add(i);
+            }
+        }
+        return selectedLines.toArray(new Integer[selectedLines.size()]);
     }
 
     private File chooseMediaFile() {

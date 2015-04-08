@@ -152,7 +152,12 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 DialogMediaLibrary dialog = (
-                        new DialogMediaLibrary(mainFrame, m_nlbFacade.getMainFacade(), MediaFile.Type.Image)
+                        new DialogMediaLibrary(
+                                mainFrame,
+                                m_nlbFacade.getMainFacade(),
+                                MediaFile.Type.Image,
+                                m_imageFileName.split(Constants.MEDIA_FILE_NAME_SEP)
+                        )
                 );
                 dialog.showDialog();
                 if (!dialog.isCanceled()) {

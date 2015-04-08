@@ -116,8 +116,8 @@ public class NonLinearBookImpl implements NonLinearBook {
     private List<String> m_autowiredPages;
     private Map<String, ObjImpl> m_objs;
     private List<VariableImpl> m_variables;
-    private List<MediaFileImpl> m_imageFiles;
-    private List<MediaFileImpl> m_soundFiles;
+    private Set<MediaFileImpl> m_imageFiles;
+    private Set<MediaFileImpl> m_soundFiles;
     private NonLinearBook m_parentNLB;
     private Page m_parentPage;
 
@@ -1929,8 +1929,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_autowiredPages = new ArrayList<>();
         m_objs = new HashMap<>();
         m_variables = new ArrayList<>();
-        m_imageFiles = new ArrayList<>();
-        m_soundFiles = new ArrayList<>();
+        m_imageFiles = new TreeSet<>();
+        m_soundFiles = new TreeSet<>();
     }
 
     public NonLinearBookImpl(NonLinearBook parentNLB, Page parentPage) {
@@ -1947,8 +1947,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_autowiredPages = new ArrayList<>();
         m_objs = new HashMap<>();
         m_variables = new ArrayList<>();
-        m_imageFiles = new ArrayList<>();
-        m_soundFiles = new ArrayList<>();
+        m_imageFiles = new TreeSet<>();
+        m_soundFiles = new TreeSet<>();
     }
 
     ChangeStartPointCommand createChangeStartPointCommand(final String startPoint) {
@@ -2856,8 +2856,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 throw new NLBIOException("Error when enumerating images' directory contents");
             }
             for (File file : listFiles) {
-                final MediaFileImpl imageFile = new MediaFileImpl();
-                imageFile.setFileName(file.getName());
+                final MediaFileImpl imageFile = new MediaFileImpl(file.getName());
                 imageFile.setRedirect(
                         FileManipulator.getOptionalFileAsString(
                                 imagesDir,
@@ -2887,8 +2886,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 throw new NLBIOException("Error when enumerating sound' directory contents");
             }
             for (File file : listFiles) {
-                final MediaFileImpl soundFile = new MediaFileImpl();
-                soundFile.setFileName(file.getName());
+                final MediaFileImpl soundFile = new MediaFileImpl(file.getName());
                 soundFile.setRedirect(
                         FileManipulator.getOptionalFileAsString(
                                 soundDir,
@@ -2931,7 +2929,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     private void writeMediaFiles(
-            List<MediaFileImpl> mediaFiles,
+            Set<MediaFileImpl> mediaFiles,
             final @NotNull FileManipulator fileManipulator,
             final File mediaDir
     ) throws NLBIOException, NLBConsistencyException, NLBFileManipulationException, NLBVCSException {
@@ -4132,8 +4130,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     ) throws NLBFileManipulationException, NLBIOException, NLBVCSException {
         File localFile = createUniqueMediaFile(fileManipulator, file, fileName, mediaDirName);
         fileManipulator.copyFile(localFile, file, "Cannot copy media file " + localFile.getName());
-        MediaFileImpl mediaFile = new MediaFileImpl();
-        mediaFile.setFileName(localFile.getName());
+        MediaFileImpl mediaFile = new MediaFileImpl(localFile.getName());
         return mediaFile;
     }
 
@@ -4178,7 +4175,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final @NotNull FileManipulator fileManipulator,
             final String imageFileName
     ) throws NLBFileManipulationException, NLBIOException, NLBConsistencyException {
-        ListIterator<MediaFileImpl> imageFileIterator = m_imageFiles.listIterator();
+        Iterator<MediaFileImpl> imageFileIterator = m_imageFiles.iterator();
         while (imageFileIterator.hasNext()) {
             MediaFileImpl imageFile = imageFileIterator.next();
             if (imageFile.getFileName().equals(imageFileName)) {
@@ -4201,7 +4198,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final @NotNull FileManipulator fileManipulator,
             final String soundFileName
     ) throws NLBFileManipulationException, NLBIOException, NLBConsistencyException {
-        ListIterator<MediaFileImpl> soundFileIterator = m_soundFiles.listIterator();
+        Iterator<MediaFileImpl> soundFileIterator = m_soundFiles.iterator();
         while (soundFileIterator.hasNext()) {
             MediaFileImpl soundFile = soundFileIterator.next();
             if (soundFile.getFileName().equals(soundFileName)) {
@@ -4238,6 +4235,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
+    @Override
     public void exportMedia(
             final boolean isRoot,
             final File mainExportDir,

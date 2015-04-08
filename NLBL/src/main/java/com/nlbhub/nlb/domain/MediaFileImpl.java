@@ -52,6 +52,10 @@ public class MediaFileImpl implements MediaFile {
     private String m_redirect;
     private String m_constrId;
 
+    public MediaFileImpl(String fileName) {
+        m_fileName = fileName;
+    }
+
     @Override
     public String getFileName() {
         return m_fileName;
@@ -77,5 +81,32 @@ public class MediaFileImpl implements MediaFile {
 
     public void setConstrId(final String constrId) {
         m_constrId = constrId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MediaFileImpl mediaFile = (MediaFileImpl) o;
+
+        if (m_constrId != null ? !m_constrId.equals(mediaFile.m_constrId) : mediaFile.m_constrId != null) return false;
+        if (!m_fileName.equals(mediaFile.m_fileName)) return false;
+        if (m_redirect != null ? !m_redirect.equals(mediaFile.m_redirect) : mediaFile.m_redirect != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = m_fileName.hashCode();
+        result = 31 * result + (m_redirect != null ? m_redirect.hashCode() : 0);
+        result = 31 * result + (m_constrId != null ? m_constrId.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public int compareTo(MediaFile o) {
+        return m_fileName.compareTo(o.getFileName());
     }
 }

@@ -44,7 +44,7 @@ package com.nlbhub.nlb.api;
  * @author Anton P. Kolosov
  * @version 1.0
  */
-public interface MediaFile {
+public interface MediaFile extends Comparable<MediaFile> {
     public enum Type {Image, Sound}
 
     public String getFileName();
