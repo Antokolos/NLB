@@ -919,6 +919,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         final JScrollPane scrollPane9 = new JScrollPane();
         panel29.add(scrollPane9, BorderLayout.CENTER);
         m_linksTable = new JXTable();
+        m_linksTable.setSortable(false);
         m_linksTable.setVisibleRowCount(5);
         m_linksTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         scrollPane9.setViewportView(m_linksTable);

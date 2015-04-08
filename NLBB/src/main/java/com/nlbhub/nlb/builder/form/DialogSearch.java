@@ -326,6 +326,7 @@ public class DialogSearch extends JDialog {
         final JScrollPane scrollPane2 = new JScrollPane();
         panel18.add(scrollPane2, BorderLayout.CENTER);
         m_searchResultsTable = new JXTable();
+        m_searchResultsTable.setSortable(false);
         m_searchResultsTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         scrollPane2.setViewportView(m_searchResultsTable);
         label1.setLabelFor(m_searchText);

@@ -652,6 +652,7 @@
                                           <component id="c125" class="org.jdesktop.swingx.JXTable" binding="m_linksTable">
                                             <constraints/>
                                             <properties>
+                                              <sortable value="false"/>
                                               <visibleRowCount value="5"/>
                                             </properties>
                                             <clientProperties>

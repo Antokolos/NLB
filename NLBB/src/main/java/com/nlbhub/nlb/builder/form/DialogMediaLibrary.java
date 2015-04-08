@@ -461,6 +461,7 @@ public class DialogMediaLibrary extends JDialog {
         final JScrollPane scrollPane1 = new JScrollPane();
         panel9.add(scrollPane1, BorderLayout.CENTER);
         m_mediaFileList = new JXTable();
+        m_mediaFileList.setSortable(false);
         m_mediaFileList.setVisibleRowCount(10);
         m_mediaFileList.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         scrollPane1.setViewportView(m_mediaFileList);

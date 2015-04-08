@@ -166,6 +166,7 @@
                   <component id="cf9d" class="org.jdesktop.swingx.JXTable" binding="m_mediaFileList">
                     <constraints/>
                     <properties>
+                      <sortable value="false"/>
                       <visibleRowCount value="10"/>
                     </properties>
                     <clientProperties>

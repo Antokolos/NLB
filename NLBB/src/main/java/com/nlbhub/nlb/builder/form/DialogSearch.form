@@ -259,7 +259,9 @@
                     <children>
                       <component id="15c08" class="org.jdesktop.swingx.JXTable" binding="m_searchResultsTable">
                         <constraints/>
-                        <properties/>
+                        <properties>
+                          <sortable value="false"/>
+                        </properties>
                         <clientProperties>
                           <terminateEditOnFocusLost class="java.lang.Boolean" value="true"/>
                         </clientProperties>

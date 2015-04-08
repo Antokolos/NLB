@@ -383,6 +383,7 @@ public class DialogModifications extends JDialog implements NLBObserver {
         m_modifications = new JXTable();
         m_modifications.setCellSelectionEnabled(true);
         m_modifications.setColumnSelectionAllowed(true);
+        m_modifications.setSortable(false);
         m_modifications.setVisibleRowCount(5);
         m_modifications.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         scrollPane1.setViewportView(m_modifications);
