@@ -73,7 +73,6 @@ public class URQExportManager extends TextExportManager {
     @Override
     protected String generatePageText(PageBuildingBlocks pageBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
-        StringBuilder postPage = new StringBuilder();
         stringBuilder.append(pageBlocks.getPageComment());
         stringBuilder.append(pageBlocks.getPageLabel());
         stringBuilder.append(pageBlocks.getPageCaption());
@@ -88,15 +87,22 @@ public class URQExportManager extends TextExportManager {
                 stringBuilder.append("if ").append(linkBlocks.getLinkConstraint()).append(" then ");
             }
             stringBuilder.append(linkBlocks.getLinkStart());
+        }
+        stringBuilder.append(pageBlocks.getPageEnd());
+        return stringBuilder.toString();
+    }
+
+    @Override
+    protected String generatePostPageText(PageBuildingBlocks pageBlocks) {
+        StringBuilder postPage = new StringBuilder();
+        for (final LinkBuildingBlocks linkBlocks : pageBlocks.getLinksBuildingBlocks()) {
             postPage.append(linkBlocks.getLinkComment());
             postPage.append(linkBlocks.getLinkLabel());
             postPage.append(linkBlocks.getLinkModifications());
             postPage.append(linkBlocks.getLinkVariable());
             postPage.append(linkBlocks.getLinkGoTo());
         }
-        stringBuilder.append(decoratePageEnd());
-        stringBuilder.append(postPage.toString());
-        return stringBuilder.toString();
+        return postPage.toString();
     }
 
     @Override
@@ -319,7 +325,7 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageTextEnd() {
+    protected String decoratePageTextEnd(String labelText, int pageNumber) {
         return LINE_SEPARATOR;
     }
 

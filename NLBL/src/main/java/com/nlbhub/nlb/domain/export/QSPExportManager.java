@@ -103,8 +103,13 @@ public class QSPExportManager extends TextExportManager {
                 stringBuilder.append("END").append(LINE_SEPARATOR);
             }
         }
-        stringBuilder.append(decoratePageEnd());
+        stringBuilder.append(pageBlocks.getPageEnd());
         return stringBuilder.toString();
+    }
+
+    @Override
+    protected String generatePostPageText(PageBuildingBlocks pageBlocks) {
+        return Constants.EMPTY_STRING;
     }
 
     @Override
@@ -298,7 +303,7 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageTextEnd() {
+    protected String decoratePageTextEnd(String labelText, int pageNumber) {
         return "'" + LINE_SEPARATOR;
     }
 

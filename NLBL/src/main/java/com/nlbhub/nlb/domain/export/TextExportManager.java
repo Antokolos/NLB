@@ -88,7 +88,9 @@ public abstract class TextExportManager extends ExportManager {
             stringBuilder.append(generateObjText(objsBlocks.get(i)));
         }
         for (int i = 0; i < pagesBlocks.size(); i++) {
-            stringBuilder.append(generatePageText(pagesBlocks.get(i)));
+            PageBuildingBlocks pageBlocks = pagesBlocks.get(i);
+            stringBuilder.append(generatePageText(pageBlocks));
+            stringBuilder.append(generatePostPageText(pageBlocks));
         }
         stringBuilder.append(generateTrailingText());
         return stringBuilder.toString();
@@ -99,6 +101,8 @@ public abstract class TextExportManager extends ExportManager {
     protected abstract String generateObjText(final ObjBuildingBlocks objBlocks);
 
     protected abstract String generatePageText(final PageBuildingBlocks pageBlocks);
+
+    protected abstract String generatePostPageText(PageBuildingBlocks pageBlocks);
 
     protected abstract String generateTrailingText();
 }

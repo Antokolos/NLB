@@ -451,6 +451,7 @@ public abstract class HypertextExportManager
 
     @Override
     protected String decoratePageEnd() {
+        // TODO: Not used here???
         return "page end";
     }
 
@@ -513,7 +514,7 @@ public abstract class HypertextExportManager
     }
 
     @Override
-    protected String decoratePageTextEnd() {
+    protected String decoratePageTextEnd(String labelText, int pageNumber) {
         return "";
     }
 

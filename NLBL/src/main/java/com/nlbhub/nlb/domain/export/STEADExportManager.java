@@ -58,10 +58,7 @@ public class STEADExportManager extends TextExportManager {
     private static final String GLOBAL_VAR_PREFIX = "_";
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
     private static final Pattern STEAD_OBJ_PATTERN = Pattern.compile("\\{(.*)\\}");
-    /**
-     * Use page numbers as destinations instead of page IDs.
-     */
-    private static final boolean GOTO_PAGE_NUMBERS = true;
+
     /**
      * Enable comments in the generated text
      */
@@ -535,8 +532,6 @@ public class STEADExportManager extends TextExportManager {
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             if (linkBlocks.isAuto()) {
                 autosBuilder.append(generateAutoLinkCode(linkBlocks));
-            } else {
-                stringBuilder.append(generateOrdinaryLinkCode(linkBlocks));
             }
         }
         autosBuilder.append("    end,").append(LINE_SEPARATOR);
@@ -545,6 +540,7 @@ public class STEADExportManager extends TextExportManager {
                 !StringHelper.isEmpty(pageBlocks.getPageVariable())
                         || !StringHelper.isEmpty(pageBlocks.getPageModifications())
         );
+        stringBuilder.append(generateOrdinaryLinkTextInsideRoom(pageBlocks));
         stringBuilder.append(pageBlocks.getPageTextEnd());
 
         stringBuilder.append(autosBuilder.toString());
@@ -575,8 +571,23 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageSound());
 
         stringBuilder.append(generateObjsCollection(pageBlocks, linksBlocks));
-        stringBuilder.append(decoratePageEnd());
+        stringBuilder.append(pageBlocks.getPageEnd());
         return stringBuilder.toString();
+    }
+
+    protected String generateOrdinaryLinkTextInsideRoom(PageBuildingBlocks pageBuildingBlocks) {
+        StringBuilder linksBuilder = new StringBuilder();
+        for (final LinkBuildingBlocks linkBlocks : pageBuildingBlocks.getLinksBuildingBlocks()) {
+            if (!linkBlocks.isAuto()) {
+                linksBuilder.append(generateOrdinaryLinkCode(linkBlocks));
+            }
+        }
+        return linksBuilder.toString();
+    }
+
+    @Override
+    protected String generatePostPageText(PageBuildingBlocks pageBlocks) {
+        return Constants.EMPTY_STRING;
     }
 
     protected String generateObjsCollection(PageBuildingBlocks pageBlocks, List<LinkBuildingBlocks> linksBlocks) {
@@ -1451,25 +1462,20 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageTextEnd() {
+    protected String decoratePageTextEnd(String labelText, int pageNumber) {
         return "    end," + LINE_SEPARATOR;
     }
 
     @Override
     protected String decoratePageLabel(String labelText, int pageNumber) {
         StringBuilder roomBeginning = new StringBuilder();
-        String roomName = getGoToPageNumbers() ? decorateId(String.valueOf(pageNumber)) : decorateId(labelText);
-        roomBeginning.append(roomName);
+        roomBeginning.append(decoratePageName(labelText, pageNumber));
         if (pageNumber == 1) {
             roomBeginning.append(", main = room { nam = \"main\", enter = function(s) nlbwalk(main); end }, ");
         } else {
             roomBeginning.append(" = ");
         }
         return roomBeginning.toString() + "room {" + LINE_SEPARATOR;
-    }
-
-    protected boolean getGoToPageNumbers() {
-        return GOTO_PAGE_NUMBERS;
     }
 
     @Override
@@ -1480,9 +1486,5 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decoratePageComment(String comment) {
         return "-- " + comment + LINE_SEPARATOR;
-    }
-
-    protected String decorateId(String id) {
-        return "v_" + id.replaceAll("-", "_");
     }
 }

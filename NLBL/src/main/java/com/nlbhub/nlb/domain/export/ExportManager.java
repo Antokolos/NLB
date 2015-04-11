@@ -81,6 +81,11 @@ public abstract class ExportManager {
     private Map<String, String> m_mediaToConstraintMap;
     private Map<String, String> m_mediaRedirectsMap;
 
+    /**
+     * Use page numbers as destinations instead of page IDs.
+     */
+    private static final boolean GOTO_PAGE_NUMBERS = true;
+
     private class ExportData {
         private NonLinearBook m_nlb;
         private Page m_modulePage;
@@ -357,6 +362,7 @@ public abstract class ExportManager {
         NonLinearBook nlb = exportData.getNlb();
         PageBuildingBlocks blocks = new PageBuildingBlocks();
         final Integer pageNumber = exportData.getPageNumber(page.getId());
+        blocks.setPageName(decoratePageName(page.getId(), pageNumber));
         blocks.setPageLabel(decoratePageLabel(page.getId(), pageNumber));
         blocks.setPageNumber(decoratePageNumber(pageNumber));
         blocks.setPageComment(decoratePageComment(page.getCaption()));
@@ -366,7 +372,7 @@ public abstract class ExportManager {
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
         blocks.setPageSound(decoratePageSound(getSoundPaths(null, soundFileName), page.isSoundSFX()));
         blocks.setPageTextStart(decoratePageTextStart(page.getId(), pageNumber, StringHelper.getTextChunks(page.getText())));
-        blocks.setPageTextEnd(decoratePageTextEnd());
+        blocks.setPageTextEnd(decoratePageTextEnd(page.getId(), pageNumber));
         if (!StringHelper.isEmpty(page.getVarId())) {
             Variable variable = nlb.getVariableById(page.getVarId());
             // TODO: Add cases with deleted pages/links/variables etc. to the unit test
@@ -2117,7 +2123,19 @@ public abstract class ExportManager {
 
     protected abstract String getLineSeparator();
 
-    protected abstract String decoratePageTextEnd();
+    protected abstract String decoratePageTextEnd(String labelText, int pageNumber);
+
+    protected boolean getGoToPageNumbers() {
+        return GOTO_PAGE_NUMBERS;
+    }
+
+    protected String decorateId(String id) {
+        return "v_" + id.replaceAll("-", "_");
+    }
+
+    protected String decoratePageName(String labelText, int pageNumber) {
+        return getGoToPageNumbers() ? decorateId(String.valueOf(pageNumber)) : decorateId(labelText);
+    }
 
     protected abstract String decoratePageLabel(String labelText, int pageNumber);
 

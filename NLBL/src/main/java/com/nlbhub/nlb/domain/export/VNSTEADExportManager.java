@@ -39,7 +39,6 @@
 package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.Constants;
-import com.nlbhub.nlb.api.Link;
 import com.nlbhub.nlb.api.TextChunk;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
@@ -102,7 +101,7 @@ public class VNSTEADExportManager extends STEADExportManager {
 
     @Override
     protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {
-        String roomName = getGoToPageNumbers() ? decorateId(String.valueOf(pageNumber)) : decorateId(labelText);
+
         String lineSep = getLineSeparator();
         StringBuilder pageText = new StringBuilder();
         pageText.append("    dsc = function(s)").append(lineSep);
@@ -112,23 +111,38 @@ public class VNSTEADExportManager extends STEADExportManager {
             pageText.append("\");").append(lineSep);
             pageText.append("pn();").append(lineSep);
         }
-        pageText.append("    end,").append(lineSep);
-        pageText.append("    walk_to = room {").append(lineSep);
-        pageText.append("        nam = \"").append(roomName).append("_choices\",").append(lineSep);
-        pageText.append("        enter = function(s) ").append(lineSep);
-        pageText.append("            objs():zap();").append(lineSep);
         return pageText.toString();
     }
 
     @Override
-    protected String decoratePageTextEnd() {
-        StringBuilder pageText = new StringBuilder();
+    protected String decoratePageTextEnd(String labelText, int pageNumber) {
         String lineSep = getLineSeparator();
-        pageText.append("            theme.win.geom(320, 320, 1280, 480);").append(lineSep);
-        pageText.append("            vn:start('dissolve');").append(lineSep);
-        pageText.append("            vn:commit();").append(lineSep);
-        pageText.append("        end").append(lineSep).append("    },").append(lineSep);
-        return  pageText.toString();
+        StringBuilder pageText = new StringBuilder();
+        pageText.append("    end,").append(lineSep);
+        pageText.append("    walk_to = \"").append(decoratePageName(labelText, pageNumber)).append("_choices\",").append(lineSep);
+        return pageText.toString();
+    }
+
+    @Override
+    protected String generateOrdinaryLinkTextInsideRoom(PageBuildingBlocks pageBuildingBlocks) {
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
+    protected String generatePostPageText(PageBuildingBlocks pageBlocks) {
+        StringBuilder result = new StringBuilder();
+        String lineSep = getLineSeparator();
+        String roomName = pageBlocks.getPageName();
+        result.append(roomName).append("_choices").append(" = room {").append(lineSep);
+        result.append("    nam = \"").append(roomName).append("_choices\",").append(lineSep);
+        result.append("    enter = function(s) ").append(lineSep);
+        result.append("        objs():zap();").append(lineSep);
+        result.append(super.generateOrdinaryLinkTextInsideRoom(pageBlocks));
+        result.append("        theme.win.geom(320, 320, 1280, 480);").append(lineSep);
+        result.append("        vn:start('dissolve');").append(lineSep);
+        result.append("        vn:commit();").append(lineSep);
+        result.append("    end").append(lineSep).append("}").append(lineSep).append(lineSep);
+        return result.toString();
     }
 
     @Override

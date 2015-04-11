@@ -48,6 +48,7 @@ import java.util.List;
  * @version 1.0 12/5/13
  */
 public class PageBuildingBlocks {
+    private String m_pageName;
     private String m_pageLabel;
     private String m_pageNumber;
     private String m_pageComment;
@@ -67,6 +68,14 @@ public class PageBuildingBlocks {
     public PageBuildingBlocks() {
         m_containedObjIds = new ArrayList<>();
         m_linksBuildingBlocks = new ArrayList<>();
+    }
+
+    public String getPageName() {
+        return m_pageName;
+    }
+
+    public void setPageName(String pageName) {
+        m_pageName = pageName;
     }
 
     public String getPageLabel() {

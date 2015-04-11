@@ -700,7 +700,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decoratePageTextEnd() {
+    protected String decoratePageTextEnd(String labelText, int pageNumber) {
         return Constants.EMPTY_STRING;
     }
 
@@ -717,9 +717,5 @@ public class JSIQ2ExportManager extends XMLExportManager {
     @Override
     protected String decoratePageComment(String comment) {
         return Constants.EMPTY_STRING;
-    }
-
-    private String decorateId(String id) {
-        return "v_" + id.replaceAll("-", "_");
     }
 }

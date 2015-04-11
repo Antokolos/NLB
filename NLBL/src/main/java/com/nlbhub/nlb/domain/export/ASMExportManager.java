@@ -71,7 +71,6 @@ public class ASMExportManager extends TextExportManager {
     @Override
     protected String generatePageText(PageBuildingBlocks pageBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
-        StringBuilder postPage = new StringBuilder();
         stringBuilder.append(pageBlocks.getPageComment());
         stringBuilder.append(pageBlocks.getPageLabel());
         stringBuilder.append(pageBlocks.getPageCaption());
@@ -89,14 +88,8 @@ public class ASMExportManager extends TextExportManager {
             if (hasConstraint) {
                 stringBuilder.append("<<endif>>").append(LINE_SEPARATOR);
             }
-            postPage.append(linkBlocks.getLinkComment());
-            postPage.append(linkBlocks.getLinkLabel());
-            postPage.append(linkBlocks.getLinkModifications());
-            postPage.append(linkBlocks.getLinkVariable());
-            postPage.append(linkBlocks.getLinkGoTo());
         }
-        stringBuilder.append(decoratePageEnd());
-        stringBuilder.append(postPage.toString());
+        stringBuilder.append(pageBlocks.getPageEnd());
         return stringBuilder.toString();
     }
 
@@ -172,6 +165,19 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
+    protected String generatePostPageText(PageBuildingBlocks pageBlocks) {
+        StringBuilder postPage = new StringBuilder();
+        for (final LinkBuildingBlocks linkBlocks : pageBlocks.getLinksBuildingBlocks()) {
+            postPage.append(linkBlocks.getLinkComment());
+            postPage.append(linkBlocks.getLinkLabel());
+            postPage.append(linkBlocks.getLinkModifications());
+            postPage.append(linkBlocks.getLinkVariable());
+            postPage.append(linkBlocks.getLinkGoTo());
+        }
+        return postPage.toString();
+    }
+
+    @Override
     protected String decorateLinkVariable(String variableName) {
         return "<<set $" + variableName + " = 1>>" + LINE_SEPARATOR;
     }
@@ -223,7 +229,7 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageTextEnd() {
+    protected String decoratePageTextEnd(String labelText, int pageNumber) {
         return LINE_SEPARATOR;
     }
 
