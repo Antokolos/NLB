@@ -1,8 +1,8 @@
 /**
- * @(#)TextToGraphics.java
+ * @(#)ImageHelper.java
  *
  * This file is part of the Non-Linear Book project.
- * Copyright (c) 2012-2014 Anton P. Kolosov
+ * Copyright (c) 2012-2015 Anton P. Kolosov
  * Authors: Anton P. Kolosov, et al.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -34,7 +34,7 @@
  * For more information, please contact Anton P. Kolosov at this
  * address: antokolos@gmail.com
  *
- * Copyright (c) 2014 Anton P. Kolosov All rights reserved.
+ * Copyright (c) 2015 Anton P. Kolosov All rights reserved.
  */
 package com.nlbhub.nlb.builder.util;
 
@@ -47,8 +47,15 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+import javax.swing.*;
 
-public class TextToGraphics {
+/**
+ * The ImageHelper class
+ *
+ * @author Anton P. Kolosov
+ * @version 1.0
+ */
+public class ImageHelper {
     public static boolean textToGraphics(String text, File outputFile) {
         try {
             /*
@@ -85,5 +92,14 @@ public class TextToGraphics {
         } catch (IOException e) {
             return false;
         }
+    }
+
+    public static double getScaleToFit(JPanel componentToFit, File imageFile) throws IOException {
+        BufferedImage bimg = ImageIO.read(imageFile);
+        int width          = bimg.getWidth();
+        int height         = bimg.getHeight();
+        double scalex = componentToFit.getVisibleRect().getWidth() / (double) width;
+        double scaley = componentToFit.getVisibleRect().getHeight() / (double) height;
+        return (scalex < scaley) ? scalex : scaley;
     }
 }

@@ -42,7 +42,8 @@ import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.MediaFile;
 import com.nlbhub.nlb.builder.model.ListSingleSelectionModel;
 import com.nlbhub.nlb.builder.model.MediaFileModelSwing;
-import com.nlbhub.nlb.builder.util.TextToGraphics;
+import com.nlbhub.nlb.builder.util.ImageHelper;
+import com.nlbhub.nlb.builder.util.WheelScaleListener;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
@@ -53,11 +54,13 @@ import org.jdesktop.swingx.JXImageView;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.table.TableColumnExt;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -68,6 +71,7 @@ public class DialogMediaLibrary extends JDialog {
     private final static File PLACEHOLDER_IMAGE = new File("template/sample" + PH_IMAGE_EXT);
     private final static String PH_SOUND_EXT = ".ogg";
     private final static File PLACEHOLDER_SOUND = new File("template/sample" + PH_SOUND_EXT);
+    private final String[] m_itemsSelectedByDefault;
     private final JFileChooser m_fileChooser = new JFileChooser();
     private MediaFileModelSwing m_mediaFileModelSwing;
     private String m_selectedFileName;
@@ -113,12 +117,14 @@ public class DialogMediaLibrary extends JDialog {
                                 int maxIndex = lsm.getMaxSelectionIndex();
                                 for (int i = minIndex; i <= maxIndex; i++) {
                                     if (lsm.isSelectedIndex(i)) {
-                                        m_imageView.setImage(
+                                        File imageFile = (
                                                 new File(
                                                         nonLinearBookFacade.getNlb().getImagesDir(),
                                                         (String) m_mediaFileModelSwing.getValueAt(i, 0)
                                                 )
                                         );
+                                        m_imageView.setImage(imageFile);
+                                        m_imageView.setScale(ImageHelper.getScaleToFit(m_imageView, imageFile));
                                         break;
                                     }
                                 }
@@ -129,6 +135,7 @@ public class DialogMediaLibrary extends JDialog {
                     }
                 }
         );
+        m_itemsSelectedByDefault = itemsSelectedByDefault;
         m_mediaFileList.setSelectionModel(listSingleSelectionModel);
         TableColumnExt redirectColumn = m_mediaFileList.getColumnExt(1);
         JComboBox<String> redirects = new JComboBox<>();
@@ -142,7 +149,6 @@ public class DialogMediaLibrary extends JDialog {
             constraints.addItem(value);
         }
         constraintColumn.setCellEditor(new DefaultCellEditor(constraints));
-        selectItems(itemsSelectedByDefault);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
@@ -196,7 +202,7 @@ public class DialogMediaLibrary extends JDialog {
                             case Image:
                                 File tempFile = File.createTempFile("ph_img", "dat");
                                 tempFile.deleteOnExit();
-                                if (TextToGraphics.textToGraphics(placeholderName, tempFile)) {
+                                if (ImageHelper.textToGraphics(placeholderName, tempFile)) {
                                     nonLinearBookFacade.addImageFile(tempFile, placeholderName + PH_IMAGE_EXT);
                                 } else {
                                     nonLinearBookFacade.addImageFile(PLACEHOLDER_IMAGE, placeholderName + PH_IMAGE_EXT);
@@ -264,6 +270,8 @@ public class DialogMediaLibrary extends JDialog {
             }
         });
 
+        m_imageView.addMouseWheelListener(new WheelScaleListener(m_imageView));
+
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -330,6 +338,7 @@ public class DialogMediaLibrary extends JDialog {
         // focus the second time it was displayed
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                selectItems(m_itemsSelectedByDefault);
                 buttonOK.requestFocusInWindow();
             }
         });

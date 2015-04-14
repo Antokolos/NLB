@@ -40,6 +40,8 @@ package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.builder.model.LinksTableModelSwing;
+import com.nlbhub.nlb.builder.util.ImageHelper;
+import com.nlbhub.nlb.builder.util.WheelScaleListener;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.StringHelper;
@@ -47,12 +49,17 @@ import org.jdesktop.swingx.JXImageView;
 import org.jdesktop.swingx.JXTable;
 
 import javax.swing.*;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 
 public class DialogPageProperties extends JDialog implements NLBObserver {
+
     private final String m_observerId;
     private Page m_page;
     private NonLinearBookFacade m_nlbFacade;
@@ -178,6 +185,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
             public void actionPerformed(ActionEvent actionEvent) {
                 nlbFacade.undo(page.getId());
                 setPageProperties(page);
+                setPageImage(page.getImageFileName());
             }
         });
 
@@ -186,6 +194,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
             public void actionPerformed(ActionEvent actionEvent) {
                 nlbFacade.redo(page.getId());
                 setPageProperties(page);
+                setPageImage(page.getImageFileName());
             }
         });
 
@@ -244,6 +253,30 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
             }
         });
 
+        /*
+        Possible image correction on resize.
+        Slow as is (some caching is needed in order to not read image file every time)
+        m_imageView.addComponentListener(new ComponentListener() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                setPageImage(m_imageFileName);
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent e) {
+            }
+
+            @Override
+            public void componentShown(ComponentEvent e) {
+            }
+
+            @Override
+            public void componentHidden(ComponentEvent e) {
+            }
+        });
+        */
+        m_imageView.addMouseWheelListener(new WheelScaleListener(m_imageView));
+
         m_autowireCheckBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
@@ -284,6 +317,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         // focus the second time it was displayed
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                setPageImage(m_page.getImageFileName());
                 buttonOK.requestFocusInWindow();
             }
         });
@@ -354,7 +388,6 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_autoOutCheckBox.setSelected(page.isAutoOut());
         m_autowireInConstraintTextField.setText(autowireInConstraint != null ? autowireInConstraint.getValue() : "");
         m_autowireOutConstraintTextField.setText(autowireOutConstraint != null ? autowireOutConstraint.getValue() : "");
-        setPageImage(page.getImageFileName());
 
         toggleModuleTraversalTexts(!page.getModule().isEmpty());
         toggleAutowireTexts(page.isAutowire());
@@ -380,6 +413,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 File file = new File(m_nlbFacade.getMainFacade().getNlb().getImagesDir(), imageFileName);
                 if (file.exists()) {
                     m_imageView.setImage(file);
+                    m_imageView.setScale(ImageHelper.getScaleToFit(m_imageView, file));
                     m_imageView.setVisible(true);
                 } else {
                     m_imageView.setVisible(false);

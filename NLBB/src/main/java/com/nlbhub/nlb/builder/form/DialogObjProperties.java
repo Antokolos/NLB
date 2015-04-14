@@ -39,6 +39,8 @@
 package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.*;
+import com.nlbhub.nlb.builder.util.ImageHelper;
+import com.nlbhub.nlb.builder.util.WheelScaleListener;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.StringHelper;
@@ -116,6 +118,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
             public void actionPerformed(ActionEvent actionEvent) {
                 nlbFacade.undo(obj.getId());
                 setObjProperties(obj);
+                setObjImage(obj.getImageFileName());
             }
         });
 
@@ -124,6 +127,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
             public void actionPerformed(ActionEvent actionEvent) {
                 nlbFacade.redo(obj.getId());
                 setObjProperties(obj);
+                setObjImage(obj.getImageFileName());
             }
         });
 
@@ -168,6 +172,30 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
             }
         });
 
+        /*
+        Possible image correction on resize.
+        Slow as is (some caching is needed in order to not read image file every time)
+        m_imageView.addComponentListener(new ComponentListener() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                setObjImage(m_imageFileName);
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent e) {
+            }
+
+            @Override
+            public void componentShown(ComponentEvent e) {
+            }
+
+            @Override
+            public void componentHidden(ComponentEvent e) {
+            }
+        });
+        */
+        m_imageView.addMouseWheelListener(new WheelScaleListener(m_imageView));
+
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -198,6 +226,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         // focus the second time it was displayed
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                setObjImage(m_obj.getImageFileName());
                 buttonOK.requestFocusInWindow();
             }
         });
@@ -234,7 +263,6 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_imageFileName = obj.getImageFileName();
         m_animatedImageCheckBox.setSelected(obj.isAnimatedImage());
         m_imageFileNameLabel.setText(m_imageFileName);
-        setObjImage(obj.getImageFileName());
     }
 
     private void onOK() {
@@ -277,6 +305,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 File file = new File(m_nlbFacade.getMainFacade().getNlb().getImagesDir(), imageFileName);
                 if (file.exists()) {
                     m_imageView.setImage(file);
+                    m_imageView.setScale(ImageHelper.getScaleToFit(m_imageView, file));
                     m_imageView.setVisible(true);
                 } else {
                     m_imageView.setVisible(false);
