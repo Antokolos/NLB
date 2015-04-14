@@ -120,6 +120,16 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
+    public Set<String> getUsedImages() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Set<String> getUsedSounds() {
+        return Collections.emptySet();
+    }
+
+    @Override
     public List<MediaFile> getImageFiles() {
         return Collections.emptyList();
     }

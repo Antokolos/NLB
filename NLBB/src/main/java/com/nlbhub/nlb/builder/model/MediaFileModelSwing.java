@@ -60,6 +60,7 @@ public class MediaFileModelSwing extends AbstractTableModel {
     private NonLinearBookFacade m_nonLinearBookFacade;
     private MediaFile.Type m_mediaType;
     private Map<String, String> m_namesToIdsMap;
+    private Set<String> m_usages;
 
     public MediaFileModelSwing(NonLinearBookFacade nonLinearBookFacade, final MediaFile.Type mediaType) {
         m_nonLinearBookFacade = nonLinearBookFacade;
@@ -73,6 +74,16 @@ public class MediaFileModelSwing extends AbstractTableModel {
                     m_namesToIdsMap.put(variable.getValue(), variable.getId());
                 }
             }
+        }
+        switch (m_mediaType) {
+            case Image:
+                m_usages = m_nonLinearBookFacade.getNlb().getUsedImages();
+                break;
+            case Sound:
+                m_usages = m_nonLinearBookFacade.getNlb().getUsedSounds();
+                break;
+            default:
+                m_usages = Collections.emptySet();
         }
     }
 
@@ -122,7 +133,7 @@ public class MediaFileModelSwing extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 3;
+        return 4;
     }
 
     @Override
@@ -154,6 +165,13 @@ public class MediaFileModelSwing extends AbstractTableModel {
                     return constraint.getValue();
                 } else {
                     return Constants.EMPTY_STRING;
+                }
+            case 3:
+                MediaFile mediaFile2 = getMediaFile(rowIndex);
+                if (m_usages.contains(mediaFile2.getFileName())) {
+                    return Constants.EMPTY_STRING;
+                } else {
+                    return "UNUSED";
                 }
             default:
                 return null;
@@ -213,6 +231,8 @@ public class MediaFileModelSwing extends AbstractTableModel {
                 return "Redirect";
             case 2:
                 return "Constraint";
+            case 3:
+                return "Usages";
             default:
                 return super.getColumnName(column);
         }
@@ -220,6 +240,6 @@ public class MediaFileModelSwing extends AbstractTableModel {
 
     @Override
     public boolean isCellEditable(final int rowIndex, final int columnIndex) {
-        return columnIndex > 0;
+        return (columnIndex > 0) && (columnIndex < 3);
     }
 }

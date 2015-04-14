@@ -2266,6 +2266,47 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     @Override
+    public Set<String> getUsedImages() {
+        Set<String> result = new HashSet<>();
+        for (Map.Entry<String, PageImpl> pageEntry : m_pages.entrySet()) {
+            PageImpl page = pageEntry.getValue();
+            result.addAll(getUsedMedia(page.getImageFileName()));
+            NonLinearBook module = page.getModule();
+            if (!module.isEmpty()) {
+                result.addAll(module.getUsedImages());
+            }
+        }
+        for (Map.Entry<String, ObjImpl> objEntry : m_objs.entrySet()) {
+            ObjImpl obj = objEntry.getValue();
+            result.addAll(getUsedMedia(obj.getImageFileName()));
+        }
+        return result;
+    }
+
+    @Override
+    public Set<String> getUsedSounds() {
+        Set<String> result = new HashSet<>();
+        for (Map.Entry<String, PageImpl> pageEntry : m_pages.entrySet()) {
+            PageImpl page = pageEntry.getValue();
+            result.addAll(getUsedMedia(page.getSoundFileName()));
+            NonLinearBook module = page.getModule();
+            if (!module.isEmpty()) {
+                result.addAll(module.getUsedSounds());
+            }
+        }
+        return result;
+    }
+
+    private Set<String> getUsedMedia(String fileNamesStr) {
+        Set<String> result = new HashSet<>();
+        if (StringHelper.notEmpty(fileNamesStr)) {
+            String[] fileNames = fileNamesStr.split(Constants.MEDIA_FILE_NAME_SEP);
+            Collections.addAll(result, fileNames);
+        }
+        return result;
+    }
+
+    @Override
     public List<MediaFile> getImageFiles() {
         List<MediaFile> imageFiles = new ArrayList<>();
         imageFiles.addAll(m_imageFiles);

@@ -296,6 +296,18 @@ public interface NonLinearBook {
 
     public File getImagesDir();
 
+    /**
+     * Return set of image file names that has usages in the book
+     * @return
+     */
+    public Set<String> getUsedImages();
+
+    /**
+     * Return set of sound file names that has usages in the book
+     * @return
+     */
+    public Set<String> getUsedSounds();
+
     public List<MediaFile> getImageFiles();
 
     public List<MediaFile> getSoundFiles();
