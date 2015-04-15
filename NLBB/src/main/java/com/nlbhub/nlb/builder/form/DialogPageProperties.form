@@ -1147,6 +1147,25 @@
                                               <text value="Background"/>
                                             </properties>
                                           </component>
+                                          <grid id="94905" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                                            <constraints border-constraint="South"/>
+                                            <properties/>
+                                            <border type="none"/>
+                                            <children>
+                                              <component id="6a55b" class="javax.swing.JButton" binding="m_buttonZoomIn">
+                                                <constraints/>
+                                                <properties>
+                                                  <text value="+"/>
+                                                </properties>
+                                              </component>
+                                              <component id="b149c" class="javax.swing.JButton" binding="m_buttonZoomOut">
+                                                <constraints/>
+                                                <properties>
+                                                  <text value="―"/>
+                                                </properties>
+                                              </component>
+                                            </children>
+                                          </grid>
                                         </children>
                                       </grid>
                                       <component id="ae4f5" class="org.jdesktop.swingx.JXImageView" binding="m_imageView">

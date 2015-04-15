@@ -44,6 +44,7 @@ import com.nlbhub.nlb.builder.model.ListSingleSelectionModel;
 import com.nlbhub.nlb.builder.model.MediaFileModelSwing;
 import com.nlbhub.nlb.builder.util.ImageHelper;
 import com.nlbhub.nlb.builder.util.WheelScaleListener;
+import com.nlbhub.nlb.builder.util.Zoomer;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
@@ -74,6 +75,7 @@ public class DialogMediaLibrary extends JDialog {
     private final String[] m_itemsSelectedByDefault;
     private final JFileChooser m_fileChooser = new JFileChooser();
     private MediaFileModelSwing m_mediaFileModelSwing;
+    private Zoomer m_zoomer;
     private String m_selectedFileName;
     private boolean m_isCanceled = false;
     private JPanel contentPane;
@@ -88,6 +90,8 @@ public class DialogMediaLibrary extends JDialog {
     private JButton m_voidButton;
     private JButton m_buttonPlaceholder;
     private JButton m_buttonSearchUsages;
+    private JButton m_buttonZoomIn;
+    private JButton m_buttonZoomOut;
 
     public DialogMediaLibrary(
             final MainFrame mainFrame,
@@ -97,6 +101,7 @@ public class DialogMediaLibrary extends JDialog {
     ) {
         final DialogMediaLibrary self = this;
         setContentPane(contentPane);
+        m_zoomer = new Zoomer(m_imageView);
         m_mediaFileModelSwing = new MediaFileModelSwing(nonLinearBookFacade, mediaType);
         m_mediaFileList.setModel(m_mediaFileModelSwing);
         ListSingleSelectionModel listSingleSelectionModel = new ListSingleSelectionModel();
@@ -267,6 +272,18 @@ public class DialogMediaLibrary extends JDialog {
                             "Error while removing: " + ex.toString()
                     );
                 }
+            }
+        });
+
+        m_buttonZoomIn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                m_zoomer.zoomIn();
+            }
+        });
+
+        m_buttonZoomOut.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                m_zoomer.zoomOut();
             }
         });
 
@@ -495,10 +512,19 @@ public class DialogMediaLibrary extends JDialog {
         m_imageView = new JXImageView();
         m_imagePreviewPanel.add(m_imageView, BorderLayout.CENTER);
         final JPanel panel9 = new JPanel();
-        panel9.setLayout(new BorderLayout(0, 0));
-        panel8.add(panel9, BorderLayout.CENTER);
+        panel9.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        m_imagePreviewPanel.add(panel9, BorderLayout.NORTH);
+        m_buttonZoomIn = new JButton();
+        m_buttonZoomIn.setText("+");
+        panel9.add(m_buttonZoomIn);
+        m_buttonZoomOut = new JButton();
+        m_buttonZoomOut.setText("―");
+        panel9.add(m_buttonZoomOut);
+        final JPanel panel10 = new JPanel();
+        panel10.setLayout(new BorderLayout(0, 0));
+        panel8.add(panel10, BorderLayout.CENTER);
         final JScrollPane scrollPane1 = new JScrollPane();
-        panel9.add(scrollPane1, BorderLayout.CENTER);
+        panel10.add(scrollPane1, BorderLayout.CENTER);
         m_mediaFileList = new JXTable();
         m_mediaFileList.setSortable(false);
         m_mediaFileList.setVisibleRowCount(10);

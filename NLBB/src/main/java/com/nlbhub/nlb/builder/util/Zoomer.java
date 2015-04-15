@@ -1,5 +1,5 @@
 /**
- * @(#)WheelScaleListener.java
+ * @(#)Zoomer.java
  *
  * This file is part of the Non-Linear Book project.
  * Copyright (c) 2012-2015 Anton P. Kolosov
@@ -41,27 +41,29 @@ package com.nlbhub.nlb.builder.util;
 import org.jdesktop.swingx.JXImageView;
 
 import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 
 /**
- * The WheelScaleListener class
+ * The Zoomer class
  *
  * @author Anton P. Kolosov
  * @version 1.0
  */
-public class WheelScaleListener implements MouseWheelListener {
-    private Zoomer m_zoomer;
+public class Zoomer {
+    private static final double SCALE_FACTOR = 0.9;
 
-    public WheelScaleListener(JXImageView imageView) {
-        m_zoomer = new Zoomer(imageView);
+    private JXImageView m_imageView;
+
+    public Zoomer(JXImageView imageView) {
+        m_imageView = imageView;
     }
 
-    @Override
-    public void mouseWheelMoved(MouseWheelEvent e) {
-        if (e.getWheelRotation() > 0) {
-            m_zoomer.zoomOut();
-        } else {
-            m_zoomer.zoomIn();
-        }
+    public void zoomIn() {
+        double scale = m_imageView.getScale();
+        m_imageView.setScale(scale / SCALE_FACTOR);
+    }
+
+    public void zoomOut() {
+        double scale = m_imageView.getScale();
+        m_imageView.setScale(scale * SCALE_FACTOR);
     }
 }

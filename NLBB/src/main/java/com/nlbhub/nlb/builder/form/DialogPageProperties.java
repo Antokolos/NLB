@@ -42,6 +42,7 @@ import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.builder.model.LinksTableModelSwing;
 import com.nlbhub.nlb.builder.util.ImageHelper;
 import com.nlbhub.nlb.builder.util.WheelScaleListener;
+import com.nlbhub.nlb.builder.util.Zoomer;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.StringHelper;
@@ -59,8 +60,8 @@ import java.io.File;
 import java.io.IOException;
 
 public class DialogPageProperties extends JDialog implements NLBObserver {
-
     private final String m_observerId;
+    private Zoomer m_zoomer;
     private Page m_page;
     private NonLinearBookFacade m_nlbFacade;
     private MultiLangString m_pageCaptionTexts;
@@ -123,12 +124,15 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JCheckBox m_useMPLCheckBox;
     private JTextField m_timerVariableTextField;
     private JCheckBox m_soundSFXCheckBox;
+    private JButton m_buttonZoomIn;
+    private JButton m_buttonZoomOut;
 
     public DialogPageProperties(final MainFrame mainFrame, final NonLinearBookFacade nlbFacade, final Page page) {
         m_nlbFacade = nlbFacade;
         setPageProperties(page);
         setTitle("Page properties");
         setContentPane(contentPane);
+        m_zoomer = new Zoomer(m_imageView);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
@@ -250,6 +254,18 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 m_autowireInTextTextField.setText(m_autowireInTexts.get(selectedLanguage));
                 m_autowireOutTextTextField.setText(m_autowireOutTexts.get(selectedLanguage));
                 m_selectedLanguage = selectedLanguage;
+            }
+        });
+
+        m_buttonZoomIn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                m_zoomer.zoomIn();
+            }
+        });
+
+        m_buttonZoomOut.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                m_zoomer.zoomOut();
             }
         });
 
@@ -1272,41 +1288,50 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_backgroundCheckBox = new JCheckBox();
         m_backgroundCheckBox.setText("Background");
         panel58.add(m_backgroundCheckBox, BorderLayout.NORTH);
+        final JPanel panel59 = new JPanel();
+        panel59.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel58.add(panel59, BorderLayout.SOUTH);
+        m_buttonZoomIn = new JButton();
+        m_buttonZoomIn.setText("+");
+        panel59.add(m_buttonZoomIn);
+        m_buttonZoomOut = new JButton();
+        m_buttonZoomOut.setText("―");
+        panel59.add(m_buttonZoomOut);
         m_imageView = new JXImageView();
         panel57.add(m_imageView, BorderLayout.CENTER);
-        final JPanel panel59 = new JPanel();
-        panel59.setLayout(new BorderLayout(0, 0));
-        panel54.add(panel59, BorderLayout.NORTH);
         final JPanel panel60 = new JPanel();
-        panel60.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel59.add(panel60, BorderLayout.NORTH);
+        panel60.setLayout(new BorderLayout(0, 0));
+        panel54.add(panel60, BorderLayout.NORTH);
+        final JPanel panel61 = new JPanel();
+        panel61.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel60.add(panel61, BorderLayout.NORTH);
         m_setSoundButton = new JButton();
         m_setSoundButton.setMaximumSize(new Dimension(120, 36));
         m_setSoundButton.setMinimumSize(new Dimension(120, 36));
         m_setSoundButton.setPreferredSize(new Dimension(120, 36));
         m_setSoundButton.setText("Set sound...");
-        panel60.add(m_setSoundButton);
-        final JPanel panel61 = new JPanel();
-        panel61.setLayout(new BorderLayout(0, 0));
-        panel59.add(panel61, BorderLayout.CENTER);
+        panel61.add(m_setSoundButton);
         final JPanel panel62 = new JPanel();
         panel62.setLayout(new BorderLayout(0, 0));
-        panel61.add(panel62, BorderLayout.NORTH);
+        panel60.add(panel62, BorderLayout.CENTER);
+        final JPanel panel63 = new JPanel();
+        panel63.setLayout(new BorderLayout(0, 0));
+        panel62.add(panel63, BorderLayout.NORTH);
         m_soundFileNameLabel = new JLabel();
         m_soundFileNameLabel.setHorizontalAlignment(0);
         m_soundFileNameLabel.setHorizontalTextPosition(0);
         m_soundFileNameLabel.setText("<NO_SOUND>");
-        panel62.add(m_soundFileNameLabel, BorderLayout.CENTER);
+        panel63.add(m_soundFileNameLabel, BorderLayout.CENTER);
         m_soundSFXCheckBox = new JCheckBox();
         m_soundSFXCheckBox.setText("SFX");
-        panel62.add(m_soundSFXCheckBox, BorderLayout.NORTH);
-        final JPanel panel63 = new JPanel();
-        panel63.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel63, BorderLayout.NORTH);
+        panel63.add(m_soundSFXCheckBox, BorderLayout.NORTH);
+        final JPanel panel64 = new JPanel();
+        panel64.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel64, BorderLayout.NORTH);
         final JToolBar toolBar1 = new JToolBar();
         toolBar1.setBorderPainted(false);
         toolBar1.setFloatable(false);
-        panel63.add(toolBar1, BorderLayout.CENTER);
+        panel64.add(toolBar1, BorderLayout.CENTER);
         m_undoButton = new JButton();
         m_undoButton.setIcon(new ImageIcon(getClass().getResource("/common/undo.png")));
         m_undoButton.setText("Undo");
@@ -1316,7 +1341,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_redoButton.setText("Redo");
         toolBar1.add(m_redoButton);
         m_languageComboBox = new JComboBox();
-        panel63.add(m_languageComboBox, BorderLayout.EAST);
+        panel64.add(m_languageComboBox, BorderLayout.EAST);
         m_traverseTextLabel.setLabelFor(m_traverseTextTextField);
         label1.setLabelFor(m_pageCaptionTextField);
         m_autowireInTextLabel.setLabelFor(m_autowireInTextTextField);
