@@ -78,6 +78,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         stringBuilder.append(lineSep);
 
         stringBuilder.append("f1 = font('fonts/STEINEMU.ttf', 32);").append(lineSep);
+        stringBuilder.append("fend = font('fonts/STEINEMU.ttf', 128);").append(lineSep);
         stringBuilder.append("function pname(n, c)").append(lineSep);
         stringBuilder.append("    return function()").append(lineSep);
         stringBuilder.append("        pn(img 'blank:8x1',f1:txt(n, c, 1))").append(lineSep);
@@ -134,30 +135,38 @@ public class VNSTEADExportManager extends STEADExportManager {
         StringBuilder linksBuilder = new StringBuilder();
         String lineSep = getLineSeparator();
         String roomName = pageBlocks.getPageName();
+        List<LinkBuildingBlocks> linksBuildingBlocks = pageBlocks.getLinksBuildingBlocks();
         result.append(roomName).append("_choices").append(" = room {").append(lineSep);
         result.append("    nam = \"").append(roomName).append("_choices\",").append(lineSep);
+        if (linksBuildingBlocks.isEmpty()) {
+            result.append("    dsc = fend:txt('The')..img 'blank:64x64'..fend:txt('End'),").append(lineSep);
+        }
         result.append("    enter = function(s) ").append(lineSep);
         result.append("        objs():zap();").append(lineSep);
-        for (LinkBuildingBlocks linkBlocks : pageBlocks.getLinksBuildingBlocks()) {
-            if (!linkBlocks.isAuto()) {
-                if (linkBlocks.isTrivial()) {
-                    result.append(linkBlocks.getLinkModifications());
-                    result.append(linkBlocks.getLinkVariable());
-                    result.append(linkBlocks.getLinkGoTo());
+        for (LinkBuildingBlocks linkBlock : linksBuildingBlocks) {
+            if (!linkBlock.isAuto()) {
+                if (linkBlock.isTrivial()) {
+                    result.append(linkBlock.getLinkModifications());
+                    result.append(linkBlock.getLinkVariable());
+                    result.append(linkBlock.getLinkGoTo());
                 } else {
-                    final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
+                    final boolean constrained = !StringHelper.isEmpty(linkBlock.getLinkConstraint());
                     if (constrained) {
-                        result.append("if ").append(linkBlocks.getLinkConstraint()).append(" then").append(lineSep);
+                        result.append("if ").append(linkBlock.getLinkConstraint()).append(" then").append(lineSep);
                     }
-                    result.append("        put(").append(linkBlocks.getLinkLabel()).append(");").append(lineSep);
+                    result.append("        put(").append(linkBlock.getLinkLabel()).append(");").append(lineSep);
                     if (constrained) {
                         result.append("end;").append(lineSep);
                     }
                 }
-                linksBuilder.append(generateOrdinaryLinkCode(linkBlocks));
+                linksBuilder.append(generateOrdinaryLinkCode(linkBlock));
             }
         }
-        result.append("        theme.win.geom(320, 320, 1280, 480);").append(lineSep);
+        if (linksBuildingBlocks.isEmpty()) {
+            result.append("        theme.win.geom(710, 400, 500, 150);").append(lineSep);
+        } else {
+            result.append("        theme.win.geom(320, 320, 1280, 480);").append(lineSep);
+        }
         result.append("        vn:start('dissolve');").append(lineSep);
         result.append("        vn:commit();").append(lineSep);
         result.append("    end").append(lineSep).append("}").append(lineSep).append(lineSep);
