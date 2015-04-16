@@ -131,17 +131,37 @@ public class VNSTEADExportManager extends STEADExportManager {
     @Override
     protected String generatePostPageText(PageBuildingBlocks pageBlocks) {
         StringBuilder result = new StringBuilder();
+        StringBuilder linksBuilder = new StringBuilder();
         String lineSep = getLineSeparator();
         String roomName = pageBlocks.getPageName();
         result.append(roomName).append("_choices").append(" = room {").append(lineSep);
         result.append("    nam = \"").append(roomName).append("_choices\",").append(lineSep);
         result.append("    enter = function(s) ").append(lineSep);
         result.append("        objs():zap();").append(lineSep);
-        result.append(super.generateOrdinaryLinkTextInsideRoom(pageBlocks));
+        for (LinkBuildingBlocks linkBlocks : pageBlocks.getLinksBuildingBlocks()) {
+            if (!linkBlocks.isAuto()) {
+                if (linkBlocks.isTrivial()) {
+                    result.append(linkBlocks.getLinkModifications());
+                    result.append(linkBlocks.getLinkVariable());
+                    result.append(linkBlocks.getLinkGoTo());
+                } else {
+                    final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
+                    if (constrained) {
+                        result.append("if ").append(linkBlocks.getLinkConstraint()).append(" then").append(lineSep);
+                    }
+                    result.append("        put(").append(linkBlocks.getLinkLabel()).append(");").append(lineSep);
+                    if (constrained) {
+                        result.append("end;").append(lineSep);
+                    }
+                }
+                linksBuilder.append(generateOrdinaryLinkCode(linkBlocks));
+            }
+        }
         result.append("        theme.win.geom(320, 320, 1280, 480);").append(lineSep);
         result.append("        vn:start('dissolve');").append(lineSep);
         result.append("        vn:commit();").append(lineSep);
         result.append("    end").append(lineSep).append("}").append(lineSep).append(lineSep);
+        result.append(linksBuilder.toString());
         return result.toString();
     }
 
@@ -160,12 +180,17 @@ public class VNSTEADExportManager extends STEADExportManager {
 
     @Override
     protected String decorateLinkLabel(String linkId, String linkText) {
-        return linkText;
+        return decorateId(linkId);
     }
 
     @Override
     protected String decorateLinkStart(String linkId, String linkText, int pageNumber) {
-        return "            put( menu {nam = '" + decorateId(linkId) + "', ";
+        String lineSep = getLineSeparator();
+        StringBuilder result = new StringBuilder();
+        result.append(decorateId(linkId)).append(" = menu {").append(lineSep);
+        result.append("    nam = \"").append(decorateId(linkId)).append("\",").append(lineSep);
+        result.append("    dsc = function(s) ").append("return \"{").append(linkText).append("}^\" end, ").append(lineSep);
+        return result.toString();
     }
 
     @Override
@@ -176,46 +201,33 @@ public class VNSTEADExportManager extends STEADExportManager {
             int targetPageNumber
     ) {
         return (
-                " nlbwalk("
+                "        nlbwalk("
                         + (
                         getGoToPageNumbers()
                                 ? decorateId(String.valueOf(targetPageNumber))
                                 : decorateId(linkTarget)
                 )
-                        + "); "
+                        + "); " + getLineSeparator()
         );
     }
 
     @Override
     protected String decorateLinkEnd() {
-        return " });" + getLineSeparator();
+        return "}" + getLineSeparator();
     }
 
     @Override
     protected String generateOrdinaryLinkCode(LinkBuildingBlocks linkBlocks) {
         String lineSep = getLineSeparator();
-        final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
         StringBuilder result = new StringBuilder();
-        if (linkBlocks.isTrivial()) {
-            result.append(linkBlocks.getLinkModifications());
-            result.append(linkBlocks.getLinkVariable());
-            result.append(linkBlocks.getLinkGoTo());
-        } else {
-            if (constrained) {
-                result.append("if ").append(linkBlocks.getLinkConstraint()).append(" then").append(lineSep);
-            }
+        if (!linkBlocks.isTrivial() && !linkBlocks.isAuto()) {
             result.append(linkBlocks.getLinkStart());
-            result.append("dsc = function(s) ");
-            result.append("return \"{").append(linkBlocks.getLinkLabel()).append("}^\" end, ");
-            result.append("act = function(s) ").append(lineSep);
+            result.append("    act = function(s) ").append(lineSep);
             result.append(linkBlocks.getLinkModifications());
             result.append(linkBlocks.getLinkVariable());
             result.append(linkBlocks.getLinkGoTo());
-            result.append("end").append(lineSep);
-            result.append(linkBlocks.getLinkEnd());
-            if (constrained) {
-                result.append("end;").append(lineSep);
-            }
+            result.append("    end").append(lineSep);
+            result.append(linkBlocks.getLinkEnd()).append(lineSep);
         }
         return result.toString();
     }
