@@ -344,15 +344,16 @@ public abstract class ExportManager {
 
     /**
      *
-     * @param links
+     * @param pageBuildingBlocks
      * @return true if links list consists only of one link without constraint with default text
      */
-    private boolean determineTrivialStatus(List<Link> links) {
-        if (links.size() == 1) {
-            Link link = links.get(0);
-            return link.getTexts().equals(Link.DEFAULT_TEXT) && StringHelper.isEmpty(link.getConstrId());
-        }
-        return false;
+    private boolean determineTrivialStatus(PageBuildingBlocks pageBuildingBlocks) {
+        List<LinkBuildingBlocks> linkBlocks = pageBuildingBlocks.getLinksBuildingBlocks();
+        return linkBlocks.size() == 1 && linkBlocks.get(0).isTrivial();
+    }
+
+    private boolean determineTrivialStatus(Link link) {
+        return link.getTexts().equals(Link.DEFAULT_TEXT) && StringHelper.isEmpty(link.getConstrId());
     }
 
     private PageBuildingBlocks createPageBuildingBlocks(
@@ -413,10 +414,9 @@ public abstract class ExportManager {
         // TODO: NLB-24: workaround is used to determine animated images presence
         blocks.setHasObjectsWithAnimatedImages(hasAnim);
         List<Link> links = page.getLinks();
-        final boolean isTrivial = determineTrivialStatus(links);
         for (final Link link : links) {
             if (!link.isDeleted()) {
-                LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData, isTrivial);
+                LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
                 blocks.addLinkBuildingBlocks(linkBuildingBlocks);
             }
         }
@@ -438,7 +438,7 @@ public abstract class ExportManager {
                             null
                     )
             );
-            LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData, isTrivial);
+            LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
             blocks.addLinkBuildingBlocks(linkBuildingBlocks);
         }
         if (page.shouldReturn() && !exportData.getModulePage().getId().equals(MAIN_DATA_KEY)) {
@@ -459,7 +459,7 @@ public abstract class ExportManager {
                                     link.getModifications()
                             )
                     );
-                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(linklw), exportData, isTrivial);
+                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(linklw), exportData);
                     blocks.addLinkBuildingBlocks(linkBuildingBlocks);
                 }
             } else {
@@ -485,7 +485,7 @@ public abstract class ExportManager {
                                 null
                         )
                 );
-                LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData, isTrivial);
+                LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
                 blocks.addLinkBuildingBlocks(linkBuildingBlocks);
             }
         }
@@ -509,7 +509,7 @@ public abstract class ExportManager {
                                     null
                             )
                     );
-                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData, isTrivial);
+                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
                     blocks.addLinkBuildingBlocks(linkBuildingBlocks);
                 }
             }
@@ -537,12 +537,12 @@ public abstract class ExportManager {
                                     null
                             )
                     );
-                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData, isTrivial);
+                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
                     blocks.addLinkBuildingBlocks(linkBuildingBlocks);
                 }
             }
         }
-
+        blocks.setHasTrivialLink(determineTrivialStatus(blocks));
         return blocks;
     }
 
@@ -1289,12 +1289,11 @@ public abstract class ExportManager {
 
     private LinkBuildingBlocks createLinkBuildingBlocks(
             final Link link,
-            final ExportData exportData,
-            final boolean isTrivial
+            final ExportData exportData
     ) throws NLBConsistencyException {
         LinkBuildingBlocks blocks = new LinkBuildingBlocks();
         blocks.setAuto(link.isAuto());
-        blocks.setTrivial(isTrivial);
+        blocks.setTrivial(determineTrivialStatus(link));
         blocks.setLinkLabel(decorateLinkLabel(link.getId(), link.getText()));
         blocks.setLinkComment(decorateLinkComment(link.getText()));
         // TODO: exportData.getIdToPageNumberMap().get(link.getTarget()) can produce NPE for return links

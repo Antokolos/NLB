@@ -64,6 +64,8 @@ public class PageBuildingBlocks {
     private boolean m_hasObjectsWithAnimatedImages;
     private List<String> m_containedObjIds;
     private List<LinkBuildingBlocks> m_linksBuildingBlocks;
+    /** Page blocks' link is considered trivial if it is only one and it is trivial. */
+    private boolean m_hasTrivialLink;
 
     public PageBuildingBlocks() {
         m_containedObjIds = new ArrayList<>();
@@ -204,5 +206,13 @@ public class PageBuildingBlocks {
 
     public void setPageEnd(String pageEnd) {
         m_pageEnd = pageEnd;
+    }
+
+    public boolean isHasTrivialLink() {
+        return m_hasTrivialLink;
+    }
+
+    public void setHasTrivialLink(boolean hasTrivialLink) {
+        m_hasTrivialLink = hasTrivialLink;
     }
 }

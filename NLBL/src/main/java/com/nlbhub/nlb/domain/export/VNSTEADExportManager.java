@@ -143,13 +143,14 @@ public class VNSTEADExportManager extends STEADExportManager {
         }
         result.append("    enter = function(s) ").append(lineSep);
         result.append("        objs():zap();").append(lineSep);
-        for (LinkBuildingBlocks linkBlock : linksBuildingBlocks) {
-            if (!linkBlock.isAuto()) {
-                if (linkBlock.isTrivial()) {
-                    result.append(linkBlock.getLinkModifications());
-                    result.append(linkBlock.getLinkVariable());
-                    result.append(linkBlock.getLinkGoTo());
-                } else {
+        if (pageBlocks.isHasTrivialLink()) {
+            LinkBuildingBlocks trivialLink = linksBuildingBlocks.get(0);
+            result.append(trivialLink.getLinkModifications());
+            result.append(trivialLink.getLinkVariable());
+            result.append(trivialLink.getLinkGoTo());
+        } else {
+            for (LinkBuildingBlocks linkBlock : linksBuildingBlocks) {
+                if (!linkBlock.isAuto()) {
                     final boolean constrained = !StringHelper.isEmpty(linkBlock.getLinkConstraint());
                     if (constrained) {
                         result.append("if ").append(linkBlock.getLinkConstraint()).append(" then").append(lineSep);
@@ -158,8 +159,8 @@ public class VNSTEADExportManager extends STEADExportManager {
                     if (constrained) {
                         result.append("end;").append(lineSep);
                     }
+                    linksBuilder.append(generateOrdinaryLinkCode(linkBlock));
                 }
-                linksBuilder.append(generateOrdinaryLinkCode(linkBlock));
             }
         }
         if (linksBuildingBlocks.isEmpty()) {
@@ -229,7 +230,7 @@ public class VNSTEADExportManager extends STEADExportManager {
     protected String generateOrdinaryLinkCode(LinkBuildingBlocks linkBlocks) {
         String lineSep = getLineSeparator();
         StringBuilder result = new StringBuilder();
-        if (!linkBlocks.isTrivial() && !linkBlocks.isAuto()) {
+        if (!linkBlocks.isAuto()) {
             result.append(linkBlocks.getLinkStart());
             result.append("    act = function(s) ").append(lineSep);
             result.append(linkBlocks.getLinkModifications());
