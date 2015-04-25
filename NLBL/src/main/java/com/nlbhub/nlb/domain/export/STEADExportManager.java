@@ -563,11 +563,12 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR);
         }
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
+        stringBuilder.append("    exit = function(s, t)").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.sndout(s);").append(LINE_SEPARATOR);
         if (timerSet) {
-            stringBuilder.append("    exit = function(s, t)").append(LINE_SEPARATOR);
             stringBuilder.append("        timer:stop();").append(LINE_SEPARATOR);
-            stringBuilder.append("    end,").append(LINE_SEPARATOR);
         }
+        stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append(pageBlocks.getPageSound());
 
         stringBuilder.append(generateObjsCollection(pageBlocks, linksBlocks));
@@ -1407,9 +1408,11 @@ public class STEADExportManager extends TextExportManager {
             notFirst = true;
         }
         result.append(ifTermination). append("    end,").append(LINE_SEPARATOR);
+        result.append("    sndout = function(s) ");
         if (hasSFX) {
-            result.append("    exit = function(s) stop_sound(); end,").append(LINE_SEPARATOR);
+            result.append("stop_sound(); ");
         }
+        result.append("end,").append(LINE_SEPARATOR);
         return result.toString();
     }
 
