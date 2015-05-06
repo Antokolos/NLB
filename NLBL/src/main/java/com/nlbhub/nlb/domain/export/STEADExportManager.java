@@ -1134,6 +1134,11 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateFreezeOperation() {
+        return "curloc().notext = false;" + LINE_SEPARATOR;
+    }
+
+    @Override
     protected String decorateClearOperation(String destinationId, String destinationVar) {
         if (destinationId != null) {
             return "objs(" + decorateId(destinationId) + "):zap();" + LINE_SEPARATOR;

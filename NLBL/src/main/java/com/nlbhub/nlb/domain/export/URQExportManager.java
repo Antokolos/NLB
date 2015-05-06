@@ -490,6 +490,12 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateFreezeOperation() {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateClearOperation(String destinationId, String destinationVar) {
         // TODO: implement
         return EMPTY_STRING;
