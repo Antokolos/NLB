@@ -522,7 +522,7 @@ public class STEADExportManager extends TextExportManager {
         if (timerSet) {
             stringBuilder.append("    timer = function(s) s.time = s.time + 1; ");
             stringBuilder.append(pageBlocks.getPageTimerVariable()).append("s.autos(s); ");
-            stringBuilder.append("if (_curloc.notext) then p \"\"; end; ");
+            stringBuilder.append("if (_curloc.notext) then return true; end; ");
             stringBuilder.append("end,").append(LINE_SEPARATOR);
         }
         stringBuilder.append(pageBlocks.getPageTextStart());
