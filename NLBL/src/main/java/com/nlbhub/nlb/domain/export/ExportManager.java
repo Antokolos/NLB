@@ -40,6 +40,7 @@ package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
+import com.nlbhub.nlb.domain.SearchResult;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.MultiLangString;
@@ -738,6 +739,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public SearchResult searchText(SearchContract contract) {
+                return link.searchText(contract);
+            }
+
+            @Override
             public String addObserver(NLBObserver observer) {
                 throw new UnsupportedOperationException("Not supported during export");
             }
@@ -1005,6 +1011,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public SearchResult searchText(SearchContract contract) {
+                return page.searchText(contract);
+            }
+
+            @Override
             public String addObserver(NLBObserver observer) {
                 throw new UnsupportedOperationException("Not supported during export");
             }
@@ -1176,6 +1187,11 @@ public abstract class ExportManager {
             @Override
             public NonLinearBook getCurrentNLB() {
                 return obj.getCurrentNLB();
+            }
+
+            @Override
+            public SearchResult searchText(SearchContract contract) {
+                return obj.searchText(contract);
             }
 
             @Override

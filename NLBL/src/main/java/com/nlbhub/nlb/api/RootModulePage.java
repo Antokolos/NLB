@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.api;
 
+import com.nlbhub.nlb.domain.SearchResult;
 import com.nlbhub.nlb.util.MultiLangString;
 import org.jetbrains.annotations.NotNull;
 
@@ -297,6 +298,11 @@ public class RootModulePage implements Page {
     @Override
     public NonLinearBook getCurrentNLB() {
         return m_nlb;
+    }
+
+    @Override
+    public SearchResult searchText(SearchContract contract) {
+        return null;
     }
 
     @Override

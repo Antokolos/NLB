@@ -1,5 +1,7 @@
 package com.nlbhub.nlb.api;
 
+import com.nlbhub.nlb.domain.SearchResult;
+
 /**
  * The IdentifiableItem class
  *
@@ -18,4 +20,6 @@ public interface IdentifiableItem {
     public boolean hasDeletedParent();
 
     public NonLinearBook getCurrentNLB();
+
+    public SearchResult searchText(SearchContract contract);
 }

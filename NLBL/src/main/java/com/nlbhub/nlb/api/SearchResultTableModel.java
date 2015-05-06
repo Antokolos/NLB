@@ -84,6 +84,12 @@ public class SearchResultTableModel {
         }
     }
 
+    public void addSearchResults(final List<SearchResult> searchResults) {
+        for (SearchResult searchResult : searchResults) {
+            addSearchResult(searchResult);
+        }
+    }
+
     /**
      * @param searchResultTableModel should have same column set or at least the same column count
      */

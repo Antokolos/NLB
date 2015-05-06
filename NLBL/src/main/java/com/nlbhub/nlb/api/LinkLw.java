@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.api;
 
 import com.nlbhub.nlb.domain.ModificationImpl;
+import com.nlbhub.nlb.domain.SearchResult;
 import com.nlbhub.nlb.domain.VariableImpl;
 import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.StringHelper;
@@ -250,6 +251,12 @@ public class LinkLw implements Link {
     @Override
     public NonLinearBook getCurrentNLB() {
         return m_parent.getCurrentNLB();
+    }
+
+    @Override
+    public SearchResult searchText(SearchContract contract) {
+        // No search functionality needed for Lw links
+        return null;
     }
 
     @Override

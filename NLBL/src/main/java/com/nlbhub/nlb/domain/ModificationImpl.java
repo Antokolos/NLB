@@ -150,7 +150,30 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
 
     @Override
     public SearchResult searchText(SearchContract contract) {
-        // TODO: implement search in modifications
+        SearchResult result = super.searchText(contract);
+        if (result != null) {
+            return result;
+        } else {
+            IdentifiableItem parent = getParent();
+            Variable variable = getCurrentNLB().getVariableById(m_varId);
+            SearchResult resultV = (variable != null) ? variable.searchText(contract) : null;
+            if (resultV != null) {
+                if (parent != null) {
+                    resultV.setId(parent.getId());
+                    resultV.setModulePageId(parent.getCurrentNLB().getParentPage().getId());
+                }
+                return resultV;
+            }
+            Variable expression = getCurrentNLB().getVariableById(m_exprId);
+            SearchResult resultE = (expression != null) ? expression.searchText(contract) : null;
+            if (resultE != null) {
+                if (parent != null) {
+                    resultE.setId(parent.getId());
+                    resultE.setModulePageId(parent.getCurrentNLB().getParentPage().getId());
+                }
+                return resultE;
+            }
+        }
         return null;
     }
 

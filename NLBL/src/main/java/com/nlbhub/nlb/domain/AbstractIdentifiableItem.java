@@ -153,6 +153,7 @@ public abstract class AbstractIdentifiableItem implements IdentifiableItem {
         return m_currentNLB;
     }
 
+    @Override
     public SearchResult searchText(SearchContract contract) {
         if (contract.isSearchInIds() && textMatches(m_id, contract)) {
             SearchResult result = new SearchResult();

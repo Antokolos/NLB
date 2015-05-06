@@ -3488,40 +3488,45 @@ public class NonLinearBookImpl implements NonLinearBook {
             for (Map.Entry<String, PageImpl> entry : m_pages.entrySet()) {
                 final SearchResult pageResult;
                 final PageImpl page = entry.getValue();
-                if ((pageResult = page.searchText(contract)) != null) {
-                    pageResult.setModulePageId(modulePageId);
-                    result.addSearchResult(pageResult);
-                } else {
-                    final boolean searchInVars = contract.isSearchInVars();
-                    final VariableImpl variable = (searchInVars) ? getVariableImplById(page.getVarId()) : null;
-                    final VariableImpl variableTimer = (searchInVars) ? getVariableImplById(page.getTimerVarId()) : null;
-                    if (variable != null) {
-                        final SearchResult varResult = variable.searchText(contract);
-                        if (varResult != null) {
-                            varResult.setId(page.getId());
-                            varResult.setModulePageId(modulePageId);
-                            result.addSearchResult(varResult);
+                if (!page.isDeleted()) {
+                    if ((pageResult = page.searchText(contract)) != null) {
+                        pageResult.setModulePageId(modulePageId);
+                        result.addSearchResult(pageResult);
+                    } else {
+                        if (contract.isSearchInVars()) {
+                            final VariableImpl variable = getVariableImplById(page.getVarId());
+                            final VariableImpl variableTimer = getVariableImplById(page.getTimerVarId());
+                            if (variable != null) {
+                                final SearchResult varResult = variable.searchText(contract);
+                                if (varResult != null) {
+                                    varResult.setId(page.getId());
+                                    varResult.setModulePageId(modulePageId);
+                                    result.addSearchResult(varResult);
+                                }
+                            }
+                            if (variableTimer != null) {
+                                final SearchResult varResult = variableTimer.searchText(contract);
+                                if (varResult != null) {
+                                    varResult.setId(page.getId());
+                                    varResult.setModulePageId(modulePageId);
+                                    result.addSearchResult(varResult);
+                                }
+                            }
+                            result.addSearchResults(getModificationSearchResults(page, contract));
                         }
                     }
-                    if (variableTimer != null) {
-                        final SearchResult varResult = variableTimer.searchText(contract);
-                        if (varResult != null) {
-                            varResult.setId(page.getId());
-                            varResult.setModulePageId(modulePageId);
-                            result.addSearchResult(varResult);
-                        }
+
+                    final NonLinearBookImpl moduleImpl = page.getModuleImpl();
+                    if (!moduleImpl.isEmpty()) {
+                        result.addSearchResultTableModel(
+                                moduleImpl.searchText(
+                                        new SearchContract(contract.getSearchText(), contract.isSearchInIds(), contract.isSearchInPages(), contract.isSearchInObjects(), contract.isSearchInLinks(), contract.isSearchInVars(), contract.isIgnoreCase(), contract.isWholeWords()), page.getId()
+                                )
+                        );
                     }
-                }
-                final NonLinearBookImpl moduleImpl = page.getModuleImpl();
-                if (!moduleImpl.isEmpty()) {
-                    result.addSearchResultTableModel(
-                            moduleImpl.searchText(
-                                    new SearchContract(contract.getSearchText(), contract.isSearchInIds(), contract.isSearchInPages(), contract.isSearchInObjects(), contract.isSearchInLinks(), contract.isSearchInVars(), contract.isIgnoreCase(), contract.isWholeWords()), page.getId()
-                            )
-                    );
-                }
-                if (contract.isSearchInLinks()) {
-                    searchLinks(modulePageId, page, result, contract);
+                    if (contract.isSearchInLinks()) {
+                        searchLinks(modulePageId, page, result, contract);
+                    }
                 }
             }
         }
@@ -3531,37 +3536,52 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final SearchResult varResult;
                 final SearchResult constrResult;
                 final ObjImpl obj = entry.getValue();
-                if ((objResult = obj.searchText(contract)) != null) {
-                    objResult.setModulePageId(modulePageId);
-                    result.addSearchResult(objResult);
-                } else {
-                    final VariableImpl variable = getVariableImplById(obj.getVarId());
-                    final VariableImpl constraint = getVariableImplById(obj.getConstrId());
-                    if (contract.isSearchInVars()) {
-                        if (variable != null) {
-                            varResult = variable.searchText(contract);
-                            if (varResult != null) {
-                                varResult.setId(obj.getId());
-                                varResult.setModulePageId(modulePageId);
-                                result.addSearchResult(varResult);
+                if (!obj.isDeleted()) {
+                    if ((objResult = obj.searchText(contract)) != null) {
+                        objResult.setModulePageId(modulePageId);
+                        result.addSearchResult(objResult);
+                    } else {
+                        final VariableImpl variable = getVariableImplById(obj.getVarId());
+                        final VariableImpl constraint = getVariableImplById(obj.getConstrId());
+                        if (contract.isSearchInVars()) {
+                            if (variable != null) {
+                                varResult = variable.searchText(contract);
+                                if (varResult != null) {
+                                    varResult.setId(obj.getId());
+                                    varResult.setModulePageId(modulePageId);
+                                    result.addSearchResult(varResult);
+                                }
                             }
-                        }
-                        if (constraint != null) {
-                            constrResult = constraint.searchText(contract);
-                            if (constrResult != null) {
-                                constrResult.setId(obj.getId());
-                                constrResult.setModulePageId(modulePageId);
-                                result.addSearchResult(constrResult);
+                            if (constraint != null) {
+                                constrResult = constraint.searchText(contract);
+                                if (constrResult != null) {
+                                    constrResult.setId(obj.getId());
+                                    constrResult.setModulePageId(modulePageId);
+                                    result.addSearchResult(constrResult);
+                                }
                             }
+                            result.addSearchResults(getModificationSearchResults(obj, contract));
                         }
                     }
-                }
-                if (contract.isSearchInLinks()) {
-                    searchLinks(modulePageId, obj, result, contract);
+                    if (contract.isSearchInLinks()) {
+                        searchLinks(modulePageId, obj, result, contract);
+                    }
                 }
             }
         }
         return result;
+    }
+
+    private List<SearchResult> getModificationSearchResults(final ModifyingItem item, final SearchContract contract) {
+        List<SearchResult> results = new ArrayList<>();
+        List<Modification> modifications = item.getModifications();
+        for (Modification modification : modifications) {
+            final SearchResult modificationResult = modification.searchText(contract);
+            if (modificationResult != null) {
+                results.add(modificationResult);
+            }
+        }
+        return results;
     }
 
     @Override
@@ -4109,6 +4129,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                             result.addSearchResult(constraintsResult);
                         }
                     }
+                    result.addSearchResults(getModificationSearchResults(link, contract));
                 }
             }
         }
