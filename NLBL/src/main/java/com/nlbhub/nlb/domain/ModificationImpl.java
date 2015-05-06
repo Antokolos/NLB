@@ -154,24 +154,26 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
         if (result != null) {
             return result;
         } else {
-            IdentifiableItem parent = getParent();
-            Variable variable = getCurrentNLB().getVariableById(m_varId);
-            SearchResult resultV = (variable != null) ? variable.searchText(contract) : null;
-            if (resultV != null) {
-                if (parent != null) {
-                    resultV.setId(parent.getId());
-                    resultV.setModulePageId(parent.getCurrentNLB().getParentPage().getId());
+            if (!isDeleted()) {
+                IdentifiableItem parent = getParent();
+                Variable variable = getCurrentNLB().getVariableById(m_varId);
+                SearchResult resultV = (variable != null) ? variable.searchText(contract) : null;
+                if (resultV != null) {
+                    if (parent != null) {
+                        resultV.setId(parent.getId());
+                        resultV.setModulePageId(parent.getCurrentNLB().getParentPage().getId());
+                    }
+                    return resultV;
                 }
-                return resultV;
-            }
-            Variable expression = getCurrentNLB().getVariableById(m_exprId);
-            SearchResult resultE = (expression != null) ? expression.searchText(contract) : null;
-            if (resultE != null) {
-                if (parent != null) {
-                    resultE.setId(parent.getId());
-                    resultE.setModulePageId(parent.getCurrentNLB().getParentPage().getId());
+                Variable expression = getCurrentNLB().getVariableById(m_exprId);
+                SearchResult resultE = (expression != null) ? expression.searchText(contract) : null;
+                if (resultE != null) {
+                    if (parent != null) {
+                        resultE.setId(parent.getId());
+                        resultE.setModulePageId(parent.getCurrentNLB().getParentPage().getId());
+                    }
+                    return resultE;
                 }
-                return resultE;
             }
         }
         return null;
