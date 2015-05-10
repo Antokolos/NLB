@@ -308,16 +308,15 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    nlbwalk = function(loc)").append(LINE_SEPARATOR);
-        stringBuilder.append("        if (_curloc ~= loc) then").append(LINE_SEPARATOR);
+        stringBuilder.append("        if (curloc() ~= loc) then").append(LINE_SEPARATOR);
         stringBuilder.append("            _curloc = loc;").append(LINE_SEPARATOR);
-        stringBuilder.append("            _curloc.notext = true;").append(LINE_SEPARATOR);
         stringBuilder.append("            walk(loc);").append(LINE_SEPARATOR);
         stringBuilder.append("        else").append(LINE_SEPARATOR);
         stringBuilder.append("            if _curloc.exit ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("                _curloc.exit(_curloc);").append(LINE_SEPARATOR);
+        stringBuilder.append("                _curloc.exit(_curloc, _curloc);").append(LINE_SEPARATOR);
         stringBuilder.append("            end").append(LINE_SEPARATOR);
         stringBuilder.append("            if _curloc.enter ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("                _curloc.enter(_curloc);").append(LINE_SEPARATOR);
+        stringBuilder.append("                _curloc.enter(_curloc, _curloc);").append(LINE_SEPARATOR);
         stringBuilder.append("            end").append(LINE_SEPARATOR);
         stringBuilder.append("        end").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
@@ -476,8 +475,8 @@ public class STEADExportManager extends TextExportManager {
             usepBuilder.append("        end;").append(LINE_SEPARATOR);
             usepBuilder.append(objBlocks.getObjUseEnd());
             stringBuilder.append("        else").append(LINE_SEPARATOR);
-            stringBuilder.append("            if w.used ~= nil then").append(LINE_SEPARATOR);
-            stringBuilder.append("                w.used(w, s);").append(LINE_SEPARATOR);
+            stringBuilder.append("            if w.useda ~= nil then").append(LINE_SEPARATOR);
+            stringBuilder.append("                w.useda(w, s);").append(LINE_SEPARATOR);
             stringBuilder.append("            end;").append(LINE_SEPARATOR);
             stringBuilder.append("        end;").append(LINE_SEPARATOR);
             stringBuilder.append(objBlocks.getObjUseEnd());
@@ -546,6 +545,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(autosBuilder.toString());
         // TODO: check that here() will not be used in modifications (for example, when automatically taking objects to the inventory)
         stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.notext = true;").append(LINE_SEPARATOR);
         if (varsOrModsPresent) {
             stringBuilder.append(pageBlocks.getPageModifications());
             stringBuilder.append(pageBlocks.getPageVariable());
@@ -557,7 +557,8 @@ public class STEADExportManager extends TextExportManager {
             if (hasPageTimer) {
                 stringBuilder.append("        ").append(pageBlocks.getPageTimerVariable()).append(LINE_SEPARATOR);
             }
-            stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR);
+            // stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR); -- will be called when timer triggers
+            // Timer will be triggered first time immediately after timer:set()
             stringBuilder.append("        timer:set(").append(hasAnim ? 20 : 200).append(");").append(LINE_SEPARATOR);
         } else {
             stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR);
@@ -568,6 +569,7 @@ public class STEADExportManager extends TextExportManager {
         if (timerSet) {
             stringBuilder.append("        timer:stop();").append(LINE_SEPARATOR);
         }
+        stringBuilder.append("        s.notext = true;").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append(pageBlocks.getPageSound());
 
