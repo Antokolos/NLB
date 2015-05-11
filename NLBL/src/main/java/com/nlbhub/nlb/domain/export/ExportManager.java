@@ -1690,7 +1690,7 @@ public abstract class ExportManager {
                         );
                         final String removeDestinationName = (
                                 (variable != null && removeDestinationId == null)
-                                        ? variable.getName()
+                                        ? decorateAutoVar(variable.getName())
                                         : null
                         );
                         final String objIdToRemove = exportData.getObjId(expression.getValue());
