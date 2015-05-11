@@ -519,10 +519,12 @@ public class STEADExportManager extends TextExportManager {
         boolean hasAnim = pageBlocks.isHasObjectsWithAnimatedImages();
         boolean timerSet = hasAnim || hasPageTimer;
         if (timerSet) {
-            stringBuilder.append("    timer = function(s) s.time = s.time + 1; ");
-            stringBuilder.append(pageBlocks.getPageTimerVariable()).append("s.autos(s); ");
-            stringBuilder.append("if (_curloc.notext) then return true; end; ");
-            stringBuilder.append("end,").append(LINE_SEPARATOR);
+            stringBuilder.append("    timer = function(s)").append(LINE_SEPARATOR);
+            stringBuilder.append("        s.time = s.time + 1; ").append(LINE_SEPARATOR);
+            stringBuilder.append(pageBlocks.getPageTimerVariable()).append(LINE_SEPARATOR);
+            stringBuilder.append("        local afl = s.autos(s); ").append(LINE_SEPARATOR);
+            stringBuilder.append("        if (_curloc.notext and afl) then return true; end; ").append(LINE_SEPARATOR);
+            stringBuilder.append("    end,").append(LINE_SEPARATOR);
         }
         stringBuilder.append(pageBlocks.getPageTextStart());
         autosBuilder.append("    autos = function(s)").append(LINE_SEPARATOR);
@@ -533,6 +535,7 @@ public class STEADExportManager extends TextExportManager {
                 autosBuilder.append(generateAutoLinkCode(linkBlocks));
             }
         }
+        autosBuilder.append("        return true;").append(LINE_SEPARATOR);
         autosBuilder.append("    end,").append(LINE_SEPARATOR);
 
         boolean varsOrModsPresent = (
@@ -652,7 +655,7 @@ public class STEADExportManager extends TextExportManager {
         result.append(linkBlocks.getLinkVariable());
         result.append(linkBlocks.getLinkGoTo());
         // Should return immediately to prevent unwanted following of other auto links
-        result.append(LINE_SEPARATOR).append("        return;").append(LINE_SEPARATOR);
+        result.append(LINE_SEPARATOR).append("        return false;").append(LINE_SEPARATOR);
         result.append(" end;"); // matching end for if (...)
         result.append(LINE_SEPARATOR);
         return result.toString();
