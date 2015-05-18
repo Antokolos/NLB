@@ -102,7 +102,8 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void createNewBook() {
-        m_nlb = new NonLinearBookImpl();
+        DummyNLB parentNLB = DummyNLB.singleton();
+        m_nlb = new NonLinearBookImpl(parentNLB, new RootModulePage(parentNLB, Constants.MAIN_MODULE_NAME));
         notifyObservers();
     }
 
