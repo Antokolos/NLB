@@ -514,7 +514,9 @@ public class STEADExportManager extends TextExportManager {
         // Do not check pageBlocks.isUseCaption() here, because in INSTEAD all rooms must have name
         stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageImage());
-        stringBuilder.append("    var { time = 0; tag = ''; notext = true; },").append(LINE_SEPARATOR);
+        stringBuilder.append("    var { time = 0; tag = ''; notext = true; ");
+        stringBuilder.append("autowired = ").append(pageBlocks.isAutowired() ? "true" : "false").append("; ");
+        stringBuilder.append("},").append(LINE_SEPARATOR);
         boolean hasPageTimer = StringHelper.notEmpty(pageBlocks.getPageTimerVariable());
         boolean hasAnim = pageBlocks.isHasObjectsWithAnimatedImages();
         boolean timerSet = hasAnim || hasPageTimer;
@@ -549,10 +551,12 @@ public class STEADExportManager extends TextExportManager {
         // TODO: check that here() will not be used in modifications (for example, when automatically taking objects to the inventory)
         stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.notext = true;").append(LINE_SEPARATOR);
+        stringBuilder.append("        if not (f.autowired) then").append(LINE_SEPARATOR);
         if (varsOrModsPresent) {
             stringBuilder.append(pageBlocks.getPageModifications());
             stringBuilder.append(pageBlocks.getPageVariable());
         }
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("        s.snd(s);").append(LINE_SEPARATOR);
         stringBuilder.append("        s.bgimg(s);").append(LINE_SEPARATOR);
         if (timerSet) {
@@ -1481,14 +1485,19 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageLabel(String labelText, int pageNumber) {
+        return generatePageBeginningCode(labelText, pageNumber) + "room {" + LINE_SEPARATOR;
+    }
+
+    protected String generatePageBeginningCode(String labelText, int pageNumber) {
         StringBuilder roomBeginning = new StringBuilder();
-        roomBeginning.append(decoratePageName(labelText, pageNumber));
+        String roomName = decoratePageName(labelText, pageNumber);
         if (pageNumber == 1) {
-            roomBeginning.append(", main = room { nam = \"main\", enter = function(s) nlbwalk(main); end }, ");
+            roomBeginning.append("main, ").append(roomName);
+            roomBeginning.append(" = room { nam = \"main\", enter = function(s) nlbwalk(").append(roomName).append("); end }, ");
         } else {
-            roomBeginning.append(" = ");
+            roomBeginning.append(roomName).append(" = ");
         }
-        return roomBeginning.toString() + "room {" + LINE_SEPARATOR;
+        return roomBeginning.toString();
     }
 
     @Override

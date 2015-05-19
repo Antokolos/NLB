@@ -61,6 +61,7 @@ public class PageBuildingBlocks {
     private String m_pageTimerVariable;
     private String m_pageModifications;
     private String m_pageEnd;
+    private boolean m_autowired;
     private boolean m_hasObjectsWithAnimatedImages;
     private List<String> m_containedObjIds;
     private List<LinkBuildingBlocks> m_linksBuildingBlocks;
@@ -142,6 +143,14 @@ public class PageBuildingBlocks {
 
     public void setPageTextEnd(String pageTextEnd) {
         m_pageTextEnd = pageTextEnd;
+    }
+
+    public boolean isAutowired() {
+        return m_autowired;
+    }
+
+    public void setAutowired(boolean autowired) {
+        m_autowired = autowired;
     }
 
     public boolean isHasObjectsWithAnimatedImages() {

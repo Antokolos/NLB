@@ -364,6 +364,7 @@ public abstract class ExportManager {
         NonLinearBook nlb = exportData.getNlb();
         PageBuildingBlocks blocks = new PageBuildingBlocks();
         final Integer pageNumber = exportData.getPageNumber(page.getId());
+        blocks.setAutowired(page.isAutowire());
         blocks.setPageName(decoratePageName(page.getId(), pageNumber));
         blocks.setPageLabel(decoratePageLabel(page.getId(), pageNumber));
         blocks.setPageNumber(decoratePageNumber(pageNumber));
