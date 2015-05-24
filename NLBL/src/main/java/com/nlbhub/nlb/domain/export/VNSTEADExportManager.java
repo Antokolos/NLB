@@ -55,7 +55,7 @@ import java.util.regex.Pattern;
  * @version 1.0 03/25/15
  */
 public class VNSTEADExportManager extends STEADExportManager {
-    private static final Pattern SENTENCE_PATTERN = Pattern.compile("((?:^|[^\\.\\?\\!]+)(?:[\\.\\?\\!]+|$))");
+    private static final Pattern SENTENCE_PATTERN = Pattern.compile("((?:^|[^\\.\\?\\!]+)(?:[\\.\\?\\!]+\"?|$))");
     private static final int PARAGRAPH_THRESHOLD = 100;
 
     public VNSTEADExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
