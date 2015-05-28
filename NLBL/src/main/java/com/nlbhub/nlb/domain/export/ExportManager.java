@@ -365,7 +365,8 @@ public abstract class ExportManager {
         PageBuildingBlocks blocks = new PageBuildingBlocks();
         final Integer pageNumber = exportData.getPageNumber(page.getId());
         blocks.setAutowired(page.isAutowire());
-        blocks.setPageName(decoratePageName(page.getId(), pageNumber));
+        final String pageName = decoratePageName(page.getId(), pageNumber);
+        blocks.setPageName(pageName);
         blocks.setPageLabel(decoratePageLabel(page.getId(), pageNumber));
         blocks.setPageNumber(decoratePageNumber(pageNumber));
         blocks.setPageComment(decoratePageComment(page.getCaption()));
@@ -373,7 +374,7 @@ public abstract class ExportManager {
         String imageFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_IMAGE_FILE_NAME: page.getImageFileName());
         blocks.setPageImage(decoratePageImage(getImagePaths(null, imageFileName, false), page.isImageBackground()));
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
-        blocks.setPageSound(decoratePageSound(getSoundPaths(null, soundFileName), page.isSoundSFX()));
+        blocks.setPageSound(decoratePageSound(pageName, getSoundPaths(null, soundFileName), page.isSoundSFX()));
         blocks.setPageTextStart(decoratePageTextStart(page.getId(), pageNumber, StringHelper.getTextChunks(page.getText())));
         blocks.setPageTextEnd(decoratePageTextEnd(page.getId(), pageNumber));
         if (!StringHelper.isEmpty(page.getVarId())) {
@@ -1996,7 +1997,7 @@ public abstract class ExportManager {
 
     protected abstract String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground);
 
-    protected abstract String decoratePageSound(List<SoundPathData> pageSoundPathDatas, boolean soundSFX);
+    protected abstract String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX);
 
     /**
      * Returns the name of the media file to which mediaFileName is redirected, or mediaFileName

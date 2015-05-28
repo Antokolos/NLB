@@ -68,6 +68,10 @@ public class STEADExportManager extends TextExportManager {
         super(nlb, encoding);
     }
 
+    protected boolean isVN() {
+        return false;
+    }
+
     @Override
     protected String generatePreambleText() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -549,6 +553,13 @@ public class STEADExportManager extends TextExportManager {
 
         stringBuilder.append(autosBuilder.toString());
         // TODO: check that here() will not be used in modifications (for example, when automatically taking objects to the inventory)
+        stringBuilder.append("    nextsnd = function(s)").append(LINE_SEPARATOR);
+        stringBuilder.append("        local sndfile = pop('").append(pageBlocks.getPageName()).append("_snds');").append(LINE_SEPARATOR);
+        stringBuilder.append("        if sndfile ~= nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("            s.sndout(s);").append(LINE_SEPARATOR);
+        stringBuilder.append("            add_sound(sndfile);").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.notext = true;").append(LINE_SEPARATOR);
         stringBuilder.append("        if not (f.autowired) then").append(LINE_SEPARATOR);
@@ -1296,15 +1307,7 @@ public class STEADExportManager extends TextExportManager {
             String linkTarget,
             int targetPageNumber
     ) {
-        return (
-                "                nlbwalk("
-                        + (
-                        getGoToPageNumbers()
-                                ? decorateId(String.valueOf(targetPageNumber))
-                                : decorateId(linkTarget)
-                )
-                        + "); "
-        );
+        return "                nlbwalk(" + decoratePageName(linkTarget, targetPageNumber) + "); ";
     }
 
     @Override
@@ -1395,7 +1398,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageSound(List<SoundPathData> pageSoundPathDatas, boolean soundSFX) {
+    protected String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX) {
         StringBuilder result = new StringBuilder("    snd = function(s) " + LINE_SEPARATOR);
         boolean notFirst = false;
         boolean hasSFX = false;
@@ -1403,17 +1406,22 @@ public class STEADExportManager extends TextExportManager {
         for (SoundPathData pageSoundPathData : pageSoundPathDatas) {
             String pageSoundPath = pageSoundPathData.getSoundPath();
             if (StringHelper.notEmpty(pageSoundPath)) {
-                ifTermination = "        end" + LINE_SEPARATOR;
-                result.append("        ").append(notFirst ? "else" : Constants.EMPTY_STRING).append("if (");
                 String constraint = pageSoundPathData.getConstraint();
-                result.append(StringHelper.notEmpty(constraint) ? "s.tag == '" + constraint + "'" : "true").append(") then");
-                result.append(LINE_SEPARATOR);
+                final boolean hasConstraint = StringHelper.notEmpty(constraint);
+                if (hasConstraint) {
+                    ifTermination = "        end" + LINE_SEPARATOR;
+                    result.append("        ").append(notFirst ? "else" : Constants.EMPTY_STRING).append("if (");
+                    result.append("s.tag == '").append(constraint).append("'").append(") then");
+                    result.append(LINE_SEPARATOR);
+                } else {
+                    result.append(ifTermination);
+                }
                 if (Constants.VOID.equals(pageSoundPath)) {
                     result.append("            stop_music();").append(LINE_SEPARATOR);
                 } else {
                     if (soundSFX) {
                         hasSFX = true;
-                        result.append("            add_sound('").append(pageSoundPath).append("');").append(LINE_SEPARATOR);
+                        result.append("            push('").append(pageName).append("_snds").append("', '").append(pageSoundPath).append("');").append(LINE_SEPARATOR);
                     } else {
                         result.append("            set_music('").append(pageSoundPath).append("', 0);").append(LINE_SEPARATOR);
                     }
@@ -1421,7 +1429,11 @@ public class STEADExportManager extends TextExportManager {
             }
             notFirst = true;
         }
-        result.append(ifTermination). append("    end,").append(LINE_SEPARATOR);
+        result.append(ifTermination);
+        if (!isVN()) {
+            result.append("        s.nextsnd(s);").append(LINE_SEPARATOR);
+        }
+        result.append("    end,").append(LINE_SEPARATOR);
         result.append("    sndout = function(s) ");
         if (hasSFX) {
             result.append("stop_sound(); ");

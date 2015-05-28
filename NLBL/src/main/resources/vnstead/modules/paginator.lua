@@ -1,7 +1,9 @@
 require "kbd"
 require "click"
 
-iface.cmd_orig = iface.cmd
+if not iface.cmd_orig then
+    iface.cmd_orig = iface.cmd
+end
 hook_keys('space', 'right ctrl', 'left ctrl')
 
 click.bg = true
@@ -67,6 +69,11 @@ local text_page = function(txt)
 		return ''
 	end)
 	res = res:gsub("[ \t\n]+$", ""):gsub("^[ \t\n]+", "");
+
+    local loc = here();
+    if loc.nextsnd ~= nil and res ~= '' then
+        loc.nextsnd(loc);
+    end
 
 	return res..'\n'
 end

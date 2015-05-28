@@ -62,6 +62,10 @@ public class VNSTEADExportManager extends STEADExportManager {
         super(nlb, encoding);
     }
 
+    protected boolean isVN() {
+        return true;
+    }
+
     @Override
     protected String generatePreambleText() {
         StringBuilder stringBuilder = new StringBuilder();
