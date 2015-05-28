@@ -81,6 +81,7 @@ public abstract class ExportManager {
     private Map<String, Variable.DataType> m_dataTypeMap;
     private Map<String, String> m_mediaToConstraintMap;
     private Map<String, String> m_mediaRedirectsMap;
+    private Map<String, Boolean> m_mediaFlagsMap;
 
     /**
      * Use page numbers as destinations instead of page IDs.
@@ -278,6 +279,7 @@ public abstract class ExportManager {
             m_dataTypeMap = nlb.getVariableDataTypes();
             m_mediaToConstraintMap = nlb.getMediaToConstraintMap();
             m_mediaRedirectsMap = nlb.getMediaRedirectsMap();
+            m_mediaFlagsMap = nlb.getMediaFlagsMap();
         } catch (NLBConsistencyException e) {
             throw new NLBExportException("Export error", e);
         }
@@ -2120,6 +2122,7 @@ public abstract class ExportManager {
                 } else {
                     result.setConstraint(Constants.EMPTY_STRING);
                 }
+                result.setSfx(m_mediaFlagsMap.get(soundFileName));
                 return result;
             }
         }

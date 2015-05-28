@@ -133,7 +133,7 @@ public class MediaFileModelSwing extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 4;
+        return 5;
     }
 
     @Override
@@ -150,13 +150,21 @@ public class MediaFileModelSwing extends AbstractTableModel {
                 }
             case 1:
                 MediaFile mediaFile = getMediaFile(rowIndex);
-                final String redirect = (mediaFile != null) ? mediaFile.getRedirect() : null;
+                final boolean flag = (mediaFile != null) && mediaFile.isFlagged();
+                if (flag) {
+                    return Constants.YES;
+                } else {
+                    return Constants.NO;
+                }
+            case 2:
+                MediaFile mediaFile0 = getMediaFile(rowIndex);
+                final String redirect = (mediaFile0 != null) ? mediaFile0.getRedirect() : null;
                 if (StringHelper.notEmpty(redirect)) {
                     return redirect;
                 } else {
                     return Constants.EMPTY_STRING;
                 }
-            case 2:
+            case 3:
                 MediaFile mediaFile1 = getMediaFile(rowIndex);
                 final String constrId = (mediaFile1 != null) ? mediaFile1.getConstrId() : null;
                 if (StringHelper.notEmpty(constrId)) {
@@ -166,9 +174,9 @@ public class MediaFileModelSwing extends AbstractTableModel {
                 } else {
                     return Constants.EMPTY_STRING;
                 }
-            case 3:
+            case 4:
                 MediaFile mediaFile2 = getMediaFile(rowIndex);
-                if (m_usages.contains(mediaFile2.getFileName())) {
+                if ((mediaFile2 != null) && m_usages.contains(mediaFile2.getFileName())) {
                     return Constants.EMPTY_STRING;
                 } else {
                     return "UNUSED";
@@ -183,13 +191,20 @@ public class MediaFileModelSwing extends AbstractTableModel {
         String value = (String) aValue;
         switch (columnIndex) {
             case 1:
+                if (Constants.YES.equalsIgnoreCase(value)) {
+                    setMediaFileFlag(rowIndex, true);
+                } else {
+                    setMediaFileFlag(rowIndex, false);
+                }
+                break;
+            case 2:
                 if (NC.equalsIgnoreCase(value)) {
                     setMediaFileRedirect(rowIndex, Constants.EMPTY_STRING);
                 } else {
                     setMediaFileRedirect(rowIndex, value);
                 }
                 break;
-            case 2:
+            case 3:
                 setMediaFileConstrId(rowIndex, m_namesToIdsMap.get(value));
                 break;
             default:
@@ -222,16 +237,25 @@ public class MediaFileModelSwing extends AbstractTableModel {
         }
     }
 
+    private void setMediaFileFlag(int rowIndex, boolean flag) {
+        MediaFile mediaFile = getMediaFile(rowIndex);
+        if (mediaFile != null) {
+            m_nonLinearBookFacade.setMediaFileFlag(m_mediaType, mediaFile.getFileName(), flag);
+        }
+    }
+
     @Override
     public String getColumnName(int column) {
         switch (column) {
             case 0:
                 return "Media file name";
             case 1:
-                return "Redirect";
+                return (m_mediaType == MediaFile.Type.Image) ? "BG" : "SFX";
             case 2:
-                return "Constraint";
+                return "Redirect";
             case 3:
+                return "Constraint";
+            case 4:
                 return "Usages";
             default:
                 return super.getColumnName(column);
@@ -240,6 +264,6 @@ public class MediaFileModelSwing extends AbstractTableModel {
 
     @Override
     public boolean isCellEditable(final int rowIndex, final int columnIndex) {
-        return (columnIndex > 0) && (columnIndex < 3);
+        return (columnIndex > 0) && (columnIndex <= 3);
     }
 }

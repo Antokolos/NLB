@@ -51,6 +51,7 @@ public class MediaFileImpl implements MediaFile {
     private String m_fileName;
     private String m_redirect;
     private String m_constrId;
+    private boolean m_flagged;
 
     public MediaFileImpl(String fileName) {
         m_fileName = fileName;
@@ -84,17 +85,26 @@ public class MediaFileImpl implements MediaFile {
     }
 
     @Override
+    public boolean isFlagged() {
+        return m_flagged;
+    }
+
+    public void setFlagged(boolean flagged) {
+        m_flagged = flagged;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
         MediaFileImpl mediaFile = (MediaFileImpl) o;
 
-        if (m_constrId != null ? !m_constrId.equals(mediaFile.m_constrId) : mediaFile.m_constrId != null) return false;
+        if (m_flagged != mediaFile.m_flagged) return false;
         if (!m_fileName.equals(mediaFile.m_fileName)) return false;
         if (m_redirect != null ? !m_redirect.equals(mediaFile.m_redirect) : mediaFile.m_redirect != null) return false;
+        return !(m_constrId != null ? !m_constrId.equals(mediaFile.m_constrId) : mediaFile.m_constrId != null);
 
-        return true;
     }
 
     @Override
@@ -102,6 +112,7 @@ public class MediaFileImpl implements MediaFile {
         int result = m_fileName.hashCode();
         result = 31 * result + (m_redirect != null ? m_redirect.hashCode() : 0);
         result = 31 * result + (m_constrId != null ? m_constrId.hashCode() : 0);
+        result = 31 * result + (m_flagged ? 1 : 0);
         return result;
     }
 

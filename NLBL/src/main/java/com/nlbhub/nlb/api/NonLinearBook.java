@@ -365,4 +365,6 @@ public interface NonLinearBook {
     public Map<String, String> getMediaToConstraintMap();
 
     public Map<String, String> getMediaRedirectsMap();
+
+    public Map<String, Boolean> getMediaFlagsMap();
 }

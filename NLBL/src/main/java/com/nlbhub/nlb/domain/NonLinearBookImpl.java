@@ -76,11 +76,12 @@ public class NonLinearBookImpl implements NonLinearBook {
     );
     private static final String MEDIA_FILE_NAME_TEMPLATE = "%s_%d%s";
     private static final String CONSTRID_EXT = ".constrid";
+    private static final String FLAG_EXT = ".flag";
     private static final String REDIRECT_EXT = ".redirect";
     private static final FilenameFilter NON_SPECIAL_FILTER = new FilenameFilter() {
         @Override
         public boolean accept(final File dir, final String name) {
-            return !name.endsWith(CONSTRID_EXT) && !name.endsWith(REDIRECT_EXT);
+            return !name.endsWith(CONSTRID_EXT) && !name.endsWith(REDIRECT_EXT) && !name.endsWith(FLAG_EXT);
         }
     };
     private static final String STARTPOINT_FILE_NAME = "startpoint";
@@ -2362,6 +2363,27 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
+    public void setMediaFileFlag(final MediaFile.Type mediaType, final String fileName, final boolean flag) {
+        switch (mediaType) {
+            case Image:
+                for (MediaFileImpl mediaFile : m_imageFiles) {
+                    if (mediaFile.getFileName().equals(fileName)) {
+                        mediaFile.setFlagged(flag);
+                        break;
+                    }
+                }
+                break;
+            case Sound:
+                for (MediaFileImpl mediaFile : m_soundFiles) {
+                    if (mediaFile.getFileName().equals(fileName)) {
+                        mediaFile.setFlagged(flag);
+                        break;
+                    }
+                }
+                break;
+        }
+    }
+
     public void setRootDir(final File rootDir) {
         m_rootDir = rootDir;
     }
@@ -2912,6 +2934,15 @@ public class NonLinearBookImpl implements NonLinearBook {
                                 Constants.EMPTY_STRING
                         )
                 );
+                imageFile.setFlagged(
+                        "true".equals(
+                                FileManipulator.getOptionalFileAsString(
+                                        imagesDir,
+                                        file.getName() + FLAG_EXT,
+                                        String.valueOf(false)
+                                )
+                        )
+                );
                 m_imageFiles.add(imageFile);
             }
         }
@@ -2940,6 +2971,15 @@ public class NonLinearBookImpl implements NonLinearBook {
                                 soundDir,
                                 file.getName() + CONSTRID_EXT,
                                 Constants.EMPTY_STRING
+                        )
+                );
+                soundFile.setFlagged(
+                        "true".equals(
+                                FileManipulator.getOptionalFileAsString(
+                                        soundDir,
+                                        file.getName() + FLAG_EXT,
+                                        String.valueOf(false)
+                                )
                         )
                 );
                 m_soundFiles.add(soundFile);
@@ -3003,6 +3043,19 @@ public class NonLinearBookImpl implements NonLinearBook {
                             mediaFile.getRedirect(),
                             Constants.EMPTY_STRING
                     );
+                }
+                File flagFile = new File(mediaDir, mediaFile.getFileName() + FLAG_EXT);
+                if (mediaFile.isFlagged()) {
+                    fileManipulator.writeOptionalString(
+                            mediaDir,
+                            flagFile.getName(),
+                            String.valueOf(mediaFile.isFlagged()),
+                            String.valueOf(false)
+                    );
+                } else {
+                    if (flagFile.exists()) {
+                        fileManipulator.deleteFileOrDir(flagFile);
+                    }
                 }
             }
         }
@@ -3989,6 +4042,20 @@ public class NonLinearBookImpl implements NonLinearBook {
             if (StringHelper.notEmpty(mediaFile.getRedirect())) {
                 result.put(mediaFile.getFileName(), mediaFile.getRedirect());
             }
+        }
+        return result;
+    }
+
+    @Override
+    public Map<String, Boolean> getMediaFlagsMap() {
+        Map<String, Boolean> result = new HashMap<>();
+        List<MediaFile> imageFiles = getImageFiles();
+        for (MediaFile mediaFile : imageFiles) {
+            result.put(mediaFile.getFileName(), mediaFile.isFlagged());
+        }
+        List<MediaFile> soundFiles = getSoundFiles();
+        for (MediaFile mediaFile : soundFiles) {
+            result.put(mediaFile.getFileName(), mediaFile.isFlagged());
         }
         return result;
     }

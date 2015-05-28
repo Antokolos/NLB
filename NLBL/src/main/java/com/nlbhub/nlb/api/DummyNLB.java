@@ -258,4 +258,9 @@ public class DummyNLB implements NonLinearBook {
     public Map<String, String> getMediaRedirectsMap() {
         return Collections.emptyMap();
     }
+
+    @Override
+    public Map<String, Boolean> getMediaFlagsMap() {
+        return Collections.emptyMap();
+    }
 }

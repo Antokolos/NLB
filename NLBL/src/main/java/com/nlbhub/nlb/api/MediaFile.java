@@ -45,9 +45,10 @@ package com.nlbhub.nlb.api;
  * @version 1.0
  */
 public interface MediaFile extends Comparable<MediaFile> {
-    public enum Type {Image, Sound}
+    enum Type {Image, Sound}
 
-    public String getFileName();
-    public String getRedirect();
-    public String getConstrId();
+    String getFileName();
+    String getRedirect();
+    String getConstrId();
+    boolean isFlagged();
 }

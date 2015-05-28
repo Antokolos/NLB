@@ -59,4 +59,6 @@ public interface Constants {
     String NLB_PAGE_ATTR = "nlbpage";
     String NLB_OBJ_ATTR = "nlbobj";
     String NLB_LINK_ATTR = "nlblink";
+    String YES = "YES";
+    String NO = "NO";
 }

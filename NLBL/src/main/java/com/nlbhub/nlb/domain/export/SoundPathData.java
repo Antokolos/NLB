@@ -60,6 +60,7 @@ public class SoundPathData {
     private String m_parentFolderPath;
     private String m_fileName;
     private String m_constraint;
+    private boolean m_sfx;
 
     public String getParentFolderPath() {
         return m_parentFolderPath;
@@ -91,6 +92,14 @@ public class SoundPathData {
 
     public void setConstraint(String constraint) {
         m_constraint = constraint;
+    }
+
+    public boolean isSfx() {
+        return m_sfx;
+    }
+
+    public void setSfx(boolean sfx) {
+        m_sfx = sfx;
     }
 
     @Override

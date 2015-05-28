@@ -1419,7 +1419,7 @@ public class STEADExportManager extends TextExportManager {
                 if (Constants.VOID.equals(pageSoundPath)) {
                     result.append("            stop_music();").append(LINE_SEPARATOR);
                 } else {
-                    if (soundSFX) {
+                    if (soundSFX || pageSoundPathData.isSfx()) {
                         hasSFX = true;
                         result.append("            push('").append(pageName).append("_snds").append("', '").append(pageSoundPath).append("');").append(LINE_SEPARATOR);
                     } else {
