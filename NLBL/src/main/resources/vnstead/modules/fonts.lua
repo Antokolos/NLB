@@ -1,4 +1,4 @@
--- example module
+-- fonts module
 require "sprites"
 require "theme"
 

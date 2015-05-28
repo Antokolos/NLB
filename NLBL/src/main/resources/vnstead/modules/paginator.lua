@@ -1,3 +1,4 @@
+-- paginator module
 require "kbd"
 require "click"
 
