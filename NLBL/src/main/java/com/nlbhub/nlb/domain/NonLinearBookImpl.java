@@ -2481,7 +2481,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     public PageImpl createFilteredPage(
             final String sourceId,
             final History history
-    ) throws ScriptException {
+    ) throws ScriptException, NLBConsistencyException {
         final PageImpl source = getPageImplById(sourceId);
         ScriptEngineManager factory = new ScriptEngineManager();
         List<DecisionPoint> decisionsList = history.getDecisionPoints();
@@ -2622,7 +2622,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final ScriptEngineManager factory,
             final Map<String, Object> visitedVars,
             final Link link
-    ) throws ScriptException {
+    ) throws ScriptException, NLBConsistencyException {
 
         final Variable constraintVar = getVariableById(link.getConstrId());
         final Variable moduleConstraint = (
@@ -2677,7 +2677,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             ScriptEngineManager factory,
             final String constraint,
             final Map<String, Object> visitedVars
-    ) {
+    ) throws NLBConsistencyException {
         final Collection<String> constraintVars = VarFinder.findVariableNames(constraint);
         final Map<String, Object> varMapping = new HashMap<>();
         for (final String var : constraintVars) {

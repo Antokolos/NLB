@@ -602,7 +602,7 @@ public class GetNLBDataService {
     protected Response generateFilteredResponse(
             final ModuleData moduleData,
             final String pageId
-    ) throws ScriptException {
+    ) throws ScriptException, NLBConsistencyException {
         final Page filteredPage = (
                 moduleData.getModule().createFilteredPage(pageId, s_history)
         );

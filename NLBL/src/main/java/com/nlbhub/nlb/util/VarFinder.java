@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.util;
 
+import com.nlbhub.nlb.exception.NLBConsistencyException;
 import org.mozilla.javascript.Parser;
 import org.mozilla.javascript.ast.AstNode;
 import org.mozilla.javascript.ast.Name;
@@ -56,19 +57,23 @@ public class VarFinder {
      * @param script
      * @return
      */
-    public static Collection<String> findVariableNames(final String script) {
-        final Set<String> names = new HashSet<String>();
-        class Visitor implements NodeVisitor {
-            @Override
-            public boolean visit(AstNode node) {
-                if (node instanceof Name) {
-                    names.add(node.getString());
+    public static Collection<String> findVariableNames(final String script) throws NLBConsistencyException {
+        try {
+            final Set<String> names = new HashSet<String>();
+            class Visitor implements NodeVisitor {
+                @Override
+                public boolean visit(AstNode node) {
+                    if (node instanceof Name) {
+                        names.add(node.getString());
+                    }
+                    return true;
                 }
-                return true;
             }
+            AstNode node = new Parser().parse(script, "<cmd>", 1);
+            node.visit(new Visitor());
+            return names;
+        } catch (Exception e) {
+            throw new NLBConsistencyException("Exception while processing formula '" + script + "': " + e.getMessage());
         }
-        AstNode node = new Parser().parse(script, "<cmd>", 1);
-        node.visit(new Visitor());
-        return names;
     }
 }

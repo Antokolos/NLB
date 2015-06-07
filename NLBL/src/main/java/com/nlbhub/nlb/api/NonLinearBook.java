@@ -332,7 +332,7 @@ public interface NonLinearBook {
 
     public Obj getObjById(String objId);
 
-    public Page createFilteredPage(final String sourceId, final History history) throws ScriptException;
+    public Page createFilteredPage(final String sourceId, final History history) throws ScriptException, NLBConsistencyException;
 
     public boolean load(final String path, final ProgressData progressData) throws NLBIOException, NLBConsistencyException, NLBVCSException;
 
