@@ -96,7 +96,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         stringBuilder.append("end").append(lineSep);
 
         stringBuilder.append("function init()").append(lineSep);
-        stringBuilder.append("    vn:scene ('box:1920x1080,gray');").append(lineSep);
+        stringBuilder.append("    vn:scene(nil);").append(lineSep);
         stringBuilder.append("    vn.fading = 8").append(lineSep);
         stringBuilder.append("end").append(lineSep);
 
@@ -166,14 +166,12 @@ public class VNSTEADExportManager extends STEADExportManager {
                     linksBuilder.append(generateOrdinaryLinkCode(linkBlock));
                 }
             }
+            if (linksBuildingBlocks.isEmpty()) {
+                result.append("        vn:geom(470, 400, 980, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png');").append(lineSep);
+            } else {
+                result.append("        vn:geom(320, 320, 1280, 480, 'dissolve');").append(lineSep);
+            }
         }
-        if (linksBuildingBlocks.isEmpty()) {
-            result.append("        theme.win.geom(710, 400, 500, 150);").append(lineSep);
-        } else {
-            result.append("        theme.win.geom(320, 320, 1280, 480);").append(lineSep);
-        }
-        result.append("        vn:start('dissolve');").append(lineSep);
-        result.append("        vn:commit();").append(lineSep);
         result.append("    end").append(lineSep).append("}").append(lineSep).append(lineSep);
         result.append(linksBuilder.toString());
         return result.toString();
@@ -244,9 +242,9 @@ public class VNSTEADExportManager extends STEADExportManager {
     }
 
     /**
-     * imageBackground is actually ignored, because in VN every image should be treated as background
+     * imageBackground should be true in "The End" pages, if you want to show fancy winner's picture
      * @param pageImagePathDatas
-     * @param imageBackground ignored
+     * @param imageBackground
      * @return
      */
     @Override
@@ -255,7 +253,6 @@ public class VNSTEADExportManager extends STEADExportManager {
         StringBuilder bgimgBuilder = new StringBuilder("    bgimg = function(s)" + lineSep);
         boolean notFirst = false;
         String bgimgIfTermination = Constants.EMPTY_STRING;
-        bgimgBuilder.append("theme.win.geom(8, 880, 1904, 200);");
         for (ImagePathData pageImagePathData : pageImagePathDatas) {
             if (pageImagePathData.getMaxFrameNumber() == 0) {
                 String pageImagePath = pageImagePathData.getImagePath();
@@ -267,7 +264,11 @@ public class VNSTEADExportManager extends STEADExportManager {
                     tempBuilder.append(lineSep);
                     bgimgIfTermination = "        end" + lineSep;
                     bgimgBuilder.append(tempBuilder).append("            ");
-                    bgimgBuilder.append("vn:scene ('").append(pageImagePath).append("');").append(lineSep);
+                    if (imageBackground) {
+                        bgimgBuilder.append("theme.gfx.bg('").append(pageImagePath).append("');").append(lineSep);
+                    }
+                    // vn:scene should be called in all cases
+                    bgimgBuilder.append("vn:scene('").append(pageImagePath).append("');").append(lineSep);
                 }
             } else {
                 // TODO: support animated images
@@ -275,8 +276,9 @@ public class VNSTEADExportManager extends STEADExportManager {
             notFirst = true;
         }
         bgimgBuilder.append(bgimgIfTermination).append(lineSep);
-        bgimgBuilder.append("        vn:start('dissolve');").append(lineSep);
-        bgimgBuilder.append("        vn:commit();").append(lineSep);
+        if (!imageBackground) {
+            bgimgBuilder.append("        vn:geom(8, 864, 1904, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png');").append(lineSep);
+        }
         bgimgBuilder.append("    end,").append(lineSep);
         return bgimgBuilder.toString();
     }

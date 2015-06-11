@@ -219,6 +219,11 @@ public class NonLinearBookFacade implements NLBObservable {
             exportBundledFile(modulesDir, true, "paginator.lua");
             exportBundledFile(modulesDir, true, "vn.lua");
         }
+        File gfxDir = new File(exportDir, "gfx");
+        if (gfxDir.mkdir()) {
+            exportBundledFile(gfxDir, true, "fl.png");
+            exportBundledFile(gfxDir, true, "fr.png");
+        }
         exportBundledFile(exportDir, false, "theme.ini");
     }
 

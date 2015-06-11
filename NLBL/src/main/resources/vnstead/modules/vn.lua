@@ -25,7 +25,7 @@ local win_get = function()
 		theme.get 'win.h',
 		theme.get 'up.x',
 		theme.get 'down.x';
-	s._win_get = true
+	    s._win_get = true
 end
 game.timer = function(s)
 	if vn.tostop then
@@ -79,7 +79,10 @@ vn = obj {
 	_effects = {};
 	_bg = false;
 	_need_effect = false;
-	hz = 50;
+	_wf = 0;
+	_fln = nil;
+    _frn = nil;
+    hz = 50;
 	var { speed = 500, fading = 8, bgalpha = 127 };
 	var { win_x = 0, win_y = 0, win_w = 0, win_h = 0, up_x = 0, down_x = 0; };
 	screen = function(s)
@@ -247,6 +250,7 @@ vn = obj {
 	set_bg = function(s, picture)
 		if not picture then
 			s.bg_spr = sprite.box(s.scr_w, s.scr_h, theme.get 'scr.col.bg')
+			s._bg = picture;
 			return
 		end
 		if s.bg_spr then
@@ -431,7 +435,8 @@ vn = obj {
 			s._scene_effect = effect
 		end
 		win_get();
-		theme.win.geom(s.scr_w, s.scr_h, 0, 0)
+		-- s.scr_w + s.textpad + s._wf, s.scr_h + s.textpad -- because otherwise screen is corrupted for some reason
+		theme.win.geom(s.scr_w + s.textpad + s._wf, s.scr_h + s.textpad, 0, 0)
 		theme.set("win.up.x", -s.scr_w);
 		theme.set("win.down.x", -s.scr_w);
 		if s.skip_mode then
@@ -455,6 +460,27 @@ vn = obj {
 		return
 		-- just transpose
 	end;
+	-- effect is effect name, like 'dissolve'
+	-- wf is the fancy border width, in pixels
+	-- fln and frn are paths to the borders' images
+	geom = function(s, x, y, w, h, effect, wf, fln, frn)
+		-- wf can be zero, this means do not use borders
+		if wf then
+			s._wf = wf;
+		else
+			s._wf = 0;
+		end
+		s._fln = fln;
+		s._frn = frn;
+		s.win_x, s.win_y, s.win_w, s.win_h = x + s._wf, y, w - 2*s._wf, h;
+		theme.win.geom(s.win_x, s.win_y, s.win_w, s.win_h);
+		if effect then
+		    s:start(effect);
+		else
+		    s:start();
+		end;
+		s:commit();
+	end;
 	scene = function(s, bg, eff)
 		local i,v
 		for i,v in ipairs(s._effects) do
@@ -463,16 +489,36 @@ vn = obj {
 		s._effects = {}
 		s._need_effect = false
 		s._scene_effect = eff
-		if bg then
-			s:set_bg(bg)
-		end
+		-- if bg is nil, simple box sprite will be set
+		s:set_bg(bg)
 	end;
 	textpad = 8;
 	textbg = function(s, to)
 		local pad = vn.textpad;
+		local wf = vn._wf;
+		local fln = vn._fln;
+		local frn = vn._frn;
 		local w, h = theme.get 'win.w', theme.get 'win.h'
 		local x, y = theme.get 'win.x', theme.get 'win.y'
 		local sb = sprite.box(w + pad*2, h + pad * 2, 'black', s.bgalpha)
+		if (wf > 0) then
+			local fl;
+			if fln then
+				fl = sprite.load(fln);
+			else
+				fl = sprite.box(wf, h + pad * 2, 'black', s.bgalpha);
+			end
+			local fr;
+			if frn then
+				fr = sprite.load(frn);
+			else
+				fr = sprite.box(wf, h + pad * 2, 'black', s.bgalpha);
+			end
+			sprite.draw(fl, to, x - pad - wf, y - pad);
+			sprite.draw(fr, to, x + w + pad, y - pad);
+			sprite.free(fl)
+			sprite.free(fr)
+		end
 		sprite.draw(sb, to, x - pad, y - pad)
 		sprite.free(sb)
 	end;
