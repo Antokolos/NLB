@@ -143,7 +143,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         result.append(roomName).append("_choices").append(" = room {").append(lineSep);
         result.append("    nam = \"").append(roomName).append("_choices\",").append(lineSep);
         if (linksBuildingBlocks.isEmpty()) {
-            result.append("    dsc = fend:txt('The')..img 'blank:64x64'..fend:txt('End'),").append(lineSep);
+            result.append("    dsc = img 'blank:23x23'..'^'..fend:txt('The')..img 'blank:64x64'..fend:txt('End'),").append(lineSep);
         }
         result.append("    enter = function(s) ").append(lineSep);
         result.append("        objs():zap();").append(lineSep);
