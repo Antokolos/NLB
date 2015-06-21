@@ -504,6 +504,9 @@ public class STEADExportManager extends TextExportManager {
         if (StringHelper.notEmpty(objBlocks.getObjConstraint())) {
             stringBuilder.append("lifeon('").append(objBlocks.getObjLabel()).append("');").append(LINE_SEPARATOR);
         }
+        if (StringHelper.notEmpty(objBlocks.getObjAlias())) {
+            stringBuilder.append(objBlocks.getObjAlias()).append(" = ").append(objBlocks.getObjLabel()).append(LINE_SEPARATOR);
+        }
         return stringBuilder.toString();
     }
 

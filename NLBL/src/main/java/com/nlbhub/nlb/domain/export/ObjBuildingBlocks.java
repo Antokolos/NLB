@@ -52,6 +52,7 @@ public class ObjBuildingBlocks {
     private String m_objComment;
     private String m_objStart;
     private String m_objName;
+    private String m_objAlias;
     private String m_objImage;
     private String m_objDisp;
     private String m_objText;
@@ -107,6 +108,14 @@ public class ObjBuildingBlocks {
 
     public void setObjName(String objName) {
         m_objName = objName;
+    }
+
+    public String getObjAlias() {
+        return m_objAlias;
+    }
+
+    public void setObjAlias(String objAlias) {
+        m_objAlias = objAlias;
     }
 
     public String getObjImage() {

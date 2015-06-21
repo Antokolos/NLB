@@ -562,6 +562,7 @@ public abstract class ExportManager {
         blocks.setObjComment(decorateObjComment(obj.getName()));
         blocks.setObjStart(decorateObjStart(obj.getId(), menuObj));
         blocks.setObjName(decorateObjName(obj.getName()));
+        blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
         final String objImage = decorateObjImage(getImagePaths(null, imageFileName, obj.isAnimatedImage()));
         final boolean hasImage = StringHelper.notEmpty(imageFileName);
