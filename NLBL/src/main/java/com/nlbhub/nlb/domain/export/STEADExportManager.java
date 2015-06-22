@@ -756,9 +756,9 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateObjDisp(List<TextChunk> dispChunks, boolean imageEnabled) {
         if (imageEnabled) {
             return (
-                    "    disp = function(s) return \"" +
+                    "    disp = function(s) return s.imgv(s)..\"" +
                             getDispText(dispChunks) +
-                            "\"..s.imgv(s) end," + LINE_SEPARATOR
+                            "\" end," + LINE_SEPARATOR
             );
         } else {
             if (dispChunks.size() > 0) {
