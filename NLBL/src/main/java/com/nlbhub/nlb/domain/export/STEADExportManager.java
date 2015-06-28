@@ -774,13 +774,16 @@ public class STEADExportManager extends TextExportManager {
         return expandVariables(dispChunks);
     }
 
-    private String expandInteractionMarks(String text) {
+    private String expandInteractionMarks(String objId, String text, boolean withImage) {
         StringBuilder result = new StringBuilder();
         Matcher matcher = STEAD_OBJ_PATTERN.matcher(text);
         int start = 0;
         while (matcher.find()) {
-            result.append(text.substring(start, matcher.start())).append("{");
-            result.append(matcher.group(1)).append("\"..s.imgv(s)..\"").append("}");
+            result.append(text.substring(start, matcher.start())).append("{").append(decorateId(objId)).append("|");
+            if (withImage) {
+                result.append("\"..s.imgv(s)..\"");
+            }
+            result.append(matcher.group(1)).append("}");
             start = matcher.end();
         }
         result.append(text.substring(start, text.length()));
@@ -788,17 +791,22 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjText(List<TextChunk> textChunks, boolean imageEnabled) {
+    protected String decorateObjText(String objId, boolean suppressDsc, List<TextChunk> textChunks, boolean imageEnabled) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("    dsc = function(s) ");
+        stringBuilder.append("    dscf = function(s) ");
         if (textChunks.size() > 0) {
             stringBuilder.append("p(\"");
             if (imageEnabled) {
-                stringBuilder.append(expandInteractionMarks(getObjText(textChunks)));
+                stringBuilder.append(expandInteractionMarks(objId, getObjText(textChunks), true));
             } else {
-                stringBuilder.append(getObjText(textChunks));
+                stringBuilder.append(expandInteractionMarks(objId, getObjText(textChunks), false));
             }
             stringBuilder.append("\"); ");
+        }
+        stringBuilder.append("end,").append(LINE_SEPARATOR);
+        stringBuilder.append("    dsc = function(s) ");
+        if (!suppressDsc) {
+            stringBuilder.append("s.dscf(s); ");
         }
         stringBuilder.append("end,").append(LINE_SEPARATOR);
         return stringBuilder.toString();

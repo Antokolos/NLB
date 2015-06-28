@@ -568,7 +568,7 @@ public abstract class ExportManager {
         final boolean hasImage = StringHelper.notEmpty(imageFileName);
         blocks.setObjImage(objImage);
         blocks.setObjDisp(decorateObjDisp(StringHelper.getTextChunks(obj.getDisp()), hasImage && obj.isImageInInventory()));
-        blocks.setObjText(decorateObjText(StringHelper.getTextChunks(obj.getText()), hasImage && obj.isImageInScene()));
+        blocks.setObjText(decorateObjText(obj.getId(), obj.isSuppressDsc(), StringHelper.getTextChunks(obj.getText()), hasImage && obj.isImageInScene()));
         blocks.setTakable(obj.isTakable());
         blocks.setObjTak(decorateObjTak(obj.getName()));
         blocks.setObjInv(decorateObjInv(menuObj));
@@ -1085,6 +1085,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public boolean isSuppressDsc() {
+                return obj.isSuppressDsc();
+            }
+
+            @Override
             public String getDisp() {
                 return escapeText(obj.getDisp());
             }
@@ -1240,7 +1245,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjText(List<TextChunk> textChunks, boolean imageEnabled) {
+    protected String decorateObjText(String objId, boolean suppressDsc, List<TextChunk> textChunks, boolean imageEnabled) {
         return EMPTY_STRING;
     }
 

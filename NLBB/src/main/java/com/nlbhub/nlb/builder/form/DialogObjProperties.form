@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.nlbhub.nlb.builder.form.DialogObjProperties">
   <grid id="cbd77" binding="contentPane" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="48" y="54" width="868" height="415"/>
+      <xy x="48" y="54" width="1041" height="415"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -546,6 +546,12 @@
                                         <constraints/>
                                         <properties>
                                           <text value="Can be taken to the inventory"/>
+                                        </properties>
+                                      </component>
+                                      <component id="60799" class="javax.swing.JCheckBox" binding="m_suppressDsc">
+                                        <constraints/>
+                                        <properties>
+                                          <text value="CheckBox"/>
                                         </properties>
                                       </component>
                                       <component id="66dbe" class="javax.swing.JCheckBox" binding="m_imageInScene">

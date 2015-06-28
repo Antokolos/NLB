@@ -72,6 +72,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String CONSTRID_FILE_NAME = "constrid";
     private static final String NAME_FILE_NAME = "name";
     private static final String IMAGE_FILE_NAME = "image";
+    private static final String SUPPRESS_DSC_FILE_NAME = "suppdsc";
     private static final String ANIMATED_FILE_NAME = "animated";
     private static final String DISP_SUBDIR_NAME = "disp";
     private static final String TAKABLE_FILE_NAME = "takable";
@@ -95,6 +96,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private String m_containerId = DEFAULT_CONTAINER_ID;
     private String m_imageFileName = DEFAULT_IMAGE_FILE_NAME;
     private boolean m_animatedImage = DEFAULT_ANIMATED_IMAGE;
+    private boolean m_suppressDsc = DEFAULT_SUPPRESS_DSC;
     private boolean m_imageInScene = DEFAULT_IMAGE_IN_SCENE;
     private boolean m_imageInInventory = DEFAULT_IMAGE_IN_INVENTORY;
 
@@ -219,6 +221,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         return m_animatedImage;
     }
 
+    public void setSuppressDsc(boolean suppressDsc) {
+        m_suppressDsc = suppressDsc;
+    }
+
+    @Override
+    public boolean isSuppressDsc() {
+        return m_suppressDsc;
+    }
+
     public void setImageFileName(String imageFileName) {
         m_imageFileName = imageFileName;
     }
@@ -320,6 +331,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                     String.valueOf(m_animatedImage),
                     String.valueOf(DEFAULT_ANIMATED_IMAGE)
             );
+            fileManipulator.writeOptionalString(
+                    objDir,
+                    SUPPRESS_DSC_FILE_NAME,
+                    String.valueOf(m_suppressDsc),
+                    String.valueOf(DEFAULT_SUPPRESS_DSC)
+            );
             fileManipulator.writeOptionalMultiLangString(
                     new File(objDir, DISP_SUBDIR_NAME),
                     m_disp,
@@ -401,6 +418,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         ANIMATED_FILE_NAME,
                         String.valueOf(DEFAULT_ANIMATED_IMAGE)
+                )
+        );
+        m_suppressDsc = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        SUPPRESS_DSC_FILE_NAME,
+                        String.valueOf(DEFAULT_SUPPRESS_DSC)
                 )
         );
         m_disp = (

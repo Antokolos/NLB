@@ -51,6 +51,7 @@ import java.util.List;
 public interface Obj extends NodeItem {
     public static final String DEFAULT_IMAGE_FILE_NAME = Constants.EMPTY_STRING;
     public static final boolean DEFAULT_ANIMATED_IMAGE = false;
+    public static final boolean DEFAULT_SUPPRESS_DSC = false;
     public static final MultiLangString DEFAULT_TEXT = MultiLangString.createEmptyText();
     public static final MultiLangString DEFAULT_ACT_TEXT = MultiLangString.createEmptyText();
     public static final String DEFAULT_VARID = Constants.EMPTY_STRING;
@@ -79,6 +80,8 @@ public interface Obj extends NodeItem {
     public String getImageFileName();
 
     public boolean isAnimatedImage();
+
+    public boolean isSuppressDsc();
 
     /**
      * Returns display name of the object, which is used in the text, e.g. when inserted into the inventory

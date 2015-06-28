@@ -92,6 +92,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JCheckBox m_animatedImageCheckBox;
     private JButton m_buttonZoomIn;
     private JButton m_buttonZoomOut;
+    private JCheckBox m_suppressDsc;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -291,6 +292,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_objNameTextField.getText(),
                 m_imageFileName,
                 m_animatedImageCheckBox.isSelected(),
+                m_suppressDsc.isSelected(),
                 m_objDisplayNames,
                 m_objTexts,
                 m_objActTexts,
@@ -712,6 +714,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objIsTakable = new JCheckBox();
         m_objIsTakable.setText("Can be taken to the inventory");
         panel27.add(m_objIsTakable);
+        m_suppressDsc = new JCheckBox();
+        m_suppressDsc.setText("CheckBox");
+        panel27.add(m_suppressDsc);
         m_imageInScene = new JCheckBox();
         m_imageInScene.setText("Image in scene");
         panel27.add(m_imageInScene);

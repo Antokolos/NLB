@@ -715,6 +715,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private String m_existingObjName;
         private String m_existingImageFileName;
         private boolean m_existingAnimatedImage;
+        private boolean m_existingSuppressDsc;
         private MultiLangString m_existingObjDisp;
         private MultiLangString m_existingObjText;
         private MultiLangString m_existingObjActText;
@@ -724,6 +725,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private String m_newObjName;
         private String m_newImageFileName;
         private boolean m_newAnimatedImage;
+        private boolean m_newSuppressDsc;
         private MultiLangString m_newObjDisp;
         private MultiLangString m_newObjText;
         private MultiLangString m_newObjActText;
@@ -739,6 +741,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String objName,
                 final String imageFileName,
                 final boolean animatedImage,
+                final boolean suppressDsc,
                 final MultiLangString objDisp,
                 final MultiLangString objText,
                 final MultiLangString objActText,
@@ -754,6 +757,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     objName,
                     imageFileName,
                     animatedImage,
+                    suppressDsc,
                     objDisp,
                     objText,
                     objActText,
@@ -771,6 +775,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String objName,
                 final String imageFileName,
                 final boolean animatedImage,
+                final boolean suppressDsc,
                 final MultiLangString objDisp,
                 final MultiLangString objText,
                 final MultiLangString objActText,
@@ -802,6 +807,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingObjName = obj.getName();
             m_existingImageFileName = obj.getImageFileName();
             m_existingAnimatedImage = obj.isAnimatedImage();
+            m_existingSuppressDsc = obj.isSuppressDsc();
             m_existingObjDisp = obj.getDisps();
             m_existingObjText = obj.getTexts();
             m_existingObjActText = obj.getActTexts();
@@ -811,6 +817,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newObjName = objName;
             m_newImageFileName = imageFileName;
             m_newAnimatedImage = animatedImage;
+            m_newSuppressDsc = suppressDsc;
             m_newObjDisp = objDisp;
             m_newObjText = objText;
             m_newObjActText = objActText;
@@ -826,6 +833,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setName(m_newObjName);
             m_obj.setImageFileName(m_newImageFileName);
             m_obj.setAnimatedImage(m_newAnimatedImage);
+            m_obj.setSuppressDsc(m_newSuppressDsc);
             m_obj.setDisps(m_newObjDisp);
             m_obj.setTexts(m_newObjText);
             m_obj.setActTexts(m_newObjActText);
@@ -842,6 +850,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setName(m_existingObjName);
             m_obj.setImageFileName(m_existingImageFileName);
             m_obj.setAnimatedImage(m_existingAnimatedImage);
+            m_obj.setSuppressDsc(m_existingSuppressDsc);
             m_obj.setDisps(m_existingObjDisp);
             m_obj.setTexts(m_existingObjText);
             m_obj.setActTexts(m_existingObjActText);
@@ -1608,6 +1617,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.getName(),
                         obj.getImageFileName(),
                         obj.isAnimatedImage(),
+                        obj.isSuppressDsc(),
                         obj.getDisps(),
                         obj.getTexts(),
                         obj.getActTexts(),
@@ -2029,6 +2039,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String objName,
             final String imageFileName,
             final boolean animatedImage,
+            final boolean suppressDsc,
             final MultiLangString objDisp,
             final MultiLangString objText,
             final MultiLangString objActText,
@@ -2045,6 +2056,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         objName,
                         imageFileName,
                         animatedImage,
+                        suppressDsc,
                         objDisp,
                         objText,
                         objActText,
