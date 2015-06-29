@@ -131,6 +131,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         setTexts(source.getTexts());
         setActTexts(source.getActTexts());
         m_takable = source.isTakable();
+        m_suppressDsc = source.isSuppressDsc();
         m_imageInScene = source.isImageInScene();
         m_imageInInventory = source.isImageInInventory();
         m_containerId = source.getContainerId();
