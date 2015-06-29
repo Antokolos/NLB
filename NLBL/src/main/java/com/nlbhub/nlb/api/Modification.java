@@ -48,6 +48,7 @@ public interface Modification extends IdentifiableItem {
     public enum Type {
         ASSIGN,
         TAG,
+        GETTAG,
         WHILE,
         IF,
         IFHAVE,

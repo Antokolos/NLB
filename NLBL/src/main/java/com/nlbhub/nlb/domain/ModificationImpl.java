@@ -64,6 +64,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     private static final String EXPRID_FILE_NAME = "exprid";
     private static final Set<Type> UNPARAMETRIZED_TYPES = new HashSet<Type>() {{
         add(Type.FREEZE);
+        add(Type.GETTAG);
         add(Type.CLEAR);
         add(Type.CLRINV);
         add(Type.ELSE);
@@ -128,6 +129,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     public boolean returnsValue() {
         switch (m_type) {
             case CLONE:
+            case GETTAG:
             case ID:
             case ASSIGN:
             case HAVE:
@@ -138,7 +140,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 return true;
             default:
                 // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, IFHAVE, ADD, ADDINV, REMOVE, RMINV, CLEAR, CLRINV,
-                // SPUSH, PUSH, SINJECT, INJECT, SHUFFLE, ACT, USE
+                // SPUSH, PUSH, SINJECT, INJECT, SHUFFLE, PDSC, ACT, USE
                 // It is funny, but RETURN operation currently does not actually return anything :)
                 return false;
         }
@@ -185,6 +187,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.WHILE;
         } else if (type.equals(Type.TAG.name())) {
             m_type = Type.TAG;
+        } else if (type.equals(Type.GETTAG.name())) {
+            m_type = Type.GETTAG;
         } else if (type.equals(Type.IF.name())) {
             m_type = Type.IF;
         } else if (type.equals(Type.IFHAVE.name())) {
@@ -289,6 +293,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "TAG":
                 m_type = Type.TAG;
+                break;
+            case "GETTAG":
+                m_type = Type.GETTAG;
                 break;
             case "WHILE":
                 m_type = Type.WHILE;

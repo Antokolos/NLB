@@ -1543,6 +1543,7 @@ public abstract class ExportManager {
                 }
                 switch (modification.getType()) {
                     case TAG:
+                        // TODO: is obj id really necessary for tag and gettag operations???
                         boolean hasName = variable != null;
                         String varName = (variable != null) ? variable.getName() : Constants.EMPTY_STRING;
                         final String objIdToTag = (hasName) ? exportData.getObjId(varName) : null;
@@ -1551,6 +1552,20 @@ public abstract class ExportManager {
                                         hasName ? decorateAutoVar(varName) : Constants.EMPTY_STRING,
                                         objIdToTag,
                                         expression.getValue()
+                                )
+                        );
+                        break;
+                    case GETTAG:
+                        // Actually this is double check, because empty variable was already checked
+                        String resName = (variable != null) ?  variable.getName() : Constants.EMPTY_STRING;
+                        final String gettagObjId = (expression != null) ? exportData.getObjId(expression.getValue()) : null;
+                        stringBuilder.append(
+                                decorateGetTagOperation(
+                                        decorateStringVar(resName),
+                                        gettagObjId,
+                                        (expression != null && StringHelper.notEmpty(expression.getValue()))
+                                                ? decorateAutoVar(expression.getValue())
+                                                : Constants.EMPTY_STRING
                                 )
                         );
                         break;
@@ -1879,6 +1894,8 @@ public abstract class ExportManager {
     protected abstract String decorateAssignment(String variableName, String variableValue);
 
     protected abstract String decorateTag(String variable, final String objId, String tag);
+
+    protected abstract String decorateGetTagOperation(String resultingVariable, final String objId, String objVariableName);
 
     protected abstract String decorateWhile(String constraint);
 

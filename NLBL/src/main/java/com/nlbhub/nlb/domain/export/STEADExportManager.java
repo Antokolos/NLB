@@ -986,6 +986,23 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateGetTagOperation(String resultingVariable, String objId, String objVariableName) {
+        StringBuilder result = new StringBuilder();
+        if (StringHelper.notEmpty(resultingVariable)) {
+            result.append(resultingVariable).append(" = ");
+            if (StringHelper.notEmpty(objVariableName)) {
+                result.append(objVariableName);
+            } else if (objId != null) {
+                result.append(decorateId(objId)).append(".tag;");
+            } else {
+                result.append("s");
+            }
+            result.append(".tag;").append(LINE_SEPARATOR);
+        }
+        return result.toString();
+    }
+
+    @Override
     protected String decorateWhile(final String constraint) {
         return "while (" + constraint + ") do" + LINE_SEPARATOR;
     }
