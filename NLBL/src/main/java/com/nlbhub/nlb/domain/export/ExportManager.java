@@ -1803,9 +1803,10 @@ public abstract class ExportManager {
                         );
                         break;
                     case SHUFFLE:
-                        stringBuilder.append(
-                                decorateShuffleOperation(decorateAutoVar(expression.getValue()))
-                        );
+                        stringBuilder.append(decorateShuffleOperation(decorateAutoVar(expression.getValue())));
+                        break;
+                    case PDSC:
+                        stringBuilder.append(decoratePDscOperation(decorateAutoVar(expression.getValue())));
                         break;
                     case ACT:
                         final String actingObjId = exportData.getObjId(expression.getValue());
@@ -1932,6 +1933,8 @@ public abstract class ExportManager {
     protected abstract String decorateRndOperation(String variableName, String maxValue);
 
     protected abstract String decorateShuffleOperation(String listVariableName);
+
+    protected abstract String decoratePDscOperation(String objVariableName);
 
     protected abstract String decorateActOperation(String actingObjVariable, String actingObjId);
 

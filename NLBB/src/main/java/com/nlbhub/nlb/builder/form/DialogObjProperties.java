@@ -715,7 +715,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objIsTakable.setText("Can be taken to the inventory");
         panel27.add(m_objIsTakable);
         m_suppressDsc = new JCheckBox();
-        m_suppressDsc.setText("CheckBox");
+        m_suppressDsc.setText("Suppress dsc");
         panel27.add(m_suppressDsc);
         m_imageInScene = new JCheckBox();
         m_imageInScene.setText("Image in scene");

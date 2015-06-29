@@ -551,7 +551,7 @@
                                       <component id="60799" class="javax.swing.JCheckBox" binding="m_suppressDsc">
                                         <constraints/>
                                         <properties>
-                                          <text value="CheckBox"/>
+                                          <text value="Suppress dsc"/>
                                         </properties>
                                       </component>
                                       <component id="66dbe" class="javax.swing.JCheckBox" binding="m_imageInScene">

@@ -1205,6 +1205,11 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decoratePDscOperation(String objVariableName) {
+        return objVariableName + ".dscf(" + objVariableName + ");" + LINE_SEPARATOR;
+    }
+
+    @Override
     protected String decorateActOperation(String actingObjVariable, String actingObjId) {
         String source = (actingObjId != null) ? decorateId(actingObjId) : actingObjVariable;
         return "acta(" + source + ");" + LINE_SEPARATOR;

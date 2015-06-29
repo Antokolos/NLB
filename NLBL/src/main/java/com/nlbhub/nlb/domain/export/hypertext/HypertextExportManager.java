@@ -349,6 +349,12 @@ public abstract class HypertextExportManager
     }
 
     @Override
+    protected String decoratePDscOperation(String objVariableName) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateActOperation(String actingObjVariable, String actingObjId) {
         // TODO: implement
         return EMPTY_STRING;

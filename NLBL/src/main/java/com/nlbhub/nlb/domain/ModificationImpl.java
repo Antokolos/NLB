@@ -233,6 +233,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.EJECT;
         } else if (type.equals(Type.SHUFFLE.name())) {
             m_type = Type.SHUFFLE;
+        } else if (type.equals(Type.PDSC.name())) {
+            m_type = Type.PDSC;
         } else if (type.equals(Type.ACT.name())) {
             m_type = Type.ACT;
         } else if (type.equals(Type.USE.name())) {
@@ -362,6 +364,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "SHUFFLE":
                 m_type = Type.SHUFFLE;
+                break;
+            case "PDSC":
+                m_type = Type.PDSC;
                 break;
             case "ACT":
                 m_type = Type.ACT;
