@@ -774,12 +774,15 @@ public class STEADExportManager extends TextExportManager {
         return expandVariables(dispChunks);
     }
 
-    private String expandInteractionMarks(String objId, String text, boolean withImage) {
+    private String expandInteractionMarks(String objId, String objName, boolean useReference, String text, boolean withImage) {
         StringBuilder result = new StringBuilder();
         Matcher matcher = STEAD_OBJ_PATTERN.matcher(text);
         int start = 0;
         while (matcher.find()) {
-            result.append(text.substring(start, matcher.start())).append("{").append(decorateId(objId)).append("|");
+            result.append(text.substring(start, matcher.start())).append("{");
+            if (useReference) {
+                result.append(StringHelper.isEmpty(objName) ? objId : objName).append("|");
+            }
             if (withImage) {
                 result.append("\"..s.imgv(s)..\"");
             }
@@ -791,15 +794,15 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjText(String objId, boolean suppressDsc, List<TextChunk> textChunks, boolean imageEnabled) {
+    protected String decorateObjText(String objId, String objName, boolean suppressDsc, List<TextChunk> textChunks, boolean imageEnabled) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("    dscf = function(s) ");
         if (textChunks.size() > 0) {
             stringBuilder.append("p(\"");
             if (imageEnabled) {
-                stringBuilder.append(expandInteractionMarks(objId, getObjText(textChunks), true));
+                stringBuilder.append(expandInteractionMarks(objId, objName, suppressDsc, getObjText(textChunks), true));
             } else {
-                stringBuilder.append(expandInteractionMarks(objId, getObjText(textChunks), false));
+                stringBuilder.append(expandInteractionMarks(objId, objName, suppressDsc, getObjText(textChunks), false));
             }
             stringBuilder.append("\"); ");
         }
