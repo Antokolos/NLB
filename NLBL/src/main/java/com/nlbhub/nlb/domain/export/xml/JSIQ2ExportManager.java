@@ -658,6 +658,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
+    protected String decoratePageTimerVariableInit(final String variableName) {
+        // TODO: implement and use
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
     protected String decoratePageTimerVariable(final String variableName) {
         // TODO: implement and use
         return Constants.EMPTY_STRING;

@@ -390,16 +390,21 @@ public abstract class ExportManager {
         } else {
             blocks.setPageVariable(EMPTY_STRING);
         }
+        blocks.setHasPageTimer(false);
         if (!StringHelper.isEmpty(page.getTimerVarId())) {
             Variable timerVariable = nlb.getVariableById(page.getTimerVarId());
             // TODO: Add cases with deleted pages/links/variables etc. to the unit test
             if (!timerVariable.isDeleted()) {
+                blocks.setHasPageTimer(true);
+                blocks.setPageTimerVariableInit(decoratePageTimerVariableInit(timerVariable.getName()));
                 blocks.setPageTimerVariable(decoratePageTimerVariable(timerVariable.getName()));
             } else {
-                blocks.setPageTimerVariable(EMPTY_STRING);
+                blocks.setPageTimerVariableInit(decoratePageTimerVariableInit(EMPTY_STRING));
+                blocks.setPageTimerVariable(decoratePageTimerVariable(EMPTY_STRING));
             }
         } else {
-            blocks.setPageTimerVariable(EMPTY_STRING);
+            blocks.setPageTimerVariableInit(decoratePageTimerVariableInit(EMPTY_STRING));
+            blocks.setPageTimerVariable(decoratePageTimerVariable(EMPTY_STRING));
         }
         blocks.setPageModifications(
                 decoratePageModifications(
@@ -2014,6 +2019,8 @@ public abstract class ExportManager {
     protected abstract String decorateLinkVariable(String variableName);
 
     protected abstract String decoratePageVariable(final String variableName);
+
+    protected abstract String decoratePageTimerVariableInit(final String variableName);
 
     protected abstract String decoratePageTimerVariable(final String variableName);
 

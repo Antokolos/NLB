@@ -91,7 +91,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("game.act = 'Nothing happens.';").append(LINE_SEPARATOR);
         stringBuilder.append("game.inv = 'Hm.. This is strange thing..';").append(LINE_SEPARATOR);
         stringBuilder.append("game.use = 'Does not work...';").append(LINE_SEPARATOR);
-        stringBuilder.append("game.forcedsc = true;").append(LINE_SEPARATOR);
+        stringBuilder.append("game.forcedsc = false;").append(LINE_SEPARATOR);
 
         stringBuilder.append(generateLibraryMethods());
         return stringBuilder.toString();
@@ -524,13 +524,11 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    var { time = 0; tag = ''; notext = true; ");
         stringBuilder.append("autowired = ").append(pageBlocks.isAutowired() ? "true" : "false").append("; ");
         stringBuilder.append("},").append(LINE_SEPARATOR);
-        boolean hasPageTimer = StringHelper.notEmpty(pageBlocks.getPageTimerVariable());
         boolean hasAnim = pageBlocks.isHasObjectsWithAnimatedImages();
-        boolean timerSet = hasAnim || hasPageTimer;
+        boolean timerSet = hasAnim || pageBlocks.isHasPageTimer();
         if (timerSet) {
             stringBuilder.append("    timer = function(s)").append(LINE_SEPARATOR);
-            stringBuilder.append("        s.time = s.time + 1; ").append(LINE_SEPARATOR);
-            stringBuilder.append(pageBlocks.getPageTimerVariable()).append(LINE_SEPARATOR);
+            stringBuilder.append("        ").append(pageBlocks.getPageTimerVariable()).append(LINE_SEPARATOR);
             stringBuilder.append("        local afl = s.autos(s); ").append(LINE_SEPARATOR);
             stringBuilder.append("        if (_curloc.notext and afl) then return true; end; ").append(LINE_SEPARATOR);
             stringBuilder.append("    end,").append(LINE_SEPARATOR);
@@ -565,6 +563,9 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.notext = true;").append(LINE_SEPARATOR);
+        if (timerSet) {
+            stringBuilder.append("        ").append(pageBlocks.getPageTimerVariableInit()).append(LINE_SEPARATOR);
+        }
         stringBuilder.append("        if not (f.autowired) then").append(LINE_SEPARATOR);
         if (varsOrModsPresent) {
             stringBuilder.append(pageBlocks.getPageModifications());
@@ -574,10 +575,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        s.snd(s);").append(LINE_SEPARATOR);
         stringBuilder.append("        s.bgimg(s);").append(LINE_SEPARATOR);
         if (timerSet) {
-            stringBuilder.append("        s.time = 0;").append(LINE_SEPARATOR);
-            if (hasPageTimer) {
-                stringBuilder.append("        ").append(pageBlocks.getPageTimerVariable()).append(LINE_SEPARATOR);
-            }
+            stringBuilder.append("        ").append(pageBlocks.getPageTimerVariable()).append(LINE_SEPARATOR);
             // stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR); -- will be called when timer triggers
             // Timer will be triggered first time immediately after timer:set()
             stringBuilder.append("        timer:set(").append(hasAnim ? 20 : 200).append(");").append(LINE_SEPARATOR);
@@ -1373,9 +1371,23 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decoratePageTimerVariableInit(final String variableName) {
+        if (StringHelper.isEmpty(variableName)) {
+            return "s.time = 0; ";
+        } else {
+            String timerVar = decorateNumberVar(variableName);
+            return timerVar + " = 0; s.time = " + timerVar + "; ";
+        }
+    }
+
+    @Override
     protected String decoratePageTimerVariable(final String variableName) {
-        String globalVar = GLOBAL_VAR_PREFIX + variableName;
-        return globalVar + " = s.time; ";
+        if (StringHelper.isEmpty(variableName)) {
+            return "s.time = s.time + 1; ";
+        } else {
+            String timerVar = decorateNumberVar(variableName);
+            return timerVar + " = " + timerVar + " + 1; s.time = " + timerVar + "; ";
+        }
     }
 
     @Override

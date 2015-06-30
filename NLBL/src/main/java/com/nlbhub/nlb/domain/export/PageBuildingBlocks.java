@@ -59,10 +59,12 @@ public class PageBuildingBlocks {
     private String m_pageTextEnd;
     private String m_pageVariable;
     private String m_pageTimerVariable;
+    private String m_pageTimerVariableInit;
     private String m_pageModifications;
     private String m_pageEnd;
     private boolean m_autowired;
     private boolean m_hasObjectsWithAnimatedImages;
+    private boolean m_hasPageTimer;
     private List<String> m_containedObjIds;
     private List<LinkBuildingBlocks> m_linksBuildingBlocks;
     /** Page blocks' link is considered trivial if it is only one and it is trivial. */
@@ -161,12 +163,28 @@ public class PageBuildingBlocks {
         m_hasObjectsWithAnimatedImages = hasObjectsWithAnimatedImages;
     }
 
+    public boolean isHasPageTimer() {
+        return m_hasPageTimer;
+    }
+
+    public void setHasPageTimer(boolean hasPageTimer) {
+        m_hasPageTimer = hasPageTimer;
+    }
+
     public String getPageVariable() {
         return m_pageVariable;
     }
 
     public void setPageVariable(String pageVariable) {
         m_pageVariable = pageVariable;
+    }
+
+    public String getPageTimerVariableInit() {
+        return m_pageTimerVariableInit;
+    }
+
+    public void setPageTimerVariableInit(String pageTimerVariableInit) {
+        m_pageTimerVariableInit = pageTimerVariableInit;
     }
 
     public String getPageTimerVariable() {
