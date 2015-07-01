@@ -91,7 +91,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("game.act = 'Nothing happens.';").append(LINE_SEPARATOR);
         stringBuilder.append("game.inv = 'Hm.. This is strange thing..';").append(LINE_SEPARATOR);
         stringBuilder.append("game.use = 'Does not work...';").append(LINE_SEPARATOR);
-        stringBuilder.append("game.forcedsc = false;").append(LINE_SEPARATOR);
+        stringBuilder.append("game.forcedsc = true;").append(LINE_SEPARATOR);
 
         stringBuilder.append(generateLibraryMethods());
         return stringBuilder.toString();
@@ -472,7 +472,7 @@ public class STEADExportManager extends TextExportManager {
                 usepBuilder.append(usesStartBuilder);
                 String useSuccessText = useBuildingBlocks.getUseSuccessText();
                 if (StringHelper.notEmpty(useSuccessText)) {
-                    usepBuilder.append("p \"").append(useSuccessText).append("\"; _curloc.notext = false;").append(LINE_SEPARATOR);
+                    usepBuilder.append("_curloc.lasttext = \"").append(useSuccessText).append("\"; p(_curloc.lasttext);").append(LINE_SEPARATOR);
                 }
                 usepBuilder.append(usesEndBuilder);
             }
@@ -521,7 +521,7 @@ public class STEADExportManager extends TextExportManager {
         // Do not check pageBlocks.isUseCaption() here, because in INSTEAD all rooms must have name
         stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageImage());
-        stringBuilder.append("    var { time = 0; tag = ''; notext = true; ");
+        stringBuilder.append("    var { time = 0; tag = ''; lasttext = nil; ");
         stringBuilder.append("autowired = ").append(pageBlocks.isAutowired() ? "true" : "false").append("; ");
         stringBuilder.append("},").append(LINE_SEPARATOR);
         boolean hasAnim = pageBlocks.isHasObjectsWithAnimatedImages();
@@ -530,7 +530,7 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append("    timer = function(s)").append(LINE_SEPARATOR);
             stringBuilder.append("        ").append(pageBlocks.getPageTimerVariable()).append(LINE_SEPARATOR);
             stringBuilder.append("        local afl = s.autos(s); ").append(LINE_SEPARATOR);
-            stringBuilder.append("        if (_curloc.notext and afl) then return true; end; ").append(LINE_SEPARATOR);
+            stringBuilder.append("        if (s.lasttext ~= nil) then p(s.lasttext); elseif afl then return true; end; ").append(LINE_SEPARATOR);
             stringBuilder.append("    end,").append(LINE_SEPARATOR);
         }
         stringBuilder.append(pageBlocks.getPageTextStart());
@@ -562,7 +562,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
-        stringBuilder.append("        s.notext = true;").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.lasttext = nil;").append(LINE_SEPARATOR);
         if (timerSet) {
             stringBuilder.append("        ").append(pageBlocks.getPageTimerVariableInit()).append(LINE_SEPARATOR);
         }
@@ -588,7 +588,7 @@ public class STEADExportManager extends TextExportManager {
         if (timerSet) {
             stringBuilder.append("        timer:stop();").append(LINE_SEPARATOR);
         }
-        stringBuilder.append("        s.notext = true;").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.lasttext = nil;").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append(pageBlocks.getPageSound());
 
@@ -863,7 +863,7 @@ public class STEADExportManager extends TextExportManager {
     protected String getActText(List<TextChunk> actTextChunks) {
         return (
                 (actTextChunks.size() > 0)
-                        ? "        p(\"" + expandVariables(actTextChunks) + "\"); _curloc.notext = false;" + LINE_SEPARATOR
+                        ? "        _curloc.lasttext = \"" + expandVariables(actTextChunks) + "\"; p(_curloc.lasttext);" + LINE_SEPARATOR
                         : Constants.EMPTY_STRING
         );
     }
@@ -1184,7 +1184,7 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateFreezeOperation() {
-        return "curloc().notext = false;" + LINE_SEPARATOR;
+        return "curloc().lasttext = \"\";" + LINE_SEPARATOR;
     }
 
     @Override
