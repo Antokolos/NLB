@@ -311,19 +311,19 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            return _curloc;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    nlbwalk = function(loc)").append(LINE_SEPARATOR);
-        stringBuilder.append("        if (curloc() ~= loc) then").append(LINE_SEPARATOR);
+        stringBuilder.append("    nlbwalk = function(s, loc)").append(LINE_SEPARATOR);
+        stringBuilder.append("        if (s ~= loc) then").append(LINE_SEPARATOR);
         stringBuilder.append("            _curloc = loc;").append(LINE_SEPARATOR);
         stringBuilder.append("            walk(loc);").append(LINE_SEPARATOR);
         stringBuilder.append("        else").append(LINE_SEPARATOR);
-        stringBuilder.append("            local lasttext = _curloc.lasttext;").append(LINE_SEPARATOR);
-        stringBuilder.append("            if _curloc.exit ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("                _curloc.exit(_curloc, _curloc);").append(LINE_SEPARATOR);
+        stringBuilder.append("            local lasttext = s.lasttext;").append(LINE_SEPARATOR);
+        stringBuilder.append("            if s.exit ~= nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("                s.exit(s, s);").append(LINE_SEPARATOR);
         stringBuilder.append("            end").append(LINE_SEPARATOR);
-        stringBuilder.append("            if _curloc.enter ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("                _curloc.enter(_curloc, _curloc);").append(LINE_SEPARATOR);
+        stringBuilder.append("            if s.enter ~= nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("                s.enter(s, s);").append(LINE_SEPARATOR);
         stringBuilder.append("            end").append(LINE_SEPARATOR);
-        stringBuilder.append("            _curloc.lasttext = lasttext;").append(LINE_SEPARATOR);
+        stringBuilder.append("            s.lasttext = lasttext;").append(LINE_SEPARATOR);
         stringBuilder.append("        end").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("}").append(LINE_SEPARATOR);
@@ -454,17 +454,8 @@ public class STEADExportManager extends TextExportManager {
                 //stringBuilder.append(padding).append(extraPadding);
                 stringBuilder.append(useBuildingBlocks.getUseVariable()).append(LINE_SEPARATOR);
                 /*
-                The following code does not needed. INSTEAD handles changes in variables
-                automatically. But I will keep the code to show my intention :)
-                stringBuilder.append(padding).append(extraPadding);
-                if (ENABLE_COMMENTS) {
-                    stringBuilder.append(
-                        "    -- nlbwalk to the current room again in order to "
-                        + "reflect changes in the variables"
-                    ).append(LINE_SEPARATOR);
-                }
-                stringBuilder.append(padding).append(extraPadding);
-                stringBuilder.append("    nlbwalk(curloc());").append(LINE_SEPARATOR);
+                INSTEAD handles changes in variables automatically. Therefore it is not needed to walk to the current
+                room again in order to reflect changes in the variables.
                 */
                 if (constrained) {
                     usesEndBuilder.append(padding).append("    end;").append(LINE_SEPARATOR);
@@ -1344,7 +1335,7 @@ public class STEADExportManager extends TextExportManager {
             String linkTarget,
             int targetPageNumber
     ) {
-        return "                nlbwalk(" + decoratePageName(linkTarget, targetPageNumber) + "); ";
+        return "                nlbwalk(s, " + decoratePageName(linkTarget, targetPageNumber) + "); ";
     }
 
     @Override
@@ -1556,7 +1547,7 @@ public class STEADExportManager extends TextExportManager {
         String roomName = decoratePageName(labelText, pageNumber);
         if (pageNumber == 1) {
             roomBeginning.append("main, ").append(roomName);
-            roomBeginning.append(" = room { nam = \"main\", enter = function(s) nlbwalk(").append(roomName).append("); end }, ");
+            roomBeginning.append(" = room { nam = \"main\", enter = function(s) nlbwalk(s, ").append(roomName).append("); end }, ");
         } else {
             roomBeginning.append(roomName).append(" = ");
         }
