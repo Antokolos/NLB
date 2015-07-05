@@ -1226,7 +1226,7 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decoratePRNOperation(String variableName) {
-        return "curloc().lasttext = curloc().lasttext.." + variableName + "; p(curloc().lasttext); curloc().wastext = true;" + LINE_SEPARATOR;
+        return "curloc().lasttext = curloc().lasttext.." + variableName + "; p(" + variableName + "); curloc().wastext = true;" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1236,7 +1236,7 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decoratePDscOperation(String objVariableName) {
-        return "curloc().lasttext = curloc().lasttext..\" \".." + objVariableName + ".dscf(" + objVariableName + "); p(curloc().lasttext); curloc().wastext = true;" + LINE_SEPARATOR;
+        return "curloc().lasttext = curloc().lasttext..\" \".." + objVariableName + ":dscf(); p(" + objVariableName + ":dscf()); curloc().wastext = true;" + LINE_SEPARATOR;
     }
 
     @Override
