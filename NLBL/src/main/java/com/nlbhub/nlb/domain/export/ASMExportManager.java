@@ -443,6 +443,18 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decoratePRNOperation(String variableName) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateDSCOperation(String resultVariableName, String dscObjVariable, String dscObjId) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decoratePDscOperation(String objVariableName) {
         // TODO: implement
         return EMPTY_STRING;

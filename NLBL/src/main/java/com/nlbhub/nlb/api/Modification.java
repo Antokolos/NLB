@@ -74,6 +74,8 @@ public interface Modification extends IdentifiableItem {
         INJECT,
         EJECT,
         SHUFFLE,
+        PRN,
+        DSC,
         PDSC,
         ACT,
         USE,

@@ -1225,6 +1225,16 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decoratePRNOperation(String variableName) {
+        return "curloc().lasttext = curloc().lasttext.." + variableName + "; p(curloc().lasttext); curloc().wastext = true;" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateDSCOperation(String resultVariableName, String dscObjVariable, String dscObjId) {
+        return resultVariableName + " = " + ((dscObjId != null) ? decorateId(dscObjId) : dscObjVariable) + ":dscf();" + LINE_SEPARATOR;
+    }
+
+    @Override
     protected String decoratePDscOperation(String objVariableName) {
         return "curloc().lasttext = curloc().lasttext..\" \".." + objVariableName + ".dscf(" + objVariableName + "); p(curloc().lasttext); curloc().wastext = true;" + LINE_SEPARATOR;
     }

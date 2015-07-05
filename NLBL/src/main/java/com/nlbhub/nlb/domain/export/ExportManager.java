@@ -1825,6 +1825,35 @@ public abstract class ExportManager {
                     case SHUFFLE:
                         stringBuilder.append(decorateShuffleOperation(decorateAutoVar(expression.getValue())));
                         break;
+                    case PRN:
+                        String prnArg;
+                        switch (expression.getDataType()) {
+                            case STRING:
+                                prnArg = decorateStringVar(expression.getValue());
+                                break;
+                            case BOOLEAN:
+                                prnArg = decorateBooleanVar(expression.getValue());
+                                break;
+                            case NUMBER:
+                                prnArg = decorateNumberVar(expression.getValue());
+                                break;
+                            default:
+                                prnArg = decorateAutoVar(expression.getValue());
+                        }
+                        stringBuilder.append(decoratePRNOperation(prnArg));
+                        break;
+                    case DSC:
+                        assert variable != null;
+                        final String dscObjId = exportData.getObjId(expression.getValue());
+                        // Left part of assignment should be string variable
+                        stringBuilder.append(
+                                decorateDSCOperation(
+                                        decorateStringVar(variable.getName()),
+                                        decorateAutoVar(expression.getValue()),
+                                        dscObjId
+                                )
+                        );
+                        break;
                     case PDSC:
                         stringBuilder.append(decoratePDscOperation(decorateAutoVar(expression.getValue())));
                         break;
@@ -1955,6 +1984,10 @@ public abstract class ExportManager {
     protected abstract String decorateRndOperation(String variableName, String maxValue);
 
     protected abstract String decorateShuffleOperation(String listVariableName);
+
+    protected abstract String decoratePRNOperation(String variableName);
+
+    protected abstract String decorateDSCOperation(String resultVariableName, String dscObjVariable, String dscObjId);
 
     protected abstract String decoratePDscOperation(String objVariableName);
 

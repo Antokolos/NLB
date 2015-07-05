@@ -137,9 +137,10 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case EJECT:
             case SIZE:
             case RND:
+            case DSC:
                 return true;
             default:
-                // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, IFHAVE, ADD, ADDINV, REMOVE, RMINV, CLEAR, CLRINV,
+                // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, IFHAVE, ADD, ADDINV, REMOVE, RMINV, FREEZE, CLEAR, CLRINV,
                 // SPUSH, PUSH, SINJECT, INJECT, SHUFFLE, PDSC, ACT, USE
                 // It is funny, but RETURN operation currently does not actually return anything :)
                 return false;
@@ -237,6 +238,10 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.EJECT;
         } else if (type.equals(Type.SHUFFLE.name())) {
             m_type = Type.SHUFFLE;
+        } else if (type.equals(Type.PRN.name())) {
+            m_type = Type.PRN;
+        } else if (type.equals(Type.DSC.name())) {
+            m_type = Type.DSC;
         } else if (type.equals(Type.PDSC.name())) {
             m_type = Type.PDSC;
         } else if (type.equals(Type.ACT.name())) {
@@ -371,6 +376,12 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "SHUFFLE":
                 m_type = Type.SHUFFLE;
+                break;
+            case "PRN":
+                m_type = Type.PRN;
+                break;
+            case "DSC":
+                m_type = Type.DSC;
                 break;
             case "PDSC":
                 m_type = Type.PDSC;
