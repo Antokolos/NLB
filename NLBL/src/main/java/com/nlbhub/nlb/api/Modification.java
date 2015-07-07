@@ -64,7 +64,6 @@ public interface Modification extends IdentifiableItem {
         ADDALL,
         REMOVE,
         RMINV,
-        FREEZE,
         CLEAR,
         CLRINV,
         SPUSH,

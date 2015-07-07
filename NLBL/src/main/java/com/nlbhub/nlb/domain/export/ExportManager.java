@@ -1749,9 +1749,6 @@ public abstract class ExportManager {
                                 )
                         );
                         break;
-                    case FREEZE:
-                        stringBuilder.append(decorateFreezeOperation());
-                        break;
                     case CLEAR:
                         final String destinationId = (expression != null) ? exportData.getObjId(expression.getValue()) : null;
                         stringBuilder.append(
@@ -1972,8 +1969,6 @@ public abstract class ExportManager {
     protected abstract String decorateInjectOperation(String listVariableName, String objectId, String objectVar);
 
     protected abstract String decorateEjectOperation(String variableName, String listVariableName);
-
-    protected abstract String decorateFreezeOperation();
 
     protected abstract String decorateClearOperation(String destinationId, String destinationVar);
 
