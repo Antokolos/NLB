@@ -44,9 +44,12 @@ import com.nlbhub.nlb.web.Launcher;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * The NLBBMain class represents main class used to start the application.
@@ -76,7 +79,7 @@ public class NLBBMain implements Runnable {
             ClassNotFoundException,
             UnsupportedLookAndFeelException,
             IllegalAccessException,
-            InstantiationException {
+            InstantiationException, IOException, FontFormatException {
 
         //Create and set up the window.
         final JFrame frame = new JFrame("Non-Linear Book Builder");
@@ -124,12 +127,39 @@ public class NLBBMain implements Runnable {
         } catch (Exception e) {
             // If Nimbus is not available, you can set the GUI to another look and feel.
         }
+        setUIFont(loadFont());
         SwingUtilities.updateComponentTreeUI(component);
         SwingUtilities.updateComponentTreeUI(menuBar);
 
         //Display the window.
         frame.pack();
         frame.setVisible(true);
+    }
+
+    private java.awt.Font loadFont() throws IOException, FontFormatException{
+        //create the font to use. Specify the size!
+        File fontFile = new File("fonts/ttf/dejavu/DejaVuSans.ttf");
+        Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontFile).deriveFont(12f);
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        //register the font
+        ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, fontFile));
+        return customFont;
+    }
+
+    private static void setUIFont(java.awt.Font font) {
+        javax.swing.plaf.FontUIResource f = new javax.swing.plaf.FontUIResource(font);
+        java.util.Enumeration keys = UIManager.getDefaults().keys();
+        while (keys.hasMoreElements())
+        {
+            Object key = keys.nextElement();
+            Object value = UIManager.get(key);
+            if (value instanceof javax.swing.plaf.FontUIResource)
+            {
+                UIManager.put(key, f);
+            }
+        }
+        // Set the default font... Please note, it may not work for non-Nimbus L&F
+        UIManager.getLookAndFeelDefaults().put("defaultFont", font);
     }
 
     private static JMenuBar createMenuBar() {
@@ -152,6 +182,10 @@ public class NLBBMain implements Runnable {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (InstantiationException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (FontFormatException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
