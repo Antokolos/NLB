@@ -319,12 +319,6 @@ public abstract class HypertextExportManager
     }
 
     @Override
-    protected String decorateFreezeOperation() {
-        // TODO: implement
-        return EMPTY_STRING;
-    }
-
-    @Override
     protected String decorateClearOperation(String destinationId, String destinationVar) {
         // TODO: implement
         return EMPTY_STRING;

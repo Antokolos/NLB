@@ -63,7 +63,6 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     private static final String TYPE_FILE_NAME = "type";
     private static final String EXPRID_FILE_NAME = "exprid";
     private static final Set<Type> UNPARAMETRIZED_TYPES = new HashSet<Type>() {{
-        add(Type.FREEZE);
         add(Type.GETTAG);
         add(Type.CLEAR);
         add(Type.CLRINV);
@@ -140,7 +139,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case DSC:
                 return true;
             default:
-                // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, IFHAVE, ADD, ADDINV, REMOVE, RMINV, FREEZE, CLEAR, CLRINV,
+                // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, IFHAVE, ADD, ADDINV, REMOVE, RMINV, CLEAR, CLRINV,
                 // SPUSH, PUSH, SINJECT, INJECT, SHUFFLE, PDSC, ACT, USE
                 // It is funny, but RETURN operation currently does not actually return anything :)
                 return false;
@@ -218,8 +217,6 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.REMOVE;
         } else if (type.equals(Type.RMINV.name())) {
             m_type = Type.RMINV;
-        } else if (type.equals(Type.FREEZE.name())) {
-            m_type = Type.FREEZE;
         } else if (type.equals(Type.CLEAR.name())) {
             m_type = Type.CLEAR;
         } else if (type.equals(Type.CLRINV.name())) {
@@ -346,9 +343,6 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "RMINV":
                 m_type = Type.RMINV;
-                break;
-            case "FREEZE":
-                m_type = Type.FREEZE;
                 break;
             case "CLEAR":
                 m_type = Type.CLEAR;
