@@ -12,4 +12,4 @@ do
 CP=$CP:$APP_LIB/$jar
 done
 
-$JAVA -classpath $CP com.nlbhub.nlb.builder.NLBBMain
+$JAVA -classpath $CP -DconsoleEncoding=UTF-8 com.nlbhub.nlb.builder.NLBBMain

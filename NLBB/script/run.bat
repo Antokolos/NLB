@@ -22,4 +22,4 @@ setlocal EnableDelayedExpansion
 set CP=./bin
 for %%f in (%COMMON_LIB%\*.jar) do set CP=%%f;!CP!
 
-"%JAVA_HOME%/bin/java" -classpath %CP% com.nlbhub.nlb.builder.NLBBMain
+"%JAVA_HOME%/bin/java" -classpath %CP% -DconsoleEncoding=UTF-8 com.nlbhub.nlb.builder.NLBBMain
