@@ -1764,6 +1764,9 @@ public abstract class ExportManager {
                     case SPUSH:
                         stringBuilder.append(decorateSPushOperation(decorateAutoVar(expression.getValue())));
                         break;
+                    case WPUSH:
+                        stringBuilder.append(decorateWPushOperation(decorateAutoVar(expression.getValue())));
+                        break;
                     case PUSH:
                         final String objIdToPush = exportData.getObjId(expression.getValue());
                         if (variable != null) {
@@ -1959,6 +1962,8 @@ public abstract class ExportManager {
     protected abstract String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName);
 
     protected abstract String decorateSPushOperation(String listVariableName);
+
+    protected abstract String decorateWPushOperation(String listVariableName);
 
     protected abstract String decoratePushOperation(String listVariableName, String objectId, String objectVar);
 

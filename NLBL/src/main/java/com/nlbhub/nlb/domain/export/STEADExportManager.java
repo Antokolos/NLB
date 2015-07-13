@@ -1135,6 +1135,11 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateWPushOperation(String listVariableName) {
+        return createListObj(listVariableName) + "        push(" + listVariableName + ".listnam, w);  -- will push nil if undef" + LINE_SEPARATOR;
+    }
+
+    @Override
     protected String decoratePushOperation(String listVariableName, String objectId, String objectVar) {
         return (
                 createListObj(listVariableName) +
