@@ -65,6 +65,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private MultiLangString m_objActTexts;
     private String m_selectedLanguage;
     private String m_imageFileName;
+    private String m_soundFileName;
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -93,6 +94,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JButton m_buttonZoomIn;
     private JButton m_buttonZoomOut;
     private JCheckBox m_suppressDsc;
+    private JButton m_setSoundButton;
+    private JLabel m_soundFileNameLabel;
+    private JCheckBox m_soundSFXCheckBox;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -134,6 +138,25 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 nlbFacade.redo(obj.getId());
                 setObjProperties(obj);
                 setObjImage(obj.getImageFileName());
+            }
+        });
+
+        m_setSoundButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                DialogMediaLibrary dialog = (
+                        new DialogMediaLibrary(
+                                mainFrame,
+                                m_nlbFacade.getMainFacade(),
+                                MediaFile.Type.Sound,
+                                m_soundFileName.split(Constants.MEDIA_FILE_NAME_SEP)
+                        )
+                );
+                dialog.showDialog();
+                if (!dialog.isCanceled()) {
+                    m_soundFileName = dialog.getSelectedFileName();
+                    m_soundFileNameLabel.setText(m_soundFileName);
+                }
             }
         });
 
@@ -267,6 +290,10 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_imageInScene.setSelected(obj.isImageInScene());
         m_imageInInventory.setSelected(obj.isImageInInventory());
 
+        m_soundFileName = obj.getSoundFileName();
+        m_soundSFXCheckBox.setSelected(obj.isSoundSFX());
+        m_soundFileNameLabel.setText(m_soundFileName);
+
         DefaultComboBoxModel<String> languageComboboxModel = new DefaultComboBoxModel<>();
         languageComboboxModel.addElement(Constants.RU);
         languageComboboxModel.addElement(Constants.EN);
@@ -292,6 +319,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_objConstraintTextField.getText(),
                 m_objNameTextField.getText(),
                 m_imageFileName,
+                m_soundFileName,
+                m_soundSFXCheckBox.isSelected(),
                 m_animatedImageCheckBox.isSelected(),
                 m_suppressDsc.isSelected(),
                 m_objDisplayNames,
@@ -397,7 +426,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         panel7.add(buttonCancel);
         final JPanel panel8 = new JPanel();
         panel8.setLayout(new BorderLayout(0, 0));
-        panel4.add(panel8, BorderLayout.CENTER);
+        panel4.add(panel8, BorderLayout.SOUTH);
         final JPanel panel9 = new JPanel();
         panel9.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         panel8.add(panel9, BorderLayout.NORTH);
@@ -428,17 +457,45 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_buttonZoomOut.setText("―");
         panel12.add(m_buttonZoomOut);
         m_imageView = new JXImageView();
+        m_imageView.setMinimumSize(new Dimension(10, 100));
+        m_imageView.setPreferredSize(new Dimension(10, 100));
         panel10.add(m_imageView, BorderLayout.CENTER);
         final JPanel panel13 = new JPanel();
         panel13.setLayout(new BorderLayout(0, 0));
-        panel3.add(panel13, BorderLayout.CENTER);
+        panel4.add(panel13, BorderLayout.CENTER);
         final JPanel panel14 = new JPanel();
-        panel14.setLayout(new BorderLayout(0, 0));
+        panel14.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         panel13.add(panel14, BorderLayout.NORTH);
+        m_setSoundButton = new JButton();
+        m_setSoundButton.setMaximumSize(new Dimension(120, 36));
+        m_setSoundButton.setMinimumSize(new Dimension(120, 36));
+        m_setSoundButton.setPreferredSize(new Dimension(120, 36));
+        m_setSoundButton.setText("Set sound...");
+        panel14.add(m_setSoundButton);
+        final JPanel panel15 = new JPanel();
+        panel15.setLayout(new BorderLayout(0, 0));
+        panel13.add(panel15, BorderLayout.CENTER);
+        final JPanel panel16 = new JPanel();
+        panel16.setLayout(new BorderLayout(0, 0));
+        panel15.add(panel16, BorderLayout.NORTH);
+        m_soundFileNameLabel = new JLabel();
+        m_soundFileNameLabel.setHorizontalAlignment(0);
+        m_soundFileNameLabel.setHorizontalTextPosition(0);
+        m_soundFileNameLabel.setText("<NO_SOUND>");
+        panel16.add(m_soundFileNameLabel, BorderLayout.CENTER);
+        m_soundSFXCheckBox = new JCheckBox();
+        m_soundSFXCheckBox.setText("SFX");
+        panel16.add(m_soundSFXCheckBox, BorderLayout.NORTH);
+        final JPanel panel17 = new JPanel();
+        panel17.setLayout(new BorderLayout(0, 0));
+        panel3.add(panel17, BorderLayout.CENTER);
+        final JPanel panel18 = new JPanel();
+        panel18.setLayout(new BorderLayout(0, 0));
+        panel17.add(panel18, BorderLayout.NORTH);
         final JToolBar toolBar1 = new JToolBar();
         toolBar1.setBorderPainted(false);
         toolBar1.setFloatable(false);
-        panel14.add(toolBar1, BorderLayout.WEST);
+        panel18.add(toolBar1, BorderLayout.WEST);
         m_undoButton = new JButton();
         m_undoButton.setIcon(new ImageIcon(getClass().getResource("/common/undo.png")));
         m_undoButton.setText("Undo");
@@ -448,26 +505,26 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_redoButton.setText("Redo");
         toolBar1.add(m_redoButton);
         m_languageComboBox = new JComboBox();
-        panel14.add(m_languageComboBox, BorderLayout.EAST);
-        final JPanel panel15 = new JPanel();
-        panel15.setLayout(new BorderLayout(0, 0));
-        panel13.add(panel15, BorderLayout.CENTER);
+        panel18.add(m_languageComboBox, BorderLayout.EAST);
+        final JPanel panel19 = new JPanel();
+        panel19.setLayout(new BorderLayout(0, 0));
+        panel17.add(panel19, BorderLayout.CENTER);
         m_tabbedPane1 = new JTabbedPane();
-        panel15.add(m_tabbedPane1, BorderLayout.CENTER);
-        final JPanel panel16 = new JPanel();
-        panel16.setLayout(new GridBagLayout());
-        m_tabbedPane1.addTab("Text", panel16);
-        final JPanel panel17 = new JPanel();
-        panel17.setLayout(new GridBagLayout());
-        panel17.setMinimumSize(new Dimension(468, 33));
-        panel17.setPreferredSize(new Dimension(468, 33));
+        panel19.add(m_tabbedPane1, BorderLayout.CENTER);
+        final JPanel panel20 = new JPanel();
+        panel20.setLayout(new GridBagLayout());
+        m_tabbedPane1.addTab("Text", panel20);
+        final JPanel panel21 = new JPanel();
+        panel21.setLayout(new GridBagLayout());
+        panel21.setMinimumSize(new Dimension(468, 33));
+        panel21.setPreferredSize(new Dimension(468, 33));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
-        panel16.add(panel17, gbc);
+        panel20.add(panel21, gbc);
         final JScrollPane scrollPane1 = new JScrollPane();
         scrollPane1.setHorizontalScrollBarPolicy(31);
         scrollPane1.setVerticalScrollBarPolicy(21);
@@ -477,7 +534,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        panel17.add(scrollPane1, gbc);
+        panel21.add(scrollPane1, gbc);
         m_objDispTextField = new JTextField();
         m_objDispTextField.setColumns(40);
         scrollPane1.setViewportView(m_objDispTextField);
@@ -488,18 +545,18 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.EAST;
-        panel16.add(label1, gbc);
+        panel20.add(label1, gbc);
         final JPanel spacer1 = new JPanel();
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 3;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.VERTICAL;
-        panel16.add(spacer1, gbc);
-        final JPanel panel18 = new JPanel();
-        panel18.setLayout(new GridBagLayout());
-        panel18.setMinimumSize(new Dimension(468, 33));
-        panel18.setPreferredSize(new Dimension(468, 33));
+        panel20.add(spacer1, gbc);
+        final JPanel panel22 = new JPanel();
+        panel22.setLayout(new GridBagLayout());
+        panel22.setMinimumSize(new Dimension(468, 33));
+        panel22.setPreferredSize(new Dimension(468, 33));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 1;
@@ -507,7 +564,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
-        panel16.add(panel18, gbc);
+        panel20.add(panel22, gbc);
         final JScrollPane scrollPane2 = new JScrollPane();
         scrollPane2.setHorizontalScrollBarPolicy(31);
         scrollPane2.setVerticalScrollBarPolicy(21);
@@ -517,7 +574,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        panel18.add(scrollPane2, gbc);
+        panel22.add(scrollPane2, gbc);
         m_objTextTextArea = new JTextArea();
         m_objTextTextArea.setColumns(50);
         m_objTextTextArea.setLineWrap(true);
@@ -531,11 +588,11 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.anchor = GridBagConstraints.EAST;
-        panel16.add(label2, gbc);
-        final JPanel panel19 = new JPanel();
-        panel19.setLayout(new GridBagLayout());
-        panel19.setMinimumSize(new Dimension(468, 33));
-        panel19.setPreferredSize(new Dimension(468, 33));
+        panel20.add(label2, gbc);
+        final JPanel panel23 = new JPanel();
+        panel23.setLayout(new GridBagLayout());
+        panel23.setMinimumSize(new Dimension(468, 33));
+        panel23.setPreferredSize(new Dimension(468, 33));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 2;
@@ -543,7 +600,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
-        panel16.add(panel19, gbc);
+        panel20.add(panel23, gbc);
         final JScrollPane scrollPane3 = new JScrollPane();
         scrollPane3.setHorizontalScrollBarPolicy(31);
         scrollPane3.setVerticalScrollBarPolicy(21);
@@ -553,7 +610,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        panel19.add(scrollPane3, gbc);
+        panel23.add(scrollPane3, gbc);
         m_objActTextTextArea = new JTextArea();
         m_objActTextTextArea.setColumns(50);
         m_objActTextTextArea.setLineWrap(true);
@@ -567,17 +624,17 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.anchor = GridBagConstraints.EAST;
-        panel16.add(label3, gbc);
-        final JPanel panel20 = new JPanel();
-        panel20.setLayout(new GridBagLayout());
-        m_tabbedPane1.addTab("Properties", panel20);
+        panel20.add(label3, gbc);
+        final JPanel panel24 = new JPanel();
+        panel24.setLayout(new GridBagLayout());
+        m_tabbedPane1.addTab("Properties", panel24);
         final JLabel label4 = new JLabel();
         label4.setText("Obj Id");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.EAST;
-        panel20.add(label4, gbc);
+        panel24.add(label4, gbc);
         final JLabel label5 = new JLabel();
         label5.setFont(new Font(label5.getFont().getName(), label5.getFont().getStyle(), label5.getFont().getSize()));
         label5.setText("Obj name");
@@ -585,11 +642,11 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.anchor = GridBagConstraints.EAST;
-        panel20.add(label5, gbc);
-        final JPanel panel21 = new JPanel();
-        panel21.setLayout(new GridBagLayout());
-        panel21.setMinimumSize(new Dimension(468, 33));
-        panel21.setPreferredSize(new Dimension(468, 33));
+        panel24.add(label5, gbc);
+        final JPanel panel25 = new JPanel();
+        panel25.setLayout(new GridBagLayout());
+        panel25.setMinimumSize(new Dimension(468, 33));
+        panel25.setPreferredSize(new Dimension(468, 33));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 0;
@@ -597,7 +654,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
-        panel20.add(panel21, gbc);
+        panel24.add(panel25, gbc);
         final JScrollPane scrollPane4 = new JScrollPane();
         scrollPane4.setHorizontalScrollBarPolicy(31);
         scrollPane4.setVerticalScrollBarPolicy(21);
@@ -607,15 +664,15 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        panel21.add(scrollPane4, gbc);
+        panel25.add(scrollPane4, gbc);
         m_objIdTextField = new JTextField();
         m_objIdTextField.setColumns(40);
         m_objIdTextField.setEditable(false);
         scrollPane4.setViewportView(m_objIdTextField);
-        final JPanel panel22 = new JPanel();
-        panel22.setLayout(new GridBagLayout());
-        panel22.setMinimumSize(new Dimension(468, 33));
-        panel22.setPreferredSize(new Dimension(468, 33));
+        final JPanel panel26 = new JPanel();
+        panel26.setLayout(new GridBagLayout());
+        panel26.setMinimumSize(new Dimension(468, 33));
+        panel26.setPreferredSize(new Dimension(468, 33));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 1;
@@ -623,7 +680,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
-        panel20.add(panel22, gbc);
+        panel24.add(panel26, gbc);
         final JScrollPane scrollPane5 = new JScrollPane();
         scrollPane5.setHorizontalScrollBarPolicy(31);
         scrollPane5.setVerticalScrollBarPolicy(21);
@@ -633,57 +690,57 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        panel22.add(scrollPane5, gbc);
+        panel26.add(scrollPane5, gbc);
         m_objNameTextField = new JTextField();
         m_objNameTextField.setColumns(40);
         scrollPane5.setViewportView(m_objNameTextField);
-        final JPanel panel23 = new JPanel();
-        panel23.setLayout(new BorderLayout(0, 0));
+        final JPanel panel27 = new JPanel();
+        panel27.setLayout(new BorderLayout(0, 0));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 5;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        panel20.add(panel23, gbc);
-        final JPanel panel24 = new JPanel();
-        panel24.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel23.add(panel24, BorderLayout.EAST);
+        panel24.add(panel27, gbc);
+        final JPanel panel28 = new JPanel();
+        panel28.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel27.add(panel28, BorderLayout.EAST);
         m_modificationsButton = new JButton();
         m_modificationsButton.setText("Modifications...");
-        panel24.add(m_modificationsButton);
-        final JPanel panel25 = new JPanel();
-        panel25.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-        panel23.add(panel25, BorderLayout.WEST);
+        panel28.add(m_modificationsButton);
+        final JPanel panel29 = new JPanel();
+        panel29.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        panel27.add(panel29, BorderLayout.WEST);
         m_setTextColorButton = new JButton();
         m_setTextColorButton.setEnabled(false);
         m_setTextColorButton.setText("Set text color");
-        panel25.add(m_setTextColorButton);
+        panel29.add(m_setTextColorButton);
         m_setObjColorButton = new JButton();
         m_setObjColorButton.setEnabled(false);
         m_setObjColorButton.setText("Set obj color");
-        panel25.add(m_setObjColorButton);
+        panel29.add(m_setObjColorButton);
         m_setBorderColorButton = new JButton();
         m_setBorderColorButton.setEnabled(false);
         m_setBorderColorButton.setText("Set border color");
-        panel25.add(m_setBorderColorButton);
+        panel29.add(m_setBorderColorButton);
         final JPanel spacer2 = new JPanel();
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
         gbc.gridy = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel20.add(spacer2, gbc);
+        panel24.add(spacer2, gbc);
         final JLabel label6 = new JLabel();
         label6.setText("Obj variable");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.anchor = GridBagConstraints.EAST;
-        panel20.add(label6, gbc);
-        final JPanel panel26 = new JPanel();
-        panel26.setLayout(new GridBagLayout());
-        panel26.setMinimumSize(new Dimension(468, 33));
-        panel26.setPreferredSize(new Dimension(468, 33));
+        panel24.add(label6, gbc);
+        final JPanel panel30 = new JPanel();
+        panel30.setLayout(new GridBagLayout());
+        panel30.setMinimumSize(new Dimension(468, 33));
+        panel30.setPreferredSize(new Dimension(468, 33));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 2;
@@ -691,7 +748,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
-        panel20.add(panel26, gbc);
+        panel24.add(panel30, gbc);
         final JScrollPane scrollPane6 = new JScrollPane();
         scrollPane6.setHorizontalScrollBarPolicy(31);
         scrollPane6.setVerticalScrollBarPolicy(21);
@@ -701,36 +758,36 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        panel26.add(scrollPane6, gbc);
+        panel30.add(scrollPane6, gbc);
         m_objVariableTextField = new JTextField();
         m_objVariableTextField.setColumns(40);
         scrollPane6.setViewportView(m_objVariableTextField);
-        final JPanel panel27 = new JPanel();
-        panel27.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        final JPanel panel31 = new JPanel();
+        panel31.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 4;
         gbc.fill = GridBagConstraints.BOTH;
-        panel20.add(panel27, gbc);
+        panel24.add(panel31, gbc);
         m_objIsTakable = new JCheckBox();
         m_objIsTakable.setText("Can be taken to the inventory");
-        panel27.add(m_objIsTakable);
+        panel31.add(m_objIsTakable);
         m_suppressDsc = new JCheckBox();
         m_suppressDsc.setText("Suppress dsc");
-        panel27.add(m_suppressDsc);
+        panel31.add(m_suppressDsc);
         m_imageInScene = new JCheckBox();
         m_imageInScene.setText("Image in scene");
-        panel27.add(m_imageInScene);
+        panel31.add(m_imageInScene);
         m_imageInInventory = new JCheckBox();
         m_imageInInventory.setText("Image in inventory");
-        panel27.add(m_imageInInventory);
+        panel31.add(m_imageInInventory);
         m_animatedImageCheckBox = new JCheckBox();
         m_animatedImageCheckBox.setText("Animated image");
-        panel27.add(m_animatedImageCheckBox);
-        final JPanel panel28 = new JPanel();
-        panel28.setLayout(new GridBagLayout());
-        panel28.setMinimumSize(new Dimension(468, 33));
-        panel28.setPreferredSize(new Dimension(468, 33));
+        panel31.add(m_animatedImageCheckBox);
+        final JPanel panel32 = new JPanel();
+        panel32.setLayout(new GridBagLayout());
+        panel32.setMinimumSize(new Dimension(468, 33));
+        panel32.setPreferredSize(new Dimension(468, 33));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 3;
@@ -738,7 +795,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
-        panel20.add(panel28, gbc);
+        panel24.add(panel32, gbc);
         final JScrollPane scrollPane7 = new JScrollPane();
         scrollPane7.setHorizontalScrollBarPolicy(31);
         scrollPane7.setVerticalScrollBarPolicy(21);
@@ -748,7 +805,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        panel28.add(scrollPane7, gbc);
+        panel32.add(scrollPane7, gbc);
         m_objConstraintTextField = new JTextField();
         m_objConstraintTextField.setColumns(40);
         scrollPane7.setViewportView(m_objConstraintTextField);
@@ -758,10 +815,10 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.anchor = GridBagConstraints.EAST;
-        panel20.add(label7, gbc);
-        final JPanel panel29 = new JPanel();
-        panel29.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel29, BorderLayout.CENTER);
+        panel24.add(label7, gbc);
+        final JPanel panel33 = new JPanel();
+        panel33.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel33, BorderLayout.CENTER);
         label1.setLabelFor(m_objDispTextField);
         label2.setLabelFor(m_objTextTextArea);
         label3.setLabelFor(m_objActTextTextArea);

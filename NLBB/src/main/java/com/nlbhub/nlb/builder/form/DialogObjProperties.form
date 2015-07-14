@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.nlbhub.nlb.builder.form.DialogObjProperties">
   <grid id="cbd77" binding="contentPane" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="48" y="54" width="1041" height="415"/>
+      <xy x="48" y="54" width="1062" height="415"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -72,70 +72,128 @@
                           </grid>
                         </children>
                       </grid>
-                      <grid id="1d044" layout-manager="BorderLayout" hgap="0" vgap="0">
+                      <grid id="44359" layout-manager="BorderLayout" hgap="0" vgap="0">
                         <constraints border-constraint="Center"/>
                         <properties/>
                         <border type="none"/>
                         <children>
-                          <grid id="98e5e" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                          <grid id="ad199" layout-manager="BorderLayout" hgap="0" vgap="0">
                             <constraints border-constraint="North"/>
                             <properties/>
                             <border type="none"/>
                             <children>
-                              <component id="5d8ee" class="javax.swing.JButton" binding="m_setImageButton">
-                                <constraints/>
-                                <properties>
-                                  <maximumSize width="120" height="36"/>
-                                  <minimumSize width="120" height="36"/>
-                                  <preferredSize width="120" height="36"/>
-                                  <text value="Set image..."/>
-                                </properties>
-                              </component>
-                            </children>
-                          </grid>
-                          <grid id="291a" layout-manager="BorderLayout" hgap="0" vgap="0">
-                            <constraints border-constraint="Center"/>
-                            <properties/>
-                            <border type="none"/>
-                            <children>
-                              <grid id="2d75b" layout-manager="BorderLayout" hgap="0" vgap="0">
+                              <grid id="784ba" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
                                 <constraints border-constraint="North"/>
                                 <properties/>
                                 <border type="none"/>
                                 <children>
-                                  <component id="27b05" class="javax.swing.JLabel" binding="m_imageFileNameLabel">
-                                    <constraints border-constraint="Center"/>
+                                  <component id="3d55" class="javax.swing.JButton" binding="m_setSoundButton">
+                                    <constraints/>
                                     <properties>
-                                      <horizontalAlignment value="0"/>
-                                      <horizontalTextPosition value="0"/>
-                                      <text value="&lt;NO IMAGE&gt;"/>
+                                      <maximumSize width="120" height="36"/>
+                                      <minimumSize width="120" height="36"/>
+                                      <preferredSize width="120" height="36"/>
+                                      <text value="Set sound..."/>
                                     </properties>
                                   </component>
-                                  <grid id="4f2ee" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
-                                    <constraints border-constraint="South"/>
+                                </children>
+                              </grid>
+                              <grid id="97e0a" layout-manager="BorderLayout" hgap="0" vgap="0">
+                                <constraints border-constraint="Center"/>
+                                <properties/>
+                                <border type="none"/>
+                                <children>
+                                  <grid id="14db2" layout-manager="BorderLayout" hgap="0" vgap="0">
+                                    <constraints border-constraint="North"/>
                                     <properties/>
                                     <border type="none"/>
                                     <children>
-                                      <component id="a9ab2" class="javax.swing.JButton" binding="m_buttonZoomIn">
-                                        <constraints/>
+                                      <component id="4d669" class="javax.swing.JLabel" binding="m_soundFileNameLabel">
+                                        <constraints border-constraint="Center"/>
                                         <properties>
-                                          <text value="+"/>
+                                          <horizontalAlignment value="0"/>
+                                          <horizontalTextPosition value="0"/>
+                                          <text value="&lt;NO_SOUND&gt;"/>
                                         </properties>
                                       </component>
-                                      <component id="6dd6c" class="javax.swing.JButton" binding="m_buttonZoomOut">
-                                        <constraints/>
+                                      <component id="17bb8" class="javax.swing.JCheckBox" binding="m_soundSFXCheckBox">
+                                        <constraints border-constraint="North"/>
                                         <properties>
-                                          <text value="―"/>
+                                          <text value="SFX"/>
                                         </properties>
                                       </component>
                                     </children>
                                   </grid>
                                 </children>
                               </grid>
-                              <component id="65d71" class="org.jdesktop.swingx.JXImageView" binding="m_imageView">
+                            </children>
+                          </grid>
+                          <grid id="1d044" layout-manager="BorderLayout" hgap="0" vgap="0">
+                            <constraints border-constraint="Center"/>
+                            <properties/>
+                            <border type="none"/>
+                            <children>
+                              <grid id="98e5e" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                                <constraints border-constraint="North"/>
+                                <properties/>
+                                <border type="none"/>
+                                <children>
+                                  <component id="5d8ee" class="javax.swing.JButton" binding="m_setImageButton">
+                                    <constraints/>
+                                    <properties>
+                                      <maximumSize width="120" height="36"/>
+                                      <minimumSize width="120" height="36"/>
+                                      <preferredSize width="120" height="36"/>
+                                      <text value="Set image..."/>
+                                    </properties>
+                                  </component>
+                                </children>
+                              </grid>
+                              <grid id="291a" layout-manager="BorderLayout" hgap="0" vgap="0">
                                 <constraints border-constraint="Center"/>
                                 <properties/>
-                              </component>
+                                <border type="none"/>
+                                <children>
+                                  <grid id="2d75b" layout-manager="BorderLayout" hgap="0" vgap="0">
+                                    <constraints border-constraint="North"/>
+                                    <properties/>
+                                    <border type="none"/>
+                                    <children>
+                                      <component id="27b05" class="javax.swing.JLabel" binding="m_imageFileNameLabel">
+                                        <constraints border-constraint="Center"/>
+                                        <properties>
+                                          <horizontalAlignment value="0"/>
+                                          <horizontalTextPosition value="0"/>
+                                          <text value="&lt;NO IMAGE&gt;"/>
+                                        </properties>
+                                      </component>
+                                      <grid id="4f2ee" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                                        <constraints border-constraint="South"/>
+                                        <properties/>
+                                        <border type="none"/>
+                                        <children>
+                                          <component id="a9ab2" class="javax.swing.JButton" binding="m_buttonZoomIn">
+                                            <constraints/>
+                                            <properties>
+                                              <text value="+"/>
+                                            </properties>
+                                          </component>
+                                          <component id="6dd6c" class="javax.swing.JButton" binding="m_buttonZoomOut">
+                                            <constraints/>
+                                            <properties>
+                                              <text value="―"/>
+                                            </properties>
+                                          </component>
+                                        </children>
+                                      </grid>
+                                    </children>
+                                  </grid>
+                                  <component id="65d71" class="org.jdesktop.swingx.JXImageView" binding="m_imageView">
+                                    <constraints border-constraint="Center"/>
+                                    <properties/>
+                                  </component>
+                                </children>
+                              </grid>
                             </children>
                           </grid>
                         </children>

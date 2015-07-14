@@ -97,7 +97,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private String m_imageFileName = DEFAULT_IMAGE_FILE_NAME;
     private boolean m_imageBackground = DEFAULT_IMAGE_BACKGROUND;
     private String m_soundFileName = DEFAULT_SOUND_FILE_NAME;
-    private boolean m_soundSFX;
+    private boolean m_soundSFX = DEFAULT_SOUND_SFX;
     private String m_varId = DEFAULT_VARID;
     private String m_timerVarId = DEFAULT_TVARID;
     private MultiLangString m_caption = DEFAULT_CAPTION;

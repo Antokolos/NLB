@@ -72,6 +72,8 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String CONSTRID_FILE_NAME = "constrid";
     private static final String NAME_FILE_NAME = "name";
     private static final String IMAGE_FILE_NAME = "image";
+    private static final String SOUND_FILE_NAME = "sound";
+    private static final String SOUND_SFX_FILE_NAME = "soundsfx";
     private static final String SUPPRESS_DSC_FILE_NAME = "suppdsc";
     private static final String ANIMATED_FILE_NAME = "animated";
     private static final String DISP_SUBDIR_NAME = "disp";
@@ -96,6 +98,8 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private String m_containerId = DEFAULT_CONTAINER_ID;
     private String m_imageFileName = DEFAULT_IMAGE_FILE_NAME;
     private boolean m_animatedImage = DEFAULT_ANIMATED_IMAGE;
+    private String m_soundFileName = DEFAULT_SOUND_FILE_NAME;
+    private boolean m_soundSFX = DEFAULT_SOUND_SFX;
     private boolean m_suppressDsc = DEFAULT_SUPPRESS_DSC;
     private boolean m_imageInScene = DEFAULT_IMAGE_IN_SCENE;
     private boolean m_imageInInventory = DEFAULT_IMAGE_IN_INVENTORY;
@@ -111,6 +115,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         || textMatches(m_name, contract)
                         || textMatches(m_disp, contract)
                         || textMatches(m_imageFileName, contract)
+                        || textMatches(m_soundFileName, contract)
                 ) {
             result = new SearchResult();
             result.setId(getId());
@@ -126,6 +131,8 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         m_constrId = source.getConstrId();
         m_name = source.getName();
         m_imageFileName = source.getImageFileName();
+        m_soundFileName = source.getSoundFileName();
+        m_soundSFX = source.isSoundSFX();
         m_animatedImage = source.isAnimatedImage();
         setDisps(source.getDisps());
         setTexts(source.getTexts());
@@ -211,6 +218,24 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     @Override
     public String getImageFileName() {
         return m_imageFileName;
+    }
+
+    @Override
+    public String getSoundFileName() {
+        return m_soundFileName;
+    }
+
+    public void setSoundFileName(String soundFileName) {
+        m_soundFileName = soundFileName;
+    }
+
+    @Override
+    public boolean isSoundSFX() {
+        return m_soundSFX;
+    }
+
+    public void setSoundSFX(boolean soundSFX) {
+        m_soundSFX = soundSFX;
     }
 
     public void setAnimatedImage(final boolean animatedImage) {
@@ -328,6 +353,18 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(
                     objDir,
+                    SOUND_FILE_NAME,
+                    m_soundFileName,
+                    DEFAULT_SOUND_FILE_NAME
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
+                    SOUND_SFX_FILE_NAME,
+                    String.valueOf(m_soundSFX),
+                    String.valueOf(DEFAULT_SOUND_SFX)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
                     ANIMATED_FILE_NAME,
                     String.valueOf(m_animatedImage),
                     String.valueOf(DEFAULT_ANIMATED_IMAGE)
@@ -412,6 +449,20 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         IMAGE_FILE_NAME,
                         DEFAULT_IMAGE_FILE_NAME
+                )
+        );
+        m_soundFileName = (
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        SOUND_FILE_NAME,
+                        DEFAULT_SOUND_FILE_NAME
+                )
+        );
+        m_soundSFX = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        SOUND_SFX_FILE_NAME,
+                        String.valueOf(DEFAULT_SOUND_SFX)
                 )
         );
         m_animatedImage = "true".equals(

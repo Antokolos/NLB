@@ -51,6 +51,8 @@ import java.util.List;
 public interface Obj extends NodeItem {
     public static final String DEFAULT_IMAGE_FILE_NAME = Constants.EMPTY_STRING;
     public static final boolean DEFAULT_ANIMATED_IMAGE = false;
+    public static final String DEFAULT_SOUND_FILE_NAME = Constants.EMPTY_STRING;
+    public static final boolean DEFAULT_SOUND_SFX = true;
     public static final boolean DEFAULT_SUPPRESS_DSC = false;
     public static final MultiLangString DEFAULT_TEXT = MultiLangString.createEmptyText();
     public static final MultiLangString DEFAULT_ACT_TEXT = MultiLangString.createEmptyText();
@@ -78,6 +80,10 @@ public interface Obj extends NodeItem {
     public String getName();
 
     public String getImageFileName();
+
+    public String getSoundFileName();
+
+    public boolean isSoundSFX();
 
     public boolean isAnimatedImage();
 

@@ -1085,6 +1085,16 @@ public abstract class ExportManager {
             }
 
             @Override
+            public String getSoundFileName() {
+                return obj.getSoundFileName();
+            }
+
+            @Override
+            public boolean isSoundSFX() {
+                return obj.isSoundSFX();
+            }
+
+            @Override
             public boolean isAnimatedImage() {
                 return obj.isAnimatedImage();
             }

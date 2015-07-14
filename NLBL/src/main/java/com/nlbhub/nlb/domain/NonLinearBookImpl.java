@@ -714,6 +714,8 @@ public class NonLinearBookImpl implements NonLinearBook {
 
         private String m_existingObjName;
         private String m_existingImageFileName;
+        private String m_existingSoundFileName;
+        private boolean m_existingSoundSFX;
         private boolean m_existingAnimatedImage;
         private boolean m_existingSuppressDsc;
         private MultiLangString m_existingObjDisp;
@@ -724,6 +726,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         private boolean m_existingImageInInventory;
         private String m_newObjName;
         private String m_newImageFileName;
+        private String m_newSoundFileName;
+        private boolean m_newSoundSFX;
         private boolean m_newAnimatedImage;
         private boolean m_newSuppressDsc;
         private MultiLangString m_newObjDisp;
@@ -740,6 +744,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String objConstraintValue,
                 final String objName,
                 final String imageFileName,
+                final String soundFileName,
+                final boolean soundSFX,
                 final boolean animatedImage,
                 final boolean suppressDsc,
                 final MultiLangString objDisp,
@@ -756,6 +762,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                     objConstraintValue,
                     objName,
                     imageFileName,
+                    soundFileName,
+                    soundSFX,
                     animatedImage,
                     suppressDsc,
                     objDisp,
@@ -774,6 +782,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String objConstraintValue,
                 final String objName,
                 final String imageFileName,
+                final String soundFileName,
+                final boolean soundSFX,
                 final boolean animatedImage,
                 final boolean suppressDsc,
                 final MultiLangString objDisp,
@@ -806,6 +816,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             );
             m_existingObjName = obj.getName();
             m_existingImageFileName = obj.getImageFileName();
+            m_existingSoundFileName = obj.getSoundFileName();
+            m_existingSoundSFX = obj.isSoundSFX();
             m_existingAnimatedImage = obj.isAnimatedImage();
             m_existingSuppressDsc = obj.isSuppressDsc();
             m_existingObjDisp = obj.getDisps();
@@ -816,6 +828,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingImageInInventory = obj.isImageInInventory();
             m_newObjName = objName;
             m_newImageFileName = imageFileName;
+            m_newSoundFileName = soundFileName;
+            m_newSoundSFX = soundSFX;
             m_newAnimatedImage = animatedImage;
             m_newSuppressDsc = suppressDsc;
             m_newObjDisp = objDisp;
@@ -832,6 +846,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setConstrId(m_constraintTracker.execute());
             m_obj.setName(m_newObjName);
             m_obj.setImageFileName(m_newImageFileName);
+            m_obj.setSoundFileName(m_newSoundFileName);
+            m_obj.setSoundSFX(m_newSoundSFX);
             m_obj.setAnimatedImage(m_newAnimatedImage);
             m_obj.setSuppressDsc(m_newSuppressDsc);
             m_obj.setDisps(m_newObjDisp);
@@ -849,6 +865,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setConstrId(m_constraintTracker.revert());
             m_obj.setName(m_existingObjName);
             m_obj.setImageFileName(m_existingImageFileName);
+            m_obj.setSoundFileName(m_existingSoundFileName);
+            m_obj.setSoundSFX(m_existingSoundSFX);
             m_obj.setAnimatedImage(m_existingAnimatedImage);
             m_obj.setSuppressDsc(m_existingSuppressDsc);
             m_obj.setDisps(m_existingObjDisp);
@@ -1616,6 +1634,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                         (objConstraint != null) ? objConstraint.getValue() : Constants.EMPTY_STRING,
                         obj.getName(),
                         obj.getImageFileName(),
+                        obj.getSoundFileName(),
+                        obj.isSoundSFX(),
                         obj.isAnimatedImage(),
                         obj.isSuppressDsc(),
                         obj.getDisps(),
@@ -2038,6 +2058,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String objConstraintValue,
             final String objName,
             final String imageFileName,
+            final String soundFileName,
+            final boolean soundSFX,
             final boolean animatedImage,
             final boolean suppressDsc,
             final MultiLangString objDisp,
@@ -2055,6 +2077,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                         objConstraintValue,
                         objName,
                         imageFileName,
+                        soundFileName,
+                        soundSFX,
                         animatedImage,
                         suppressDsc,
                         objDisp,
@@ -2306,6 +2330,10 @@ public class NonLinearBookImpl implements NonLinearBook {
             if (!module.isEmpty()) {
                 result.addAll(module.getUsedSounds());
             }
+        }
+        for (Map.Entry<String, ObjImpl> objEntry : m_objs.entrySet()) {
+            ObjImpl obj = objEntry.getValue();
+            result.addAll(getUsedMedia(obj.getSoundFileName()));
         }
         return result;
     }
