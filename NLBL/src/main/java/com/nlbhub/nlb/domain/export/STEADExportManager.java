@@ -398,6 +398,13 @@ public class STEADExportManager extends TextExportManager {
         return stringBuilder.toString();
     }
 
+    private String getContainerExpression(ObjBuildingBlocks objBlocks) {
+        if ("nil".equals(objBlocks.getContainerRef())) {
+            return "container = nil;";
+        } else {
+            return "container = stead.deref(" + objBlocks.getContainerRef() + ");";
+        }
+    }
     @Override
     protected String generateObjText(ObjBuildingBlocks objBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -405,7 +412,7 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(objBlocks.getObjComment());
         }
         stringBuilder.append(objBlocks.getObjLabel()).append(objBlocks.getObjStart());
-        stringBuilder.append("    var { tag = ''; container = stead.deref(").append(objBlocks.getContainerRef()).append("); },").append(LINE_SEPARATOR);
+        stringBuilder.append("    var { tag = ''; ").append(getContainerExpression(objBlocks)).append(" },").append(LINE_SEPARATOR);
         stringBuilder.append(objBlocks.getObjName());
         stringBuilder.append(objBlocks.getObjDisp());
         stringBuilder.append(objBlocks.getObjText());
