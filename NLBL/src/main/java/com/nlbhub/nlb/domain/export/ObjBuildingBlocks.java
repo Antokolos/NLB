@@ -70,6 +70,7 @@ public class ObjBuildingBlocks {
     private String m_objObjStart;
     private String m_objObjEnd;
     private String m_objEnd;
+    private String m_containerRef;
     private List<String> m_containedObjIds;
     private List<UseBuildingBlocks> m_useBuildingBlocks;
 
@@ -252,6 +253,14 @@ public class ObjBuildingBlocks {
 
     public void setObjObjEnd(String objObjEnd) {
         m_objObjEnd = objObjEnd;
+    }
+
+    public String getContainerRef() {
+        return m_containerRef;
+    }
+
+    public void setContainerRef(String containerRef) {
+        m_containerRef = containerRef;
     }
 
     public List<String> getContainedObjIds() {

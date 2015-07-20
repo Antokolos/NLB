@@ -252,12 +252,18 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("                take(object);").append(LINE_SEPARATOR);
         stringBuilder.append("            end;").append(LINE_SEPARATOR);
         stringBuilder.append("        else").append(LINE_SEPARATOR);
+        stringBuilder.append("            local ores;").append(LINE_SEPARATOR);
         stringBuilder.append("            if exist(object, target) then").append(LINE_SEPARATOR);
-        stringBuilder.append("                objs(target):add(clone(object));").append(LINE_SEPARATOR);
+        stringBuilder.append("                ores = clone(object);").append(LINE_SEPARATOR);
         stringBuilder.append("            else").append(LINE_SEPARATOR);
-        stringBuilder.append("                objs(target):add(object);").append(LINE_SEPARATOR);
+        stringBuilder.append("                ores = object;").append(LINE_SEPARATOR);
         stringBuilder.append("            end;").append(LINE_SEPARATOR);
+        stringBuilder.append("            ores.container = stead.deref(target);").append(LINE_SEPARATOR);
+        stringBuilder.append("            objs(target):add(ores);").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    clrcntnr = function(coll)").append(LINE_SEPARATOR);
+        stringBuilder.append("        -- TODO: add implementation (set container to nil for every obj from coll)").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    revive = function()").append(LINE_SEPARATOR);
         stringBuilder.append("        for k,v in pairs(_filter) do").append(LINE_SEPARATOR);
@@ -399,7 +405,7 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(objBlocks.getObjComment());
         }
         stringBuilder.append(objBlocks.getObjLabel()).append(objBlocks.getObjStart());
-        stringBuilder.append("    var { tag = ''; },").append(LINE_SEPARATOR);
+        stringBuilder.append("    var { tag = ''; container = stead.deref(").append(objBlocks.getContainerRef()).append("); },").append(LINE_SEPARATOR);
         stringBuilder.append(objBlocks.getObjName());
         stringBuilder.append(objBlocks.getObjDisp());
         stringBuilder.append(objBlocks.getObjText());
@@ -1057,8 +1063,21 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateCloneOperation(final String variableName, final String objId, final String objVar) {
         if (objId != null) {
             return variableName + " = clone(" + decorateId(objId) + ");" + LINE_SEPARATOR;
-        } else {
+        } else if (objVar != null) {
             return variableName + " = clone(" + objVar + ");" + LINE_SEPARATOR;
+        } else {
+            return variableName + " = clone(s);" + LINE_SEPARATOR;
+        }
+    }
+
+    @Override
+    protected String decorateContainerOperation(String variableName, String objId, String objVar) {
+        if (objId != null) {
+            return variableName + " = stead.ref(" + decorateId(objId) + ".container);" + LINE_SEPARATOR;
+        } else if (objVar != null) {
+            return variableName + " = stead.ref(" + objVar + ".container);" + LINE_SEPARATOR;
+        } else {
+            return variableName + " = stead.ref(s.container);" + LINE_SEPARATOR;
         }
     }
 
@@ -1073,25 +1092,20 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateDelObj(String destinationId, final String destinationName, String objectId, String objectVar, String objectName, String objectDisplayName) {
+        String objToDel = (objectId != null) ? decorateId(objectId) : objectVar;
         if (destinationId == null) {
             if (destinationName != null) {
-                return (
-                        "            rmv(\"" + destinationName + "\", " + objectVar + ");" + LINE_SEPARATOR
-                );
+                return "            rmv(\"" + destinationName + "\", " + objToDel + "); " + getClearContainerStatement(objToDel) + LINE_SEPARATOR;
             } else {
-                return (
-                        "            objs():del(" +
-                                ((objectId != null) ? decorateId(objectId) : objectVar) +
-                                ");" + LINE_SEPARATOR
-                );
+                return "            objs():del(" + objToDel + "); " + getClearContainerStatement(objToDel) + LINE_SEPARATOR;
             }
         } else {
-            return (
-                    "            objs(" + decorateId(destinationId) + "):del(" +
-                            ((objectId != null) ? decorateId(objectId) : objectVar) +
-                            ");" + LINE_SEPARATOR
-            );
+            return "            objs(" + decorateId(destinationId) + "):del(" + objToDel + "); " + getClearContainerStatement(objToDel) + LINE_SEPARATOR;
         }
+    }
+
+    private String getClearContainerStatement(String objVar) {
+        return objVar + ".container = nil; ";
     }
 
     @Override
@@ -1192,11 +1206,11 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateClearOperation(String destinationId, String destinationVar) {
         if (destinationId != null) {
-            return "objs(" + decorateId(destinationId) + "):zap();" + LINE_SEPARATOR;
+            return "clrcntnr(objs(" + decorateId(destinationId) + ")); " + "objs(" + decorateId(destinationId) + "):zap();" + LINE_SEPARATOR;
         } else if (destinationVar != null) {
             return "clear(" + destinationVar + ");" + LINE_SEPARATOR;
         } else {
-            return "objs():zap();" + LINE_SEPARATOR;
+            return "clrcntnr(objs()); objs():zap();" + LINE_SEPARATOR;
         }
     }
 

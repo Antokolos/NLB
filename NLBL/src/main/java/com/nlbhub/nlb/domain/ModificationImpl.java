@@ -63,6 +63,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     private static final String TYPE_FILE_NAME = "type";
     private static final String EXPRID_FILE_NAME = "exprid";
     private static final Set<Type> UNPARAMETRIZED_TYPES = new HashSet<Type>() {{
+        add(Type.CNTNR);    // Can be without parameters
+        add(Type.CLONE);    // Can be without parameters
         add(Type.GETTAG);
         add(Type.CLEAR);
         add(Type.CLRINV);
@@ -127,6 +129,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     @Override
     public boolean returnsValue() {
         switch (m_type) {
+            case CNTNR:
             case CLONE:
             case GETTAG:
             case ID:
@@ -205,6 +208,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.HAVE;
         } else if (type.equals(Type.CLONE.name())) {
             m_type = Type.CLONE;
+        } else if (type.equals(Type.CNTNR.name())) {
+            m_type = Type.CNTNR;
         } else if (type.equals(Type.ID.name())) {
             m_type = Type.ID;
         } else if (type.equals(Type.ADD.name())) {
@@ -327,6 +332,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "CLONE":
                 m_type = Type.CLONE;
+                break;
+            case "CNTNR":
+                m_type = Type.CNTNR;
                 break;
             case "ID":
                 m_type = Type.ID;

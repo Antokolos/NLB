@@ -244,6 +244,12 @@ public abstract class HypertextExportManager
     }
 
     @Override
+    protected String decorateContainerOperation(String variableName, String objId, String objVar) {
+        // TODO: implement
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateGetIdOperation(final String variableName, final String objId, final String objVar) {
         // TODO: implement
         return Constants.EMPTY_STRING;

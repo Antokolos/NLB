@@ -70,6 +70,7 @@ public abstract class ExportManager {
     private static final String OR_PLACEHOLDER = "179ef88a-88b7-4ad2-8dfa-d2040debde73";
     private static final String AND_PLACEHOLDER = "f0e77ec8-a270-4a3f-8b8f-1ade38988f37";
     private static final Pattern FILE_NAME_PATTERN = Pattern.compile("(^.*\\D|^)(\\d*)(\\..*)$");
+    private static final int NONEXISTING_PAGE = -1;
 
     public static final String EMPTY_STRING = Constants.EMPTY_STRING;
     public static final String UTF_8 = "UTF-8";
@@ -219,18 +220,26 @@ public abstract class ExportManager {
             return m_objList;
         }
 
-        private Integer getPageNumber(final String pageId) throws NLBConsistencyException {
+        private int getPageNumber(final String pageId) {
             if (m_idToPageNumberMap.containsKey(pageId)) {
                 return m_idToPageNumberMap.get(pageId);
             } else {
                 if (m_parentED != null) {
                     return m_parentED.getPageNumber(pageId);
                 } else {
-                    throw new NLBConsistencyException(
-                            "Page number cannot be determined for pageId = " + pageId
-                    );
+                    return NONEXISTING_PAGE;
                 }
             }
+        }
+
+        private int checkedGetPageNumber(final String pageId) throws NLBConsistencyException {
+            int pageNumber = getPageNumber(pageId);
+            if (pageNumber != NONEXISTING_PAGE) {
+                return pageNumber;
+            }
+            throw new NLBConsistencyException(
+                    "Page number cannot be determined for pageId = " + pageId
+            );
         }
 
         private Boolean hasInwardLinks(final String objId) {
@@ -365,7 +374,7 @@ public abstract class ExportManager {
     ) throws NLBConsistencyException, NLBExportException {
         NonLinearBook nlb = exportData.getNlb();
         PageBuildingBlocks blocks = new PageBuildingBlocks();
-        final Integer pageNumber = exportData.getPageNumber(page.getId());
+        final Integer pageNumber = exportData.checkedGetPageNumber(page.getId());
         blocks.setAutowired(page.isAutowire());
         final String pageName = decoratePageName(page.getId(), pageNumber);
         blocks.setPageName(pageName);
@@ -556,7 +565,21 @@ public abstract class ExportManager {
         return blocks;
     }
 
-    final ObjBuildingBlocks createObjBuildingBlocks(
+    private String getContainerRef(Obj obj, ExportData exportData) {
+        String containerId = obj.getContainerId();
+        if (Obj.DEFAULT_CONTAINER_ID.equals(containerId)) {
+            return "nil";
+        }
+        int pageNumber = exportData.getPageNumber(containerId);
+        if (pageNumber != NONEXISTING_PAGE) {
+            return decoratePageName(containerId, pageNumber);
+        } else {
+            // This is obj, just decorate its id
+            return decorateId(containerId);
+        }
+    }
+
+    private ObjBuildingBlocks createObjBuildingBlocks(
             final Obj obj,
             final ExportData exportData
     ) throws NLBConsistencyException, NLBExportException {
@@ -610,6 +633,7 @@ public abstract class ExportManager {
         blocks.setObjUseEnd(decorateObjUseEnd());
         blocks.setObjEnd(decorateObjEnd());
         blocks.setObjObjStart(decorateObjObjStart());
+        blocks.setContainerRef(getContainerRef(obj, exportData));
         List<String> containedObjIds = obj.getContainedObjIds();
         if (!containedObjIds.isEmpty()) {
             for (String containedObjId : containedObjIds) {
@@ -1342,7 +1366,7 @@ public abstract class ExportManager {
                 decorateLinkStart(
                         link.getId(),
                         link.getText(),
-                        exportData.getPageNumber(link.getTarget())
+                        exportData.checkedGetPageNumber(link.getTarget())
                 )
         );
         Variable variable = exportData.getNlb().getVariableById(link.getVarId());
@@ -1375,7 +1399,7 @@ public abstract class ExportManager {
                         buildModificationsText("    ", link.getModifications(), exportData)
                 )
         );
-        int targetPageNumber = exportData.getPageNumber(link.getTarget());
+        int targetPageNumber = exportData.checkedGetPageNumber(link.getTarget());
         blocks.setTargetPageNumber(targetPageNumber);
         blocks.setLinkGoTo(
                 decorateLinkGoTo(
@@ -1652,12 +1676,25 @@ public abstract class ExportManager {
                         break;
                     case CLONE:
                         assert variable != null;
-                        final String objIdToClone = exportData.getObjId(expression.getValue());
+                        final String cloneArg = (expression != null) ? decorateAutoVar(expression.getValue()) : null;
+                        final String objIdToClone = (expression != null) ? exportData.getObjId(expression.getValue()) : null;
                         stringBuilder.append(
                                 decorateCloneOperation(
                                         decorateAutoVar(variable.getName()),
                                         objIdToClone,
-                                        decorateAutoVar(expression.getValue())
+                                        cloneArg
+                                )
+                        );
+                        break;
+                    case CNTNR:
+                        assert variable != null;
+                        final String containerArg = (expression != null) ? decorateAutoVar(expression.getValue()) : null;
+                        final String objIdToGetContainer = (expression != null) ? exportData.getObjId(expression.getValue()) : null;
+                        stringBuilder.append(
+                                decorateContainerOperation(
+                                        decorateAutoVar(variable.getName()),
+                                        objIdToGetContainer,
+                                        containerArg
                                 )
                         );
                         break;
@@ -1958,6 +1995,8 @@ public abstract class ExportManager {
     protected abstract String decorateHaveOperation(String variableName, String objId, String objVar);
 
     protected abstract String decorateCloneOperation(String variableName, String objId, String objVar);
+
+    protected abstract String decorateContainerOperation(String variableName, String objId, String objVar);
 
     protected abstract String decorateGetIdOperation(String variableName, String objId, String objVar);
 

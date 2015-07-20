@@ -58,6 +58,7 @@ public interface Modification extends IdentifiableItem {
         RETURN,
         HAVE,
         CLONE,
+        CNTNR,
         ID,
         ADD,
         ADDINV,
