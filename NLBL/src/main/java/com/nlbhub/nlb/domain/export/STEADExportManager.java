@@ -361,18 +361,18 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    use = function(s, w)").append(LINE_SEPARATOR);
-        stringBuilder.append("        s.usea(s, w);").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.usea(s, w, w);").append(LINE_SEPARATOR);
         stringBuilder.append("        local loc = curloc();").append(LINE_SEPARATOR);
         stringBuilder.append("        loc.autos(loc);").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
-        stringBuilder.append("    usea = function(s, w)").append(LINE_SEPARATOR);
-        stringBuilder.append("        s.usef(s, w);").append(LINE_SEPARATOR);
+        stringBuilder.append("    usea = function(s, w, ww)").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.usef(s, w, ww);").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
-        stringBuilder.append("    usef = function(s, w)").append(LINE_SEPARATOR);
+        stringBuilder.append("    usef = function(s, w, ww)").append(LINE_SEPARATOR);
         stringBuilder.append("        local list = _lists[s.listnam];").append(LINE_SEPARATOR);
         stringBuilder.append("        if list ~= nil then").append(LINE_SEPARATOR);
         stringBuilder.append("            repeat").append(LINE_SEPARATOR);
-        stringBuilder.append("                list.value.usea(list.value, w);").append(LINE_SEPARATOR);
+        stringBuilder.append("                list.value.usea(list.value, w, ww);").append(LINE_SEPARATOR);
         stringBuilder.append("                list = list.next;").append(LINE_SEPARATOR);
         stringBuilder.append("            until list == nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
@@ -389,7 +389,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        local list = _lists[s.listnam];").append(LINE_SEPARATOR);
         stringBuilder.append("        if list ~= nil then").append(LINE_SEPARATOR);
         stringBuilder.append("            repeat").append(LINE_SEPARATOR);
-        stringBuilder.append("                w.usea(w, list.value);").append(LINE_SEPARATOR);
+        stringBuilder.append("                w.usea(w, list.value, list.value);").append(LINE_SEPARATOR);
         stringBuilder.append("                list = list.next;").append(LINE_SEPARATOR);
         stringBuilder.append("            until list == nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
@@ -444,7 +444,7 @@ public class STEADExportManager extends TextExportManager {
         }
         if (hasUses) {
             StringBuilder usepBuilder = new StringBuilder();
-            usepBuilder.append("    usep = function(s, w)").append(LINE_SEPARATOR);
+            usepBuilder.append("    usep = function(s, w, ww)").append(LINE_SEPARATOR);
             for (int i = 0; i < usesBuildingBlocks.size(); i++) {
                 StringBuilder usesStartBuilder = new StringBuilder();
                 StringBuilder usesEndBuilder = new StringBuilder();
@@ -489,7 +489,7 @@ public class STEADExportManager extends TextExportManager {
             usepBuilder.append(objBlocks.getObjUseEnd());
             stringBuilder.append("        else").append(LINE_SEPARATOR);
             stringBuilder.append("            if w.useda ~= nil then").append(LINE_SEPARATOR);
-            stringBuilder.append("                w.useda(w, s);").append(LINE_SEPARATOR);
+            stringBuilder.append("                w.useda(w, s, s);").append(LINE_SEPARATOR);
             stringBuilder.append("            end;").append(LINE_SEPARATOR);
             stringBuilder.append("        end;").append(LINE_SEPARATOR);
             stringBuilder.append(objBlocks.getObjUseEnd());
@@ -498,9 +498,10 @@ public class STEADExportManager extends TextExportManager {
             // If object is takable, then empty use and usep functions should be specified anyway
             stringBuilder.append(objBlocks.getObjUseEnd());
             // TODO: make additional decorate method for usep function (something like decorateObjStart())
-            stringBuilder.append("    usep = function(s, w)").append(LINE_SEPARATOR);
+            stringBuilder.append("    usep = function(s, w, ww)").append(LINE_SEPARATOR);
             stringBuilder.append(objBlocks.getObjUseEnd());
         }
+        stringBuilder.append(objBlocks.getObjCommonTo());
         List<String> containedObjIds = objBlocks.getContainedObjIds();
         if (containedObjIds.size() != 0) {
             stringBuilder.append(objBlocks.getObjObjStart());
@@ -893,18 +894,17 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateObjUseStart() {
         // Before use, execute possible act commands (without printing act text) -> s.actf(s)
         return (
-                "    use = function(s, w)" + LINE_SEPARATOR +
+                "    use = function(s, w, ww)" + LINE_SEPARATOR +
                         "        s.actf(s);" + LINE_SEPARATOR +
-                        "        s.usea(s, w);" + LINE_SEPARATOR +
+                        "        s.usea(s, w, ww);" + LINE_SEPARATOR +
                         "        local loc = curloc();" + LINE_SEPARATOR +
                         "        loc.autos(loc);" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
-                        "    usea = function(s, w)" + LINE_SEPARATOR +
-                        "        s.usep(s, w);" + LINE_SEPARATOR +
-                        "        s.usef(s, w);" + LINE_SEPARATOR +
-                        "        s.usecmn(s, w);" + LINE_SEPARATOR +
+                        "    usea = function(s, w, ww)" + LINE_SEPARATOR +
+                        "        s.usep(s, w, ww);" + LINE_SEPARATOR +
+                        "        s.usef(s, w, ww);" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
-                        "    usef = function(s, w)" + LINE_SEPARATOR
+                        "    usef = function(s, w, ww)" + LINE_SEPARATOR
         );
     }
 
@@ -966,15 +966,17 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateObjCommonTo(String commonObjId) {
         StringBuilder result = new StringBuilder();
         boolean hasCmn = StringHelper.notEmpty(commonObjId);
-        result.append("    usecmn = function(s, w)").append(LINE_SEPARATOR);
+        result.append("    used = function(s, w)").append(LINE_SEPARATOR);
+        String id = hasCmn ? decorateId(commonObjId) : Constants.EMPTY_STRING;
         if (hasCmn) {
-            // NB: first parameter of usea() call is CORRECT! It SHOULD be current object, not common object.
-            result.append("        ").append(decorateId(commonObjId)).append("usea(s, w);").append(LINE_SEPARATOR);
+            result.append("        ").append("w.usea(w, ").append(id).append(", s);").append(LINE_SEPARATOR);
+            result.append("        local loc = curloc();").append(LINE_SEPARATOR);
+            result.append("        loc.autos(loc);").append(LINE_SEPARATOR);
         }
         result.append("    end,").append(LINE_SEPARATOR);
         result.append("    actcmn = function(s)").append(LINE_SEPARATOR);
         if (hasCmn) {
-            result.append("        ").append(decorateId(commonObjId)).append("acta(s);").append(LINE_SEPARATOR);
+            result.append("        ").append(id).append(".acta(").append(id).append(");").append(LINE_SEPARATOR);
         }
         result.append("    end,").append(LINE_SEPARATOR);
         return result.toString();
@@ -1177,7 +1179,7 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateWPushOperation(String listVariableName) {
-        return createListObj(listVariableName) + "        push(" + listVariableName + ".listnam, w);  -- will push nil if undef" + LINE_SEPARATOR;
+        return createListObj(listVariableName) + "        push(" + listVariableName + ".listnam, ww);  -- will push nil if undef" + LINE_SEPARATOR;
     }
 
     @Override
