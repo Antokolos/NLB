@@ -258,7 +258,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            else").append(LINE_SEPARATOR);
         stringBuilder.append("                ores = object;").append(LINE_SEPARATOR);
         stringBuilder.append("            end;").append(LINE_SEPARATOR);
-        stringBuilder.append("            ores.container = stead.deref(target);").append(LINE_SEPARATOR);
+        stringBuilder.append("            ores.container = target;").append(LINE_SEPARATOR);
         stringBuilder.append("            objs(target):add(ores);").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
@@ -279,7 +279,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        local mt = getmetatable(t);").append(LINE_SEPARATOR);
         stringBuilder.append("        local res = {};").append(LINE_SEPARATOR);
         stringBuilder.append("        for k,v in pairs(t) do").append(LINE_SEPARATOR);
-        stringBuilder.append("            if type(v) == \"table\" then").append(LINE_SEPARATOR);
+        stringBuilder.append("            if type(v) == \"table\" and k ~= \"container\" then").append(LINE_SEPARATOR);
         stringBuilder.append("                v = deepcopy(v)").append(LINE_SEPARATOR);
         stringBuilder.append("            end;").append(LINE_SEPARATOR);
         stringBuilder.append("            res[k] = v;").append(LINE_SEPARATOR);
@@ -402,7 +402,7 @@ public class STEADExportManager extends TextExportManager {
         if ("nil".equals(objBlocks.getContainerRef())) {
             return "container = nil;";
         } else {
-            return "container = stead.deref(" + objBlocks.getContainerRef() + ");";
+            return "container = " + objBlocks.getContainerRef() + ";";
         }
     }
     @Override
@@ -1080,11 +1080,11 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateContainerOperation(String variableName, String objId, String objVar) {
         if (objId != null) {
-            return variableName + " = stead.ref(" + decorateId(objId) + ".container);" + LINE_SEPARATOR;
+            return variableName + " = " + decorateId(objId) + ".container;" + LINE_SEPARATOR;
         } else if (objVar != null) {
-            return variableName + " = stead.ref(" + objVar + ".container);" + LINE_SEPARATOR;
+            return variableName + " = " + objVar + ".container;" + LINE_SEPARATOR;
         } else {
-            return variableName + " = stead.ref(s.container);" + LINE_SEPARATOR;
+            return variableName + " = s.container;" + LINE_SEPARATOR;
         }
     }
 
