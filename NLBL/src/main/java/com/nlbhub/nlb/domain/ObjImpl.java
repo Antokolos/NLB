@@ -70,6 +70,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String ACT_TEXT_SUBDIR_NAME = "acttext";
     private static final String VARID_FILE_NAME = "varid";
     private static final String CONSTRID_FILE_NAME = "constrid";
+    private static final String COMMONTOID_FILE_NAME = "commonto";
     private static final String NAME_FILE_NAME = "name";
     private static final String IMAGE_FILE_NAME = "image";
     private static final String SOUND_FILE_NAME = "sound";
@@ -87,6 +88,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
      */
     private String m_varId = DEFAULT_VARID;
     private String m_constrId = DEFAULT_CONSTRID;
+    private String m_commonToId = DEFAULT_COMMON_TO_ID;
     private String m_name = DEFAULT_NAME;
     private MultiLangString m_disp = DEFAULT_DISP;
     private MultiLangString m_text = DEFAULT_TEXT;
@@ -129,6 +131,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         super(source);
         m_varId = source.getVarId();
         m_constrId = source.getConstrId();
+        m_commonToId = source.getCommonToId();
         m_name = source.getName();
         m_imageFileName = source.getImageFileName();
         m_soundFileName = source.getSoundFileName();
@@ -199,6 +202,16 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     @XmlElement(name = "constrid")
     public String getConstrId() {
         return m_constrId;
+    }
+
+    @Override
+    @XmlElement(name = "commontoid")
+    public String getCommonToId() {
+        return m_commonToId;
+    }
+
+    public void setCommonToId(String commonToId) {
+        m_commonToId = commonToId;
     }
 
     public void setVarId(String varId) {
@@ -339,6 +352,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(objDir, VARID_FILE_NAME, m_varId, DEFAULT_VARID);
             fileManipulator.writeOptionalString(objDir, CONSTRID_FILE_NAME, m_constrId, DEFAULT_CONSTRID);
+            fileManipulator.writeOptionalString(objDir, COMMONTOID_FILE_NAME, m_commonToId, DEFAULT_COMMON_TO_ID);
             fileManipulator.writeOptionalString(
                     objDir,
                     NAME_FILE_NAME,
@@ -435,6 +449,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         CONSTRID_FILE_NAME,
                         DEFAULT_CONSTRID
+                )
+        );
+        m_commonToId = (
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        COMMONTOID_FILE_NAME,
+                        DEFAULT_COMMON_TO_ID
                 )
         );
         m_name = (

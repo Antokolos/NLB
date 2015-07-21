@@ -198,6 +198,9 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
             case "OBJCONSTRAINT":
                 m_type = Type.OBJCONSTRAINT;
                 break;
+            case "COMMONTO":
+                m_type = Type.COMMONTO;
+                break;
             case "LINK":
                 m_type = Type.LINK;
                 break;
@@ -238,6 +241,9 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
                 break;
             case TIMER:
                 m_dataType = DataType.NUMBER;
+                break;
+            case COMMONTO:
+                m_dataType = DataType.STRING;
                 break;
             default:
                 String dataType = FileManipulator.getOptionalFileAsString(

@@ -623,6 +623,9 @@ public abstract class ExportManager {
         } else {
             blocks.setObjConstraint(EMPTY_STRING);
         }
+        if (!StringHelper.isEmpty(obj.getCommonToId())) {
+            // TODO:
+        }
         blocks.setObjModifications(
                 decorateObjModifications(
                         buildModificationsText(EMPTY_STRING, obj.getModifications(), exportData)
@@ -1096,6 +1099,11 @@ public abstract class ExportManager {
             @Override
             public String getConstrId() {
                 return obj.getConstrId();
+            }
+
+            @Override
+            public String getCommonToId() {
+                return obj.getCommonToId();
             }
 
             @Override

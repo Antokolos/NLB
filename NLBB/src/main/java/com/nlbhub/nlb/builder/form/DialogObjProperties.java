@@ -58,8 +58,6 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private Zoomer m_zoomer;
     private Obj m_obj;
     private NonLinearBookFacade m_nlbFacade;
-    private Variable m_variable;
-    private Variable m_constraint;
     private MultiLangString m_objDisplayNames;
     private MultiLangString m_objTexts;
     private MultiLangString m_objActTexts;
@@ -97,6 +95,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JButton m_setSoundButton;
     private JLabel m_soundFileNameLabel;
     private JCheckBox m_soundSFXCheckBox;
+    private JTextField m_objCommonToTextField;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -276,13 +275,15 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
 
     private void setObjProperties(final Obj obj) {
         m_obj = obj;
-        m_variable = m_nlbFacade.getNlb().getVariableById(obj.getVarId());
-        m_constraint = m_nlbFacade.getNlb().getVariableById(obj.getConstrId());
+        Variable variable = m_nlbFacade.getNlb().getVariableById(obj.getVarId());
+        Variable constraint = m_nlbFacade.getNlb().getVariableById(obj.getConstrId());
+        Variable commonTo = m_nlbFacade.getNlb().getVariableById(obj.getCommonToId());
         m_objIdTextField.setText(obj.getId());
         m_objNameTextField.setText(obj.getName());
         m_objDispTextField.setText(obj.getDisp());
-        m_objVariableTextField.setText(m_variable != null ? m_variable.getName() : "");
-        m_objConstraintTextField.setText(m_constraint != null ? m_constraint.getValue() : "");
+        m_objVariableTextField.setText(variable != null ? variable.getName() : "");
+        m_objConstraintTextField.setText(constraint != null ? constraint.getValue() : "");
+        m_objCommonToTextField.setText(commonTo != null ? commonTo.getName() : "");
         m_objTextTextArea.setText(obj.getText());
         m_objActTextTextArea.setText(obj.getActText());
         m_suppressDsc.setSelected(obj.isSuppressDsc());
@@ -317,6 +318,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_obj,
                 m_objVariableTextField.getText(),
                 m_objConstraintTextField.getText(),
+                m_objCommonToTextField.getText(),
                 m_objNameTextField.getText(),
                 m_imageFileName,
                 m_soundFileName,
@@ -699,7 +701,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         panel28.setLayout(new BorderLayout(0, 0));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 5;
+        gbc.gridy = 6;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
@@ -767,7 +769,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         panel32.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.fill = GridBagConstraints.BOTH;
         panel25.add(panel32, gbc);
         m_objIsTakable = new JCheckBox();
@@ -818,8 +820,40 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.anchor = GridBagConstraints.EAST;
         panel25.add(label7, gbc);
         final JPanel panel34 = new JPanel();
-        panel34.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel34, BorderLayout.CENTER);
+        panel34.setLayout(new GridBagLayout());
+        panel34.setMinimumSize(new Dimension(468, 33));
+        panel34.setPreferredSize(new Dimension(468, 33));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(5, 5, 5, 0);
+        panel25.add(panel34, gbc);
+        final JScrollPane scrollPane8 = new JScrollPane();
+        scrollPane8.setHorizontalScrollBarPolicy(31);
+        scrollPane8.setVerticalScrollBarPolicy(21);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel34.add(scrollPane8, gbc);
+        m_objCommonToTextField = new JTextField();
+        m_objCommonToTextField.setColumns(40);
+        scrollPane8.setViewportView(m_objCommonToTextField);
+        final JLabel label8 = new JLabel();
+        label8.setText("Common To");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel25.add(label8, gbc);
+        final JPanel panel35 = new JPanel();
+        panel35.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel35, BorderLayout.CENTER);
         label1.setLabelFor(m_objDispTextField);
         label2.setLabelFor(m_objTextTextArea);
         label3.setLabelFor(m_objActTextTextArea);
@@ -827,6 +861,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         label5.setLabelFor(m_objNameTextField);
         label6.setLabelFor(m_objVariableTextField);
         label7.setLabelFor(m_objConstraintTextField);
+        label8.setLabelFor(m_objCommonToTextField);
     }
 
     /**

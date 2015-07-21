@@ -58,6 +58,7 @@ public interface Obj extends NodeItem {
     public static final MultiLangString DEFAULT_ACT_TEXT = MultiLangString.createEmptyText();
     public static final String DEFAULT_VARID = Constants.EMPTY_STRING;
     public static final String DEFAULT_CONSTRID = Constants.EMPTY_STRING;
+    public static final String DEFAULT_COMMON_TO_ID = Constants.EMPTY_STRING;
     public static final String DEFAULT_NAME = Constants.EMPTY_STRING;
     public static final MultiLangString DEFAULT_DISP = MultiLangString.createEmptyText();
     public static final boolean DEFAULT_TAKABLE = false;
@@ -77,7 +78,10 @@ public interface Obj extends NodeItem {
 
     public String getConstrId();
 
+    public String getCommonToId();
+
     public String getName();
+
 
     public String getImageFileName();
 
