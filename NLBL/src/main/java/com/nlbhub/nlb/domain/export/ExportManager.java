@@ -624,7 +624,15 @@ public abstract class ExportManager {
             blocks.setObjConstraint(EMPTY_STRING);
         }
         if (!StringHelper.isEmpty(obj.getCommonToId())) {
-            // TODO:
+            Variable commonTo = exportData.getNlb().getVariableById(obj.getCommonToId());
+            // TODO: Add cases with deleted pages/links/variables etc. to the unit test
+            if (!commonTo.isDeleted()) {
+                blocks.setObjCommonTo(decorateObjCommonTo(commonTo.getValue()));
+            } else {
+                blocks.setObjCommonTo(decorateObjCommonTo(EMPTY_STRING));
+            }
+        } else {
+            blocks.setObjCommonTo(decorateObjCommonTo(EMPTY_STRING));
         }
         blocks.setObjModifications(
                 decorateObjModifications(
@@ -1309,6 +1317,10 @@ public abstract class ExportManager {
     }
 
     protected String decorateObjConstraint(String constraintValue) {
+        return EMPTY_STRING;
+    }
+
+    protected String decorateObjCommonTo(String commonObjId) {
         return EMPTY_STRING;
     }
 

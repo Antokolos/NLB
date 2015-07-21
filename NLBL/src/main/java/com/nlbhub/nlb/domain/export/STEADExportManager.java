@@ -869,6 +869,7 @@ public class STEADExportManager extends TextExportManager {
                         "    acta = function(s)" + LINE_SEPARATOR +
                         actText +
                         "        s.actf(s);" + LINE_SEPARATOR +
+                        "        s.actcmn(s);" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    actf = function(s)" + LINE_SEPARATOR
         );
@@ -901,6 +902,7 @@ public class STEADExportManager extends TextExportManager {
                         "    usea = function(s, w)" + LINE_SEPARATOR +
                         "        s.usep(s, w);" + LINE_SEPARATOR +
                         "        s.usef(s, w);" + LINE_SEPARATOR +
+                        "        s.usecmn(s, w);" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    usef = function(s, w)" + LINE_SEPARATOR
         );
@@ -957,6 +959,24 @@ public class STEADExportManager extends TextExportManager {
             result.append("        end;").append(LINE_SEPARATOR);
             result.append("    end,").append(LINE_SEPARATOR);
         }
+        return result.toString();
+    }
+
+    @Override
+    protected String decorateObjCommonTo(String commonObjId) {
+        StringBuilder result = new StringBuilder();
+        boolean hasCmn = StringHelper.notEmpty(commonObjId);
+        result.append("    usecmn = function(s, w)").append(LINE_SEPARATOR);
+        if (hasCmn) {
+            // NB: first parameter of usea() call is CORRECT! It SHOULD be current object, not common object.
+            result.append("        ").append(decorateId(commonObjId)).append("usea(s, w);").append(LINE_SEPARATOR);
+        }
+        result.append("    end,").append(LINE_SEPARATOR);
+        result.append("    actcmn = function(s)").append(LINE_SEPARATOR);
+        if (hasCmn) {
+            result.append("        ").append(decorateId(commonObjId)).append("acta(s);").append(LINE_SEPARATOR);
+        }
+        result.append("    end,").append(LINE_SEPARATOR);
         return result.toString();
     }
 
