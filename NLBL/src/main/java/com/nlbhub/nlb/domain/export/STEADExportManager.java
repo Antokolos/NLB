@@ -445,6 +445,9 @@ public class STEADExportManager extends TextExportManager {
         if (hasUses) {
             StringBuilder usepBuilder = new StringBuilder();
             usepBuilder.append("    usep = function(s, w, ww)").append(LINE_SEPARATOR);
+            usepBuilder.append("        local prevt = curloc().lasttext;").append(LINE_SEPARATOR);
+            usepBuilder.append("        local wasnouses = true;").append(LINE_SEPARATOR);
+            usepBuilder.append("        curloc().lasttext = \"\";").append(LINE_SEPARATOR);
             for (int i = 0; i < usesBuildingBlocks.size(); i++) {
                 StringBuilder usesStartBuilder = new StringBuilder();
                 StringBuilder usesEndBuilder = new StringBuilder();
@@ -455,7 +458,8 @@ public class STEADExportManager extends TextExportManager {
                     usesStartBuilder.append(useBuildingBlocks.getUseTarget());
                     usesStartBuilder.append(" then").append(LINE_SEPARATOR);
                 } else {
-                    usesStartBuilder.append(padding).append("elseif ");
+                    usesStartBuilder.append(padding).append("end;").append(LINE_SEPARATOR);
+                    usesStartBuilder.append(padding).append("if ").append(LINE_SEPARATOR);
                     usesStartBuilder.append(useBuildingBlocks.getUseTarget());
                     usesStartBuilder.append(" then").append(LINE_SEPARATOR);
                 }
@@ -481,16 +485,16 @@ public class STEADExportManager extends TextExportManager {
                 usepBuilder.append(usesStartBuilder);
                 String useSuccessText = useBuildingBlocks.getUseSuccessText();
                 if (StringHelper.notEmpty(useSuccessText)) {
-                    usepBuilder.append("curloc().lasttext = \"").append(useSuccessText).append("\"; p(curloc().lasttext); curloc().wastext = true;").append(LINE_SEPARATOR);
+                    usepBuilder.append("local t = \"").append(useSuccessText).append(" \"; curloc().lasttext = curloc().lasttext..t; p(t); curloc().wastext = true; wasnouses = false;").append(LINE_SEPARATOR);
                 }
                 usepBuilder.append(usesEndBuilder);
             }
+            usepBuilder.append("        if wasnouses then curloc().lasttext = prevt; end;").append(LINE_SEPARATOR);
             usepBuilder.append("        end;").append(LINE_SEPARATOR);
             usepBuilder.append(objBlocks.getObjUseEnd());
-            stringBuilder.append("        else").append(LINE_SEPARATOR);
-            stringBuilder.append("            if w.useda ~= nil then").append(LINE_SEPARATOR);
-            stringBuilder.append("                w.useda(w, s, s);").append(LINE_SEPARATOR);
-            stringBuilder.append("            end;").append(LINE_SEPARATOR);
+            stringBuilder.append("        end;").append(LINE_SEPARATOR);
+            stringBuilder.append("        if w.useda ~= nil then").append(LINE_SEPARATOR);
+            stringBuilder.append("            w.useda(w, s, s);").append(LINE_SEPARATOR);
             stringBuilder.append("        end;").append(LINE_SEPARATOR);
             stringBuilder.append(objBlocks.getObjUseEnd());
             stringBuilder.append(usepBuilder);
