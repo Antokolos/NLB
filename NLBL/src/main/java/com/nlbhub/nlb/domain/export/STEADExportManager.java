@@ -976,7 +976,8 @@ public class STEADExportManager extends TextExportManager {
         result.append("    end,").append(LINE_SEPARATOR);
         result.append("    actcmn = function(s)").append(LINE_SEPARATOR);
         if (hasCmn) {
-            result.append("        ").append(id).append(".acta(").append(id).append(");").append(LINE_SEPARATOR);
+            // Here we are calling actf of common object, replacing its argument by the current object
+            result.append("        ").append(id).append(".actf(s);").append(LINE_SEPARATOR);
         }
         result.append("    end,").append(LINE_SEPARATOR);
         return result.toString();
@@ -1031,7 +1032,7 @@ public class STEADExportManager extends TextExportManager {
             if (StringHelper.notEmpty(objVariableName)) {
                 result.append(objVariableName);
             } else if (objId != null) {
-                result.append(decorateId(objId)).append(".tag;");
+                result.append(decorateId(objId));
             } else {
                 result.append("s");
             }
@@ -1114,8 +1115,10 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateGetIdOperation(final String variableName, final String objId, final String objVar) {
         if (objId != null) {
             return variableName + " = '" + objId + "';" + LINE_SEPARATOR;
-        } else {
+        } else if (objVar != null) {
             return variableName + " = " + objVar + ".nlbid;" + LINE_SEPARATOR;
+        } else {
+            return variableName + " = s.nlbid;" + LINE_SEPARATOR;
         }
     }
 
