@@ -250,6 +250,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.PDSC;
         } else if (type.equals(Type.ACT.name())) {
             m_type = Type.ACT;
+        } else if (type.equals(Type.ACTF.name())) {
+            m_type = Type.ACTF;
         } else if (type.equals(Type.USE.name())) {
             m_type = Type.USE;
         } else if (type.equals(Type.SIZE.name())) {
@@ -395,6 +397,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "ACT":
                 m_type = Type.ACT;
+                break;
+            case "ACTF":
+                m_type = Type.ACTF;
                 break;
             case "USE":
                 m_type = Type.USE;

@@ -237,6 +237,13 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            end;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    actf = function(object)").append(LINE_SEPARATOR);
+        stringBuilder.append("        if object ~= nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("            if object.actf ~= nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("                object.actf(object);").append(LINE_SEPARATOR);
+        stringBuilder.append("            end;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    clear = function(object)").append(LINE_SEPARATOR);
         stringBuilder.append("        if object ~= nil then").append(LINE_SEPARATOR);
         stringBuilder.append("            if object.clear ~= nil then").append(LINE_SEPARATOR);
@@ -1293,6 +1300,12 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateActOperation(String actingObjVariable, String actingObjId) {
         String source = (actingObjId != null) ? decorateId(actingObjId) : actingObjVariable;
         return "acta(" + source + ");" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateActfOperation(String actingObjVariable, String actingObjId) {
+        String source = (actingObjId != null) ? decorateId(actingObjId) : actingObjVariable;
+        return "actf(" + source + ");" + LINE_SEPARATOR;
     }
 
     @Override

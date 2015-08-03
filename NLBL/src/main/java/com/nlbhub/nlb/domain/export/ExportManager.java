@@ -1933,6 +1933,15 @@ public abstract class ExportManager {
                                 )
                         );
                         break;
+                    case ACTF:
+                        final String actfingObjId = exportData.getObjId(expression.getValue());
+                        stringBuilder.append(
+                                decorateActfOperation(
+                                        decorateAutoVar(expression.getValue()),
+                                        actfingObjId
+                                )
+                        );
+                        break;
                     case USE:
                         assert variable != null;
                         final String sourceId = exportData.getObjId(variable.getName());
@@ -2061,6 +2070,8 @@ public abstract class ExportManager {
     protected abstract String decoratePDscOperation(String objVariableName);
 
     protected abstract String decorateActOperation(String actingObjVariable, String actingObjId);
+
+    protected abstract String decorateActfOperation(String actingObjVariable, String actingObjId);
 
     protected abstract String decorateUseOperation(
             String sourceVariable,
