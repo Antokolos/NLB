@@ -1836,6 +1836,22 @@ public abstract class ExportManager {
                     case CLRINV:
                         stringBuilder.append(decorateClearInvOperation());
                         break;
+                    case OBJS:
+                        final String srcObjId = exportData.getObjId(expression.getValue());
+                        if (variable != null) {
+                            stringBuilder.append(
+                                    decorateObjsOperation(
+                                            decorateAutoVar(variable.getName()),
+                                            srcObjId,
+                                            decorateAutoVar(expression.getValue())
+                                    )
+                            );
+                        } else {
+                            throw new NLBConsistencyException(
+                                    "Destination list variable name is not specified for objs operation"
+                            );
+                        }
+                        break;
                     case SPUSH:
                         stringBuilder.append(decorateSPushOperation(decorateAutoVar(expression.getValue())));
                         break;
@@ -2046,6 +2062,8 @@ public abstract class ExportManager {
     protected abstract String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName);
 
     protected abstract String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName, boolean unique);
+
+    protected abstract String decorateObjsOperation(String listVariableName, String srcObjId, String objectVar);
 
     protected abstract String decorateSPushOperation(String listVariableName);
 

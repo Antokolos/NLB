@@ -109,6 +109,14 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
         stringBuilder.append("        _lists[listname] = {next = list, value = v};").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    pushObjs = function(listname, v)").append(LINE_SEPARATOR);
+        stringBuilder.append("        for k,vv in stead.opairs(objs(v)) do").append(LINE_SEPARATOR);
+        stringBuilder.append("            local o = stead.ref(vv);").append(LINE_SEPARATOR);
+        stringBuilder.append("            if (isObject(o)) then").append(LINE_SEPARATOR);
+        stringBuilder.append("                push(listname, o);").append(LINE_SEPARATOR);
+        stringBuilder.append("            end;").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    pop = function(listname)").append(LINE_SEPARATOR);
         stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
         stringBuilder.append("        if list == nil then").append(LINE_SEPARATOR);
@@ -1187,6 +1195,16 @@ public class STEADExportManager extends TextExportManager {
                         ", " + ((destinationListVariableName != null) ? "(" + destinationListVariableName + " ~= nil) and " + destinationListVariableName + ".listnam or \"\"" : "nil") +
                         ", " + "(" + sourceListVariableName + " ~= nil) and " + sourceListVariableName + ".listnam or \"\"" +
                         (unique ? ", true" : ", false") +
+                        ");" + LINE_SEPARATOR
+        );
+    }
+
+    @Override
+    protected String decorateObjsOperation(String listVariableName, String srcObjId, String objectVar) {
+        return (
+                createListObj(listVariableName) +
+                        "        pushObjs(" +
+                        listVariableName + ".listnam, " + ((srcObjId != null) ? decorateId(srcObjId) : objectVar) +
                         ");" + LINE_SEPARATOR
         );
     }

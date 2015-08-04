@@ -377,6 +377,12 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateObjsOperation(String listVariableName, String srcObjId, String objectVar) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateSPushOperation(String listVariableName) {
         // TODO: implement
         return EMPTY_STRING;

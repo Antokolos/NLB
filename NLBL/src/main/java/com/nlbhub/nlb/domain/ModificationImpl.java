@@ -140,10 +140,11 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case SIZE:
             case RND:
             case DSC:
+            case OBJS:
                 return true;
             default:
-                // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, IFHAVE, ADD, ADDINV, REMOVE, RMINV, CLEAR, CLRINV,
-                // SPUSH, WPUSH, PUSH, SINJECT, INJECT, SHUFFLE, PDSC, ACT, USE
+                // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, IFHAVE, ADD, ADDU, ADDINV, ADDALL, ADDALLU,
+                // REMOVE, RMINV, CLEAR, CLRINV, SPUSH, WPUSH, PUSH, SINJECT, INJECT, SHUFFLE, PDSC, ACT, USE
                 // It is funny, but RETURN operation currently does not actually return anything :)
                 return false;
         }
@@ -230,6 +231,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.CLEAR;
         } else if (type.equals(Type.CLRINV.name())) {
             m_type = Type.CLRINV;
+        } else if (type.equals(Type.OBJS.name())) {
+            m_type = Type.OBJS;
         } else if (type.equals(Type.SPUSH.name())) {
             m_type = Type.SPUSH;
         } else if (type.equals(Type.WPUSH.name())) {
@@ -371,6 +374,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "CLRINV":
                 m_type = Type.CLRINV;
+                break;
+            case "OBJS":
+                m_type = Type.OBJS;
                 break;
             case "SPUSH":
                 m_type = Type.SPUSH;

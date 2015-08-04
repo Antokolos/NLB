@@ -69,6 +69,7 @@ public interface Modification extends IdentifiableItem {
         RMINV,
         CLEAR,
         CLRINV,
+        OBJS,
         SPUSH,
         WPUSH,
         PUSH,
