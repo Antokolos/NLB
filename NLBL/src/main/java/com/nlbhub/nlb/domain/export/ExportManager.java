@@ -1600,6 +1600,7 @@ public abstract class ExportManager {
                                     + modification.getFullId()
                     );
                 }
+                boolean unique = false;
                 switch (modification.getType()) {
                     case TAG:
                         // TODO: is obj id really necessary for tag and gettag operations???
@@ -1732,6 +1733,8 @@ public abstract class ExportManager {
                                 )
                         );
                         break;
+                    case ADDU:
+                        unique = true;
                     case ADD:
                         final String addDestinationId = (
                                 (variable != null)
@@ -1747,7 +1750,9 @@ public abstract class ExportManager {
                                         expression.getValue(),
                                         (objIdToAdd == null)
                                                 ? null
-                                                : exportData.getNlb().getObjById(objIdToAdd).getDisp())
+                                                : exportData.getNlb().getObjById(objIdToAdd).getDisp(),
+                                        unique
+                                )
                         );
                         break;
                     case ADDINV:
@@ -1763,6 +1768,8 @@ public abstract class ExportManager {
                                 )
                         );
                         break;
+                    case ADDALLU:
+                        unique = true;
                     case ADDALL:
                         final String addAllDestinationId = (
                                 (variable != null)
@@ -1775,7 +1782,8 @@ public abstract class ExportManager {
                                         ((addAllDestinationId == null) && (variable != null))
                                                 ? decorateAutoVar(variable.getName())
                                                 : null,
-                                        decorateAutoVar(expression.getValue())
+                                        decorateAutoVar(expression.getValue()),
+                                        unique
                                 )
                         );
                         break;
@@ -2033,11 +2041,11 @@ public abstract class ExportManager {
 
     protected abstract String decorateDelInvObj(String objectId, String objectVar, String objectName, String objectDisplayName);
 
-    protected abstract String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName);
+    protected abstract String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName, boolean unique);
 
     protected abstract String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName);
 
-    protected abstract String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName);
+    protected abstract String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName, boolean unique);
 
     protected abstract String decorateSPushOperation(String listVariableName);
 

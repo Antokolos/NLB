@@ -180,18 +180,18 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        _lists[listname] = nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        addArr(listname, shuffled(arr));").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    addAll = function(s, destination, destinationList, listName)").append(LINE_SEPARATOR);
+        stringBuilder.append("    addAll = function(s, destination, destinationList, listName, unique)").append(LINE_SEPARATOR);
         stringBuilder.append("        local loclist = _lists[listName];").append(LINE_SEPARATOR);
         stringBuilder.append("        if loclist == nil then").append(LINE_SEPARATOR);
         stringBuilder.append("            return;").append(LINE_SEPARATOR);
         stringBuilder.append("        else").append(LINE_SEPARATOR);
         stringBuilder.append("            repeat").append(LINE_SEPARATOR);
         stringBuilder.append("                if destination ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("                    addf(destination, loclist.value);").append(LINE_SEPARATOR);
+        stringBuilder.append("                    addf(destination, loclist.value, unique);").append(LINE_SEPARATOR);
         stringBuilder.append("                elseif destinationList ~= nil then").append(LINE_SEPARATOR);
         stringBuilder.append("                    push(destinationList, loclist.value);").append(LINE_SEPARATOR);
         stringBuilder.append("                else").append(LINE_SEPARATOR);
-        stringBuilder.append("                    addf(s, loclist.value);").append(LINE_SEPARATOR);
+        stringBuilder.append("                    addf(s, loclist.value, unique);").append(LINE_SEPARATOR);
         stringBuilder.append("                end;").append(LINE_SEPARATOR);
         stringBuilder.append("                loclist = loclist.next;").append(LINE_SEPARATOR);
         stringBuilder.append("            until loclist == nil;").append(LINE_SEPARATOR);
@@ -251,22 +251,24 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            end;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    addf = function(target, object)").append(LINE_SEPARATOR);
+        stringBuilder.append("    addf = function(target, object, unique)").append(LINE_SEPARATOR);
         stringBuilder.append("        if target == nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("            if have(object) then").append(LINE_SEPARATOR);
-        stringBuilder.append("                take(clone(object));").append(LINE_SEPARATOR);
-        stringBuilder.append("            else").append(LINE_SEPARATOR);
+        stringBuilder.append("            if not have(object) then").append(LINE_SEPARATOR);
         stringBuilder.append("                take(object);").append(LINE_SEPARATOR);
+        stringBuilder.append("            elseif not unique then").append(LINE_SEPARATOR);
+        stringBuilder.append("                take(clone(object));").append(LINE_SEPARATOR);
         stringBuilder.append("            end;").append(LINE_SEPARATOR);
         stringBuilder.append("        else").append(LINE_SEPARATOR);
-        stringBuilder.append("            local ores;").append(LINE_SEPARATOR);
-        stringBuilder.append("            if exist(object, target) then").append(LINE_SEPARATOR);
-        stringBuilder.append("                ores = clone(object);").append(LINE_SEPARATOR);
-        stringBuilder.append("            else").append(LINE_SEPARATOR);
+        stringBuilder.append("            local ores = nil;").append(LINE_SEPARATOR);
+        stringBuilder.append("            if not exist(object, target) then").append(LINE_SEPARATOR);
         stringBuilder.append("                ores = object;").append(LINE_SEPARATOR);
+        stringBuilder.append("            elseif not unique then").append(LINE_SEPARATOR);
+        stringBuilder.append("                ores = clone(object);").append(LINE_SEPARATOR);
         stringBuilder.append("            end;").append(LINE_SEPARATOR);
-        stringBuilder.append("            ores.container = target;").append(LINE_SEPARATOR);
-        stringBuilder.append("            objs(target):add(ores);").append(LINE_SEPARATOR);
+        stringBuilder.append("            if ores ~= nil then").append(LINE_SEPARATOR);
+        stringBuilder.append("                ores.container = target;").append(LINE_SEPARATOR);
+        stringBuilder.append("                objs(target):add(ores);").append(LINE_SEPARATOR);
+        stringBuilder.append("            end;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    clrcntnr = function(coll)").append(LINE_SEPARATOR);
@@ -1160,10 +1162,11 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
+    protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName, boolean unique) {
         return (
                 "            addf(" + ((destinationId != null) ? decorateId(destinationId) : "s") +
                         ", " + ((objectId != null) ? decorateId(objectId) : objectVar) +
+                        (unique ? ", true" : ", false") +
                         ");" + LINE_SEPARATOR
         );
     }
@@ -1171,18 +1174,20 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
         return (
-                "            addf(nil, " + ((objectId != null) ? decorateId(objectId) : objectVar) + ");" + LINE_SEPARATOR
+                "            addf(nil, " + ((objectId != null) ? decorateId(objectId) : objectVar) + ", false);" + LINE_SEPARATOR
         );
     }
 
     @Override
-    protected String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName) {
+    protected String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName, boolean unique) {
         return (
                 createListObj(destinationListVariableName) +
                 createListObj(sourceListVariableName) +
                         "        addAll(s, " + ((destinationId != null) ? decorateId(destinationId) : "nil") +
                         ", " + ((destinationListVariableName != null) ? "(" + destinationListVariableName + " ~= nil) and " + destinationListVariableName + ".listnam or \"\"" : "nil") +
-                        ", " + "(" + sourceListVariableName + " ~= nil) and " + sourceListVariableName + ".listnam or \"\");" + LINE_SEPARATOR
+                        ", " + "(" + sourceListVariableName + " ~= nil) and " + sourceListVariableName + ".listnam or \"\"" +
+                        (unique ? ", true" : ", false") +
+                        ");" + LINE_SEPARATOR
         );
     }
 

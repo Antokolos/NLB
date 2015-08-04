@@ -455,7 +455,7 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName) {
+    protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName, boolean unique) {
         // TODO: implement
         return EMPTY_STRING;
     }
@@ -466,7 +466,7 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName) {
+    protected String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName, boolean unique) {
         // TODO: implement
         return EMPTY_STRING;
     }

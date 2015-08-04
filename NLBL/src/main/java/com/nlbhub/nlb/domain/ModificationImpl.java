@@ -214,10 +214,14 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.ID;
         } else if (type.equals(Type.ADD.name())) {
             m_type = Type.ADD;
+        } else if (type.equals(Type.ADDU.name())) {
+            m_type = Type.ADDU;
         } else if (type.equals(Type.ADDINV.name())) {
             m_type = Type.ADDINV;
         } else if (type.equals(Type.ADDALL.name())) {
             m_type = Type.ADDALL;
+        } else if (type.equals(Type.ADDALLU.name())) {
+            m_type = Type.ADDALLU;
         } else if (type.equals(Type.REMOVE.name())) {
             m_type = Type.REMOVE;
         } else if (type.equals(Type.RMINV.name())) {
@@ -344,11 +348,17 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case "ADD":
                 m_type = Type.ADD;
                 break;
+            case "ADDU":
+                m_type = Type.ADDU;
+                break;
             case "ADDINV":
                 m_type = Type.ADDINV;
                 break;
             case "ADDALL":
                 m_type = Type.ADDALL;
+                break;
+            case "ADDALLU":
+                m_type = Type.ADDALLU;
                 break;
             case "REMOVE":
                 m_type = Type.REMOVE;
