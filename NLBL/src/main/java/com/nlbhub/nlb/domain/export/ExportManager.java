@@ -1957,6 +1957,18 @@ public abstract class ExportManager {
                                 )
                         );
                         break;
+                    case ACTT:
+                        assert variable != null;
+                        final String actObjId = exportData.getObjId(expression.getValue());
+                        // Left part of assignment should be string variable
+                        stringBuilder.append(
+                                decorateActtOperation(
+                                        decorateStringVar(variable.getName()),
+                                        decorateAutoVar(expression.getValue()),
+                                        actObjId
+                                )
+                        );
+                        break;
                     case ACTF:
                         final String actfingObjId = exportData.getObjId(expression.getValue());
                         stringBuilder.append(
@@ -2096,6 +2108,8 @@ public abstract class ExportManager {
     protected abstract String decoratePDscOperation(String objVariableName);
 
     protected abstract String decorateActOperation(String actingObjVariable, String actingObjId);
+
+    protected abstract String decorateActtOperation(String resultVariableName, String actObjVariable, String actObjId);
 
     protected abstract String decorateActfOperation(String actingObjVariable, String actingObjId);
 

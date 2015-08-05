@@ -881,12 +881,16 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateObjActStart(List<TextChunk> actTextChunks) {
-        String actText = getActText(actTextChunks);
+        String actTextExpanded = expandVariables(actTextChunks);
+        String actText = getActText(StringHelper.notEmpty(actTextExpanded), actTextChunks.size());
         return (
                 "    act = function(s)" + LINE_SEPARATOR +
                         "        s.acta(s);" + LINE_SEPARATOR +
                         "        local loc = curloc();" + LINE_SEPARATOR +
                         "        loc.autos(loc);" + LINE_SEPARATOR +
+                        "    end," + LINE_SEPARATOR +
+                        "    actt = function(s)" + LINE_SEPARATOR +
+                        "        return \"" + actTextExpanded + "\";" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    acta = function(s)" + LINE_SEPARATOR +
                         actText +
@@ -897,11 +901,10 @@ public class STEADExportManager extends TextExportManager {
         );
     }
 
-    protected String getActText(List<TextChunk> actTextChunks) {
-        String actText = expandVariables(actTextChunks);
+    protected String getActText(boolean actTextEmpty, int actTextChunksSize) {
         return (
-                (StringHelper.notEmpty(actText))
-                        ? "        curloc().lasttext = \"" + actText + "\"; p(curloc().lasttext); curloc().wastext = true;" + LINE_SEPARATOR
+                (actTextEmpty)
+                        ? "        curloc().lasttext = s.actt(s); p(curloc().lasttext); curloc().wastext = true;" + LINE_SEPARATOR
                         : Constants.EMPTY_STRING
         );
     }
@@ -1323,6 +1326,11 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateActOperation(String actingObjVariable, String actingObjId) {
         String source = (actingObjId != null) ? decorateId(actingObjId) : actingObjVariable;
         return "acta(" + source + ");" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateActtOperation(String resultVariableName, String actObjVariable, String actObjId) {
+        return resultVariableName + " = " + ((actObjId != null) ? decorateId(actObjId) : actObjVariable) + ":actt();" + LINE_SEPARATOR;
     }
 
     @Override

@@ -334,10 +334,10 @@ public class VNSTEADExportManager extends STEADExportManager {
     }
 
     @Override
-    protected String getActText(List<TextChunk> actTextChunks) {
+    protected String getActText(boolean actTextEmpty, int actTextChunksSize) {
         return (
-                (actTextChunks.size() > 0)
-                        ? "        p(\"" + super.expandVariables(actTextChunks) + "\");" + getLineSeparator()
+                (actTextChunksSize > 0)
+                        ? "        p(s.actt(s));" + getLineSeparator()
                         : Constants.EMPTY_STRING
         );
     }

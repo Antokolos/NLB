@@ -140,6 +140,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case SIZE:
             case RND:
             case DSC:
+            case ACTT:
             case OBJS:
                 return true;
             default:
@@ -257,6 +258,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.PDSC;
         } else if (type.equals(Type.ACT.name())) {
             m_type = Type.ACT;
+        } else if (type.equals(Type.ACTT.name())) {
+            m_type = Type.ACTT;
         } else if (type.equals(Type.ACTF.name())) {
             m_type = Type.ACTF;
         } else if (type.equals(Type.USE.name())) {
@@ -413,6 +416,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "ACT":
                 m_type = Type.ACT;
+                break;
+            case "ACTT":
+                m_type = Type.ACTT;
                 break;
             case "ACTF":
                 m_type = Type.ACTF;

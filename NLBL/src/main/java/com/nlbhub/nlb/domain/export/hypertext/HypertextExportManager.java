@@ -391,6 +391,12 @@ public abstract class HypertextExportManager
     }
 
     @Override
+    protected String decorateActtOperation(String resultVariableName, String actObjVariable, String actObjId) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateActfOperation(String actingObjVariable, String actingObjId) {
         // TODO: implement
         return EMPTY_STRING;

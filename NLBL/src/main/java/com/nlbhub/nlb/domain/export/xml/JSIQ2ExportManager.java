@@ -565,6 +565,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
+    protected String decorateActtOperation(String resultVariableName, String actObjVariable, String actObjId) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateActfOperation(String actingObjVariable, String actingObjId) {
         // TODO: implement
         return EMPTY_STRING;

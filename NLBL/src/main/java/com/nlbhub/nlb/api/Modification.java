@@ -82,6 +82,7 @@ public interface Modification extends IdentifiableItem {
         DSC,
         PDSC,
         ACT,
+        ACTT,
         ACTF,
         USE,
         SIZE,
