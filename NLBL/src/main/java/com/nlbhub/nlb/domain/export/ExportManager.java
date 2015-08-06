@@ -72,6 +72,7 @@ public abstract class ExportManager {
     private static final Pattern FILE_NAME_PATTERN = Pattern.compile("(^.*\\D|^)(\\d*)(\\..*)$");
     private static final int NONEXISTING_PAGE = -1;
 
+    public static final String NO_CONTAINER = "function() return nil; end";
     public static final String EMPTY_STRING = Constants.EMPTY_STRING;
     public static final String UTF_8 = "UTF-8";
     public static final String UTF_16LE = "UTF-16LE";
@@ -568,14 +569,14 @@ public abstract class ExportManager {
     private String getContainerRef(Obj obj, ExportData exportData) {
         String containerId = obj.getContainerId();
         if (Obj.DEFAULT_CONTAINER_ID.equals(containerId)) {
-            return "nil";
+            return NO_CONTAINER;
         }
         int pageNumber = exportData.getPageNumber(containerId);
         if (pageNumber != NONEXISTING_PAGE) {
-            return decoratePageName(containerId, pageNumber);
+            return "function() return " + decoratePageName(containerId, pageNumber) + "; end";
         } else {
             // This is obj, just decorate its id
-            return decorateId(containerId);
+            return "function() return " + decorateId(containerId) + "; end";
         }
     }
 

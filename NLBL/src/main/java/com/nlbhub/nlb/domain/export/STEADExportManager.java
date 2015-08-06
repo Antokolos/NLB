@@ -274,13 +274,13 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("                ores = clone(object);").append(LINE_SEPARATOR);
         stringBuilder.append("            end;").append(LINE_SEPARATOR);
         stringBuilder.append("            if ores ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("                ores.container = target;").append(LINE_SEPARATOR);
+        stringBuilder.append("                ores.container = function() return target; end;").append(LINE_SEPARATOR);
         stringBuilder.append("                objs(target):add(ores);").append(LINE_SEPARATOR);
         stringBuilder.append("            end;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    clrcntnr = function(coll)").append(LINE_SEPARATOR);
-        stringBuilder.append("        -- TODO: add implementation (set container to nil for every obj from coll)").append(LINE_SEPARATOR);
+        stringBuilder.append("        -- TODO: add implementation (set container to nil func for every obj from coll)").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    revive = function()").append(LINE_SEPARATOR);
         stringBuilder.append("        for k,v in pairs(_filter) do").append(LINE_SEPARATOR);
@@ -416,8 +416,8 @@ public class STEADExportManager extends TextExportManager {
     }
 
     private String getContainerExpression(ObjBuildingBlocks objBlocks) {
-        if ("nil".equals(objBlocks.getContainerRef())) {
-            return "container = nil;";
+        if (NO_CONTAINER.equals(objBlocks.getContainerRef())) {
+            return "container = " + NO_CONTAINER + ";";
         } else {
             return "container = " + objBlocks.getContainerRef() + ";";
         }
@@ -918,9 +918,9 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateObjUseStart() {
         // Before use, execute possible act commands (without printing act text) -> s.actf(s)
         return (
-                "    use = function(s, w, ww)" + LINE_SEPARATOR +
+                "    use = function(s, w)" + LINE_SEPARATOR +
                         "        s.actf(s);" + LINE_SEPARATOR +
-                        "        s.usea(s, w, ww);" + LINE_SEPARATOR +
+                        "        s.usea(s, w, w);" + LINE_SEPARATOR +
                         "        local loc = curloc();" + LINE_SEPARATOR +
                         "        loc.autos(loc);" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
@@ -1127,11 +1127,11 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateContainerOperation(String variableName, String objId, String objVar) {
         if (objId != null) {
-            return variableName + " = " + decorateId(objId) + ".container;" + LINE_SEPARATOR;
+            return variableName + " = " + decorateId(objId) + ".container();" + LINE_SEPARATOR;
         } else if (objVar != null) {
-            return variableName + " = " + objVar + ".container;" + LINE_SEPARATOR;
+            return variableName + " = " + objVar + ".container();" + LINE_SEPARATOR;
         } else {
-            return variableName + " = s.container;" + LINE_SEPARATOR;
+            return variableName + " = s.container();" + LINE_SEPARATOR;
         }
     }
 
@@ -1161,7 +1161,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     private String getClearContainerStatement(String objVar) {
-        return objVar + ".container = nil; ";
+        return objVar + ".container = " + NO_CONTAINER + "; ";
     }
 
     @Override
