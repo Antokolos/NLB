@@ -580,6 +580,19 @@ public abstract class ExportManager {
         }
     }
 
+    private List<String> getDecoratedContainedObjIds(Obj obj) {
+        List<String> result = new ArrayList<>();
+        if (obj != null) {
+            List<String> containedObjIds = obj.getContainedObjIds();
+            if (!containedObjIds.isEmpty()) {
+                for (String containedObjId : containedObjIds) {
+                    result.add(decorateContainedObjId(containedObjId));
+                }
+            }
+        }
+        return result;
+    }
+
     private ObjBuildingBlocks createObjBuildingBlocks(
             final Obj obj,
             final ExportData exportData
@@ -629,6 +642,11 @@ public abstract class ExportManager {
             // TODO: Add cases with deleted pages/links/variables etc. to the unit test
             if (!commonTo.isDeleted()) {
                 blocks.setObjCommonTo(decorateObjCommonTo(commonTo.getValue()));
+                Obj commonToObj = exportData.getNlb().getObjById(commonTo.getValue());
+                List<String> decoratedContainedObjIds = getDecoratedContainedObjIds(commonToObj);
+                for (String containedObjId : decoratedContainedObjIds) {
+                    blocks.addContainedObjId(containedObjId);
+                }
             } else {
                 blocks.setObjCommonTo(decorateObjCommonTo(EMPTY_STRING));
             }
@@ -646,11 +664,9 @@ public abstract class ExportManager {
         blocks.setObjEnd(decorateObjEnd());
         blocks.setObjObjStart(decorateObjObjStart());
         blocks.setContainerRef(getContainerRef(obj, exportData));
-        List<String> containedObjIds = obj.getContainedObjIds();
-        if (!containedObjIds.isEmpty()) {
-            for (String containedObjId : containedObjIds) {
-                blocks.addContainedObjId(decorateContainedObjId(containedObjId));
-            }
+        List<String> decoratedContainedObjIds = getDecoratedContainedObjIds(obj);
+        for (String containedObjId : decoratedContainedObjIds) {
+            blocks.addContainedObjId(containedObjId);
         }
         blocks.setObjObjEnd(decorateObjObjEnd());
         List<Link> links = obj.getLinks();
