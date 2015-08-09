@@ -415,11 +415,11 @@ public class STEADExportManager extends TextExportManager {
         return stringBuilder.toString();
     }
 
-    private String getContainerExpression(ObjBuildingBlocks objBlocks) {
-        if (NO_CONTAINER.equals(objBlocks.getContainerRef())) {
+    private String getContainerExpression(String containerRef) {
+        if (NO_CONTAINER.equals(containerRef)) {
             return "container = " + NO_CONTAINER + ";";
         } else {
-            return "container = " + objBlocks.getContainerRef() + ";";
+            return "container = " + containerRef + ";";
         }
     }
     @Override
@@ -429,7 +429,6 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(objBlocks.getObjComment());
         }
         stringBuilder.append(objBlocks.getObjLabel()).append(objBlocks.getObjStart());
-        stringBuilder.append("    var { tag = ''; ").append(getContainerExpression(objBlocks)).append(" },").append(LINE_SEPARATOR);
         stringBuilder.append(objBlocks.getObjName());
         stringBuilder.append(objBlocks.getObjDisp());
         stringBuilder.append(objBlocks.getObjText());
@@ -736,14 +735,15 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjStart(final String id, boolean menuObj) {
+    protected String decorateObjStart(final String id, String containerRef, boolean menuObj) {
         StringBuilder result = new StringBuilder();
         if (menuObj) {
             result.append(" = menu {").append(LINE_SEPARATOR);
         } else {
             result.append(" = obj {").append(LINE_SEPARATOR);
         }
-        result.append("    nlbid = '").append(id).append("',").append(LINE_SEPARATOR);
+        result.append("    var { tag = ''; ").append(getContainerExpression(containerRef));
+        result.append(" nlbid = '").append(id).append("';").append(" },").append(LINE_SEPARATOR);
         return result.toString();
     }
 

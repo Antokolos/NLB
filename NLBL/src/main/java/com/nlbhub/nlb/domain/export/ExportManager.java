@@ -602,7 +602,7 @@ public abstract class ExportManager {
         final boolean menuObj = (obj.getLinks().size() == 0) && !exportData.hasInwardLinks(obj.getId());
         blocks.setObjLabel(decorateObjLabel(obj.getId()));
         blocks.setObjComment(decorateObjComment(obj.getName()));
-        blocks.setObjStart(decorateObjStart(obj.getId(), menuObj));
+        blocks.setObjStart(decorateObjStart(obj.getId(), getContainerRef(obj, exportData), menuObj));
         blocks.setObjName(decorateObjName(obj.getName()));
         blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
@@ -663,7 +663,6 @@ public abstract class ExportManager {
         blocks.setObjUseEnd(decorateObjUseEnd());
         blocks.setObjEnd(decorateObjEnd());
         blocks.setObjObjStart(decorateObjObjStart());
-        blocks.setContainerRef(getContainerRef(obj, exportData));
         List<String> decoratedContainedObjIds = getDecoratedContainedObjIds(obj);
         for (String containedObjId : decoratedContainedObjIds) {
             blocks.addContainedObjId(containedObjId);
@@ -1301,7 +1300,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjStart(final String id, boolean menuObj) {
+    protected String decorateObjStart(final String id, String containerRef, boolean menuObj) {
         return EMPTY_STRING;
     }
 
