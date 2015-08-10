@@ -122,7 +122,7 @@ public class LinkLw implements Link {
                 modification.setType(Modification.Type.ASSIGN.name());
                 modification.setParent(this);
                 modification.setVarId(
-                        (m_type == Type.AutowiredIn) ? parent.getId() : target
+                        (m_type == Type.AutowiredIn) ? target + "_" + parent.getId() : parent.getId() + "_" + target
                 );
 
                 modification.setExprId((m_type == Type.AutowiredIn) ? NonLinearBook.TRUE_VARID : NonLinearBook.FALSE_VARID);

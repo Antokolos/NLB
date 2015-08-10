@@ -3555,6 +3555,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             variable.setValue("false");
             return variable;
         } else {
+            String[] ids = parseIds(varId);
             for (PageImpl page : m_pages.values()) {
                 if (varId != null && varId.endsWith(page.getId())) {
                     VariableImpl variable = new VariableImpl();
@@ -3565,14 +3566,16 @@ public class NonLinearBookImpl implements NonLinearBook {
                     variable.setDataType(Variable.DataType.BOOLEAN);
                     if (isLinkConstraint) {
                         VariableImpl autowiredOutConstraint = null;
+                        PageImpl autowiredPage = null;
                         Matcher matcher = AUTOWIRED_OUT_PATTERN.matcher(varId);
                         if (matcher.find()) {
                             String autowiredPageId = matcher.group(1);
-                            PageImpl autowiredPage = getPageImplById(autowiredPageId);
+                            autowiredPage = getPageImplById(autowiredPageId);
                             autowiredOutConstraint = getVariableImplById(autowiredPage.getAutowireOutConstrId());
                         }
+                        // autowiredPage.getId() should be equal to ids[0]...
                         variable.setValue(
-                                decorateId(page.getId()) +
+                                decorateId(page.getId(), (autowiredPage != null) ? autowiredPage.getId() : ids[0]) +
                                         (
                                                 (autowiredOutConstraint != null)
                                                         ? " && " + autowiredOutConstraint.getValue()
@@ -3580,7 +3583,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                                         )
                         );
                     } else {
-                        variable.setName(decorateId(page.getId()));
+                        variable.setName(decorateId(page.getId(), ids[0]));
                     }
 
                     return variable;
@@ -3590,8 +3593,12 @@ public class NonLinearBookImpl implements NonLinearBook {
         return null;
     }
 
-    public static String decorateId(String id) {
-        return "vl_" + id.replaceAll("-", "_");
+    private static String[] parseIds(String varId) {
+        return varId.split("_");
+    }
+
+    public static String decorateId(String id, String autowiredId) {
+        return "vl_" + ((autowiredId != null) ? autowiredId.replaceAll("-", "_") + "_" : "") + id.replaceAll("-", "_");
     }
 
     @Override
@@ -4091,7 +4098,11 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
         for (Map.Entry<String, PageImpl> entry : m_pages.entrySet()) {
             // For autowired vars
-            result.put(decorateId(entry.getKey()), Variable.DataType.BOOLEAN);
+            for (Map.Entry<String, PageImpl> entryA : m_pages.entrySet()) {
+                if (entryA.getValue().isAutowire()) {
+                    result.put(decorateId(entry.getKey(), entryA.getKey()), Variable.DataType.BOOLEAN);
+                }
+            }
 
             final NonLinearBookImpl moduleImpl = entry.getValue().getModuleImpl();
             if (!moduleImpl.isEmpty()) {
