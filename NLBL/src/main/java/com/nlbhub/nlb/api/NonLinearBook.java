@@ -331,7 +331,13 @@ public interface NonLinearBook {
 
     public Map<String, Page> getPages();
 
+    public Map<String, Page> getDownwardPagesHeirarchy();
+
+    public Map<String, Page> getUpwardPagesHeirarchy();
+
     public List<String> getAutowiredPagesIds();
+
+    public List<String> getParentGlobalAutowiredPagesIds();
 
     public boolean isAutowired(final String pageId);
 

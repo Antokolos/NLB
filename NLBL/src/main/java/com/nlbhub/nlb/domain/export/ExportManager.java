@@ -221,28 +221,6 @@ public abstract class ExportManager {
             return m_objList;
         }
 
-        private int getPageNumber(final String pageId) {
-            if (m_idToPageNumberMap.containsKey(pageId)) {
-                return m_idToPageNumberMap.get(pageId);
-            } else {
-                if (m_parentED != null) {
-                    return m_parentED.getPageNumber(pageId);
-                } else {
-                    return NONEXISTING_PAGE;
-                }
-            }
-        }
-
-        private int checkedGetPageNumber(final String pageId) throws NLBConsistencyException {
-            int pageNumber = getPageNumber(pageId);
-            if (pageNumber != NONEXISTING_PAGE) {
-                return pageNumber;
-            }
-            throw new NLBConsistencyException(
-                    "Page number cannot be determined for pageId = " + pageId
-            );
-        }
-
         private Boolean hasInwardLinks(final String objId) {
             if (m_inwardLinksMap.containsKey(objId)) {
                 return m_inwardLinksMap.get(objId);
@@ -329,6 +307,25 @@ public abstract class ExportManager {
     pages 1, 2 and 6 belongs to the main NLB module.
      */
 
+    private int getPageNumber(final String pageId) {
+        for (ExportData exportData : m_exportDataMap.values()) {
+            if (exportData.m_idToPageNumberMap.containsKey(pageId)) {
+                return exportData.m_idToPageNumberMap.get(pageId);
+            }
+        }
+        return NONEXISTING_PAGE;
+    }
+
+    private int checkedGetPageNumber(final String pageId) throws NLBConsistencyException {
+        int pageNumber = getPageNumber(pageId);
+        if (pageNumber != NONEXISTING_PAGE) {
+            return pageNumber;
+        }
+        throw new NLBConsistencyException(
+                "Page number cannot be determined for pageId = " + pageId
+        );
+    }
+
     protected NLBBuildingBlocks createNLBBuildingBlocks() throws NLBConsistencyException, NLBExportException {
         return createNLBBuildingBlocks(m_exportDataMap.get(MAIN_DATA_KEY));
     }
@@ -375,7 +372,7 @@ public abstract class ExportManager {
     ) throws NLBConsistencyException, NLBExportException {
         NonLinearBook nlb = exportData.getNlb();
         PageBuildingBlocks blocks = new PageBuildingBlocks();
-        final Integer pageNumber = exportData.checkedGetPageNumber(page.getId());
+        final Integer pageNumber = checkedGetPageNumber(page.getId());
         blocks.setAutowired(page.isAutowire());
         final String pageName = decoratePageName(page.getId(), pageNumber);
         blocks.setPageName(pageName);
@@ -511,7 +508,7 @@ public abstract class ExportManager {
         }
         if (page.isAutowire()) {
             // Add return autowired links on the fly
-            for (Page nlbPage : nlb.getPages().values()) {
+            for (Page nlbPage : getPagesForAutowiredOutwardLinks(page, nlb)) {
                 if (!nlbPage.isAutowire()) {
                     Link link = (
                             new LinkLw(
@@ -537,7 +534,7 @@ public abstract class ExportManager {
         // Please note, that we are adding autowired inward links even from autowired pages itself
         // if book has full autowire property set to true
         if (nlb.isFullAutowire() || !page.isAutowire()) {
-            for (String autowiredPageId : nlb.getAutowiredPagesIds()) {
+            for (String autowiredPageId : getAllAutowiredPageIds(nlb)) {
                 // Do not creating links to self
                 if (!autowiredPageId.equals(page.getId())) {
                     // Add links for autowired pages on the fly
@@ -566,12 +563,29 @@ public abstract class ExportManager {
         return blocks;
     }
 
+    private List<String> getAllAutowiredPageIds(NonLinearBook nlb) {
+        List<String> result = new ArrayList<>();
+        result.addAll(nlb.getAutowiredPagesIds());
+        result.addAll(nlb.getParentGlobalAutowiredPagesIds());
+        return result;
+    }
+
+    private List<Page> getPagesForAutowiredOutwardLinks(Page autowiredSourcePage, NonLinearBook nlb) {
+        List<Page> result = new ArrayList<>();
+        if (autowiredSourcePage.isGlobalAutowire()) {
+            result.addAll(nlb.getDownwardPagesHeirarchy().values());
+        } else {
+            result.addAll(nlb.getPages().values());
+        }
+        return result;
+    }
+
     private String getContainerRef(Obj obj, ExportData exportData) {
         String containerId = obj.getContainerId();
         if (Obj.DEFAULT_CONTAINER_ID.equals(containerId)) {
             return NO_CONTAINER;
         }
-        int pageNumber = exportData.getPageNumber(containerId);
+        int pageNumber = getPageNumber(containerId);
         if (pageNumber != NONEXISTING_PAGE) {
             return "function() return " + decoratePageName(containerId, pageNumber) + "; end";
         } else {
@@ -950,6 +964,11 @@ public abstract class ExportManager {
             @Override
             public boolean isAutowire() {
                 return page.isAutowire();
+            }
+
+            @Override
+            public boolean isGlobalAutowire() {
+                return page.isGlobalAutowire();
             }
 
             @Override
@@ -1402,7 +1421,7 @@ public abstract class ExportManager {
                 decorateLinkStart(
                         link.getId(),
                         link.getText(),
-                        exportData.checkedGetPageNumber(link.getTarget())
+                        checkedGetPageNumber(link.getTarget())
                 )
         );
         Variable variable = exportData.getNlb().getVariableById(link.getVarId());
@@ -1435,7 +1454,7 @@ public abstract class ExportManager {
                         buildModificationsText("    ", link.getModifications(), exportData)
                 )
         );
-        int targetPageNumber = exportData.checkedGetPageNumber(link.getTarget());
+        int targetPageNumber = checkedGetPageNumber(link.getTarget());
         blocks.setTargetPageNumber(targetPageNumber);
         blocks.setLinkGoTo(
                 decorateLinkGoTo(
@@ -1602,7 +1621,7 @@ public abstract class ExportManager {
                 if (modification.returnsValue() && (variable == null || variable.isDeleted())) {
                     throw new NLBConsistencyException(
                             "Variable with id = " + modification.getVarId()
-                                    + "cannot be found for modification"
+                                    + " cannot be found for modification "
                                     + modification.getFullId()
                     );
                 }

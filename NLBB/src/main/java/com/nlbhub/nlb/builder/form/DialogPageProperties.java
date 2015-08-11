@@ -126,6 +126,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JCheckBox m_soundSFXCheckBox;
     private JButton m_buttonZoomIn;
     private JButton m_buttonZoomOut;
+    private JCheckBox m_globalAutowireCheckBox;
 
     public DialogPageProperties(final MainFrame mainFrame, final NonLinearBookFacade nlbFacade, final Page page) {
         m_nlbFacade = nlbFacade;
@@ -384,6 +385,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_pageCaptionTextField.setText(m_page.getCaption());
         m_useCheckBox.setSelected(m_page.isUseCaption());
         m_useMPLCheckBox.setSelected(m_page.isUseMPL());
+        m_globalAutowireCheckBox.setSelected(m_page.isGlobalAutowire());
         m_pageText.setText(page.getText());
 
         m_moduleNameTextField.setText(page.getModuleName());
@@ -468,6 +470,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 m_autoOutCheckBox.isSelected(),
                 m_autowireInConstraintTextField.getText(),
                 m_autowireOutConstraintTextField.getText(),
+                m_globalAutowireCheckBox.isSelected(),
                 ((LinksTableModelSwing) m_linksTable.getModel()).getTableModel()
         );
         m_nlbFacade.removeObserver(m_observerId);
@@ -1195,6 +1198,9 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_autowireCheckBox = new JCheckBox();
         m_autowireCheckBox.setText("Autowire");
         panel47.add(m_autowireCheckBox);
+        m_globalAutowireCheckBox = new JCheckBox();
+        m_globalAutowireCheckBox.setText("Global Autowire");
+        panel47.add(m_globalAutowireCheckBox);
         final JPanel panel48 = new JPanel();
         panel48.setLayout(new GridBagLayout());
         panel48.setMinimumSize(new Dimension(56, 33));

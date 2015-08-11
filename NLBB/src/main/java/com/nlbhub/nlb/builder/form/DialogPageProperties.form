@@ -989,6 +989,12 @@
                                               <text value="Autowire"/>
                                             </properties>
                                           </component>
+                                          <component id="1ce4a" class="javax.swing.JCheckBox" binding="m_globalAutowireCheckBox">
+                                            <constraints/>
+                                            <properties>
+                                              <text value="Global Autowire"/>
+                                            </properties>
+                                          </component>
                                         </children>
                                       </grid>
                                     </children>

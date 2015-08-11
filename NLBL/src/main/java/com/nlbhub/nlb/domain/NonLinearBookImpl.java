@@ -405,6 +405,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_existingAutowire;
         private final MultiLangString m_existingAutowireInText;
         private final MultiLangString m_existingAutowireOutText;
+        private final boolean m_existingGlobalAutowired;
         private final boolean m_existingAutoIn;
         private final boolean m_existingAutoOut;
         private final String m_newImageFileName;
@@ -426,6 +427,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final MultiLangString m_newAutowireOutText;
         private final boolean m_newAutoIn;
         private final boolean m_newAutoOut;
+        private final boolean m_newGlobalAutowired;
         private AbstractNodeItem.SortLinksCommand m_sortLinkCommand;
         private List<AbstractNodeItem.DeleteLinkCommand> m_deleteLinkCommands = new ArrayList<>();
 
@@ -456,6 +458,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final boolean autoOut,
                 final String autowireInConstraintVariableBody,
                 final String autowireOutConstraintVariableBody,
+                final boolean globalAutowire,
                 final LinksTableModel linksTableModel
         ) {
             this(
@@ -485,6 +488,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     autoOut,
                     autowireInConstraintVariableBody,
                     autowireOutConstraintVariableBody,
+                    globalAutowire,
                     linksTableModel
             );
         }
@@ -516,6 +520,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final boolean autoOut,
                 final String autowireInConstraintVariableBody,
                 final String autowireOutConstraintVariableBody,
+                final boolean globalAutowire,
                 final LinksTableModel linksTableModel
         ) {
             m_page = page;
@@ -586,6 +591,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingAutowire = m_page.isAutowire();
             m_existingAutowireInText = m_page.getAutowireInTexts();
             m_existingAutowireOutText = m_page.getAutowireOutTexts();
+            m_existingGlobalAutowired = m_page.isGlobalAutowire();
             m_existingAutoIn = m_page.isAutoIn();
             m_existingAutoOut = m_page.isAutoOut();
             m_newImageFileName = imageFileName;
@@ -605,6 +611,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newAutowire = autowire;
             m_newAutowireInText = autowireInText;
             m_newAutowireOutText = autowireOutText;
+            m_newGlobalAutowired = globalAutowire;
             m_newAutoIn = autoIn;
             m_newAutoOut = autoOut;
             for (final Link link : m_page.getLinks()) {
@@ -657,6 +664,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setAutowireOutTexts(m_newAutowireOutText);
             m_page.setAutoIn(m_newAutoIn);
             m_page.setAutoOut(m_newAutoOut);
+            m_page.setGlobalAutoWired(m_newGlobalAutowired);
             m_page.notifyObservers();
         }
 
@@ -695,6 +703,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setAutowireOutTexts(m_existingAutowireOutText);
             m_page.setAutoIn(m_existingAutoIn);
             m_page.setAutoOut(m_existingAutoOut);
+            m_page.setGlobalAutoWired(m_existingGlobalAutowired);
             m_page.notifyObservers();
         }
     }
@@ -1629,6 +1638,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         page.isAutoOut(),
                         (autoInConstraint != null) ? autoInConstraint.getValue() : Constants.EMPTY_STRING,
                         (autoOutConstraint != null) ? autoOutConstraint.getValue() : Constants.EMPTY_STRING,
+                        page.isGlobalAutowire(),
                         new LinksTableModel(new ArrayList<Link>())
                 );
                 m_commandChain.addCommand(updatePageCommand);
@@ -2039,6 +2049,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final boolean autoOut,
             final String autowireInConstraint,
             final String autowireOutConstraint,
+            final boolean globalAutowire,
             final LinksTableModel linksTableModel
     ) {
         return (
@@ -2069,6 +2080,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         autoOut,
                         autowireInConstraint,
                         autowireOutConstraint,
+                        globalAutowire,
                         linksTableModel
                 )
         );
@@ -2472,8 +2484,46 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     @Override
+    public Map<String, Page> getDownwardPagesHeirarchy() {
+        Map<String, Page> result = new HashMap<>();
+        result.putAll(m_pages);
+        for (Page page : m_pages.values()) {
+            NonLinearBook module = page.getModule();
+            if (!module.isEmpty()) {
+                result.putAll(module.getDownwardPagesHeirarchy());
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public Map<String, Page> getUpwardPagesHeirarchy() {
+        Map<String, Page> result = new HashMap<>();
+        result.putAll(m_pages);
+        if (m_parentNLB != null) {
+            result.putAll(m_parentNLB.getUpwardPagesHeirarchy());
+        }
+        return result;
+    }
+
+    @Override
     public List<String> getAutowiredPagesIds() {
         return m_autowiredPages;
+    }
+
+    @Override
+    public List<String> getParentGlobalAutowiredPagesIds() {
+        List<String> result = new ArrayList<>();
+        if (m_parentNLB != null) {
+            for (String id : m_parentNLB.getAutowiredPagesIds()) {
+                Page page = m_parentNLB.getPageById(id);
+                if (page != null && page.isGlobalAutowire()) {
+                    result.add(id);
+                }
+            }
+            result.addAll(m_parentNLB.getParentGlobalAutowiredPagesIds());
+        }
+        return result;
     }
 
     public void addPage(@NotNull PageImpl page) {
@@ -3556,7 +3606,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             return variable;
         } else {
             String[] ids = parseIds(varId);
-            for (PageImpl page : m_pages.values()) {
+            for (Page page : getDownwardPagesHeirarchy().values()) {
                 if (varId != null && varId.endsWith(page.getId())) {
                     VariableImpl variable = new VariableImpl();
                     boolean isLinkConstraint = varId.startsWith(LC_VARID_PREFIX);
@@ -4098,7 +4148,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
         for (Map.Entry<String, PageImpl> entry : m_pages.entrySet()) {
             // For autowired vars
-            for (Map.Entry<String, PageImpl> entryA : m_pages.entrySet()) {
+            for (Map.Entry<String, Page> entryA : getUpwardPagesHeirarchy().entrySet()) {
                 if (entryA.getValue().isAutowire()) {
                     result.put(decorateId(entry.getKey(), entryA.getKey()), Variable.DataType.BOOLEAN);
                 }

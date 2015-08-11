@@ -150,7 +150,22 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
+    public Map<String, Page> getDownwardPagesHeirarchy() {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public Map<String, Page> getUpwardPagesHeirarchy() {
+        return Collections.emptyMap();
+    }
+
+    @Override
     public List<String> getAutowiredPagesIds() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<String> getParentGlobalAutowiredPagesIds() {
         return Collections.emptyList();
     }
 

@@ -186,6 +186,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public boolean isGlobalAutowire() {
+        return false;
+    }
+
+    @Override
     public String getAutowireInText() {
         return Constants.EMPTY_STRING;
     }
