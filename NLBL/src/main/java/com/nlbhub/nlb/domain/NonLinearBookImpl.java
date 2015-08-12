@@ -3644,7 +3644,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     private static String[] parseIds(String varId) {
-        return varId.split("_");
+        return (varId != null) ? varId.split("_") : null;
     }
 
     public static String decorateId(String id, String autowiredId) {
