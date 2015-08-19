@@ -1167,8 +1167,8 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateDelInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
         return (
-                "            if have(\"" + objectName + "\") then remove(\""
-                        + objectName + "\", " + "inv()); end;" + LINE_SEPARATOR
+                "            if have(stead.deref(" + objectVar + ")) then remove(stead.deref("
+                        + objectVar + "), " + "inv()); end;" + LINE_SEPARATOR
         );
     }
 
