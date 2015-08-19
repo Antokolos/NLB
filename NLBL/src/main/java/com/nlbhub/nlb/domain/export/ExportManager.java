@@ -1451,7 +1451,7 @@ public abstract class ExportManager {
         }
         blocks.setLinkModifications(
                 decorateLinkModifications(
-                        buildModificationsText("    ", link.getModifications(), exportData)
+                        buildModificationsText(getIndentString(), link.getModifications(), exportData)
                 )
         );
         int targetPageNumber = checkedGetPageNumber(link.getTarget());
@@ -1468,6 +1468,10 @@ public abstract class ExportManager {
                 decorateLinkEnd()
         );
         return blocks;
+    }
+
+    protected String getIndentString() {
+        return "    ";
     }
 
     private UseBuildingBlocks createUseBuildingBlocks(

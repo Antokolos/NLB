@@ -133,6 +133,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     private JButton m_pushButton;
     private JButton m_pullButton;
     private JButton m_exportVNSTEAD;
+    private JButton m_exportToChoiceScript;
     private final Launcher m_launcher;
     private final JFileChooser m_dirChooser;
     private final JFileChooser m_fileChooser;
@@ -420,6 +421,13 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         toolBar5.setFloatable(true);
         toolBar5.setOrientation(0);
         m_toolbarPanel.add(toolBar5);
+        m_exportToChoiceScript = new JButton();
+        m_exportToChoiceScript.setBorderPainted(false);
+        m_exportToChoiceScript.setFocusPainted(false);
+        m_exportToChoiceScript.setIcon(new ImageIcon(getClass().getResource("/extras/export/exportCS.png")));
+        m_exportToChoiceScript.setRolloverEnabled(true);
+        m_exportToChoiceScript.setText("");
+        toolBar5.add(m_exportToChoiceScript);
         m_exportToQSPText = new JButton();
         m_exportToQSPText.setBorderPainted(false);
         m_exportToQSPText.setFocusPainted(false);
@@ -1037,6 +1045,22 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                         )
                 );
                 dialog.showDialog();
+            }
+        });
+        m_exportToChoiceScript.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    File exportDir = chooseExportDir();
+                    if (exportDir != null) {
+                        getMainPaneInfo().getPaneNlbFacade().exportToChoiceScript(exportDir);
+                    }
+                } catch (NLBExportException ex) {
+                    JOptionPane.showMessageDialog(
+                            m_mainFramePanel,
+                            "Error while exporting to Choice Script file: " + ex.toString()
+                    );
+                }
             }
         });
         m_exportToQSPText.addActionListener(new ActionListener() {

@@ -434,6 +434,16 @@
             </properties>
             <border type="none"/>
             <children>
+              <component id="f5ce5" class="javax.swing.JButton" binding="m_exportToChoiceScript">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="extras/export/exportCS.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
               <component id="44ef8" class="javax.swing.JButton" binding="m_exportToQSPText">
                 <constraints/>
                 <properties>

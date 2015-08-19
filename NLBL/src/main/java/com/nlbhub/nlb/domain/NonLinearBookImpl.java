@@ -4356,6 +4356,11 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
+    public void exportToChoiceScript(final File targetFile) throws NLBExportException {
+        ExportManager manager = new ChoiceScriptExportManager(this, ExportManager.UTF_8);
+        manager.exportToFile(targetFile);
+    }
+
     public void exportToQSPTextFile(final File targetFile) throws NLBExportException {
         ExportManager manager = new QSPExportManager(this, ExportManager.UTF_16LE);
         manager.exportToFile(targetFile);

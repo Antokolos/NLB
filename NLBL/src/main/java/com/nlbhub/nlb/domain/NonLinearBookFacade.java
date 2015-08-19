@@ -172,6 +172,10 @@ public class NonLinearBookFacade implements NLBObservable {
         notifyObservers();
     }
 
+    public void exportToChoiceScript(File exportDir) throws NLBExportException {
+        m_nlb.exportToChoiceScript(new File(exportDir, "startup.txt"));
+    }
+
     public void exportToQSPTextFile(File exportDir) throws NLBExportException {
         m_nlb.exportToQSPTextFile(new File(exportDir, "book.txt"));
         File imagesExportDir = new File(exportDir, NonLinearBook.IMAGES_DIR_NAME);
