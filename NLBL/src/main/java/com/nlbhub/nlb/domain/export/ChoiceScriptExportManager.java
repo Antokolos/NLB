@@ -45,6 +45,7 @@ import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The ChoiceScriptExportManager class
@@ -63,6 +64,15 @@ public class ChoiceScriptExportManager extends TextExportManager {
     @Override
     protected String generatePreambleText() {
         return "*comment Generated with Non-Linear Book Builder, http://nlbhub.com" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String generateVariableInitializationText(Map<String, String> initValuesMap) {
+        StringBuilder result = new StringBuilder();
+        for (Map.Entry<String, String> entry : initValuesMap.entrySet()) {
+            result.append("*create ").append(entry.getKey()).append(" ").append(entry.getValue()).append(LINE_SEPARATOR);
+        }
+        return result.toString();
     }
 
     @Override
@@ -119,7 +129,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
 
     @Override
     protected String decorateLinkStart(String linkId, String linkText, int pageNumber) {
-        return "    #" + linkText + LINE_SEPARATOR + "        *goto " + linkId + LINE_SEPARATOR;
+        return "    #" + linkText + LINE_SEPARATOR + "            *goto " + linkId + LINE_SEPARATOR;
     }
 
     @Override
@@ -177,7 +187,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
      */
     @Override
     protected String decorateNot() {
-        return "false = ";
+        return "not";
     }
 
     /**
@@ -194,6 +204,11 @@ public class ChoiceScriptExportManager extends TextExportManager {
     @Override
     protected String decorateAnd() {
         return "and";
+    }
+
+    @Override
+    protected String additionalDecorationForVariableInExpression(String variable) {
+        return "(" + variable + ")";
     }
 
     @Override
@@ -223,10 +238,15 @@ public class ChoiceScriptExportManager extends TextExportManager {
 
     /**
      * @return
+     * @param isFinish
      */
     @Override
-    protected String decoratePageEnd() {
-        return "*choice" + LINE_SEPARATOR;
+    protected String decoratePageEnd(boolean isFinish) {
+        if (isFinish) {
+            return "*finish" + LINE_SEPARATOR;
+        } else {
+            return "*choice" + LINE_SEPARATOR;
+        }
     }
 
     @Override
@@ -245,7 +265,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
      */
     @Override
     protected String decorateLinkVariable(String variableName) {
-        return variableName + " = true" + LINE_SEPARATOR;
+        return "*set " + variableName + " true" + LINE_SEPARATOR;
     }
 
     /**
@@ -254,7 +274,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
      */
     @Override
     protected String decoratePageVariable(final String variableName) {
-        return variableName + " = true" + LINE_SEPARATOR;
+        return "*set " + variableName + " true" + LINE_SEPARATOR;
     }
 
     @Override
@@ -358,7 +378,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
      */
     @Override
     protected String decorateAssignment(String variableName, String variableValue) {
-        return variableName + " = " + variableValue + LINE_SEPARATOR;
+        return "*set " + variableName + " " + variableValue + LINE_SEPARATOR;
     }
 
     @Override

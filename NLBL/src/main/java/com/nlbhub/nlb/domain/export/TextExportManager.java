@@ -44,6 +44,7 @@ import com.nlbhub.nlb.exception.NLBExportException;
 
 import java.io.*;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The TextExportManager class
@@ -84,6 +85,7 @@ public abstract class TextExportManager extends ExportManager {
         final List<ObjBuildingBlocks> objsBlocks = nlbBlocks.getObjsBuildingBlocks();
         final List<PageBuildingBlocks> pagesBlocks = nlbBlocks.getPagesBuildingBlocks();
         stringBuilder.append(generatePreambleText());
+        stringBuilder.append(generateVariableInitializationText(getInitValuesMap()));
         for (int i = 0; i < objsBlocks.size(); i++) {
             stringBuilder.append(generateObjText(objsBlocks.get(i)));
         }
@@ -97,6 +99,10 @@ public abstract class TextExportManager extends ExportManager {
     }
 
     protected abstract String generatePreambleText();
+
+    protected String generateVariableInitializationText(Map<String, String> initValuesMap) {
+        return EMPTY_STRING;
+    }
 
     protected abstract String generateObjText(final ObjBuildingBlocks objBlocks);
 

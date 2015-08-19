@@ -170,7 +170,7 @@ public class URQExportManager extends TextExportManager {
      */
     @Override
     protected String decorateNot() {
-        return "not";
+        return "not ";
     }
 
     /**
@@ -216,9 +216,10 @@ public class URQExportManager extends TextExportManager {
 
     /**
      * @return
+     * @param isFinish
      */
     @Override
-    protected String decoratePageEnd() {
+    protected String decoratePageEnd(boolean isFinish) {
         return "end" + LINE_SEPARATOR + LINE_SEPARATOR;
     }
 

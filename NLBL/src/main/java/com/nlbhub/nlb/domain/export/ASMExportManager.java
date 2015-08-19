@@ -100,7 +100,7 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateNot() {
-        return "not";
+        return "not ";
     }
 
     @Override
@@ -160,7 +160,7 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageEnd() {
+    protected String decoratePageEnd(boolean isFinish) {
         return LINE_SEPARATOR;
     }
 

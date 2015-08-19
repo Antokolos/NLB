@@ -679,7 +679,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decoratePageEnd() {
+    protected String decoratePageEnd(boolean isFinish) {
         return Constants.EMPTY_STRING;
     }
 

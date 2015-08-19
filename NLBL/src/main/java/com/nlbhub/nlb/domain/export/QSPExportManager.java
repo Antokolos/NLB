@@ -159,7 +159,7 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateNot() {
-        return "NO";
+        return "NO ";
     }
 
     @Override
@@ -224,7 +224,7 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageEnd() {
+    protected String decoratePageEnd(boolean isFinish) {
         return "-" + LINE_SEPARATOR;
     }
 

@@ -103,6 +103,8 @@ public interface Page extends NodeItem {
 
     public boolean isLeaf();
 
+    public boolean isFinish();
+
     public String getTraverseText();
 
     public MultiLangString getTraverseTexts();

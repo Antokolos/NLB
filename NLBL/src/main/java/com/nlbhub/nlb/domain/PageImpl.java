@@ -334,6 +334,14 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     @Override
+    public boolean isFinish() {
+        return isLeaf()
+                && getModule().isEmpty()
+                && !isAutowire()
+                && StringHelper.isEmpty(m_returnText);
+    }
+
+    @Override
     public String getTraverseText() {
         return m_traverseText.get(getCurrentNLB().getLanguage());
     }

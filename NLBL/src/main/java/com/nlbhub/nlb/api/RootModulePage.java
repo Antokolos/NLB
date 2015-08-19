@@ -126,6 +126,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public boolean isFinish() {
+        return false;
+    }
+
+    @Override
     public String getTraverseText() {
         return Constants.EMPTY_STRING;
     }

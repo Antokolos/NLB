@@ -418,7 +418,7 @@ public abstract class ExportManager {
                         buildModificationsText(EMPTY_STRING, page.getModifications(), exportData)
                 )
         );
-        blocks.setPageEnd(decoratePageEnd());
+        blocks.setPageEnd(decoratePageEnd(page.isFinish()));
         List<String> containedObjIds = page.getContainedObjIds();
         boolean hasAnim = false;
         if (!containedObjIds.isEmpty()) {
@@ -561,6 +561,29 @@ public abstract class ExportManager {
         }
         blocks.setHasTrivialLink(determineTrivialStatus(blocks));
         return blocks;
+    }
+
+    protected Map<String, String> getInitValuesMap() {
+        Map<String, String> result = new HashMap<>();
+        for (Map.Entry<String, Variable.DataType> entry : m_dataTypeMap.entrySet()) {
+            String defaultValue = getDefaultValue(entry.getValue());
+            result.put(entry.getKey(), defaultValue);
+        }
+        return result;
+    }
+
+    private String getDefaultValue(Variable.DataType datatype) {
+        switch (datatype) {
+            case BOOLEAN:
+                return "false";
+            case AUTO:
+            case NUMBER:
+                return "0";
+            case STRING:
+                return "\"\"";
+            default:
+                return "";
+        }
     }
 
     private List<String> getAllAutowiredPageIds(NonLinearBook nlb) {
@@ -900,6 +923,11 @@ public abstract class ExportManager {
             @Override
             public boolean isLeaf() {
                 return page.isLeaf();
+            }
+
+            @Override
+            public boolean isFinish() {
+                return page.isFinish();
             }
 
             @Override
@@ -1561,7 +1589,6 @@ public abstract class ExportManager {
         expression = expression.replaceAll(LTE_PLACEHOLDER, decorateLte());
         expression = expression.replaceAll(AND_PLACEHOLDER, decorateAnd());
         expression = expression.replaceAll(OR_PLACEHOLDER, decorateOr());
-        expression = expression.replaceAll(NOT_PLACEHOLDER, decorateNot());
         for (final String expressionVar : expressionVars) {
             String decoratedVariable = decorateVariable(expressionVar);
             Variable.DataType dataType = m_dataTypeMap.get(expressionVar);
@@ -1578,6 +1605,7 @@ public abstract class ExportManager {
                     )
             );
         }
+        expression = expression.replaceAll(NOT_PLACEHOLDER + " ", decorateNot());  // decorateNot() should append whitespace in the end, if needed!
         expression = expression.replaceAll("\\b\\s*true\\s*\\b", " " + Matcher.quoteReplacement(decorateTrue()) + " ");
         expression = expression.replaceAll("\\b\\s*false\\s*\\b", " " + Matcher.quoteReplacement(decorateFalse()) + " ");
         return new ExpressionData(existenceBuilder.toString(), expression);
@@ -1593,15 +1621,26 @@ public abstract class ExportManager {
         }
         switch (dataType) {
             case BOOLEAN:
-                return decorateBooleanVar(constraintVar);
+                return additionalDecorationForVariableInExpression(decorateBooleanVar(constraintVar));
             case NUMBER:
                 return decorateNumberVar(constraintVar);
             case STRING:
                 return decorateStringVar(constraintVar);
             case AUTO:
             default:
-                return decorateAutoVar(constraintVar);
+                return additionalDecorationForVariableInExpression(decorateAutoVar(constraintVar));
         }
+    }
+
+    /**
+     * Possible additional decoration, should be applied to all BOOLEAN or AUTO variables.
+     * It was introduced in order to provide mandatory ()'s in ChoiceScript's not().
+     * By default, no additional modifications are done.
+     * @param variable
+     * @return
+     */
+    protected String additionalDecorationForVariableInExpression(String variable) {
+        return variable;
     }
 
     private String decorateAutoVar(String constraintVar) {
@@ -2175,6 +2214,10 @@ public abstract class ExportManager {
 
     protected abstract String decorateLte();
 
+    /**
+     * This method should append whitespace in the end, if needed!
+     * @return
+     */
     protected abstract String decorateNot();
 
     protected abstract String decorateOr();
@@ -2206,7 +2249,7 @@ public abstract class ExportManager {
         return Constants.EMPTY_STRING;
     }
 
-    protected abstract String decoratePageEnd();
+    protected abstract String decoratePageEnd(boolean isFinish);
 
     protected abstract String decorateLinkVariable(String variableName);
 

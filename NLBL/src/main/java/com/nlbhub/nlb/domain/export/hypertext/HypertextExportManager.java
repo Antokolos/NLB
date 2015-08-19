@@ -504,7 +504,7 @@ public abstract class HypertextExportManager
     }
 
     @Override
-    protected String decoratePageEnd() {
+    protected String decoratePageEnd(boolean isFinish) {
         // TODO: Not used here???
         return "page end";
     }
