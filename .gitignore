@@ -31,3 +31,4 @@ com_crashlytics_export_strings.xml
 # and now, project-specific items
 dist/
 **/*.so
+**/*.o

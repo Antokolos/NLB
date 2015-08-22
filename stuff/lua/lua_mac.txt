@@ -1,0 +1,6 @@
+You need to recompile Lua in order to enable dynamic library support.
+I've used the following project:
+http://www.malcolmhardie.com/opensource/LuaFramework/
+Just open it in Xcode, then in Build Settings search Other C Flags, add the following:
+-DLUA_USE_DLOPEN -DLUA_USE_MACOSX
+Output can be found in ~/Library/Developer/Xcode/DerivedData

@@ -1,0 +1,62 @@
+http://stackoverflow.com/questions/194485/how-do-i-create-a-dynamic-library-dylib-with-xcode
+
+Dynamic linking on Mac OS X, a tiny example
+
+Steps:
+1) create a library libmylib.dylib containing mymod.o
+2) compile and link a "callmymod" which calls it
+3) call mymod from callmymod, using DYLD_LIBRARY_PATH and DYLD_PRINT_LIBRARIES
+
+Problem: you "just" want to create a library for other modules to use. However there's a daunting pile of programs -- gcc, ld, macosx libtool, dyld -- with zillions of options, some well-rotted compost, and differences between MacOSX and Linux. There are tons of man pages (I count 7679 + 1358 + 228 + 226 lines in 10.4.11 ppc) but not much in the way of examples, or programs with a "tell me what you're doing" mode.
+
+(The most important thing in understanding is to make a simplified OVERVIEW for yourself: draw some pictures, run some small examples, explain it to someone else).
+
+Background: apple OverviewOfDynamicLibraries, Wikipedia Dynamic_library
+
+Step 1, create libmylib.dylib --
+
+mymod.c:
+    #include <stdio.h>
+    void mymod( int x )
+    {
+        printf( "mymod: %d\n", x );
+    }
+gcc -c mymod.c  # -> mymod.o
+gcc -dynamiclib -current_version 1.0  mymod.o  -o libmylib.dylib
+    # calls libtool with many options -- see man libtool
+    # -compatibility_version is used by dyld, see also cmpdylib
+
+file libmylib.dylib  # Mach-O dynamically linked shared library ppc
+otool -L libmylib.dylib  # versions, refs /usr/lib/libgcc_s.1.dylib
+Step 2, compile and link callmymod --
+
+callmymod.c:
+    extern void mymod( int x );
+    int main( int argc, char** argv )
+    {
+        mymod( 42 );
+    }
+gcc -c callmymod.c
+gcc -v callmymod.o ./libmylib.dylib -o callmymod
+    # == gcc callmymod.o -dynamic -L. -lmylib
+otool -L callmymod  # refs libmylib.dylib
+nm -gpv callmymod  # U undef _mymod: just a reference, not mymod itself
+Step 3, run callmymod linking to libmylib.dylib --
+
+export DYLD_PRINT_LIBRARIES=1  # see what dyld does, for ALL programs
+callmymod
+    dyld: loaded: libmylib.dylib ...
+    mymod: 42
+
+mv libmylib.dylib /tmp
+export DYLD_LIBRARY_PATH=/tmp  # dir:dir:...
+callmymod
+    dyld: loaded: /tmp/libmylib.dylib ...
+    mymod: 42
+
+unset DYLD_PRINT_LIBRARIES
+unset DYLD_LIBRARY_PATH
+That ends one tiny example; hope it helps understand the steps.
+(If you do this a lot, see GNU Libtool which is glibtool on macs, and SCons.)
+cheers
+-- denis
