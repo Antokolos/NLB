@@ -188,7 +188,7 @@ public class VNSTEADExportManager extends STEADExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, int pageNumber) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, int pageNumber) {
         String lineSep = getLineSeparator();
         StringBuilder result = new StringBuilder();
         result.append(decorateId(linkId)).append(" = menu {").append(lineSep);

@@ -44,6 +44,7 @@ import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -91,16 +92,31 @@ public class ChoiceScriptExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageTextEnd());
         stringBuilder.append(pageBlocks.getPageModifications());
         stringBuilder.append(pageBlocks.getPageVariable());
+        List<LinkBuildingBlocks> allLinksBlocks = pageBlocks.getLinksBuildingBlocks();
+        List<LinkBuildingBlocks> linksBlocks = new ArrayList<>();
+        for (final LinkBuildingBlocks linkBlocks : allLinksBlocks) {
+            if (linkBlocks.isAuto()) {
+                stringBuilder.append(getLinkRedirectText(linkBlocks, true));
+            } else {
+                linksBlocks.add(linkBlocks);
+            }
+        }
         stringBuilder.append(pageBlocks.getPageEnd());
 
-        List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
-            if (!StringHelper.isEmpty(linkBlocks.getLinkConstraint())) {
-                stringBuilder.append("    *if ").append(linkBlocks.getLinkConstraint()).append(LINE_SEPARATOR);
-                stringBuilder.append("    ");
-            }
-            stringBuilder.append(linkBlocks.getLinkStart());
+            stringBuilder.append(getLinkRedirectText(linkBlocks, false));
         }
+        return stringBuilder.toString();
+    }
+
+    protected String getLinkRedirectText(final LinkBuildingBlocks linkBlocks, final boolean isAuto) {
+        final String padding = "    ";
+        StringBuilder stringBuilder = new StringBuilder();
+        if (!StringHelper.isEmpty(linkBlocks.getLinkConstraint())) {
+            stringBuilder.append(isAuto ? Constants.EMPTY_STRING : padding).append("*if ").append(linkBlocks.getLinkConstraint()).append(LINE_SEPARATOR);
+            stringBuilder.append(padding);
+        }
+        stringBuilder.append(linkBlocks.getLinkStart());
         return stringBuilder.toString();
     }
 
@@ -128,8 +144,12 @@ public class ChoiceScriptExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, int pageNumber) {
-        return "    #" + linkText + LINE_SEPARATOR + "            *goto " + linkId + LINE_SEPARATOR;
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, int pageNumber) {
+        if (isAuto) {
+            return "*goto " + linkId + LINE_SEPARATOR;
+        } else {
+            return "    #" + linkText + LINE_SEPARATOR + "            *goto " + linkId + LINE_SEPARATOR;
+        }
     }
 
     @Override

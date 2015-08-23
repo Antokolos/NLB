@@ -669,7 +669,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, int pageNumber) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, int pageNumber) {
         return linkText;
     }
 

@@ -1449,6 +1449,7 @@ public abstract class ExportManager {
                 decorateLinkStart(
                         link.getId(),
                         link.getText(),
+                        link.isAuto(),
                         checkedGetPageNumber(link.getTarget())
                 )
         );
@@ -1551,8 +1552,8 @@ public abstract class ExportManager {
         String constraintBody = (
                 (shouldObeyToModuleConstraint && !StringHelper.isEmpty(moduleConstraintText))
                         ? (
-                        (!StringHelper.isEmpty(constraintText))
-                                ? moduleConstraintText + "&&" + constraintText
+                        (StringHelper.notEmpty(constraintText))
+                                ? moduleConstraintText + "&&" + "(" + constraintText + ")"
                                 : moduleConstraintText
                 )
                         : constraintText
@@ -1561,7 +1562,7 @@ public abstract class ExportManager {
         return (
                 isPositiveConstraint
                         ? expressionData.getExistencePart() + "(" + expressionData.getExpressionPart() + ")"
-                        : expressionData.getExistencePart() + "(" + decorateNot() + " (" + expressionData.getExpressionPart() + "))"
+                        : expressionData.getExistencePart() + "(" + decorateNot() + "(" + expressionData.getExpressionPart() + "))"
         );
     }
 
@@ -2236,7 +2237,7 @@ public abstract class ExportManager {
 
     protected abstract String decorateLinkComment(String comment);
 
-    protected abstract String decorateLinkStart(String linkId, String linkText, int pageNumber);
+    protected abstract String decorateLinkStart(String linkId, String linkText, boolean isAuto, int pageNumber);
 
     protected abstract String decorateLinkGoTo(
             String linkId,

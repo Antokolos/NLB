@@ -1432,7 +1432,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, int pageNumber) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, int pageNumber) {
         return (
                 "        xact(" + LINE_SEPARATOR
                         + "            '" + decorateId(linkId) + "'," + LINE_SEPARATOR
