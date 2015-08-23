@@ -32,3 +32,5 @@ com_crashlytics_export_strings.xml
 dist/
 **/*.so
 **/*.o
+stuff/lua/luapassing/Debug/
+stuff/lua/luapassing/luapassing/Debug/
