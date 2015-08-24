@@ -342,8 +342,19 @@ public class ChoiceScriptExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground) {
-        // TODO: support images
-        return Constants.EMPTY_STRING;
+        // TODO: support image constraints
+        ImagePathData pageImagePathData = pageImagePathDatas.get(0);
+        if (pageImagePathData.getMaxFrameNumber() == 0) {
+            String pageImagePath = pageImagePathData.getImagePath();
+            if (StringHelper.isEmpty(pageImagePath)) {
+                return Constants.EMPTY_STRING;
+            } else {
+                return "*image scenes/" + pageImagePath + LINE_SEPARATOR;
+            }
+        } else {
+            // TODO: support animated images
+            return Constants.EMPTY_STRING;
+        }
     }
 
     @Override
