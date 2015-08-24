@@ -355,15 +355,23 @@ public abstract class ExportManager {
     /**
      *
      * @param pageBuildingBlocks
-     * @return true if links list consists only of one link without constraint with default text
+     * @return true if links list consists only of trivial links
      */
     private boolean determineTrivialStatus(PageBuildingBlocks pageBuildingBlocks) {
         List<LinkBuildingBlocks> linkBlocks = pageBuildingBlocks.getLinksBuildingBlocks();
-        return linkBlocks.size() == 1 && linkBlocks.get(0).isTrivial();
+        if (linkBlocks.size() == 0) {
+            return false;
+        }
+        for (LinkBuildingBlocks blocks : linkBlocks) {
+            if (!blocks.isTrivial()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean determineTrivialStatus(Link link) {
-        return link.getTexts().equals(Link.DEFAULT_TEXT) && StringHelper.isEmpty(link.getConstrId());
+        return link.getTexts().equals(Link.DEFAULT_TEXT) || link.isAuto();
     }
 
     private PageBuildingBlocks createPageBuildingBlocks(
@@ -559,7 +567,7 @@ public abstract class ExportManager {
                 }
             }
         }
-        blocks.setHasTrivialLink(determineTrivialStatus(blocks));
+        blocks.setHasTrivialLinks(determineTrivialStatus(blocks));
         return blocks;
     }
 
@@ -1440,8 +1448,9 @@ public abstract class ExportManager {
             final ExportData exportData
     ) throws NLBConsistencyException {
         LinkBuildingBlocks blocks = new LinkBuildingBlocks();
+        final boolean trivial = determineTrivialStatus(link);
         blocks.setAuto(link.isAuto());
-        blocks.setTrivial(determineTrivialStatus(link));
+        blocks.setTrivial(trivial);
         blocks.setLinkLabel(decorateLinkLabel(link.getId(), link.getText()));
         blocks.setLinkComment(decorateLinkComment(link.getText()));
         // TODO: exportData.getIdToPageNumberMap().get(link.getTarget()) can produce NPE for return links
@@ -1450,8 +1459,8 @@ public abstract class ExportManager {
                         link.getId(),
                         link.getText(),
                         link.isAuto(),
-                        checkedGetPageNumber(link.getTarget())
-                )
+                        trivial,
+                        checkedGetPageNumber(link.getTarget()))
         );
         Variable variable = exportData.getNlb().getVariableById(link.getVarId());
         if (variable != null && !variable.isDeleted()) {
@@ -2237,7 +2246,7 @@ public abstract class ExportManager {
 
     protected abstract String decorateLinkComment(String comment);
 
-    protected abstract String decorateLinkStart(String linkId, String linkText, boolean isAuto, int pageNumber);
+    protected abstract String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber);
 
     protected abstract String decorateLinkGoTo(
             String linkId,

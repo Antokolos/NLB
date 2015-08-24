@@ -145,7 +145,7 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, int pageNumber) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber) {
         return "[[" + linkText + "|" + linkId + "]]" + LINE_SEPARATOR;
     }
 

@@ -84,6 +84,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
     @Override
     protected String generatePageText(PageBuildingBlocks pageBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder trivialLinksBuilder = new StringBuilder();
         stringBuilder.append(pageBlocks.getPageComment());
         stringBuilder.append(pageBlocks.getPageLabel());
         stringBuilder.append(pageBlocks.getPageCaption());
@@ -97,11 +98,18 @@ public class ChoiceScriptExportManager extends TextExportManager {
         for (final LinkBuildingBlocks linkBlocks : allLinksBlocks) {
             if (linkBlocks.isAuto()) {
                 stringBuilder.append(getLinkRedirectText(linkBlocks, true));
+            } else if (linkBlocks.isTrivial() && pageBlocks.isHasTrivialLinks()) {
+                trivialLinksBuilder.append(getLinkRedirectText(linkBlocks, true));
             } else {
                 linksBlocks.add(linkBlocks);
             }
         }
-        stringBuilder.append(pageBlocks.getPageEnd());
+        if (pageBlocks.isHasTrivialLinks()) {
+            stringBuilder.append("*page_break").append(LINE_SEPARATOR);
+            stringBuilder.append(trivialLinksBuilder.toString());
+        } else {
+            stringBuilder.append(pageBlocks.getPageEnd());
+        }
 
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             stringBuilder.append(getLinkRedirectText(linkBlocks, false));
@@ -109,11 +117,11 @@ public class ChoiceScriptExportManager extends TextExportManager {
         return stringBuilder.toString();
     }
 
-    protected String getLinkRedirectText(final LinkBuildingBlocks linkBlocks, final boolean isAuto) {
+    protected String getLinkRedirectText(final LinkBuildingBlocks linkBlocks, final boolean isAutoOrTrivial) {
         final String padding = "    ";
         StringBuilder stringBuilder = new StringBuilder();
         if (!StringHelper.isEmpty(linkBlocks.getLinkConstraint())) {
-            stringBuilder.append(isAuto ? Constants.EMPTY_STRING : padding).append("*if ").append(linkBlocks.getLinkConstraint()).append(LINE_SEPARATOR);
+            stringBuilder.append(isAutoOrTrivial ? Constants.EMPTY_STRING : padding).append("*if ").append(linkBlocks.getLinkConstraint()).append(LINE_SEPARATOR);
             stringBuilder.append(padding);
         }
         stringBuilder.append(linkBlocks.getLinkStart());
@@ -144,8 +152,8 @@ public class ChoiceScriptExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, int pageNumber) {
-        if (isAuto) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber) {
+        if (isAuto || isTrivial) {
             return "*goto " + linkId + LINE_SEPARATOR;
         } else {
             return "    #" + linkText + LINE_SEPARATOR + "            *goto " + linkId + LINE_SEPARATOR;

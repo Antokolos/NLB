@@ -147,7 +147,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         }
         result.append("    enter = function(s) ").append(lineSep);
         result.append("        objs():zap();").append(lineSep);
-        if (pageBlocks.isHasTrivialLink()) {
+        if (pageBlocks.isHasTrivialLinks()) {
             LinkBuildingBlocks trivialLink = linksBuildingBlocks.get(0);
             result.append(trivialLink.getLinkModifications());
             result.append(trivialLink.getLinkVariable());
@@ -188,7 +188,7 @@ public class VNSTEADExportManager extends STEADExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, int pageNumber) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber) {
         String lineSep = getLineSeparator();
         StringBuilder result = new StringBuilder();
         result.append(decorateId(linkId)).append(" = menu {").append(lineSep);
