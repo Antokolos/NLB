@@ -362,19 +362,37 @@ public class ChoiceScriptExportManager extends TextExportManager {
         return Constants.EMPTY_STRING;
     }
 
+    private String getAppropriateText(TextChunk textChunk) {
+        switch (textChunk.getType()) {
+            case TEXT:
+                return textChunk.getText();
+            case VARIABLE:
+                return "${" + textChunk.getText() + "}";
+            default:
+                return Constants.EMPTY_STRING;
+        }
+    }
+
     protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {
         StringBuilder pageText = new StringBuilder();
+        String lineSeparator = getLineSeparator();
+        int newlines = 0;
         for (final TextChunk textChunk : pageTextChunks) {
             switch (textChunk.getType()) {
                 case TEXT:
-                    pageText.append(textChunk.getText());
-                    break;
                 case VARIABLE:
-                    pageText.append("${").append(textChunk.getText()).append("}");
+                    if (newlines == 1) {
+                        pageText.append(lineSeparator).append("*line_break").append(lineSeparator);
+                    } else {
+                        for (int i = 0; i < newlines; i++) {
+                            pageText.append(lineSeparator);
+                        }
+                    }
+                    newlines = 0;
+                    pageText.append(getAppropriateText(textChunk));
                     break;
                 case NEWLINE:
-                    String lineSeparator = getLineSeparator();
-                    pageText.append(lineSeparator + "*line_break" + lineSeparator);
+                    newlines++;
                     break;
             }
         }
