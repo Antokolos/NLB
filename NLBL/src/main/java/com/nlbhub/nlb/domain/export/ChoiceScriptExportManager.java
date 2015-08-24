@@ -373,7 +373,8 @@ public class ChoiceScriptExportManager extends TextExportManager {
                     pageText.append("${").append(textChunk.getText()).append("}");
                     break;
                 case NEWLINE:
-                    pageText.append(getLineSeparator());
+                    String lineSeparator = getLineSeparator();
+                    pageText.append(lineSeparator + "*line_break" + lineSeparator);
                     break;
             }
         }
