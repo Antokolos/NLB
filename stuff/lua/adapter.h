@@ -1,14 +1,14 @@
 #ifndef _ADAPTER_H
 #define _ADAPTER_H
 
-static void initFunc();
+void initFunc();
 
-static void setAchievementFunc(const char* achievementName);
+void setAchievementFunc(const char* achievementName);
 
-static void storeFunc();
+void storeFunc();
 
-static void clearAchievementFunc(const char* achievementName);
+void clearAchievementFunc(const char* achievementName);
 
-static void resetAllFunc();
+void resetAllFunc();
 
 #endif
