@@ -7,7 +7,7 @@
 # Your platform. See PLATS for possible values.
 PLAT= antokolos
 
-CC= gcc -arch i386
+CC= g++ -arch i386
 CFLAGS= -O2 -Wall $(MYCFLAGS)
 AR= ar rcu
 RANLIB= ranlib
