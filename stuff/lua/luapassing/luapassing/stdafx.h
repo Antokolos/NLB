@@ -14,7 +14,6 @@
 
 
 // TODO: reference additional headers your program requires here
-#include "lua/lua.h"
-#include "lua/lualib.h"
-#include "lua/lauxlib.h"
+#include "luapassing.h"
+#include "adapter.h"
 #include <stdio.h>

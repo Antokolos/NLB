@@ -33,4 +33,6 @@ dist/
 **/*.so
 **/*.o
 stuff/lua/luapassing/Debug/
+stuff/lua/luapassing/Release/
 stuff/lua/luapassing/luapassing/Debug/
+stuff/lua/luapassing/luapassing/Release/
