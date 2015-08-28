@@ -2,29 +2,62 @@
 // See http://www.wellho.net/mouth/1844_Calling-functions-in-C-from-your-Lua-script-a-first-HowTo.html
 #ifdef _WINDOWS
 #include "stdafx.h"
+#else
+#include "luapassing.h"
+#include "adapter.h"
+#include <stdio.h>
+#include <dlfcn.h>
+#include <string.h>
+#endif
 
 luaL_registerT luaL_register = NULL;
 lua_pushnumberT lua_pushnumber = NULL;
 lua_tonumberT lua_tonumber = NULL;
 lua_tolstringT lua_tolstring = NULL;
 lua_tobooleanT lua_toboolean = NULL;
+bool initDone = false;
 
-static void initLuaFunctionPointers(HMODULE lib) {
-	luaL_register = (luaL_registerT)GetProcAddress(lib, "luaL_register");
-	lua_pushnumber = (lua_pushnumberT)GetProcAddress(lib, "lua_pushnumber");
-	lua_tonumber = (lua_tonumberT)GetProcAddress(lib, "lua_tonumber");
-	lua_tolstring = (lua_tolstringT)GetProcAddress(lib, "lua_tolstring");
-	lua_toboolean = (lua_tobooleanT)GetProcAddress(lib, "lua_toboolean");
+#ifdef _WINDOWS
+static void initLuaFunctionPointers (HMODULE lib) {
+    luaL_register = (luaL_registerT)GetProcAddress(lib, "luaL_register");
+    lua_pushnumber = (lua_pushnumberT)GetProcAddress(lib, "lua_pushnumber");
+    lua_tonumber = (lua_tonumberT)GetProcAddress(lib, "lua_tonumber");
+    lua_tolstring = (lua_tolstringT)GetProcAddress(lib, "lua_tolstring");
+    lua_toboolean = (lua_tobooleanT)GetProcAddress(lib, "lua_toboolean");
 }
 #else
-#include "lua/lua.h"
-#include "lua/lualib.h"
-#include "lua/lauxlib.h"
-#include "adapter.h"
-#include <stdio.h>
-#endif
+// See http://syprog.blogspot.ru/2011/12/listing-loaded-shared-objects-in-linux.html
+struct lmap {
+   void*    base_address;     /* Base address of the shared object */
+   char*    path;             /* Absolute file name (path) of the shared object */
+   void*    not_needed1;      /* Pointer to the dynamic section of the shared object */
+   struct lmap *next, *prev;  /* chain of loaded objects */
+};
 
-bool initDone = false;
+struct something
+{
+   void*  pointers[3];
+   struct something* ptr;
+};
+
+static void initLuaFunctionPointers (void* ph) {
+    luaL_register = (luaL_registerT)dlsym(ph, "luaL_register");
+    printf("Alive");
+    lua_pushnumber = (lua_pushnumberT)dlsym(ph, "lua_pushnumber");
+    lua_tonumber = (lua_tonumberT)dlsym(ph, "lua_tonumber");
+    lua_tolstring = (lua_tolstringT)dlsym(ph, "lua_tolstring");
+    lua_toboolean = (lua_tobooleanT)dlsym(ph, "lua_toboolean");
+}
+
+/**
+ * detecting whether base is ends with str
+ */
+bool endsWith (const char* base, const char* str) {
+    int blen = strlen(base);
+    int slen = strlen(str);
+    return (blen >= slen) && (0 == strcmp(base + blen - slen, str));
+}
+#endif
 
 static int init(lua_State *L) {
     printf("Initializing API...\n");
@@ -37,7 +70,6 @@ static int init(lua_State *L) {
         printf("API initialized.\n");
         lua_pushnumber(L, 1.0);
     }
-  
     return 1;
 }
   
@@ -93,7 +125,20 @@ extern "C" __declspec(dllexport) int luaopen_luapassing(lua_State *L) {
     initLuaFunctionPointers(lib);
 #else
 extern "C" int luaopen_luapassing ( lua_State *L) {
-#endif  
+    const char* luaLibName = "liblua5.1.so.0";
+    struct lmap* pl;
+    void* ph = dlopen(NULL, RTLD_NOW);
+    struct something* p = (struct something*)ph;
+    p = p->ptr;
+    pl = (struct lmap*)p->ptr;
+    while (NULL != pl) {
+        printf("%s\n", pl->path);
+        if (endsWith(pl->path, luaLibName)) {
+            initLuaFunctionPointers(pl);
+        }
+        pl = pl->next;
+    }
+#endif
     static const luaL_reg Map [] = {
         {"init", init},
         {"setAchievement", setAchievement},
@@ -115,7 +160,7 @@ int i;
 if (EnumProcessModules(GetCurrentProcess(), hMods, sizeof(hMods), &cbNeeded)) {
     for (i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {
         TCHAR szModName[MAX_PATH];
-		// Get the full path to the module's file.
+        // Get the full path to the module's file.
 
         if (GetModuleFileName(hMods[i], szModName, MAX_PATH)) {
             int wlength = GetShortPathNameW(szModName, 0, 0);

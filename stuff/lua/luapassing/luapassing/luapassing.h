@@ -1,5 +1,8 @@
 #ifndef _LUAPASSING_H
 #define _LUAPASSING_H
+#ifndef _WINDOWS
+#include <stdlib.h>
+#endif
 
 typedef struct lua_State lua_State;
 typedef double lua_Number;
