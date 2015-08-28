@@ -26,36 +26,16 @@ static void initLuaFunctionPointers (HMODULE lib) {
     lua_toboolean = (lua_tobooleanT)GetProcAddress(lib, "lua_toboolean");
 }
 #else
-// See http://syprog.blogspot.ru/2011/12/listing-loaded-shared-objects-in-linux.html
-struct lmap {
-   void*    base_address;     /* Base address of the shared object */
-   char*    path;             /* Absolute file name (path) of the shared object */
-   void*    not_needed1;      /* Pointer to the dynamic section of the shared object */
-   struct lmap *next, *prev;  /* chain of loaded objects */
-};
-
-struct something
-{
-   void*  pointers[3];
-   struct something* ptr;
-};
-
 static void initLuaFunctionPointers (void* ph) {
+    /*
+     * If ph equals to RTLD_DEFAULT, then all mach-o images in the process
+     * (except those loaded with dlopen(xxx, RTLD_LOCAL)) are searched in the order they were loaded.
+     */
     luaL_register = (luaL_registerT)dlsym(ph, "luaL_register");
-    printf("Alive");
     lua_pushnumber = (lua_pushnumberT)dlsym(ph, "lua_pushnumber");
     lua_tonumber = (lua_tonumberT)dlsym(ph, "lua_tonumber");
     lua_tolstring = (lua_tolstringT)dlsym(ph, "lua_tolstring");
     lua_toboolean = (lua_tobooleanT)dlsym(ph, "lua_toboolean");
-}
-
-/**
- * detecting whether base is ends with str
- */
-bool endsWith (const char* base, const char* str) {
-    int blen = strlen(base);
-    int slen = strlen(str);
-    return (blen >= slen) && (0 == strcmp(base + blen - slen, str));
 }
 #endif
 
@@ -125,19 +105,12 @@ extern "C" __declspec(dllexport) int luaopen_luapassing(lua_State *L) {
     initLuaFunctionPointers(lib);
 #else
 extern "C" int luaopen_luapassing ( lua_State *L) {
-    const char* luaLibName = "liblua5.1.so.0";
-    struct lmap* pl;
-    void* ph = dlopen(NULL, RTLD_NOW);
-    struct something* p = (struct something*)ph;
-    p = p->ptr;
-    pl = (struct lmap*)p->ptr;
-    while (NULL != pl) {
-        printf("%s\n", pl->path);
-        if (endsWith(pl->path, luaLibName)) {
-            initLuaFunctionPointers(pl);
-        }
-        pl = pl->next;
-    }
+    /*
+     * Can pass full path of the Lua framework as the first parameter, but passing NULL is more simple.
+     * In this case (passing NULL) ph will be equal to RTLD_DEFAULT
+     */
+    void* ph = dlopen(NULL, RTLD_NOW);  
+    initLuaFunctionPointers(ph);
 #endif
     static const luaL_reg Map [] = {
         {"init", init},
