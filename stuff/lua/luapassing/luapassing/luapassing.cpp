@@ -7,14 +7,15 @@
 #include "adapter.h"
 #include <stdio.h>
 #include <dlfcn.h>
-#include <string.h>
 #endif
 
+#ifndef _LINUX
 luaL_registerT luaL_register = NULL;
 lua_pushnumberT lua_pushnumber = NULL;
 lua_tonumberT lua_tonumber = NULL;
 lua_tolstringT lua_tolstring = NULL;
 lua_tobooleanT lua_toboolean = NULL;
+#endif
 bool initDone = false;
 
 #ifdef _WINDOWS
@@ -25,7 +26,7 @@ static void initLuaFunctionPointers (HMODULE lib) {
     lua_tolstring = (lua_tolstringT)GetProcAddress(lib, "lua_tolstring");
     lua_toboolean = (lua_tobooleanT)GetProcAddress(lib, "lua_toboolean");
 }
-#else
+#elif defined(_MACOSX)
 static void initLuaFunctionPointers (void* ph) {
     /*
      * If ph equals to RTLD_DEFAULT, then all mach-o images in the process
@@ -103,7 +104,9 @@ extern "C" __declspec(dllexport) int luaopen_luapassing(lua_State *L) {
         return 1;
     }
     initLuaFunctionPointers(lib);
-#else
+#elif defined(_LINUX)
+extern "C" int luaopen_luapassing ( lua_State *L) {
+#elif defined(_MACOSX)
 extern "C" int luaopen_luapassing ( lua_State *L) {
     /*
      * Can pass full path of the Lua framework as the first parameter, but passing NULL is more simple.

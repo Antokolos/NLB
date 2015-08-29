@@ -5,9 +5,9 @@
 # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
 
 # Your platform. See PLATS for possible values.
-PLAT= antokolos
+PLAT= linux
 
-CC= g++ -arch i386
+CC= g++ -fPIC
 CFLAGS= -O2 -Wall $(MYCFLAGS)
 AR= ar rcu
 RANLIB= ranlib
@@ -19,6 +19,7 @@ MYLDFLAGS=
 MYLIBS= 
 
 # == END OF USER SETTINGS. NO NEED TO CHANGE ANYTHING BELOW THIS LINE =========
+LUA_SO=liblua5.1.so.0
 
 PLATS= aix ansi bsd freebsd generic linux macosx mingw posix solaris
 
@@ -36,7 +37,7 @@ LUAC_T=	luac
 LUAC_O=	luac.o print.o
 
 ALL_O= $(CORE_O) $(LIB_O) $(LUA_O) $(LUAC_O)
-ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T)
+ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T) $(LUA_SO)
 ALL_A= $(LUA_A)
 
 default: $(PLAT)
@@ -56,6 +57,9 @@ $(LUA_T): $(LUA_O) $(LUA_A)
 
 $(LUAC_T): $(LUAC_O) $(LUA_A)
 	$(CC) -o $@ $(MYLDFLAGS) $(LUAC_O) $(LUA_A) $(LIBS)
+
+$(LUA_SO): $(CORE_O) $(LIB_O)
+	$(CC) -o $@ -shared $?
 
 clean:
 	$(RM) $(ALL_T) $(ALL_O)
