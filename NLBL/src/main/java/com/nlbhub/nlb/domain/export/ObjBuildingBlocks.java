@@ -70,6 +70,7 @@ public class ObjBuildingBlocks {
     private String m_objObjStart;
     private String m_objObjEnd;
     private String m_objEnd;
+    private String m_objSound;
     private String m_objCommonTo;
     private String m_containerRef;
     private List<String> m_containedObjIds;
@@ -254,6 +255,14 @@ public class ObjBuildingBlocks {
 
     public void setObjObjEnd(String objObjEnd) {
         m_objObjEnd = objObjEnd;
+    }
+
+    public String getObjSound() {
+        return m_objSound;
+    }
+
+    public void setObjSound(String objSound) {
+        m_objSound = objSound;
     }
 
     public String getObjCommonTo() {

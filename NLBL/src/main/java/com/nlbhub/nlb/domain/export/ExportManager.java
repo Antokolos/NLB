@@ -713,6 +713,8 @@ public abstract class ExportManager {
             blocks.addContainedObjId(containedObjId);
         }
         blocks.setObjObjEnd(decorateObjObjEnd());
+        String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Obj.DEFAULT_SOUND_FILE_NAME: obj.getSoundFileName());
+        blocks.setObjSound(decorateObjSound(getSoundPaths(null, soundFileName), obj.isSoundSFX()));
         List<Link> links = obj.getLinks();
         for (final Link link : links) {
             if (!link.isDeleted()) {
@@ -1442,6 +1444,11 @@ public abstract class ExportManager {
     protected String decorateContainedObjId(String containedObjId) {
         return EMPTY_STRING;
     }
+
+    protected String decorateObjSound(List<SoundPathData> objSoundPathDatas, boolean soundSFX) {
+        return EMPTY_STRING;
+    }
+
 
     private LinkBuildingBlocks createLinkBuildingBlocks(
             final Link link,

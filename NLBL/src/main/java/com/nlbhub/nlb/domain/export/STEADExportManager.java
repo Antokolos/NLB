@@ -430,6 +430,7 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append(objBlocks.getObjLabel()).append(objBlocks.getObjStart());
         stringBuilder.append(objBlocks.getObjName());
+        stringBuilder.append(objBlocks.getObjSound());
         stringBuilder.append(objBlocks.getObjDisp());
         stringBuilder.append(objBlocks.getObjText());
         if (objBlocks.isTakable()) {
@@ -1549,6 +1550,42 @@ public class STEADExportManager extends TextExportManager {
         bgimgBuilder.append(bgimgIfTermination).append("    end,").append(LINE_SEPARATOR);
         picBuilder.append(picIfTermination).append("    end,").append(LINE_SEPARATOR);
         return bgimgBuilder.toString() + picBuilder.toString();
+    }
+
+    @Override
+    protected String decorateObjSound(List<SoundPathData> objSoundPathDatas, boolean soundSFX) {
+        // TODO: Code duplication with decoratePageSound()
+        StringBuilder result = new StringBuilder("    snd = function(s) " + LINE_SEPARATOR);
+        boolean notFirst = false;
+        String ifTermination = Constants.EMPTY_STRING;
+        for (SoundPathData objSoundPathData : objSoundPathDatas) {
+            String objSoundPath = objSoundPathData.getSoundPath();
+            if (StringHelper.notEmpty(objSoundPath)) {
+                String constraint = objSoundPathData.getConstraint();
+                final boolean hasConstraint = StringHelper.notEmpty(constraint);
+                if (hasConstraint) {
+                    ifTermination = "        end" + LINE_SEPARATOR;
+                    result.append("        ").append(notFirst ? "else" : Constants.EMPTY_STRING).append("if (");
+                    result.append("s.tag == '").append(constraint).append("'").append(") then");
+                    result.append(LINE_SEPARATOR);
+                } else {
+                    result.append(ifTermination);
+                }
+                if (Constants.VOID.equals(objSoundPath)) {
+                    result.append("            stop_music();").append(LINE_SEPARATOR);
+                } else {
+                    if (soundSFX || objSoundPathData.isSfx()) {
+                        result.append("            add_sound('").append(objSoundPath).append("');").append(LINE_SEPARATOR);
+                    } else {
+                        result.append("            set_music('").append(objSoundPath).append("', 0);").append(LINE_SEPARATOR);
+                    }
+                }
+            }
+            notFirst = true;
+        }
+        result.append(ifTermination);
+        result.append("    end,").append(LINE_SEPARATOR);
+        return result.toString();
     }
 
     @Override
