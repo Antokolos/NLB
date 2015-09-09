@@ -1947,6 +1947,18 @@ public abstract class ExportManager {
                             );
                         }
                         break;
+                    case SSND:
+                        stringBuilder.append(decorateSSndOperation());
+                        break;
+                    case WSND:
+                        stringBuilder.append(decorateWSndOperation());
+                        break;
+                    case SND:
+                        final String sndArgObjId = exportData.getObjId(expression.getValue());
+                        stringBuilder.append(
+                                decorateSndOperation(sndArgObjId, decorateAutoVar(expression.getValue()))
+                        );
+                        break;
                     case SPUSH:
                         stringBuilder.append(decorateSPushOperation(decorateAutoVar(expression.getValue())));
                         break;
@@ -2171,6 +2183,12 @@ public abstract class ExportManager {
     protected abstract String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName, boolean unique);
 
     protected abstract String decorateObjsOperation(String listVariableName, String srcObjId, String objectVar);
+
+    protected abstract String decorateSSndOperation();
+
+    protected abstract String decorateWSndOperation();
+
+    protected abstract String decorateSndOperation(String objectId, String objectVar);
 
     protected abstract String decorateSPushOperation(String listVariableName);
 

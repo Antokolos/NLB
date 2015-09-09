@@ -65,6 +65,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     private static final Set<Type> UNPARAMETRIZED_TYPES = new HashSet<Type>() {{
         add(Type.CNTNR);    // Can be without parameters
         add(Type.CLONE);    // Can be without parameters
+        add(Type.SSND);
+        add(Type.WSND);
         add(Type.GETTAG);
         add(Type.CLEAR);
         add(Type.CLRINV);
@@ -146,6 +148,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             default:
                 // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, IFHAVE, ADD, ADDU, ADDINV, ADDALL, ADDALLU,
                 // REMOVE, RMINV, CLEAR, CLRINV, SPUSH, WPUSH, PUSH, SINJECT, INJECT, SHUFFLE, PDSC, ACT, USE
+                // SSND, WSND, SND
                 // It is funny, but RETURN operation currently does not actually return anything :)
                 return false;
         }
@@ -234,6 +237,12 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.CLRINV;
         } else if (type.equals(Type.OBJS.name())) {
             m_type = Type.OBJS;
+        } else if (type.equals(Type.SSND.name())) {
+            m_type = Type.SSND;
+        } else if (type.equals(Type.WSND.name())) {
+            m_type = Type.WSND;
+        } else if (type.equals(Type.SND.name())) {
+            m_type = Type.SND;
         } else if (type.equals(Type.SPUSH.name())) {
             m_type = Type.SPUSH;
         } else if (type.equals(Type.WPUSH.name())) {
@@ -380,6 +389,15 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "OBJS":
                 m_type = Type.OBJS;
+                break;
+            case "SSND":
+                m_type = Type.SSND;
+                break;
+            case "WSND":
+                m_type = Type.WSND;
+                break;
+            case "SND":
+                m_type = Type.SND;
                 break;
             case "SPUSH":
                 m_type = Type.SPUSH;

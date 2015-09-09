@@ -1214,6 +1214,27 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateSSndOperation() {
+        return "        s:snd();" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateWSndOperation() {
+        return "        ww:snd();" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateSndOperation(String objectId, String objectVar) {
+        if (objectId != null) {
+            return "        " + objectId + ":snd();" + LINE_SEPARATOR;
+        } else if (objectVar != null) {
+            return "        " + objectVar + ":snd();" + LINE_SEPARATOR;
+        } else {
+            return decorateSSndOperation();
+        }
+    }
+
+    @Override
     protected String decorateSPushOperation(String listVariableName) {
         return createListObj(listVariableName) + "        push(" + listVariableName + ".listnam, s);" + LINE_SEPARATOR;
     }
