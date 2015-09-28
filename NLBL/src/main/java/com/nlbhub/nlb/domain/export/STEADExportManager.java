@@ -556,12 +556,16 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("autowired = ").append(pageBlocks.isAutowired() ? "true" : "false").append("; ");
         stringBuilder.append("},").append(LINE_SEPARATOR);
         boolean hasAnim = pageBlocks.isHasObjectsWithAnimatedImages();
-        boolean timerSet = hasAnim || pageBlocks.isHasPageTimer();
+        boolean hasPageAnim = true;
+        boolean timerSet = hasAnim || hasPageAnim || pageBlocks.isHasPageTimer();
         if (timerSet) {
             stringBuilder.append("    timer = function(s)").append(LINE_SEPARATOR);
             stringBuilder.append("        if not s.wastext then").append(LINE_SEPARATOR);
             stringBuilder.append("        ").append(pageBlocks.getPageTimerVariable()).append(LINE_SEPARATOR);
             stringBuilder.append("        end; ").append(LINE_SEPARATOR);
+            if (hasPageAnim) {
+                stringBuilder.append("        s.bgimg(s); ").append(LINE_SEPARATOR);
+            }
             stringBuilder.append("        local afl = s.autos(s); ").append(LINE_SEPARATOR);
             stringBuilder.append("        if (s.lasttext ~= nil) and not s.wastext then p(s.lasttext); elseif afl and not s.wastext then return true; end; ").append(LINE_SEPARATOR);
             stringBuilder.append("        s.wastext = false; ").append(LINE_SEPARATOR);
@@ -613,7 +617,7 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append("        ").append(pageBlocks.getPageTimerVariable()).append(LINE_SEPARATOR);
             // stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR); -- will be called when timer triggers
             // Timer will be triggered first time immediately after timer:set()
-            stringBuilder.append("        timer:set(").append(hasAnim ? 20 : 200).append(");").append(LINE_SEPARATOR);
+            stringBuilder.append("        timer:set(").append(hasAnim || hasPageAnim ? 20 : 200).append(");").append(LINE_SEPARATOR);
         } else {
             stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR);
         }
@@ -1533,7 +1537,7 @@ public class STEADExportManager extends TextExportManager {
         if (StringHelper.notEmpty(caption) && useCaption) {
             return "    nam = \"" + caption + "\"," + LINE_SEPARATOR;
         } else {
-            return "    nam = \"...\"," + LINE_SEPARATOR;
+            return "    nam = function(s) return true; end," + LINE_SEPARATOR;
         }
     }
 
@@ -1545,32 +1549,37 @@ public class STEADExportManager extends TextExportManager {
         String bgimgIfTermination = Constants.EMPTY_STRING;
         String picIfTermination = Constants.EMPTY_STRING;
         for (ImagePathData pageImagePathData : pageImagePathDatas) {
-            if (pageImagePathData.getMaxFrameNumber() == 0) {
-                String pageImagePath = pageImagePathData.getImagePath();
-                if (StringHelper.notEmpty(pageImagePath)) {
-                    StringBuilder tempBuilder = new StringBuilder();
-                    tempBuilder.append("        ").append(notFirst ? "else" : Constants.EMPTY_STRING).append("if (");
-                    String constraint = pageImagePathData.getConstraint();
-                    tempBuilder.append(StringHelper.notEmpty(constraint) ? "s.tag == '" + constraint + "'" : "true").append(") then");
-                    tempBuilder.append(LINE_SEPARATOR);
-                    if (imageBackground) {
-                        bgimgIfTermination = "        end" + LINE_SEPARATOR;
-                        bgimgBuilder.append(tempBuilder).append("            ");
-                        bgimgBuilder.append("theme.gfx.bg('").append(pageImagePath).append("');").append(LINE_SEPARATOR);
-                    } else {
-                        picIfTermination = "        end" + LINE_SEPARATOR;
-                        picBuilder.append(tempBuilder).append("            ");
-                        picBuilder.append("return '").append(pageImagePath).append("';").append(LINE_SEPARATOR);
-                    }
+            String pageImagePath = pageImagePathData.getImagePath();
+            if (StringHelper.notEmpty(pageImagePath)) {
+                StringBuilder tempBuilder = new StringBuilder();
+                tempBuilder.append("        ").append(notFirst ? "else" : Constants.EMPTY_STRING).append("if (");
+                String constraint = pageImagePathData.getConstraint();
+                tempBuilder.append(StringHelper.notEmpty(constraint) ? "s.tag == '" + constraint + "'" : "true").append(") then");
+                tempBuilder.append(LINE_SEPARATOR);
+                final String img = decorateImagePath(pageImagePath, pageImagePathData.getMaxFrameNumber());
+                if (imageBackground) {
+                    bgimgIfTermination = "        end" + LINE_SEPARATOR;
+                    bgimgBuilder.append(tempBuilder).append("            ");
+                    bgimgBuilder.append("theme.gfx.bg(").append(img).append(");").append(LINE_SEPARATOR);
+                } else {
+                    picIfTermination = "        end" + LINE_SEPARATOR;
+                    picBuilder.append(tempBuilder).append("            ");
+                    picBuilder.append("return ").append(img).append(";").append(LINE_SEPARATOR);
                 }
-            } else {
-                // TODO: support animated images
             }
             notFirst = true;
         }
         bgimgBuilder.append(bgimgIfTermination).append("    end,").append(LINE_SEPARATOR);
         picBuilder.append(picIfTermination).append("    end,").append(LINE_SEPARATOR);
         return bgimgBuilder.toString() + picBuilder.toString();
+    }
+
+    private String decorateImagePath(String imagePath, int maxFrameNumber) {
+        if (maxFrameNumber > 0) {
+            return "string.format('" + imagePath + "', curloc().time % " + maxFrameNumber + " + 1)";
+        } else {
+            return "'" + imagePath + "'";
+        }
     }
 
     @Override

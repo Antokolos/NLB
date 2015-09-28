@@ -71,6 +71,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public boolean isImageAnimated() {
+        return DEFAULT_IMAGE_ANIMATED;
+    }
+
+    @Override
     public String getSoundFileName() {
         return DEFAULT_SOUND_FILE_NAME;
     }

@@ -389,7 +389,8 @@ public abstract class ExportManager {
         blocks.setPageComment(decoratePageComment(page.getCaption()));
         blocks.setPageCaption(decoratePageCaption(page.getCaption(), page.isUseCaption()));
         String imageFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_IMAGE_FILE_NAME: page.getImageFileName());
-        blocks.setPageImage(decoratePageImage(getImagePaths(null, imageFileName, false), page.isImageBackground()));
+        boolean isAnimatedImage = page.isImageAnimated();
+        blocks.setPageImage(decoratePageImage(getImagePaths(null, imageFileName, isAnimatedImage), page.isImageBackground()));
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
         blocks.setPageSound(decoratePageSound(pageName, getSoundPaths(null, soundFileName), page.isSoundSFX()));
         blocks.setPageTextStart(decoratePageTextStart(page.getId(), pageNumber, StringHelper.getTextChunks(page.getText())));
@@ -878,6 +879,11 @@ public abstract class ExportManager {
             @Override
             public boolean isImageBackground() {
                 return page.isImageBackground();
+            }
+
+            @Override
+            public boolean isImageAnimated() {
+                return page.isImageAnimated();
             }
 
             @Override
