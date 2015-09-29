@@ -556,7 +556,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("autowired = ").append(pageBlocks.isAutowired() ? "true" : "false").append("; ");
         stringBuilder.append("},").append(LINE_SEPARATOR);
         boolean hasAnim = pageBlocks.isHasObjectsWithAnimatedImages();
-        boolean hasPageAnim = true;
+        boolean hasPageAnim = pageBlocks.isHasAnimatedPageImage();
         boolean timerSet = hasAnim || hasPageAnim || pageBlocks.isHasPageTimer();
         if (timerSet) {
             stringBuilder.append("    timer = function(s)").append(LINE_SEPARATOR);
