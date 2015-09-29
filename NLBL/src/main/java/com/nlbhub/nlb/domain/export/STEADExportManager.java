@@ -1537,7 +1537,7 @@ public class STEADExportManager extends TextExportManager {
         if (StringHelper.notEmpty(caption) && useCaption) {
             return "    nam = \"" + caption + "\"," + LINE_SEPARATOR;
         } else {
-            return "    nam = function(s) return true; end," + LINE_SEPARATOR;
+            return "    nam = \"...\"," + LINE_SEPARATOR;
         }
     }
 
