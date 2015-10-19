@@ -16,7 +16,6 @@ lua_tonumberT lua_tonumber = NULL;
 lua_tolstringT lua_tolstring = NULL;
 lua_tobooleanT lua_toboolean = NULL;
 #endif
-bool initDone = false;
 
 #ifdef _WINDOWS
 static void initLuaFunctionPointers (HMODULE lib) {
@@ -41,36 +40,44 @@ static void initLuaFunctionPointers (void* ph) {
 #endif
 
 static int init(lua_State *L) {
-    printf("Initializing API...\n");
-    if (initDone) {
-        printf("Already initialized!\n");
+    log("Initializing API...\n");
+    if (checkInitFunc()) {
+        log("Already initialized!\n");
         lua_pushnumber(L, 0.0);
     } else {
         initFunc();
-        initDone = true;
-        printf("API initialized.\n");
+        log("API initialized.\n");
         lua_pushnumber(L, 1.0);
     }
     return 1;
+}
+
+static void checkInit() {
+	if (!checkInitFunc()) {
+		initFunc();
+		log("Warning: init while processing.\n");
+	}
 }
   
 static int setAchievement(lua_State *L) {
     const char* achievementName = lua_tostring(L, 1);
     bool storeImmediately = lua_toboolean(L, 2);
-    printf("Setting achievement '%s'...\n", achievementName);
+	checkInit();
+    log("Setting achievement '%s'...\n", achievementName);
     setAchievementFunc(achievementName);
     if (storeImmediately) {
         storeFunc();
     }
-    printf("Achievement set.\n");
+    log("Achievement set.\n");
     lua_pushnumber(L, 0.0);
     return 1;
 }
   
 static int store(lua_State *L) {
-    printf ("Storing...\n");
+	checkInit();
+    log("Storing...\n");
     storeFunc();
-    printf ("Done.\n");
+	log("Done.\n");
     lua_pushnumber(L, 0.0);
     return 1;
 }
@@ -78,20 +85,22 @@ static int store(lua_State *L) {
 static int clearAchievement(lua_State *L) {
     const char* achievementName = lua_tostring(L, 1);
     bool storeImmediately = lua_toboolean(L, 2);
-    printf("Clearing achievement '%s'...\n", achievementName);
+	checkInit();
+	log("Clearing achievement '%s'...\n", achievementName);
     clearAchievementFunc(achievementName);
     if (storeImmediately) {
         storeFunc();
     }
-    printf("Achievement cleared.\n");
+    log("Achievement cleared.\n");
     lua_pushnumber(L, 0.0);
     return 1;
 }
 
 static int resetAll(lua_State *L) {
-    printf ("Resetting all achievements...\n");
+    log("Resetting all achievements...\n");
+	checkInit();
     resetAllFunc();
-    printf ("Done.\n");
+    log("Done.\n");
     lua_pushnumber(L, 0.0);
     return 1;
 }
@@ -100,7 +109,7 @@ static int resetAll(lua_State *L) {
 extern "C" __declspec(dllexport) int luaopen_luapassing(lua_State *L) {
     HMODULE lib = GetModuleHandle(L"lua5.1.dll");
     if (!lib) {
-        printf("Library lua5.1.dll is not loaded!\n");
+        log("Library lua5.1.dll is not loaded!\n");
         return 1;
     }
     initLuaFunctionPointers(lib);
