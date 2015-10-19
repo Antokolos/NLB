@@ -389,7 +389,9 @@ public abstract class ExportManager {
         blocks.setPageComment(decoratePageComment(page.getCaption()));
         blocks.setPageCaption(decoratePageCaption(page.getCaption(), page.isUseCaption()));
         String imageFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_IMAGE_FILE_NAME: page.getImageFileName());
-        blocks.setPageImage(decoratePageImage(getImagePaths(null, imageFileName, false), page.isImageBackground()));
+        boolean isAnimatedImage = page.isImageAnimated();
+        blocks.setHasAnimatedPageImage(isAnimatedImage);
+        blocks.setPageImage(decoratePageImage(getImagePaths(null, imageFileName, isAnimatedImage), page.isImageBackground()));
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
         blocks.setPageSound(decoratePageSound(pageName, getSoundPaths(null, soundFileName), page.isSoundSFX()));
         blocks.setPageTextStart(decoratePageTextStart(page.getId(), pageNumber, StringHelper.getTextChunks(page.getText())));
@@ -713,6 +715,8 @@ public abstract class ExportManager {
             blocks.addContainedObjId(containedObjId);
         }
         blocks.setObjObjEnd(decorateObjObjEnd());
+        String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Obj.DEFAULT_SOUND_FILE_NAME: obj.getSoundFileName());
+        blocks.setObjSound(decorateObjSound(getSoundPaths(null, soundFileName), obj.isSoundSFX()));
         List<Link> links = obj.getLinks();
         for (final Link link : links) {
             if (!link.isDeleted()) {
@@ -876,6 +880,11 @@ public abstract class ExportManager {
             @Override
             public boolean isImageBackground() {
                 return page.isImageBackground();
+            }
+
+            @Override
+            public boolean isImageAnimated() {
+                return page.isImageAnimated();
             }
 
             @Override
@@ -1443,6 +1452,11 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
+    protected String decorateObjSound(List<SoundPathData> objSoundPathDatas, boolean soundSFX) {
+        return EMPTY_STRING;
+    }
+
+
     private LinkBuildingBlocks createLinkBuildingBlocks(
             final Link link,
             final ExportData exportData
@@ -1940,6 +1954,18 @@ public abstract class ExportManager {
                             );
                         }
                         break;
+                    case SSND:
+                        stringBuilder.append(decorateSSndOperation());
+                        break;
+                    case WSND:
+                        stringBuilder.append(decorateWSndOperation());
+                        break;
+                    case SND:
+                        final String sndArgObjId = exportData.getObjId(expression.getValue());
+                        stringBuilder.append(
+                                decorateSndOperation(sndArgObjId, decorateAutoVar(expression.getValue()))
+                        );
+                        break;
                     case SPUSH:
                         stringBuilder.append(decorateSPushOperation(decorateAutoVar(expression.getValue())));
                         break;
@@ -2164,6 +2190,12 @@ public abstract class ExportManager {
     protected abstract String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName, boolean unique);
 
     protected abstract String decorateObjsOperation(String listVariableName, String srcObjId, String objectVar);
+
+    protected abstract String decorateSSndOperation();
+
+    protected abstract String decorateWSndOperation();
+
+    protected abstract String decorateSndOperation(String objectId, String objectVar);
 
     protected abstract String decorateSPushOperation(String listVariableName);
 

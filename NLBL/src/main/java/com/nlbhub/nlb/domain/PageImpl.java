@@ -55,7 +55,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -71,6 +70,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String TEXT_SUBDIR_NAME = "text";
     private static final String IMAGE_FILE_NAME = "image";
     private static final String IMAGEBG_FILE_NAME = "imagebg";
+    private static final String IMGANIM_FILE_NAME = "imganim";
     private static final String SOUND_FILE_NAME = "sound";
     private static final String SOUND_SFX_FILE_NAME = "soundsfx";
     private static final String VARID_FILE_NAME = "varid";
@@ -97,6 +97,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String DEFAULT_MODULE_NAME_FORMAT = "%s's submodule";
     private String m_imageFileName = DEFAULT_IMAGE_FILE_NAME;
     private boolean m_imageBackground = DEFAULT_IMAGE_BACKGROUND;
+    private boolean m_imageAnimated = DEFAULT_IMAGE_ANIMATED;
     private String m_soundFileName = DEFAULT_SOUND_FILE_NAME;
     private boolean m_soundSFX = DEFAULT_SOUND_SFX;
     private String m_varId = DEFAULT_VARID;
@@ -145,6 +146,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         super(source);
         m_imageFileName = source.getImageFileName();
         m_imageBackground = source.isImageBackground();
+        m_imageAnimated = source.isImageAnimated();
         m_soundFileName = source.getSoundFileName();
         setSoundSFX(source.isSoundSFX());
         setVarId(source.getVarId());
@@ -228,6 +230,15 @@ public class PageImpl extends AbstractNodeItem implements Page {
     @Override
     public boolean isImageBackground() {
         return m_imageBackground;
+    }
+
+    public void setImageAnimated(boolean imageAnimated) {
+        m_imageAnimated = imageAnimated;
+    }
+
+    @Override
+    public boolean isImageAnimated() {
+        return m_imageAnimated;
     }
 
     public void setSoundFileName(String soundFileName) {
@@ -591,6 +602,12 @@ public class PageImpl extends AbstractNodeItem implements Page {
             );
             fileManipulator.writeOptionalString(
                     pageDir,
+                    IMGANIM_FILE_NAME,
+                    String.valueOf(m_imageAnimated),
+                    String.valueOf(DEFAULT_IMAGE_ANIMATED)
+            );
+            fileManipulator.writeOptionalString(
+                    pageDir,
                     SOUND_FILE_NAME,
                     m_soundFileName,
                     DEFAULT_SOUND_FILE_NAME
@@ -746,6 +763,13 @@ public class PageImpl extends AbstractNodeItem implements Page {
                             pageDir,
                             IMAGEBG_FILE_NAME,
                             String.valueOf(DEFAULT_IMAGE_BACKGROUND)
+                    )
+            );
+            m_imageAnimated = "true".equals(
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            IMGANIM_FILE_NAME,
+                            String.valueOf(DEFAULT_IMAGE_ANIMATED)
                     )
             );
             m_soundFileName = (

@@ -1147,12 +1147,6 @@
                                               <text value="&lt;NO IMAGE&gt;"/>
                                             </properties>
                                           </component>
-                                          <component id="69794" class="javax.swing.JCheckBox" binding="m_backgroundCheckBox">
-                                            <constraints border-constraint="North"/>
-                                            <properties>
-                                              <text value="Background"/>
-                                            </properties>
-                                          </component>
                                           <grid id="94905" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
                                             <constraints border-constraint="South"/>
                                             <properties/>
@@ -1168,6 +1162,25 @@
                                                 <constraints/>
                                                 <properties>
                                                   <text value="―"/>
+                                                </properties>
+                                              </component>
+                                            </children>
+                                          </grid>
+                                          <grid id="7bc00" layout-manager="BorderLayout" hgap="0" vgap="0">
+                                            <constraints border-constraint="North"/>
+                                            <properties/>
+                                            <border type="none"/>
+                                            <children>
+                                              <component id="69794" class="javax.swing.JCheckBox" binding="m_backgroundCheckBox">
+                                                <constraints border-constraint="West"/>
+                                                <properties>
+                                                  <text value="Background"/>
+                                                </properties>
+                                              </component>
+                                              <component id="295a" class="javax.swing.JCheckBox" binding="m_animatedCheckBox">
+                                                <constraints border-constraint="East"/>
+                                                <properties>
+                                                  <text value="Animated"/>
                                                 </properties>
                                               </component>
                                             </children>

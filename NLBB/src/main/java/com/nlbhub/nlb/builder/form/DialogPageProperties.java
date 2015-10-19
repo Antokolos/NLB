@@ -127,6 +127,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JButton m_buttonZoomIn;
     private JButton m_buttonZoomOut;
     private JCheckBox m_globalAutowireCheckBox;
+    private JCheckBox m_animatedCheckBox;
 
     public DialogPageProperties(final MainFrame mainFrame, final NonLinearBookFacade nlbFacade, final Page page) {
         m_nlbFacade = nlbFacade;
@@ -351,6 +352,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
 
         m_imageFileName = page.getImageFileName();
         m_backgroundCheckBox.setSelected(page.isImageBackground());
+        m_animatedCheckBox.setSelected(page.isImageAnimated());
         m_imageFileNameLabel.setText(m_imageFileName);
 
         m_soundFileName = page.getSoundFileName();
@@ -448,6 +450,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 m_page,
                 m_imageFileName,
                 m_backgroundCheckBox.isSelected(),
+                m_animatedCheckBox.isSelected(),
                 m_soundFileName,
                 m_soundSFXCheckBox.isSelected(),
                 m_pageVariableTextField.getText(),
@@ -1291,9 +1294,6 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_imageFileNameLabel.setHorizontalTextPosition(0);
         m_imageFileNameLabel.setText("<NO IMAGE>");
         panel58.add(m_imageFileNameLabel, BorderLayout.CENTER);
-        m_backgroundCheckBox = new JCheckBox();
-        m_backgroundCheckBox.setText("Background");
-        panel58.add(m_backgroundCheckBox, BorderLayout.NORTH);
         final JPanel panel59 = new JPanel();
         panel59.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         panel58.add(panel59, BorderLayout.SOUTH);
@@ -1303,41 +1303,50 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_buttonZoomOut = new JButton();
         m_buttonZoomOut.setText("―");
         panel59.add(m_buttonZoomOut);
-        m_imageView = new JXImageView();
-        panel57.add(m_imageView, BorderLayout.CENTER);
         final JPanel panel60 = new JPanel();
         panel60.setLayout(new BorderLayout(0, 0));
-        panel54.add(panel60, BorderLayout.NORTH);
+        panel58.add(panel60, BorderLayout.NORTH);
+        m_backgroundCheckBox = new JCheckBox();
+        m_backgroundCheckBox.setText("Background");
+        panel60.add(m_backgroundCheckBox, BorderLayout.WEST);
+        m_animatedCheckBox = new JCheckBox();
+        m_animatedCheckBox.setText("Animated");
+        panel60.add(m_animatedCheckBox, BorderLayout.EAST);
+        m_imageView = new JXImageView();
+        panel57.add(m_imageView, BorderLayout.CENTER);
         final JPanel panel61 = new JPanel();
-        panel61.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel60.add(panel61, BorderLayout.NORTH);
+        panel61.setLayout(new BorderLayout(0, 0));
+        panel54.add(panel61, BorderLayout.NORTH);
+        final JPanel panel62 = new JPanel();
+        panel62.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel61.add(panel62, BorderLayout.NORTH);
         m_setSoundButton = new JButton();
         m_setSoundButton.setMaximumSize(new Dimension(120, 36));
         m_setSoundButton.setMinimumSize(new Dimension(120, 36));
         m_setSoundButton.setPreferredSize(new Dimension(120, 36));
         m_setSoundButton.setText("Set sound...");
-        panel61.add(m_setSoundButton);
-        final JPanel panel62 = new JPanel();
-        panel62.setLayout(new BorderLayout(0, 0));
-        panel60.add(panel62, BorderLayout.CENTER);
+        panel62.add(m_setSoundButton);
         final JPanel panel63 = new JPanel();
         panel63.setLayout(new BorderLayout(0, 0));
-        panel62.add(panel63, BorderLayout.NORTH);
+        panel61.add(panel63, BorderLayout.CENTER);
+        final JPanel panel64 = new JPanel();
+        panel64.setLayout(new BorderLayout(0, 0));
+        panel63.add(panel64, BorderLayout.NORTH);
         m_soundFileNameLabel = new JLabel();
         m_soundFileNameLabel.setHorizontalAlignment(0);
         m_soundFileNameLabel.setHorizontalTextPosition(0);
         m_soundFileNameLabel.setText("<NO_SOUND>");
-        panel63.add(m_soundFileNameLabel, BorderLayout.CENTER);
+        panel64.add(m_soundFileNameLabel, BorderLayout.CENTER);
         m_soundSFXCheckBox = new JCheckBox();
         m_soundSFXCheckBox.setText("SFX");
-        panel63.add(m_soundSFXCheckBox, BorderLayout.NORTH);
-        final JPanel panel64 = new JPanel();
-        panel64.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel64, BorderLayout.NORTH);
+        panel64.add(m_soundSFXCheckBox, BorderLayout.NORTH);
+        final JPanel panel65 = new JPanel();
+        panel65.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel65, BorderLayout.NORTH);
         final JToolBar toolBar1 = new JToolBar();
         toolBar1.setBorderPainted(false);
         toolBar1.setFloatable(false);
-        panel64.add(toolBar1, BorderLayout.CENTER);
+        panel65.add(toolBar1, BorderLayout.CENTER);
         m_undoButton = new JButton();
         m_undoButton.setIcon(new ImageIcon(getClass().getResource("/common/undo.png")));
         m_undoButton.setText("Undo");
@@ -1347,7 +1356,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_redoButton.setText("Redo");
         toolBar1.add(m_redoButton);
         m_languageComboBox = new JComboBox();
-        panel64.add(m_languageComboBox, BorderLayout.EAST);
+        panel65.add(m_languageComboBox, BorderLayout.EAST);
         m_traverseTextLabel.setLabelFor(m_traverseTextTextField);
         label1.setLabelFor(m_pageCaptionTextField);
         m_autowireInTextLabel.setLabelFor(m_autowireInTextTextField);

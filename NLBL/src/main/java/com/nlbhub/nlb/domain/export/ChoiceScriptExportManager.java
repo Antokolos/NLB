@@ -554,6 +554,24 @@ public class ChoiceScriptExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateSSndOperation() {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateWSndOperation() {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateSndOperation(String objectId, String objectVar) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateSPushOperation(String listVariableName) {
         // TODO: implement
         return EMPTY_STRING;
