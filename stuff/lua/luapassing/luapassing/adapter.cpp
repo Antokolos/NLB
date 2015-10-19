@@ -9,7 +9,7 @@
 #define UserStatsObject void
 
 UserStatsObject* getUserStatsObject() {
-	return null;
+	return NULL;
 }
 
 void globalInit() {
