@@ -1,4 +1,7 @@
 #include "adapter.h"
+#ifndef _WINDOWS
+#include <stdio.h>
+#endif
 #include <stdarg.h>
 
 // Modify code here and insert actual code for all required actions -- begin
