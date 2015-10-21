@@ -186,6 +186,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public boolean isModuleExternal() {
+        return false;
+    }
+
+    @Override
     public NonLinearBook getModule() {
         return m_nlb;
     }

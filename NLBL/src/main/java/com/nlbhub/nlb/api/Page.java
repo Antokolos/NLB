@@ -77,6 +77,7 @@ public interface Page extends NodeItem {
     public static final MultiLangString DEFAULT_RETURN_TEXT = MultiLangString.createEmptyText();
     public static final String DEFAULT_RETURN_PAGE_ID = Constants.EMPTY_STRING;
     public static final String DEFAULT_MODULE_CONSTR_ID = Constants.EMPTY_STRING;
+    public static final boolean DEFAULT_MODULE_EXTERNAL = false;
 
     public String getImageFileName();
 
@@ -133,6 +134,8 @@ public interface Page extends NodeItem {
     public String getModuleConstrId();
 
     public String getModuleName();
+
+    public boolean isModuleExternal();
 
     public NonLinearBook getModule();
 

@@ -80,6 +80,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String USE_MPL_FILE_NAME = "use_mpl";
     private static final String MODULE_SUBDIR_NAME = "module";
     private static final String MODNAME_FILE_NAME = "modname";
+    private static final String EXTMOD_FILE_NAME = "extmod";
     private static final String TRAVTEXT_FILE_NAME = "travtext";
     private static final String AUTOTRAV_FILE_NAME = "autotrav";
     private static final String AUTORET_FILE_NAME = "autoret";
@@ -107,6 +108,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private boolean m_useMPL = DEFAULT_USE_MPL;
     private MultiLangString m_text = DEFAULT_TEXT;
     private String m_moduleName;
+    private boolean m_moduleExternal = DEFAULT_MODULE_EXTERNAL;
     private String m_defaultModuleName;
     private MultiLangString m_traverseText;
     private boolean m_autoTraverse = DEFAULT_AUTO_TRAVERSE;
@@ -156,6 +158,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         setUseMPL(source.isUseMPL());
         setTexts(source.getTexts());
         setModuleName(source.getModuleName());
+        setModuleExternal(source.isModuleExternal());
         resetDefaultModuleName();
         setTraverseTexts(source.getTraverseTexts());
         setAutoTraverse(source.isAutoTraverse());
@@ -178,6 +181,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         m_module = new NonLinearBookImpl(getCurrentNLB(), this);
         resetDefaultModuleName();
         m_moduleName = m_defaultModuleName;
+        m_moduleExternal = DEFAULT_MODULE_EXTERNAL;
         m_traverseText = MultiLangString.createCopy(DEFAULT_TRAVERSE_TEXT);
     }
 
@@ -424,6 +428,15 @@ public class PageImpl extends AbstractNodeItem implements Page {
         m_moduleName = moduleName;
     }
 
+    @Override
+    public boolean isModuleExternal() {
+        return m_moduleExternal;
+    }
+
+    public void setModuleExternal(boolean moduleExternal) {
+        m_moduleExternal = moduleExternal;
+    }
+
     public void setTraverseText(String traverseText) {
         m_traverseText.put(getCurrentNLB().getLanguage(), traverseText);
     }
@@ -629,6 +642,12 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     m_moduleName,
                     m_defaultModuleName
             );
+            fileManipulator.writeOptionalString(
+                    pageDir,
+                    EXTMOD_FILE_NAME,
+                    String.valueOf(m_moduleExternal),
+                    String.valueOf(DEFAULT_MODULE_EXTERNAL)
+            );
             fileManipulator.writeOptionalMultiLangString(
                     new File(pageDir, TRAVTEXT_FILE_NAME),
                     m_traverseText,
@@ -799,6 +818,13 @@ public class PageImpl extends AbstractNodeItem implements Page {
                             m_defaultModuleName
                     )
             );
+            m_moduleExternal = "true".equals(
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            EXTMOD_FILE_NAME,
+                            String.valueOf(DEFAULT_MODULE_EXTERNAL)
+                    )
+            );
             m_traverseText = (
                     FileManipulator.readOptionalMultiLangString(
                             new File(pageDir, TRAVTEXT_FILE_NAME),
@@ -926,6 +952,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         result.setCaption(getCaption());
         result.setModuleConstrId(getModuleConstrId());
         result.setModuleName(getModuleName());
+        result.setModuleExternal(isModuleExternal());
         result.setReturnText(getReturnText());
         result.setTraverseText(getTraverseText());
         result.setUseCaption(isUseCaption());

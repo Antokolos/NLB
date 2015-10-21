@@ -1002,6 +1002,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public boolean isModuleExternal() {
+                return page.isModuleExternal();
+            }
+
+            @Override
             public NonLinearBook getModule() {
                 return page.getModule();
             }

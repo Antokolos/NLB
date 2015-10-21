@@ -872,6 +872,12 @@
                                               <text value="Auto Return"/>
                                             </properties>
                                           </component>
+                                          <component id="82547" class="javax.swing.JCheckBox" binding="m_externalCheckBox">
+                                            <constraints/>
+                                            <properties>
+                                              <text value="External"/>
+                                            </properties>
+                                          </component>
                                         </children>
                                       </grid>
                                     </children>

@@ -398,6 +398,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_existingUseCaption;
         private final boolean m_existingUseMPL;
         private final String m_existingModuleName;
+        private final boolean m_existingModuleExternal;
         private final MultiLangString m_existingTraverseText;
         private final MultiLangString m_existingReturnText;
         private final boolean m_existingAutoTraverse;
@@ -419,6 +420,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_newUseCaption;
         private final boolean m_newUseMPL;
         private final String m_newModuleName;
+        private final boolean m_newModuleExternal;
         private final MultiLangString m_newTraverseText;
         private final boolean m_newAutoTraverse;
         private final boolean m_newAutoReturn;
@@ -448,6 +450,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final boolean useCaption,
                 final boolean useMPL,
                 final String moduleName,
+                final boolean moduleExternal,
                 final MultiLangString traverseText,
                 final boolean autoTraverse,
                 final boolean autoReturn,
@@ -479,6 +482,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     useCaption,
                     useMPL,
                     moduleName,
+                    moduleExternal,
                     traverseText,
                     autoTraverse,
                     autoReturn,
@@ -512,6 +516,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final boolean useCaption,
                 final boolean useMPL,
                 final String moduleName,
+                final boolean moduleExternal,
                 final MultiLangString traverseText,
                 final boolean autoTraverse,
                 final boolean autoReturn,
@@ -589,6 +594,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingUseCaption = m_page.isUseCaption();
             m_existingUseMPL = m_page.isUseMPL();
             m_existingModuleName = m_page.getModuleName();
+            m_existingModuleExternal = m_page.isModuleExternal();
             m_existingTraverseText = m_page.getTraverseTexts();
             m_existingAutoTraverse = m_page.isAutoTraverse();
             m_existingAutoReturn = m_page.isAutoReturn();
@@ -610,6 +616,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newUseCaption = useCaption;
             m_newUseMPL = useMPL;
             m_newModuleName = moduleName;
+            m_newModuleExternal = moduleExternal;
             m_newTraverseText = traverseText;
             m_newAutoTraverse = autoTraverse;
             m_newAutoReturn = autoReturn;
@@ -657,6 +664,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setUseCaption(m_newUseCaption);
             m_page.setUseMPL(m_newUseMPL);
             m_page.setModuleName(m_newModuleName);
+            m_page.setModuleExternal(m_newModuleExternal);
             m_page.setTraverseTexts(m_newTraverseText);
             m_page.setAutoTraverse(m_newAutoTraverse);
             m_page.setAutoReturn(m_newAutoReturn);
@@ -697,6 +705,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setUseCaption(m_existingUseCaption);
             m_page.setUseMPL(m_existingUseMPL);
             m_page.setModuleName(m_existingModuleName);
+            m_page.setModuleExternal(m_existingModuleExternal);
             m_page.setTraverseTexts(m_existingTraverseText);
             m_page.setAutoTraverse(m_existingAutoTraverse);
             m_page.setAutoReturn(m_existingAutoReturn);
@@ -1635,6 +1644,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         page.isUseCaption(),
                         page.isUseMPL(),
                         page.getModuleName(),
+                        page.isModuleExternal(),
                         page.getTraverseTexts(),
                         page.isAutoTraverse(),
                         page.isAutoReturn(),
@@ -2047,6 +2057,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final boolean useCaption,
             final boolean useMPL,
             final String moduleName,
+            final boolean moduleExternal,
             final MultiLangString traverseText,
             final boolean autoTraverse,
             final boolean autoReturn,
@@ -2079,6 +2090,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         useCaption,
                         useMPL,
                         moduleName,
+                        moduleExternal,
                         traverseText,
                         autoTraverse,
                         autoReturn,

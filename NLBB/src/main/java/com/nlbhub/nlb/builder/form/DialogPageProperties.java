@@ -128,6 +128,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JButton m_buttonZoomOut;
     private JCheckBox m_globalAutowireCheckBox;
     private JCheckBox m_animatedCheckBox;
+    private JCheckBox m_externalCheckBox;
 
     public DialogPageProperties(final MainFrame mainFrame, final NonLinearBookFacade nlbFacade, final Page page) {
         m_nlbFacade = nlbFacade;
@@ -391,6 +392,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_pageText.setText(page.getText());
 
         m_moduleNameTextField.setText(page.getModuleName());
+        m_externalCheckBox.setSelected(page.isModuleExternal());
         m_traverseTextTextField.setText(page.getTraverseText());
         m_autoTraverseCheckBox.setSelected(page.isAutoTraverse());
         m_autoReturnCheckBox.setSelected(page.isAutoReturn());
@@ -460,6 +462,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 m_useCheckBox.isSelected(),
                 m_useMPLCheckBox.isSelected(),
                 m_moduleNameTextField.getText(),
+                m_externalCheckBox.isSelected(),
                 m_traverseTexts,
                 m_autoTraverseCheckBox.isSelected(),
                 m_autoReturnCheckBox.isSelected(),
@@ -1127,6 +1130,9 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_autoReturnCheckBox = new JCheckBox();
         m_autoReturnCheckBox.setText("Auto Return");
         panel40.add(m_autoReturnCheckBox);
+        m_externalCheckBox = new JCheckBox();
+        m_externalCheckBox.setText("External");
+        panel40.add(m_externalCheckBox);
         final JPanel panel41 = new JPanel();
         panel41.setLayout(new BorderLayout(0, 0));
         tabbedPane1.addTab("Autowire", panel41);
