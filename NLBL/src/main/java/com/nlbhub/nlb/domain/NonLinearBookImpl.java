@@ -4164,6 +4164,16 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     @Override
+    public NonLinearBook findExternalModule(String name) {
+        for (final Map.Entry<String, NonLinearBook> entry : m_externalModules.entrySet()) {
+            if (entry.getKey().equals(name)) {
+                return entry.getValue();
+            }
+        }
+        return m_parentNLB.findExternalModule(name);
+    }
+
+    @Override
     public Map<String, Variable.DataType> getVariableDataTypes() throws NLBConsistencyException {
         Map<String, Variable.DataType> result = new HashMap<>();
         for (VariableImpl variable : m_variables) {

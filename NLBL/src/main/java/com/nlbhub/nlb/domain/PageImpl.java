@@ -913,7 +913,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
             );
             if (isModuleExternal()) {
                 m_module.clear();
-                m_module.append(getCurrentNLB().getExternalModules().get(m_moduleName));
+                m_module.append(getCurrentNLB().findExternalModule(m_moduleName));
             } else {
                 final File moduleDir = new File(pageDir, MODULE_SUBDIR_NAME);
                 m_module.loadAndSetParent(moduleDir.getCanonicalPath(), getCurrentNLB(), this);

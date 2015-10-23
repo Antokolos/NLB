@@ -377,6 +377,13 @@ public interface NonLinearBook {
 
     public Map<String, NonLinearBook> getExternalModules();
 
+    /**
+     * Find external module recursively by name (if not found in the current book, will find in the parent book and so on)
+     * @param name
+     * @return
+     */
+    public NonLinearBook findExternalModule(final String name);
+
     public Map<String, Variable.DataType> getVariableDataTypes() throws NLBConsistencyException;
 
     public Map<String, String> getMediaToConstraintMap();
