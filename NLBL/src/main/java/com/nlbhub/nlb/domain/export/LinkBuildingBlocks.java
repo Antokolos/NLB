@@ -55,6 +55,7 @@ public class LinkBuildingBlocks {
     private int m_targetPageNumber;
     private String m_linkEnd;
     private boolean m_auto;
+    private boolean m_once;
     /** Link is considered trivial if it has default text and has no constraints. */
     private boolean m_isTrivial;
 
@@ -147,5 +148,13 @@ public class LinkBuildingBlocks {
 
     public void setAuto(boolean auto) {
         m_auto = auto;
+    }
+
+    public boolean isOnce() {
+        return m_once;
+    }
+
+    public void setOnce(boolean once) {
+        m_once = once;
     }
 }

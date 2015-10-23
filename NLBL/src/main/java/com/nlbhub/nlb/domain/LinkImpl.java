@@ -68,6 +68,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     private static final String CONSTRID_FILE_NAME = "constrid";
     private static final String STROKE_FILE_NAME = "stroke";
     private static final String AUTO_FILE_NAME = "auto";
+    private static final String ONCE_FILE_NAME = "once";
     private String m_varId = DEFAULT_VAR_ID;
     /**
      * Id of the target page of the link (to which this link leads).
@@ -87,6 +88,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     private String m_stroke = DEFAULT_STROKE;
     private CoordsImpl m_coords = new CoordsImpl();
     private boolean m_auto = DEFAUlT_AUTO;
+    private boolean m_once = DEFAUlT_ONCE;
     private ObserverHandler m_observerHandler = new ObserverHandler();
     private boolean m_isPositiveConstraint = true;
     private boolean m_isObeyToModuleConstraint = true;
@@ -128,6 +130,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
         m_isTraversalLink = sourceLink.isTraversalLink();
         m_isReturnLink = sourceLink.isReturnLink();
         m_auto = sourceLink.isAuto();
+        m_once = sourceLink.isOnce();
     }
 
     public LinkImpl(final NodeItem parent, String target) {
@@ -244,6 +247,16 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
         m_auto = auto;
     }
 
+    @Override
+    @XmlElement(name = "is-once")
+    public boolean isOnce() {
+        return m_once;
+    }
+
+    public void setOnce(boolean once) {
+        m_once = once;
+    }
+
     private void writeCoords(
             FileManipulator fileManipulator,
             File linkDir
@@ -294,6 +307,12 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
                     String.valueOf(m_auto),
                     String.valueOf(DEFAUlT_AUTO)
             );
+            fileManipulator.writeOptionalString(
+                    linkDir,
+                    ONCE_FILE_NAME,
+                    String.valueOf(m_once),
+                    String.valueOf(DEFAUlT_ONCE)
+            );
             writeCoords(fileManipulator, linkDir);
             writeModOrderFile(fileManipulator, linkDir);
             writeModifications(fileManipulator, linkDir);
@@ -342,6 +361,13 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
                         linkDir,
                         AUTO_FILE_NAME,
                         String.valueOf(DEFAUlT_AUTO)
+                )
+        );
+        m_once = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        linkDir,
+                        ONCE_FILE_NAME,
+                        String.valueOf(DEFAUlT_ONCE)
                 )
         );
         readCoords(linkDir);

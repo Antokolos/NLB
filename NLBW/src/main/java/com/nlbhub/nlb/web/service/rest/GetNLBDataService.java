@@ -608,13 +608,9 @@ public class GetNLBDataService {
         );
 
         final DecisionPoint decisionPointToBeMade = s_history.getDecisionPointToBeMade();
-        ReturnBookIdAndModulePage returnBookIdAndPage = getReturnLinkBookId(
-                decisionPointToBeMade, moduleData
-        );
+        ReturnBookIdAndModulePage returnBookIdAndPage = getReturnLinkBookId(decisionPointToBeMade, moduleData);
         final String normalLinkBookId = getNormalLinkBookId(decisionPointToBeMade);
-        final String traversalLinkBookId = (
-                getTraversalLinkBookId(decisionPointToBeMade, moduleData, pageId)
-        );
+        final String traversalLinkBookId = getTraversalLinkBookId(decisionPointToBeMade, moduleData, pageId);
         AutomaticDecision automaticDecision = addPossibleNextDecisions(
                 filteredPage,
                 decisionPointToBeMade,

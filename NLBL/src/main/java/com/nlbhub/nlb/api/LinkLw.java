@@ -71,6 +71,7 @@ public class LinkLw implements Link {
     private String m_constrId;
     private String m_varId;
     private boolean m_auto;
+    private boolean m_once;
     private boolean m_positiveConstraint;
     private boolean m_shouldObeyToModuleConstraint;
     private List<Modification> m_modifications = new ArrayList<>();
@@ -83,6 +84,7 @@ public class LinkLw implements Link {
      * @param constrId
      * @param varId has meaning only for MPL links; represent ID of the MPL link variable
      * @param auto
+     * @param once
      * @param positiveConstraint
      * @param shouldObeyToModuleConstraint
      * @param mplLink should be true if link is MPL, false otherwise
@@ -96,6 +98,7 @@ public class LinkLw implements Link {
             String constrId,
             String varId,
             boolean auto,
+            boolean once,
             boolean positiveConstraint,
             boolean shouldObeyToModuleConstraint,
             boolean mplLink,
@@ -108,6 +111,7 @@ public class LinkLw implements Link {
         m_constrId = constrId;
         m_varId = varId;
         m_auto = auto;
+        m_once = once;
         m_positiveConstraint = positiveConstraint;
         m_shouldObeyToModuleConstraint = shouldObeyToModuleConstraint;
         if (mplLink) {
@@ -199,6 +203,12 @@ public class LinkLw implements Link {
     @XmlElement(name = "is-auto")
     public boolean isAuto() {
         return m_auto;
+    }
+
+    @Override
+    @XmlElement(name = "is-once")
+    public boolean isOnce() {
+        return m_once;
     }
 
     @Override

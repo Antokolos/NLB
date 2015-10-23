@@ -459,6 +459,7 @@ public abstract class ExportManager {
                             page.getModuleConstrId(),
                             Constants.EMPTY_STRING,
                             page.isAutoTraverse(),
+                            false,
                             true,
                             false,
                             false,
@@ -480,6 +481,7 @@ public abstract class ExportManager {
                                     link.getConstrId(),
                                     link.getVarId(),
                                     link.isAuto(),
+                                    link.isOnce(),
                                     link.isPositiveConstraint(),
                                     false,
                                     true,
@@ -506,6 +508,7 @@ public abstract class ExportManager {
                                 exportData.getModulePage().getModuleConstrId(),
                                 Constants.EMPTY_STRING,
                                 page.isAutoReturn(),
+                                false,
                                 StringHelper.isEmpty(exportData.getModulePage().getModuleConstrId()),
                                 false,
                                 false,
@@ -530,6 +533,7 @@ public abstract class ExportManager {
                                             + page.getId() + NonLinearBook.LC_VARID_SEPARATOR_OUT + nlbPage.getId(),
                                     Constants.EMPTY_STRING,
                                     page.isAutoOut(),
+                                    false,
                                     true,
                                     false,
                                     false,
@@ -558,6 +562,7 @@ public abstract class ExportManager {
                                     autowiredPage.getAutowireInConstrId(),
                                     Constants.EMPTY_STRING,
                                     autowiredPage.isAutoIn(),
+                                    false,
                                     true,
                                     false,
                                     false,
@@ -786,6 +791,11 @@ public abstract class ExportManager {
             @Override
             public boolean isAuto() {
                 return link.isAuto();
+            }
+
+            @Override
+            public boolean isOnce() {
+                return link.isOnce();
             }
 
             @Override
@@ -1469,6 +1479,7 @@ public abstract class ExportManager {
         LinkBuildingBlocks blocks = new LinkBuildingBlocks();
         final boolean trivial = determineTrivialStatus(link);
         blocks.setAuto(link.isAuto());
+        blocks.setOnce(link.isOnce());
         blocks.setTrivial(trivial);
         blocks.setLinkLabel(decorateLinkLabel(link.getId(), link.getText()));
         blocks.setLinkComment(decorateLinkComment(link.getText()));

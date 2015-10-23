@@ -227,12 +227,25 @@
                                           </component>
                                         </children>
                                       </grid>
-                                      <component id="be12e" class="javax.swing.JCheckBox" binding="m_autoCheckBox">
+                                      <grid id="59a96" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
                                         <constraints border-constraint="Center"/>
-                                        <properties>
-                                          <text value="Auto"/>
-                                        </properties>
-                                      </component>
+                                        <properties/>
+                                        <border type="none"/>
+                                        <children>
+                                          <component id="be12e" class="javax.swing.JCheckBox" binding="m_autoCheckBox">
+                                            <constraints/>
+                                            <properties>
+                                              <text value="Auto"/>
+                                            </properties>
+                                          </component>
+                                          <component id="2cd26" class="javax.swing.JCheckBox" binding="m_onceCheckBox">
+                                            <constraints/>
+                                            <properties>
+                                              <text value="Once"/>
+                                            </properties>
+                                          </component>
+                                        </children>
+                                      </grid>
                                     </children>
                                   </grid>
                                   <component id="5b1d2" class="javax.swing.JLabel">

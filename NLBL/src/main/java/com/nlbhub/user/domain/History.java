@@ -38,6 +38,7 @@
  */
 package com.nlbhub.user.domain;
 
+import com.nlbhub.nlb.api.Link;
 import com.nlbhub.nlb.exception.DecisionException;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -166,5 +167,14 @@ public class History {
             }
         }
         m_decisionPointToBeMade = decisionPointToBeMade;
+    }
+
+    public boolean containsLink(Link link) {
+        for (DecisionPoint decisionPoint : m_decisionPoints) {
+            if (link.getId().equals(decisionPoint.getLinkId())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

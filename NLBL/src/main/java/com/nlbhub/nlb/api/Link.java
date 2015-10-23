@@ -53,6 +53,7 @@ public interface Link extends ModifyingItem, NLBObservable {
     public final static String DEFAULT_CONSTR_ID = Constants.EMPTY_STRING;
     public final static String DEFAULT_STROKE = "0000FF";
     public final static boolean DEFAUlT_AUTO = false;
+    public final static boolean DEFAUlT_ONCE = false;
 
     public String getVarId();
 
@@ -69,6 +70,8 @@ public interface Link extends ModifyingItem, NLBObservable {
     public Coords getCoords();
 
     public boolean isAuto();
+
+    public boolean isOnce();
 
     /**
      * If true, constraint is fulfilled if its expression is true.

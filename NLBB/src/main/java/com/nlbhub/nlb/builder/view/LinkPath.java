@@ -530,6 +530,9 @@ public class LinkPath extends ItemPath implements NLBObserver {
         if (link.isAuto()) {
             text.append("<A> ");
         }
+        if (link.isOnce()) {
+            text.append("<O> ");
+        }
         if (!StringHelper.isEmpty(link.getText())) {
             int captionSize = link.getText().length();
             if (captionSize > MAX_CAPTION_CHARS_IN_LINK_TEXT) {

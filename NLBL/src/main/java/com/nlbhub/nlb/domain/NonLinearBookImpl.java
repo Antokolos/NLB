@@ -939,7 +939,9 @@ public class NonLinearBookImpl implements NonLinearBook {
         private MultiLangString m_newLinkText;
         private MultiLangString m_existingLinkText;
         private boolean m_existingAuto;
+        private boolean m_existingOnce;
         private boolean m_newAuto;
+        private boolean m_newOnce;
 
         private UpdateLinkCommand(
                 final NonLinearBook currentNLB,
@@ -947,7 +949,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String linkVariableName,
                 final String linkConstraintValue,
                 final MultiLangString linkText,
-                final boolean auto
+                final boolean auto,
+                final boolean once
         ) {
             IdentifiableItem parent = link.getParent();
             AbstractNodeItem nodeItem = getPageImplById(parent.getId());
@@ -960,7 +963,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                     linkVariableName,
                     linkConstraintValue,
                     linkText,
-                    auto
+                    auto,
+                    once
             );
         }
 
@@ -970,9 +974,10 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String linkVariableName,
                 final String linkConstraintValue,
                 final MultiLangString linkText,
-                final boolean auto
+                final boolean auto,
+                final boolean once
         ) {
-            init(currentNLB, link, linkVariableName, linkConstraintValue, linkText, auto);
+            init(currentNLB, link, linkVariableName, linkConstraintValue, linkText, auto, once);
         }
 
         private void init(
@@ -981,7 +986,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String linkVariableName,
                 final String linkConstraintValue,
                 final MultiLangString linkText,
-                final boolean auto
+                final boolean auto,
+                final boolean once
         ) {
             m_link = link;
             m_variableTracker = new VariableTracker(
@@ -1007,7 +1013,9 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingLinkText = link.getTexts();
             m_newLinkText = linkText;
             m_existingAuto = link.isAuto();
+            m_existingOnce = link.isOnce();
             m_newAuto = auto;
+            m_newOnce = once;
         }
 
         @Override
@@ -1016,6 +1024,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_link.setConstrId(m_constraintTracker.execute());
             m_link.setTexts(m_newLinkText);
             m_link.setAuto(m_newAuto);
+            m_link.setOnce(m_newOnce);
             m_link.notifyObservers();
         }
 
@@ -1025,6 +1034,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_link.setConstrId(m_constraintTracker.revert());
             m_link.setTexts(m_existingLinkText);
             m_link.setAuto(m_existingAuto);
+            m_link.setOnce(m_existingOnce);
             m_link.notifyObservers();
         }
     }
@@ -1771,7 +1781,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                         (linkVariable != null) ? linkVariable.getName() : Constants.EMPTY_STRING,
                         (linkConstraint != null) ? linkConstraint.getValue() : Constants.EMPTY_STRING,
                         link.getTexts(),
-                        link.isAuto()
+                        link.isAuto(),
+                        link.isOnce()
                 );
                 m_commandChain.addCommand(updateLinkCommand);
                 copyModifications(currentNLB, nlbToPaste, link, newLink);
@@ -2160,9 +2171,10 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String linkVariableName,
             final String linkConstraintValue,
             final MultiLangString linkText,
-            final boolean auto
+            final boolean auto,
+            final boolean once
     ) {
-        return new UpdateLinkCommand(this, link, linkVariableName, linkConstraintValue, linkText, auto);
+        return new UpdateLinkCommand(this, link, linkVariableName, linkConstraintValue, linkText, auto, once);
     }
 
     UpdateModificationsCommand createUpdateModificationsCommand(
@@ -2653,7 +2665,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         List<String> linkIdsToBeExcluded = new ArrayList<>();
         // TODO: ineffective search, please refactor!
         for (final Link link : source.getLinks()) {
-            if (determineLinkExcludedStatus(factory, visitedVars, link)) {
+            if (determineLinkExcludedStatus(factory, visitedVars, link, history)) {
                 linkIdsToBeExcluded.add(link.getId());
             }
         }
@@ -2669,13 +2681,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                             source.getModuleConstrId(),
                             Constants.EMPTY_STRING,
                             source.isAutoTraverse(),
+                            false,
                             true,
                             false,
                             false,
                             null
                     )
             );
-            if (!determineLinkExcludedStatus(factory, visitedVars, link)) {
+            if (!determineLinkExcludedStatus(factory, visitedVars, link, history)) {
                 linksToBeAdded.add(link);
             }
         }
@@ -2691,13 +2704,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                                     link.getConstrId(),
                                     link.getVarId(),
                                     link.isAuto(),
+                                    link.isOnce(),
                                     link.isPositiveConstraint(),
                                     false,
                                     true,
                                     link.getModifications()
                             )
                     );
-                    if (!determineLinkExcludedStatus(factory, visitedVars, linklw)) {
+                    if (!determineLinkExcludedStatus(factory, visitedVars, linklw, history)) {
                         linksToBeAdded.add(linklw);
                     }
                 }
@@ -2718,13 +2732,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                                 m_parentPage.getModuleConstrId(),
                                 Constants.EMPTY_STRING,
                                 source.isAutoReturn(),
+                                false,
                                 StringHelper.isEmpty(m_parentPage.getModuleConstrId()),
                                 false,
                                 false,
                                 null
                         )
                 );
-                if (!determineLinkExcludedStatus(factory, visitedVars, link)) {
+                if (!determineLinkExcludedStatus(factory, visitedVars, link, history)) {
                     linksToBeAdded.add(link);
                 }
             }
@@ -2777,9 +2792,12 @@ public class NonLinearBookImpl implements NonLinearBook {
     private boolean determineLinkExcludedStatus(
             final ScriptEngineManager factory,
             final Map<String, Object> visitedVars,
-            final Link link
+            final Link link,
+            History history
     ) throws ScriptException, NLBConsistencyException {
-
+        if (link.isOnce() && history.containsLink(link)) {
+            return true;
+        }
         final Variable constraintVar = getVariableById(link.getConstrId());
         final Variable moduleConstraint = (
                 m_parentPage != null

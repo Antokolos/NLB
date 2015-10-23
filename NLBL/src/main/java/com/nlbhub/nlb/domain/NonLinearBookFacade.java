@@ -399,7 +399,8 @@ public class NonLinearBookFacade implements NLBObservable {
             final String linkVariableName,
             final String linkConstraintValue,
             final MultiLangString linkText,
-            final boolean auto
+            final boolean auto,
+            final boolean once
     ) {
         NonLinearBookImpl.UpdateLinkCommand command = (
                 m_nlb.createUpdateLinkCommand(
@@ -407,7 +408,8 @@ public class NonLinearBookFacade implements NLBObservable {
                         linkVariableName,
                         linkConstraintValue,
                         linkText,
-                        auto
+                        auto,
+                        once
                 )
         );
         getUndoManagerByItemId(link.getId()).executeAndStore(command);

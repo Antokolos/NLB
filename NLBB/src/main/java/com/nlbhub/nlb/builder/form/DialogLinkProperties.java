@@ -71,6 +71,7 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
     private JCheckBox m_autoCheckBox;
     private JComboBox m_languageComboBox;
     private JTabbedPane m_tabbedPane1;
+    private JCheckBox m_onceCheckBox;
 
     public DialogLinkProperties(
             final NonLinearBookFacade nlbFacade,
@@ -171,6 +172,7 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         m_linkVariableTextField.setText(m_variable != null ? m_variable.getName() : "");
         m_linkTextTextField.setText(link.getText());
         m_autoCheckBox.setSelected(link.isAuto());
+        m_onceCheckBox.setSelected(link.isOnce());
         m_linkConstraintsTextField.setText(m_constraint != null ? m_constraint.getValue() : "");
 
         DefaultComboBoxModel<String> languageComboboxModel = new DefaultComboBoxModel<>();
@@ -192,7 +194,8 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
                 m_linkVariableTextField.getText(),
                 m_linkConstraintsTextField.getText(),
                 m_linkTexts,
-                m_autoCheckBox.isSelected()
+                m_autoCheckBox.isSelected(),
+                m_onceCheckBox.isSelected()
         );
         m_nlbFacade.removeObserver(m_observerId);
         dispose();
@@ -373,9 +376,15 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         m_modificationsButton = new JButton();
         m_modificationsButton.setText("Modifications...");
         panel16.add(m_modificationsButton);
+        final JPanel panel17 = new JPanel();
+        panel17.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        panel14.add(panel17, BorderLayout.CENTER);
         m_autoCheckBox = new JCheckBox();
         m_autoCheckBox.setText("Auto");
-        panel14.add(m_autoCheckBox, BorderLayout.CENTER);
+        panel17.add(m_autoCheckBox);
+        m_onceCheckBox = new JCheckBox();
+        m_onceCheckBox.setText("Once");
+        panel17.add(m_onceCheckBox);
         final JLabel label3 = new JLabel();
         label3.setText("Link constraints");
         gbc = new GridBagConstraints();
@@ -383,10 +392,10 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         gbc.gridy = 2;
         gbc.anchor = GridBagConstraints.EAST;
         panel12.add(label3, gbc);
-        final JPanel panel17 = new JPanel();
-        panel17.setLayout(new GridBagLayout());
-        panel17.setMinimumSize(new Dimension(468, 33));
-        panel17.setPreferredSize(new Dimension(468, 33));
+        final JPanel panel18 = new JPanel();
+        panel18.setLayout(new GridBagLayout());
+        panel18.setMinimumSize(new Dimension(468, 33));
+        panel18.setPreferredSize(new Dimension(468, 33));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 2;
@@ -394,7 +403,7 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
-        panel12.add(panel17, gbc);
+        panel12.add(panel18, gbc);
         final JScrollPane scrollPane3 = new JScrollPane();
         scrollPane3.setHorizontalScrollBarPolicy(31);
         scrollPane3.setVerticalScrollBarPolicy(21);
@@ -404,7 +413,7 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        panel17.add(scrollPane3, gbc);
+        panel18.add(scrollPane3, gbc);
         m_linkConstraintsTextField = new JTextField();
         m_linkConstraintsTextField.setColumns(40);
         scrollPane3.setViewportView(m_linkConstraintsTextField);
@@ -421,10 +430,10 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         gbc.gridy = 1;
         gbc.anchor = GridBagConstraints.EAST;
         panel12.add(label4, gbc);
-        final JPanel panel18 = new JPanel();
-        panel18.setLayout(new GridBagLayout());
-        panel18.setMinimumSize(new Dimension(468, 33));
-        panel18.setPreferredSize(new Dimension(468, 33));
+        final JPanel panel19 = new JPanel();
+        panel19.setLayout(new GridBagLayout());
+        panel19.setMinimumSize(new Dimension(468, 33));
+        panel19.setPreferredSize(new Dimension(468, 33));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 1;
@@ -432,7 +441,7 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
-        panel12.add(panel18, gbc);
+        panel12.add(panel19, gbc);
         final JScrollPane scrollPane4 = new JScrollPane();
         scrollPane4.setHorizontalScrollBarPolicy(31);
         scrollPane4.setVerticalScrollBarPolicy(21);
@@ -442,17 +451,17 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        panel18.add(scrollPane4, gbc);
+        panel19.add(scrollPane4, gbc);
         m_linkVariableTextField = new JTextField();
         m_linkVariableTextField.setColumns(40);
         scrollPane4.setViewportView(m_linkVariableTextField);
-        final JPanel panel19 = new JPanel();
-        panel19.setLayout(new BorderLayout(0, 0));
-        panel8.add(panel19, BorderLayout.NORTH);
+        final JPanel panel20 = new JPanel();
+        panel20.setLayout(new BorderLayout(0, 0));
+        panel8.add(panel20, BorderLayout.NORTH);
         final JToolBar toolBar1 = new JToolBar();
         toolBar1.setBorderPainted(false);
         toolBar1.setFloatable(false);
-        panel19.add(toolBar1, BorderLayout.WEST);
+        panel20.add(toolBar1, BorderLayout.WEST);
         m_undoButton = new JButton();
         m_undoButton.setIcon(new ImageIcon(getClass().getResource("/common/undo.png")));
         m_undoButton.setText("Undo");
@@ -462,10 +471,10 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         m_redoButton.setText("Redo");
         toolBar1.add(m_redoButton);
         m_languageComboBox = new JComboBox();
-        panel19.add(m_languageComboBox, BorderLayout.EAST);
-        final JPanel panel20 = new JPanel();
-        panel20.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel20, BorderLayout.CENTER);
+        panel20.add(m_languageComboBox, BorderLayout.EAST);
+        final JPanel panel21 = new JPanel();
+        panel21.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel21, BorderLayout.CENTER);
         label2.setLabelFor(m_linkIdTextField);
         label3.setLabelFor(m_linkConstraintsTextField);
         label4.setLabelFor(m_linkVariableTextField);
