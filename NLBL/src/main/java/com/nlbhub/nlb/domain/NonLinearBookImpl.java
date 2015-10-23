@@ -3705,7 +3705,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         }
                         // autowiredPage.getId() should be equal to ids[0]...
                         variable.setValue(
-                                decorateId(page.getId(), (autowiredPage != null) ? autowiredPage.getId() : ids[0]) +
+                                SpecialVariablesNameHelper.decorateId(page.getId(), (autowiredPage != null) ? autowiredPage.getId() : ids[0]) +
                                         (
                                                 (autowiredOutConstraint != null)
                                                         ? " && " + autowiredOutConstraint.getValue()
@@ -3713,7 +3713,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                                         )
                         );
                     } else {
-                        variable.setName(decorateId(page.getId(), ids[0]));
+                        variable.setName(SpecialVariablesNameHelper.decorateId(page.getId(), ids[0]));
                     }
 
                     return variable;
@@ -3725,10 +3725,6 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     private static String[] parseIds(String varId) {
         return (varId != null) ? varId.split("_") : null;
-    }
-
-    public static String decorateId(String id, String autowiredId) {
-        return "vl_" + ((autowiredId != null) ? autowiredId.replaceAll("-", "_") + "_" : "") + id.replaceAll("-", "_");
     }
 
     @Override
@@ -4241,11 +4237,26 @@ public class NonLinearBookImpl implements NonLinearBook {
                     // Do nothing
             }
         }
+        for (Map.Entry<String, ObjImpl> entryObj : m_objs.entrySet()) {
+            // For 'link once' special variables
+            for (final Link link : entryObj.getValue().getLinks()) {
+                if (link.isOnce()) {
+                    result.put(SpecialVariablesNameHelper.decorateLinkVisitStateVar(link.getId()), Variable.DataType.BOOLEAN);
+                }
+            }
+        }
         for (Map.Entry<String, PageImpl> entry : m_pages.entrySet()) {
             // For autowired vars
             for (Map.Entry<String, Page> entryA : getUpwardPagesHeirarchy().entrySet()) {
                 if (entryA.getValue().isAutowire()) {
-                    result.put(decorateId(entry.getKey(), entryA.getKey()), Variable.DataType.BOOLEAN);
+                    result.put(SpecialVariablesNameHelper.decorateId(entry.getKey(), entryA.getKey()), Variable.DataType.BOOLEAN);
+                }
+            }
+
+            // For 'link once' special variables
+            for (final Link link : entry.getValue().getLinks()) {
+                if (link.isOnce()) {
+                    result.put(SpecialVariablesNameHelper.decorateLinkVisitStateVar(link.getId()), Variable.DataType.BOOLEAN);
                 }
             }
 

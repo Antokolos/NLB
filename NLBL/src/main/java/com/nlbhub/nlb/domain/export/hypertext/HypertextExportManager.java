@@ -164,6 +164,7 @@ public abstract class HypertextExportManager
             page.add(linkAnchor);
             page.add(linkBlocks.getLinkModifications());
             page.add(linkBlocks.getLinkVariable());
+            page.add(linkBlocks.getLinkVisitStateVariable());
         }
         return page;
     }
@@ -529,11 +530,20 @@ public abstract class HypertextExportManager
 
     @Override
     protected String decorateLinkVariable(String variableName) {
-        if (StringHelper.isEmpty(variableName)) {
-            return "";
-        } else {
-            return getLineSeparator() + "    " + "Запишите ключевое слово: " + variableName;
+        StringBuilder result = new StringBuilder();
+        if (!StringHelper.isEmpty(variableName)) {
+            result.append(getLineSeparator()).append("    ").append("Запишите ключевое слово: ").append(variableName);
         }
+        return result.toString();
+    }
+
+    @Override
+    protected String decorateLinkVisitStateVariable(String linkVisitStateVariable) {
+        StringBuilder result = new StringBuilder();
+        if (StringHelper.isEmpty(linkVisitStateVariable)) {
+            result.append(getLineSeparator()).append("    ").append("Запишите ключевое слово: ").append(linkVisitStateVariable);
+        }
+        return result.toString();
     }
 
     @Override

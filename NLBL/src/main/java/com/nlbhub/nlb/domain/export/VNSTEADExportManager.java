@@ -151,6 +151,7 @@ public class VNSTEADExportManager extends STEADExportManager {
             LinkBuildingBlocks trivialLink = linksBuildingBlocks.get(0);
             result.append(trivialLink.getLinkModifications());
             result.append(trivialLink.getLinkVariable());
+            result.append(trivialLink.getLinkVisitStateVariable());
             result.append(trivialLink.getLinkGoTo());
         } else {
             for (LinkBuildingBlocks linkBlock : linksBuildingBlocks) {
@@ -229,6 +230,7 @@ public class VNSTEADExportManager extends STEADExportManager {
             result.append("    act = function(s) ").append(lineSep);
             result.append(linkBlocks.getLinkModifications());
             result.append(linkBlocks.getLinkVariable());
+            result.append(linkBlocks.getLinkVisitStateVariable());
             result.append(linkBlocks.getLinkGoTo());
             result.append("    end").append(lineSep);
             result.append(linkBlocks.getLinkEnd()).append(lineSep);

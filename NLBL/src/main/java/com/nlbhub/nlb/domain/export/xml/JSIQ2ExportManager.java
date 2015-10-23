@@ -190,13 +190,24 @@ public class JSIQ2ExportManager extends XMLExportManager {
                     );
                     article.addScript(actionVariableScript);
                 }
-                if (hasLinkVariable || hasLinkModifications) {
+                boolean hasLinkVisitStateVariable = !StringHelper.isEmpty(linkBlocks.getLinkVisitStateVariable());
+                if (hasLinkVisitStateVariable) {
+                    Script actionVisitStateVariableScript = new Script();
+                    actionVisitStateVariableScript.setType("lvs_var_" + i);
+                    actionVisitStateVariableScript.setValue(
+                            //"<![CDATA[" + linkBlocks.getLinkVisitStateVariable() + "]]>"
+                            linkBlocks.getLinkVisitStateVariable()
+                    );
+                    article.addScript(actionVisitStateVariableScript);
+                }
+                if (hasLinkVariable || hasLinkModifications || hasLinkVisitStateVariable) {
                     Script actionDoScript = new Script();
                     actionDoScript.setType("do_" + i);
                     actionDoScript.setValue(
                             //"<![CDATA[" + "var_" + i + "(); " + "mod_" + i + "(); ]]>"
                             (hasLinkModifications ? "mod_" + i + "(); " : Constants.EMPTY_STRING)
                                     + (hasLinkVariable ? "var_" + i + "(); " : Constants.EMPTY_STRING)
+                                    + (hasLinkVisitStateVariable ? "lvs_var_" + i + "(); " : Constants.EMPTY_STRING)
                     );
                     article.addScript(actionDoScript);
                     action.setDo("do_" + i);
@@ -704,6 +715,11 @@ public class JSIQ2ExportManager extends XMLExportManager {
     @Override
     protected String decorateLinkVariable(String variableName) {
         return "vars." + variableName + " = true; ";
+    }
+
+    @Override
+    protected String decorateLinkVisitStateVariable(String linkVisitStateVariable) {
+        return "vars." + linkVisitStateVariable + " = true; ";
     }
 
     @Override

@@ -49,13 +49,13 @@ public class LinkBuildingBlocks {
     private String m_linkComment;
     private String m_linkStart;
     private String m_linkVariable;
+    private String m_linkVisitStateVariable;
     private String m_linkConstraint;
     private String m_linkModifications;
     private String m_linkGoTo;
     private int m_targetPageNumber;
     private String m_linkEnd;
     private boolean m_auto;
-    private boolean m_once;
     /** Link is considered trivial if it has default text and has no constraints. */
     private boolean m_isTrivial;
 
@@ -100,6 +100,14 @@ public class LinkBuildingBlocks {
 
     public void setLinkVariable(String linkVariable) {
         m_linkVariable = linkVariable;
+    }
+
+    public String getLinkVisitStateVariable() {
+        return m_linkVisitStateVariable;
+    }
+
+    public void setLinkVisitStateVariable(String linkVisitStateVariable) {
+        m_linkVisitStateVariable = linkVisitStateVariable;
     }
 
     public String getLinkConstraint() {
@@ -148,13 +156,5 @@ public class LinkBuildingBlocks {
 
     public void setAuto(boolean auto) {
         m_auto = auto;
-    }
-
-    public boolean isOnce() {
-        return m_once;
-    }
-
-    public void setOnce(boolean once) {
-        m_once = once;
     }
 }

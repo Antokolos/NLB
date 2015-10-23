@@ -141,6 +141,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
             postPage.append(linkBlocks.getLinkLabel());
             postPage.append(linkBlocks.getLinkModifications());
             postPage.append(linkBlocks.getLinkVariable());
+            postPage.append(linkBlocks.getLinkVisitStateVariable());
             postPage.append(linkBlocks.getLinkGoTo());
         }
         return postPage.toString();
@@ -294,6 +295,11 @@ public class ChoiceScriptExportManager extends TextExportManager {
     @Override
     protected String decorateLinkVariable(String variableName) {
         return "*set " + variableName + " true" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateLinkVisitStateVariable(String linkVisitStateVariable) {
+        return "*set " + linkVisitStateVariable + " true" + LINE_SEPARATOR;
     }
 
     /**

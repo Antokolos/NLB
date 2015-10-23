@@ -95,6 +95,7 @@ public class QSPExportManager extends TextExportManager {
             }
             stringBuilder.append(linkBlocks.getLinkModifications());
             stringBuilder.append(linkBlocks.getLinkVariable());
+            stringBuilder.append(linkBlocks.getLinkVisitStateVariable());
             stringBuilder.append(linkBlocks.getLinkGoTo());
             if (!linkBlocks.isAuto()) {
                 stringBuilder.append(linkBlocks.getLinkEnd());
@@ -231,6 +232,11 @@ public class QSPExportManager extends TextExportManager {
     @Override
     protected String decorateLinkVariable(String variableName) {
         return "    " + variableName + " = 1" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateLinkVisitStateVariable(String linkVisitStateVariable) {
+        return "    " + linkVisitStateVariable + " = 1" + LINE_SEPARATOR;
     }
 
     @Override

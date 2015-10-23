@@ -663,6 +663,7 @@ public class STEADExportManager extends TextExportManager {
                 }
                 linksBuilder.append(linkBlocks.getLinkModifications());
                 linksBuilder.append(linkBlocks.getLinkVariable());
+                linksBuilder.append(linkBlocks.getLinkVisitStateVariable());
                 linksBuilder.append(linkBlocks.getLinkGoTo());
                 linksBuilder.append(linkBlocks.getLinkEnd());
             }
@@ -709,6 +710,7 @@ public class STEADExportManager extends TextExportManager {
         result.append("if (").append((constrained) ? linkBlocks.getLinkConstraint() : "true").append(") then ");
         result.append(linkBlocks.getLinkModifications());
         result.append(linkBlocks.getLinkVariable());
+        result.append(linkBlocks.getLinkVisitStateVariable());
         result.append(linkBlocks.getLinkGoTo());
         // Should return immediately to prevent unwanted following of other auto links
         result.append(LINE_SEPARATOR).append("        return false;").append(LINE_SEPARATOR);
@@ -1493,6 +1495,12 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateLinkVariable(String variableName) {
         String globalVar = GLOBAL_VAR_PREFIX + variableName;
+        return globalVar + " = true;" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateLinkVisitStateVariable(String linkVisitStateVariable) {
+        String globalVar = GLOBAL_VAR_PREFIX + linkVisitStateVariable;
         return globalVar + " = true;" + LINE_SEPARATOR;
     }
 

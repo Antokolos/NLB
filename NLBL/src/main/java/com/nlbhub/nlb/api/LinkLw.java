@@ -281,8 +281,4 @@ public class LinkLw implements Link {
     @Override
     public void notifyObservers() {
     }
-
-    public static String decorateId(String id) {
-        return "vl_" + id.replaceAll("-", "_");
-    }
 }

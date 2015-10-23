@@ -682,7 +682,7 @@ public abstract class ExportManager {
             Variable constraint = exportData.getNlb().getVariableById(obj.getConstrId());
             // TODO: Add cases with deleted pages/links/variables etc. to the unit test
             if (!constraint.isDeleted()) {
-                blocks.setObjConstraint(decorateObjConstraint(translateConstraintBody(constraint.getValue(), true, false, Constants.EMPTY_STRING)));
+                blocks.setObjConstraint(decorateObjConstraint(translateConstraintBody(constraint.getValue(), true, false, Constants.EMPTY_STRING, Constants.EMPTY_STRING)));
             } else {
                 blocks.setObjConstraint(EMPTY_STRING);
             }
@@ -1479,7 +1479,6 @@ public abstract class ExportManager {
         LinkBuildingBlocks blocks = new LinkBuildingBlocks();
         final boolean trivial = determineTrivialStatus(link);
         blocks.setAuto(link.isAuto());
-        blocks.setOnce(link.isOnce());
         blocks.setTrivial(trivial);
         blocks.setLinkLabel(decorateLinkLabel(link.getId(), link.getText()));
         blocks.setLinkComment(decorateLinkComment(link.getText()));
@@ -1493,25 +1492,37 @@ public abstract class ExportManager {
                         checkedGetPageNumber(link.getTarget()))
         );
         Variable variable = exportData.getNlb().getVariableById(link.getVarId());
-        if (variable != null && !variable.isDeleted()) {
-            blocks.setLinkVariable(decorateLinkVariable(variable.getName()));
+        String linkVisitStateVariable = link.isOnce() ? SpecialVariablesNameHelper.decorateLinkVisitStateVar(link.getId()) : Constants.EMPTY_STRING;
+        boolean variableExists = (variable != null && !variable.isDeleted());
+        String variableName = variableExists ? variable.getName() : Constants.EMPTY_STRING;
+        if (variableExists) {
+            blocks.setLinkVariable(decorateLinkVariable(variableName));
         } else {
             blocks.setLinkVariable(EMPTY_STRING);
         }
+        if (link.isOnce()) {
+            blocks.setLinkVisitStateVariable(decorateLinkVisitStateVariable(linkVisitStateVariable));
+        } else {
+            blocks.setLinkVisitStateVariable(EMPTY_STRING);
+        }
         Variable constraint = exportData.getNlb().getVariableById(link.getConstrId());
+        String additionalConstraintText = link.isOnce() ? "!" + SpecialVariablesNameHelper.decorateLinkVisitStateVar(link.getId()) : Constants.EMPTY_STRING;
         if (
-                (constraint != null && !constraint.isDeleted())
+                StringHelper.notEmpty(additionalConstraintText) ||
+                        (constraint != null && !constraint.isDeleted())
                         || (
                         link.isObeyToModuleConstraint()
                                 && !StringHelper.isEmpty(exportData.getModuleConstraintText())
                 )
                 ) {
+            // If isOnce(), then additional constraint is '!lvs_xxxxx'
             blocks.setLinkConstraint(
                     translateConstraintBody(
                             (constraint != null) ? constraint.getValue().trim() : Constants.EMPTY_STRING,
                             link.isPositiveConstraint(),
                             link.isObeyToModuleConstraint(),
-                            exportData.getModuleConstraintText()
+                            exportData.getModuleConstraintText(),
+                            additionalConstraintText
                     )
             );
         } else {
@@ -1568,7 +1579,8 @@ public abstract class ExportManager {
                             (constraint != null) ? constraint.getValue().trim() : Constants.EMPTY_STRING,
                             link.isPositiveConstraint(),
                             link.isObeyToModuleConstraint(),
-                            exportData.getModuleConstraintText()
+                            exportData.getModuleConstraintText(),
+                            Constants.EMPTY_STRING
                     )
             );
         } else {
@@ -1586,17 +1598,25 @@ public abstract class ExportManager {
             String constraintText,
             boolean isPositiveConstraint,
             boolean shouldObeyToModuleConstraint,
-            String moduleConstraintText
+            String moduleConstraintText,
+            String additionalConstraintText
     ) throws NLBConsistencyException {
         String constraintBody = (
                 (shouldObeyToModuleConstraint && !StringHelper.isEmpty(moduleConstraintText))
                         ? (
                         (StringHelper.notEmpty(constraintText))
-                                ? moduleConstraintText + "&&" + "(" + constraintText + ")"
+                                ? "(" + moduleConstraintText + ")&&" + "(" + constraintText + ")"
                                 : moduleConstraintText
                 )
                         : constraintText
         );
+        if (StringHelper.notEmpty(additionalConstraintText)) {
+            if (StringHelper.isEmpty(constraintBody)) {
+                constraintBody = additionalConstraintText;
+            } else {
+                constraintBody = "(" + additionalConstraintText + ")&&" + "(" + constraintBody + ")";
+            }
+        }
         ExpressionData expressionData = translateExpressionBody(constraintBody);
         return (
                 isPositiveConstraint
@@ -1754,6 +1774,7 @@ public abstract class ExportManager {
                                                 expression.getValue(),
                                                 true,
                                                 false,
+                                                Constants.EMPTY_STRING,
                                                 Constants.EMPTY_STRING
                                         )
                                 )
@@ -1766,6 +1787,7 @@ public abstract class ExportManager {
                                                 expression.getValue(),
                                                 true,
                                                 false,
+                                                Constants.EMPTY_STRING,
                                                 Constants.EMPTY_STRING
                                         )
                                 )
@@ -1791,6 +1813,7 @@ public abstract class ExportManager {
                                                 expression.getValue(),
                                                 true,
                                                 false,
+                                                Constants.EMPTY_STRING,
                                                 Constants.EMPTY_STRING
                                         )
                                 )
@@ -2311,6 +2334,8 @@ public abstract class ExportManager {
 
     protected abstract String decorateLinkVariable(String variableName);
 
+    protected abstract String decorateLinkVisitStateVariable(String linkVisitStateVariable);
+
     protected abstract String decoratePageVariable(final String variableName);
 
     protected abstract String decoratePageTimerVariableInit(final String variableName);
@@ -2481,7 +2506,7 @@ public abstract class ExportManager {
     }
 
     protected String decorateId(String id) {
-        return "v_" + id.replaceAll("-", "_");
+        return "v_" + SpecialVariablesNameHelper.decorateId(id);
     }
 
     protected String decoratePageName(String labelText, int pageNumber) {
