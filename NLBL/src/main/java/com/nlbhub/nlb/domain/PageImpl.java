@@ -144,7 +144,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     /**
      * NB: Please take into account that it will create full copy, including ids and such
      */
-    public PageImpl(PageImpl source) {
+    public PageImpl(Page source) {
         super(source);
         m_imageFileName = source.getImageFileName();
         m_imageBackground = source.isImageBackground();
@@ -167,7 +167,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         setReturnPageId(source.getReturnPageId());
         setModuleConstrId(source.getModuleConstrId());
         m_module = new NonLinearBookImpl(getCurrentNLB(), this);
-        m_module.append(source.getModuleImpl());
+        m_module.append(source.getModule());
         setAutowireInTexts(source.getAutowireInTexts());
         setAutowireOutTexts(source.getAutowireOutTexts());
         setGlobalAutoWired(source.isGlobalAutowire());
@@ -578,7 +578,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
                 if (moduleDir.exists()) {
                     fileManipulator.deleteFileOrDir(moduleDir);
                 }
-            } else {
+            } else if (!isModuleExternal()) {
+                // External module should not be touched at all
                 m_module.setRootDir(moduleDir);
                 m_module.save(fileManipulator, new DummyProgressData(), partialProgressData);
             }
@@ -734,8 +735,6 @@ public class PageImpl extends AbstractNodeItem implements Page {
         try {
             setId(pageDir.getName());
             resetDefaultModuleName();
-            final File moduleDir = new File(pageDir, MODULE_SUBDIR_NAME);
-            m_module.loadAndSetParent(moduleDir.getCanonicalPath(), getCurrentNLB(), this);
             m_varId = (
                     FileManipulator.getOptionalFileAsString(
                             pageDir,
@@ -912,6 +911,13 @@ public class PageImpl extends AbstractNodeItem implements Page {
                             String.valueOf(DEFAULT_GLOBAL_AUTOWIRED)
                     )
             );
+            if (isModuleExternal()) {
+                m_module.clear();
+                m_module.append(getCurrentNLB().getExternalModules().get(m_moduleName));
+            } else {
+                final File moduleDir = new File(pageDir, MODULE_SUBDIR_NAME);
+                m_module.loadAndSetParent(moduleDir.getCanonicalPath(), getCurrentNLB(), this);
+            }
             readNodeItemProperties(pageDir);
             readModifications(pageDir);
         } catch (IOException e) {

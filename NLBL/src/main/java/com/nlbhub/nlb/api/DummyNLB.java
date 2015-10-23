@@ -260,6 +260,11 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
+    public Map<String, NonLinearBook> getExternalModules() {
+        return Collections.emptyMap();
+    }
+
+    @Override
     public Map<String, Variable.DataType> getVariableDataTypes() throws NLBConsistencyException {
         return Collections.emptyMap();
     }

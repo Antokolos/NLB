@@ -127,7 +127,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         return null;
     }
 
-    public ObjImpl(ObjImpl source) {
+    public ObjImpl(Obj source) {
         super(source);
         m_varId = source.getVarId();
         m_constrId = source.getConstrId();

@@ -95,6 +95,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     private static final String PAGES_DIR_NAME = "pages";
     private static final String OBJS_DIR_NAME = "objs";
     private static final String VARS_DIR_NAME = "vars";
+    private static final String MODULES_DIR_NAME = "modules";
     private static final String AUTOWIRED_PAGES_FILE_NAME = "autopgs";
     private static final String AUTOWIRED_SEPARATOR = "\n";
     private static final String DEFAULT_AUTOWIRED_PAGES = Constants.EMPTY_STRING;
@@ -121,6 +122,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     private Set<MediaFileImpl> m_soundFiles;
     private NonLinearBook m_parentNLB;
     private Page m_parentPage;
+    private Map<String, NonLinearBook> m_externalModules;
 
     private class ModifyingItemAndModification {
         AbstractModifyingItem m_modifyingItem;
@@ -2010,6 +2012,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_parentPage = null;
         m_pages = new HashMap<>();
         m_autowiredPages = new ArrayList<>();
+        m_externalModules = new HashMap<>();
         m_objs = new HashMap<>();
         m_variables = new ArrayList<>();
         m_imageFiles = new TreeSet<>();
@@ -2028,6 +2031,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_parentPage = parentPage;
         m_pages = new HashMap<>();
         m_autowiredPages = new ArrayList<>();
+        m_externalModules = new HashMap<>();
         m_objs = new HashMap<>();
         m_variables = new ArrayList<>();
         m_imageFiles = new TreeSet<>();
@@ -2228,34 +2232,36 @@ public class NonLinearBookImpl implements NonLinearBook {
      *
      * @param operand
      */
-    public void append(final NonLinearBookImpl operand) {
-        for (Map.Entry<String, PageImpl> entry : operand.m_pages.entrySet()) {
-            PageImpl operandPage = entry.getValue();
-            PageImpl newPage = new PageImpl(operandPage);
-            m_pages.put(entry.getKey(), newPage);
-            if (operand.isAutowired(entry.getKey())) {
-                addAutowiredPageId(entry.getKey());
-            }
-        }
-
-        for (Map.Entry<String, ObjImpl> entry : operand.m_objs.entrySet()) {
-            m_objs.put(entry.getKey(), new ObjImpl(entry.getValue()));
-        }
-
-        // first, remove variables with the same ids
-        Iterator<VariableImpl> iterator = m_variables.iterator();
-        while (iterator.hasNext()) {
-            VariableImpl existingVariable = iterator.next();
-            for (Variable variable : operand.getVariables()) {
-                if (variable.getId().equals(existingVariable.getId())) {
-                    iterator.remove();
-                    break;
+    public void append(final NonLinearBook operand) {
+        if (operand != null) {
+            for (Map.Entry<String, Page> entry : operand.getPages().entrySet()) {
+                Page operandPage = entry.getValue();
+                PageImpl newPage = new PageImpl(operandPage);
+                m_pages.put(entry.getKey(), newPage);
+                if (operand.isAutowired(entry.getKey())) {
+                    addAutowiredPageId(entry.getKey());
                 }
             }
-        }
-        // second, add copies of operand variables
-        for (VariableImpl variable : operand.m_variables) {
-            m_variables.add(new VariableImpl(variable));
+
+            for (Map.Entry<String, Obj> entry : operand.getObjs().entrySet()) {
+                m_objs.put(entry.getKey(), new ObjImpl(entry.getValue()));
+            }
+
+            // first, remove variables with the same ids
+            Iterator<VariableImpl> iterator = m_variables.iterator();
+            while (iterator.hasNext()) {
+                VariableImpl existingVariable = iterator.next();
+                for (Variable variable : operand.getVariables()) {
+                    if (variable.getId().equals(existingVariable.getId())) {
+                        iterator.remove();
+                        break;
+                    }
+                }
+            }
+            // second, add copies of operand variables
+            for (Variable variable : operand.getVariables()) {
+                m_variables.add(new VariableImpl(variable));
+            }
         }
     }
 
@@ -2894,6 +2900,35 @@ public class NonLinearBookImpl implements NonLinearBook {
         return null;
     }
 
+    private boolean loadModules(final File rootDir) throws NLBIOException, NLBConsistencyException, NLBVCSException {
+        final File modulesDir = new File(rootDir, MODULES_DIR_NAME);
+        if (!modulesDir.exists() || !modulesDir.isDirectory()) {
+            return false;
+        }
+        for (final String moduleName : modulesDir.list()) {
+            NonLinearBookImpl moduleImpl = loadModule(modulesDir, moduleName);
+            if (moduleImpl == null) {
+                return false;
+            } else {
+                m_externalModules.put(moduleName, moduleImpl);
+            }
+        }
+        return true;
+    }
+
+    private NonLinearBookImpl loadModule(final File modulesDir, final String name) throws NLBIOException, NLBVCSException, NLBConsistencyException {
+        try {
+            final File moduleDir = new File(modulesDir, name);
+            final NonLinearBookImpl moduleImpl = new NonLinearBookImpl();
+            if (moduleImpl.load(moduleDir.getCanonicalPath(), new DummyProgressData())) {
+                return moduleImpl;
+            }
+        } catch (IOException e) {
+            throw new NLBIOException("Error loading module '" + name + "'", e);
+        }
+        return null;
+    }
+
     public boolean load(
             final String path,
             final ProgressData progressData
@@ -2903,6 +2938,9 @@ public class NonLinearBookImpl implements NonLinearBook {
             return false;
         }
         m_rootDir = rootDir;
+        progressData.setNoteText("Reading external modules...");
+        loadModules(rootDir);
+        progressData.setProgressValue(18);
         progressData.setNoteText("Reading autowired pages...");
         readAutowiredPagesFile(rootDir);
         progressData.setProgressValue(20);
@@ -4118,6 +4156,11 @@ public class NonLinearBookImpl implements NonLinearBook {
     @Override
     public Page getParentPage() {
         return m_parentPage;
+    }
+
+    @Override
+    public Map<String, NonLinearBook> getExternalModules() {
+        return m_externalModules;
     }
 
     @Override
