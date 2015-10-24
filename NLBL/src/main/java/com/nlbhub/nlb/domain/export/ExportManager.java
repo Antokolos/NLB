@@ -391,9 +391,9 @@ public abstract class ExportManager {
         String imageFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_IMAGE_FILE_NAME: page.getImageFileName());
         boolean isAnimatedImage = page.isImageAnimated();
         blocks.setHasAnimatedPageImage(isAnimatedImage);
-        blocks.setPageImage(decoratePageImage(getImagePaths(null, imageFileName, isAnimatedImage), page.isImageBackground()));
+        blocks.setPageImage(decoratePageImage(getImagePaths(page.getExternalHierarchy(), imageFileName, isAnimatedImage), page.isImageBackground()));
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
-        blocks.setPageSound(decoratePageSound(pageName, getSoundPaths(null, soundFileName), page.isSoundSFX()));
+        blocks.setPageSound(decoratePageSound(pageName, getSoundPaths(page.getExternalHierarchy(), soundFileName), page.isSoundSFX()));
         blocks.setPageTextStart(decoratePageTextStart(page.getId(), pageNumber, StringHelper.getTextChunks(page.getText())));
         blocks.setPageTextEnd(decoratePageTextEnd(page.getId(), pageNumber));
         if (!StringHelper.isEmpty(page.getVarId())) {
@@ -658,7 +658,7 @@ public abstract class ExportManager {
         blocks.setObjName(decorateObjName(obj.getName()));
         blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
-        final String objImage = decorateObjImage(getImagePaths(null, imageFileName, obj.isAnimatedImage()));
+        final String objImage = decorateObjImage(getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage()));
         final boolean hasImage = StringHelper.notEmpty(imageFileName);
         blocks.setObjImage(objImage);
         blocks.setObjDisp(decorateObjDisp(StringHelper.getTextChunks(obj.getDisp()), hasImage && obj.isImageInInventory()));
@@ -721,7 +721,7 @@ public abstract class ExportManager {
         }
         blocks.setObjObjEnd(decorateObjObjEnd());
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Obj.DEFAULT_SOUND_FILE_NAME: obj.getSoundFileName());
-        blocks.setObjSound(decorateObjSound(getSoundPaths(null, soundFileName), obj.isSoundSFX()));
+        blocks.setObjSound(decorateObjSound(getSoundPaths(obj.getExternalHierarchy(), soundFileName), obj.isSoundSFX()));
         List<Link> links = obj.getLinks();
         for (final Link link : links) {
             if (!link.isDeleted()) {
@@ -1017,6 +1017,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public String getExternalHierarchy() {
+                return page.getExternalHierarchy();
+            }
+
+            @Override
             public NonLinearBook getModule() {
                 return page.getModule();
             }
@@ -1307,6 +1312,11 @@ public abstract class ExportManager {
             @Override
             public Link getLinkById(@NotNull String linkId) {
                 return obj.getLinkById(linkId);
+            }
+
+            @Override
+            public String getExternalHierarchy() {
+                return obj.getExternalHierarchy();
             }
 
             @Override
@@ -2367,14 +2377,15 @@ public abstract class ExportManager {
     }
 
     /**
-     * NB: in case of ordinary (inline) NLB modules moduleDir should be <code>null</code>
+     * NB: in case of ordinary (inline) NLB modules externalHierarchy should be <code>null</code>
+     * (if this inline module is inside the main book and not inside of external module)
      *
-     * @param moduleDir
+     * @param externalHierarchy
      * @param imageFileNames
      * @return
      */
     protected List<ImagePathData> getImagePaths(
-            final String moduleDir,
+            final String externalHierarchy,
             final String imageFileNames,
             final boolean animatedImage
     ) throws NLBExportException {
@@ -2386,21 +2397,22 @@ public abstract class ExportManager {
             List<ImagePathData> result = new ArrayList<>();
             String[] fileNamesArr = imageFileNames.split(Constants.MEDIA_FILE_NAME_SEP);
             for (String fileName : fileNamesArr) {
-                result.add(getImagePath(moduleDir, fileName, animatedImage));
+                result.add(getImagePath(externalHierarchy, fileName, animatedImage));
             }
             return result;
         }
     }
 
     /**
-     * NB: in case of ordinary (inline) NLB modules moduleDir should be <code>null</code>
+     * NB: in case of ordinary (inline) NLB modules externalHierarchy should be <code>null</code>
+     * (if this inline module is inside the main book and not inside of external module)
      *
-     * @param moduleDir
+     * @param externalHierarchy
      * @param imageFileName
      * @return
      */
     protected ImagePathData getImagePath(
-            final String moduleDir,
+            final String externalHierarchy,
             final String imageFileName,
             final boolean animatedImage
     ) throws NLBExportException {
@@ -2408,10 +2420,10 @@ public abstract class ExportManager {
         // Please note that here we use redirected file name.
         Matcher matcher = FILE_NAME_PATTERN.matcher(getRedirectMediaOrSelf(imageFileName));
         if (matcher.find()) {
-            if (moduleDir == null) {
+            if (StringHelper.isEmpty(externalHierarchy)) {
                 result.setParentFolderPath(NonLinearBook.IMAGES_DIR_NAME);
             } else {
-                result.setParentFolderPath(NonLinearBook.IMAGES_DIR_NAME + "/" + moduleDir);
+                result.setParentFolderPath(NonLinearBook.IMAGES_DIR_NAME + "/" + externalHierarchy);
             }
             if (animatedImage) {
                 result.setFileName(matcher.group(1));
@@ -2434,7 +2446,7 @@ public abstract class ExportManager {
         }
     }
 
-    protected List<SoundPathData> getSoundPaths(String moduleDir, String soundFileNames) {
+    protected List<SoundPathData> getSoundPaths(String externalHierarchy, String soundFileNames) {
         if (StringHelper.isEmpty(soundFileNames)) {
             return new ArrayList<SoundPathData>() {{
                 add(SoundPathData.EMPTY);
@@ -2443,13 +2455,13 @@ public abstract class ExportManager {
             List<SoundPathData> result = new ArrayList<>();
             String[] fileNamesArr = soundFileNames.split(Constants.MEDIA_FILE_NAME_SEP);
             for (String fileName : fileNamesArr) {
-                result.add(getSoundPath(moduleDir, fileName));
+                result.add(getSoundPath(externalHierarchy, fileName));
             }
             return result;
         }
     }
 
-    protected SoundPathData getSoundPath(String moduleDir, String soundFileName) {
+    protected SoundPathData getSoundPath(String externalHierarchy, String soundFileName) {
         if (StringHelper.isEmpty(soundFileName)) {
             return SoundPathData.EMPTY;
         } else {
@@ -2457,10 +2469,10 @@ public abstract class ExportManager {
                 return SoundPathData.VOID;
             } else {
                 SoundPathData result = new SoundPathData();
-                if (moduleDir == null) {
+                if (externalHierarchy == null) {
                     result.setParentFolderPath(NonLinearBook.SOUND_DIR_NAME);
                 } else {
-                    result.setParentFolderPath(NonLinearBook.SOUND_DIR_NAME + "/" + moduleDir);
+                    result.setParentFolderPath(NonLinearBook.SOUND_DIR_NAME + "/" + externalHierarchy);
                 }
 
                 // Please note that here we use redirected file name.

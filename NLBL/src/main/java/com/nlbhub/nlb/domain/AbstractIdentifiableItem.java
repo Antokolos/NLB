@@ -85,11 +85,11 @@ public abstract class AbstractIdentifiableItem implements IdentifiableItem {
         m_currentNLB = currentNLB;
     }
 
-    public AbstractIdentifiableItem(IdentifiableItem identifiableItem) {
+    public AbstractIdentifiableItem(IdentifiableItem identifiableItem, NonLinearBook currentNLB) {
+        this(currentNLB);
         m_id = identifiableItem.getId();
         m_isDeleted = identifiableItem.isDeleted();
         m_parent = identifiableItem.getParent();
-        m_currentNLB = identifiableItem.getCurrentNLB();
     }
 
     public void copy(IdentifiableItem identifiableItem) {

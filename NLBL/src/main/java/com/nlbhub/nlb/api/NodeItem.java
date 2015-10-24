@@ -78,4 +78,12 @@ public interface NodeItem extends ModifyingItem, NLBObservable {
     public List<Link> getLinks();
 
     public Link getLinkById(@NotNull String linkId);
+
+    /**
+     * This method returns path-like expression, e.g. 'module1/module2' or empty String.
+     * The result is not empty for nodes which were imported from external modules and shows the position of the
+     * current node in the external modules hierarchy.
+     * @return path-like hierarchy expression, e.g. 'module1/module2' or empty String.
+     */
+    public String getExternalHierarchy();
 }

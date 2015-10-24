@@ -1114,11 +1114,11 @@ public class NonLinearBookImpl implements NonLinearBook {
                             } else {
                                 m_modificationsToBeReplaced.put(
                                         modification.getId(),
-                                        new ModificationImpl(modification)
+                                        new ModificationImpl(modification, m_item.getCurrentNLB())
                                 );
                                 m_modificationsToBeReplacedPrev.put(
                                         existingModification.getId(),
-                                        new ModificationImpl(existingModification)
+                                        new ModificationImpl(existingModification, m_item.getCurrentNLB())
                                 );
                             }
                             toBeAdded = false;
@@ -1128,7 +1128,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         m_modificationsToBeAddedIdsInCorrectOrder.add(modification.getId());
                         m_modificationsToBeAdded.put(
                                 modification.getId(),
-                                new ModificationImpl(modification)
+                                new ModificationImpl(modification, m_item.getCurrentNLB())
                         );
                     }
                 }
@@ -1140,15 +1140,15 @@ public class NonLinearBookImpl implements NonLinearBook {
                     if (existingVariable != null) {
                         m_variablesToBeReplacedPrev.put(
                                 existingVariable.getId(),
-                                new VariableImpl(existingVariable)
+                                new VariableImpl(existingVariable, m_item.getCurrentNLB())
                         );
                         m_variablesToBeReplaced.put(
                                 existingVariable.getId(),
-                                new VariableImpl(variable)
+                                new VariableImpl(variable, m_item.getCurrentNLB())
                         );
                     } else {
                         if (!variable.isDeleted()) {
-                            m_variablesToBeAdded.put(variable.getId(), new VariableImpl(variable));
+                            m_variablesToBeAdded.put(variable.getId(), new VariableImpl(variable, m_item.getCurrentNLB()));
                         }
                     }
                 }
@@ -1825,7 +1825,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             for (String objId : objIds) {
                 ObjImpl existingObj = getObjImplById(objId);
                 if (existingObj != null && !existingObj.isDeleted()) {
-                    ObjImpl obj = new ObjImpl(existingObj);
+                    ObjImpl obj = new ObjImpl(existingObj, m_newClipboardData);
                     m_newClipboardData.addObj(obj);
                     copyModificationVariables(obj, m_newClipboardData);
                     VariableImpl objVariable = getVariableImplById(obj.getVarId());
@@ -1854,7 +1854,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             for (String pageId : pageIds) {
                 PageImpl existingPage = getPageImplById(pageId);
                 if (existingPage != null && !existingPage.isDeleted()) {
-                    PageImpl page = new PageImpl(existingPage);
+                    PageImpl page = new PageImpl(existingPage, m_newClipboardData);
                     m_newClipboardData.addPage(page);
                     copyModificationVariables(page, m_newClipboardData);
                     // also we should move all related variables to the new NLB
@@ -1865,27 +1865,27 @@ public class NonLinearBookImpl implements NonLinearBook {
                     VariableImpl pageTimerVariable = getVariableImplById(page.getTimerVarId());
                     if (autowireInConstraint != null && !autowireInConstraint.isDeleted()) {
                         m_newClipboardData.addVariable(
-                                new VariableImpl(autowireInConstraint)
+                                new VariableImpl(autowireInConstraint, m_newClipboardData)
                         );
                     }
                     if (autowireOutConstraint != null && !autowireOutConstraint.isDeleted()) {
                         m_newClipboardData.addVariable(
-                                new VariableImpl(autowireOutConstraint)
+                                new VariableImpl(autowireOutConstraint, m_newClipboardData)
                         );
                     }
                     if (moduleConstraint != null && !moduleConstraint.isDeleted()) {
                         m_newClipboardData.addVariable(
-                                new VariableImpl(moduleConstraint)
+                                new VariableImpl(moduleConstraint, m_newClipboardData)
                         );
                     }
                     if (pageVariable != null && !pageVariable.isDeleted()) {
                         m_newClipboardData.addVariable(
-                                new VariableImpl(pageVariable)
+                                new VariableImpl(pageVariable, m_newClipboardData)
                         );
                     }
                     if (pageTimerVariable != null && !pageTimerVariable.isDeleted()) {
                         m_newClipboardData.addVariable(
-                                new VariableImpl(pageTimerVariable)
+                                new VariableImpl(pageTimerVariable, m_newClipboardData)
                         );
                     }
                     checkContainedObjects(page, objIds);
@@ -1928,12 +1928,12 @@ public class NonLinearBookImpl implements NonLinearBook {
                     VariableImpl linkConstraint = getVariableImplById(link.getConstrId());
                     if (linkVariable != null && !linkVariable.isDeleted()) {
                         target.addVariable(
-                                new VariableImpl(linkVariable)
+                                new VariableImpl(linkVariable, target)
                         );
                     }
                     if (linkConstraint != null && !linkConstraint.isDeleted()) {
                         target.addVariable(
-                                new VariableImpl(linkConstraint)
+                                new VariableImpl(linkConstraint, target)
                         );
                     }
                 } else {
@@ -1955,12 +1955,12 @@ public class NonLinearBookImpl implements NonLinearBook {
                     VariableImpl modificationExpression = getVariableImplById(modification.getExprId());
                     if (modificationVariable != null && !modificationVariable.isDeleted()) {
                         target.addVariable(
-                                new VariableImpl(modificationVariable)
+                                new VariableImpl(modificationVariable, target)
                         );
                     }
                     if (modificationExpression != null && !modificationExpression.isDeleted()) {
                         target.addVariable(
-                                new VariableImpl(modificationExpression)
+                                new VariableImpl(modificationExpression, target)
                         );
                     }
                 }
@@ -2243,12 +2243,13 @@ public class NonLinearBookImpl implements NonLinearBook {
      * Appends items to this book which are contained in operand (with overwrite if needed)
      *
      * @param operand
+     * @param overwriteProperties
      */
-    public void append(final NonLinearBook operand) {
+    public void append(final NonLinearBook operand, boolean overwriteProperties) {
         if (operand != null) {
             for (Map.Entry<String, Page> entry : operand.getPages().entrySet()) {
                 Page operandPage = entry.getValue();
-                PageImpl newPage = new PageImpl(operandPage);
+                PageImpl newPage = new PageImpl(operandPage, this);
                 m_pages.put(entry.getKey(), newPage);
                 if (operand.isAutowired(entry.getKey())) {
                     addAutowiredPageId(entry.getKey());
@@ -2256,7 +2257,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             }
 
             for (Map.Entry<String, Obj> entry : operand.getObjs().entrySet()) {
-                m_objs.put(entry.getKey(), new ObjImpl(entry.getValue()));
+                m_objs.put(entry.getKey(), new ObjImpl(entry.getValue(), this));
             }
 
             // first, remove variables with the same ids
@@ -2272,9 +2273,24 @@ public class NonLinearBookImpl implements NonLinearBook {
             }
             // second, add copies of operand variables
             for (Variable variable : operand.getVariables()) {
-                m_variables.add(new VariableImpl(variable));
+                m_variables.add(new VariableImpl(variable, this));
+            }
+
+            if (overwriteProperties) {
+                overwriteBookProperties(operand);
             }
         }
+    }
+
+    private void overwriteBookProperties(final NonLinearBook operand) {
+        m_startPoint = operand.getStartPoint();
+        m_language = operand.getLanguage();
+        m_license = operand.getLicense();
+        m_fullAutowire = operand.isFullAutowire();
+        m_suppressMedia = operand.isSuppressMedia();
+        m_suppressSound = operand.isSuppressSound();
+        m_author = operand.getAuthor();
+        m_version = operand.getVersion();
     }
 
     public List<Link> getAssociatedLinks(NodeItem nodeItem) {
@@ -4665,10 +4681,40 @@ public class NonLinearBookImpl implements NonLinearBook {
                     FileManipulator.transfer(sourceMedia, targetMedia);
                 }
             }
+            for (Map.Entry<String, NonLinearBook> entry : getExternalModules().entrySet()) {
+                File extModuleExportDir = new File(exportDir, entry.getKey());
+                extModuleExportDir.mkdir();
+                final NonLinearBook module = entry.getValue();
+                if (!module.isEmpty()) {
+                    switch (mediaType) {
+                        case Image:
+                            module.exportMedia(
+                                    true,
+                                    extModuleExportDir,
+                                    mediaDirName,
+                                    module.getImageFiles(),
+                                    mediaType
+                            );
+                            break;
+                        case Sound:
+                            module.exportMedia(
+                                    true,
+                                    extModuleExportDir,
+                                    mediaDirName,
+                                    module.getSoundFiles(),
+                                    mediaType
+                            );
+                            break;
+                        default:
+                            throw new NLBExportException("Unknown media type = " + mediaType.name());
+                    }
 
+                }
+            }
+            /* At the current time media files from inline modules (which are not external) are NOT exported
             for (Page page : m_pages.values()) {
                 final NonLinearBook module = page.getModule();
-                if (!module.isEmpty()) {
+                if (!module.isEmpty() && !page.isModuleExternal()) {
                     switch (mediaType) {
                         case Image:
                             module.exportMedia(
@@ -4694,6 +4740,7 @@ public class NonLinearBookImpl implements NonLinearBook {
 
                 }
             }
+            */
         } catch (IOException e) {
             throw new NLBExportException("IOException when exporting media", e);
         }

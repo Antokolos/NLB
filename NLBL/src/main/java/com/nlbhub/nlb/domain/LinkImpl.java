@@ -114,7 +114,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
         setDeleted(sourceLink.isDeleted());
         setParent(parent);
         for (Modification modification : sourceLink.getModifications()) {
-            addModification(new ModificationImpl(modification));
+            addModification(new ModificationImpl(modification, parent.getCurrentNLB()));
         }
         m_varId = sourceLink.getVarId();
         m_target = sourceLink.getTarget();

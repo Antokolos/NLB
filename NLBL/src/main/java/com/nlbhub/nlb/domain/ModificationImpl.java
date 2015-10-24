@@ -78,8 +78,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     private String m_varId;
     private String m_exprId;
 
-    public ModificationImpl(Modification modification) {
-        super(modification);
+    public ModificationImpl(Modification modification, NonLinearBook currentNLB) {
+        super(modification, currentNLB);
         m_type = modification.getType();
         m_varId = modification.getVarId();
         m_exprId = modification.getExprId();

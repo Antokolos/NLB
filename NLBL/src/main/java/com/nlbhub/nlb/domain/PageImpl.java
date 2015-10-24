@@ -55,6 +55,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -144,8 +145,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
     /**
      * NB: Please take into account that it will create full copy, including ids and such
      */
-    public PageImpl(Page source) {
-        super(source);
+    public PageImpl(Page source, NonLinearBook currentNLB) {
+        super(source, currentNLB);
         m_imageFileName = source.getImageFileName();
         m_imageBackground = source.isImageBackground();
         m_imageAnimated = source.isImageAnimated();
@@ -166,8 +167,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
         setReturnTexts(source.getReturnTexts());
         setReturnPageId(source.getReturnPageId());
         setModuleConstrId(source.getModuleConstrId());
-        m_module = new NonLinearBookImpl(getCurrentNLB(), this);
-        m_module.append(source.getModule());
+        m_module = new NonLinearBookImpl(currentNLB, this);
+        m_module.append(source.getModule(), true);
         setAutowireInTexts(source.getAutowireInTexts());
         setAutowireOutTexts(source.getAutowireOutTexts());
         setGlobalAutoWired(source.isGlobalAutowire());
@@ -913,7 +914,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
             );
             if (isModuleExternal()) {
                 m_module.clear();
-                m_module.append(getCurrentNLB().findExternalModule(m_moduleName));
+                m_module.append(getCurrentNLB().findExternalModule(m_moduleName), true);
             } else {
                 final File moduleDir = new File(pageDir, MODULE_SUBDIR_NAME);
                 m_module.loadAndSetParent(moduleDir.getCanonicalPath(), getCurrentNLB(), this);

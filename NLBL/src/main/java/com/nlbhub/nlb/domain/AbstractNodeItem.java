@@ -243,8 +243,8 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
         super();
     }
 
-    public AbstractNodeItem(final @NotNull NodeItem nodeItem) {
-        super(nodeItem);
+    public AbstractNodeItem(final @NotNull NodeItem nodeItem, NonLinearBook currentNLB) {
+        super(nodeItem, currentNLB);
         m_stroke = nodeItem.getStroke();
         m_fill = nodeItem.getFill();
         m_textColor = nodeItem.getTextColor();
@@ -671,5 +671,28 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
     @Override
     public void notifyObservers() {
         m_observerHandler.notifyObservers();
+    }
+
+    @Override
+    public String getExternalHierarchy() {
+        StringBuilder builder = new StringBuilder();
+        NonLinearBook currentNLB = getCurrentNLB();
+        List<String> hierarchy = new ArrayList<>();
+        boolean proceed;
+        do {
+            Page parentPage = currentNLB.getParentPage();
+            proceed = (parentPage != null && parentPage.isModuleExternal());
+            if (proceed) {
+                hierarchy.add(parentPage.getModuleName());
+                currentNLB = parentPage.getCurrentNLB();
+            }
+        } while (proceed);
+        for (int i = hierarchy.size() - 1; i >= 0; i--) {
+            builder.append(hierarchy.get(i));
+            if (i > 0) {
+                builder.append("/");
+            }
+        }
+        return builder.toString();
     }
 }

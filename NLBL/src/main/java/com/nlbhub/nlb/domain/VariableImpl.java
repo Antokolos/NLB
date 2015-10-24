@@ -99,8 +99,8 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
         super(currentNLB);
     }
 
-    public VariableImpl(Variable variable) {
-        super(variable);
+    public VariableImpl(Variable variable, NonLinearBook currentNLB) {
+        super(variable, currentNLB);
         m_type = variable.getType();
         m_dataType = variable.getDataType();
         m_name = variable.getName();

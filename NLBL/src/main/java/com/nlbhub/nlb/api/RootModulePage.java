@@ -191,6 +191,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public String getExternalHierarchy() {
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
     public NonLinearBook getModule() {
         return m_nlb;
     }

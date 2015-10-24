@@ -66,15 +66,15 @@ public class ModificationsTableModel {
         for (final Modification modification : modifications) {
             Variable variable = nlb.getVariableById(modification.getVarId());
             if (variable != null) {
-                m_variableMap.put(modification.getVarId(), new VariableImpl(variable));
+                m_variableMap.put(modification.getVarId(), new VariableImpl(variable, m_currentNLB));
             }
 
             Variable expression = nlb.getVariableById(modification.getExprId());
             if (expression != null) {
-                m_variableMap.put(modification.getExprId(), new VariableImpl(expression));
+                m_variableMap.put(modification.getExprId(), new VariableImpl(expression, m_currentNLB));
             }
 
-            m_modifications.add(new ModificationImpl(modification));
+            m_modifications.add(new ModificationImpl(modification, m_currentNLB));
         }
     }
 
