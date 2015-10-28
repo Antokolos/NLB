@@ -1723,8 +1723,10 @@ public abstract class ExportManager {
             final ExportData exportData
     ) throws NLBConsistencyException {
         final StringBuilder stringBuilder = new StringBuilder();
+        final Page modulePage = exportData.getModulePage();
         for (final Modification modification : modifications) {
-            if (!modification.isDeleted()) {
+            final boolean shouldUse = !modification.isExternal() || ((modulePage != null) && modulePage.isModuleExternal());
+            if (!modification.isDeleted() && shouldUse) {
                 stringBuilder.append(indentString);
                 Variable variable = (
                         StringHelper.isEmpty(modification.getVarId())

@@ -63,6 +63,16 @@ public class ModificationsTableModelSwing extends AbstractTableModel {
     }
 
     @Override
+    public Class<?> getColumnClass(int columnIndex) {
+        switch (columnIndex) {
+            case 0:
+                return Boolean.class;
+            default:
+                return super.getColumnClass(columnIndex);
+        }
+    }
+
+    @Override
     public int getRowCount() {
         return m_tableModel.getRowCount();
     }

@@ -81,14 +81,16 @@ public class ModificationsTableModel {
     public String getColumnName(int column) {
         switch (column) {
             case 0:
-                return "Modification Id";
+                return "External";
             case 1:
-                return "DataType";
+                return "Modification Id";
             case 2:
-                return "Variable";
+                return "DataType";
             case 3:
-                return "Operation";
+                return "Variable";
             case 4:
+                return "Operation";
+            case 5:
                 return "Expression";
             default:
                 return "N/A";
@@ -106,7 +108,7 @@ public class ModificationsTableModel {
     }
 
     public int getColumnCount() {
-        return 5;
+        return 6;
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
@@ -114,16 +116,18 @@ public class ModificationsTableModel {
         final Variable expression;
         switch (columnIndex) {
             case 0:
-                return modification.getId();
+                return modification.isExternal();
             case 1:
+                return modification.getId();
+            case 2:
                 expression = getExpression(modification);
                 return (expression != null) ? expression.getDataType() : Variable.DEFAULT_DATATYPE;
-            case 2:
+            case 3:
                 final Variable variable = getVariable(modification);
                 return (variable != null) ? variable.getName() : "";
-            case 3:
-                return modification.getType();
             case 4:
+                return modification.getType();
+            case 5:
                 expression = getExpression(modification);
                 return (expression != null) ? expression.getValue() : "";
             default:
@@ -144,12 +148,17 @@ public class ModificationsTableModel {
 
     public boolean setValueAt(Object aValue, int rowIndex, int columnIndex) {
         ModificationImpl modification = getModificationAt(rowIndex);
-        final String cellValue = (String) aValue;
+        final String cellValue = aValue.toString();  // will work for boolean values of externalFlag too
         switch (columnIndex) {
-            case 1:
+            case 0:
+                final boolean externalFlag = (Boolean) aValue;
+                modification.setExternal(externalFlag);
+                break;
+            // case 1: it is UNID, not changeable
+            case 2:
                 setDataType(modification, cellValue);
                 break;
-            case 2:
+            case 3:
                 VariableImpl variable = getVariable(modification);
                 if (variable != null) {
                     if (StringHelper.isEmpty(cellValue)) {
@@ -178,7 +187,7 @@ public class ModificationsTableModel {
                     }
                 }
                 break;
-            case 3:
+            case 4:
                 modification.setType(cellValue);
                 VariableImpl expr = getExpression(modification);
                 if (expr != null) {
@@ -189,7 +198,7 @@ public class ModificationsTableModel {
                     }
                 }
                 break;
-            case 4:
+            case 5:
                 VariableImpl expression = getExpression(modification);
                 if (expression != null) {
                     if (StringHelper.isEmpty(cellValue)) {
@@ -279,7 +288,7 @@ public class ModificationsTableModel {
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return columnIndex > 0;
+        return columnIndex != 1;
     }
 
     public void add(ModifyingItem modifyingItem) {

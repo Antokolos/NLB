@@ -45,6 +45,7 @@ package com.nlbhub.nlb.api;
  * @version 1.0 1/15/14
  */
 public interface Modification extends IdentifiableItem {
+    public static final boolean DEFAULT_EXTERNAL = false;
     public enum Type {
         ASSIGN,
         TAG,
@@ -91,6 +92,8 @@ public interface Modification extends IdentifiableItem {
         SIZE,
         RND
     }
+
+    public boolean isExternal();
 
     public String getVarId();
 

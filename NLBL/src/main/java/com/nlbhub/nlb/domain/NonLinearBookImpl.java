@@ -2770,6 +2770,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final Map<String, Object> visitedVars
     ) throws ScriptException {
         for (final Modification modification : modifyingItem.getModifications()) {
+            // TODO: Other modification types, and do not forget about external flag
             if (modification.getType() == Modification.Type.ASSIGN) {
                 // create a JavaScript engine
                 ScriptEngine engine = factory.getEngineByName("JavaScript");

@@ -238,9 +238,11 @@ public class DialogModifications extends JDialog implements NLBObserver {
                 new ModificationsTableModelSwing(m_nlbFacade.getNlb(), modifyingItem.getModifications())
         );
         m_modifications.setModel(m_modificationsTableModel);
-        TableColumnExt dataTypeColumn = m_modifications.getColumnExt(1);
+        TableColumnExt extColumn = m_modifications.getColumnExt(0);
+        extColumn.setCellEditor(new DefaultCellEditor(new JCheckBox()));
+        TableColumnExt dataTypeColumn = m_modifications.getColumnExt(2);
         dataTypeColumn.setCellEditor(new DefaultCellEditor(CB_DATA_TYPE));
-        TableColumnExt typeColumn = m_modifications.getColumnExt(3);
+        TableColumnExt typeColumn = m_modifications.getColumnExt(4);
         typeColumn.setCellEditor(new DefaultCellEditor(CB_MODIFICATION_TYPE));
     }
 

@@ -59,6 +59,7 @@ import java.util.Set;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class ModificationImpl extends AbstractIdentifiableItem implements Modification {
+    private static final String EXTERNAL_FILE_NAME = "external";
     private static final String VARID_FILE_NAME = "varid";
     private static final String TYPE_FILE_NAME = "type";
     private static final String EXPRID_FILE_NAME = "exprid";
@@ -74,12 +75,14 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
         add(Type.END);
         add(Type.RETURN);
     }};
+    private boolean m_external;
     private Type m_type = Type.ASSIGN;
     private String m_varId;
     private String m_exprId;
 
     public ModificationImpl(Modification modification, NonLinearBook currentNLB) {
         super(modification, currentNLB);
+        m_external = modification.isExternal();
         m_type = modification.getType();
         m_varId = modification.getVarId();
         m_exprId = modification.getExprId();
@@ -100,6 +103,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
 
     public void copy(Modification modification) {
         super.copy(modification);
+        m_external = modification.isExternal();
         m_type = modification.getType();
         m_varId = modification.getVarId();
         m_exprId = modification.getExprId();
@@ -126,6 +130,15 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     @Override
     public Type getType() {
         return m_type;
+    }
+
+    @Override
+    public boolean isExternal() {
+        return m_external;
+    }
+
+    public void setExternal(boolean external) {
+        m_external = external;
     }
 
     @Override
@@ -295,6 +308,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                     modificationDir,
                     "Cannot create NLB modification directory for modification with Id = " + getId()
             );
+            fileManipulator.writeOptionalString(modificationDir, EXTERNAL_FILE_NAME, String.valueOf(m_external), String.valueOf(DEFAULT_EXTERNAL));
             fileManipulator.writeRequiredString(modificationDir, VARID_FILE_NAME, m_varId);
             fileManipulator.writeRequiredString(modificationDir, TYPE_FILE_NAME, m_type.name());
             fileManipulator.writeRequiredString(modificationDir, EXPRID_FILE_NAME, m_exprId);
@@ -305,6 +319,13 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             File modificationDir
     ) throws NLBIOException, NLBConsistencyException {
         setId(modificationDir.getName());
+        m_external = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        modificationDir,
+                        EXTERNAL_FILE_NAME,
+                        String.valueOf(DEFAULT_EXTERNAL)
+                )
+        );
         m_varId = (
                 FileManipulator.getRequiredFileAsString(
                         modificationDir,
