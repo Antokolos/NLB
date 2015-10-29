@@ -1184,7 +1184,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                     if (exportDir != null) {
                         getMainPaneInfo().getPaneNlbFacade().exportToVNSTEADFile(exportDir);
                     }
-                } catch (NLBExportException ex) {
+                } catch (NLBExportException | NLBIOException ex) {
                     JOptionPane.showMessageDialog(
                             m_mainFramePanel,
                             "Error while exporting to VNSTEAD: " + ex.toString()

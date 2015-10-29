@@ -45,10 +45,7 @@ import com.nlbhub.nlb.domain.export.hypertext.PDFExportManager;
 import com.nlbhub.nlb.domain.export.hypertext.TaggedTextExportManager;
 import com.nlbhub.nlb.domain.export.xml.JSIQ2ExportManager;
 import com.nlbhub.nlb.exception.*;
-import com.nlbhub.nlb.util.FileManipulator;
-import com.nlbhub.nlb.util.MultiLangString;
-import com.nlbhub.nlb.util.StringHelper;
-import com.nlbhub.nlb.util.VarFinder;
+import com.nlbhub.nlb.util.*;
 import com.nlbhub.user.domain.DecisionPoint;
 import com.nlbhub.user.domain.History;
 import org.jetbrains.annotations.NotNull;
@@ -97,6 +94,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     private static final String VARS_DIR_NAME = "vars";
     private static final String MODULES_DIR_NAME = "modules";
     private static final String AUTOWIRED_PAGES_FILE_NAME = "autopgs";
+    private static final String GITIGNORE_FILENAME = ".gitignore";
     private static final String AUTOWIRED_SEPARATOR = "\n";
     private static final String DEFAULT_AUTOWIRED_PAGES = Constants.EMPTY_STRING;
     /**
@@ -3312,8 +3310,38 @@ public class NonLinearBookImpl implements NonLinearBook {
             writeBookProperties(fileManipulator, m_rootDir);
             progressData.setNoteText("Writing autowired pages file...");
             writeAutowiredPagesFile(fileManipulator, m_rootDir);
+            writeExternalModuleSupportFiles(fileManipulator);
         } catch (IOException e) {
             throw new NLBIOException("IO exception occurred", e);
+        }
+    }
+
+    private void writeExternalModuleSupportFiles(
+            final FileManipulator fileManipulator
+    ) throws NLBIOException, NLBVCSException, NLBFileManipulationException {
+        File modulesDir = new File(m_rootDir, MODULES_DIR_NAME);
+        if (modulesDir.exists()) {
+            if (!modulesDir.isDirectory()) {
+                throw new NLBIOException("Modules directory is not a directory");
+            }
+        } else {
+            if (!modulesDir.mkdir()) {
+                throw new NLBIOException("Cannot create external modules directory");
+            }
+        }
+        // TODO: .gitignore file is only for Git! support ,hgignore etc
+        File gitignoreFile = new File(m_rootDir, GITIGNORE_FILENAME);
+        if (gitignoreFile.exists()) {
+            if (!gitignoreFile.isFile()) {
+                throw new NLBIOException(GITIGNORE_FILENAME + " is not a file");
+            }
+        } else {
+            /*
+             * .gitignore file content:
+             * /modules/
+             * This means: ignore modules directory and all files inside it, but only in NLB root directory
+             */
+            fileManipulator.writeRequiredString(m_rootDir, GITIGNORE_FILENAME, "/" + MODULES_DIR_NAME + "/");
         }
     }
 
