@@ -505,12 +505,12 @@ public abstract class ExportManager {
                                         : page.getReturnPageId(),
                                 page,
                                 page.getReturnTexts(),
-                                exportData.getModulePage().getModuleConstrId(),
+                                Constants.EMPTY_STRING,
                                 Constants.EMPTY_STRING,
                                 page.isAutoReturn(),
                                 false,
                                 StringHelper.isEmpty(exportData.getModulePage().getModuleConstrId()),
-                                false,
+                                !page.isLeaf(),
                                 false,
                                 null
                         )

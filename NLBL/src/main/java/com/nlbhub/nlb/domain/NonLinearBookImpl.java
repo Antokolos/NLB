@@ -2743,12 +2743,12 @@ public class NonLinearBookImpl implements NonLinearBook {
                                         : source.getReturnPageId(),
                                 source,
                                 source.getReturnTexts(),
-                                m_parentPage.getModuleConstrId(),
+                                Constants.EMPTY_STRING,
                                 Constants.EMPTY_STRING,
                                 source.isAutoReturn(),
                                 false,
                                 StringHelper.isEmpty(m_parentPage.getModuleConstrId()),
-                                false,
+                                !source.isLeaf(),
                                 false,
                                 null
                         )
