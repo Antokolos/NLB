@@ -2471,7 +2471,7 @@ public abstract class ExportManager {
                 return SoundPathData.VOID;
             } else {
                 SoundPathData result = new SoundPathData();
-                if (externalHierarchy == null) {
+                if (StringHelper.isEmpty(externalHierarchy)) {
                     result.setParentFolderPath(NonLinearBook.SOUND_DIR_NAME);
                 } else {
                     result.setParentFolderPath(NonLinearBook.SOUND_DIR_NAME + "/" + externalHierarchy);
@@ -2487,7 +2487,11 @@ public abstract class ExportManager {
                 } else {
                     result.setConstraint(Constants.EMPTY_STRING);
                 }
-                result.setSfx(m_mediaFlagsMap.get(soundFileName));
+                if (StringHelper.isEmpty(externalHierarchy)) {
+                    result.setSfx(m_mediaFlagsMap.get(soundFileName));
+                } else {
+                    result.setSfx(m_mediaFlagsMap.get(externalHierarchy + "/" + soundFileName));
+                }
                 return result;
             }
         }

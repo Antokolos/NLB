@@ -4354,6 +4354,18 @@ public class NonLinearBookImpl implements NonLinearBook {
     @Override
     public Map<String, Boolean> getMediaFlagsMap() {
         Map<String, Boolean> result = new HashMap<>();
+        result.putAll(getMediaFlagsMapForModule(this));
+        for (Map.Entry<String, NonLinearBook> entry : getExternalModules().entrySet()) {
+            Map<String, Boolean> moduleResult = entry.getValue().getMediaFlagsMap();
+            for (Map.Entry<String, Boolean> moduleEntry : moduleResult.entrySet()) {
+                result.put(entry.getKey() + "/" + moduleEntry.getKey(), moduleEntry.getValue());
+            }
+        }
+        return result;
+    }
+
+    private Map<String, Boolean> getMediaFlagsMapForModule(NonLinearBook module) {
+        Map<String, Boolean> result = new HashMap<>();
         List<MediaFile> imageFiles = getImageFiles();
         for (MediaFile mediaFile : imageFiles) {
             result.put(mediaFile.getFileName(), mediaFile.isFlagged());
