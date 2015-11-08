@@ -3664,7 +3664,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 );
             }
 
-        } else {
+        } else if (ids.length > 1) {
             link = null;
             modification = nodeItem.getModificationById(ids[1]);
             if (modification == null) {
@@ -3675,6 +3675,10 @@ public class NonLinearBookImpl implements NonLinearBook {
                                 + variable.getId()
                 );
             }
+        } else {
+            result.setModifyingItem(null);
+            result.setModification(null);
+            return result;
         }
 
         if (variable.isDeleted()) {
