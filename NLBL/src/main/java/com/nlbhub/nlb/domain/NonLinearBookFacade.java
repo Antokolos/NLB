@@ -323,6 +323,7 @@ public class NonLinearBookFacade implements NLBObservable {
             final boolean soundSFX,
             final String pageVariableName,
             final String pageTimerVariableName,
+            final String pageDefTagVariableValue,
             final MultiLangString pageText,
             final MultiLangString pageCaptionText,
             final boolean useCaption,
@@ -355,6 +356,7 @@ public class NonLinearBookFacade implements NLBObservable {
                         soundSFX,
                         pageVariableName,
                         pageTimerVariableName,
+                        pageDefTagVariableValue,
                         pageText,
                         pageCaptionText,
                         useCaption,
@@ -420,6 +422,7 @@ public class NonLinearBookFacade implements NLBObservable {
     public void updateObj(
             final Obj obj,
             final String objVariableName,
+            final String objDefTagVariableValue,
             final String objConstraintValue,
             final String objCommonToName,
             final String objName,
@@ -439,6 +442,7 @@ public class NonLinearBookFacade implements NLBObservable {
                 m_nlb.createUpdateObjCommand(
                         obj,
                         objVariableName,
+                        objDefTagVariableValue,
                         objConstraintValue,
                         objCommonToName,
                         objName,

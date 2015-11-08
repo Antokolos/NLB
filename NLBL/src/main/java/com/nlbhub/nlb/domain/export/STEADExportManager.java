@@ -552,7 +552,7 @@ public class STEADExportManager extends TextExportManager {
         // Do not check pageBlocks.isUseCaption() here, because in INSTEAD all rooms must have name
         stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageImage());
-        stringBuilder.append("    var { time = 0; wastext = false; lasttext = nil; tag = ''; ");
+        stringBuilder.append("    var { time = 0; wastext = false; lasttext = nil; tag = '").append(pageBlocks.getPageDefaultTag()).append("'; ");
         stringBuilder.append("autowired = ").append(pageBlocks.isAutowired() ? "true" : "false").append("; ");
         stringBuilder.append("},").append(LINE_SEPARATOR);
         boolean hasAnim = pageBlocks.isHasObjectsWithAnimatedImages();
@@ -742,14 +742,14 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjStart(final String id, String containerRef, boolean menuObj) {
+    protected String decorateObjStart(final String id, String containerRef, boolean menuObj, String objDefaultTag) {
         StringBuilder result = new StringBuilder();
         if (menuObj) {
             result.append(" = menu {").append(LINE_SEPARATOR);
         } else {
             result.append(" = obj {").append(LINE_SEPARATOR);
         }
-        result.append("    var { tag = ''; ").append(getContainerExpression(containerRef));
+        result.append("    var { tag = '").append(objDefaultTag).append("'; ").append(getContainerExpression(containerRef));
         result.append(" nlbid = '").append(id).append("';").append(" },").append(LINE_SEPARATOR);
         return result.toString();
     }

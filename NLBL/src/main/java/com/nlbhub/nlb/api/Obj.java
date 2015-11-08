@@ -82,7 +82,6 @@ public interface Obj extends NodeItem {
 
     public String getName();
 
-
     public String getImageFileName();
 
     public String getSoundFileName();

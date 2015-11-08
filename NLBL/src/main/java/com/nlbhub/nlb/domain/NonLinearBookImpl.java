@@ -384,6 +384,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final PageImpl m_page;
         private VariableTracker m_variableTracker;
         private VariableTracker m_timerVariableTracker;
+        private VariableTracker m_defTagVariableTracker;
         private VariableTracker m_moduleConstrIdTracker;
         private VariableTracker m_autowireInConstrIdTracker;
         private VariableTracker m_autowireOutConstrIdTracker;
@@ -445,6 +446,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final boolean soundSFX,
                 final String pageVariableName,
                 final String pageTimerVariableName,
+                final String pageDefTagVariableValue,
                 final MultiLangString pageText,
                 final MultiLangString pageCaptionText,
                 final boolean useCaption,
@@ -477,6 +479,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     soundSFX,
                     pageVariableName,
                     pageTimerVariableName,
+                    pageDefTagVariableValue,
                     pageText,
                     pageCaptionText,
                     useCaption,
@@ -511,6 +514,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final boolean soundSFX,
                 final String pageVariableName,
                 final String pageTimerVariableName,
+                final String pageDefTagVariableValue,
                 final MultiLangString pageText,
                 final MultiLangString pageCaptionText,
                 final boolean useCaption,
@@ -552,6 +556,16 @@ public class NonLinearBookImpl implements NonLinearBook {
                     Variable.DataType.NUMBER,
                     pageTimerVariableName,
                     Variable.DEFAULT_VALUE,
+                    m_page.getFullId()
+            );
+            m_defTagVariableTracker = new VariableTracker(
+                    currentNLB,
+                    getVariableImplById(m_page.getDefaultTagId()),
+                    StringHelper.isEmpty(pageDefTagVariableValue),
+                    Variable.Type.TAG,
+                    Variable.DataType.STRING,
+                    Variable.DEFAULT_NAME,
+                    pageDefTagVariableValue,
                     m_page.getFullId()
             );
             m_moduleConstrIdTracker = new VariableTracker(
@@ -656,6 +670,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setSoundSFX(m_newSoundSFX);
             m_page.setVarId(m_variableTracker.execute());
             m_page.setTimerVarId(m_timerVariableTracker.execute());
+            m_page.setDefaultTagId(m_defTagVariableTracker.execute());
             m_page.setModuleConstrId(m_moduleConstrIdTracker.execute());
             m_page.setAutowireInConstrId(m_autowireInConstrIdTracker.execute());
             m_page.setAutowireOutConstrId(m_autowireOutConstrIdTracker.execute());
@@ -697,6 +712,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setSoundSFX(m_existingSoundSFX);
             m_page.setVarId(m_variableTracker.revert());
             m_page.setTimerVarId(m_timerVariableTracker.revert());
+            m_page.setDefaultTagId(m_defTagVariableTracker.revert());
             m_page.setModuleConstrId(m_moduleConstrIdTracker.revert());
             m_page.setAutowireInConstrId(m_autowireInConstrIdTracker.revert());
             m_page.setAutowireOutConstrId(m_autowireOutConstrIdTracker.revert());
@@ -737,6 +753,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     class UpdateObjCommand implements NLBCommand {
         private final ObjImpl m_obj;
         private VariableTracker m_variableTracker;
+        private VariableTracker m_deftagTracker;
         private VariableTracker m_constraintTracker;
         private VariableTracker m_commonToTracker;
 
@@ -769,6 +786,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final NonLinearBook currentNLB,
                 final Obj obj,
                 final String objVariableName,
+                final String objDefTagVariableValue,
                 final String objConstraintValue,
                 final String objCommonToName,
                 final String objName,
@@ -788,6 +806,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     currentNLB,
                     getObjImplById(obj.getId()),
                     objVariableName,
+                    objDefTagVariableValue,
                     objConstraintValue,
                     objCommonToName,
                     objName,
@@ -809,6 +828,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final NonLinearBook currentNLB,
                 final ObjImpl obj,
                 final String objVariableName,
+                final String objDefTagVariableValue,
                 final String objConstraintValue,
                 final String objCommonToName,
                 final String objName,
@@ -833,6 +853,16 @@ public class NonLinearBookImpl implements NonLinearBook {
                     Variable.DataType.BOOLEAN,
                     objVariableName,
                     Variable.DEFAULT_VALUE,
+                    m_obj.getFullId()
+            );
+            m_deftagTracker = new VariableTracker(
+                    currentNLB,
+                    getVariableImplById(m_obj.getDefaultTagId()),
+                    StringHelper.isEmpty(objDefTagVariableValue),
+                    Variable.Type.TAG,
+                    Variable.DataType.STRING,
+                    Variable.DEFAULT_NAME,
+                    objDefTagVariableValue,
                     m_obj.getFullId()
             );
             m_constraintTracker = new VariableTracker(
@@ -884,6 +914,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         @Override
         public void execute() {
             m_obj.setVarId(m_variableTracker.execute());
+            m_obj.setDefaultTagId(m_deftagTracker.execute());
             m_obj.setConstrId(m_constraintTracker.execute());
             m_obj.setCommonToId(m_commonToTracker.execute());
             m_obj.setName(m_newObjName);
@@ -904,6 +935,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         @Override
         public void revert() {
             m_obj.setVarId(m_variableTracker.revert());
+            m_obj.setDefaultTagId(m_deftagTracker.revert());
             m_obj.setConstrId(m_constraintTracker.revert());
             m_obj.setCommonToId(m_commonToTracker.revert());
             m_obj.setName(m_existingObjName);
@@ -1636,6 +1668,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 PageImpl newPage = newPages.get(idsMapping.get(entry.getKey()));
                 final Variable pageVariable = nlbToPaste.getVariableById(page.getVarId());
                 final Variable pageTimerVariable = nlbToPaste.getVariableById(page.getTimerVarId());
+                final Variable pageDefTagVariable = nlbToPaste.getVariableById(page.getDefaultTagId());
                 final Variable modConstraint = nlbToPaste.getVariableById(page.getModuleConstrId());
                 final Variable autoInConstraint = nlbToPaste.getVariableById(page.getAutowireInConstrId());
                 final Variable autoOutConstraint = nlbToPaste.getVariableById(page.getAutowireOutConstrId());
@@ -1649,6 +1682,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         page.isSoundSFX(),
                         (pageVariable != null) ? pageVariable.getName() : Constants.EMPTY_STRING,
                         (pageTimerVariable != null) ? pageTimerVariable.getName() : Constants.EMPTY_STRING,
+                        (pageDefTagVariable != null) ? pageDefTagVariable.getValue() : Constants.EMPTY_STRING,
                         page.getTexts(),
                         page.getCaptions(),
                         page.isUseCaption(),
@@ -1682,12 +1716,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                 ObjImpl obj = entry.getValue();
                 ObjImpl newObj = newObjs.get(idsMapping.get(entry.getKey()));
                 final Variable objVariable = nlbToPaste.getVariableById(obj.getVarId());
+                final Variable deftagVariable = nlbToPaste.getVariableById(obj.getDefaultTagId());
                 final Variable objConstraint = nlbToPaste.getVariableById(obj.getConstrId());
                 final Variable objCommonTo = nlbToPaste.getVariableById(obj.getCommonToId());
                 UpdateObjCommand updateObjCommand = new UpdateObjCommand(
                         currentNLB,
                         newObj,
                         (objVariable != null) ? objVariable.getName() : Constants.EMPTY_STRING,
+                        (deftagVariable != null) ? deftagVariable.getValue() : Constants.EMPTY_STRING,
                         (objConstraint != null) ? objConstraint.getValue() : Constants.EMPTY_STRING,
                         (objCommonTo != null) ? objCommonTo.getName() : Constants.EMPTY_STRING,
                         obj.getName(),
@@ -1830,6 +1866,10 @@ public class NonLinearBookImpl implements NonLinearBook {
                     if (objVariable != null && !objVariable.isDeleted()) {
                         m_newClipboardData.addVariable(objVariable);
                     }
+                    VariableImpl deftagVariable = getVariableImplById(obj.getDefaultTagId());
+                    if (deftagVariable != null && !deftagVariable.isDeleted()) {
+                        m_newClipboardData.addVariable(deftagVariable);
+                    }
                     VariableImpl objConstraint = getVariableImplById(obj.getConstrId());
                     if (objConstraint != null && !objConstraint.isDeleted()) {
                         m_newClipboardData.addVariable(objConstraint);
@@ -1861,6 +1901,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     VariableImpl moduleConstraint = getVariableImplById(page.getModuleConstrId());
                     VariableImpl pageVariable = getVariableImplById(page.getVarId());
                     VariableImpl pageTimerVariable = getVariableImplById(page.getTimerVarId());
+                    VariableImpl pageDefTagVariable = getVariableImplById(page.getDefaultTagId());
                     if (autowireInConstraint != null && !autowireInConstraint.isDeleted()) {
                         m_newClipboardData.addVariable(
                                 new VariableImpl(autowireInConstraint, m_newClipboardData)
@@ -1884,6 +1925,11 @@ public class NonLinearBookImpl implements NonLinearBook {
                     if (pageTimerVariable != null && !pageTimerVariable.isDeleted()) {
                         m_newClipboardData.addVariable(
                                 new VariableImpl(pageTimerVariable, m_newClipboardData)
+                        );
+                    }
+                    if (pageDefTagVariable != null && !pageDefTagVariable.isDeleted()) {
+                        m_newClipboardData.addVariable(
+                                new VariableImpl(pageDefTagVariable, m_newClipboardData)
                         );
                     }
                     checkContainedObjects(page, objIds);
@@ -2065,6 +2111,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final boolean soundSFX,
             final String pageVariableName,
             final String pageTimerVariableName,
+            final String pageDefTagVariableValue,
             final MultiLangString pageText,
             final MultiLangString pageCaptionText,
             final boolean useCaption,
@@ -2098,6 +2145,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         soundSFX,
                         pageVariableName,
                         pageTimerVariableName,
+                        pageDefTagVariableValue,
                         pageText,
                         pageCaptionText,
                         useCaption,
@@ -2126,6 +2174,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     UpdateObjCommand createUpdateObjCommand(
             final Obj obj,
             final String objVariableName,
+            final String objDefTagVariableValue,
             final String objConstraintValue,
             final String objCommonToName,
             final String objName,
@@ -2146,6 +2195,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         this,
                         obj,
                         objVariableName,
+                        objDefTagVariableValue,
                         objConstraintValue,
                         objCommonToName,
                         objName,
@@ -2917,6 +2967,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             updateVisitedVars(decisionModule, page, factory, visitedVars);
             Variable variable = decisionModule.getVariableById(page.getVarId());
             // TODO: page timer???
+            // Default tag does not affect this
             if (variable != null && !StringHelper.isEmpty(variable.getName())) {
                 visitedVars.put(variable.getName(), true);
             }
@@ -3442,45 +3493,14 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     private void preprocessVariable(final VariableImpl variable) throws NLBConsistencyException {
-        final String id = variable.getId();
         if ((variable.getType() == VariableImpl.Type.PAGE) || (variable.getType() == VariableImpl.Type.TIMER)) {
-            final PageImpl page = getPageImplById(variable.getTarget());
-            if (variable.isDeleted()) {
-                // page.getVarId() should be empty or set to another variable's Id
-                if (id.equals(page.getVarId())) {
-                    throw new NLBConsistencyException(
-                            "Page (or timer) variable for page with Id = "
-                                    + page.getId()
-                                    + " is incorrect, because the corresponding variable with Id = "
-                                    + id
-                                    + " has been deleted"
-                    );
-                }
-            }
-            if (page.isDeleted()) {
-                variable.setDeleted(true);
-            }
+            preprocessPageRelatedVariable(variable);
         } else if (
                 variable.getType() == VariableImpl.Type.OBJ
                         || variable.getType() == VariableImpl.Type.OBJCONSTRAINT
                         || variable.getType() == VariableImpl.Type.COMMONTO
                 ) {
-            final Obj obj = getObjById(variable.getTarget());
-            if (variable.isDeleted()) {
-                // obj.getVarId() should be empty or set to another variable's Id
-                if (id.equals(obj.getVarId()) || id.equals(obj.getConstrId()) || id.equals(obj.getCommonToId())) {
-                    throw new NLBConsistencyException(
-                            "Obj variable for obj with Id = "
-                                    + obj.getId()
-                                    + " is incorrect, because the corresponding variable with Id = "
-                                    + id
-                                    + " has been deleted"
-                    );
-                }
-            }
-            if (obj.isDeleted()) {
-                variable.setDeleted(true);
-            }
+            preprocessObjRelatedVariable(variable);
         } else if (
                 variable.getType() == VariableImpl.Type.LINK
                         || variable.getType() == VariableImpl.Type.LINKCONSTRAINT
@@ -3500,7 +3520,13 @@ public class NonLinearBookImpl implements NonLinearBook {
                     getModifyingItemAndModification(variable)
             );
             if (!itemAndModification.existsAndValid()) {
-                variable.setDeleted(true);
+                if (variable.getType() == VariableImpl.Type.TAG) {
+                    if (!preprocessObjRelatedVariable(variable) && !preprocessPageRelatedVariable(variable)) {
+                        variable.setDeleted(true);
+                    }
+                } else {
+                    variable.setDeleted(true);
+                }
             }
         } else if (
                 variable.getType() == VariableImpl.Type.MODCONSTRAINT
@@ -3512,6 +3538,54 @@ public class NonLinearBookImpl implements NonLinearBook {
                 variable.setDeleted(true);
             }
         }
+    }
+
+    private boolean preprocessObjRelatedVariable(VariableImpl variable) throws NLBConsistencyException {
+        final String id = variable.getId();
+        final Obj obj = getObjById(variable.getTarget());
+        if (obj == null) {
+            return false;
+        }
+        if (variable.isDeleted()) {
+            // obj.getVarId() should be empty or set to another variable's Id
+            if (id.equals(obj.getVarId()) || id.equals(obj.getConstrId()) || id.equals(obj.getCommonToId())) {
+                throw new NLBConsistencyException(
+                        "Obj variable for obj with Id = "
+                                + obj.getId()
+                                + " is incorrect, because the corresponding variable with Id = "
+                                + id
+                                + " has been deleted"
+                );
+            }
+        }
+        if (obj.isDeleted()) {
+            variable.setDeleted(true);
+        }
+        return true;
+    }
+
+    private boolean preprocessPageRelatedVariable(VariableImpl variable) throws NLBConsistencyException {
+        final String id = variable.getId();
+        final PageImpl page = getPageImplById(variable.getTarget());
+        if (page == null) {
+            return false;
+        }
+        if (variable.isDeleted()) {
+            // page.getVarId() should be empty or set to another variable's Id
+            if (id.equals(page.getVarId())) {
+                throw new NLBConsistencyException(
+                        "Page (or timer) variable for page with Id = "
+                                + page.getId()
+                                + " is incorrect, because the corresponding variable with Id = "
+                                + id
+                                + " has been deleted"
+                );
+            }
+        }
+        if (page.isDeleted()) {
+            variable.setDeleted(true);
+        }
+        return true;
     }
 
     private Link getLinkWithCheck(VariableImpl variable) throws NLBConsistencyException {
@@ -3805,6 +3879,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         if (contract.isSearchInVars()) {
                             final VariableImpl variable = getVariableImplById(page.getVarId());
                             final VariableImpl variableTimer = getVariableImplById(page.getTimerVarId());
+                            final VariableImpl variableDefTag = getVariableImplById(page.getDefaultTagId());
                             if (variable != null) {
                                 final SearchResult varResult = variable.searchText(contract);
                                 if (varResult != null) {
@@ -3815,6 +3890,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                             }
                             if (variableTimer != null) {
                                 final SearchResult varResult = variableTimer.searchText(contract);
+                                if (varResult != null) {
+                                    varResult.setId(page.getId());
+                                    varResult.setModulePageId(modulePageId);
+                                    result.addSearchResult(varResult);
+                                }
+                            }
+                            if (variableDefTag != null) {
+                                final SearchResult varResult = variableDefTag.searchText(contract);
                                 if (varResult != null) {
                                     varResult.setId(page.getId());
                                     varResult.setModulePageId(modulePageId);
@@ -3843,6 +3926,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             for (Map.Entry<String, ObjImpl> entry : m_objs.entrySet()) {
                 final SearchResult objResult;
                 final SearchResult varResult;
+                final SearchResult deftagResult;
                 final SearchResult constrResult;
                 final SearchResult commontoResult;
                 final ObjImpl obj = entry.getValue();
@@ -3852,6 +3936,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         result.addSearchResult(objResult);
                     } else {
                         final VariableImpl variable = getVariableImplById(obj.getVarId());
+                        final VariableImpl deftag = getVariableImplById(obj.getDefaultTagId());
                         final VariableImpl constraint = getVariableImplById(obj.getConstrId());
                         final VariableImpl commonto = getVariableImplById(obj.getCommonToId());
                         if (contract.isSearchInVars()) {
@@ -3861,6 +3946,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                                     varResult.setId(obj.getId());
                                     varResult.setModulePageId(modulePageId);
                                     result.addSearchResult(varResult);
+                                }
+                            }
+                            if (deftag != null) {
+                                deftagResult = deftag.searchText(contract);
+                                if (deftagResult != null) {
+                                    deftagResult.setId(obj.getId());
+                                    deftagResult.setModulePageId(modulePageId);
+                                    result.addSearchResult(deftagResult);
                                 }
                             }
                             if (constraint != null) {

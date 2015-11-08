@@ -407,6 +407,17 @@ public abstract class ExportManager {
         } else {
             blocks.setPageVariable(EMPTY_STRING);
         }
+        if (!StringHelper.isEmpty(page.getDefaultTagId())) {
+            Variable deftag = nlb.getVariableById(page.getDefaultTagId());
+            // TODO: Add cases with deleted pages/links/variables etc. to the unit test
+            if (!deftag.isDeleted()) {
+                blocks.setPageDefaultTag(deftag.getValue());
+            } else {
+                blocks.setPageDefaultTag(EMPTY_STRING);
+            }
+        } else {
+            blocks.setPageDefaultTag(EMPTY_STRING);
+        }
         blocks.setHasPageTimer(false);
         if (!StringHelper.isEmpty(page.getTimerVarId())) {
             Variable timerVariable = nlb.getVariableById(page.getTimerVarId());
@@ -651,22 +662,6 @@ public abstract class ExportManager {
     ) throws NLBConsistencyException, NLBExportException {
         NonLinearBook nlb = obj.getCurrentNLB();
         ObjBuildingBlocks blocks = new ObjBuildingBlocks();
-        final boolean menuObj = (obj.getLinks().size() == 0) && !exportData.hasInwardLinks(obj.getId());
-        blocks.setObjLabel(decorateObjLabel(obj.getId()));
-        blocks.setObjComment(decorateObjComment(obj.getName()));
-        blocks.setObjStart(decorateObjStart(obj.getId(), getContainerRef(obj, exportData), menuObj));
-        blocks.setObjName(decorateObjName(obj.getName()));
-        blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
-        String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
-        final String objImage = decorateObjImage(getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage()));
-        final boolean hasImage = StringHelper.notEmpty(imageFileName);
-        blocks.setObjImage(objImage);
-        blocks.setObjDisp(decorateObjDisp(StringHelper.getTextChunks(obj.getDisp()), hasImage && obj.isImageInInventory()));
-        blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), StringHelper.getTextChunks(obj.getText()), hasImage && obj.isImageInScene()));
-        blocks.setTakable(obj.isTakable());
-        blocks.setObjTak(decorateObjTak(obj.getName()));
-        blocks.setObjInv(decorateObjInv(menuObj));
-        blocks.setObjActStart(decorateObjActStart(StringHelper.getTextChunks(obj.getActText())));
         if (!StringHelper.isEmpty(obj.getVarId())) {
             Variable variable = exportData.getNlb().getVariableById(obj.getVarId());
             // TODO: Add cases with deleted pages/links/variables etc. to the unit test
@@ -677,6 +672,17 @@ public abstract class ExportManager {
             }
         } else {
             blocks.setObjVariable(EMPTY_STRING);
+        }
+        if (!StringHelper.isEmpty(obj.getDefaultTagId())) {
+            Variable deftag = exportData.getNlb().getVariableById(obj.getDefaultTagId());
+            // TODO: Add cases with deleted pages/links/variables etc. to the unit test
+            if (!deftag.isDeleted()) {
+                blocks.setObjDefaultTagVariable(deftag.getValue());
+            } else {
+                blocks.setObjDefaultTagVariable(EMPTY_STRING);
+            }
+        } else {
+            blocks.setObjDefaultTagVariable(EMPTY_STRING);
         }
         if (!StringHelper.isEmpty(obj.getConstrId())) {
             Variable constraint = exportData.getNlb().getVariableById(obj.getConstrId());
@@ -710,6 +716,23 @@ public abstract class ExportManager {
                         buildModificationsText(EMPTY_STRING, obj.getModifications(), exportData)
                 )
         );
+        final boolean menuObj = (obj.getLinks().size() == 0) && !exportData.hasInwardLinks(obj.getId());
+        blocks.setObjLabel(decorateObjLabel(obj.getId()));
+        blocks.setObjComment(decorateObjComment(obj.getName()));
+        // blocks obj default tag variable was set earlier
+        blocks.setObjStart(decorateObjStart(obj.getId(), getContainerRef(obj, exportData), menuObj, blocks.getObjDefaultTagVariable()));
+        blocks.setObjName(decorateObjName(obj.getName()));
+        blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
+        String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
+        final String objImage = decorateObjImage(getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage()));
+        final boolean hasImage = StringHelper.notEmpty(imageFileName);
+        blocks.setObjImage(objImage);
+        blocks.setObjDisp(decorateObjDisp(StringHelper.getTextChunks(obj.getDisp()), hasImage && obj.isImageInInventory()));
+        blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), StringHelper.getTextChunks(obj.getText()), hasImage && obj.isImageInScene()));
+        blocks.setTakable(obj.isTakable());
+        blocks.setObjTak(decorateObjTak(obj.getName()));
+        blocks.setObjInv(decorateObjInv(menuObj));
+        blocks.setObjActStart(decorateObjActStart(StringHelper.getTextChunks(obj.getActText())));
         blocks.setObjActEnd(decorateObjActEnd());
         blocks.setObjUseStart(decorateObjUseStart());
         blocks.setObjUseEnd(decorateObjUseEnd());
@@ -1081,6 +1104,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public String getDefaultTagId() {
+                return page.getDefaultTagId();
+            }
+
+            @Override
             public String getStroke() {
                 return page.getStroke();
             }
@@ -1280,6 +1308,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public String getDefaultTagId() {
+                return obj.getDefaultTagId();
+            }
+
+            @Override
             public String getStroke() {
                 return obj.getStroke();
             }
@@ -1389,7 +1422,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjStart(final String id, String containerRef, boolean menuObj) {
+    protected String decorateObjStart(final String id, String containerRef, boolean menuObj, String objDefaultTag) {
         return EMPTY_STRING;
     }
 

@@ -54,6 +54,7 @@ public interface NodeItem extends ModifyingItem, NLBObservable {
     public static final String DEFAULT_TEXTCOLOR = "000000";
     public static final String DEFAULT_LNKORDER = Constants.EMPTY_STRING;
     public static final String DEFAULT_CONTENT = Constants.EMPTY_STRING;
+    public static final String DEFAULT_TAG_ID = Constants.EMPTY_STRING;
 
     /**
      * Resize bars orientations.
@@ -64,6 +65,8 @@ public interface NodeItem extends ModifyingItem, NLBObservable {
 
     public static final int DEFAULT_NODE_WIDTH = 100;
     public static final int DEFAULT_NODE_HEIGHT = 50;
+
+    public String getDefaultTagId();
 
     public String getStroke();
 

@@ -251,6 +251,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public String getDefaultTagId() {
+        return DEFAULT_TAG_ID;
+    }
+
+    @Override
     public String getStroke() {
         return Constants.EMPTY_STRING;
     }

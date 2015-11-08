@@ -59,6 +59,7 @@ public class PageBuildingBlocks {
     private String m_pageTextEnd;
     private String m_pageVariable;
     private String m_pageTimerVariable;
+    private String m_pageDefaultTag;
     private String m_pageTimerVariableInit;
     private String m_pageModifications;
     private String m_pageEnd;
@@ -202,6 +203,14 @@ public class PageBuildingBlocks {
 
     public void setPageTimerVariable(String pageTimerVariable) {
         m_pageTimerVariable = pageTimerVariable;
+    }
+
+    public String getPageDefaultTag() {
+        return m_pageDefaultTag;
+    }
+
+    public void setPageDefaultTag(String pageDefaultTag) {
+        m_pageDefaultTag = pageDefaultTag;
     }
 
     public String getPageModifications() {

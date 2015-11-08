@@ -65,10 +65,12 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
     private static final String LNKORDER_SEPARATOR = "\n";
     private static final String CONTENT_FILE_NAME = "content";
     private static final String CONTENT_SEPARATOR = "\n";
+    private static final String DEFTAGID_FILE_NAME = "deftagid";
     private static final String STROKE_FILE_NAME = "stroke";
     private static final String FILL_FILE_NAME = "fill";
     private static final String TEXTCOLOR_FILE_NAME = "txtcolor";
 
+    private String m_defaultTagId = DEFAULT_TAG_ID;
     private String m_stroke = DEFAULT_STROKE;
     private String m_fill = DEFAULT_FILL;
     private String m_textColor = DEFAULT_TEXTCOLOR;
@@ -245,6 +247,7 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
 
     public AbstractNodeItem(final @NotNull NodeItem nodeItem, NonLinearBook currentNLB) {
         super(nodeItem, currentNLB);
+        m_defaultTagId = nodeItem.getDefaultTagId();
         m_stroke = nodeItem.getStroke();
         m_fill = nodeItem.getFill();
         m_textColor = nodeItem.getTextColor();
@@ -306,6 +309,16 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
         m_coords.setTop(top);
         m_coords.setWidth(DEFAULT_NODE_WIDTH);
         m_coords.setHeight(DEFAULT_NODE_HEIGHT);
+    }
+
+    @Override
+    @XmlElement(name = "default-tag-id")
+    public String getDefaultTagId() {
+        return m_defaultTagId;
+    }
+
+    public void setDefaultTagId(String defaultTagId) {
+        m_defaultTagId = defaultTagId;
     }
 
     @Override
@@ -389,6 +402,7 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
             final @NotNull File nodeDir,
             final @NotNull NonLinearBookImpl nonLinearBook
     ) throws IOException, NLBIOException, NLBFileManipulationException, NLBVCSException {
+        fileManipulator.writeOptionalString(nodeDir, DEFTAGID_FILE_NAME, m_defaultTagId, DEFAULT_TAG_ID);
         fileManipulator.writeOptionalString(nodeDir, STROKE_FILE_NAME, m_stroke, DEFAULT_STROKE);
         fileManipulator.writeOptionalString(nodeDir, FILL_FILE_NAME, m_fill, DEFAULT_FILL);
         fileManipulator.writeOptionalString(nodeDir, TEXTCOLOR_FILE_NAME, m_textColor, DEFAULT_TEXTCOLOR);
@@ -399,6 +413,13 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
     }
 
     public void readNodeItemProperties(File nodeDir) throws NLBIOException, NLBConsistencyException {
+        m_defaultTagId = (
+                FileManipulator.getOptionalFileAsString(
+                        nodeDir,
+                        DEFTAGID_FILE_NAME,
+                        DEFAULT_TAG_ID
+                )
+        );
         m_stroke = (
                 FileManipulator.getOptionalFileAsString(
                         nodeDir,

@@ -55,7 +55,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -976,6 +975,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         result.setFill(getFill());
         result.setParent(getParent());
         result.setStroke(getStroke());
+        result.setDefaultTagId(getDefaultTagId());
         result.setTextColor(getTextColor());
         AbstractNodeItem.filterTargetLinkList(result, this, linkIdsToBeExcluded);
         for (Link link : linksToBeAdded) {

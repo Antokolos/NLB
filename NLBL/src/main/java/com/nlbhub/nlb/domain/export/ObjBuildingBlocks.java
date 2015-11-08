@@ -62,6 +62,7 @@ public class ObjBuildingBlocks {
     private String m_objInv;
     private String m_objActStart;
     private String m_objVariable;
+    private String m_objDefaultTagVariable;
     private String m_objConstraint;
     private String m_objModifications;
     private String m_objActEnd;
@@ -183,6 +184,14 @@ public class ObjBuildingBlocks {
 
     public void setObjVariable(String objVariable) {
         m_objVariable = objVariable;
+    }
+
+    public String getObjDefaultTagVariable() {
+        return m_objDefaultTagVariable;
+    }
+
+    public void setObjDefaultTagVariable(String objDefaultTagVariable) {
+        m_objDefaultTagVariable = objDefaultTagVariable;
     }
 
     public String getObjConstraint() {

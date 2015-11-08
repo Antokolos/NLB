@@ -495,7 +495,7 @@
                                   </grid>
                                   <grid id="fc472" layout-manager="BorderLayout" hgap="0" vgap="0">
                                     <constraints>
-                                      <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <grid row="7" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                       <gridbag weightx="1.0" weighty="1.0"/>
                                     </constraints>
                                     <properties/>
@@ -594,7 +594,7 @@
                                   </grid>
                                   <grid id="3448c" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
                                     <constraints>
-                                      <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                       <gridbag weightx="0.0" weighty="0.0"/>
                                     </constraints>
                                     <properties/>
@@ -676,7 +676,7 @@
                                   </component>
                                   <grid id="a50c1" layout-manager="GridBagLayout">
                                     <constraints>
-                                      <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                       <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="1.0"/>
                                     </constraints>
                                     <properties>
@@ -708,12 +708,54 @@
                                   </grid>
                                   <component id="8622f" class="javax.swing.JLabel">
                                     <constraints>
-                                      <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                      <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                                       <gridbag weightx="0.0" weighty="0.0"/>
                                     </constraints>
                                     <properties>
                                       <labelFor value="3747d"/>
                                       <text value="Common To"/>
+                                    </properties>
+                                  </component>
+                                  <grid id="21e4c" layout-manager="GridBagLayout">
+                                    <constraints>
+                                      <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="1.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <minimumSize width="468" height="33"/>
+                                      <preferredSize width="468" height="33"/>
+                                    </properties>
+                                    <border type="none"/>
+                                    <children>
+                                      <scrollpane id="2c9d4">
+                                        <constraints>
+                                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                          <gridbag weightx="1.0" weighty="1.0"/>
+                                        </constraints>
+                                        <properties>
+                                          <horizontalScrollBarPolicy value="31"/>
+                                          <verticalScrollBarPolicy value="21"/>
+                                        </properties>
+                                        <border type="none"/>
+                                        <children>
+                                          <component id="6e3dd" class="javax.swing.JTextField" binding="m_objDefaultTagTextField">
+                                            <constraints/>
+                                            <properties>
+                                              <columns value="40"/>
+                                            </properties>
+                                          </component>
+                                        </children>
+                                      </scrollpane>
+                                    </children>
+                                  </grid>
+                                  <component id="6e3de" class="javax.swing.JLabel">
+                                    <constraints>
+                                      <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <labelFor value="6e3dd"/>
+                                      <text value="Default tag"/>
                                     </properties>
                                   </component>
                                 </children>
