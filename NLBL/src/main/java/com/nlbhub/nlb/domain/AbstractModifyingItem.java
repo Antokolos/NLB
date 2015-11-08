@@ -83,7 +83,7 @@ public abstract class AbstractModifyingItem extends AbstractIdentifiableItem imp
     protected AbstractModifyingItem(ModifyingItem modifyingItem, NonLinearBook currentNLB) {
         super(modifyingItem, currentNLB);
         for (Modification modification : modifyingItem.getModifications()) {
-            ModificationImpl modificationImpl = new ModificationImpl(modification, currentNLB);
+            ModificationImpl modificationImpl = new ModificationImpl(modification, this, currentNLB);
             m_modifications.add(modificationImpl);
         }
     }

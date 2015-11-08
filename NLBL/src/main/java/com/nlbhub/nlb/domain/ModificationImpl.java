@@ -80,8 +80,23 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     private String m_varId;
     private String m_exprId;
 
+    /**
+     * NB: Before using this constructor, please check, whether it is needed to change parent or not.
+     * If you want to change modification parent, please use next constructor below.
+     *
+     * @param modification
+     * @param currentNLB
+     */
     public ModificationImpl(Modification modification, NonLinearBook currentNLB) {
         super(modification, currentNLB);
+        m_external = modification.isExternal();
+        m_type = modification.getType();
+        m_varId = modification.getVarId();
+        m_exprId = modification.getExprId();
+    }
+
+    public ModificationImpl(Modification modification, ModifyingItem parent, NonLinearBook currentNLB) {
+        super(modification, parent, currentNLB);
         m_external = modification.isExternal();
         m_type = modification.getType();
         m_varId = modification.getVarId();

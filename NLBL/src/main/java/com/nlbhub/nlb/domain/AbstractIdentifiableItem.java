@@ -38,10 +38,7 @@
  */
 package com.nlbhub.nlb.domain;
 
-import com.nlbhub.nlb.api.DummyNLB;
-import com.nlbhub.nlb.api.IdentifiableItem;
-import com.nlbhub.nlb.api.NonLinearBook;
-import com.nlbhub.nlb.api.SearchContract;
+import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.StringHelper;
@@ -90,6 +87,13 @@ public abstract class AbstractIdentifiableItem implements IdentifiableItem {
         m_id = identifiableItem.getId();
         m_isDeleted = identifiableItem.isDeleted();
         m_parent = identifiableItem.getParent();
+    }
+
+    public AbstractIdentifiableItem(IdentifiableItem identifiableItem, ModifyingItem parent, NonLinearBook currentNLB) {
+        this(currentNLB);
+        m_id = identifiableItem.getId();
+        m_isDeleted = identifiableItem.isDeleted();
+        m_parent = parent;
     }
 
     public void copy(IdentifiableItem identifiableItem) {
