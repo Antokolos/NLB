@@ -389,6 +389,7 @@ public class NonLinearBookFacade implements NLBObservable {
             final String linkVariableName,
             final String linkConstraintValue,
             final MultiLangString linkText,
+            final MultiLangString linkAltText,
             final boolean auto,
             final boolean once
     ) {
@@ -398,6 +399,7 @@ public class NonLinearBookFacade implements NLBObservable {
                         linkVariableName,
                         linkConstraintValue,
                         linkText,
+                        linkAltText,
                         auto,
                         once
                 )

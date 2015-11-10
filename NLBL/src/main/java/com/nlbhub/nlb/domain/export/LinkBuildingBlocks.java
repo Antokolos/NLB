@@ -46,6 +46,7 @@ package com.nlbhub.nlb.domain.export;
  */
 public class LinkBuildingBlocks {
     private String m_linkLabel;
+    private String m_linkAltText;
     private String m_linkComment;
     private String m_linkStart;
     private String m_linkVariable;
@@ -76,6 +77,14 @@ public class LinkBuildingBlocks {
 
     public void setLinkLabel(String linkLabel) {
         m_linkLabel = linkLabel;
+    }
+
+    public String getLinkAltText() {
+        return m_linkAltText;
+    }
+
+    public void setLinkAltText(String linkAltText) {
+        m_linkAltText = linkAltText;
     }
 
     public String getLinkComment() {

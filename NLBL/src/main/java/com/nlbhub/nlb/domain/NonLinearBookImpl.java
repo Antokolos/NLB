@@ -968,6 +968,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         private VariableTracker m_constraintTracker;
         private MultiLangString m_newLinkText;
         private MultiLangString m_existingLinkText;
+        private MultiLangString m_newAltText;
+        private MultiLangString m_existingAltText;
         private boolean m_existingAuto;
         private boolean m_existingOnce;
         private boolean m_newAuto;
@@ -979,6 +981,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String linkVariableName,
                 final String linkConstraintValue,
                 final MultiLangString linkText,
+                final MultiLangString linkAltText,
                 final boolean auto,
                 final boolean once
         ) {
@@ -993,6 +996,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     linkVariableName,
                     linkConstraintValue,
                     linkText,
+                    linkAltText,
                     auto,
                     once
             );
@@ -1004,10 +1008,11 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String linkVariableName,
                 final String linkConstraintValue,
                 final MultiLangString linkText,
+                final MultiLangString linkAltText,
                 final boolean auto,
                 final boolean once
         ) {
-            init(currentNLB, link, linkVariableName, linkConstraintValue, linkText, auto, once);
+            init(currentNLB, link, linkVariableName, linkConstraintValue, linkText, linkAltText, auto, once);
         }
 
         private void init(
@@ -1016,6 +1021,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String linkVariableName,
                 final String linkConstraintValue,
                 final MultiLangString linkText,
+                final MultiLangString linkAltText,
                 final boolean auto,
                 final boolean once
         ) {
@@ -1042,6 +1048,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             );
             m_existingLinkText = link.getTexts();
             m_newLinkText = linkText;
+            m_existingAltText = link.getAltTexts();
+            m_newAltText = linkAltText;
             m_existingAuto = link.isAuto();
             m_existingOnce = link.isOnce();
             m_newAuto = auto;
@@ -1053,6 +1061,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_link.setVarId(m_variableTracker.execute());
             m_link.setConstrId(m_constraintTracker.execute());
             m_link.setTexts(m_newLinkText);
+            m_link.setAltTexts(m_newAltText);
             m_link.setAuto(m_newAuto);
             m_link.setOnce(m_newOnce);
             m_link.notifyObservers();
@@ -1063,6 +1072,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_link.setVarId(m_variableTracker.revert());
             m_link.setConstrId(m_constraintTracker.revert());
             m_link.setTexts(m_existingLinkText);
+            m_link.setAltTexts(m_existingAltText);
             m_link.setAuto(m_existingAuto);
             m_link.setOnce(m_existingOnce);
             m_link.notifyObservers();
@@ -1815,6 +1825,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         (linkVariable != null) ? linkVariable.getName() : Constants.EMPTY_STRING,
                         (linkConstraint != null) ? linkConstraint.getValue() : Constants.EMPTY_STRING,
                         link.getTexts(),
+                        link.getAltTexts(),
                         link.isAuto(),
                         link.isOnce()
                 );
@@ -2219,10 +2230,11 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String linkVariableName,
             final String linkConstraintValue,
             final MultiLangString linkText,
+            final MultiLangString linkAltText,
             final boolean auto,
             final boolean once
     ) {
-        return new UpdateLinkCommand(this, link, linkVariableName, linkConstraintValue, linkText, auto, once);
+        return new UpdateLinkCommand(this, link, linkVariableName, linkConstraintValue, linkText, linkAltText, auto, once);
     }
 
     UpdateModificationsCommand createUpdateModificationsCommand(
@@ -2742,6 +2754,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                             source.getModule().getStartPoint(),
                             source,
                             source.getTraverseTexts(),
+                            Link.DEFAULT_ALT_TEXT,
                             source.getModuleConstrId(),
                             Constants.EMPTY_STRING,
                             source.isAutoTraverse(),
@@ -2765,6 +2778,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                                     link.getTarget(),
                                     source,
                                     link.getTexts(),
+                                    link.getAltTexts(),
                                     link.getConstrId(),
                                     link.getVarId(),
                                     link.isAuto(),
@@ -2793,6 +2807,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                                         : source.getReturnPageId(),
                                 source,
                                 source.getReturnTexts(),
+                                Link.DEFAULT_ALT_TEXT,
                                 Constants.EMPTY_STRING,
                                 Constants.EMPTY_STRING,
                                 source.isAutoReturn(),
@@ -4172,6 +4187,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             result += pageEntry.getValue().getText().length();
             for (LinkImpl link : pageEntry.getValue().getLinkImpls()) {
                 result += link.getText().length();
+                result += link.getAltText().length();
             }
         }
         for (Map.Entry<String, ObjImpl> objEntry : m_objs.entrySet()) {
@@ -4179,6 +4195,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             result += objEntry.getValue().getActText().length();
             for (LinkImpl link : objEntry.getValue().getLinkImpls()) {
                 result += link.getText().length();
+                result += link.getAltText().length();
             }
         }
         return result;

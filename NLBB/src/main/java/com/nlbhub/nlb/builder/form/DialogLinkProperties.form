@@ -131,15 +131,59 @@
                                     </constraints>
                                     <properties>
                                       <font/>
+                                      <labelFor value="5e49e"/>
                                       <text value="Link text"/>
                                     </properties>
                                   </component>
                                   <vspacer id="b8d21">
                                     <constraints>
-                                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
                                       <gridbag weightx="0.0" weighty="1.0"/>
                                     </constraints>
                                   </vspacer>
+                                  <grid id="25150" layout-manager="GridBagLayout">
+                                    <constraints>
+                                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <minimumSize width="468" height="33"/>
+                                      <preferredSize width="468" height="33"/>
+                                    </properties>
+                                    <border type="none"/>
+                                    <children>
+                                      <scrollpane id="95d8e">
+                                        <constraints>
+                                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                          <gridbag weightx="1.0" weighty="1.0"/>
+                                        </constraints>
+                                        <properties>
+                                          <horizontalScrollBarPolicy value="31"/>
+                                          <verticalScrollBarPolicy value="21"/>
+                                        </properties>
+                                        <border type="none"/>
+                                        <children>
+                                          <component id="3924e" class="javax.swing.JTextField" binding="m_altTextTextField">
+                                            <constraints/>
+                                            <properties>
+                                              <columns value="40"/>
+                                            </properties>
+                                          </component>
+                                        </children>
+                                      </scrollpane>
+                                    </children>
+                                  </grid>
+                                  <component id="baef7" class="javax.swing.JLabel">
+                                    <constraints>
+                                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <font/>
+                                      <labelFor value="3924e"/>
+                                      <text value="Alt text"/>
+                                    </properties>
+                                  </component>
                                 </children>
                               </grid>
                               <grid id="3a840" layout-manager="GridBagLayout">

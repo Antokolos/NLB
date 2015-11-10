@@ -68,6 +68,7 @@ public class LinkLw implements Link {
     private String m_target;
     private IdentifiableItem m_parent;
     private MultiLangString m_text;
+    private MultiLangString m_altText;
     private String m_constrId;
     private String m_varId;
     private boolean m_auto;
@@ -81,6 +82,7 @@ public class LinkLw implements Link {
      * @param target
      * @param parent
      * @param text
+     * @param altText
      * @param constrId
      * @param varId has meaning only for MPL links; represent ID of the MPL link variable
      * @param auto
@@ -95,6 +97,7 @@ public class LinkLw implements Link {
             String target,
             Page parent,
             MultiLangString text,
+            MultiLangString altText,
             String constrId,
             String varId,
             boolean auto,
@@ -108,6 +111,7 @@ public class LinkLw implements Link {
         m_target = target;
         m_parent = parent;
         m_text = text;
+        m_altText = altText;
         m_constrId = constrId;
         m_varId = varId;
         m_auto = auto;
@@ -156,6 +160,16 @@ public class LinkLw implements Link {
     @Override
     public MultiLangString getTexts() {
         return MultiLangString.createCopy(m_text);
+    }
+
+    @Override
+    public String getAltText() {
+        return m_altText.get(m_parent.getCurrentNLB().getLanguage());
+    }
+
+    @Override
+    public MultiLangString getAltTexts() {
+        return MultiLangString.createCopy(m_altText);
     }
 
     @Override

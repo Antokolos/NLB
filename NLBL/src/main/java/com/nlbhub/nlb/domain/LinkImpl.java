@@ -65,6 +65,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     private static final String VARID_FILE_NAME = "varid";
     private static final String TARGET_FILE_NAME = "target";
     private static final String TEXT_SUBDIR_NAME = "text";
+    private static final String ALT_TEXT_SUBDIR_NAME = "alt_text";
     private static final String CONSTRID_FILE_NAME = "constrid";
     private static final String STROKE_FILE_NAME = "stroke";
     private static final String AUTO_FILE_NAME = "auto";
@@ -78,6 +79,10 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
      * Link text.
      */
     private MultiLangString m_text = DEFAULT_TEXT;
+    /**
+     * Link alt text (when link is inaccessible).
+     */
+    private MultiLangString m_altText = DEFAULT_ALT_TEXT;
     /**
      * Link constraint Id.
      */
@@ -119,6 +124,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
         m_varId = sourceLink.getVarId();
         m_target = sourceLink.getTarget();
         m_text = sourceLink.getTexts();
+        m_altText = sourceLink.getAltTexts();
         m_constrId = sourceLink.getConstrId();
         m_stroke = sourceLink.getStroke();
         m_coords.setLeft(sourceLink.getCoords().getLeft());
@@ -147,6 +153,11 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
             result = new SearchResult();
             result.setId(getId());
             result.setInformation(getText());
+            return result;
+        } else if (textMatches(m_altText, contract)) {
+            result = new SearchResult();
+            result.setId(getId());
+            result.setInformation(getAltText());
             return result;
         }
         return null;
@@ -180,12 +191,31 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
         return MultiLangString.createCopy(m_text);
     }
 
+    @XmlElement(name = "alt-text")
+    @Override
+    public String getAltText() {
+        return m_altText.get(getCurrentNLB().getLanguage());
+    }
+
+    @Override
+    public MultiLangString getAltTexts() {
+        return MultiLangString.createCopy(m_altText);
+    }
+
     public void setTexts(final MultiLangString text) {
         m_text = text;
     }
 
     public void setText(String text) {
         m_text.put(getCurrentNLB().getLanguage(), text);
+    }
+
+    public void setAltTexts(final MultiLangString altText) {
+        m_altText = altText;
+    }
+
+    public void setAltText(String altText) {
+        m_altText.put(getCurrentNLB().getLanguage(), altText);
     }
 
     @XmlElement(name = "constrid")
@@ -299,6 +329,11 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
                     m_text,
                     DEFAULT_TEXT
             );
+            fileManipulator.writeOptionalMultiLangString(
+                    new File(linkDir, ALT_TEXT_SUBDIR_NAME),
+                    m_altText,
+                    DEFAULT_ALT_TEXT
+            );
             fileManipulator.writeOptionalString(linkDir, CONSTRID_FILE_NAME, m_constrId, DEFAULT_CONSTR_ID);
             fileManipulator.writeOptionalString(linkDir, STROKE_FILE_NAME, m_stroke, DEFAULT_STROKE);
             fileManipulator.writeOptionalString(
@@ -340,6 +375,12 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
                 FileManipulator.readOptionalMultiLangString(
                         new File(linkDir, TEXT_SUBDIR_NAME),
                         DEFAULT_TEXT
+                )
+        );
+        m_altText = (
+                FileManipulator.readOptionalMultiLangString(
+                        new File(linkDir, ALT_TEXT_SUBDIR_NAME),
+                        DEFAULT_ALT_TEXT
                 )
         );
         m_constrId = (

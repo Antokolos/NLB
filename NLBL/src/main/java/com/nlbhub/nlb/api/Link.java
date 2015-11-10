@@ -50,6 +50,7 @@ public interface Link extends ModifyingItem, NLBObservable {
     public final static String DEFAULT_VAR_ID = Constants.EMPTY_STRING;
     public final static String DEFAULT_TARGET = Constants.EMPTY_STRING;
     public final static MultiLangString DEFAULT_TEXT = MultiLangString.createDefaultLinkText();
+    public final static MultiLangString DEFAULT_ALT_TEXT = MultiLangString.createEmptyText();
     public final static String DEFAULT_CONSTR_ID = Constants.EMPTY_STRING;
     public final static String DEFAULT_STROKE = "0000FF";
     public final static boolean DEFAUlT_AUTO = false;
@@ -62,6 +63,10 @@ public interface Link extends ModifyingItem, NLBObservable {
     public String getText();
 
     public MultiLangString getTexts();
+
+    public String getAltText();
+
+    public MultiLangString getAltTexts();
 
     public String getConstrId();
 

@@ -371,7 +371,7 @@ public abstract class ExportManager {
     }
 
     private boolean determineTrivialStatus(Link link) {
-        return link.getTexts().equals(Link.DEFAULT_TEXT) || link.isAuto();
+        return (link.getTexts().equals(Link.DEFAULT_TEXT) && link.getAltTexts().equals(Link.DEFAULT_ALT_TEXT)) || link.isAuto();
     }
 
     private PageBuildingBlocks createPageBuildingBlocks(
@@ -467,6 +467,7 @@ public abstract class ExportManager {
                             targetED.getNlb().getStartPoint(),
                             page,
                             page.getTraverseTexts(),
+                            Link.DEFAULT_ALT_TEXT,
                             page.getModuleConstrId(),
                             Constants.EMPTY_STRING,
                             page.isAutoTraverse(),
@@ -489,6 +490,7 @@ public abstract class ExportManager {
                                     link.getTarget(),
                                     page,
                                     link.getTexts(),
+                                    link.getAltTexts(),
                                     link.getConstrId(),
                                     link.getVarId(),
                                     link.isAuto(),
@@ -516,6 +518,7 @@ public abstract class ExportManager {
                                         : page.getReturnPageId(),
                                 page,
                                 page.getReturnTexts(),
+                                Link.DEFAULT_ALT_TEXT,
                                 Constants.EMPTY_STRING,
                                 Constants.EMPTY_STRING,
                                 page.isAutoReturn(),
@@ -523,8 +526,7 @@ public abstract class ExportManager {
                                 StringHelper.isEmpty(exportData.getModulePage().getModuleConstrId()),
                                 !page.isLeaf(),
                                 false,
-                                null
-                        )
+                                null)
                 );
                 LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
                 blocks.addLinkBuildingBlocks(linkBuildingBlocks);
@@ -540,6 +542,7 @@ public abstract class ExportManager {
                                     nlbPage.getId(),
                                     page,
                                     page.getAutowireOutTexts(),
+                                    Link.DEFAULT_ALT_TEXT,
                                     NonLinearBook.LC_VARID_PREFIX
                                             + page.getId() + NonLinearBook.LC_VARID_SEPARATOR_OUT + nlbPage.getId(),
                                     Constants.EMPTY_STRING,
@@ -548,8 +551,7 @@ public abstract class ExportManager {
                                     true,
                                     false,
                                     false,
-                                    null
-                            )
+                                    null)
                     );
                     LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
                     blocks.addLinkBuildingBlocks(linkBuildingBlocks);
@@ -570,6 +572,7 @@ public abstract class ExportManager {
                                     autowiredPageId,
                                     page,
                                     autowiredPage.getAutowireInTexts(),
+                                    Link.DEFAULT_ALT_TEXT,
                                     autowiredPage.getAutowireInConstrId(),
                                     Constants.EMPTY_STRING,
                                     autowiredPage.isAutoIn(),
@@ -577,8 +580,7 @@ public abstract class ExportManager {
                                     true,
                                     false,
                                     false,
-                                    null
-                            )
+                                    null)
                     );
                     LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
                     blocks.addLinkBuildingBlocks(linkBuildingBlocks);
@@ -794,6 +796,16 @@ public abstract class ExportManager {
             @Override
             public MultiLangString getTexts() {
                 return escapeMultiLang(link.getTexts());
+            }
+
+            @Override
+            public String getAltText() {
+                return escapeText(link.getAltText());
+            }
+
+            @Override
+            public MultiLangString getAltTexts() {
+                return escapeMultiLang(link.getAltTexts());
             }
 
             @Override
@@ -1522,6 +1534,7 @@ public abstract class ExportManager {
         LinkBuildingBlocks blocks = new LinkBuildingBlocks();
         final boolean trivial = determineTrivialStatus(link);
         blocks.setAuto(link.isAuto());
+        blocks.setLinkAltText(link.getAltText());
         blocks.setTrivial(trivial);
         blocks.setLinkLabel(decorateLinkLabel(link.getId(), link.getText()));
         blocks.setLinkComment(decorateLinkComment(link.getText()));
@@ -1603,6 +1616,7 @@ public abstract class ExportManager {
         UseBuildingBlocks blocks = new UseBuildingBlocks();
         blocks.setUseTarget(decorateUseTarget(link.getTarget()));
         blocks.setUseSuccessText(link.getText());
+        blocks.setUseFailureText(link.getAltText());
         Variable variable = exportData.getNlb().getVariableById(link.getVarId());
         if (variable != null && !variable.isDeleted()) {
             blocks.setUseVariable(decorateUseVariable(variable.getName()));

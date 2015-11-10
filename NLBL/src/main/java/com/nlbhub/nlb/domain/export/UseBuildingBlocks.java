@@ -50,6 +50,7 @@ public class UseBuildingBlocks {
     private String m_useConstraint;
     private String m_useModifications;
     private String m_useSuccessText;
+    private String m_useFailureText;
 
     public String getUseVariable() {
         return m_useVariable;
@@ -89,5 +90,15 @@ public class UseBuildingBlocks {
 
     public void setUseSuccessText(String useSuccessText) {
         m_useSuccessText = useSuccessText;
+    }
+
+    public String getUseFailureText() {
+        // TODO: this method is currently not used, but it should be!
+        // TODO: see Implement use failure text during export to INSTEAD NLB-133
+        return m_useFailureText;
+    }
+
+    public void setUseFailureText(String useFailureText) {
+        m_useFailureText = useFailureText;
     }
 }
