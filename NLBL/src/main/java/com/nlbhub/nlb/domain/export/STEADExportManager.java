@@ -501,10 +501,13 @@ public class STEADExportManager extends TextExportManager {
 
                 usepBuilder.append(usesStartBuilder);
                 String useSuccessText = useBuildingBlocks.getUseSuccessText();
-                // TODO: support use failure
-                // TODO: see Implement use failure text during export to INSTEAD NLB-133
+                String useFailureText = useBuildingBlocks.getUseFailureText();
                 if (StringHelper.notEmpty(useSuccessText)) {
                     usepBuilder.append("local t = \"").append(useSuccessText).append(" \"; curloc().lasttext = curloc().lasttext..t; p(t); curloc().wastext = true; wasnouses = false;").append(LINE_SEPARATOR);
+                    if (StringHelper.notEmpty(useFailureText)) {
+                        usepBuilder.append(padding).append("    else").append(LINE_SEPARATOR);
+                        usepBuilder.append("local t = \"").append(useFailureText).append(" \"; curloc().lasttext = curloc().lasttext..t; p(t); curloc().wastext = true; wasnouses = false;").append(LINE_SEPARATOR);
+                    }
                 }
                 usepBuilder.append(usesEndBuilder);
             }

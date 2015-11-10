@@ -93,8 +93,6 @@ public class UseBuildingBlocks {
     }
 
     public String getUseFailureText() {
-        // TODO: this method is currently not used, but it should be!
-        // TODO: see Implement use failure text during export to INSTEAD NLB-133
         return m_useFailureText;
     }
 
