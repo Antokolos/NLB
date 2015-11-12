@@ -1455,6 +1455,15 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateLinkAltText(String text) {
+        if (StringHelper.isEmpty(text)) {
+            return Constants.EMPTY_STRING;
+        } else {
+            return text + "^";
+        }
+    }
+
+    @Override
     protected String decorateLinkLabel(String linkId, String linkText) {
         return "{" + decorateId(linkId) + "|" + linkText + "}^";
     }

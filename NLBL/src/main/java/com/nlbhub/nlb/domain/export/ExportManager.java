@@ -1534,7 +1534,7 @@ public abstract class ExportManager {
         LinkBuildingBlocks blocks = new LinkBuildingBlocks();
         final boolean trivial = determineTrivialStatus(link);
         blocks.setAuto(link.isAuto());
-        blocks.setLinkAltText(link.getAltText());
+        blocks.setLinkAltText(decorateLinkAltText(link.getAltText()));
         blocks.setTrivial(trivial);
         blocks.setLinkLabel(decorateLinkLabel(link.getId(), link.getText()));
         blocks.setLinkComment(decorateLinkComment(link.getText()));
@@ -2371,6 +2371,10 @@ public abstract class ExportManager {
     protected abstract String decorateStringVar(String constraintVar);
 
     protected abstract String decorateNumberVar(String constraintVar);
+
+    protected String decorateLinkAltText(String text) {
+        return text;
+    }
 
     protected abstract String decorateLinkLabel(String linkId, String linkText);
 
