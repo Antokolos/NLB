@@ -255,6 +255,11 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
+    public boolean isDummy() {
+        return true;
+    }
+
+    @Override
     public Page getParentPage() {
         return null;
     }

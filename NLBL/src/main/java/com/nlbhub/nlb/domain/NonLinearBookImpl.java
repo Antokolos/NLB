@@ -4327,6 +4327,11 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     @Override
+    public boolean isDummy() {
+        return false;
+    }
+
+    @Override
     public Page getParentPage() {
         return m_parentPage;
     }
@@ -4493,7 +4498,7 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     private NonLinearBook getMainNLB() {
         NonLinearBook result = this;
-        while (result.getParentNLB() != null) {
+        while (result.getParentNLB() != null && !result.getParentNLB().isDummy()) {
             result = result.getParentNLB();
         }
         return result;

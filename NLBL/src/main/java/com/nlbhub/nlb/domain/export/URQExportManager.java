@@ -314,22 +314,22 @@ public class URQExportManager extends TextExportManager {
         return Constants.EMPTY_STRING;
     }
 
-    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {
-        StringBuilder pageText = new StringBuilder();
-        for (final TextChunk textChunk : pageTextChunks) {
+    protected String expandVariables(List<TextChunk> textChunks) {
+        StringBuilder result = new StringBuilder();
+        for (final TextChunk textChunk : textChunks) {
             switch (textChunk.getType()) {
                 case TEXT:
-                    pageText.append("pln ").append(textChunk.getText());
+                    result.append("pln ").append(textChunk.getText());
                     break;
                 case VARIABLE:
-                    pageText.append("$").append(textChunk.getText()).append("$");
+                    result.append("$").append(textChunk.getText()).append("$");
                     break;
                 case NEWLINE:
-                    pageText.append(getLineSeparator());
+                    result.append(getLineSeparator());
                     break;
             }
         }
-        return pageText.toString();
+        return result.toString();
     }
 
     @Override

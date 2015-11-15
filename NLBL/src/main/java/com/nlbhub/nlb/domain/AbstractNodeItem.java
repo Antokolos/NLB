@@ -614,7 +614,7 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
         target.m_links = new ArrayList<>();
         for (LinkImpl link : source.m_links) {
             if (!linkIdsToBeExcluded.contains(link.getId())) {
-                target.m_links.add(link);
+                target.m_links.add(new LinkImpl(target, link));
             }
         }
     }

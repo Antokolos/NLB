@@ -729,8 +729,8 @@ public abstract class ExportManager {
         final String objImage = decorateObjImage(getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage()));
         final boolean hasImage = StringHelper.notEmpty(imageFileName);
         blocks.setObjImage(objImage);
-        blocks.setObjDisp(decorateObjDisp(StringHelper.getTextChunks(obj.getDisp()), hasImage && obj.isImageInInventory()));
-        blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), StringHelper.getTextChunks(obj.getText()), hasImage && obj.isImageInScene()));
+        blocks.setObjDisp(decorateObjDisp(expandVariables(StringHelper.getTextChunks(obj.getDisp())), hasImage && obj.isImageInInventory()));
+        blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), expandVariables(StringHelper.getTextChunks(obj.getText())), hasImage && obj.isImageInScene()));
         blocks.setTakable(obj.isTakable());
         blocks.setObjTak(decorateObjTak(obj.getName()));
         blocks.setObjInv(decorateObjInv(menuObj));
@@ -1315,8 +1315,8 @@ public abstract class ExportManager {
             }
 
             @Override
-            public String getCumulativeText(List<String> objIdsToBeExcluded) {
-                return obj.getCumulativeText(objIdsToBeExcluded);
+            public String getCumulativeText(List<String> objIdsToBeExcluded, Map<String, Object> visitedVars) {
+                return obj.getCumulativeText(objIdsToBeExcluded, visitedVars);
             }
 
             @Override
@@ -1446,11 +1446,11 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjDisp(List<TextChunk> dispChunks, boolean imageEnabled) {
+    protected String decorateObjDisp(String dispText, boolean imageEnabled) {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjText(String objId, String objName, boolean suppressDsc, List<TextChunk> textChunks, boolean imageEnabled) {
+    protected String decorateObjText(String objId, String objName, boolean suppressDsc, String objText, boolean imageEnabled) {
         return EMPTY_STRING;
     }
 
@@ -1534,15 +1534,16 @@ public abstract class ExportManager {
         LinkBuildingBlocks blocks = new LinkBuildingBlocks();
         final boolean trivial = determineTrivialStatus(link);
         blocks.setAuto(link.isAuto());
-        blocks.setLinkAltText(decorateLinkAltText(link.getAltText()));
+        String expandedLinkText = expandVariables(StringHelper.getTextChunks(link.getText()));
+        blocks.setLinkAltText(decorateLinkAltText(expandVariables(StringHelper.getTextChunks(link.getAltText()))));
         blocks.setTrivial(trivial);
-        blocks.setLinkLabel(decorateLinkLabel(link.getId(), link.getText()));
+        blocks.setLinkLabel(decorateLinkLabel(link.getId(), expandedLinkText));
         blocks.setLinkComment(decorateLinkComment(link.getText()));
         // TODO: exportData.getIdToPageNumberMap().get(link.getTarget()) can produce NPE for return links
         blocks.setLinkStart(
                 decorateLinkStart(
                         link.getId(),
-                        link.getText(),
+                        expandedLinkText,
                         link.isAuto(),
                         trivial,
                         checkedGetPageNumber(link.getTarget()))
@@ -1594,7 +1595,7 @@ public abstract class ExportManager {
         blocks.setLinkGoTo(
                 decorateLinkGoTo(
                         link.getId(),
-                        link.getText(),
+                        expandedLinkText,
                         link.getTarget(),
                         targetPageNumber
                 )
@@ -1615,8 +1616,8 @@ public abstract class ExportManager {
     ) throws NLBConsistencyException {
         UseBuildingBlocks blocks = new UseBuildingBlocks();
         blocks.setUseTarget(decorateUseTarget(link.getTarget()));
-        blocks.setUseSuccessText(link.getText());
-        blocks.setUseFailureText(link.getAltText());
+        blocks.setUseSuccessText(expandVariables(StringHelper.getTextChunks(link.getText())));
+        blocks.setUseFailureText(expandVariables(StringHelper.getTextChunks(link.getAltText())));
         Variable variable = exportData.getNlb().getVariableById(link.getVarId());
         if (variable != null && !variable.isDeleted()) {
             blocks.setUseVariable(decorateUseVariable(variable.getName()));
@@ -2430,6 +2431,32 @@ public abstract class ExportManager {
     }
 
     /**
+     * Expands variables from text chunks.
+     * By default the text is copied as is.
+     * Override this method if you really want to expand variable values.
+     *
+     * @param textChunks
+     * @return
+     */
+    protected String expandVariables(List<TextChunk> textChunks) {
+        StringBuilder result = new StringBuilder();
+        for (final TextChunk textChunk : textChunks) {
+            switch (textChunk.getType()) {
+                case TEXT:
+                    result.append(textChunk.getText());
+                    break;
+                case VARIABLE:
+                    result.append("$").append(textChunk.getText()).append("$");
+                    break;
+                case NEWLINE:
+                    result.append(getLineSeparator());
+                    break;
+            }
+        }
+        return result.toString();
+    }
+
+    /**
      * NB: in case of ordinary (inline) NLB modules externalHierarchy should be <code>null</code>
      * (if this inline module is inside the main book and not inside of external module)
      *
@@ -2549,21 +2576,7 @@ public abstract class ExportManager {
     }
 
     protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {
-        StringBuilder pageText = new StringBuilder();
-        for (final TextChunk textChunk : pageTextChunks) {
-            switch (textChunk.getType()) {
-                case TEXT:
-                    pageText.append(textChunk.getText());
-                    break;
-                case VARIABLE:
-                    pageText.append("$").append(textChunk.getText()).append("$");
-                    break;
-                case NEWLINE:
-                    pageText.append(getLineSeparator());
-                    break;
-            }
-        }
-        return pageText.toString();
+        return expandVariables(pageTextChunks);
     }
 
     protected abstract String getLineSeparator();

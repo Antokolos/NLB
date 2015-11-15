@@ -47,6 +47,7 @@ import com.nlbhub.nlb.exception.NLBIOException;
 import com.nlbhub.nlb.exception.NLBVCSException;
 import com.nlbhub.nlb.util.FileManipulator;
 import com.nlbhub.nlb.util.MultiLangString;
+import com.nlbhub.nlb.util.StringHelper;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -56,6 +57,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The ObjImpl class
@@ -550,14 +552,14 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         readModifications(objDir);
     }
 
-    public String getCumulativeText(final List<String> objIdsToBeExcluded) {
+    public String getCumulativeText(final List<String> objIdsToBeExcluded, Map<String, Object> visitedVars) {
         StringBuilder result = new StringBuilder();
         if (!objIdsToBeExcluded.contains(getId())) {
-            result.append(getText());
+            result.append(StringHelper.replaceVariables(getText(), visitedVars));
             for (String objId : getContainedObjIds()) {
                 Obj obj = getCurrentNLB().getObjById(objId);
                 if (obj != null) {
-                    result.append(obj.getCumulativeText(objIdsToBeExcluded));
+                    result.append(obj.getCumulativeText(objIdsToBeExcluded, visitedVars));
                 }
             }
         }

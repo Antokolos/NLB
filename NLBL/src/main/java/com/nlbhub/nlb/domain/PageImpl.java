@@ -54,7 +54,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.File;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -944,7 +943,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     ) {
         PageImpl result = new PageImpl(getCurrentNLB());
         result.setId(getId());
-        result.setText(replaceVariables(getText(), visitedVars) + generateObjText(objIdsToBeExcluded));
+        result.setText(StringHelper.replaceVariables(getText(), visitedVars) + generateObjText(objIdsToBeExcluded, visitedVars));
         final Coords sourceCoords = getCoords();
         final CoordsImpl resultCoords = result.getCoords();
         resultCoords.setLeft(sourceCoords.getLeft());
@@ -979,46 +978,28 @@ public class PageImpl extends AbstractNodeItem implements Page {
         result.setTextColor(getTextColor());
         AbstractNodeItem.filterTargetLinkList(result, this, linkIdsToBeExcluded);
         for (Link link : linksToBeAdded) {
-            result.addLink(new LinkImpl(this, link));
+            result.addLink(new LinkImpl(result, link));
         }
+        result.replaceVariablesInLinks(visitedVars);
         return result;
     }
 
-    private static String replaceVariables(String pageText, Map<String, Object> visitedVars) {
-        StringBuilder result = new StringBuilder();
-        List<TextChunk> textChunks = StringHelper.getTextChunks(pageText);
-        for (TextChunk textChunk : textChunks) {
-            switch (textChunk.getType()) {
-                case TEXT:
-                    result.append(textChunk.getText());
-                    break;
-                case VARIABLE:
-                    Object mappedItem = visitedVars.get(textChunk.getText());
-                    if (mappedItem != null) {
-                        if (mappedItem instanceof Number) {
-                            result.append(new DecimalFormat("#.###").format(mappedItem));
-                        } else {
-                            result.append(String.valueOf(mappedItem));
-                        }
-                    } else {
-                        result.append("UNDEFINED");
-                    }
-                    break;
-                case NEWLINE:
-                    result.append(Constants.EOL_STRING);
-                    break;
-            }
+    /**
+     * Method with side-effect
+     */
+    private void replaceVariablesInLinks(Map<String, Object> visitedVars) {
+        for (LinkImpl link : getLinkImpls()) {
+            link.setText(StringHelper.replaceVariables(link.getText(), visitedVars));
         }
-        return result.toString();
     }
 
-    private String generateObjText(final List<String> objIdsToBeExcluded) {
+    private String generateObjText(final List<String> objIdsToBeExcluded, Map<String, Object> visitedVars) {
         StringBuilder result = new StringBuilder();
         for (String objId : getContainedObjIds()) {
             if (!objIdsToBeExcluded.contains(objId)) {
                 Obj obj = getCurrentNLB().getObjById(objId);
                 if (obj != null) {
-                    result.append(obj.getCumulativeText(objIdsToBeExcluded));
+                    result.append(obj.getCumulativeText(objIdsToBeExcluded, visitedVars));
                 }
             }
         }

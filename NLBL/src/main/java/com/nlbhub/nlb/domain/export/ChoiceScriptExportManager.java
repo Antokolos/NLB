@@ -379,11 +379,11 @@ public class ChoiceScriptExportManager extends TextExportManager {
         }
     }
 
-    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {
+    protected String expandVariables(List<TextChunk> textChunks) {
         StringBuilder pageText = new StringBuilder();
         String lineSeparator = getLineSeparator();
         int newlines = 0;
-        for (final TextChunk textChunk : pageTextChunks) {
+        for (final TextChunk textChunk : textChunks) {
             switch (textChunk.getType()) {
                 case TEXT:
                 case VARIABLE:

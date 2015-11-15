@@ -695,7 +695,7 @@ public class STEADExportManager extends TextExportManager {
     protected String generateOrdinaryLinkCode(LinkBuildingBlocks linkBlocks) {
         final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
         StringBuilder result = new StringBuilder();
-        result.append("        p ");
+        result.append("        p(");
         if (constrained) {
             result.append("((").append(linkBlocks.getLinkConstraint()).append(") and ");
         }
@@ -704,7 +704,7 @@ public class STEADExportManager extends TextExportManager {
             result.append(" or ");
             result.append("\"").append(linkBlocks.getLinkAltText()).append("\")");
         }
-        result.append(";").append(LINE_SEPARATOR);
+        result.append(");").append(LINE_SEPARATOR);
         return result.toString();
     }
 
@@ -799,25 +799,21 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjDisp(List<TextChunk> dispChunks, boolean imageEnabled) {
+    protected String decorateObjDisp(String dispText, boolean imageEnabled) {
         if (imageEnabled) {
             return (
                     "    disp = function(s) return s.imgv(s)..\"" +
-                            getDispText(dispChunks) +
+                            dispText +
                             "\" end," + LINE_SEPARATOR
             );
         } else {
-            if (dispChunks.size() > 0) {
-                return "    disp = function(s) return \"" + getDispText(dispChunks) + "\" end," + LINE_SEPARATOR;
+            if (StringHelper.notEmpty(dispText)) {
+                return "    disp = function(s) return \"" + dispText + "\" end," + LINE_SEPARATOR;
             } else {
                 return "    disp = function(s) end," + LINE_SEPARATOR;
             }
 
         }
-    }
-
-    protected String getDispText(List<TextChunk> dispChunks) {
-        return expandVariables(dispChunks);
     }
 
     private String expandInteractionMarks(String objId, String objName, boolean useReference, String text, boolean withImage) {
@@ -840,15 +836,15 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjText(String objId, String objName, boolean suppressDsc, List<TextChunk> textChunks, boolean imageEnabled) {
+    protected String decorateObjText(String objId, String objName, boolean suppressDsc, String objText, boolean imageEnabled) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("    dscf = function(s) ");
-        if (textChunks.size() > 0) {
+        if (StringHelper.notEmpty(objText)) {
             stringBuilder.append("return \"");
             if (imageEnabled) {
-                stringBuilder.append(expandInteractionMarks(objId, objName, suppressDsc, getObjText(textChunks), true));
+                stringBuilder.append(expandInteractionMarks(objId, objName, suppressDsc, objText, true));
             } else {
-                stringBuilder.append(expandInteractionMarks(objId, objName, suppressDsc, getObjText(textChunks), false));
+                stringBuilder.append(expandInteractionMarks(objId, objName, suppressDsc, objText, false));
             }
             stringBuilder.append("\"; ");
         }
@@ -859,10 +855,6 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("end,").append(LINE_SEPARATOR);
         return stringBuilder.toString();
-    }
-
-    protected String getObjText(List<TextChunk> textChunks) {
-        return expandVariables(textChunks);
     }
 
     @Override

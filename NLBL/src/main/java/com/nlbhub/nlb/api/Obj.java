@@ -41,6 +41,7 @@ package com.nlbhub.nlb.api;
 import com.nlbhub.nlb.util.MultiLangString;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The Obj class
@@ -108,5 +109,5 @@ public interface Obj extends NodeItem {
 
     public String getContainerId();
 
-    public String getCumulativeText(final List<String> objIdsToBeExcluded);
+    public String getCumulativeText(final List<String> objIdsToBeExcluded, Map<String, Object> visitedVars);
 }

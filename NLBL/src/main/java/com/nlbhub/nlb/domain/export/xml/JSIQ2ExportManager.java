@@ -340,14 +340,10 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decorateObjDisp(List<TextChunk> dispChunks, boolean imageEnabled) {
+    protected String decorateObjDisp(String dispText, boolean imageEnabled) {
         // TODO: resolve imageEnabled case
         // TODO: resolve variables output
-        StringBuilder result = new StringBuilder();
-        for (TextChunk textChunk : dispChunks) {
-            result.append(textChunk.getText());
-        }
-        return result.toString();
+        return dispText;
     }
 
     @Override
@@ -770,22 +766,22 @@ public class JSIQ2ExportManager extends XMLExportManager {
         return Constants.EMPTY_STRING;
     }
 
-    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {
-        StringBuilder pageText = new StringBuilder();
-        for (final TextChunk textChunk : pageTextChunks) {
+    protected String expandVariables(List<TextChunk> textChunks) {
+        StringBuilder result = new StringBuilder();
+        for (final TextChunk textChunk : textChunks) {
             switch (textChunk.getType()) {
                 case TEXT:
-                    pageText.append(textChunk.getText());
+                    result.append(textChunk.getText());
                     break;
                 case VARIABLE:
-                    pageText.append("$").append(textChunk.getText()).append("$");
+                    result.append("$").append(textChunk.getText()).append("$");
                     break;
                 case NEWLINE:
-                    pageText.append(" <br/>").append(getLineSeparator());
+                    result.append(" <br/>").append(getLineSeparator());
                     break;
             }
         }
-        return pageText.toString();
+        return result.toString();
     }
 
     @Override

@@ -441,6 +441,7 @@ public class GetNLBDataService {
             ModuleData moduleData = getNonLinearBookModuleData(bookId, mainNLB);
             final Link link = moduleData.getModule().getPageById(fromPageId).getLinkById(linkId);
             if (link != null) {
+                // TODO: NLB-137 will not replace variables in link.getText()
                 s_history.setDecisionPointToBeMadeText(link.getText());
                 response = generateFilteredResponse(moduleData, link.getTarget());
                 s_history.makeDecision();

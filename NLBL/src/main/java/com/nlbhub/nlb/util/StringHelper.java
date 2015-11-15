@@ -41,8 +41,10 @@ package com.nlbhub.nlb.util;
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.TextChunk;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,6 +64,41 @@ public class StringHelper {
     private static final Pattern LINE_PATTERN = Pattern.compile("(?m)^.*$");
     private static final Pattern VAR_PATTERN = Pattern.compile("\\$([^\\s\\$]*)\\$");
     private final static String DELIMITER = ";";
+
+    /**
+     * This method is used in the NLB internal engine.
+     *
+     * @param pageText
+     * @param visitedVars
+     * @return
+     */
+    public static String replaceVariables(String pageText, Map<String, Object> visitedVars) {
+        StringBuilder result = new StringBuilder();
+        List<TextChunk> textChunks = getTextChunks(pageText);
+        for (TextChunk textChunk : textChunks) {
+            switch (textChunk.getType()) {
+                case TEXT:
+                    result.append(textChunk.getText());
+                    break;
+                case VARIABLE:
+                    Object mappedItem = visitedVars.get(textChunk.getText());
+                    if (mappedItem != null) {
+                        if (mappedItem instanceof Number) {
+                            result.append(new DecimalFormat("#.###").format(mappedItem));
+                        } else {
+                            result.append(String.valueOf(mappedItem));
+                        }
+                    } else {
+                        result.append("UNDEFINED");
+                    }
+                    break;
+                case NEWLINE:
+                    result.append(Constants.EOL_STRING);
+                    break;
+            }
+        }
+        return result.toString();
+    }
 
     /**
      * TODO: this method REALLY needs JUnit

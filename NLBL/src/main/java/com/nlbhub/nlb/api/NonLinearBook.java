@@ -373,6 +373,8 @@ public interface NonLinearBook {
 
     public NonLinearBook getParentNLB();
 
+    public boolean isDummy();
+
     public Page getParentPage();
 
     public Map<String, NonLinearBook> getExternalModules();

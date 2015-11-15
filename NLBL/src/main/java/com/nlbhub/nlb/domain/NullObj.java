@@ -45,6 +45,7 @@ import com.nlbhub.nlb.util.MultiLangString;
 
 import javax.xml.bind.annotation.XmlElement;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The NullObj class
@@ -166,7 +167,7 @@ public class NullObj extends AbstractNodeItem implements Obj {
     }
 
     @Override
-    public String getCumulativeText(List<String> objIdsToBeExcluded) {
+    public String getCumulativeText(List<String> objIdsToBeExcluded, Map<String, Object> visitedVars) {
         return Constants.EMPTY_STRING;
     }
 }
