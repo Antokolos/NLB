@@ -1229,7 +1229,7 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateSndOperation(String objectId, String objectVar) {
         if (objectId != null) {
-            return "        " + objectId + ":snd();" + LINE_SEPARATOR;
+            return "        " + decorateId(objectId) + ":snd();" + LINE_SEPARATOR;
         } else if (objectVar != null) {
             return "        " + objectVar + ":snd();" + LINE_SEPARATOR;
         } else {
