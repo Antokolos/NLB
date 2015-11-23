@@ -100,6 +100,11 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
+    public String getTitle() {
+        return DEFAULT_TITLE;
+    }
+
+    @Override
     public String getAuthor() {
         return DEFAULT_AUTHOR;
     }

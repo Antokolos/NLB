@@ -87,6 +87,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     private static final String FULLAUTO_FILE_NAME = "fullauto";
     private static final String SUPPRESS_MEDIA_FILE_NAME = "suppmed";
     private static final String SUPPRESS_SOUND_FILE_NAME = "suppsou";
+    private static final String TITLE_FILE_NAME = "title";
     private static final String AUTHOR_FILE_NAME = "author";
     private static final String VERSION_FILE_NAME = "version";
     private static final String PAGES_DIR_NAME = "pages";
@@ -107,6 +108,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     private String m_startPoint;
     private String m_language;
     private String m_license;
+    private String m_title;
     private String m_author;
     private String m_version;
     private boolean m_fullAutowire;
@@ -1539,6 +1541,7 @@ public class NonLinearBookImpl implements NonLinearBook {
 
         private final String m_prevLicense;
         private final String m_prevLanguage;
+        private final String m_prevTitle;
         private final String m_prevAuthor;
         private final String m_prevVersion;
         private final Boolean m_prevFullAutowire;
@@ -1546,6 +1549,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final Boolean m_prevSuppressSound;
         private final String m_newLicense;
         private final String m_newLanguage;
+        private final String m_newTitle;
         private final String m_newAuthor;
         private final String m_newVersion;
         private final Boolean m_newFullAutowire;
@@ -1556,6 +1560,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         UpdateBookPropertiesCommand(
                 final String license,
                 final String language,
+                final String title,
                 final String author,
                 final String version,
                 final Boolean fullAutowire,
@@ -1565,6 +1570,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         ) {
             m_prevLicense = m_license;
             m_prevLanguage = m_language;
+            m_prevTitle = m_title;
             m_prevAuthor = m_author;
             m_prevVersion = m_version;
             m_prevFullAutowire = m_fullAutowire;
@@ -1572,6 +1578,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_prevSuppressSound = m_suppressSound;
             m_newLicense = license;
             m_newLanguage = language;
+            m_newTitle = title;
             m_newAuthor = author;
             m_newVersion = version;
             m_newFullAutowire = fullAutowire;
@@ -1585,6 +1592,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                                 moduleImpl.createUpdateBookPropertiesCommand(
                                         license,
                                         language,
+                                        title,
                                         author,
                                         version,
                                         fullAutowire,
@@ -1605,6 +1613,9 @@ public class NonLinearBookImpl implements NonLinearBook {
             }
             if (m_newLanguage != null) {
                 m_language = m_newLanguage;
+            }
+            if (m_newTitle != null) {
+                m_title = m_newTitle;
             }
             if (m_newAuthor != null) {
                 m_author = m_newAuthor;
@@ -1631,6 +1642,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         public void revert() {
             m_license = m_prevLicense;
             m_language = m_prevLanguage;
+            m_title = m_prevTitle;
             m_author = m_prevAuthor;
             m_version = m_prevVersion;
             m_fullAutowire = m_prevFullAutowire;
@@ -2073,6 +2085,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_fullAutowire = DEFAULT_FULL_AUTOWIRE;
         m_suppressMedia = DEFAULT_SUPPRESS_MEDIA;
         m_suppressSound = DEFAULT_SUPPRESS_SOUND;
+        m_title = DEFAULT_TITLE;
         m_author = DEFAULT_AUTHOR;
         m_version = DEFAULT_VERSION;
         m_parentPage = null;
@@ -2092,6 +2105,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_fullAutowire = parentNLB.isFullAutowire();
         m_suppressMedia = parentNLB.isSuppressMedia();
         m_suppressSound = parentNLB.isSuppressSound();
+        m_title = parentNLB.getTitle();
         m_author = parentNLB.getAuthor();
         m_version = parentNLB.getVersion();
         m_parentPage = parentPage;
@@ -2259,6 +2273,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     UpdateBookPropertiesCommand createUpdateBookPropertiesCommand(
             final String license,
             final String language,
+            final String title,
             final String author,
             final String version,
             final Boolean fullAutowire,
@@ -2272,6 +2287,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         return new UpdateBookPropertiesCommand(
                 m_license.equals(license) ? null : license,
                 m_language.equals(language) ? null : language,
+                m_title.equals(title) ? null : title,
                 m_author.equals(author) ? null : author,
                 m_version.equals(version) ? null : version,
                 ((fullAutowire != null) && (m_fullAutowire == fullAutowire)) ? null : fullAutowire,
@@ -2349,6 +2365,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_fullAutowire = operand.isFullAutowire();
         m_suppressMedia = operand.isSuppressMedia();
         m_suppressSound = operand.isSuppressSound();
+        m_title = operand.getTitle();
         m_author = operand.getAuthor();
         m_version = operand.getVersion();
     }
@@ -2391,6 +2408,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_startPoint = null;
         m_language = (m_parentNLB != null) ? m_parentNLB.getLanguage() : DEFAULT_LANGUAGE;
         m_license = (m_parentNLB != null) ? m_parentNLB.getLicense() : DEFAULT_LICENSE;
+        m_title = (m_parentNLB != null) ? m_parentNLB.getTitle() : DEFAULT_TITLE;
         m_author = (m_parentNLB != null) ? m_parentNLB.getAuthor() : DEFAULT_AUTHOR;
         m_version = (m_parentNLB != null) ? m_parentNLB.getVersion() : DEFAULT_VERSION;
         m_fullAutowire = (m_parentNLB != null) ? m_parentNLB.isFullAutowire() : DEFAULT_FULL_AUTOWIRE;
@@ -2443,6 +2461,11 @@ public class NonLinearBookImpl implements NonLinearBook {
     @Override
     public boolean isSuppressSound() {
         return m_suppressSound;
+    }
+
+    @Override
+    public String getTitle() {
+        return m_title;
     }
 
     @Override
@@ -3127,6 +3150,13 @@ public class NonLinearBookImpl implements NonLinearBook {
                         (m_parentNLB != null) ? String.valueOf(m_parentNLB.isSuppressSound()) : String.valueOf(DEFAULT_SUPPRESS_SOUND)
                 )
         );
+        m_title = (
+                FileManipulator.getOptionalFileAsString(
+                        rootDir,
+                        TITLE_FILE_NAME,
+                        (m_parentNLB != null) ? m_parentNLB.getTitle() : DEFAULT_TITLE
+                )
+        );
         m_author = (
                 FileManipulator.getOptionalFileAsString(
                         rootDir,
@@ -3767,6 +3797,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             fileManipulator.writeOptionalString(rootDir, FULLAUTO_FILE_NAME, String.valueOf(m_fullAutowire), String.valueOf(m_parentNLB.isFullAutowire()));
             fileManipulator.writeOptionalString(rootDir, SUPPRESS_MEDIA_FILE_NAME, String.valueOf(m_suppressMedia), String.valueOf(m_parentNLB.isSuppressMedia()));
             fileManipulator.writeOptionalString(rootDir, SUPPRESS_SOUND_FILE_NAME, String.valueOf(m_suppressSound), String.valueOf(m_parentNLB.isSuppressSound()));
+            fileManipulator.writeOptionalString(rootDir, TITLE_FILE_NAME, m_title, m_parentNLB.getTitle());
             fileManipulator.writeOptionalString(rootDir, AUTHOR_FILE_NAME, m_author, m_parentNLB.getAuthor());
             fileManipulator.writeOptionalString(rootDir, VERSION_FILE_NAME, m_version, m_parentNLB.getVersion());
         } else {
@@ -3775,6 +3806,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             fileManipulator.writeOptionalString(rootDir, FULLAUTO_FILE_NAME, String.valueOf(m_fullAutowire), String.valueOf(DEFAULT_FULL_AUTOWIRE));
             fileManipulator.writeOptionalString(rootDir, SUPPRESS_MEDIA_FILE_NAME, String.valueOf(m_suppressMedia), String.valueOf(DEFAULT_SUPPRESS_MEDIA));
             fileManipulator.writeOptionalString(rootDir, SUPPRESS_SOUND_FILE_NAME, String.valueOf(m_suppressSound), String.valueOf(DEFAULT_SUPPRESS_SOUND));
+            fileManipulator.writeOptionalString(rootDir, TITLE_FILE_NAME, m_title, DEFAULT_TITLE);
             fileManipulator.writeOptionalString(rootDir, AUTHOR_FILE_NAME, m_author, DEFAULT_AUTHOR);
             fileManipulator.writeOptionalString(rootDir, VERSION_FILE_NAME, m_version, DEFAULT_VERSION);
         }

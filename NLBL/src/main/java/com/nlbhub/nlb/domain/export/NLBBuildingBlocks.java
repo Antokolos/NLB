@@ -48,12 +48,42 @@ import java.util.List;
  * @version 1.0 12/5/13
  */
 public class NLBBuildingBlocks {
+    private String m_title;
+    private String m_author;
+    private String m_version;
     private List<PageBuildingBlocks> m_pagesBuildingBlocks;
     private List<ObjBuildingBlocks> m_objsBuildingBlocks;
 
-    public NLBBuildingBlocks() {
+    public NLBBuildingBlocks(String title, String author, String version) {
+        m_title = title;
+        m_author = author;
+        m_version = version;
         m_pagesBuildingBlocks = new ArrayList<>();
         m_objsBuildingBlocks = new ArrayList<>();
+    }
+
+    public String getTitle() {
+        return m_title;
+    }
+
+    public void setTitle(String title) {
+        m_title = title;
+    }
+
+    public String getAuthor() {
+        return m_author;
+    }
+
+    public void setAuthor(String author) {
+        m_author = author;
+    }
+
+    public String getVersion() {
+        return m_version;
+    }
+
+    public void setVersion(String version) {
+        m_version = version;
     }
 
     public List<PageBuildingBlocks> getPagesBuildingBlocks() {

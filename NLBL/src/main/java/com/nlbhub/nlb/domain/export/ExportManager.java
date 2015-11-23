@@ -333,7 +333,8 @@ public abstract class ExportManager {
     private NLBBuildingBlocks createNLBBuildingBlocks(
             final ExportData exportData
     ) throws NLBConsistencyException, NLBExportException {
-        NLBBuildingBlocks blocks = new NLBBuildingBlocks();
+        final NonLinearBook nlb = exportData.getNlb();
+        NLBBuildingBlocks blocks = new NLBBuildingBlocks(nlb.getTitle(), nlb.getAuthor(), nlb.getVersion());
         //stringBuilder.append("#mode quote").append(LINE_SEPARATOR);
         for (final Obj obj : exportData.getObjList()) {
             blocks.addObjBuildingBlocks(createObjBuildingBlocks(createPreprocessedObj(obj), exportData));
