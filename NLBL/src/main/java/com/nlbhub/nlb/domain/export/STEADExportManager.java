@@ -311,9 +311,16 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    clone = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        if s.nlbobj == \"listobj\" then").append(LINE_SEPARATOR);
-        stringBuilder.append("            return clonefd(s);").append(LINE_SEPARATOR);
+        stringBuilder.append("            return new('clonefdl(listobj, \\''..s.listnam..'\\')');").append(LINE_SEPARATOR);
         stringBuilder.append("        else").append(LINE_SEPARATOR);
         stringBuilder.append("            return new('clonef(\\''..stead.deref(s)..'\\')');").append(LINE_SEPARATOR);
+        stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    clonelst = function(s, listnam)").append(LINE_SEPARATOR);
+        stringBuilder.append("        if s.nlbobj == \"listobj\" then").append(LINE_SEPARATOR);
+        stringBuilder.append("            return new('clonefdl(listobj, \\''..listnam..'\\')');").append(LINE_SEPARATOR);
+        stringBuilder.append("        else").append(LINE_SEPARATOR);
+        stringBuilder.append("            return nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    clonef = function(s_nam)").append(LINE_SEPARATOR);
@@ -330,6 +337,11 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("        _clones[s.nam] = r;").append(LINE_SEPARATOR);
         stringBuilder.append("        ret.nam = s.nam..r;").append(LINE_SEPARATOR);
+        stringBuilder.append("        return ret;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end;").append(LINE_SEPARATOR);
+        stringBuilder.append("    clonefdl = function(s, listnam)").append(LINE_SEPARATOR);
+        stringBuilder.append("        local ret = clonefd(s)").append(LINE_SEPARATOR);
+        stringBuilder.append("        ret.listnam = listnam;").append(LINE_SEPARATOR);
         stringBuilder.append("        return ret;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    curloc = function()").append(LINE_SEPARATOR);
@@ -1268,9 +1280,8 @@ public class STEADExportManager extends TextExportManager {
     private String createListObj(String listVariableName) {
         if (listVariableName != null) {
             return (
-                    "        if " + listVariableName + " == nil then" +
-                            "            " + listVariableName + " = clone(listobj);" + LINE_SEPARATOR +
-                            "            " + listVariableName + ".listnam = \"" + listVariableName + "\";" + LINE_SEPARATOR +
+                    "        if " + listVariableName + " == nil then" + LINE_SEPARATOR +
+                            "            stead.add_var { " + listVariableName + " = clonelst(listobj, \"" + listVariableName + "\"); }" + LINE_SEPARATOR +
                             "        end;" + LINE_SEPARATOR
             );
         } else {
