@@ -81,11 +81,11 @@ public class NonLinearBookFacade implements NLBObservable {
     private NonLinearBookFacade m_parentFacade;
     private List<NonLinearBookFacade> m_moduleFacades = new ArrayList<>();
 
-    public NonLinearBookFacade() {
+    public NonLinearBookFacade(Author author, VCSAdapter vcsAdapter) {
         m_rootFacade = true;
         m_parentFacade = null;
-        m_author = new Author("author", "author@example.com");
-        m_vcsAdapter = new GitAdapterWithPathDecoration(m_author);
+        m_author = author;
+        m_vcsAdapter = vcsAdapter;
         // m_nlb should be initialized later
     }
 

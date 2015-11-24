@@ -40,6 +40,10 @@ package com.nlbhub.nlb.builder;
 
 import com.nlbhub.nlb.builder.form.MainFrame;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
+import com.nlbhub.nlb.vcs.Author;
+import com.nlbhub.nlb.vcs.DummyVCSAdapter;
+import com.nlbhub.nlb.vcs.GitAdapterWithPathDecoration;
+import com.nlbhub.nlb.vcs.VCSAdapter;
 import com.nlbhub.nlb.web.Launcher;
 
 import javax.swing.*;
@@ -61,12 +65,14 @@ public class NLBBMain implements Runnable {
     private final NonLinearBookFacade m_nlbFacade;
     private final Launcher m_launcher = new Launcher();
 
-    public NLBBMain() {
-        m_nlbFacade = new NonLinearBookFacade();
+    public NLBBMain(boolean novcs) {
+        Author author = new Author("author", "author@example.com");
+        VCSAdapter vcsAdapter = (novcs) ? new DummyVCSAdapter() : new GitAdapterWithPathDecoration(author);
+        m_nlbFacade = new NonLinearBookFacade(author, vcsAdapter);
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new NLBBMain());
+        SwingUtilities.invokeLater(new NLBBMain(args.length > 0 && "novcs".equalsIgnoreCase(args[0])));
     }
 
     /**
