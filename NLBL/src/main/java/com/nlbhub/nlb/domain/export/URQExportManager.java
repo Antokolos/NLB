@@ -61,7 +61,7 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String generatePreambleText() {
+    protected String generatePreambleText(NLBBuildingBlocks nlbBuildingBlocks) {
         return "; Generated with Non-Linear Book Builder, http://nlbhub.com" + LINE_SEPARATOR;
     }
 

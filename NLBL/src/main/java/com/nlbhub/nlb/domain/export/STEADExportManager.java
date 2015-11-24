@@ -73,9 +73,12 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String generatePreambleText() {
+    protected String generatePreambleText(NLBBuildingBlocks nlbBuildingBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("instead_version \"1.9.1\"").append(LINE_SEPARATOR);
+        stringBuilder.append("--$Name:").append(nlbBuildingBlocks.getTitle()).append("$").append(LINE_SEPARATOR);
+        stringBuilder.append("--$Version:").append(nlbBuildingBlocks.getVersion()).append("$").append(LINE_SEPARATOR);
+        stringBuilder.append("--$Author:").append(nlbBuildingBlocks.getAuthor()).append("$").append(LINE_SEPARATOR);
+        stringBuilder.append("instead_version \"2.3.0\"").append(LINE_SEPARATOR);
 
         stringBuilder.append("require \"xact\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"hideinv\"").append(LINE_SEPARATOR);
@@ -88,9 +91,12 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("stead.scene_delim = '^';").append(LINE_SEPARATOR);
         stringBuilder.append(LINE_SEPARATOR);
 
-        stringBuilder.append("game.act = function() curloc().lasttext = 'Nothing happens.'; p(curloc().lasttext); curloc().wastext = true; end;").append(LINE_SEPARATOR);
-        stringBuilder.append("game.inv = function() curloc().lasttext = 'Hm... This is strange thing...'; p(curloc().lasttext); curloc().wastext = true; end;").append(LINE_SEPARATOR);
-        stringBuilder.append("game.use = function() curloc().lasttext = 'Does not work...'; p(curloc().lasttext); curloc().wastext = true; end;").append(LINE_SEPARATOR);
+        stringBuilder.append("--game.act = function() curloc().lasttext = 'Nothing happens.'; p(curloc().lasttext); curloc().wastext = true; end;").append(LINE_SEPARATOR);
+        stringBuilder.append("--game.inv = function() curloc().lasttext = 'Hm... This is strange thing...'; p(curloc().lasttext); curloc().wastext = true; end;").append(LINE_SEPARATOR);
+        stringBuilder.append("--game.use = function() curloc().lasttext = 'Does not work...'; p(curloc().lasttext); curloc().wastext = true; end;").append(LINE_SEPARATOR);
+        stringBuilder.append("game.act = function() return true; end;").append(LINE_SEPARATOR);
+        stringBuilder.append("game.inv = function() return true; end;").append(LINE_SEPARATOR);
+        stringBuilder.append("game.use = function() return true; end;").append(LINE_SEPARATOR);
         stringBuilder.append("game.forcedsc = true;").append(LINE_SEPARATOR);
 
         stringBuilder.append(generateLibraryMethods());

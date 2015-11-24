@@ -59,7 +59,7 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
-    protected String generatePreambleText() {
+    protected String generatePreambleText(NLBBuildingBlocks nlbBuildingBlocks) {
         return "128[::]0[::]0" + LINE_SEPARATOR;
     }
 

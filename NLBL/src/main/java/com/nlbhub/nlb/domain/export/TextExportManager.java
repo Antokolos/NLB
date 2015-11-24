@@ -84,7 +84,7 @@ public abstract class TextExportManager extends ExportManager {
         StringBuilder stringBuilder = new StringBuilder();
         final List<ObjBuildingBlocks> objsBlocks = nlbBlocks.getObjsBuildingBlocks();
         final List<PageBuildingBlocks> pagesBlocks = nlbBlocks.getPagesBuildingBlocks();
-        stringBuilder.append(generatePreambleText());
+        stringBuilder.append(generatePreambleText(nlbBlocks));
         stringBuilder.append(generateVariableInitializationText(getInitValuesMap()));
         for (int i = 0; i < objsBlocks.size(); i++) {
             stringBuilder.append(generateObjText(objsBlocks.get(i)));
@@ -98,7 +98,7 @@ public abstract class TextExportManager extends ExportManager {
         return stringBuilder.toString();
     }
 
-    protected abstract String generatePreambleText();
+    protected abstract String generatePreambleText(NLBBuildingBlocks nlbBuildingBlocks);
 
     protected String generateVariableInitializationText(Map<String, String> initValuesMap) {
         return EMPTY_STRING;

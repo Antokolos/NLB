@@ -67,7 +67,7 @@ public class VNSTEADExportManager extends STEADExportManager {
     }
 
     @Override
-    protected String generatePreambleText() {
+    protected String generatePreambleText(NLBBuildingBlocks nlbBuildingBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
         String lineSep = getLineSeparator();
         stringBuilder.append("instead_version \"1.9.1\"").append(lineSep);
