@@ -44,6 +44,7 @@ import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,9 +76,12 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String generatePreambleText(NLBBuildingBlocks nlbBuildingBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("--$Name:").append(nlbBuildingBlocks.getTitle()).append("$").append(LINE_SEPARATOR);
-        stringBuilder.append("--$Version:").append(nlbBuildingBlocks.getVersion()).append("$").append(LINE_SEPARATOR);
-        stringBuilder.append("--$Author:").append(nlbBuildingBlocks.getAuthor()).append("$").append(LINE_SEPARATOR);
+        String title = StringHelper.notEmpty(nlbBuildingBlocks.getTitle()) ? nlbBuildingBlocks.getTitle() : "NLBB_" + new Date().toString();
+        String version = StringHelper.notEmpty(nlbBuildingBlocks.getVersion()) ? nlbBuildingBlocks.getVersion() : "0.1";
+        String author = StringHelper.notEmpty(nlbBuildingBlocks.getAuthor()) ? nlbBuildingBlocks.getAuthor() : "Unknown";
+        stringBuilder.append("--$Name:").append(title).append("$").append(LINE_SEPARATOR);
+        stringBuilder.append("--$Version:").append(version).append("$").append(LINE_SEPARATOR);
+        stringBuilder.append("--$Author:").append(author).append("$").append(LINE_SEPARATOR);
         stringBuilder.append("instead_version \"2.3.0\"").append(LINE_SEPARATOR);
 
         stringBuilder.append("require \"xact\"").append(LINE_SEPARATOR);
@@ -645,10 +649,11 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        s.snd(s);").append(LINE_SEPARATOR);
         stringBuilder.append("        s.bgimg(s);").append(LINE_SEPARATOR);
         if (timerSet) {
+            int timerRate = (hasPageAnim && pageBlocks.isImageBackground()) ? 1 : (hasAnim || hasPageAnim ? 20 : 200);
             stringBuilder.append("        ").append(pageBlocks.getPageTimerVariable()).append(LINE_SEPARATOR);
             // stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR); -- will be called when timer triggers
             // Timer will be triggered first time immediately after timer:set()
-            stringBuilder.append("        timer:set(").append(hasAnim || hasPageAnim ? 20 : 200).append(");").append(LINE_SEPARATOR);
+            stringBuilder.append("        timer:set(").append(timerRate).append(");").append(LINE_SEPARATOR);
         } else {
             stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR);
         }

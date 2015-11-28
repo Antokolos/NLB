@@ -392,6 +392,7 @@ public abstract class ExportManager {
         String imageFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_IMAGE_FILE_NAME: page.getImageFileName());
         boolean isAnimatedImage = page.isImageAnimated();
         blocks.setHasAnimatedPageImage(isAnimatedImage);
+        blocks.setImageBackground(page.isImageBackground());
         blocks.setPageImage(decoratePageImage(getImagePaths(page.getExternalHierarchy(), imageFileName, isAnimatedImage), page.isImageBackground()));
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
         blocks.setPageSound(decoratePageSound(pageName, getSoundPaths(page.getExternalHierarchy(), soundFileName), page.isSoundSFX()));

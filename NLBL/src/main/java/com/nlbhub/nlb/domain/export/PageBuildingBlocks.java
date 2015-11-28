@@ -66,6 +66,7 @@ public class PageBuildingBlocks {
     private boolean m_autowired;
     private boolean m_hasObjectsWithAnimatedImages;
     private boolean m_hasAnimatedPageImage;
+    private boolean m_imageBackground;
     private boolean m_hasPageTimer;
     private List<String> m_containedObjIds;
     private List<LinkBuildingBlocks> m_linksBuildingBlocks;
@@ -171,6 +172,14 @@ public class PageBuildingBlocks {
 
     public void setHasAnimatedPageImage(boolean hasAnimatedPageImage) {
         m_hasAnimatedPageImage = hasAnimatedPageImage;
+    }
+
+    public boolean isImageBackground() {
+        return m_imageBackground;
+    }
+
+    public void setImageBackground(boolean imageBackground) {
+        m_imageBackground = imageBackground;
     }
 
     public boolean isHasPageTimer() {
