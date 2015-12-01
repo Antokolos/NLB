@@ -111,6 +111,7 @@ public class STEADExportManager extends TextExportManager {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(LINE_SEPARATOR);
         stringBuilder.append("global {").append(LINE_SEPARATOR);
+        stringBuilder.append("    _fps = 25;").append(LINE_SEPARATOR);
         stringBuilder.append("    _lists = {};").append(LINE_SEPARATOR);
         stringBuilder.append("    _clones = {};").append(LINE_SEPARATOR);
         stringBuilder.append("    _filter = {};").append(LINE_SEPARATOR);
@@ -587,14 +588,24 @@ public class STEADExportManager extends TextExportManager {
         // Do not check pageBlocks.isUseCaption() here, because in INSTEAD all rooms must have name
         stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageImage());
-        stringBuilder.append("    var { time = 0; wastext = false; lasttext = nil; tag = '").append(pageBlocks.getPageDefaultTag()).append("'; ");
-        stringBuilder.append("autowired = ").append(pageBlocks.isAutowired() ? "true" : "false").append("; ");
-        stringBuilder.append("},").append(LINE_SEPARATOR);
         boolean hasAnim = pageBlocks.isHasObjectsWithAnimatedImages();
         boolean hasPageAnim = pageBlocks.isHasAnimatedPageImage();
-        boolean timerSet = hasAnim || hasPageAnim || pageBlocks.isHasPageTimer();
+        boolean hasFastAnim = hasAnim || hasPageAnim;
+        boolean timerSet =  hasFastAnim || pageBlocks.isHasPageTimer();
+        stringBuilder.append("    var { time = 0; wastext = false; lasttext = nil; tag = '").append(pageBlocks.getPageDefaultTag()).append("'; ");
+        if (hasFastAnim) {
+            stringBuilder.append("t1 = 0; ");
+        }
+        stringBuilder.append("autowired = ").append(pageBlocks.isAutowired() ? "true" : "false").append("; ");
+        stringBuilder.append("},").append(LINE_SEPARATOR);
         if (timerSet) {
             stringBuilder.append("    timer = function(s)").append(LINE_SEPARATOR);
+            if (hasFastAnim) {
+                stringBuilder.append("        if (_fps * (get_ticks() - s.t1) <= 1000) then").append(LINE_SEPARATOR);
+                stringBuilder.append("            return;").append(LINE_SEPARATOR);
+                stringBuilder.append("        end").append(LINE_SEPARATOR);
+                stringBuilder.append("        s.t1 = get_ticks();").append(LINE_SEPARATOR);
+            }
             stringBuilder.append("        if not s.wastext then").append(LINE_SEPARATOR);
             stringBuilder.append("        ").append(pageBlocks.getPageTimerVariable()).append(LINE_SEPARATOR);
             stringBuilder.append("        end; ").append(LINE_SEPARATOR);
@@ -635,6 +646,9 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
+        if (hasFastAnim) {
+            stringBuilder.append("        s.t1 = stead.ticks();").append(LINE_SEPARATOR);
+        }
         stringBuilder.append("        s.lasttext = nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        s.wastext = false;").append(LINE_SEPARATOR);
         if (timerSet) {
@@ -649,7 +663,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        s.snd(s);").append(LINE_SEPARATOR);
         stringBuilder.append("        s.bgimg(s);").append(LINE_SEPARATOR);
         if (timerSet) {
-            int timerRate = (hasPageAnim && pageBlocks.isImageBackground()) ? 1 : (hasAnim || hasPageAnim ? 20 : 200);
+            int timerRate = (hasFastAnim ? 1 : 200);
             stringBuilder.append("        ").append(pageBlocks.getPageTimerVariable()).append(LINE_SEPARATOR);
             // stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR); -- will be called when timer triggers
             // Timer will be triggered first time immediately after timer:set()
