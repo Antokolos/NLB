@@ -792,12 +792,17 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjStart(final String id, String containerRef, boolean menuObj, String objDefaultTag) {
+    protected String decorateObjStart(final String id, String containerRef, ObjType objType, String objDefaultTag) {
         StringBuilder result = new StringBuilder();
-        if (menuObj) {
-            result.append(" = menu {").append(LINE_SEPARATOR);
-        } else {
-            result.append(" = obj {").append(LINE_SEPARATOR);
+        switch (objType) {
+            case STAT:
+                result.append(" = stat {").append(LINE_SEPARATOR);
+                break;
+            case MENU:
+                result.append(" = menu {").append(LINE_SEPARATOR);
+                break;
+            default:
+                result.append(" = obj {").append(LINE_SEPARATOR);
         }
         result.append("    var { tag = '").append(objDefaultTag).append("'; ").append(getContainerExpression(containerRef));
         result.append(" nlbid = '").append(id).append("';").append(" },").append(LINE_SEPARATOR);
@@ -912,19 +917,22 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjInv(boolean menuObj) {
-        if (menuObj) {
-            return (
-                    "    menu = function(s)" + LINE_SEPARATOR
-                            + "        s.act(s);" + LINE_SEPARATOR
-                            + "    end," + LINE_SEPARATOR
-            );
-        } else {
-            return (
-                    "    inv = function(s)" + LINE_SEPARATOR
-                            + "        s.use(s, s);" + LINE_SEPARATOR
-                            + "    end," + LINE_SEPARATOR
-            );
+    protected String decorateObjInv(ObjType objType) {
+        switch (objType) {
+            case MENU:
+                return (
+                        "    menu = function(s)" + LINE_SEPARATOR
+                                + "        s.act(s);" + LINE_SEPARATOR
+                                + "    end," + LINE_SEPARATOR
+                );
+            case OBJ:
+                return (
+                        "    inv = function(s)" + LINE_SEPARATOR
+                                + "        s.use(s, s);" + LINE_SEPARATOR
+                                + "    end," + LINE_SEPARATOR
+                );
+            default:
+                return Constants.EMPTY_STRING;
         }
     }
 

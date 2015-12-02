@@ -95,6 +95,18 @@ public abstract class AbstractModifyingItem extends AbstractIdentifiableItem imp
         return result;
     }
 
+    @Override
+    public boolean hasNoModifications() {
+        if (m_modifications.size() > 0) {
+            for (ModificationImpl modification : m_modifications) {
+                if (!modification.isDeleted()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     @XmlElement(name = "modification")
     public List<ModificationImpl> getModificationImpls() {
         return m_modifications;

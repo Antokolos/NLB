@@ -231,6 +231,18 @@ public class LinkLw implements Link {
     }
 
     @Override
+    public boolean hasNoModifications() {
+        if (m_modifications.size() > 0) {
+            for (Modification modification : m_modifications) {
+                if (!modification.isDeleted()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
     public Modification getModificationById(@NotNull String modId) {
         for (Modification modification : m_modifications) {
             if (modification.getId().equals(modId)) {

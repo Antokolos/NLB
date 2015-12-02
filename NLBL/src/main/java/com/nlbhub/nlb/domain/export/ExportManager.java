@@ -720,11 +720,11 @@ public abstract class ExportManager {
                         buildModificationsText(EMPTY_STRING, obj.getModifications(), exportData)
                 )
         );
-        final boolean menuObj = (obj.getLinks().size() == 0) && !exportData.hasInwardLinks(obj.getId());
+        final ObjType objType = getObjType(obj, exportData);
         blocks.setObjLabel(decorateObjLabel(obj.getId()));
         blocks.setObjComment(decorateObjComment(obj.getName()));
         // blocks obj default tag variable was set earlier
-        blocks.setObjStart(decorateObjStart(obj.getId(), getContainerRef(obj, exportData), menuObj, blocks.getObjDefaultTagVariable()));
+        blocks.setObjStart(decorateObjStart(obj.getId(), getContainerRef(obj, exportData), objType, blocks.getObjDefaultTagVariable()));
         blocks.setObjName(decorateObjName(obj.getName()));
         blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
@@ -735,7 +735,7 @@ public abstract class ExportManager {
         blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), expandVariables(StringHelper.getTextChunks(obj.getText())), hasImage && obj.isImageInScene()));
         blocks.setTakable(obj.isTakable());
         blocks.setObjTak(decorateObjTak(obj.getName()));
-        blocks.setObjInv(decorateObjInv(menuObj));
+        blocks.setObjInv(decorateObjInv(objType));
         blocks.setObjActStart(decorateObjActStart(StringHelper.getTextChunks(obj.getActText())));
         blocks.setObjActEnd(decorateObjActEnd());
         blocks.setObjUseStart(decorateObjUseStart());
@@ -757,6 +757,25 @@ public abstract class ExportManager {
             }
         }
         return blocks;
+    }
+
+    private ObjType getObjType(final Obj obj, final ExportData exportData) {
+        if ((obj.getLinks().size() == 0) && !exportData.hasInwardLinks(obj.getId())) {
+            if (
+                    !obj.getDisps().isEmpty()
+                            && obj.getTexts().isEmpty()
+                            && obj.getActTexts().isEmpty()
+                            && obj.isTakable()
+                            && obj.hasNoModifications()
+                            && StringHelper.isEmpty(obj.getCommonToId())
+                    ) {
+                return ObjType.STAT;
+            } else {
+                return ObjType.MENU;
+            }
+        } else {
+            return ObjType.OBJ;
+        }
     }
 
     /**
@@ -858,6 +877,11 @@ public abstract class ExportManager {
             @Override
             public List<Modification> getModifications() {
                 return link.getModifications();
+            }
+
+            @Override
+            public boolean hasNoModifications() {
+                return link.hasNoModifications();
             }
 
             @Override
@@ -1163,6 +1187,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public boolean hasNoModifications() {
+                return page.hasNoModifications();
+            }
+
+            @Override
             public Modification getModificationById(@NotNull String modId) {
                 return page.getModificationById(modId);
             }
@@ -1372,6 +1401,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public boolean hasNoModifications() {
+                return obj.hasNoModifications();
+            }
+
+            @Override
             public Modification getModificationById(@NotNull String modId) {
                 return obj.getModificationById(modId);
             }
@@ -1436,7 +1470,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjStart(final String id, String containerRef, boolean menuObj, String objDefaultTag) {
+    protected String decorateObjStart(final String id, String containerRef, ObjType objType, String objDefaultTag) {
         return EMPTY_STRING;
     }
 
@@ -1460,7 +1494,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjInv(boolean menuObj) {
+    protected String decorateObjInv(ObjType objType) {
         return EMPTY_STRING;
     }
 

@@ -125,6 +125,15 @@ public class MultiLangString {
         return true;
     }
 
+    public boolean isEmpty() {
+        for (Map.Entry<String, String> entry : m_content.entrySet()) {
+            if (StringHelper.notEmpty(entry.getValue())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

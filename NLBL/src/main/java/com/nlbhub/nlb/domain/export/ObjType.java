@@ -1,8 +1,8 @@
 /**
- * @(#)ModifyingItem.java
+ * @(#)ObjType.java
  *
  * This file is part of the Non-Linear Book project.
- * Copyright (c) 2012-2014 Anton P. Kolosov
+ * Copyright (c) 2012-2015 Anton P. Kolosov
  * Authors: Anton P. Kolosov, et al.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -34,26 +34,16 @@
  * For more information, please contact Anton P. Kolosov at this
  * address: antokolos@gmail.com
  *
- * Copyright (c) 2014 Anton P. Kolosov All rights reserved.
+ * Copyright (c) 2015 Anton P. Kolosov All rights reserved.
  */
-package com.nlbhub.nlb.api;
-
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
+package com.nlbhub.nlb.domain.export;
 
 /**
- * The ModifyingItem class
+ * Type of the object.
  *
  * @author Anton P. Kolosov
- * @version 1.0 1/15/14
+ * @version 1.0
  */
-public interface ModifyingItem extends IdentifiableItem {
-    public static final String DEFAULT_MODORDER = Constants.EMPTY_STRING;
-
-    public List<Modification> getModifications();
-
-    public boolean hasNoModifications();
-
-    public Modification getModificationById(@NotNull String modId);
+public enum ObjType {
+    OBJ, MENU, STAT
 }

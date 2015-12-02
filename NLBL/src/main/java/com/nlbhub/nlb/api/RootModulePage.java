@@ -296,6 +296,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public boolean hasNoModifications() {
+        return true;
+    }
+
+    @Override
     public Modification getModificationById(@NotNull String modId) {
         return null;
     }
