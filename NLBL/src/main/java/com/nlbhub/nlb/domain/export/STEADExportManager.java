@@ -442,7 +442,10 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            until list == nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("}").append(LINE_SEPARATOR);
+        stringBuilder.append("}").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
+        stringBuilder.append("function init()").append(LINE_SEPARATOR);
+        stringBuilder.append("    nlbticks = stead.ticks();").append(LINE_SEPARATOR);
+        stringBuilder.append("end").append(LINE_SEPARATOR);
         return stringBuilder.toString();
     }
 
@@ -593,18 +596,15 @@ public class STEADExportManager extends TextExportManager {
         boolean hasFastAnim = hasAnim || hasPageAnim;
         boolean timerSet =  hasFastAnim || pageBlocks.isHasPageTimer();
         stringBuilder.append("    var { time = 0; wastext = false; lasttext = nil; tag = '").append(pageBlocks.getPageDefaultTag()).append("'; ");
-        if (hasFastAnim) {
-            stringBuilder.append("t1 = 0; ");
-        }
         stringBuilder.append("autowired = ").append(pageBlocks.isAutowired() ? "true" : "false").append("; ");
         stringBuilder.append("},").append(LINE_SEPARATOR);
         if (timerSet) {
             stringBuilder.append("    timer = function(s)").append(LINE_SEPARATOR);
             if (hasFastAnim) {
-                stringBuilder.append("        if (_fps * (get_ticks() - s.t1) <= 1000) then").append(LINE_SEPARATOR);
+                stringBuilder.append("        if (_fps * (get_ticks() - nlbticks) <= 1000) then").append(LINE_SEPARATOR);
                 stringBuilder.append("            return;").append(LINE_SEPARATOR);
                 stringBuilder.append("        end").append(LINE_SEPARATOR);
-                stringBuilder.append("        s.t1 = get_ticks();").append(LINE_SEPARATOR);
+                stringBuilder.append("        nlbticks = get_ticks();").append(LINE_SEPARATOR);
             }
             stringBuilder.append("        if not s.wastext then").append(LINE_SEPARATOR);
             stringBuilder.append("        ").append(pageBlocks.getPageTimerVariable()).append(LINE_SEPARATOR);
@@ -647,7 +647,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
         if (hasFastAnim) {
-            stringBuilder.append("        s.t1 = stead.ticks();").append(LINE_SEPARATOR);
+            stringBuilder.append("        nlbticks = stead.ticks();").append(LINE_SEPARATOR);
         }
         stringBuilder.append("        s.lasttext = nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        s.wastext = false;").append(LINE_SEPARATOR);
