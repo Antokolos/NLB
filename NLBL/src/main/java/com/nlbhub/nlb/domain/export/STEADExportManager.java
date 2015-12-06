@@ -324,7 +324,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        if s.nlbobj == \"listobj\" then").append(LINE_SEPARATOR);
         stringBuilder.append("            return new('clonefdl(listobj, \\''..s.listnam..'\\')');").append(LINE_SEPARATOR);
         stringBuilder.append("        else").append(LINE_SEPARATOR);
-        stringBuilder.append("            return new('clonef(\\''..stead.deref(s)..'\\')');").append(LINE_SEPARATOR);
+        stringBuilder.append("            return new('clonef(\\''..s.sref..'\\')');").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    clonelst = function(s, listnam)").append(LINE_SEPARATOR);
@@ -334,19 +334,19 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            return nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    clonef = function(s_nam)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local s = stead.ref(s_nam);").append(LINE_SEPARATOR);
+        stringBuilder.append("    clonef = function(sref)").append(LINE_SEPARATOR);
+        stringBuilder.append("        local s = stead.ref(sref);").append(LINE_SEPARATOR);
         stringBuilder.append("        return clonefd(s);").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    clonefd = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        local ret = deepcopy(s);").append(LINE_SEPARATOR);
-        stringBuilder.append("        local r = _clones[s.nam];").append(LINE_SEPARATOR);
+        stringBuilder.append("        local r = _clones[s.nlbid];").append(LINE_SEPARATOR);
         stringBuilder.append("        if r == nil then").append(LINE_SEPARATOR);
         stringBuilder.append("            r = 1;").append(LINE_SEPARATOR);
         stringBuilder.append("        else").append(LINE_SEPARATOR);
         stringBuilder.append("            r = r + 1;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        _clones[s.nam] = r;").append(LINE_SEPARATOR);
+        stringBuilder.append("        _clones[s.nlbid] = r;").append(LINE_SEPARATOR);
         stringBuilder.append("        ret.nam = s.nam..r;").append(LINE_SEPARATOR);
         stringBuilder.append("        return ret;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
@@ -380,10 +380,15 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            s.lasttext = lasttext;").append(LINE_SEPARATOR);
         stringBuilder.append("        end").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("}").append(LINE_SEPARATOR);
+        stringBuilder.append("}").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
+        stringBuilder.append("function init()").append(LINE_SEPARATOR);
+        stringBuilder.append("    nlbticks = stead.ticks();").append(LINE_SEPARATOR);
+        stringBuilder.append("end").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
         stringBuilder.append("listobj = {").append(LINE_SEPARATOR);
         stringBuilder.append("    nam = \"listobj\",").append(LINE_SEPARATOR);
         stringBuilder.append("    nlbobj = \"listobj\",").append(LINE_SEPARATOR);
+        stringBuilder.append("    nlbid = \"listobj\",").append(LINE_SEPARATOR);
+        stringBuilder.append("    sref = \"listobj\",").append(LINE_SEPARATOR);
         stringBuilder.append("    listnam = \"\",").append(LINE_SEPARATOR);
         stringBuilder.append("    clear = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        local r = eject(s.listnam);").append(LINE_SEPARATOR);
@@ -442,10 +447,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            until list == nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("}").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
-        stringBuilder.append("function init()").append(LINE_SEPARATOR);
-        stringBuilder.append("    nlbticks = stead.ticks();").append(LINE_SEPARATOR);
-        stringBuilder.append("end").append(LINE_SEPARATOR);
+        stringBuilder.append("}").append(LINE_SEPARATOR);
         return stringBuilder.toString();
     }
 
@@ -805,7 +807,9 @@ public class STEADExportManager extends TextExportManager {
                 result.append(" = obj {").append(LINE_SEPARATOR);
         }
         result.append("    var { tag = '").append(objDefaultTag).append("'; ").append(getContainerExpression(containerRef));
-        result.append(" nlbid = '").append(id).append("';").append(" },").append(LINE_SEPARATOR);
+        result.append(" },").append(LINE_SEPARATOR);
+        result.append("    nlbid = '").append(id).append("',").append(LINE_SEPARATOR);
+        result.append("    sref = '").append(decorateObjLabel(id)).append("',").append(LINE_SEPARATOR);
         return result.toString();
     }
 
