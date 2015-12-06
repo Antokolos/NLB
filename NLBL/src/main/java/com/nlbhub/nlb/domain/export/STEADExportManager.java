@@ -324,7 +324,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        if s.nlbobj == \"listobj\" then").append(LINE_SEPARATOR);
         stringBuilder.append("            return new('clonefdl(listobj, \\''..s.listnam..'\\')');").append(LINE_SEPARATOR);
         stringBuilder.append("        else").append(LINE_SEPARATOR);
-        stringBuilder.append("            return new('clonef(\\''..s.sref..'\\')');").append(LINE_SEPARATOR);
+        stringBuilder.append("            return new('clonef(\\''..s:deref()..'\\')');").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    clonelst = function(s, listnam)").append(LINE_SEPARATOR);
@@ -388,7 +388,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    nam = \"listobj\",").append(LINE_SEPARATOR);
         stringBuilder.append("    nlbobj = \"listobj\",").append(LINE_SEPARATOR);
         stringBuilder.append("    nlbid = \"listobj\",").append(LINE_SEPARATOR);
-        stringBuilder.append("    sref = \"listobj\",").append(LINE_SEPARATOR);
+        stringBuilder.append("    deref = function(s) return stead.deref(listobj); end,").append(LINE_SEPARATOR);
         stringBuilder.append("    listnam = \"\",").append(LINE_SEPARATOR);
         stringBuilder.append("    clear = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        local r = eject(s.listnam);").append(LINE_SEPARATOR);
@@ -809,7 +809,7 @@ public class STEADExportManager extends TextExportManager {
         result.append("    var { tag = '").append(objDefaultTag).append("'; ").append(getContainerExpression(containerRef));
         result.append(" },").append(LINE_SEPARATOR);
         result.append("    nlbid = '").append(id).append("',").append(LINE_SEPARATOR);
-        result.append("    sref = '").append(decorateObjLabel(id)).append("',").append(LINE_SEPARATOR);
+        result.append("    deref = function(s) return stead.deref(").append(decorateObjLabel(id)).append("); end,").append(LINE_SEPARATOR);
         return result.toString();
     }
 
