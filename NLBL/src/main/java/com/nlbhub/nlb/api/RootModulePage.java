@@ -96,6 +96,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public Theme getTheme() {
+        return DEFAULT_THEME;
+    }
+
+    @Override
     public String getVarId() {
         return DEFAULT_VARID;
     }

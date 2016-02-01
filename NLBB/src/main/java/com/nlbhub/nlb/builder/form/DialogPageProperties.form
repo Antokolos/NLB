@@ -414,13 +414,13 @@
                                       </component>
                                       <vspacer id="8a828">
                                         <constraints>
-                                          <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                                          <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
                                           <gridbag weightx="0.0" weighty="1.0"/>
                                         </constraints>
                                       </vspacer>
                                       <grid id="a4e3c" layout-manager="BorderLayout" hgap="0" vgap="0">
                                         <constraints>
-                                          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                          <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                           <gridbag weightx="1.0" weighty="0.0"/>
                                         </constraints>
                                         <properties/>
@@ -584,8 +584,48 @@
                                           <gridbag weightx="0.0" weighty="0.0"/>
                                         </constraints>
                                         <properties>
-                                          <labelFor value="6e3dd"/>
+                                          <labelFor value="5cfbe"/>
                                           <text value="Default tag"/>
+                                        </properties>
+                                      </component>
+                                      <grid id="10fae" layout-manager="GridBagLayout">
+                                        <constraints>
+                                          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                          <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="1.0"/>
+                                        </constraints>
+                                        <properties>
+                                          <minimumSize width="468" height="33"/>
+                                          <preferredSize width="468" height="33"/>
+                                        </properties>
+                                        <border type="none"/>
+                                        <children>
+                                          <scrollpane id="72eb3">
+                                            <constraints>
+                                              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                              <gridbag weightx="1.0" weighty="1.0"/>
+                                            </constraints>
+                                            <properties>
+                                              <horizontalScrollBarPolicy value="31"/>
+                                              <verticalScrollBarPolicy value="21"/>
+                                            </properties>
+                                            <border type="none"/>
+                                            <children>
+                                              <component id="90969" class="javax.swing.JComboBox" binding="m_themeComboBox" default-binding="true">
+                                                <constraints/>
+                                                <properties/>
+                                              </component>
+                                            </children>
+                                          </scrollpane>
+                                        </children>
+                                      </grid>
+                                      <component id="a59d" class="javax.swing.JLabel">
+                                        <constraints>
+                                          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                          <gridbag weightx="0.0" weighty="0.0"/>
+                                        </constraints>
+                                        <properties>
+                                          <labelFor value="90969"/>
+                                          <text value="Theme"/>
                                         </properties>
                                       </component>
                                     </children>

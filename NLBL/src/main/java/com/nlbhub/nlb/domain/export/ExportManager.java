@@ -979,6 +979,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public Theme getTheme() {
+                return page.getTheme();
+            }
+
+            @Override
             public String getVarId() {
                 return page.getVarId();
             }

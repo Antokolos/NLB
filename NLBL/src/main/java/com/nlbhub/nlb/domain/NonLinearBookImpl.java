@@ -398,6 +398,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_existingSoundSFX;
         private final MultiLangString m_existingPageText;
         private final MultiLangString m_existingPageCaptionText;
+        private final Theme m_existingTheme;
         private final boolean m_existingUseCaption;
         private final boolean m_existingUseMPL;
         private final String m_existingModuleName;
@@ -420,6 +421,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_newSoundSFX;
         private final MultiLangString m_newPageText;
         private final MultiLangString m_newPageCaptionText;
+        private final Theme m_newTheme;
         private final boolean m_newUseCaption;
         private final boolean m_newUseMPL;
         private final String m_newModuleName;
@@ -451,6 +453,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String pageDefTagVariableValue,
                 final MultiLangString pageText,
                 final MultiLangString pageCaptionText,
+                final Theme theme,
                 final boolean useCaption,
                 final boolean useMPL,
                 final String moduleName,
@@ -484,6 +487,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     pageDefTagVariableValue,
                     pageText,
                     pageCaptionText,
+                    theme,
                     useCaption,
                     useMPL,
                     moduleName,
@@ -519,6 +523,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String pageDefTagVariableValue,
                 final MultiLangString pageText,
                 final MultiLangString pageCaptionText,
+                final Theme theme,
                 final boolean useCaption,
                 final boolean useMPL,
                 final String moduleName,
@@ -607,6 +612,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingSoundSFX = m_page.isSoundSFX();
             m_existingPageText = m_page.getTexts();
             m_existingPageCaptionText = m_page.getCaptions();
+            m_existingTheme = m_page.getTheme();
             m_existingUseCaption = m_page.isUseCaption();
             m_existingUseMPL = m_page.isUseMPL();
             m_existingModuleName = m_page.getModuleName();
@@ -629,6 +635,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newSoundSFX = soundSFX;
             m_newPageText = pageText;
             m_newPageCaptionText = pageCaptionText;
+            m_newTheme = theme;
             m_newUseCaption = useCaption;
             m_newUseMPL = useMPL;
             m_newModuleName = moduleName;
@@ -678,6 +685,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setAutowireOutConstrId(m_autowireOutConstrIdTracker.execute());
             m_page.setTexts(m_newPageText);
             m_page.setCaptions(m_newPageCaptionText);
+            m_page.setTheme(m_newTheme);
             m_page.setUseCaption(m_newUseCaption);
             m_page.setUseMPL(m_newUseMPL);
             m_page.setModuleName(m_newModuleName);
@@ -720,6 +728,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setAutowireOutConstrId(m_autowireOutConstrIdTracker.revert());
             m_page.setTexts(m_existingPageText);
             m_page.setCaptions(m_existingPageCaptionText);
+            m_page.setTheme(m_existingTheme);
             m_page.setUseCaption(m_existingUseCaption);
             m_page.setUseMPL(m_existingUseMPL);
             m_page.setModuleName(m_existingModuleName);
@@ -1707,6 +1716,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         (pageDefTagVariable != null) ? pageDefTagVariable.getValue() : Constants.EMPTY_STRING,
                         page.getTexts(),
                         page.getCaptions(),
+                        page.getTheme(),
                         page.isUseCaption(),
                         page.isUseMPL(),
                         page.getModuleName(),
@@ -2139,6 +2149,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String pageDefTagVariableValue,
             final MultiLangString pageText,
             final MultiLangString pageCaptionText,
+            final Theme theme,
             final boolean useCaption,
             final boolean useMPL,
             final String moduleName,
@@ -2173,6 +2184,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         pageDefTagVariableValue,
                         pageText,
                         pageCaptionText,
+                        theme,
                         useCaption,
                         useMPL,
                         moduleName,

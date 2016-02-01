@@ -72,6 +72,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String IMGANIM_FILE_NAME = "imganim";
     private static final String SOUND_FILE_NAME = "sound";
     private static final String SOUND_SFX_FILE_NAME = "soundsfx";
+    private static final String THEME_FILE_NAME = "theme";
     private static final String VARID_FILE_NAME = "varid";
     private static final String TVARID_FILE_NAME = "tvarid";
     private static final String CAPTION_SUBDIR_NAME = "caption";
@@ -106,6 +107,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private boolean m_useCaption = DEFAULT_USE_CAPTION;
     private boolean m_useMPL = DEFAULT_USE_MPL;
     private MultiLangString m_text = DEFAULT_TEXT;
+    private Theme m_theme = DEFAULT_THEME;
     private String m_moduleName;
     private boolean m_moduleExternal = DEFAULT_MODULE_EXTERNAL;
     private String m_defaultModuleName;
@@ -156,6 +158,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         setUseCaption(source.isUseCaption());
         setUseMPL(source.isUseMPL());
         setTexts(source.getTexts());
+        setTheme(source.getTheme());
         setModuleName(source.getModuleName());
         setModuleExternal(source.isModuleExternal());
         resetDefaultModuleName();
@@ -275,6 +278,15 @@ public class PageImpl extends AbstractNodeItem implements Page {
     @Override
     public MultiLangString getTexts() {
         return MultiLangString.createCopy(m_text);
+    }
+
+    @Override
+    public Theme getTheme() {
+        return m_theme;
+    }
+
+    public void setTheme(Theme theme) {
+        m_theme = theme;
     }
 
     public void setTexts(final MultiLangString text) {
@@ -638,6 +650,12 @@ public class PageImpl extends AbstractNodeItem implements Page {
             );
             fileManipulator.writeOptionalString(
                     pageDir,
+                    THEME_FILE_NAME,
+                    m_theme.getName(),
+                    DEFAULT_THEME.getName()
+            );
+            fileManipulator.writeOptionalString(
+                    pageDir,
                     MODNAME_FILE_NAME,
                     m_moduleName,
                     m_defaultModuleName
@@ -809,6 +827,13 @@ public class PageImpl extends AbstractNodeItem implements Page {
                             DEFAULT_TEXT
                     )
             );
+            m_theme = m_theme.fromString(
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            THEME_FILE_NAME,
+                            DEFAULT_THEME.getName()
+                    )
+            );
             m_moduleName = (
                     FileManipulator.getOptionalFileAsString(
                             pageDir,
@@ -952,6 +977,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         resultCoords.setHeight(sourceCoords.getHeight());
         result.setDeleted(isDeleted());
         result.setReturnPageId(getReturnPageId());
+        result.setTheme(getTheme());
         result.setVarId(getVarId());
         result.setTimerVarId(getTimerVarId());
         result.setCaption(getCaption());

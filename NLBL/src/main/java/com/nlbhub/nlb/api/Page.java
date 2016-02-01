@@ -52,6 +52,7 @@ public interface Page extends NodeItem {
     public static final String DEFAULT_IMAGE_FILE_NAME = Constants.EMPTY_STRING;
     public static final String DEFAULT_SOUND_FILE_NAME = Constants.EMPTY_STRING;
     public static final MultiLangString DEFAULT_TEXT = MultiLangString.createEmptyText();
+    public static final Theme DEFAULT_THEME = Theme.DEFAULT;
     public static final String DEFAULT_VARID = Constants.EMPTY_STRING;
     public static final String DEFAULT_TVARID = Constants.EMPTY_STRING;
     public static final MultiLangString DEFAULT_CAPTION = MultiLangString.createEmptyText();
@@ -92,6 +93,8 @@ public interface Page extends NodeItem {
     public String getText();
 
     public MultiLangString getTexts();
+
+    public Theme getTheme();
 
     public String getVarId();
 
