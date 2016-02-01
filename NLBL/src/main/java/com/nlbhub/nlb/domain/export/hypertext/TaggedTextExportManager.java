@@ -40,6 +40,7 @@ package com.nlbhub.nlb.domain.export.hypertext;
 
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.TextChunk;
+import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.export.ImagePathData;
 import com.nlbhub.nlb.domain.export.LinkBuildingBlocks;
@@ -78,7 +79,7 @@ public class TaggedTextExportManager extends HypertextExportManager<TXTParagraph
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme) {
         return linkText;
     }
 
@@ -87,8 +88,8 @@ public class TaggedTextExportManager extends HypertextExportManager<TXTParagraph
             String linkId,
             String linkText,
             String linkTarget,
-            int targetPageNumber
-    ) {
+            int targetPageNumber,
+            Theme theme) {
         return String.valueOf(targetPageNumber);
     }
 
@@ -118,20 +119,20 @@ public class TaggedTextExportManager extends HypertextExportManager<TXTParagraph
     }
 
     @Override
-    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {
+    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks, Theme theme) {
         StringBuilder result = new StringBuilder();
-        result.append(super.decoratePageTextStart(labelText, pageNumber, pageTextChunks));
+        result.append(super.decoratePageTextStart(labelText, pageNumber, pageTextChunks, theme));
         result.append(getLineSeparator());
         return result.toString();
     }
 
     @Override
-    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground) {
+    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground, Theme theme) {
         return Constants.EMPTY_STRING;
     }
 
     @Override
-    protected String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX) {
+    protected String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX, Theme theme) {
         return Constants.EMPTY_STRING;
     }
 }

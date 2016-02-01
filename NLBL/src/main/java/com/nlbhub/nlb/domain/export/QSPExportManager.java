@@ -40,6 +40,7 @@ package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.TextChunk;
+import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
@@ -195,7 +196,7 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateLinkLabel(String linkId, String linkText) {
+    protected String decorateLinkLabel(String linkId, String linkText, Theme theme) {
         return "#" + linkId + LINE_SEPARATOR;
     }
 
@@ -205,7 +206,7 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme) {
         return "  ACT '" + linkText + "':" + LINE_SEPARATOR;
     }
 
@@ -214,13 +215,13 @@ public class QSPExportManager extends TextExportManager {
             String linkId,
             String linkText,
             String linkTarget,
-            int targetPageNumber
-    ) {
+            int targetPageNumber,
+            Theme theme) {
         return "    GOTO '" + linkTarget + "'" + LINE_SEPARATOR;
     }
 
     @Override
-    protected String decorateLinkEnd() {
+    protected String decorateLinkEnd(Theme theme) {
         return "  END" + LINE_SEPARATOR;
     }
 
@@ -279,7 +280,7 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground) {
+    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground, Theme theme) {
         // TODO: support image constraints
         ImagePathData pageImagePathData = pageImagePathDatas.get(0);
         if (pageImagePathData.getMaxFrameNumber() == 0) {
@@ -299,14 +300,14 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX) {
+    protected String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX, Theme theme) {
         // TODO: implement and use
         return Constants.EMPTY_STRING;
     }
 
     @Override
-    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {
-        return "'" + super.decoratePageTextStart(labelText, pageNumber, pageTextChunks);
+    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks, Theme theme) {
+        return "'" + super.decoratePageTextStart(labelText, pageNumber, pageTextChunks, theme);
     }
 
     @Override
@@ -315,12 +316,12 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageTextEnd(String labelText, int pageNumber) {
+    protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme) {
         return "'" + LINE_SEPARATOR;
     }
 
     @Override
-    protected String decoratePageLabel(String labelText, int pageNumber) {
+    protected String decoratePageLabel(String labelText, int pageNumber, Theme theme) {
         return "#" + labelText + LINE_SEPARATOR;
     }
 

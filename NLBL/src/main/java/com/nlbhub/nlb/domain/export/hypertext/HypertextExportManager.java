@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.domain.export.hypertext;
 
 import com.nlbhub.nlb.api.Constants;
+import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.export.ExportManager;
 import com.nlbhub.nlb.domain.export.LinkBuildingBlocks;
@@ -498,7 +499,7 @@ public abstract class HypertextExportManager
     }
 
     @Override
-    protected String decorateLinkLabel(String linkId, String linkText) {
+    protected String decorateLinkLabel(String linkId, String linkText, Theme theme) {
         return linkId;
     }
 
@@ -508,7 +509,7 @@ public abstract class HypertextExportManager
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme) {
         return linkText + " (" + String.valueOf(pageNumber) + ")";
     }
 
@@ -517,8 +518,8 @@ public abstract class HypertextExportManager
             String linkId,
             String linkText,
             String linkTarget,
-            int targetPageNumber
-    ) {
+            int targetPageNumber,
+            Theme theme) {
         return linkTarget;
     }
 
@@ -602,12 +603,12 @@ public abstract class HypertextExportManager
     }
 
     @Override
-    protected String decoratePageTextEnd(String labelText, int pageNumber) {
+    protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme) {
         return "";
     }
 
     @Override
-    protected String decoratePageLabel(String labelText, int pageNumber) {
+    protected String decoratePageLabel(String labelText, int pageNumber, Theme theme) {
         return labelText;
     }
 

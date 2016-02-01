@@ -40,6 +40,7 @@ package com.nlbhub.nlb.domain.export.xml;
 
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.TextChunk;
+import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.export.*;
 import com.nlbhub.nlb.domain.export.xml.beans.jsiq2.*;
@@ -684,7 +685,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decorateLinkLabel(String linkId, String linkText) {
+    protected String decorateLinkLabel(String linkId, String linkText, Theme theme) {
         return Constants.EMPTY_STRING;
     }
 
@@ -694,12 +695,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme) {
         return linkText;
     }
 
     @Override
-    protected String decorateLinkGoTo(String linkId, String linkText, String linkTarget, int targetPageNumber) {
+    protected String decorateLinkGoTo(String linkId, String linkText, String linkTarget, int targetPageNumber, Theme theme) {
         return Integer.toString(targetPageNumber - 1);
     }
 
@@ -755,18 +756,18 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground) {
+    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground, Theme theme) {
         // TODO: implement and use
         return Constants.EMPTY_STRING;
     }
 
     @Override
-    protected String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX) {
+    protected String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX, Theme theme) {
         // TODO: implement and use
         return Constants.EMPTY_STRING;
     }
 
-    protected String expandVariables(List<TextChunk> textChunks) {
+    protected String expandVariables(List<TextChunk> textChunks, Theme theme) {
         StringBuilder result = new StringBuilder();
         for (final TextChunk textChunk : textChunks) {
             switch (textChunk.getType()) {
@@ -790,12 +791,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decoratePageTextEnd(String labelText, int pageNumber) {
+    protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme) {
         return Constants.EMPTY_STRING;
     }
 
     @Override
-    protected String decoratePageLabel(String labelText, int pageNumber) {
+    protected String decoratePageLabel(String labelText, int pageNumber, Theme theme) {
         return Constants.EMPTY_STRING;
     }
 

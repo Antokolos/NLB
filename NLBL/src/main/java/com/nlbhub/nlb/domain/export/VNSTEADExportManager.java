@@ -40,6 +40,7 @@ package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.TextChunk;
+import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
@@ -62,8 +63,8 @@ public class VNSTEADExportManager extends STEADExportManager {
         super(nlb, encoding);
     }
 
-    protected boolean isVN() {
-        return true;
+    protected boolean isVN(Theme theme) {
+        return theme != Theme.STANDARD;
     }
 
     @Override
@@ -105,14 +106,16 @@ public class VNSTEADExportManager extends STEADExportManager {
     }
 
     @Override
-    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {
-
+    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks, Theme theme) {
+        if (!isVN(theme)) {
+            return super.decoratePageTextStart(labelText, pageNumber, pageTextChunks, theme);
+        }
         String lineSep = getLineSeparator();
         StringBuilder pageText = new StringBuilder();
         pageText.append("    dsc = function(s)").append(lineSep);
         if (pageTextChunks.size() > 0) {
             pageText.append("pn(\"");
-            pageText.append(expandVariables(pageTextChunks));
+            pageText.append(expandVariables(pageTextChunks, theme));
             pageText.append("\");").append(lineSep);
             pageText.append("pn();").append(lineSep);
         }
@@ -120,7 +123,10 @@ public class VNSTEADExportManager extends STEADExportManager {
     }
 
     @Override
-    protected String decoratePageTextEnd(String labelText, int pageNumber) {
+    protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme) {
+        if (!isVN(theme)) {
+            return super.decoratePageTextEnd(labelText, pageNumber, theme);
+        }
         String lineSep = getLineSeparator();
         StringBuilder pageText = new StringBuilder();
         pageText.append("    end,").append(lineSep);
@@ -130,11 +136,17 @@ public class VNSTEADExportManager extends STEADExportManager {
 
     @Override
     protected String generateOrdinaryLinkTextInsideRoom(PageBuildingBlocks pageBuildingBlocks) {
+        if (!isVN(pageBuildingBlocks.getTheme())) {
+            return super.generateOrdinaryLinkTextInsideRoom(pageBuildingBlocks);
+        }
         return Constants.EMPTY_STRING;
     }
 
     @Override
     protected String generatePostPageText(PageBuildingBlocks pageBlocks) {
+        if (!isVN(pageBlocks.getTheme())) {
+            return super.generatePostPageText(pageBlocks);
+        }
         StringBuilder result = new StringBuilder();
         StringBuilder linksBuilder = new StringBuilder();
         String lineSep = getLineSeparator();
@@ -179,17 +191,26 @@ public class VNSTEADExportManager extends STEADExportManager {
     }
 
     @Override
-    protected String decoratePageLabel(String labelText, int pageNumber) {
+    protected String decoratePageLabel(String labelText, int pageNumber, Theme theme) {
+        if (!isVN(theme)) {
+            return super.decoratePageLabel(labelText, pageNumber, theme);
+        }
         return generatePageBeginningCode(labelText, pageNumber) + "vnr {" + getLineSeparator();
     }
 
     @Override
-    protected String decorateLinkLabel(String linkId, String linkText) {
+    protected String decorateLinkLabel(String linkId, String linkText, Theme theme) {
+        if (!isVN(theme)) {
+            return super.decorateLinkLabel(linkId, linkText, theme);
+        }
         return decorateId(linkId);
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme) {
+        if (!isVN(theme)) {
+            return super.decorateLinkStart(linkId, linkText, isAuto, isTrivial, pageNumber, theme);
+        }
         String lineSep = getLineSeparator();
         StringBuilder result = new StringBuilder();
         result.append(decorateId(linkId)).append(" = menu {").append(lineSep);
@@ -203,8 +224,12 @@ public class VNSTEADExportManager extends STEADExportManager {
             String linkId,
             String linkText,
             String linkTarget,
-            int targetPageNumber
+            int targetPageNumber,
+            Theme theme
     ) {
+        if (!isVN(theme)) {
+            return super.decorateLinkGoTo(linkId, linkText, linkTarget, targetPageNumber, theme);
+        }
         return (
                 "        nlbwalk("
                         + (
@@ -217,12 +242,18 @@ public class VNSTEADExportManager extends STEADExportManager {
     }
 
     @Override
-    protected String decorateLinkEnd() {
+    protected String decorateLinkEnd(Theme theme) {
+        if (!isVN(theme)) {
+            return super.decorateLinkEnd(theme);
+        }
         return "}" + getLineSeparator();
     }
 
     @Override
     protected String generateOrdinaryLinkCode(LinkBuildingBlocks linkBlocks) {
+        if (!isVN(linkBlocks.getTheme())) {
+            return super.generateOrdinaryLinkCode(linkBlocks);
+        }
         String lineSep = getLineSeparator();
         StringBuilder result = new StringBuilder();
         if (!linkBlocks.isAuto()) {
@@ -240,6 +271,9 @@ public class VNSTEADExportManager extends STEADExportManager {
 
     @Override
     protected String generateObjsCollection(PageBuildingBlocks pageBlocks, List<LinkBuildingBlocks> linksBlocks) {
+        if (!isVN(pageBlocks.getTheme())) {
+            return super.generateObjsCollection(pageBlocks, linksBlocks);
+        }
         return Constants.EMPTY_STRING;
     }
 
@@ -247,10 +281,14 @@ public class VNSTEADExportManager extends STEADExportManager {
      * imageBackground should be true in "The End" pages, if you want to show fancy winner's picture
      * @param pageImagePathDatas
      * @param imageBackground
+     * @param theme
      * @return
      */
     @Override
-    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground) {
+    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground, Theme theme) {
+        if (!isVN(theme)) {
+            return super.decoratePageImage(pageImagePathDatas, imageBackground, theme);
+        }
         String lineSep = getLineSeparator();
         StringBuilder bgimgBuilder = new StringBuilder("    bgimg = function(s)" + lineSep);
         boolean notFirst = false;
@@ -289,9 +327,13 @@ public class VNSTEADExportManager extends STEADExportManager {
      * Expands variables from text chunks.
      *
      * @param textChunks
+     * @param theme
      * @return
      */
-    protected String expandVariables(List<TextChunk> textChunks) {
+    protected String expandVariables(List<TextChunk> textChunks, Theme theme) {
+        if (!isVN(theme)) {
+            return super.expandVariables(textChunks, theme);
+        }
         StringBuilder result = new StringBuilder();
         String lineSep = getLineSeparator();
         for (final TextChunk textChunk : textChunks) {
@@ -336,19 +378,14 @@ public class VNSTEADExportManager extends STEADExportManager {
     }
 
     @Override
-    protected String getActText(boolean actTextEmpty, int actTextChunksSize) {
+    protected String getActText(boolean actTextEmpty, int actTextChunksSize, Theme theme) {
+        if (!isVN(theme)) {
+            return super.getActText(actTextEmpty, actTextChunksSize, theme);
+        }
         return (
                 (actTextChunksSize > 0)
                         ? "        p(s.actt(s));" + getLineSeparator()
                         : Constants.EMPTY_STRING
         );
-    }
-
-    protected String getDispText(List<TextChunk> dispChunks) {
-        return super.expandVariables(dispChunks);
-    }
-
-    protected String getObjText(List<TextChunk> textChunks) {
-        return super.expandVariables(textChunks);
     }
 }

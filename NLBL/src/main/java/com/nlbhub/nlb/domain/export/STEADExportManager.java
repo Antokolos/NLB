@@ -40,6 +40,7 @@ package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.TextChunk;
+import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
@@ -69,8 +70,8 @@ public class STEADExportManager extends TextExportManager {
         super(nlb, encoding);
     }
 
-    protected boolean isVN() {
-        return false;
+    protected boolean isVN(Theme theme) {
+        return theme == Theme.VN;
     }
 
     @Override
@@ -941,9 +942,9 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjActStart(List<TextChunk> actTextChunks) {
-        String actTextExpanded = expandVariables(actTextChunks);
-        String actText = getActText(StringHelper.notEmpty(actTextExpanded), actTextChunks.size());
+    protected String decorateObjActStart(List<TextChunk> actTextChunks, Theme theme) {
+        String actTextExpanded = expandVariables(actTextChunks, theme);
+        String actText = getActText(StringHelper.notEmpty(actTextExpanded), actTextChunks.size(), theme);
         return (
                 "    act = function(s)" + LINE_SEPARATOR +
                         "        s.acta(s);" + LINE_SEPARATOR +
@@ -962,7 +963,7 @@ public class STEADExportManager extends TextExportManager {
         );
     }
 
-    protected String getActText(boolean actTextEmpty, int actTextChunksSize) {
+    protected String getActText(boolean actTextEmpty, int actTextChunksSize, Theme theme) {
         return (
                 (actTextEmpty)
                         ? "        curloc().lasttext = s.actt(s); p(curloc().lasttext); curloc().wastext = true;" + LINE_SEPARATOR
@@ -1512,7 +1513,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateLinkLabel(String linkId, String linkText) {
+    protected String decorateLinkLabel(String linkId, String linkText, Theme theme) {
         return "{" + decorateId(linkId) + "|" + linkText + "}^";
     }
 
@@ -1522,7 +1523,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme) {
         return (
                 "        xact(" + LINE_SEPARATOR
                         + "            '" + decorateId(linkId) + "'," + LINE_SEPARATOR
@@ -1535,13 +1536,13 @@ public class STEADExportManager extends TextExportManager {
             String linkId,
             String linkText,
             String linkTarget,
-            int targetPageNumber
-    ) {
+            int targetPageNumber,
+            Theme theme) {
         return "                nlbwalk(s, " + decoratePageName(linkTarget, targetPageNumber) + "); ";
     }
 
     @Override
-    protected String decorateLinkEnd() {
+    protected String decorateLinkEnd(Theme theme) {
         return (
                 LINE_SEPARATOR
                         + "            end" + LINE_SEPARATOR
@@ -1612,7 +1613,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground) {
+    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground, Theme theme) {
         StringBuilder bgimgBuilder = new StringBuilder("    bgimg = function(s)" + LINE_SEPARATOR);
         StringBuilder picBuilder = new StringBuilder("    pic = function(s)" + LINE_SEPARATOR);
         boolean notFirst = false;
@@ -1689,7 +1690,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX) {
+    protected String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX, Theme theme) {
         StringBuilder result = new StringBuilder("    snd = function(s) " + LINE_SEPARATOR);
         boolean notFirst = false;
         boolean hasSFX = false;
@@ -1721,7 +1722,7 @@ public class STEADExportManager extends TextExportManager {
             notFirst = true;
         }
         result.append(ifTermination);
-        if (!isVN()) {
+        if (!isVN(theme)) {
             result.append("        s.nextsnd(s);").append(LINE_SEPARATOR);
         }
         result.append("    end,").append(LINE_SEPARATOR);
@@ -1737,9 +1738,10 @@ public class STEADExportManager extends TextExportManager {
      * Expands variables from text chunks.
      *
      * @param textChunks
+     * @param theme
      * @return
      */
-    protected String expandVariables(List<TextChunk> textChunks) {
+    protected String expandVariables(List<TextChunk> textChunks, Theme theme) {
         StringBuilder result = new StringBuilder();
         for (final TextChunk textChunk : textChunks) {
             switch (textChunk.getType()) {
@@ -1762,12 +1764,12 @@ public class STEADExportManager extends TextExportManager {
         return GLOBAL_VAR_PREFIX;
     }
 
-    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {
+    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks, Theme theme) {
         StringBuilder pageText = new StringBuilder();
         pageText.append("    dsc = function(s)").append(LINE_SEPARATOR);
         if (pageTextChunks.size() > 0) {
             pageText.append("p(\"");
-            pageText.append(expandVariables(pageTextChunks));
+            pageText.append(expandVariables(pageTextChunks, theme));
             pageText.append("\");").append(LINE_SEPARATOR);
         }
         pageText.append("    end,").append(LINE_SEPARATOR);
@@ -1782,12 +1784,12 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageTextEnd(String labelText, int pageNumber) {
+    protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme) {
         return "    end," + LINE_SEPARATOR;
     }
 
     @Override
-    protected String decoratePageLabel(String labelText, int pageNumber) {
+    protected String decoratePageLabel(String labelText, int pageNumber, Theme theme) {
         return generatePageBeginningCode(labelText, pageNumber) + "room {" + LINE_SEPARATOR;
     }
 

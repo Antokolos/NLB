@@ -40,6 +40,7 @@ package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.TextChunk;
+import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
@@ -153,7 +154,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme) {
         if (isAuto || isTrivial) {
             return "*goto " + linkId + LINE_SEPARATOR;
         } else {
@@ -166,8 +167,8 @@ public class ChoiceScriptExportManager extends TextExportManager {
             String linkId,
             String linkText,
             String linkTarget,
-            int targetPageNumber
-    ) {
+            int targetPageNumber,
+            Theme theme) {
         return "*goto " + linkTarget + LINE_SEPARATOR + LINE_SEPARATOR;
     }
 
@@ -279,7 +280,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateLinkLabel(String linkId, String linkText) {
+    protected String decorateLinkLabel(String linkId, String linkText, Theme theme) {
         return "*label " + linkId + LINE_SEPARATOR;
     }
 
@@ -347,7 +348,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground) {
+    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground, Theme theme) {
         // TODO: support image constraints
         ImagePathData pageImagePathData = pageImagePathDatas.get(0);
         if (pageImagePathData.getMaxFrameNumber() == 0) {
@@ -364,7 +365,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX) {
+    protected String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX, Theme theme) {
         return Constants.EMPTY_STRING;
     }
 
@@ -379,7 +380,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
         }
     }
 
-    protected String expandVariables(List<TextChunk> textChunks) {
+    protected String expandVariables(List<TextChunk> textChunks, Theme theme) {
         StringBuilder pageText = new StringBuilder();
         String lineSeparator = getLineSeparator();
         int newlines = 0;
@@ -411,17 +412,18 @@ public class ChoiceScriptExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageTextEnd(String labelText, int pageNumber) {
+    protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme) {
         return LINE_SEPARATOR;
     }
 
     /**
      * @param labelText
      * @param pageNumber
+     * @param theme
      * @return
      */
     @Override
-    protected String decoratePageLabel(String labelText, int pageNumber) {
+    protected String decoratePageLabel(String labelText, int pageNumber, Theme theme) {
         return "*label " + labelText + LINE_SEPARATOR;
     }
 

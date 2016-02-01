@@ -40,6 +40,7 @@ package com.nlbhub.nlb.domain.export.hypertext;
 
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.TextChunk;
+import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.export.ImagePathData;
 import com.nlbhub.nlb.domain.export.SoundPathData;
@@ -98,15 +99,15 @@ public class HTMLExportManager extends HypertextExportManager<HTMLParagraph, HTM
     }
 
     @Override
-    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {
+    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks, Theme theme) {
         StringBuilder result = new StringBuilder();
-        result.append(super.decoratePageTextStart(labelText, pageNumber, pageTextChunks));
+        result.append(super.decoratePageTextStart(labelText, pageNumber, pageTextChunks, theme));
         result.append(getLineSeparator());
         return result.toString();
     }
 
     @Override
-    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground) {
+    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground, Theme theme) {
         // TODO: support image constraints
         ImagePathData pageImagePathData = pageImagePathDatas.get(0);
         if (pageImagePathData.getMaxFrameNumber() == 0) {
@@ -123,7 +124,7 @@ public class HTMLExportManager extends HypertextExportManager<HTMLParagraph, HTM
     }
 
     @Override
-    protected String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX) {
+    protected String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX, Theme theme) {
         return Constants.EMPTY_STRING;
     }
 }

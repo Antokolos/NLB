@@ -381,11 +381,12 @@ public abstract class ExportManager {
     ) throws NLBConsistencyException, NLBExportException {
         NonLinearBook nlb = exportData.getNlb();
         PageBuildingBlocks blocks = new PageBuildingBlocks();
+        blocks.setTheme(page.getTheme());
         final Integer pageNumber = checkedGetPageNumber(page.getId());
         blocks.setAutowired(page.isAutowire());
         final String pageName = decoratePageName(page.getId(), pageNumber);
         blocks.setPageName(pageName);
-        blocks.setPageLabel(decoratePageLabel(page.getId(), pageNumber));
+        blocks.setPageLabel(decoratePageLabel(page.getId(), pageNumber, page.getTheme()));
         blocks.setPageNumber(decoratePageNumber(pageNumber));
         blocks.setPageComment(decoratePageComment(page.getCaption()));
         blocks.setPageCaption(decoratePageCaption(page.getCaption(), page.isUseCaption()));
@@ -393,11 +394,11 @@ public abstract class ExportManager {
         boolean isAnimatedImage = page.isImageAnimated();
         blocks.setHasAnimatedPageImage(isAnimatedImage);
         blocks.setImageBackground(page.isImageBackground());
-        blocks.setPageImage(decoratePageImage(getImagePaths(page.getExternalHierarchy(), imageFileName, isAnimatedImage), page.isImageBackground()));
+        blocks.setPageImage(decoratePageImage(getImagePaths(page.getExternalHierarchy(), imageFileName, isAnimatedImage), page.isImageBackground(), page.getTheme()));
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
-        blocks.setPageSound(decoratePageSound(pageName, getSoundPaths(page.getExternalHierarchy(), soundFileName), page.isSoundSFX()));
-        blocks.setPageTextStart(decoratePageTextStart(page.getId(), pageNumber, StringHelper.getTextChunks(page.getText())));
-        blocks.setPageTextEnd(decoratePageTextEnd(page.getId(), pageNumber));
+        blocks.setPageSound(decoratePageSound(pageName, getSoundPaths(page.getExternalHierarchy(), soundFileName), page.isSoundSFX(), page.getTheme()));
+        blocks.setPageTextStart(decoratePageTextStart(page.getId(), pageNumber, StringHelper.getTextChunks(page.getText()), page.getTheme()));
+        blocks.setPageTextEnd(decoratePageTextEnd(page.getId(), pageNumber, page.getTheme()));
         if (!StringHelper.isEmpty(page.getVarId())) {
             Variable variable = nlb.getVariableById(page.getVarId());
             // TODO: Add cases with deleted pages/links/variables etc. to the unit test
@@ -456,7 +457,7 @@ public abstract class ExportManager {
         List<Link> links = page.getLinks();
         for (final Link link : links) {
             if (!link.isDeleted()) {
-                LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
+                LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(page, createPreprocessedLink(link), exportData);
                 blocks.addLinkBuildingBlocks(linkBuildingBlocks);
             }
         }
@@ -480,7 +481,7 @@ public abstract class ExportManager {
                             null
                     )
             );
-            LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
+            LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(page, createPreprocessedLink(link), exportData);
             blocks.addLinkBuildingBlocks(linkBuildingBlocks);
         }
         if (page.shouldReturn() && !exportData.getModulePage().getId().equals(MAIN_DATA_KEY)) {
@@ -503,7 +504,7 @@ public abstract class ExportManager {
                                     link.getModifications()
                             )
                     );
-                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(linklw), exportData);
+                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(page, createPreprocessedLink(linklw), exportData);
                     blocks.addLinkBuildingBlocks(linkBuildingBlocks);
                 }
             } else {
@@ -530,7 +531,7 @@ public abstract class ExportManager {
                                 false,
                                 null)
                 );
-                LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
+                LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(page, createPreprocessedLink(link), exportData);
                 blocks.addLinkBuildingBlocks(linkBuildingBlocks);
             }
         }
@@ -555,7 +556,7 @@ public abstract class ExportManager {
                                     false,
                                     null)
                     );
-                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
+                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(page, createPreprocessedLink(link), exportData);
                     blocks.addLinkBuildingBlocks(linkBuildingBlocks);
                 }
             }
@@ -584,7 +585,7 @@ public abstract class ExportManager {
                                     false,
                                     null)
                     );
-                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(createPreprocessedLink(link), exportData);
+                    LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(page, createPreprocessedLink(link), exportData);
                     blocks.addLinkBuildingBlocks(linkBuildingBlocks);
                 }
             }
@@ -731,12 +732,12 @@ public abstract class ExportManager {
         final String objImage = decorateObjImage(getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage()));
         final boolean hasImage = StringHelper.notEmpty(imageFileName);
         blocks.setObjImage(objImage);
-        blocks.setObjDisp(decorateObjDisp(expandVariables(StringHelper.getTextChunks(obj.getDisp())), hasImage && obj.isImageInInventory()));
-        blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), expandVariables(StringHelper.getTextChunks(obj.getText())), hasImage && obj.isImageInScene()));
+        blocks.setObjDisp(decorateObjDisp(expandVariables(StringHelper.getTextChunks(obj.getDisp()), obj.getTheme()), hasImage && obj.isImageInInventory()));
+        blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), expandVariables(StringHelper.getTextChunks(obj.getText()), obj.getTheme()), hasImage && obj.isImageInScene()));
         blocks.setTakable(obj.isTakable());
         blocks.setObjTak(decorateObjTak(obj.getName()));
         blocks.setObjInv(decorateObjInv(objType));
-        blocks.setObjActStart(decorateObjActStart(StringHelper.getTextChunks(obj.getActText())));
+        blocks.setObjActStart(decorateObjActStart(StringHelper.getTextChunks(obj.getActText()), obj.getTheme()));
         blocks.setObjActEnd(decorateObjActEnd());
         blocks.setObjUseStart(decorateObjUseStart());
         blocks.setObjUseEnd(decorateObjUseEnd());
@@ -752,7 +753,7 @@ public abstract class ExportManager {
         List<Link> links = obj.getLinks();
         for (final Link link : links) {
             if (!link.isDeleted()) {
-                UseBuildingBlocks useBuildingBlocks = createUseBuildingBlocks(createPreprocessedLink(link), exportData);
+                UseBuildingBlocks useBuildingBlocks = createUseBuildingBlocks(obj, createPreprocessedLink(link), exportData);
                 blocks.addUseBuildingBlocks(useBuildingBlocks);
             }
         }
@@ -1276,6 +1277,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public Theme getTheme() {
+                return obj.getTheme();
+            }
+
+            @Override
             public String getVarId() {
                 return obj.getVarId();
             }
@@ -1519,7 +1525,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjActStart(List<TextChunk> actTextChunks) {
+    protected String decorateObjActStart(List<TextChunk> actTextChunks, Theme theme) {
         return EMPTY_STRING;
     }
 
@@ -1569,16 +1575,17 @@ public abstract class ExportManager {
 
 
     private LinkBuildingBlocks createLinkBuildingBlocks(
+            final Page page,
             final Link link,
             final ExportData exportData
     ) throws NLBConsistencyException {
         LinkBuildingBlocks blocks = new LinkBuildingBlocks();
         final boolean trivial = determineTrivialStatus(link);
         blocks.setAuto(link.isAuto());
-        String expandedLinkText = expandVariables(StringHelper.getTextChunks(link.getText()));
-        blocks.setLinkAltText(decorateLinkAltText(expandVariables(StringHelper.getTextChunks(link.getAltText()))));
+        String expandedLinkText = expandVariables(StringHelper.getTextChunks(link.getText()), page.getTheme());
+        blocks.setLinkAltText(decorateLinkAltText(expandVariables(StringHelper.getTextChunks(link.getAltText()), page.getTheme())));
         blocks.setTrivial(trivial);
-        blocks.setLinkLabel(decorateLinkLabel(link.getId(), expandedLinkText));
+        blocks.setLinkLabel(decorateLinkLabel(link.getId(), expandedLinkText, page.getTheme()));
         blocks.setLinkComment(decorateLinkComment(link.getText()));
         // TODO: exportData.getIdToPageNumberMap().get(link.getTarget()) can produce NPE for return links
         blocks.setLinkStart(
@@ -1587,7 +1594,9 @@ public abstract class ExportManager {
                         expandedLinkText,
                         link.isAuto(),
                         trivial,
-                        checkedGetPageNumber(link.getTarget()))
+                        checkedGetPageNumber(link.getTarget()),
+                        page.getTheme()
+                )
         );
         Variable variable = exportData.getNlb().getVariableById(link.getVarId());
         String linkVisitStateVariable = link.isOnce() ? SpecialVariablesNameHelper.decorateLinkVisitStateVar(link.getId()) : Constants.EMPTY_STRING;
@@ -1638,11 +1647,12 @@ public abstract class ExportManager {
                         link.getId(),
                         expandedLinkText,
                         link.getTarget(),
-                        targetPageNumber
+                        targetPageNumber,
+                        page.getTheme()
                 )
         );
         blocks.setLinkEnd(
-                decorateLinkEnd()
+                decorateLinkEnd(page.getTheme())
         );
         return blocks;
     }
@@ -1652,13 +1662,14 @@ public abstract class ExportManager {
     }
 
     private UseBuildingBlocks createUseBuildingBlocks(
+            final Obj obj,
             final Link link,
             final ExportData exportData
     ) throws NLBConsistencyException {
         UseBuildingBlocks blocks = new UseBuildingBlocks();
         blocks.setUseTarget(decorateUseTarget(link.getTarget()));
-        blocks.setUseSuccessText(expandVariables(StringHelper.getTextChunks(link.getText())));
-        blocks.setUseFailureText(expandVariables(StringHelper.getTextChunks(link.getAltText())));
+        blocks.setUseSuccessText(expandVariables(StringHelper.getTextChunks(link.getText()), obj.getTheme()));
+        blocks.setUseFailureText(expandVariables(StringHelper.getTextChunks(link.getAltText()), obj.getTheme()));
         Variable variable = exportData.getNlb().getVariableById(link.getVarId());
         if (variable != null && !variable.isDeleted()) {
             blocks.setUseVariable(decorateUseVariable(variable.getName()));
@@ -2418,20 +2429,20 @@ public abstract class ExportManager {
         return text;
     }
 
-    protected abstract String decorateLinkLabel(String linkId, String linkText);
+    protected abstract String decorateLinkLabel(String linkId, String linkText, Theme theme);
 
     protected abstract String decorateLinkComment(String comment);
 
-    protected abstract String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber);
+    protected abstract String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme);
 
     protected abstract String decorateLinkGoTo(
             String linkId,
             String linkText,
             String linkTarget,
-            int targetPageNumber
-    );
+            int targetPageNumber,
+            Theme theme);
 
-    protected String decorateLinkEnd() {
+    protected String decorateLinkEnd(Theme theme) {
         return Constants.EMPTY_STRING;
     }
 
@@ -2453,9 +2464,9 @@ public abstract class ExportManager {
 
     protected abstract String decoratePageCaption(String caption, boolean useCaption);
 
-    protected abstract String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground);
+    protected abstract String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground, Theme theme);
 
-    protected abstract String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX);
+    protected abstract String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX, Theme theme);
 
     /**
      * Returns the name of the media file to which mediaFileName is redirected, or mediaFileName
@@ -2477,9 +2488,10 @@ public abstract class ExportManager {
      * Override this method if you really want to expand variable values.
      *
      * @param textChunks
+     * @param theme
      * @return
      */
-    protected String expandVariables(List<TextChunk> textChunks) {
+    protected String expandVariables(List<TextChunk> textChunks, Theme theme) {
         StringBuilder result = new StringBuilder();
         for (final TextChunk textChunk : textChunks) {
             switch (textChunk.getType()) {
@@ -2616,13 +2628,13 @@ public abstract class ExportManager {
         }
     }
 
-    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks) {
-        return expandVariables(pageTextChunks);
+    protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks, Theme theme) {
+        return expandVariables(pageTextChunks, theme);
     }
 
     protected abstract String getLineSeparator();
 
-    protected abstract String decoratePageTextEnd(String labelText, int pageNumber);
+    protected abstract String decoratePageTextEnd(String labelText, int pageNumber, Theme theme);
 
     protected boolean getGoToPageNumbers() {
         return GOTO_PAGE_NUMBERS;
@@ -2636,7 +2648,7 @@ public abstract class ExportManager {
         return getGoToPageNumbers() ? decorateId(String.valueOf(pageNumber)) : decorateId(labelText);
     }
 
-    protected abstract String decoratePageLabel(String labelText, int pageNumber);
+    protected abstract String decoratePageLabel(String labelText, int pageNumber, Theme theme);
 
     protected abstract String decoratePageNumber(int pageNumber);
 

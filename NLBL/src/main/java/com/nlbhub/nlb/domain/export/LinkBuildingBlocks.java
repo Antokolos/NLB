@@ -38,6 +38,8 @@
  */
 package com.nlbhub.nlb.domain.export;
 
+import com.nlbhub.nlb.api.Theme;
+
 /**
  * The LinkBuildingBlocks class
  *
@@ -59,6 +61,7 @@ public class LinkBuildingBlocks {
     private boolean m_auto;
     /** Link is considered trivial if it has default text and has no constraints. */
     private boolean m_isTrivial;
+    private Theme m_theme = Theme.DEFAULT;
 
     public LinkBuildingBlocks() {
     }
@@ -165,5 +168,13 @@ public class LinkBuildingBlocks {
 
     public void setAuto(boolean auto) {
         m_auto = auto;
+    }
+
+    public Theme getTheme() {
+        return m_theme;
+    }
+
+    public void setTheme(Theme theme) {
+        m_theme = theme;
     }
 }

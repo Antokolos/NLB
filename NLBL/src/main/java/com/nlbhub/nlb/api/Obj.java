@@ -75,6 +75,8 @@ public interface Obj extends NodeItem {
 
     public MultiLangString getActTexts();
 
+    public Theme getTheme();
+
     public String getVarId();
 
     public String getConstrId();

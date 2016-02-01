@@ -40,6 +40,7 @@ package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.TextChunk;
+import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
@@ -112,7 +113,7 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme) {
         return "btn " + linkId + ", " + linkText + LINE_SEPARATOR;
     }
 
@@ -121,8 +122,8 @@ public class URQExportManager extends TextExportManager {
             String linkId,
             String linkText,
             String linkTarget,
-            int targetPageNumber
-    ) {
+            int targetPageNumber,
+            Theme theme) {
         return "goto " + linkTarget + LINE_SEPARATOR + LINE_SEPARATOR;
     }
 
@@ -225,7 +226,7 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateLinkLabel(String linkId, String linkText) {
+    protected String decorateLinkLabel(String linkId, String linkText, Theme theme) {
         return ":" + linkId + LINE_SEPARATOR;
     }
 
@@ -293,7 +294,7 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground) {
+    protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground, Theme theme) {
         // TODO: support image constraints
         ImagePathData pageImagePathData = pageImagePathDatas.get(0);
         if (pageImagePathData.getMaxFrameNumber() == 0) {
@@ -310,11 +311,11 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX) {
+    protected String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX, Theme theme) {
         return Constants.EMPTY_STRING;
     }
 
-    protected String expandVariables(List<TextChunk> textChunks) {
+    protected String expandVariables(List<TextChunk> textChunks, Theme theme) {
         StringBuilder result = new StringBuilder();
         for (final TextChunk textChunk : textChunks) {
             switch (textChunk.getType()) {
@@ -338,17 +339,18 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageTextEnd(String labelText, int pageNumber) {
+    protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme) {
         return LINE_SEPARATOR;
     }
 
     /**
      * @param labelText
      * @param pageNumber
+     * @param theme
      * @return
      */
     @Override
-    protected String decoratePageLabel(String labelText, int pageNumber) {
+    protected String decoratePageLabel(String labelText, int pageNumber, Theme theme) {
         return ":" + labelText + LINE_SEPARATOR;
     }
 

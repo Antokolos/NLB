@@ -38,6 +38,8 @@
  */
 package com.nlbhub.nlb.domain.export;
 
+import com.nlbhub.nlb.api.Theme;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,6 +74,7 @@ public class PageBuildingBlocks {
     private List<LinkBuildingBlocks> m_linksBuildingBlocks;
     /** Page blocks' links are considered trivial if each of them is trivial. */
     private boolean m_hasTrivialLinks;
+    private Theme m_theme = Theme.DEFAULT;
 
     public PageBuildingBlocks() {
         m_containedObjIds = new ArrayList<>();
@@ -268,5 +271,13 @@ public class PageBuildingBlocks {
 
     public void setHasTrivialLinks(boolean hasTrivialLinks) {
         m_hasTrivialLinks = hasTrivialLinks;
+    }
+
+    public Theme getTheme() {
+        return m_theme;
+    }
+
+    public void setTheme(Theme theme) {
+        m_theme = theme;
     }
 }

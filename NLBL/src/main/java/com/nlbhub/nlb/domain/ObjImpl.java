@@ -38,9 +38,7 @@
  */
 package com.nlbhub.nlb.domain;
 
-import com.nlbhub.nlb.api.NonLinearBook;
-import com.nlbhub.nlb.api.Obj;
-import com.nlbhub.nlb.api.SearchContract;
+import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
@@ -188,6 +186,25 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
 
     public MultiLangString getActTexts() {
         return MultiLangString.createCopy(m_actText);
+    }
+
+    @Override
+    public Theme getTheme() {
+        NonLinearBook currentNLB = getCurrentNLB();
+        String containerId = getContainerId();
+        if (containerId == null) {
+            return Theme.DEFAULT;
+        }
+        Page containerPage = currentNLB.getPageById(containerId);
+        if (containerPage == null) {
+            Obj containerObj = currentNLB.getObjById(containerId);
+            if (containerObj != null) {
+                return containerObj.getTheme();
+            }
+        } else {
+            return containerPage.getTheme();
+        }
+        return Theme.DEFAULT;
     }
 
     public void setActTexts(MultiLangString actText) {

@@ -40,6 +40,7 @@ package com.nlbhub.nlb.domain;
 
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.Obj;
+import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.api.Variable;
 import com.nlbhub.nlb.util.MultiLangString;
 
@@ -89,6 +90,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     @Override
     public MultiLangString getActTexts() {
         return Obj.DEFAULT_ACT_TEXT;
+    }
+
+    @Override
+    public Theme getTheme() {
+        return Theme.DEFAULT;
     }
 
     @Override
