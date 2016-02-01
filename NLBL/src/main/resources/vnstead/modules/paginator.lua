@@ -1,26 +1,47 @@
 -- paginator module
 require "kbd"
 require "click"
+require "theme"
+require "modules/dice"
 
-if not iface.cmd_orig then
-    iface.cmd_orig = iface.cmd
-end
 hook_keys('space', 'right ctrl', 'left ctrl')
+
+iface.cmd = stead.hook(iface.cmd, function(f, s, cmd, ...)
+    return paginatorIfaceCmd(f, s, cmd, ...);
+end)
 
 click.bg = true
 
-game.click = function(s, x, y, a, b, c, d)
+local clickInInvArea = function(x, y)
+	local invx, invy, invw, invh = 
+	    tonumber(theme.get("inv.x")),
+	    tonumber(theme.get("inv.y")),
+	    tonumber(theme.get("inv.w")),
+	    tonumber(theme.get("inv.h"));
+	if ((x >= invx) and (x <= invx + invw) and (y >= invy) and (y <= invy + invh)) then
+            -- Click in inventory area
+	    return true;
+	end
+	return false;
+end
+
+paginatorClick = function(x, y, a, b, c, d)
 
 	if here().debug then
 		return
 	end
-
+	
+	if clickInInvArea(x, y) then
+            -- Click in inventory area
+	    return
+	end
+	
 	if (paginator._last and here().walk_to) or not paginator._last then
-		return game:kbd(true, 'space')
+		return paginatorKbd(true, 'space')
 	end
 end
 
-game.kbd = function(s, down, key)
+paginatorKbd = function(down, key)
 	if here().debug then
 		return
 	end
@@ -32,6 +53,11 @@ game.kbd = function(s, down, key)
 		if vn:finish() then
 			return
 		end
+		dice:hide(true);
+		-- Use code below if you want smooth rollout animation and text change on next step
+		--if dice:hide() then
+		--	return
+		--end
 		if paginator._last then
 			if here().walk_to then
 				return walk(here().walk_to)
@@ -85,11 +111,18 @@ paginator = obj {
 	w = 0;
 	h = 0;
 	_page = 1;
+	var { process = false; on = true; },
 	delim = '\n\n';
+	turnon = function(s)
+	    s.on = true;
+	end,
+	turnoff = function(s)
+	    s.on = false;
+	end
 }
 
-iface.cmd = function(s, cmd, ...)
-	local r,v = iface.cmd_orig(s, cmd, ...)
+paginatorIfaceCmd = function(f, s, cmd, ...)
+	local r,v = f(s, cmd, ...)
 	if here().debug then
 		return r,v
 	end
@@ -101,9 +134,10 @@ iface.cmd = function(s, cmd, ...)
 			end
 			game._realdisp = game._lastdisp
 		end
-
+	
 		if RAW_TEXT and not paginator.process and 
-			timer:get() == 0 and r:find("^[ \t\n]*$") and not paginator._last then
+			---timer:get() == 0 and r:find("^[ \t\n]*$") and not paginator._last then
+			r:find("^[ \t\n]*$") and not paginator._last then
 			paginator.process = true
 			r = game._realdisp
 		end
@@ -111,7 +145,8 @@ iface.cmd = function(s, cmd, ...)
 		if paginator.process or not RAW_TEXT then
 			while true do
 				r = text_page(r)
-				if timer:get() ~= 0 or not r:find("^[ \t\n]*$") or paginator._last then
+				---if timer:get() ~= 0 or not r:find("^[ \t\n]*$") or paginator._last then
+				if not r:find("^[ \t\n]*$") or paginator._last then
 					break
 				end
 				r = game._realdisp
@@ -124,6 +159,24 @@ iface.cmd = function(s, cmd, ...)
 end
 
 stead.module_init(function()
+    game.click = function(s, x, y, a, b, c, d)
+        local result;
+        if paginator.on then
+	    result = paginatorClick(x, y, a, b, c, d);
+	else
+	    return;
+	end
+        return result;
+    end
+    game.kbd = function(s, down, key)
+        local result;
+        if paginator.on then
+    	    result = paginatorKbd(down, key);
+    	else
+    	    return;
+    	end
+        return result;
+    end
 end)
 
 instead.get_title = function(s)

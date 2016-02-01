@@ -651,8 +651,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
             fileManipulator.writeOptionalString(
                     pageDir,
                     THEME_FILE_NAME,
-                    m_theme.getName(),
-                    DEFAULT_THEME.getName()
+                    m_theme.name(),
+                    DEFAULT_THEME.name()
             );
             fileManipulator.writeOptionalString(
                     pageDir,
@@ -831,7 +831,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     FileManipulator.getOptionalFileAsString(
                             pageDir,
                             THEME_FILE_NAME,
-                            DEFAULT_THEME.getName()
+                            DEFAULT_THEME.name()
                     )
             );
             m_moduleName = (

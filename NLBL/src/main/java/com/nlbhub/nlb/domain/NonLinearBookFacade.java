@@ -225,6 +225,7 @@ public class NonLinearBookFacade implements NLBObservable {
             exportBundledVNSTEADFile(modulesDir, true, "fonts.lua");
             exportBundledVNSTEADFile(modulesDir, true, "paginator.lua");
             exportBundledVNSTEADFile(modulesDir, true, "vn.lua");
+            exportBundledVNSTEADFile(modulesDir, true, "dice.lua");
         }
         File gfxDir = new File(exportDir, "gfx");
         if (gfxDir.mkdir()) {
@@ -232,6 +233,8 @@ public class NonLinearBookFacade implements NLBObservable {
             exportBundledVNSTEADFile(gfxDir, true, "fr.png");
         }
         exportBundledVNSTEADFile(exportDir, false, "theme.ini");
+        exportBundledVNSTEADFile(exportDir, false, "theme_standard.lua");
+        exportBundledVNSTEADFile(exportDir, false, "theme_vn.lua");
     }
 
     private void exportMedia(File exportDir) throws NLBExportException {

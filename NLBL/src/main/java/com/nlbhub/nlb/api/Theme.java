@@ -45,23 +45,11 @@ package com.nlbhub.nlb.api;
  * @version 1.0
  */
 public enum Theme {
-    DEFAULT("DEFAULT"),
-    STANDARD("STANDARD"),
-    VN("VN");
-
-    String name;
-
-    Theme(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
+    DEFAULT, STANDARD, VN;
 
     public Theme fromString(String name) {
         for (Theme theme : this.getDeclaringClass().getEnumConstants()) {
-            if (theme.getName().equalsIgnoreCase(name)) {
+            if (theme.name().equalsIgnoreCase(name)) {
                 return theme;
             }
         }

@@ -2,6 +2,7 @@
 require 'timer'
 require 'theme'
 require 'sprites'
+
 local win_reset = function()
 	if not vn._win_get then
 		return
@@ -27,7 +28,12 @@ local win_get = function()
 		theme.get 'down.x';
 	    s._win_get = true
 end
+
 game.timer = function(s)
+        if (get_ticks() - vnticks <= vn.hz) then
+            return;
+        end
+        vnticks = get_ticks();
 	if vn.tostop then
 		vn.tostop = false
 		return vn:stop()
@@ -41,14 +47,18 @@ game.timer = function(s)
 			vn._scene_effect = false
 			win_reset();
 			vn:textbg(vn.offscreen)
-			timer:stop()
+			---timer:stop()
 			theme.gfx.bg(vn.offscreen)
 		end
 		RAW_TEXT = true
 		return game._lastdisp
 	end
-	if not vn:process() then
+	if not vn.stopped and not vn:process() then
 		vn.tostop = true
+	end
+	if vn._need_update then
+	    vn._need_update = false;
+	    return true;
 	end
 end
 
@@ -79,12 +89,13 @@ vn = obj {
 	_effects = {};
 	_bg = false;
 	_need_effect = false;
+	_need_update = false;
 	_wf = 0;
 	_fln = nil;
-    _frn = nil;
-    hz = 50;
+	_frn = nil;
+	hz = 18;
 	var { speed = 500, fading = 8, bgalpha = 127 };
-	var { win_x = 0, win_y = 0, win_w = 0, win_h = 0, up_x = 0, down_x = 0; };
+	var { win_x = 0, win_y = 0, win_w = 0, win_h = 0, up_x = 0, down_x = 0; callback = false; txtfun = false; xhud = 1580; yhud = 100; extent = 100; hud_color = '#000000'};
 	screen = function(s)
 		if s._need_effect then
 			return sprite.screen()
@@ -98,8 +109,9 @@ vn = obj {
 		end
 		local i,v, n
 		for i,v in ipairs(s._effects) do
+                        v.step = 0;
 			s:load_effect(v)
-			if v.step < v.max_step then
+			if v.step < v.max_step - v.from_stop then
 				n = true
 			end
 		end
@@ -111,12 +123,76 @@ vn = obj {
 		s.scr_h = theme.get 'scr.h'
 		s.offscreen = sprite.blank(s.scr_w, s.scr_h)
 		s.blackscreen = sprite.box(s.scr_w, s.scr_h, 'black')
+		timer:set(1); --(s.hz)
+	end;
+	need_update = function(s)
+		s._need_update = true;
+	end;
+	file_exists = function(s, name)
+		local f=io.open(name,"r")
+		if f~=nil then io.close(f) return true else return false end
+	end;
+	split_url = function(s, url)
+		-- Splits the url into main part and extension part
+		return url:match("^(.+)(%..+)$")
 	end;
 	load_effect = function(s, v)
-		v.spr = sprite.load(v.pic)
-		if not v.spr then
-			error ("Can not load sprite:"..tostring(v.pic))
-		end
+	    local ss = s;
+	    if v.spr == nil then v.spr = {}; end;
+	    for sprStep = 0, v.max_step do
+		v.spr[sprStep] = {
+		    was_loaded = false,
+		    cache = nil,
+		    val = function(s)
+			if not s.cache then
+			    s.cache = s:load();
+			end
+			return s.cache;
+		    end,
+		    load = function(s)
+			if ss:file_exists(v.pic) then
+			    if sprStep == v.start then
+				return sprite.load(v.pic);
+			    elseif sprStep > v.start then
+				return v.spr[v.start]:val();
+			    end
+			else
+			    return s:load_frame();
+			end
+			return nil;
+		    end,
+		    load_frame = function(s)
+			local prefix, extension = ss:split_url(v.pic);
+			local sprfile = prefix..'.'..string.format("%04d", sprStep)..extension;
+			local loaded = nil;
+			if ss:file_exists(sprfile) then
+				loaded = sprite.load(sprfile);
+				if loaded then
+					s.was_loaded = true;
+				else
+					error ("Can not load sprite: "..tostring(sprfile));
+				end
+			elseif sprStep > v.start then
+				loaded = v.spr[sprStep - 1]:val();
+			end
+			
+			return loaded;
+		    end,
+		    free = function(s)
+			if s.was_loaded and s.cache then
+			    sprite.free(s.cache);
+			    s.cache = nil;
+			end
+		    end
+		};
+	    end
+	end;
+	free_effect = function(s, v)
+	    for sprStep = 0, v.max_step do
+		v.spr[sprStep]:free();
+		v.spr[sprStep] = nil;
+	    end
+	    v.spr = nil;
 	end;
 	hide = function(s, image, eff, ...)
 		local v
@@ -136,7 +212,7 @@ vn = obj {
 
 		local i,k = s:lookup(nam)
 		if not i then return end
-		sprite.free(i.spr);
+		s:free_effect(i);
 		stead.table.remove(s._effects, k)
 		return
 	end;
@@ -144,7 +220,7 @@ vn = obj {
 	show = function(s, ...)
 		return s:effect(...)
 	end;
-
+	
 	lookup = function(s, n)
 		if not n then return end
 		local i,k
@@ -154,18 +230,59 @@ vn = obj {
 			end
 		end
 	end;
-
-	effect = function(s, image, eff, speed)
+	
+	size = function(s, v, idx)
+		local xarm, yarm = s:arm(v, idx);
+		local vw, vh = sprite.size(v.spr[idx]:val());
+		return vw + xarm, vh + yarm;
+	end;
+	
+	arm = function(s, v, idx)
+		return s:arm_by_idx(v, idx, 1), s:arm_by_idx(v, idx, 2);
+	end;
+	
+	arm_by_idx = function(s, v, idx, subidx)
+		if not v.arm then
+			return 0;
+		end
+		local arm = v.arm[idx];
+		if not arm then
+			arm = v.arm[0];
+		end
+		if arm[subidx] then
+			return arm[subidx];
+		else
+			return 0;
+		end
+	end;
+	
+	steps = function(s, v)
+		local mxs = v.max_step - v.from_stop - v.start;
+		--print("vstep="..tostring(v.step).."vstart="..tostring(v.start));
+		local zstep = v.step - v.start;
+		return mxs, zstep;
+	end;
+	
+	effect = function(s, image, eff, speed, startFrame, framesFromStop, armarr)
+		local t = eff;
 		local v
 
 		if type(image) == 'string' then
 			v = { pic = image, nam = image };
 			image = v
 		end
+		
+		if not startFrame then
+			startFrame = 0;
+		end
+		
+		if not framesFromStop then
+			framesFromStop = 0;
+		end
 
 		local picture = image.pic
 		local name = image.nam
-		local v = { pic = picture, nam = name, eff = t, step = 0; }
+		local v = { pic = picture, nam = name, eff = t, step = startFrame, start = startFrame, from_stop = framesFromStop; arm = armarr; }
 
 		if eff == 'hide' then
 			s:hide(v)
@@ -179,18 +296,22 @@ vn = obj {
 
 		if oe then
 			if oe.pic ~= v.pic then -- new pic
-				sprite.free(oe.spr);
+				s:free_effect(oe);
 				oe.pic = v.pic
 				s:load_effect(oe)
 			end
 			old_pos = oe.pos
 			v = oe
 		else
+		        v.step = startFrame
+		        v.max_step = math.floor((speed or s.speed) / s.hz)
+		        v.from_stop = framesFromStop
 			s:load_effect(v)
 		end
-		v.step = 0
+		v.step = startFrame
+		v.start = startFrame
 		v.max_step = math.floor((speed or s.speed) / s.hz)
-		v.w, v.h = sprite.size(v.spr)
+		v.from_stop = framesFromStop
 		if not eff then
 			eff = ''
 		end
@@ -217,6 +338,8 @@ vn = obj {
 			v.eff = 'zoomin'
 		elseif eff:find("zoomout") then
 			v.eff = 'zoomout'
+		elseif eff:find("reverse") then
+			v.eff = 'reverse';
 		else
 			v.eff = 'none'
 		end
@@ -237,9 +360,10 @@ vn = obj {
 			v.pos = old_pos
 		end
 
-		if v.eff ~= 'none' then
+                ---because none can be animated now...
+		---if v.eff ~= 'none' then
 			s._need_effect = true
-		end
+		---end
 
 		if not oe then
 			stead.table.insert(s._effects, v)
@@ -247,6 +371,41 @@ vn = obj {
 
 		return v
 	end;
+
+	postoxy = function(s, v, idx)
+		if not idx then
+			idx = 0;
+		end
+		local vw, vh = s:size(v, idx)
+		local xarm, yarm = s:arm(v, idx)
+		local x, y = xarm, yarm
+		if v.pos:find 'left' then
+			x = xarm
+		elseif v.pos:find 'right' then
+			x = s.scr_w - vw
+		else
+			x = math.floor((s.scr_w - vw) / 2);
+		end
+		if v.pos:find 'top' then
+			y = yarm
+		elseif v.pos:find 'bottom' then
+			y = s.scr_h - vh
+		elseif v.pos:find 'middle' then
+			y = math.floor((s.scr_h - vh) / 2)
+		else
+			y = s.scr_h - vh
+		end
+		if v.pos:find('@[ \t]*[0-9+%-]+[ \t]*,[ \t]*[0-9+%-]+') then
+			local dx, dy
+			local p = v.pos:gsub("^[^@]*@", "")
+			dx = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%1")
+			dy = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%2")
+			x = x + dx
+			y = y + dy
+		end
+		return x, y
+	end;
+
 	set_bg = function(s, picture)
 		if not picture then
 			s.bg_spr = sprite.box(s.scr_w, s.scr_h, theme.get 'scr.col.bg')
@@ -264,147 +423,152 @@ vn = obj {
 		end
 		s._bg = picture
 	end;
+
 	fade = function(s, v)
-		local x, y
-		x, y = s:postoxy(v)
-		if v.eff == 'fadein' then
-			spr = sprite.alpha(v.spr, math.floor(255 * v.step / v.max_step))
+	        local mxs, zstep = s:steps(v);
+		local x, y, idx
+		local fadein = (v.eff == 'fadein');
+		if fadein then
+			idx = v.step;
 		else
-			spr = sprite.alpha(v.spr, math.floor(255 * (v.max_step - v.step) / v.max_step))
+			idx = v.max_step - v.step;
+		end
+		x, y = s:postoxy(v, idx)
+
+		if fadein then
+			spr = sprite.alpha(v.spr[idx]:val(), math.floor(255 * zstep / mxs))
+		else
+			spr = sprite.alpha(v.spr[idx]:val(), math.floor(255 * (1 - zstep / mxs)))
 		end
 		sprite.draw(spr, s:screen(), x, y);
 		sprite.free(spr)
 	end;
-
 	none = function(s, v)
 		local x, y
-		x, y = s:postoxy(v)
-		sprite.draw(v.spr, s:screen(), x, y);
+		x, y = s:postoxy(v, v.step)
+		sprite.draw(v.spr[v.step]:val(), s:screen(), x, y);
 	end;
-	postoxy = function(s, v)
-		local x = 0
-		local  y = 0
-		if v.pos:find 'left' then
-			x = 0
-		elseif v.pos:find 'right' then
-			x = s.scr_w - v.w
-		else
-			x = math.floor((s.scr_w - v.w) / 2);
-		end
-		if v.pos:find 'top' then
-			y = 0
-		elseif v.pos:find 'bottom' then
-			y = s.scr_h - v.h
-		elseif v.pos:find 'middle' then
-			y = math.floor((s.scr_h - v.h) / 2)
-		else
-			y = s.scr_h - v.h
-		end
-		if v.pos:find('@[ \t]*[0-9+%-]+[ \t]*,[ \t]*[0-9+%-]+') then
-			local dx, dy
-			local p = v.pos:gsub("^[^@]*@", "")
-			dx = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%1")
-			dy = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%2")
-			x = x + dx
-			y = y + dy
-		end
-		return x, y
+	reverse = function(s, v)
+		local x, y
+		local idx = v.max_step - v.step;
+		x, y = s:postoxy(v, idx)
+		sprite.draw(v.spr[idx]:val(), s:screen(), x, y);
 	end;
 	moveout = function(s, v)
+		local mxs, zstep = s:steps(v);
 		local x_start, x_end
 		local y_start, y_end
 		local x, y
-		x_start, y = s:postoxy(v)
+		local idx = v.max_step - v.step;
+		local vw, vh = s:size(v, idx)
+		local xarm, yarm = s:arm(v, idx)
+		local ws, hs = vw - xarm, vh - yarm
+		x_start, y = s:postoxy(v, idx)
 		if v.from == 'left' or v.from == 'right' then
-			x_start, y = s:postoxy(v)
+			x_start, y = s:postoxy(v, idx)
 		elseif v.from == 'top' or v.from == 'bottom' then
-			x, y_start = s:postoxy(v)
+			x, y_start = s:postoxy(v, idx)
 		end
 		if v.from == 'left' then
-			x = math.floor(x_start - v.step * ( x_start + v.w) / v.max_step)
+			x_end = -ws
+			x = math.floor(x_start - zstep * ( x_start - x_end) / mxs)
 		elseif v.from == 'right' then
-			x = math.floor(x_start + v.step * ( s.scr_w - x_start) / v.max_step)
+			x = math.floor(x_start + zstep * ( s.scr_w - x_start) / mxs)
 		elseif v.from == 'top' then
-			y_end = - v.h
-			y = math.floor(y_start - v.step * (y_start - y_end) / v.max_step)
+			y_end = -hs
+			y = math.floor(y_start - zstep * (y_start - y_end) / mxs)
 		elseif v.from == 'bottom' then
 			y_end = s.scr_h
-			y = math.floor(y_start + v.step * (s.scr_h - y_start + v.h) / v.max_step)
+			--y = math.floor(y_start + zstep * (s.scr_h - y_start + vh) / mxs)
+			y = math.floor(y_start + zstep * (s.scr_h - y_start) / mxs)
 		end
-		sprite.draw(v.spr, s:screen(), x, y);
+		sprite.draw(v.spr[idx]:val(), s:screen(), x, y);
 	end;
 
 	zoom = function(s, v)
+		local mxs, zstep = s:steps(v);
 		local x
 		local y
 		local spr
 		local scale
+		local sprpos;
 		if v.eff == 'zoomin' then
-			scale = v.step / v.max_step;
+			scale = zstep / mxs;
+			sprpos = v.step;
 		else
-			scale = (v.max_step - v.step) / v.max_step
+			scale = 1 - zstep / mxs
+			sprpos = v.max_step - v.step;
 		end
 
+		local vw, vh = s:size(v, sprpos)
+		local xarm, yarm = s:arm(v, sprpos)
+		local ws, hs = vw - xarm, vh - yarm
 		if scale == 0 then
 			return
 		end
 
 		if scale ~= 1.0 then
-			spr = sprite.scale(v.spr, scale, scale, false);
+			spr = sprite.scale(v.spr[sprpos]:val(), scale, scale, false);
 		else
-			spr = v.spr
+			spr = v.spr[sprpos]:val()
 		end
 
 		local w, h = sprite.size(spr)
 
-		x, y = s:postoxy(v)
+		x, y = s:postoxy(v, sprpos)
 
 		if v.pos:find 'left' then
-			x = x - math.floor((v.w - w))
+			--x = x - math.floor((ws - w))
+			-- re-use x from postoxy()
 		elseif v.pos:find 'right' then
-			x = x + math.floor((v.w - w))
+			x = x + math.floor((ws - w))
 		else
-			x = x + math.floor((v.w - w) / 2)
+			x = x + math.floor((ws - w) / 2)
 		end
 		if v.pos:find 'top' then
-			y = y - math.floor((v.h - h))
+			--y = y - math.floor((hs - h))
+			-- re-use y from postoxy()
 		elseif v.pos:find 'bottom' then
-			y = y + math.floor((v.h - h))
+			y = y + math.floor((hs - h))
 		elseif v.pos:find 'middle' then
-			y = y + math.floor((v.h - h) / 2)
+			y = y + math.floor((hs - h) / 2)
 		else
-			y = y + math.floor((v.h - h) / 2)
+			y = y + math.floor((hs - h) / 2)
 		end
 		sprite.draw(spr, s:screen(), x, y)
-		if v.spr ~= spr then
+		if v.spr[sprpos]:val() ~= spr then
 			sprite.free(spr)
 		end
 	end;
 
 	movein = function(s, v)
+		local mxs, zstep = s:steps(v);
 		local x_start, y_start
 		local x_end, y_end
 		local x, y
+		local idx = v.step;
 		if v.from == 'left' or v.from == 'right' then
-			x_end, y = s:postoxy(v)
+			x_end, y = s:postoxy(v, idx)
 		elseif v.from == 'top' or v.from == 'bottom' then
-			x, y_end = s:postoxy(v)
+			x, y_end = s:postoxy(v, idx)
 		end
-
+		local vw, vh = s:size(v, idx)
+		local xarm, yarm = s:arm(v, idx)
+		local ws, hs = vw - xarm, vh - yarm
 		if v.from == 'left' then
-			x_start = - v.w
-			x = math.floor(x_start + v.step * (x_end + v.w) / v.max_step)
+			x_start = -ws
+			x = math.floor(x_start + zstep * (xarm - x_start) / mxs)
 		elseif v.from == 'right' then
 			x_start = s.scr_w
-			x = math.floor(x_start - v.step * (s.scr_w - x_end) / v.max_step)
+			x = math.floor(x_start - zstep * (s.scr_w - x_end) / mxs)
 		elseif v.from == 'top' then
-			y_start = - v.h
-			y = math.floor(y_start + v.step * (y_end - y_start) / v.max_step)
+			y_start = -hs
+			y = math.floor(y_start + zstep * (yarm - y_start) / mxs)
 		elseif v.from == 'bottom' then
 			y_start = s.scr_h
-			y = math.floor(y_start - v.step * (s.scr_h - y_end) / v.max_step)
+			y = math.floor(y_start - zstep * (s.scr_h - y_end) / mxs)
 		end
-		sprite.draw(v.spr, s:screen(), x, y);
+		sprite.draw(v.spr[v.step]:val(), s:screen(), x, y);
 	end;
 	do_effect = function(s, v)
 		if v.eff == 'movein' then
@@ -415,9 +579,15 @@ vn = obj {
 			return s:fade(v)
 		elseif v.eff == 'zoomin' or v.eff == 'zoomout' then
 			return s:zoom(v)
+		elseif v.eff == 'reverse' then
+			return s:reverse(v)
 		else
 			return s:none(v)
 		end
+	end;
+	startcb = function(s, callback, effect)
+		s.callback = callback;
+		s:start(effect);
 	end;
 	start = function(s, effect)
 		-- do first step
@@ -428,7 +598,8 @@ vn = obj {
 		-- enter direct mode
 			theme.set('scr.gfx.mode', 'direct');
 			s:process()
-			timer:set(s.hz)
+			---timer:set(s.hz)
+			vn.stopped = false;
 			return
 		end
 		if effect then
@@ -454,9 +625,11 @@ vn = obj {
 			win_reset()
 			s:textbg(s.offscreen)
 			theme.gfx.bg(s.offscreen)
+			vn.stopped = false;
 			return
 		end
-		timer:set(s.hz)
+		---timer:set(s.hz)
+		vn.stopped = false;
 		return
 		-- just transpose
 	end;
@@ -484,7 +657,7 @@ vn = obj {
 	scene = function(s, bg, eff)
 		local i,v
 		for i,v in ipairs(s._effects) do
-			sprite.free(v.spr)
+			s:free_effect(v)
 		end
 		s._effects = {}
 		s._need_effect = false
@@ -500,7 +673,10 @@ vn = obj {
 		local frn = vn._frn;
 		local w, h = theme.get 'win.w', theme.get 'win.h'
 		local x, y = theme.get 'win.x', theme.get 'win.y'
+		local invw, invh = theme.get 'inv.w', theme.get 'inv.h'
+		local invx, invy = theme.get 'inv.x', theme.get 'inv.y'
 		local sb = sprite.box(w + pad*2, h + pad * 2, 'black', s.bgalpha)
+		local si = sprite.box(invw, invh, 'black')
 		if (wf > 0) then
 			local fl;
 			if fln then
@@ -520,27 +696,28 @@ vn = obj {
 			sprite.free(fr)
 		end
 		sprite.draw(sb, to, x - pad, y - pad)
+		sprite.draw(si, to, invx, invy)
 		sprite.free(sb)
+		sprite.free(si)
 	end;
 	commit = function(s, from)
 		sprite.copy(from, s.offscreen);
-		s:textbg(s.offscreen)
+		s:textbg(s.offscreen);
 		theme.gfx.bg(s.offscreen);
 	end;
 	finish = function(s)
 		local k,v
 		local r
 		for k,v in ipairs(s._effects) do
-			if v.step < v.max_step and v.eff ~= 'none' then
+			if v.step < v.max_step - v.from_stop and v.eff ~= 'none' then
 				r = true
-				v.step  = v.max_step
+				v.step = v.max_step - v.from_stop
 			end
 		end
 		return r
 	end;
 	stop  = function(s)
-		timer:stop()
-
+		---timer:stop()
 		local e2 = {}
 		local i,v
 
@@ -548,35 +725,84 @@ vn = obj {
 			if not v.eff:find("out") then
 				stead.table.insert(e2, v)
 			else
-				sprite.free(v.spr)
+				s:free_effect(v)
 			end
 		end
 		s._effects = e2
-
-		s:commit(sprite.screen())
+		
+		--s:draw_hud()
+		s:commit(s:screen())
 		theme.reset('scr.gfx.mode')
+		
 		RAW_TEXT = true
+		vn.stopped = true;
 		return game._lastdisp
 	end;
 	process = function(s)
 		local i,v
 		local n = false
 		local first
+		local cbresult = false;
 		-- clear bg
 		sprite.copy(s.bg_spr, s:screen())
 		for i,v in ipairs(s._effects) do
 			s:do_effect(v)
-			if v.step < v.max_step then
+			if v.step < v.max_step - v.from_stop then
 				v.step = v.step + 1
 				n = true
 			end
 		end
+		if n then
+		    s:draw_hud();
+		else
+		    if (vn.callback) then
+			local callback = vn.callback;
+			vn.callback = false;
+			cbresult = callback();
+		    end
+		    s:draw_hud();
+		    if cbresult then
+			if type(cbresult) == 'function' then
+			    return cbresult();
+			else
+			    s:start();
+			    return true;
+			end
+		    end
+		end
 		return n
+	end;
+	draw_hud = function(s, target)
+		if not target then
+			target = s:screen();
+		end
+		if (s.txtfun) then
+			local texts = s.txtfun();
+			local ycur = s.yhud;
+			for k, v in pairs(texts) do
+				local color = v.color;
+				if not color then
+					color = s.hud_color;
+				end
+				local textSprite = sprite.text(hudFont, v.text, color);
+				local w, h = sprite.size(textSprite);
+				w = w + s.extent;
+				local hudSprite = sprite.blank(w, h);
+				sprite.draw(target, s.xhud, ycur, w, h, hudSprite, 0, 0);
+				sprite.draw(textSprite, hudSprite, 0, 0);
+				sprite.draw(hudSprite, target, s.xhud, ycur);
+				ycur = ycur + h;
+				sprite.free(hudSprite);
+				sprite.free(textSprite);
+			end
+		end
 	end;
 }
 
 stead.module_init(function()
 	vn:init()
+	vnticks = stead.ticks();
+	hudFont = sprite.font('fonts/sans.ttf', 24);
 end)
 
 function vnr(v)
