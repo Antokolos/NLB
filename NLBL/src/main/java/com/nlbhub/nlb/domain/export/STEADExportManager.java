@@ -92,6 +92,9 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("require \"quotes\" ").append(LINE_SEPARATOR);
         stringBuilder.append("require \"theme\" ").append(LINE_SEPARATOR);
         stringBuilder.append("require \"timer\" ").append(LINE_SEPARATOR);
+        stringBuilder.append("require 'modules/fonts'").append(LINE_SEPARATOR);
+        stringBuilder.append("require 'modules/paginator'").append(LINE_SEPARATOR);
+        stringBuilder.append("require 'modules/vn'").append(LINE_SEPARATOR);
         stringBuilder.append("game.codepage=\"UTF-8\";").append(LINE_SEPARATOR);
         stringBuilder.append("stead.scene_delim = '^';").append(LINE_SEPARATOR);
         stringBuilder.append(LINE_SEPARATOR);
@@ -649,6 +652,13 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
+        if (pageBlocks.getTheme() == Theme.STANDARD) {
+            stringBuilder.append("    dofile('theme_standard.lua');").append(LINE_SEPARATOR);
+        } else if (pageBlocks.getTheme() == Theme.VN) {
+            stringBuilder.append("    dofile('theme_vn.lua');").append(LINE_SEPARATOR);
+        } else {
+            stringBuilder.append(getDefaultThemeSwitchExpression());
+        }
         if (hasFastAnim) {
             stringBuilder.append("        nlbticks = stead.ticks();").append(LINE_SEPARATOR);
         }
@@ -688,6 +698,10 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(generateObjsCollection(pageBlocks, linksBlocks));
         stringBuilder.append(pageBlocks.getPageEnd());
         return stringBuilder.toString();
+    }
+
+    protected String getDefaultThemeSwitchExpression() {
+        return "    dofile('theme_standard.lua');" + LINE_SEPARATOR;
     }
 
     protected String generateOrdinaryLinkTextInsideRoom(PageBuildingBlocks pageBuildingBlocks) {

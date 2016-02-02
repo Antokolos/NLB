@@ -1580,6 +1580,7 @@ public abstract class ExportManager {
             final ExportData exportData
     ) throws NLBConsistencyException {
         LinkBuildingBlocks blocks = new LinkBuildingBlocks();
+        blocks.setTheme(page.getTheme());
         final boolean trivial = determineTrivialStatus(link);
         blocks.setAuto(link.isAuto());
         String expandedLinkText = expandVariables(StringHelper.getTextChunks(link.getText()), page.getTheme());

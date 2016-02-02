@@ -73,10 +73,16 @@ public class VNSTEADExportManager extends STEADExportManager {
         String lineSep = getLineSeparator();
         stringBuilder.append("instead_version \"1.9.1\"").append(lineSep);
 
+        stringBuilder.append("require \"xact\"").append(lineSep);
+        stringBuilder.append("require \"hideinv\"").append(lineSep);
+        stringBuilder.append("--require \"para\"").append(lineSep);
+        stringBuilder.append("require \"dash\"").append(lineSep);
+        stringBuilder.append("require \"quotes\" ").append(lineSep);
+        stringBuilder.append("require \"theme\" ").append(lineSep);
+        stringBuilder.append("require \"timer\" ").append(lineSep);
         stringBuilder.append("require 'modules/fonts'").append(lineSep);
         stringBuilder.append("require 'modules/paginator'").append(lineSep);
         stringBuilder.append("require 'modules/vn'").append(lineSep);
-        stringBuilder.append("require 'dash'").append(lineSep);
 
         stringBuilder.append("game.codepage=\"UTF-8\";").append(lineSep);
         stringBuilder.append("stead.scene_delim = '^';").append(lineSep);
@@ -103,6 +109,11 @@ public class VNSTEADExportManager extends STEADExportManager {
 
         stringBuilder.append(generateLibraryMethods());
         return stringBuilder.toString();
+    }
+
+    @Override
+    protected String getDefaultThemeSwitchExpression() {
+        return "    dofile('theme_vn.lua');" + getLineSeparator();
     }
 
     @Override
@@ -231,7 +242,7 @@ public class VNSTEADExportManager extends STEADExportManager {
             return super.decorateLinkGoTo(linkId, linkText, linkTarget, targetPageNumber, theme);
         }
         return (
-                "        nlbwalk("
+                "        nlbwalk(s, "
                         + (
                         getGoToPageNumbers()
                                 ? decorateId(String.valueOf(targetPageNumber))

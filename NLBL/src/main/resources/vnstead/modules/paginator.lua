@@ -123,7 +123,7 @@ paginator = obj {
 
 paginatorIfaceCmd = function(f, s, cmd, ...)
 	local r,v = f(s, cmd, ...)
-	if here().debug then
+	if here().debug or not paginator.on then
 		return r,v
 	end
 	if type(r) == 'string' and (stead.state or RAW_TEXT) then
