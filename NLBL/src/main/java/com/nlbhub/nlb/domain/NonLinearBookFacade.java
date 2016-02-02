@@ -207,15 +207,19 @@ public class NonLinearBookFacade implements NLBObservable {
         m_nlb.exportToJSIQFile(new File(exportDir, "example.xml"));
     }
 
-    public void exportToSTEADFile(File exportDir) throws NLBExportException {
+    public void exportToSTEADFile(File exportDir) throws NLBExportException, NLBIOException {
         m_nlb.exportToSTEADFile(new File(exportDir, "main.lua"));
         exportMedia(exportDir);
+        exportAdditionalMedia(exportDir);
     }
 
     public void exportToVNSTEADFile(File exportDir) throws NLBExportException, NLBIOException {
         m_nlb.exportToVNSTEADFile(new File(exportDir, "main.lua"));
         exportMedia(exportDir);
+        exportAdditionalMedia(exportDir);
+    }
 
+    private void exportAdditionalMedia(File exportDir) throws NLBIOException {
         File fontsDir = new File(exportDir, "fonts");
         if (fontsDir.mkdir()) {
             exportBundledVNSTEADFile(fontsDir, true, "STEINEMU.ttf");

@@ -1168,7 +1168,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                     if (exportDir != null) {
                         getMainPaneInfo().getPaneNlbFacade().exportToSTEADFile(exportDir);
                     }
-                } catch (NLBExportException ex) {
+                } catch (NLBExportException | NLBIOException ex) {
                     JOptionPane.showMessageDialog(
                             m_mainFramePanel,
                             "Error while exporting to STEAD: " + ex.toString()
