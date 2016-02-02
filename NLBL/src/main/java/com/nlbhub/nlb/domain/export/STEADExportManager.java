@@ -117,6 +117,26 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("game.use = function() return true; end;").append(LINE_SEPARATOR);
         stringBuilder.append("game.forcedsc = true;").append(LINE_SEPARATOR);
 
+        stringBuilder.append("f1 = font('fonts/STEINEMU.ttf', 32);").append(LINE_SEPARATOR);
+        stringBuilder.append("fend = font('fonts/STEINEMU.ttf', 128);").append(LINE_SEPARATOR);
+        stringBuilder.append("function pname(n, c)").append(LINE_SEPARATOR);
+        stringBuilder.append("    return function()").append(LINE_SEPARATOR);
+        stringBuilder.append("        pn(img 'blank:8x1',f1:txt(n, c, 1))").append(LINE_SEPARATOR);
+        stringBuilder.append("    end").append(LINE_SEPARATOR);
+        stringBuilder.append("end").append(LINE_SEPARATOR);
+
+        stringBuilder.append("paginator.delim = '\\n[ \\t]*\\n'").append(LINE_SEPARATOR);
+
+        stringBuilder.append("function exec(s)").append(LINE_SEPARATOR);
+        stringBuilder.append("    p('$'..s:gsub(\"\\n\", \"^\")..'$^^')").append(LINE_SEPARATOR);
+        stringBuilder.append("end").append(LINE_SEPARATOR);
+
+        stringBuilder.append("function init()").append(LINE_SEPARATOR);
+        stringBuilder.append("    vn:scene(nil);").append(LINE_SEPARATOR);
+        stringBuilder.append("    vn.fading = 8").append(LINE_SEPARATOR);
+        stringBuilder.append("    nlbticks = stead.ticks();").append(LINE_SEPARATOR);
+        stringBuilder.append("end").append(LINE_SEPARATOR);
+
         stringBuilder.append(generateLibraryMethods());
         return stringBuilder.toString();
     }
@@ -395,9 +415,6 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        end").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("}").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
-        stringBuilder.append("function init()").append(LINE_SEPARATOR);
-        stringBuilder.append("    nlbticks = stead.ticks();").append(LINE_SEPARATOR);
-        stringBuilder.append("end").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
         stringBuilder.append("listobj = {").append(LINE_SEPARATOR);
         stringBuilder.append("    nam = \"listobj\",").append(LINE_SEPARATOR);
         stringBuilder.append("    nlbobj = \"listobj\",").append(LINE_SEPARATOR);

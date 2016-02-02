@@ -29,7 +29,18 @@ local win_get = function()
 	    s._win_get = true
 end
 
-game.timer = function(s)
+game.timer = stead.hook(game.timer, function(f, s, cmd, ...)
+    return vntimer(f, s, cmd, ...);
+end)
+
+game.fading = stead.hook(game.fading, function(f, s, cmd, ...)
+    return vnfading(f, s, cmd, ...);
+end)
+
+vntimer = function(f, s, cmd, ...)
+	if not vn.on then
+		return f(s, cmd, ...)
+	end
         if (get_ticks() - vnticks <= vn.hz) then
             return;
         end
@@ -62,11 +73,14 @@ game.timer = function(s)
 	end
 end
 
-if not game.old_fading then
-	game.old_fading = game.fading
-end
+--if not game.old_fading then
+--	game.old_fading = game.fading
+--end
 
-game.fading = function(s)
+vnfading = function(f, s, cmd, ...)
+	if not vn.on then
+		return f(s, cmd, ...)
+	end
 	local b = vn.bg_changing
 	if vn.skip_mode then return end
 --	if game.old_fading(s) or b then
@@ -95,7 +109,13 @@ vn = obj {
 	_frn = nil;
 	hz = 18;
 	var { speed = 500, fading = 8, bgalpha = 127 };
-	var { win_x = 0, win_y = 0, win_w = 0, win_h = 0, up_x = 0, down_x = 0; callback = false; txtfun = false; xhud = 1580; yhud = 100; extent = 100; hud_color = '#000000'};
+	var { on = true, win_x = 0, win_y = 0, win_w = 0, win_h = 0, up_x = 0, down_x = 0; callback = false; txtfun = false; xhud = 1580; yhud = 100; extent = 100; hud_color = '#000000' };
+	turnon = function(s)
+	    s.on = true;
+	end,
+	turnoff = function(s)
+	    s.on = false;
+	end,
 	screen = function(s)
 		if s._need_effect then
 			return sprite.screen()
@@ -104,7 +124,7 @@ vn = obj {
 		end
 	end;
 	ini = function(s, load)
-		if not load then
+		if not load or not s.on then
 			return
 		end
 		local i,v, n

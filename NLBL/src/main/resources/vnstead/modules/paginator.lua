@@ -10,6 +10,10 @@ iface.cmd = stead.hook(iface.cmd, function(f, s, cmd, ...)
     return paginatorIfaceCmd(f, s, cmd, ...);
 end)
 
+instead.get_title = stead.hook(instead.get_title, function(f, s, cmd, ...)
+    return paginatorGetTitle(f, s, cmd, ...);
+end)
+
 click.bg = true
 
 local clickInInvArea = function(x, y)
@@ -179,7 +183,10 @@ stead.module_init(function()
     end
 end)
 
-instead.get_title = function(s)
--- no title
+paginatorGetTitle = function(f, s, cmd, ...)
+    if not paginator.on then
+        return f(s, cmd, ...)
+    end
+    -- else no title
 end
 stead.phrase_prefix = ''
