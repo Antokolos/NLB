@@ -58,13 +58,26 @@ import java.util.regex.Pattern;
 public class VNSTEADExportManager extends STEADExportManager {
     private static final Pattern SENTENCE_PATTERN = Pattern.compile("((?:^|[^\\.\\?!]+)(?:[\\.\\?!]+(?:\\\\\")?|$))");
     private static final int PARAGRAPH_THRESHOLD = 100;
+    private boolean m_technicalInstance = false;
 
     public VNSTEADExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
         super(nlb, encoding);
     }
 
+    /**
+     * This one should be used only from STEADExportManager
+     * @param nlb
+     * @param encoding
+     * @param technicalInstance
+     * @throws NLBExportException
+     */
+    protected VNSTEADExportManager(NonLinearBookImpl nlb, String encoding, boolean technicalInstance) throws NLBExportException {
+        super(nlb, encoding, technicalInstance);
+        m_technicalInstance = technicalInstance;
+    }
+
     protected boolean isVN(Theme theme) {
-        return theme != Theme.STANDARD;
+        return m_technicalInstance || (theme != Theme.STANDARD);
     }
 
     @Override

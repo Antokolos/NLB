@@ -66,12 +66,22 @@ public class STEADExportManager extends TextExportManager {
      */
     private static final boolean ENABLE_COMMENTS = true;
 
+    private boolean m_technicalInstance = false;
+    private STEADExportManager m_vnsteadExportManager;
+
     public STEADExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
         super(nlb, encoding);
+        m_vnsteadExportManager = new VNSTEADExportManager(nlb, encoding, true);
+    }
+
+    public STEADExportManager(NonLinearBookImpl nlb, String encoding, boolean technicalInstance) throws NLBExportException {
+        super(nlb, encoding);
+        m_technicalInstance = technicalInstance;
+        m_vnsteadExportManager = null;
     }
 
     protected boolean isVN(Theme theme) {
-        return theme == Theme.VN;
+        return !m_technicalInstance && theme == Theme.VN;
     }
 
     @Override
@@ -705,6 +715,9 @@ public class STEADExportManager extends TextExportManager {
     }
 
     protected String generateOrdinaryLinkTextInsideRoom(PageBuildingBlocks pageBuildingBlocks) {
+        if (isVN(pageBuildingBlocks.getTheme())) {
+            return m_vnsteadExportManager.generateOrdinaryLinkTextInsideRoom(pageBuildingBlocks);
+        }
         StringBuilder linksBuilder = new StringBuilder();
         for (final LinkBuildingBlocks linkBlocks : pageBuildingBlocks.getLinksBuildingBlocks()) {
             if (!linkBlocks.isAuto()) {
@@ -716,10 +729,16 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String generatePostPageText(PageBuildingBlocks pageBlocks) {
+        if (isVN(pageBlocks.getTheme())) {
+            return m_vnsteadExportManager.generatePostPageText(pageBlocks);
+        }
         return Constants.EMPTY_STRING;
     }
 
     protected String generateObjsCollection(PageBuildingBlocks pageBlocks, List<LinkBuildingBlocks> linksBlocks) {
+        if (isVN(pageBlocks.getTheme())) {
+            return m_vnsteadExportManager.generateObjsCollection(pageBlocks, linksBlocks);
+        }
         StringBuilder result = new StringBuilder();
         StringBuilder linksBuilder = new StringBuilder();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
@@ -755,6 +774,9 @@ public class STEADExportManager extends TextExportManager {
     }
 
     protected String generateOrdinaryLinkCode(LinkBuildingBlocks linkBlocks) {
+        if (isVN(linkBlocks.getTheme())) {
+            return m_vnsteadExportManager.generateOrdinaryLinkCode(linkBlocks);
+        }
         final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
         StringBuilder result = new StringBuilder();
         result.append("        p(");
@@ -978,6 +1000,9 @@ public class STEADExportManager extends TextExportManager {
     }
 
     protected String getActText(boolean actTextEmpty, int actTextChunksSize, Theme theme) {
+        if (isVN(theme)) {
+            return m_vnsteadExportManager.getActText(actTextEmpty, actTextChunksSize, theme);
+        }
         return (
                 (actTextEmpty)
                         ? "        curloc().lasttext = s.actt(s); p(curloc().lasttext); curloc().wastext = true;" + LINE_SEPARATOR
@@ -1528,6 +1553,9 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateLinkLabel(String linkId, String linkText, Theme theme) {
+        if (isVN(theme)) {
+            return m_vnsteadExportManager.decorateLinkLabel(linkId, linkText, theme);
+        }
         return "{" + decorateId(linkId) + "|" + linkText + "}^";
     }
 
@@ -1538,6 +1566,9 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme) {
+        if (isVN(theme)) {
+            return m_vnsteadExportManager.decorateLinkStart(linkId, linkText, isAuto, isTrivial, pageNumber, theme);
+        }
         return (
                 "        xact(" + LINE_SEPARATOR
                         + "            '" + decorateId(linkId) + "'," + LINE_SEPARATOR
@@ -1551,12 +1582,19 @@ public class STEADExportManager extends TextExportManager {
             String linkText,
             String linkTarget,
             int targetPageNumber,
-            Theme theme) {
+            Theme theme
+    ) {
+        if (isVN(theme)) {
+            return m_vnsteadExportManager.decorateLinkGoTo(linkId, linkText, linkTarget, targetPageNumber, theme);
+        }
         return "                nlbwalk(s, " + decoratePageName(linkTarget, targetPageNumber) + "); ";
     }
 
     @Override
     protected String decorateLinkEnd(Theme theme) {
+        if (isVN(theme)) {
+            return m_vnsteadExportManager.decorateLinkEnd(theme);
+        }
         return (
                 LINE_SEPARATOR
                         + "            end" + LINE_SEPARATOR
@@ -1628,6 +1666,9 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground, Theme theme) {
+        if (isVN(theme)) {
+            return m_vnsteadExportManager.decoratePageImage(pageImagePathDatas, imageBackground, theme);
+        }
         StringBuilder bgimgBuilder = new StringBuilder("    bgimg = function(s)" + LINE_SEPARATOR);
         StringBuilder picBuilder = new StringBuilder("    pic = function(s)" + LINE_SEPARATOR);
         boolean notFirst = false;
@@ -1756,6 +1797,9 @@ public class STEADExportManager extends TextExportManager {
      * @return
      */
     protected String expandVariables(List<TextChunk> textChunks, Theme theme) {
+        if (isVN(theme)) {
+            return m_vnsteadExportManager.expandVariables(textChunks, theme);
+        }
         StringBuilder result = new StringBuilder();
         for (final TextChunk textChunk : textChunks) {
             switch (textChunk.getType()) {
@@ -1779,6 +1823,9 @@ public class STEADExportManager extends TextExportManager {
     }
 
     protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks, Theme theme) {
+        if (isVN(theme)) {
+            return m_vnsteadExportManager.decoratePageTextStart(labelText, pageNumber, pageTextChunks, theme);
+        }
         StringBuilder pageText = new StringBuilder();
         pageText.append("    dsc = function(s)").append(LINE_SEPARATOR);
         if (pageTextChunks.size() > 0) {
@@ -1799,11 +1846,17 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme) {
+        if (isVN(theme)) {
+            return m_vnsteadExportManager.decoratePageTextEnd(labelText, pageNumber, theme);
+        }
         return "    end," + LINE_SEPARATOR;
     }
 
     @Override
     protected String decoratePageLabel(String labelText, int pageNumber, Theme theme) {
+        if (isVN(theme)) {
+            return m_vnsteadExportManager.decoratePageLabel(labelText, pageNumber, theme);
+        }
         return generatePageBeginningCode(labelText, pageNumber) + "room {" + LINE_SEPARATOR;
     }
 
