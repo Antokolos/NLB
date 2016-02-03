@@ -7,8 +7,12 @@ theme.win.color('white', '#00FF00', 'gold')
 theme.set('scr.col.bg', 'gray');
 theme.set('scr.gfx.bg', 'box:1920x1080,black');
 
-theme.set('menu.button.x', 1890);
-theme.set('menu.button.y', 1050);
+theme.set('win.gfx.up', 'gfx/aup.png');
+theme.set('win.gfx.down', 'gfx/adown.png');
+theme.set('inv.gfx.up', 'gfx/aup.png');
+theme.set('inv.gfx.down', 'gfx/adown.png');
+
+theme.menu.gfx.button('gfx/menubtn.png', 1827, 0);
 
 --theme.set('inv.mode', 'disabled'); ???
 theme.set('scr.gfx.scalable', 5);

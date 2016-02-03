@@ -223,6 +223,7 @@ public class NonLinearBookFacade implements NLBObservable {
         File fontsDir = new File(exportDir, "fonts");
         if (fontsDir.mkdir()) {
             exportBundledVNSTEADFile(fontsDir, true, "STEINEMU.ttf");
+            exportBundledVNSTEADFile(fontsDir, true, "sans.ttf");
         }
         File modulesDir = new File(exportDir, "modules");
         if (modulesDir.mkdir()) {
@@ -235,6 +236,9 @@ public class NonLinearBookFacade implements NLBObservable {
         if (gfxDir.mkdir()) {
             exportBundledVNSTEADFile(gfxDir, true, "fl.png");
             exportBundledVNSTEADFile(gfxDir, true, "fr.png");
+            exportBundledVNSTEADFile(gfxDir, true, "aup.png");
+            exportBundledVNSTEADFile(gfxDir, true, "adown.png");
+            exportBundledVNSTEADFile(gfxDir, true, "menubtn.png");
         }
         exportBundledVNSTEADFile(exportDir, false, "theme.ini");
         exportBundledVNSTEADFile(exportDir, false, "theme_standard.lua");
