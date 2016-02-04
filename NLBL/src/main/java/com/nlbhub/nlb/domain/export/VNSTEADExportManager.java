@@ -400,16 +400,4 @@ public class VNSTEADExportManager extends STEADExportManager {
         }
         return result.toString();
     }
-
-    @Override
-    protected String getActText(boolean actTextEmpty, int actTextChunksSize, Theme theme) {
-        if (!isVN(theme)) {
-            return super.getActText(actTextEmpty, actTextChunksSize, theme);
-        }
-        return (
-                (actTextChunksSize > 0)
-                        ? "        p(s.actt(s));" + getLineSeparator()
-                        : Constants.EMPTY_STRING
-        );
-    }
 }

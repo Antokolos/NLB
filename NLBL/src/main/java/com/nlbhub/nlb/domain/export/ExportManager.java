@@ -732,12 +732,12 @@ public abstract class ExportManager {
         final String objImage = decorateObjImage(getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage()));
         final boolean hasImage = StringHelper.notEmpty(imageFileName);
         blocks.setObjImage(objImage);
-        blocks.setObjDisp(decorateObjDisp(expandVariables(StringHelper.getTextChunks(obj.getDisp()), obj.getTheme()), hasImage && obj.isImageInInventory()));
-        blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), expandVariables(StringHelper.getTextChunks(obj.getText()), obj.getTheme()), hasImage && obj.isImageInScene()));
+        blocks.setObjDisp(decorateObjDisp(expandVariables(StringHelper.getTextChunks(obj.getDisp())), hasImage && obj.isImageInInventory()));
+        blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), expandVariables(StringHelper.getTextChunks(obj.getText())), hasImage && obj.isImageInScene()));
         blocks.setTakable(obj.isTakable());
         blocks.setObjTak(decorateObjTak(obj.getName()));
         blocks.setObjInv(decorateObjInv(objType));
-        blocks.setObjActStart(decorateObjActStart(StringHelper.getTextChunks(obj.getActText()), obj.getTheme()));
+        blocks.setObjActStart(decorateObjActStart(expandVariables(StringHelper.getTextChunks(obj.getActText()))));
         blocks.setObjActEnd(decorateObjActEnd());
         blocks.setObjUseStart(decorateObjUseStart());
         blocks.setObjUseEnd(decorateObjUseEnd());
@@ -1525,7 +1525,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjActStart(List<TextChunk> actTextChunks, Theme theme) {
+    protected String decorateObjActStart(String actTextExpanded) {
         return EMPTY_STRING;
     }
 
@@ -2493,6 +2493,18 @@ public abstract class ExportManager {
      * @return
      */
     protected String expandVariables(List<TextChunk> textChunks, Theme theme) {
+        return expandVariables(textChunks);
+    }
+
+    /**
+     * Expands variables from text chunks.
+     * By default the text is copied as is.
+     * Override this method if you really want to expand variable values.
+     *
+     * @param textChunks
+     * @return
+     */
+    protected String expandVariables(List<TextChunk> textChunks) {
         StringBuilder result = new StringBuilder();
         for (final TextChunk textChunk : textChunks) {
             switch (textChunk.getType()) {

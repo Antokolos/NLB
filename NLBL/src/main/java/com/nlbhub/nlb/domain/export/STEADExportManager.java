@@ -995,9 +995,8 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjActStart(List<TextChunk> actTextChunks, Theme theme) {
-        String actTextExpanded = expandVariables(actTextChunks, theme);
-        String actText = getActText(StringHelper.notEmpty(actTextExpanded), actTextChunks.size(), theme);
+    protected String decorateObjActStart(String actTextExpanded) {
+        String actText = getActText(StringHelper.notEmpty(actTextExpanded));
         return (
                 "    act = function(s)" + LINE_SEPARATOR +
                         "        s.acta(s);" + LINE_SEPARATOR +
@@ -1016,10 +1015,7 @@ public class STEADExportManager extends TextExportManager {
         );
     }
 
-    protected String getActText(boolean actTextEmpty, int actTextChunksSize, Theme theme) {
-        if (isVN(theme)) {
-            return m_vnsteadExportManager.getActText(actTextEmpty, actTextChunksSize, theme);
-        }
+    protected String getActText(boolean actTextEmpty) {
         return (
                 (actTextEmpty)
                         ? "        curloc().lasttext = s.actt(s); p(curloc().lasttext); curloc().wastext = true;" + LINE_SEPARATOR
@@ -1810,13 +1806,9 @@ public class STEADExportManager extends TextExportManager {
      * Expands variables from text chunks.
      *
      * @param textChunks
-     * @param theme
      * @return
      */
-    protected String expandVariables(List<TextChunk> textChunks, Theme theme) {
-        if (isVN(theme)) {
-            return m_vnsteadExportManager.expandVariables(textChunks, theme);
-        }
+    protected String expandVariables(List<TextChunk> textChunks) {
         StringBuilder result = new StringBuilder();
         for (final TextChunk textChunk : textChunks) {
             switch (textChunk.getType()) {
@@ -1835,6 +1827,21 @@ public class STEADExportManager extends TextExportManager {
         }
         return result.toString();
     }
+
+    /**
+     * Expands variables from text chunks.
+     *
+     * @param textChunks
+     * @param theme
+     * @return
+     */
+    protected String expandVariables(List<TextChunk> textChunks, Theme theme) {
+        if (isVN(theme)) {
+            return m_vnsteadExportManager.expandVariables(textChunks, theme);
+        }
+        return expandVariables(textChunks);
+    }
+
     protected String getGlobalVarPrefix() {
         return GLOBAL_VAR_PREFIX;
     }
