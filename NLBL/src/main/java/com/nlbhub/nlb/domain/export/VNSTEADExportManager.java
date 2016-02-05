@@ -184,11 +184,21 @@ public class VNSTEADExportManager extends STEADExportManager {
         result.append("    enter = function(s) ").append(lineSep);
         result.append("        objs():zap();").append(lineSep);
         if (pageBlocks.isHasTrivialLinks()) {
-            LinkBuildingBlocks trivialLink = linksBuildingBlocks.get(0);
-            result.append(trivialLink.getLinkModifications());
-            result.append(trivialLink.getLinkVariable());
-            result.append(trivialLink.getLinkVisitStateVariable());
-            result.append(trivialLink.getLinkGoTo());
+            for (LinkBuildingBlocks linkBlock : linksBuildingBlocks) {
+                if (!linkBlock.isAuto()) {
+                    final boolean constrained = !StringHelper.isEmpty(linkBlock.getLinkConstraint());
+                    if (constrained) {
+                        result.append("if ").append(linkBlock.getLinkConstraint()).append(" then").append(lineSep);
+                    }
+                    result.append(linkBlock.getLinkModifications());
+                    result.append(linkBlock.getLinkVariable());
+                    result.append(linkBlock.getLinkVisitStateVariable());
+                    result.append(linkBlock.getLinkGoTo());
+                    if (constrained) {
+                        result.append("end;").append(lineSep);
+                    }
+                }
+            }
         } else {
             for (LinkBuildingBlocks linkBlock : linksBuildingBlocks) {
                 if (!linkBlock.isAuto()) {

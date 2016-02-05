@@ -14,7 +14,7 @@ theme.set('inv.gfx.down', 'gfx/adown.png');
 
 theme.menu.gfx.button('gfx/menubtn.png', 1827, 0);
 
---theme.set('inv.mode', 'disabled'); ???
+theme.set('inv.mode', 'horizontal-left');
 theme.set('scr.gfx.scalable', 5);
 
 -- http://www.fonts2u.com/steinem-unicode.font
@@ -22,7 +22,7 @@ theme.set('win.fnt.name', 'fonts/STEINEMU.ttf');
 theme.set('inv.fnt.name', 'fonts/STEINEMU.ttf');
 theme.set('menu.fnt.name', 'fonts/STEINEMU.ttf');
 theme.set('win.fnt.size', 32);
-theme.set('inv.fnt.size', 32);
+theme.set('inv.fnt.size', 24);
 theme.set('menu.fnt.size', 32);
 theme.set('win.fnt.height', 1.3);
 theme.set('inv.fnt.height', 1.3);
