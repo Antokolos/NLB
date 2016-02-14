@@ -41,10 +41,21 @@ vntimer = function(f, s, cmd, ...)
 	if not vn.on then
 		return f(s, cmd, ...)
 	end
-        if (get_ticks() - vnticks <= vn.hz) then
-            return;
-        end
-        vnticks = get_ticks();
+	if (get_ticks() - vnticks <= vn.hz) then
+	    return;
+	end
+	vnticks = get_ticks();
+	if vn.pause_frames > 0 then
+		vn.pause_frames = vn.pause_frames - 1;
+		return;
+	else
+		local pausecb = vn.pause_callback;
+		vn.pause_callback = false;
+		if (pausecb) then
+		    pausecb();
+		    return;
+		end
+	end
 	if vn.tostop then
 		vn.tostop = false
 		return vn:stop()
@@ -109,7 +120,23 @@ vn = obj {
 	_frn = nil;
 	hz = 18;
 	var { speed = 500, fading = 8, bgalpha = 127 };
-	var { on = true, win_x = 0, win_y = 0, win_w = 0, win_h = 0, up_x = 0, down_x = 0; callback = false; txtfun = false; xhud = 1580; yhud = 100; extent = 100; hud_color = '#000000' };
+	var {
+	    on = true,
+	    win_x = 0,
+	    win_y = 0,
+	    win_w = 0,
+	    win_h = 0,
+	    up_x = 0,
+	    down_x = 0,
+	    callback = false,
+	    txtfun = false,
+	    xhud = 1580,
+	    yhud = 100,
+	    extent = 100,
+	    hud_color = '#000000',
+	    pause_frames = 0,
+	    pause_callback = false
+	};
 	turnon = function(s)
 	    s.on = true;
 	end,
@@ -210,7 +237,7 @@ vn = obj {
 	free_effect = function(s, v)
 	    for sprStep = 0, v.max_step do
 		v.spr[sprStep]:free();
-		v.spr[sprStep] = nil;
+		v.spr[sprStep] = nil;	
 	    end
 	    v.spr = nil;
 	end;
@@ -390,6 +417,24 @@ vn = obj {
 		end
 
 		return v
+	end;
+	
+	pause = function(s, frames, callback)
+		if type(callback) == "table" then
+			local callbacks = function()
+				local i, v = next(callback, nil)  -- i is an index of t, v = t[i]
+				while i do
+					if v then
+						v();
+					end
+					i, v = next(callback, i)        -- get next index
+				end
+			end
+			s.pause_callback = callbacks;
+		else
+			s.pause_callback = callback;
+		end
+		s.pause_frames = frames;
 	end;
 
 	postoxy = function(s, v, idx)

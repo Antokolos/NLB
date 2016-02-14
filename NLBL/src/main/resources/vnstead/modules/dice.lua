@@ -114,18 +114,19 @@ dice = menu {
         local hpos = -576 + 356 * idx;
         local vpos = -506 + 356 * idx;
         if (s.pos == 1) then
-            return {die = 'gfx/e.'..idx..'.die', show = 'moveinright-right-middle@0,'..hpos, hide = 'fadeout-right-middle@0,'..hpos, hidefast = 'hide' };
+            return {die = 'gfx/e.'..idx..'.die', show = 'moveinright-right-middle@0,'..hpos, hide = 'hide', hidefast = 'hide' };
         elseif (s.pos == 2) then
-            return {die = 'gfx/s.'..idx..'.die', show = 'moveinbottom-bottom-middle@'..vpos..',0', hide = 'fadeout-bottom-middle@'..vpos..',0', hidefast = 'hide' };
+            return {die = 'gfx/s.'..idx..'.die', show = 'moveinbottom-bottom-middle@'..vpos..',0', hide = 'hide', hidefast = 'hide' };
         elseif (s.pos == 3) then
-            return {die = 'gfx/w.'..idx..'.die', show = 'moveinleft-left-middle@0,'..hpos, hide = 'fadeout-left-middle@0,'..hpos, hidefast = 'hide' };
+            return {die = 'gfx/w.'..idx..'.die', show = 'moveinleft-left-middle@0,'..hpos, hide = 'hide', hidefast = 'hide' };
         --elseif (s.pos == 4) then
         else
-            return {die = 'gfx/n.'..idx..'.die', show = 'moveintop-top-middle@'..vpos..',0', hide = 'fadeout-top-middle@'..vpos..',0', hidefast = 'hide' };
+            return {die = 'gfx/n.'..idx..'.die', show = 'moveintop-top-middle@'..vpos..',0', hide = 'hide', hidefast = 'hide' };
         end
     end,
     hide = function(s, fast)
         local result = false;
+        local pausecbs = {};
         for i=s.die_count,1,-1 do
             if s.diceOnScreen then
                 local lastRoll = s.lastRolls[i];
@@ -134,13 +135,27 @@ dice = menu {
                     if fast then
                         vn:hide(s.lastRollFiles[i], s:getPosStr(i).hidefast, vn.hz, 0, st, s:getArm());
                     else
-                        vn:hide(s.lastRollFiles[i], s:getPosStr(i).hide, 100 * vn.hz, 0, st, s:getArm());
+                        local img = s.lastRollFiles[i];
+                        local hidestr = s:getPosStr(i).hide;
+                        local spd = 100 * vn.hz;
+                        local stt = st;
+                        local arm = s:getArm();
+                        local pausecb = function() vn:hide(img, hidestr, spd, 0, stt, arm); end;
+                        if hidestr == 'hide' then
+                            table.insert(pausecbs, i, pausecb);
+                        else
+                            pausecb();
+                        end
                     end
                 end
                 table.remove(s.lastRollFiles, i);
                 table.remove(s.lastRolls, i);
                 result = true;
             end
+        end
+        if next(pausecbs) ~= nil then
+            -- pausecbs is NOT empty
+            vn:pause(50, pausecbs);
         end
         if s.diceOnScreen then
             s.diceOnScreen = false;
@@ -608,6 +623,7 @@ game_room = vnr {
         if f ~= nil then
             s.returnto = f;
         end
+        paginator:turnoff();
         s:bgimg(game.table.bg);
         vn:show(game.table.paper, 'fadein-right-top@0,40', vn.hz);
         vn:start();
@@ -622,6 +638,7 @@ game_room = vnr {
         if rollStat.data then
             game.data = shallowcopy(rollStat.data);
         end
+        paginator:turnon();
     end,
     obj = { 'dice', 'next_turn_obj', 'increase_bet_obj' }
 };
