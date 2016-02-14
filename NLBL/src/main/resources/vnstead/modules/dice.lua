@@ -153,13 +153,19 @@ dice = menu {
                 result = true;
             end
         end
+        local needStart = true;
+        local startfn = function() vn:start(); end;
         if next(pausecbs) ~= nil then
             -- pausecbs is NOT empty
+            --needStart = false;
+            --table.insert(pausecbs, s.die_count + 1, startfn);
             vn:pause(50, pausecbs);
         end
         if s.diceOnScreen then
             s.diceOnScreen = false;
-            vn:start();
+            if (needStart) then
+                startfn();
+            end
         end
         return result;
     end,
@@ -364,6 +370,8 @@ rollStat = stat {
     end,
     setrolls = function(s)
         return function(rolls, pos)
+            local curpos = dice.pos;
+            local nextpos = dice:get_next_player_pos();
             local result = false;
             local should_pass_turn = false;
             local good_luck = true;
@@ -381,9 +389,11 @@ rollStat = stat {
             if good_luck then
                 s.message = s:good_luck_message();
                 s._curRollsByPlayer[pos] = s._curRollsByPlayer[pos] + 23;
+                should_pass_turn = false;
             elseif is_double then
                 s.message = s:is_double_message(4 * prev);
                 s._curRollsByPlayer[pos] = s._curRollsByPlayer[pos] + 2 * prev;
+                should_pass_turn = false;
             elseif should_pass_turn then
                 s.message = s:should_pass_turn_message();
                 s:reset_cur();
@@ -424,28 +434,26 @@ rollStat = stat {
                     dice.rewardOnScreen = true;
                     result = true;
                 end
-                if s.data.ai[dice.pos] then
-                    if s._curRollsByPlayer[pos] <= s:get_threshold(s.data.ai[dice.pos]) or should_pass_turn then
+                local under_threshold = s._curRollsByPlayer[pos] <= s:get_threshold(s.data.ai[curpos]);
+                local action_required = should_pass_turn or not under_threshold;
+                if s.data.ai[curpos] or action_required then
+                    if under_threshold or should_pass_turn then
                         return function() if result then vn:startcb(function() dice:act(); return true; end); else dice:act(); end; return true; end
                     else
-                        if s.data.ai[dice:get_next_player_pos()] then
-                            return function()
-                                if result then
-                                    vn:startcb(function()
-                                        rollStat:add_result();
-                                        rollStat:reset_cur();
-                                        dice:next_player(true);
-                                        return true;
-                                    end);
-                                else
+                        return function()
+                            if result then
+                                vn:startcb(function()
                                     rollStat:add_result();
                                     rollStat:reset_cur();
                                     dice:next_player(true);
-                                end;
-                                return true;
-                            end
-                        else
-                            dice:update_next_player_pos();
+                                    return true;
+                                end);
+                            else
+                                rollStat:add_result();
+                                rollStat:reset_cur();
+                                dice:next_player(true);
+                            end;
+                            return true;
                         end
                     end
                 end
@@ -469,8 +477,16 @@ rollStat = stat {
             return 36;
         elseif ainame == 'cautious' then
             return 12;
+        elseif ainame == 'optimum' then
+            return 24;
+        else
+            -- human player also has threshold value :)
+            if (s.data) then
+                return s.data.threshold;
+            else
+                return 1000000;
+            end
         end
-        return 24;
     end,
     good_luck_message = function(s)
         if (LANG == "ru") then
