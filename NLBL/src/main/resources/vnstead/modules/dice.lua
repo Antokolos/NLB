@@ -653,6 +653,7 @@ game_room = vnr {
         vn.txtfun = function() return {}; end;
         if rollStat.data then
             game.data = shallowcopy(rollStat.data);
+            game.money = game.data.money[game.data.mainplr];
         end
         paginator:turnon();
     end,
