@@ -4,16 +4,25 @@ dice = menu {
     nam = "dice",
     system_type = true,
     dsc = function(s)
-        return '{'..s:disp()..'}'..img 'blank:64x64';
+        return '{' .. s:disp() .. '}' .. img 'blank:64x64';
     end,
     disp = function(s)
         if s.diceOnScreen then
-            return img('gfx/dice.png')..' '..s:hideTxt();
+            return img('gfx/dice.png') .. ' ' .. s:hideTxt();
         else
-            return img('gfx/dice.png')..' '..s:rollTxt();
+            return img('gfx/dice.png') .. ' ' .. s:rollTxt();
         end
     end,
-    var { diceOnScreen = false, rewardOnScreen = false, lastRolls = {}, lastRollFiles = {}, callback = false, callbackName = '', pos = 2, die_count = 2 },
+    var {
+        diceOnScreen = false,
+        rewardOnScreen = false,
+        lastRolls = {},
+        lastRollFiles = {},
+        callback = false,
+        callbackName = '',
+        pos = 2,
+        die_count = 2
+    },
     set_orientation = function(s, o)
         if (o == "east") then
             s.pos = 1;
@@ -21,7 +30,7 @@ dice = menu {
             s.pos = 2;
         elseif (o == "west") then
             s.pos = 3;
-        --elseif (o == "north") then
+            --elseif (o == "north") then
         else
             s.pos = 4;
         end
@@ -31,9 +40,9 @@ dice = menu {
     end,
     rollTxt = function(s)
         if (LANG == "ru") then
-	    return 'Бросить кубик';
+            return 'Бросить кубик';
         else
-	    return 'Roll the die';
+            return 'Roll the die';
         end
     end,
     hideTxt = function(s)
@@ -42,9 +51,9 @@ dice = menu {
         end
         -- Or, alternatively...
         if (LANG == "ru") then
-	    return 'Убрать кубик';
+            return 'Убрать кубик';
         else
-	    return 'Hide the die';
+            return 'Hide the die';
         end
     end,
     act = function(s)
@@ -78,7 +87,7 @@ dice = menu {
         return pos;
     end,
     update_next_player_pos = function(s)
-       s.pos = s:get_next_player_pos();
+        s.pos = s:get_next_player_pos();
     end,
     set_callback = function(s, f, name)
         s.callback = f;
@@ -114,20 +123,20 @@ dice = menu {
         local hpos = -576 + 356 * idx;
         local vpos = -506 + 356 * idx;
         if (s.pos == 1) then
-            return {die = 'gfx/e.'..idx..'.die', show = 'moveinright-right-middle@0,'..hpos, hide = 'hide', hidefast = 'hide' };
+            return { die = 'gfx/e.' .. idx .. '.die', show = 'moveinright-right-middle@0,' .. hpos, hide = 'hide', hidefast = 'hide' };
         elseif (s.pos == 2) then
-            return {die = 'gfx/s.'..idx..'.die', show = 'moveinbottom-bottom-middle@'..vpos..',0', hide = 'hide', hidefast = 'hide' };
+            return { die = 'gfx/s.' .. idx .. '.die', show = 'moveinbottom-bottom-middle@' .. vpos .. ',0', hide = 'hide', hidefast = 'hide' };
         elseif (s.pos == 3) then
-            return {die = 'gfx/w.'..idx..'.die', show = 'moveinleft-left-middle@0,'..hpos, hide = 'hide', hidefast = 'hide' };
-        --elseif (s.pos == 4) then
+            return { die = 'gfx/w.' .. idx .. '.die', show = 'moveinleft-left-middle@0,' .. hpos, hide = 'hide', hidefast = 'hide' };
+            --elseif (s.pos == 4) then
         else
-            return {die = 'gfx/n.'..idx..'.die', show = 'moveintop-top-middle@'..vpos..',0', hide = 'hide', hidefast = 'hide' };
+            return { die = 'gfx/n.' .. idx .. '.die', show = 'moveintop-top-middle@' .. vpos .. ',0', hide = 'hide', hidefast = 'hide' };
         end
     end,
     hide = function(s, fast)
         local result = false;
         local pausecbs = {};
-        for i=s.die_count,1,-1 do
+        for i = s.die_count, 1, -1 do
             if s.diceOnScreen then
                 local lastRoll = s.lastRolls[i];
                 if ((s.lastRollFiles[i] ~= nil) and (s.lastRollFiles[i] ~= '')) then
@@ -141,7 +150,7 @@ dice = menu {
                         local stt = st;
                         local arm = s:getArm();
                         local pausecb = function() vn:hide(img, hidestr, spd, 0, stt, arm); end;
-                        if hidestr == 'hide' then
+                        if rollStat.should_pass or (rollStat.data and s.pos ~= rollStat.data.mainplr) then
                             table.insert(pausecbs, i, pausecb);
                         else
                             pausecb();
@@ -171,10 +180,10 @@ dice = menu {
     end,
     show = function(s)
         local result = false;
-        for i=1,s.die_count do
+        for i = 1, s.die_count do
             if not s.diceOnScreen then
                 local lastRoll = rnd(6);
-                local lastRollFile = string.format(s:getPosStr(i).die..'%d.png', lastRoll);
+                local lastRollFile = string.format(s:getPosStr(i).die .. '%d.png', lastRoll);
                 local st = s:getStartFrame(lastRoll);
                 table.insert(s.lastRolls, i, lastRoll);
                 table.insert(s.lastRollFiles, i, lastRollFile);
@@ -192,14 +201,14 @@ dice = menu {
         local r = rnd();
         if s.pos == 1 or s.pos == 3 then
             local result = {};
-            for i=0,100 do
-                table.insert(result, i, {250 + r*220, math.abs((i+20)*(i-(40*r+70*(1-r)))*(i-130) / 1000)});
+            for i = 0, 100 do
+                table.insert(result, i, { 250 + r * 220, math.abs((i + 20) * (i - (40 * r + 70 * (1 - r))) * (i - 130) / 1000) });
             end
             return result;
         elseif s.pos == 2 or s.pos == 4 then
-            return {[0] = {0, 235}};
+            return { [0] = { 0, 235 } };
         else
-            return {[0] = {0, 0}};
+            return { [0] = { 0, 0 } };
         end
     end,
     getStartFrame = function(s, rollValue)
@@ -227,7 +236,7 @@ dice = menu {
 next_turn_obj = menu {
     nam = "next_turn_obj",
     dsc = function(s)
-        return '{'..s:disp()..'}'..img 'blank:64x64';
+        return '{' .. s:disp() .. '}' .. img 'blank:64x64';
     end,
     disp = function(s)
         if (LANG == "ru") then
@@ -256,9 +265,9 @@ luckStat = stat {
     _unluckyObj = false,
     disp = function(s)
         if (LANG == "ru") then
-    	    return "Удача: "..s._luck;
+            return "Удача: " .. s._luck;
         else
-    	    return "Luck: "..s._luck;
+            return "Luck: " .. s._luck;
         end
     end,
     setluck = function(s)
@@ -290,7 +299,7 @@ rollStat = stat {
     _rolls = {},
     _allRollsByPlayer = {},
     _curRollsByPlayer = {},
-    var { message = "", data = false },
+    var { message = "", data = false, should_pass = false },
     init = function(s)
         s._allRollsByPlayer[1] = 0;
         s._allRollsByPlayer[2] = 0;
@@ -322,11 +331,11 @@ rollStat = stat {
             prefix = "Rolls: ";
         end
         for k, v in pairs(s._rolls) do
-            result = result..tostring(v).."; ";
+            result = result .. tostring(v) .. "; ";
         end
-        result = result..s.message;
+        result = result .. s.message;
         if result ~= "" then
-            return prefix..result;
+            return prefix .. result;
         else
             return "";
         end
@@ -342,7 +351,7 @@ rollStat = stat {
     end,
     info = function(s)
         local result = {};
-        for i=1,4 do
+        for i = 1, 4 do
             local cursum = s._allRollsByPlayer[i] + s._curRollsByPlayer[i];
             local name = nil
             local money = 0;
@@ -359,12 +368,12 @@ rollStat = stat {
                     color1 = colors[1];
                     color2 = colors[2];
                 end
-                table.insert(result, {["text"] = name, ["color"] = color1});
-                table.insert(result, {["text"] = "Очки: "..cursum.."; "..s:get_money_string()..money, ["color"] = color2});
+                table.insert(result, { ["text"] = name, ["color"] = color1 });
+                table.insert(result, { ["text"] = "Очки: " .. cursum .. "; " .. s:get_money_string() .. money, ["color"] = color2 });
             end
         end
         if s.data then
-            table.insert(result, {["text"] = s:get_bet_string()..s.data.bet, ["color"] = nil});
+            table.insert(result, { ["text"] = s:get_bet_string() .. s.data.bet, ["color"] = nil });
         end
         return result;
     end,
@@ -386,6 +395,7 @@ rollStat = stat {
                 prev = v;
             end
             s.message = "";
+            s.should_pass = false;
             if good_luck then
                 s.message = s:good_luck_message();
                 s._curRollsByPlayer[pos] = s._curRollsByPlayer[pos] + 23;
@@ -395,6 +405,7 @@ rollStat = stat {
                 s._curRollsByPlayer[pos] = s._curRollsByPlayer[pos] + 2 * prev;
                 should_pass_turn = false;
             elseif should_pass_turn then
+                s.should_pass = true;
                 s.message = s:should_pass_turn_message();
                 s:reset_cur();
                 dice:next_player();
@@ -404,7 +415,7 @@ rollStat = stat {
                 if score >= s.data.threshold then
                     s.message = s:win_message(s.data.names[pos]);
                     local prize = 0;
-                    for i=1,4 do
+                    for i = 1, 4 do
                         if s:is_defined(i) then
                             local new_money = s.data.money[i] - s.data.bet;
                             if new_money > 0 then
@@ -464,7 +475,7 @@ rollStat = stat {
     get_next_round_bet = function(s)
         local next_round_bet = game.defaultbet;
         if s.data then
-            for i=1,4 do
+            for i = 1, 4 do
                 if s:is_defined(i) and s.data.money[i] < next_round_bet then
                     next_round_bet = s.data.money[i];
                 end
@@ -497,9 +508,9 @@ rollStat = stat {
     end,
     is_double_message = function(s, value)
         if (LANG == "ru") then
-            return "Дубль, вам повезло! Вы получаете +"..tostring(value).." очков!";
+            return "Дубль, вам повезло! Вы получаете +" .. tostring(value) .. " очков!";
         else
-            return "Double, you are lucky! You've got +"..tostring(value);
+            return "Double, you are lucky! You've got +" .. tostring(value);
         end
     end,
     should_pass_turn_message = function(s)
@@ -511,9 +522,9 @@ rollStat = stat {
     end,
     win_message = function(s, name)
         if (LANG == "ru") then
-            return "Игрок "..name.." побеждает в этом раунде!";
+            return "Игрок " .. name .. " побеждает в этом раунде!";
         else
-            return "Player "..name.." wins this round!";
+            return "Player " .. name .. " wins this round!";
         end
     end,
     get_player_string = function(s)
@@ -551,7 +562,7 @@ function shallowcopy(orig)
             copy[orig_key] = orig_value
         end
     else -- number, string, boolean, etc
-        copy = orig
+    copy = orig
     end
     return copy
 end
@@ -559,18 +570,20 @@ end
 increase_bet_obj = menu {
     nam = "increase_bet_obj",
     dsc = function(s)
-        local result;
+        local result = "{" .. s:txt() .. "}";
+        return result .. img 'blank:64x64';
+    end,
+    txt = function(s)
         if (LANG == "ru") then
-            result = "{Удвоить ставку}";
+            return "Удвоить ставку";
         else
-            result = "{Double the bet}";
+            return "Double the bet";
         end
-        return result..img 'blank:64x64';
     end,
     act = function(s)
         if rollStat.data then
             rollStat.data.bet = rollStat.data.bet * 2;
-            for i=1,4 do
+            for i = 1, 4 do
                 if rollStat:is_defined(i) and rollStat.data.bet > rollStat.data.money[i] then
                     rollStat.data.bet = rollStat.data.money[i];
                 end
@@ -584,10 +597,13 @@ increase_bet_obj = menu {
 play_game_obj = menu {
     nam = "play_game_obj",
     dsc = function(s)
+        return "{" .. s:txt() .. "}";
+    end,
+    txt = function(s)
         if (LANG == "ru") then
-            return "{Закончить игру}";
+            return "Закончить игру";
         else
-            return "{Leave the game}";
+            return "Leave the game";
         end
     end,
     disp = function(s)
@@ -640,8 +656,91 @@ game_room = vnr {
             s.returnto = f;
         end
         paginator:turnoff();
+        vn:lock_direct();
         s:bgimg(game.table.bg);
-        vn:show(game.table.paper, 'fadein-right-top@0,40', vn.hz);
+        vn:show(game.table.paper, 'right-top@-20,40', 0);
+        local enablefn = function(v) return (rollStat.data and not rollStat.data.ai[dice.pos] and rollStat:is_defined(rollStat.data.mainplr)); end;
+        local enablefn2 = function(v) return (rollStat.data and not rollStat.data.ai[dice.pos]); end;
+        if (game.table.plate) then
+            vn.xhud = 1540;
+            vn.yhud = 100;
+            vn:show(game.table.plate, 'right-bottom@110,95', 0);
+            vn:show_btn(
+                function(v) if vn.stopped then dice:act(); end; end,
+                "gfx/btn_dice.png",
+                'right-bottom@-195,-430',
+                "gfx/alt_btn_dice.png",
+                'right-bottom@-195,-430',
+                function(v) return dice:rollTxt() end,
+                enablefn
+            );
+            vn:show_btn(
+                function(v) if vn.stopped then next_turn_obj:act(); end; end,
+                "gfx/btn_next.png",
+                'right-bottom@-195,-270',
+                "gfx/alt_btn_next.png",
+                'right-bottom@-195,-270',
+                function(v) return next_turn_obj:disp() end,
+                enablefn
+            );
+            vn:show_btn(
+                function(v) if vn.stopped then increase_bet_obj:act(); end; end,
+                "gfx/btn_inc.png",
+                'right-bottom@-195,-150',
+                "gfx/alt_btn_inc.png",
+                'right-bottom@-195,-150',
+                function(v) return increase_bet_obj:txt() end,
+                enablefn
+            );
+            vn:show_btn(
+                function(v) if vn.stopped then play_game_obj:act(); end; end,
+                "gfx/btn_exit.png",
+                'right-bottom@-195,-20',
+                "gfx/alt_btn_exit.png",
+                'right-bottom@-195,-20',
+                function(v) return play_game_obj:txt() end,
+                enablefn2
+            );
+        else
+            vn.xhud = 1560;
+            vn.yhud = 120;
+            vn:show_btn(
+                function(v) if vn.stopped then dice:act(); end; end,
+                "gfx/btn_dice.png",
+                'right-top@-40,500',
+                "gfx/alt_btn_dice.png",
+                'right-top@-40,500',
+                function(v) return dice:rollTxt(), "n" end,
+                enablefn
+            );
+            vn:show_btn(
+                function(v) if vn.stopped then next_turn_obj:act(); end; end,
+                "gfx/btn_next.png",
+                'right-top@-40,625',
+                "gfx/alt_btn_next.png",
+                'right-top@-40,625',
+                function(v) return next_turn_obj:disp(), "h" end,
+                enablefn
+            );
+            vn:show_btn(
+                function(v) if vn.stopped then increase_bet_obj:act(); end; end,
+                "gfx/btn_inc.png",
+                'right-top@-40,750',
+                "gfx/alt_btn_inc.png",
+                'right-top@-40,750',
+                function(v) return increase_bet_obj:txt(), "h" end,
+                enablefn
+            );
+            vn:show_btn(
+                function(v) if vn.stopped then play_game_obj:act(); end; end,
+                "gfx/btn_exit.png",
+                'right-top@-40,875',
+                "gfx/alt_btn_exit.png",
+                'right-top@-40,875',
+                function(v) return play_game_obj:txt(), "s" end,
+                enablefn2
+            );
+        end
         vn:start();
         vn.txtfun = function() return rollStat:info(); end;
         take(rollStat);
@@ -655,6 +754,7 @@ game_room = vnr {
             game.data = shallowcopy(rollStat.data);
             game.money = game.data.money[game.data.mainplr];
         end
+        vn:unlock_direct();
         paginator:turnon();
     end,
     obj = { 'dice', 'next_turn_obj', 'increase_bet_obj' }
