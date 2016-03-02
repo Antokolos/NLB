@@ -369,7 +369,7 @@ rollStat = stat {
                     color2 = colors[2];
                 end
                 table.insert(result, { ["text"] = name, ["color"] = color1 });
-                table.insert(result, { ["text"] = "Очки: " .. cursum .. "; " .. s:get_money_string() .. money, ["color"] = color2 });
+                table.insert(result, { ["text"] = s:get_pts_string() .. cursum .. "; " .. s:get_money_string() .. money, ["color"] = color2 });
             end
         end
         if s.data then
@@ -532,6 +532,13 @@ rollStat = stat {
             return "Игрок: ";
         else
             return "Player: ";
+        end
+    end,
+    get_pts_string = function(s)
+        if (LANG == "ru") then
+            return "Очки: ";
+        else
+            return "Points: ";
         end
     end,
     get_money_string = function(s)
