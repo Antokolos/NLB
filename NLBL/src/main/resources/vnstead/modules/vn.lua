@@ -992,9 +992,6 @@ vn = obj {
         end
     end;
     tooltip = function(s, text, pos, x, y, vw, vh)
-        if not pos then
-            pos = "h";
-        end
         local spr = sprite.text(hudFont, text, '#000000');
         local w, h = sprite.size(spr);
         local tt_bg = sprite.box(w, h, 'white', 127);
@@ -1005,16 +1002,7 @@ vn = obj {
             target = s:screen();
         end
         local xmax = theme.get("scr.w");
-        if pos == "h" then
-            local yy = y + vh / 2 - h / 2;
-            if (xmax - x > w) then
-                sprite.draw(tt_bg, target, x + vw + 5, yy);
-                sprite.draw(spr, target, x + vw + 5, yy);
-            else
-                sprite.draw(tt_bg, target, x - w - 5, yy);
-                sprite.draw(spr, target, x - w - 5, yy);
-            end
-        elseif pos == "n" then
+        if pos == "n" then
             local yy = y - h - 5;
             local txt_offset = (vw - w) / 2;
             sprite.draw(tt_bg, target, x + txt_offset, yy);
@@ -1024,6 +1012,15 @@ vn = obj {
             local txt_offset = (vw - w) / 2;
             sprite.draw(tt_bg, target, x + txt_offset, yy);
             sprite.draw(spr, target, x + txt_offset, yy);
+        else
+            local yy = y + vh / 2 - h / 2;
+            if (xmax - x > w) then
+                sprite.draw(tt_bg, target, x + vw + 5, yy);
+                sprite.draw(spr, target, x + vw + 5, yy);
+            else
+                sprite.draw(tt_bg, target, x - w - 5, yy);
+                sprite.draw(spr, target, x - w - 5, yy);
+            end
         end
         sprite.free(spr);
         sprite.free(tt_bg);
