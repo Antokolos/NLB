@@ -91,7 +91,7 @@ vntimer = function(f, s, cmd, ...)
 end
 
 --if not game.old_fading then
---	game.old_fading = game.fading
+--    game.old_fading = game.fading
 --end
 
 vnfading = function(f, s, cmd, ...)
@@ -100,7 +100,7 @@ vnfading = function(f, s, cmd, ...)
     end
     local b = vn.bg_changing
     if vn.skip_mode then return end
-    --	if game.old_fading(s) or b then
+    --if game.old_fading(s) or b then
     if b then
         return vn.fading
     end
@@ -117,6 +117,7 @@ end
 vn = obj {
     nam = 'vn';
     system_type = true;
+    sprite_cache = {};
     _effects = {};
     _bg = false;
     _need_effect = false;
@@ -248,7 +249,7 @@ vn = obj {
                 load = function(s)
                     if ss:file_exists(v.pic) then
                         if sprStep == v.start then
-                            return sprite.load(v.pic);
+                            return s:load_file(v.pic);
                         elseif sprStep > v.start then
                             return v.spr[v.start]:val();
                         end
@@ -257,26 +258,34 @@ vn = obj {
                     end
                     return nil;
                 end,
+                load_file = function(s, sprfile)
+                    if (ss.sprite_cache[sprfile]) then
+                        return ss.sprite_cache[sprfile];
+                    end
+                    local loaded = sprite.load(sprfile);
+                    if loaded then
+                        s.was_loaded = true;
+                        ss.sprite_cache[sprfile] = loaded;
+                    else
+                        error("Can not load sprite: " .. tostring(sprfile));
+                    end
+                    return loaded;
+                end,
                 load_frame = function(s)
                     local prefix, extension = ss:split_url(v.pic);
                     local sprfile = prefix .. '.' .. string.format("%04d", sprStep) .. extension;
-                    local loaded = nil;
                     if ss:file_exists(sprfile) then
-                        loaded = sprite.load(sprfile);
-                        if loaded then
-                            s.was_loaded = true;
-                        else
-                            error("Can not load sprite: " .. tostring(sprfile));
-                        end
+                        return s:load_file(sprfile);
                     elseif sprStep > v.start then
-                        loaded = v.spr[sprStep - 1]:val();
+                        return v.spr[sprStep - 1]:val();
                     end
-
-                    return loaded;
                 end,
                 free = function(s)
                     if s.was_loaded and s.cache then
-                        sprite.free(s.cache);
+                        if ss.nocache then
+                            -- Currently this code will not be executed, because cache is always used
+                            sprite.free(s.cache);
+                        end
                         s.cache = nil;
                     end
                 end
@@ -289,6 +298,13 @@ vn = obj {
             v.spr[sprStep] = nil;
         end
         v.spr = nil;
+    end;
+    -- Call clear_cache periodically to free memory from possible garbage...
+    clear_cache = function(s)
+        for k, v in pairs(s.sprite_cache) do
+            sprite.free(v);
+        end
+        s.sprite_cache = {};
     end;
     hide = function(s, image, eff, ...)
         local v
@@ -405,9 +421,9 @@ vn = obj {
 
         if oe then
             if oe.pic ~= v.pic then -- new pic
-            s:free_effect(oe);
-            oe.pic = v.pic
-            s:load_effect(oe)
+                s:free_effect(oe);
+                oe.pic = v.pic
+                s:load_effect(oe)
             end
             old_pos = oe.pos
             v = oe
@@ -796,12 +812,15 @@ vn = obj {
         end;
         s:commit();
     end;
-    scene = function(s, bg, eff)
+    scene = function(s, bg, eff, preserve_cache)
         local i, v
         for i, v in ipairs(s._effects) do
             s:free_effect(v)
         end
         s._effects = {}
+        if not preserve_cache then
+            s:clear_cache();
+        end
         s._need_effect = false
         s._scene_effect = eff
         -- if bg is nil, simple box sprite will be set
