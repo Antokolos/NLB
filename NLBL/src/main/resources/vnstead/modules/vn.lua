@@ -207,7 +207,7 @@ vn = obj {
             return;
         end
         for i, v in ipairs(s._effects) do
-            if v.onover and s:inside_spr(v, x, y) then
+            if v.onover and s:enabled(v) and s:inside_spr(v, x, y) then
                 v:onover();
             end
         end
@@ -217,7 +217,7 @@ vn = obj {
             return;
         end
         for i, v in ipairs(s._effects) do
-            if v.onout and not s:inside_spr(v, x, y) then
+            if v.onout and s:enabled(v) and not s:inside_spr(v, x, y) then
                 v:onout();
             end
         end
@@ -324,6 +324,9 @@ vn = obj {
 
         local i, k = s:lookup(nam)
         if not i then return end
+        if i.onhide then
+            i:onhide();
+        end
         s:free_effect(i);
         stead.table.remove(s._effects, k)
         return
@@ -375,7 +378,7 @@ vn = obj {
         return mxs, zstep;
     end;
 
-    effect = function(s, image, eff, speed, startFrame, framesFromStop, armarr, on_clk, on_over, on_out, tooltip_fn, enable_fn)
+    effect = function(s, image, eff, speed, startFrame, framesFromStop, armarr, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
         local t = eff;
         local v
 
@@ -405,6 +408,7 @@ vn = obj {
             onclick = on_clk,
             onover = on_over,
             onout = on_out,
+            onhide = on_hide,
             tooltipfn = tooltip_fn,
             enablefn = enable_fn;
         }
@@ -498,8 +502,10 @@ vn = obj {
     end;
 
     pause = function(s, frames, callback)
+        local existing_callback = s.pause_callback;
+        local new_callback = callback;
         if type(callback) == "table" then
-            local callbacks = function()
+            new_callback = function()
                 local i, v = next(callback, nil) -- i is an index of t, v = t[i]
                 while i do
                     if v then
@@ -508,11 +514,19 @@ vn = obj {
                     i, v = next(callback, i) -- get next index
                 end
             end
-            s.pause_callback = callbacks;
-        else
-            s.pause_callback = callback;
         end
-        s.pause_frames = frames;
+        if existing_callback and new_callback then
+            s.pause_callback = function()
+                existing_callback();
+                s.pause_callback = new_callback;
+                s.pause_frames = frames;
+            end;
+        elseif new_callback then
+            s.pause_callback = new_callback;
+            s.pause_frames = frames;
+        elseif existing_callback then
+            s.pause_frames = s.pause_frames + frames;
+        end
     end;
 
     postoxy = function(s, v, idx)
@@ -938,6 +952,10 @@ vn = obj {
             end
             if e then
                 s:do_effect(v);
+            else
+                if v.onhide then
+                    v:onhide();
+                end
             end
             if v.step < v.max_step - v.from_stop then
                 v.step = v.step + 1
@@ -1001,14 +1019,16 @@ vn = obj {
             return;
         end
         for i, v in ipairs(s._effects) do
-            local enabled = not v.enablefn or v:enablefn();
-            if enabled and v.tooltipfn and s:inside_spr(v, x, y) then
+            if s:enabled(v) and v.tooltipfn and s:inside_spr(v, x, y) then
                 local xx, yy = s:postoxy(v);
                 local vw, vh = sprite.size(v.spr[0]:val());
                 local text, pos = v:tooltipfn();
                 s:tooltip(text, pos, xx, yy, vw, vh);
             end
         end
+    end;
+    enabled = function(s, v)
+        return not v.enablefn or v:enablefn();
     end;
     tooltip = function(s, text, pos, x, y, vw, vh)
         local spr = sprite.text(hudFont, text, '#000000');
@@ -1033,9 +1053,10 @@ vn = obj {
             sprite.draw(spr, target, x + txt_offset, yy);
         else
             local yy = y + vh / 2 - h / 2;
-            if (xmax - x > w) then
-                sprite.draw(tt_bg, target, x + vw + 5, yy);
-                sprite.draw(spr, target, x + vw + 5, yy);
+            local xx = x + vw + 5;
+            if (xmax - xx > w) then
+                sprite.draw(tt_bg, target, xx, yy);
+                sprite.draw(spr, target, xx, yy);
             else
                 sprite.draw(tt_bg, target, x - w - 5, yy);
                 sprite.draw(spr, target, x - w - 5, yy);
@@ -1044,7 +1065,7 @@ vn = obj {
         sprite.free(spr);
         sprite.free(tt_bg);
     end;
-    show_btn = function(s, actfn, btnimg, btneff, ovrimg, ovreff, tooltipfn, enablefn, btnframes, ovrframes)
+    show_btn = function(s, actfn, btnimg, btneff, ovrimg, ovreff, overfn, outfn, tooltipfn, enablefn, btnframes, ovrframes)
         if not btnframes then
             btnframes = 0;
         end
@@ -1059,20 +1080,24 @@ vn = obj {
                 if s.uiupdate then
                     return;
                 end
+                if overfn then
+                    overfn(v);
+                end
                 s:hide(v);
                 s:show(ovrimg,
                     ovreff,
                     ovrframes * s.hz, nil, nil, nil,
                     actfn,
                     nil,
-                    function(v)
+                    function(vv)
                         if s.uiupdate then
                             return;
                         end
-                        s:hide(v);
-                        s:show_btn(actfn, btnimg, btneff, ovrimg, ovreff, tooltipfn, enablefn, btnframes, ovrframes);
+                        s:hide(vv);
+                        s:show_btn(actfn, btnimg, btneff, ovrimg, ovreff, overfn, outfn, tooltipfn, enablefn, btnframes, ovrframes);
                         s:start(nil, true);
                     end,
+                    outfn,
                     tooltipfn,
                     enablefn,
                     btnframes,
@@ -1080,6 +1105,7 @@ vn = obj {
                 );
                 s:start(nil, true);
             end,
+            nil,
             nil,
             tooltipfn,
             enablefn,

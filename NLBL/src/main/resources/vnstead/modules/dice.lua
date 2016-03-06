@@ -57,12 +57,14 @@ dice = menu {
         end
     end,
     act = function(s)
+        vn:pause(10, function() set_sound('sfx/kosti.ogg', 2, 1); end);
         return s:inv();
     end,
     inv = function(s)
         if s.rewardOnScreen then
             vn:hide('gfx/round_finished.png', 'fadeout-middle-middle@0,-18', vn.hz);
             vn:hide('gfx/reward.png', 'fadeout-middle-middle@0,0', vn.hz);
+            stop_sound();
             s.rewardOnScreen = false;
         end
         if not s:show() then
@@ -166,8 +168,8 @@ dice = menu {
         local startfn = function() vn:start(); end;
         if next(pausecbs) ~= nil then
             -- pausecbs is NOT empty
-            --needStart = false;
-            --table.insert(pausecbs, s.die_count + 1, startfn);
+            needStart = false;
+            table.insert(pausecbs, s.die_count + 1, startfn);
             vn:pause(50, pausecbs);
         end
         if s.diceOnScreen then
@@ -431,6 +433,7 @@ rollStat = stat {
                     s:init();
                     vn:show('gfx/round_finished.png', 'middle-middle@0,-18', vn.hz);
                     vn:show('gfx/reward.png', 'middle-middle@0,0', 270 * vn.hz);
+                    set_sound('sfx/money.ogg', nil, 1);
                     if rollStat.data and not rollStat:is_defined(rollStat.data.mainplr) then
                         return function()
                             vn:show("gfx/loss.png", "fadein-middle-middle@0,0", 100 * vn.hz);
@@ -449,7 +452,17 @@ rollStat = stat {
                 local action_required = should_pass_turn or not under_threshold;
                 if s.data.ai[curpos] or action_required then
                     if under_threshold or should_pass_turn then
-                        return function() if result then vn:startcb(function() dice:act(); return true; end); else dice:act(); end; return true; end
+                        return function()
+                            if result then
+                                vn:startcb(function()
+                                    dice:act();
+                                    return true;
+                                end);
+                            else
+                                dice:act();
+                            end;
+                            return true;
+                        end
                     else
                         return function()
                             if result then
@@ -666,6 +679,8 @@ game_room = vnr {
         vn:lock_direct();
         s:bgimg(game.table.bg);
         vn:show(game.table.paper, 'right-top@-20,40', 0);
+        local overfn = function(v) set_sound('sfx/shake.ogg', 1, 0); end;
+        local outfn = function(v) stop_sound(1); end;
         local enablefn = function(v) return (rollStat.data and not rollStat.data.ai[dice.pos] and rollStat:is_defined(rollStat.data.mainplr)); end;
         local enablefn2 = function(v) return (rollStat.data and not rollStat.data.ai[dice.pos]); end;
         if (game.table.plate) then
@@ -673,11 +688,12 @@ game_room = vnr {
             vn.yhud = 100;
             vn:show(game.table.plate, 'right-bottom@110,95', 0);
             vn:show_btn(
-                function(v) if vn.stopped then dice:act(); end; end,
+                function(v) if vn.stopped then set_sound('sfx/kosti.ogg', 1, 1); dice:act(); end; end,
                 "gfx/btn_dice.png",
                 'right-bottom@-195,-430',
                 "gfx/alt_btn_dice.png",
                 'right-bottom@-195,-430',
+                overfn, outfn,
                 function(v) return dice:rollTxt() end,
                 enablefn
             );
@@ -687,6 +703,7 @@ game_room = vnr {
                 'right-bottom@-195,-270',
                 "gfx/alt_btn_next.png",
                 'right-bottom@-195,-270',
+                nil, nil,
                 function(v) return next_turn_obj:disp() end,
                 enablefn
             );
@@ -696,6 +713,7 @@ game_room = vnr {
                 'right-bottom@-195,-150',
                 "gfx/alt_btn_inc.png",
                 'right-bottom@-195,-150',
+                nil, nil,
                 function(v) return increase_bet_obj:txt() end,
                 enablefn
             );
@@ -705,6 +723,7 @@ game_room = vnr {
                 'right-bottom@-195,-20',
                 "gfx/alt_btn_exit.png",
                 'right-bottom@-195,-20',
+                nil, nil,
                 function(v) return play_game_obj:txt() end,
                 enablefn2
             );
@@ -712,11 +731,12 @@ game_room = vnr {
             vn.xhud = 1560;
             vn.yhud = 120;
             vn:show_btn(
-                function(v) if vn.stopped then dice:act(); end; end,
+                function(v) if vn.stopped then set_sound('sfx/kosti.ogg', 1, 1); dice:act(); end; end,
                 "gfx/btn_dice.png",
                 'right-top@-40,500',
                 "gfx/alt_btn_dice.png",
                 'right-top@-40,500',
+                overfn, outfn,
                 function(v) return dice:rollTxt(), "n" end,
                 enablefn
             );
@@ -726,6 +746,7 @@ game_room = vnr {
                 'right-top@-40,625',
                 "gfx/alt_btn_next.png",
                 'right-top@-40,625',
+                nil, nil,
                 function(v) return next_turn_obj:disp(), "h" end,
                 enablefn
             );
@@ -735,6 +756,7 @@ game_room = vnr {
                 'right-top@-40,750',
                 "gfx/alt_btn_inc.png",
                 'right-top@-40,750',
+                nil, nil,
                 function(v) return increase_bet_obj:txt(), "h" end,
                 enablefn
             );
@@ -744,6 +766,7 @@ game_room = vnr {
                 'right-top@-40,875',
                 "gfx/alt_btn_exit.png",
                 'right-top@-40,875',
+                nil, nil,
                 function(v) return play_game_obj:txt(), "s" end,
                 enablefn2
             );
