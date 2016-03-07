@@ -168,8 +168,8 @@ dice = menu {
         local startfn = function() vn:start(); end;
         if next(pausecbs) ~= nil then
             -- pausecbs is NOT empty
-            needStart = false;
-            table.insert(pausecbs, s.die_count + 1, startfn);
+            --needStart = false;
+            --table.insert(pausecbs, s.die_count + 1, startfn);
             vn:pause(50, pausecbs);
         end
         if s.diceOnScreen then
@@ -686,43 +686,43 @@ game_room = vnr {
         if (game.table.plate) then
             vn.xhud = 1540;
             vn.yhud = 100;
-            vn:show(game.table.plate, 'right-bottom@110,95', 0);
+            vn:show(game.table.plate, 'right-bottom@110,75', 0);
             vn:show_btn(
                 function(v) if vn.stopped then set_sound('sfx/kosti.ogg', 1, 1); dice:act(); end; end,
-                "gfx/btn_dice.png",
-                'right-bottom@-195,-430',
-                "gfx/alt_btn_dice.png",
-                'right-bottom@-195,-430',
+                "gfx/btn_dice2.png",
+                'right-bottom@-195,-440',
+                "gfx/alt_btn_dice2.png",
+                'right-bottom@-195,-440',
                 overfn, outfn,
                 function(v) return dice:rollTxt() end,
                 enablefn
             );
             vn:show_btn(
                 function(v) if vn.stopped then next_turn_obj:act(); end; end,
-                "gfx/btn_next.png",
-                'right-bottom@-195,-270',
-                "gfx/alt_btn_next.png",
-                'right-bottom@-195,-270',
+                "gfx/btn_next2.png",
+                'right-bottom@-195,-280',
+                "gfx/alt_btn_next2.png",
+                'right-bottom@-195,-280',
                 nil, nil,
                 function(v) return next_turn_obj:disp() end,
                 enablefn
             );
             vn:show_btn(
                 function(v) if vn.stopped then increase_bet_obj:act(); end; end,
-                "gfx/btn_inc.png",
-                'right-bottom@-195,-150',
-                "gfx/alt_btn_inc.png",
-                'right-bottom@-195,-150',
+                "gfx/btn_inc2.png",
+                'right-bottom@-195,-180',
+                "gfx/alt_btn_inc2.png",
+                'right-bottom@-195,-180',
                 nil, nil,
                 function(v) return increase_bet_obj:txt() end,
                 enablefn
             );
             vn:show_btn(
                 function(v) if vn.stopped then play_game_obj:act(); end; end,
-                "gfx/btn_exit.png",
-                'right-bottom@-195,-20',
-                "gfx/alt_btn_exit.png",
-                'right-bottom@-195,-20',
+                "gfx/btn_exit2.png",
+                'right-bottom@-195,-10',
+                "gfx/alt_btn_exit2.png",
+                'right-bottom@-195,-10',
                 nil, nil,
                 function(v) return play_game_obj:txt() end,
                 enablefn2
