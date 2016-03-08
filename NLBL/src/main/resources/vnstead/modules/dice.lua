@@ -678,6 +678,12 @@ game_room = vnr {
         paginator:turnoff();
         vn:lock_direct();
         s:bgimg(game.table.bg);
+        
+        --TBD: remove this test code
+        --local test = vn:show(game.table.paper, 'moveintop-top-left@0,0', 20 * vn.hz);
+        --vn:add_child(test, "gfx/btn_dice2.png", 0, 200);
+        --vn:add_child(test, "gfx/btn_inc2.png", 110, 200);
+        
         vn:show(game.table.paper, 'right-top@-20,40', 0);
         local overfn = function(v) set_sound('sfx/shake.ogg', 1, 0); end;
         local outfn = function(v) stop_sound(1); end;

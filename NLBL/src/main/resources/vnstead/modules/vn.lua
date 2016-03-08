@@ -324,6 +324,9 @@ vn = obj {
 
         local i, k = s:lookup(nam)
         if not i then return end
+        for ii, vv in ipairs(i.children) do
+            s:hide(vv, eff, ...);
+        end
         if i.onhide then
             i:onhide();
         end
@@ -347,9 +350,20 @@ vn = obj {
     end;
 
     size = function(s, v, idx)
+        local px, py = 0, 0;
+        if v.parent then
+            px, py = s:size(v.parent, idx);
+        end
         local xarm, yarm = s:arm(v, idx);
         local vw, vh = sprite.size(v.spr[idx]:val());
-        return vw + xarm, vh + yarm;
+        local rx, ry = vw + xarm, vh + yarm;
+        if px > rx then
+            rx = px;
+        end
+        if py > ry then
+            ry = py;
+        end
+        return rx, ry;
     end;
 
     arm = function(s, v, idx)
@@ -379,6 +393,11 @@ vn = obj {
     end;
 
     effect = function(s, image, eff, speed, startFrame, framesFromStop, armarr, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
+        local maxStep = math.floor((speed or s.speed) / s.hz);
+        return s:effect_int(nil, image, eff, startFrame, maxStep, framesFromStop, armarr, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
+    end;
+    
+    effect_int = function(s, parent_eff, image, eff, startFrame, maxStep, framesFromStop, armarr, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
         local t = eff;
         local v
 
@@ -398,6 +417,7 @@ vn = obj {
         local picture = image.pic
         local name = image.nam
         local v = {
+            parent = parent_eff,
             pic = picture,
             nam = name,
             eff = t,
@@ -410,13 +430,16 @@ vn = obj {
             onout = on_out,
             onhide = on_hide,
             tooltipfn = tooltip_fn,
-            enablefn = enable_fn;
+            enablefn = enable_fn,
+            --children = {} - actually can be set here, but I'll set it later, after possible hide() call
         }
 
         if eff == 'hide' then
             s:hide(v)
             return
         end
+        
+        v.children = {}
 
         local i, k
         local old_pos
@@ -433,13 +456,13 @@ vn = obj {
             v = oe
         else
             v.step = startFrame
-            v.max_step = math.floor((speed or s.speed) / s.hz)
+            v.max_step = maxStep;
             v.from_stop = framesFromStop
             s:load_effect(v)
         end
         v.step = startFrame
         v.start = startFrame
-        v.max_step = math.floor((speed or s.speed) / s.hz)
+        v.max_step = maxStep;
         v.from_stop = framesFromStop
         if not eff then
             eff = ''
@@ -499,6 +522,24 @@ vn = obj {
         end
 
         return v
+    end;
+    
+    add_child = function(s, parent, image, dx, dy, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
+        local armarr = { [0] = { dx, dy } };
+        return s:add_child_frames(parent, image, armarr, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
+    end;
+    
+    add_child_frames = function(s, parent, image, armarr, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
+        local child = s:effect_int(parent, image, nil, parent.start, parent.max_step, parent.from_stop, armarr, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
+        child.eff = parent.eff;
+        child.from = parent.from;
+        child.pos = parent.pos;
+        stead.table.insert(parent.children, child);
+        return child;
+    end;
+    
+    remove_child = function(s, parent, child)
+        stead.table.remove(parent.children, child);
     end;
 
     pause = function(s, frames, callback)
@@ -728,19 +769,24 @@ vn = obj {
         sprite.draw(v.spr[v.step]:val(), s:screen(), x, y);
     end;
     do_effect = function(s, v)
-        if v.eff == 'movein' then
-            return s:movein(v)
-        elseif v.eff == 'moveout' then
-            return s:moveout(v)
-        elseif v.eff == 'fadein' or v.eff == 'fadeout' then
-            return s:fade(v)
-        elseif v.eff == 'zoomin' or v.eff == 'zoomout' then
-            return s:zoom(v)
-        elseif v.eff == 'reverse' then
-            return s:reverse(v)
-        else
-            return s:none(v)
+        local result;
+        for i, vv in ipairs(v.children) do
+            s:do_effect(vv);
         end
+        if v.eff == 'movein' then
+            result = s:movein(v);
+        elseif v.eff == 'moveout' then
+            result = s:moveout(v)
+        elseif v.eff == 'fadein' or v.eff == 'fadeout' then
+            result = s:fade(v)
+        elseif v.eff == 'zoomin' or v.eff == 'zoomout' then
+            result = s:zoom(v)
+        elseif v.eff == 'reverse' then
+            result = s:reverse(v)
+        else
+            result = s:none(v)
+        end
+        return result;
     end;
     startcb = function(s, callback, effect)
         s.callback = callback;
