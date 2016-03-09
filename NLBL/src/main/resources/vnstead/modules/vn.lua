@@ -180,8 +180,8 @@ vn = obj {
         timer:set(1); --(s.hz)
     end;
     get_spr_rct = function(s, v)
-        local xs, ys = s:postoxy(v, v.step)
-        local ws, hs = sprite.size(v.spr[v.step]:val());
+        local xs, ys = s:postoxy(v)
+        local ws, hs = sprite.size(v.spr[0]:val());
         return { x = xs, y = ys, w = ws, h = hs };
     end;
     inside_spr = function(s, v, x, y)
@@ -644,17 +644,20 @@ vn = obj {
         end
         sprite.draw(spr, s:screen(), x, y);
         sprite.free(spr)
+        return idx, x, y;
     end;
     none = function(s, v)
         local x, y
         x, y = s:postoxy(v, v.step)
         sprite.draw(v.spr[v.step]:val(), s:screen(), x, y);
+        return v.step, x, y;
     end;
     reverse = function(s, v)
         local x, y
         local idx = v.max_step - v.step;
         x, y = s:postoxy(v, idx)
         sprite.draw(v.spr[idx]:val(), s:screen(), x, y);
+        return idx, x, y;
     end;
     moveout = function(s, v)
         local mxs, zstep = s:steps(v);
@@ -685,6 +688,7 @@ vn = obj {
             y = math.floor(y_start + zstep * (s.scr_h - y_start) / mxs)
         end
         sprite.draw(v.spr[idx]:val(), s:screen(), x, y);
+        return idx, x, y;
     end;
 
     zoom = function(s, v)
@@ -741,6 +745,7 @@ vn = obj {
         if v.spr[sprpos]:val() ~= spr then
             sprite.free(spr)
         end
+        return sprpos, x, y;
     end;
 
     movein = function(s, v)
@@ -770,24 +775,26 @@ vn = obj {
             y_start = s.scr_h
             y = math.floor(y_start - zstep * (s.scr_h - y_end) / mxs)
         end
-        sprite.draw(v.spr[v.step]:val(), s:screen(), x, y);
+        sprite.draw(v.spr[idx]:val(), s:screen(), x, y);
+        return idx, x, y;
     end;
     do_effect = function(s, v)
-        local result;
+        local idx, x, y;
         if v.eff == 'movein' then
-            result = s:movein(v);
+            idx, x, y = s:movein(v);
         elseif v.eff == 'moveout' then
-            result = s:moveout(v)
+            idx, x, y = s:moveout(v)
         elseif v.eff == 'fadein' or v.eff == 'fadeout' then
-            result = s:fade(v)
+            idx, x, y = s:fade(v)
         elseif v.eff == 'zoomin' or v.eff == 'zoomout' then
-            result = s:zoom(v)
+            idx, x, y = s:zoom(v)
         elseif v.eff == 'reverse' then
-            result = s:reverse(v)
+            idx, x, y = s:reverse(v)
         else
-            result = s:none(v)
+            idx, x, y = s:none(v)
         end
-        return result;
+        s:draw_hud(v, idx, x, y);
+        return idx;
     end;
     startcb = function(s, callback, effect)
         s.callback = callback;
@@ -984,13 +991,8 @@ vn = obj {
             theme.reset('scr.gfx.mode');
         end
     end;
-    process = function(s)
-        local i, v
-        local n = false
-        local first
-        local cbresult = false;
-        -- clear bg
-        sprite.copy(s.bg_spr, s:screen())
+    do_effects = function(s, call_onhide, inc_steps)
+        local n = false;
         for i, v in ipairs(s._effects) do
             local e = true;
             if v.enablefn then
@@ -999,18 +1001,27 @@ vn = obj {
             if e then
                 s:do_effect(v);
             else
-                if v.onhide then
+                if v.onhide and call_onhide then
                     v:onhide();
                 end
             end
-            if v.step < v.max_step - v.from_stop then
+            if inc_steps and (v.step < v.max_step - v.from_stop) then
                 v.step = v.step + 1
                 n = true
             end
         end
+        return n;
+    end;
+    process = function(s)
+        local i, v
+        local first
+        local cbresult = false;
+        -- clear bg
+        sprite.copy(s.bg_spr, s:screen())
+        local n = s:do_effects(true, true);
         local x, y = stead.mouse_pos();
         if n then
-            s:draw_huds();
+            s:do_effects(false, false);
             s:tooltips(x, y);
         else
             if (vn.callback) then
@@ -1018,7 +1029,7 @@ vn = obj {
                 vn.callback = false;
                 cbresult = callback();
             end
-            s:draw_huds();
+            s:do_effects(false, false);
             s:tooltips(x, y);
             if cbresult then
                 if type(cbresult) == 'function' then
@@ -1031,18 +1042,10 @@ vn = obj {
         end
         return n
     end;
-    draw_huds = function(s)
-        for i, v in ipairs(s._effects) do
-            local e = true;
-            if v.enablefn then
-                e = v:enablefn();
-            end
-            if e then
-                s:draw_hud(v);
-            end
+    draw_hud = function(s, v, idx, x, y, target)
+        if not idx then
+            idx = 0;
         end
-    end;
-    draw_hud = function(s, v, target)
         if not target then
             if s.direct_lock then
                 target = sprite.screen();
@@ -1052,7 +1055,16 @@ vn = obj {
         end
         if (v.txtfn) then
             local texts = v.txtfn();
-            local xpos, ypos = s:postoxy(v);
+            local xpos, ypos = nil, nil;
+            if not x or not y then
+                xpos, ypos = s:postoxy(v, idx);
+            end
+            if x then
+                xpos = x;
+            end
+            if y then
+                ypos = y;
+            end
             local ycur = ypos;
             for k, vv in pairs(texts) do
                 local color = vv.color;
