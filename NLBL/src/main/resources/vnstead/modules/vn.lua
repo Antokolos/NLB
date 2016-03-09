@@ -138,9 +138,6 @@ vn = obj {
         up_x = 0,
         down_x = 0,
         callback = false,
-        txtfun = false,
-        xhud = 1540,
-        yhud = 100,
         extent = 100,
         hud_color = '#000000',
         pause_frames = 0,
@@ -392,12 +389,12 @@ vn = obj {
         return mxs, zstep;
     end;
 
-    effect = function(s, image, eff, speed, startFrame, framesFromStop, armarr, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
+    effect = function(s, image, eff, speed, startFrame, framesFromStop, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
         local maxStep = math.floor((speed or s.speed) / s.hz);
-        return s:effect_int(nil, image, eff, startFrame, maxStep, framesFromStop, armarr, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
+        return s:effect_int(nil, image, eff, startFrame, maxStep, framesFromStop, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
     end;
     
-    effect_int = function(s, parent_eff, image, eff, startFrame, maxStep, framesFromStop, armarr, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
+    effect_int = function(s, parent_eff, image, eff, startFrame, maxStep, framesFromStop, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
         local t = eff;
         local v
 
@@ -425,12 +422,13 @@ vn = obj {
             start = startFrame,
             from_stop = framesFromStop,
             arm = armarr,
+            txtfn = txt_fn,
             onclick = on_clk,
             onover = on_over,
             onout = on_out,
             onhide = on_hide,
             tooltipfn = tooltip_fn,
-            enablefn = enable_fn,
+            enablefn = enable_fn
             --children = {} - actually can be set here, but I'll set it later, after possible hide() call
         }
 
@@ -524,13 +522,13 @@ vn = obj {
         return v
     end;
     
-    add_child = function(s, parent, image, dx, dy, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
+    add_child = function(s, parent, image, dx, dy, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
         local armarr = { [0] = { dx, dy } };
-        return s:add_child_frames(parent, image, armarr, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
+        return s:add_child_frames(parent, image, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
     end;
     
-    add_child_frames = function(s, parent, image, armarr, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
-        local child = s:effect_int(parent, image, nil, parent.start, parent.max_step, parent.from_stop, armarr, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
+    add_child_frames = function(s, parent, image, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
+        local child = s:effect_int(parent, image, nil, parent.start, parent.max_step, parent.from_stop, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
         child.eff = parent.eff;
         child.from = parent.from;
         child.pos = parent.pos;
@@ -571,37 +569,43 @@ vn = obj {
     end;
 
     postoxy = function(s, v, idx)
-        if not idx then
-            idx = 0;
-        end
-        local vw, vh = s:size(v, idx)
-        local xarm, yarm = s:arm(v, idx)
-        local x, y = xarm, yarm
-        if v.pos:find 'left' then
-            x = xarm
-        elseif v.pos:find 'right' then
-            x = s.scr_w - vw
+        if v.parent then
+            local x, y = s:postoxy(v.parent, idx);
+            local xarm, yarm = s:arm(v, idx);
+            return x + xarm, y + yarm;
         else
-            x = math.floor((s.scr_w - vw) / 2);
+            if not idx then
+                idx = 0;
+            end
+            local vw, vh = s:size(v, idx)
+            local xarm, yarm = s:arm(v, idx)
+            local x, y = xarm, yarm
+            if v.pos:find 'left' then
+                x = xarm
+            elseif v.pos:find 'right' then
+                x = s.scr_w - vw
+            else
+                x = math.floor((s.scr_w - vw) / 2);
+            end
+            if v.pos:find 'top' then
+                y = yarm
+            elseif v.pos:find 'bottom' then
+                y = s.scr_h - vh
+            elseif v.pos:find 'middle' then
+                y = math.floor((s.scr_h - vh) / 2)
+            else
+                y = s.scr_h - vh
+            end
+            if v.pos:find('@[ \t]*[0-9+%-]+[ \t]*,[ \t]*[0-9+%-]+') then
+                local dx, dy
+                local p = v.pos:gsub("^[^@]*@", "")
+                dx = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%1")
+                dy = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%2")
+                x = x + dx
+                y = y + dy
+            end
+            return x, y
         end
-        if v.pos:find 'top' then
-            y = yarm
-        elseif v.pos:find 'bottom' then
-            y = s.scr_h - vh
-        elseif v.pos:find 'middle' then
-            y = math.floor((s.scr_h - vh) / 2)
-        else
-            y = s.scr_h - vh
-        end
-        if v.pos:find('@[ \t]*[0-9+%-]+[ \t]*,[ \t]*[0-9+%-]+') then
-            local dx, dy
-            local p = v.pos:gsub("^[^@]*@", "")
-            dx = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%1")
-            dy = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%2")
-            x = x + dx
-            y = y + dy
-        end
-        return x, y
     end;
 
     set_bg = function(s, picture)
@@ -770,9 +774,6 @@ vn = obj {
     end;
     do_effect = function(s, v)
         local result;
-        for i, vv in ipairs(v.children) do
-            s:do_effect(vv);
-        end
         if v.eff == 'movein' then
             result = s:movein(v);
         elseif v.eff == 'moveout' then
@@ -957,7 +958,6 @@ vn = obj {
         end
         s._effects = e2
 
-        --s:draw_hud()
         s:commit(s:screen())
         s:leave_direct();
 
@@ -1010,7 +1010,7 @@ vn = obj {
         end
         local x, y = stead.mouse_pos();
         if n then
-            s:draw_hud();
+            s:draw_huds();
             s:tooltips(x, y);
         else
             if (vn.callback) then
@@ -1018,7 +1018,7 @@ vn = obj {
                 vn.callback = false;
                 cbresult = callback();
             end
-            s:draw_hud();
+            s:draw_huds();
             s:tooltips(x, y);
             if cbresult then
                 if type(cbresult) == 'function' then
@@ -1031,7 +1031,18 @@ vn = obj {
         end
         return n
     end;
-    draw_hud = function(s, target)
+    draw_huds = function(s)
+        for i, v in ipairs(s._effects) do
+            local e = true;
+            if v.enablefn then
+                e = v:enablefn();
+            end
+            if e then
+                s:draw_hud(v);
+            end
+        end
+    end;
+    draw_hud = function(s, v, target)
         if not target then
             if s.direct_lock then
                 target = sprite.screen();
@@ -1039,21 +1050,22 @@ vn = obj {
                 target = s:screen();
             end
         end
-        if (s.txtfun) then
-            local texts = s.txtfun();
-            local ycur = s.yhud;
-            for k, v in pairs(texts) do
-                local color = v.color;
+        if (v.txtfn) then
+            local texts = v.txtfn();
+            local xpos, ypos = s:postoxy(v);
+            local ycur = ypos;
+            for k, vv in pairs(texts) do
+                local color = vv.color;
                 if not color then
                     color = s.hud_color;
                 end
-                local textSprite = sprite.text(hudFont, v.text, color);
+                local textSprite = sprite.text(hudFont, vv.text, color);
                 local w, h = sprite.size(textSprite);
                 w = w + s.extent;
                 local hudSprite = sprite.blank(w, h);
-                sprite.draw(target, s.xhud, ycur, w, h, hudSprite, 0, 0);
+                sprite.draw(target, xpos, ycur, w, h, hudSprite, 0, 0);
                 sprite.draw(textSprite, hudSprite, 0, 0);
-                sprite.draw(hudSprite, target, s.xhud, ycur);
+                sprite.draw(hudSprite, target, xpos, ycur);
                 ycur = ycur + h;
                 sprite.free(hudSprite);
                 sprite.free(textSprite);
@@ -1111,18 +1123,16 @@ vn = obj {
         sprite.free(spr);
         sprite.free(tt_bg);
     end;
-    show_btn = function(s, actfn, btnimg, btneff, ovrimg, ovreff, overfn, outfn, tooltipfn, enablefn, btnframes, ovrframes)
+    show_btn = function(s, btnimg, btneff, txtfn, actfn, ovrimg, ovreff, overfn, outfn, tooltipfn, enablefn, btnframes, ovrframes)
         if not btnframes then
             btnframes = 0;
         end
         if not ovrframes then
             ovrframes = 0;
         end
-        s:show(btnimg,
-            btneff,
-            btnframes * s.hz, nil, nil, nil,
-            nil,
-            function(v)
+        local onover = nil;
+        if ovrimg then
+            onover = function(v)
                 if s.uiupdate then
                     return;
                 end
@@ -1133,6 +1143,7 @@ vn = obj {
                 s:show(ovrimg,
                     ovreff,
                     ovrframes * s.hz, nil, nil, nil,
+                    txtfn,
                     actfn,
                     nil,
                     function(vv)
@@ -1140,7 +1151,7 @@ vn = obj {
                             return;
                         end
                         s:hide(vv);
-                        s:show_btn(actfn, btnimg, btneff, ovrimg, ovreff, overfn, outfn, tooltipfn, enablefn, btnframes, ovrframes);
+                        s:show_btn(btnimg, btneff, txtfn, actfn, ovrimg, ovreff, overfn, outfn, tooltipfn, enablefn, btnframes, ovrframes);
                         s:start(nil, true);
                     end,
                     outfn,
@@ -1150,7 +1161,14 @@ vn = obj {
                     ovrframes
                 );
                 s:start(nil, true);
-            end,
+            end
+        end
+        s:show(btnimg,
+            btneff,
+            btnframes * s.hz, nil, nil, nil,
+            txtfn,
+            nil,
+            onover,
             nil,
             nil,
             tooltipfn,

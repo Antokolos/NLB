@@ -678,25 +678,21 @@ game_room = vnr {
         paginator:turnoff();
         vn:lock_direct();
         s:bgimg(game.table.bg);
-        
-        --TBD: remove this test code
-        --local test = vn:show(game.table.paper, 'moveintop-top-left@0,0', 20 * vn.hz);
-        --vn:add_child(test, "gfx/btn_dice2.png", 0, 200);
-        --vn:add_child(test, "gfx/btn_inc2.png", 110, 200);
-        
-        vn:show(game.table.paper, 'right-top@-20,40', 0);
+
+        local txtfn = function() return rollStat:info(); end;
+        local paper = vn:show(game.table.paper, 'right-top@-20,40', 0);
+
         local overfn = function(v) set_sound('sfx/shake.ogg', 1, 0); end;
         local outfn = function(v) stop_sound(1); end;
         local enablefn = function(v) return (rollStat.data and not rollStat.data.ai[dice.pos] and rollStat:is_defined(rollStat.data.mainplr)); end;
         local enablefn2 = function(v) return (rollStat.data and not rollStat.data.ai[dice.pos]); end;
         if (game.table.plate) then
-            vn.xhud = 1540;
-            vn.yhud = 100;
+            vn:add_child(paper, 'gfx/empty.png', 90, 100, txtfn);
             vn:show(game.table.plate, 'right-bottom@110,75', 0);
             vn:show_btn(
-                function(v) if vn.stopped then set_sound('sfx/kosti.ogg', 1, 1); dice:act(); end; end,
                 "gfx/btn_dice2.png",
                 'right-bottom@-195,-440',
+                nil, function(v) if vn.stopped then set_sound('sfx/kosti.ogg', 1, 1); dice:act(); end; end,
                 "gfx/alt_btn_dice2.png",
                 'right-bottom@-195,-440',
                 overfn, outfn,
@@ -704,9 +700,9 @@ game_room = vnr {
                 enablefn
             );
             vn:show_btn(
-                function(v) if vn.stopped then next_turn_obj:act(); end; end,
                 "gfx/btn_next2.png",
                 'right-bottom@-195,-280',
+                nil, function(v) if vn.stopped then next_turn_obj:act(); end; end,
                 "gfx/alt_btn_next2.png",
                 'right-bottom@-195,-280',
                 nil, nil,
@@ -714,9 +710,9 @@ game_room = vnr {
                 enablefn
             );
             vn:show_btn(
-                function(v) if vn.stopped then increase_bet_obj:act(); end; end,
                 "gfx/btn_inc2.png",
                 'right-bottom@-195,-180',
+                nil, function(v) if vn.stopped then increase_bet_obj:act(); end; end,
                 "gfx/alt_btn_inc2.png",
                 'right-bottom@-195,-180',
                 nil, nil,
@@ -724,9 +720,9 @@ game_room = vnr {
                 enablefn
             );
             vn:show_btn(
-                function(v) if vn.stopped then play_game_obj:act(); end; end,
                 "gfx/btn_exit2.png",
                 'right-bottom@-195,-10',
+                nil, function(v) if vn.stopped then play_game_obj:act(); end; end,
                 "gfx/alt_btn_exit2.png",
                 'right-bottom@-195,-10',
                 nil, nil,
@@ -734,12 +730,11 @@ game_room = vnr {
                 enablefn2
             );
         else
-            vn.xhud = 1560;
-            vn.yhud = 120;
+            vn:add_child(paper, 'gfx/empty.png', 60, 100, txtfn);
             vn:show_btn(
-                function(v) if vn.stopped then set_sound('sfx/kosti.ogg', 1, 1); dice:act(); end; end,
                 "gfx/btn_dice.png",
                 'right-top@-40,500',
+                nil, function(v) if vn.stopped then set_sound('sfx/kosti.ogg', 1, 1); dice:act(); end; end,
                 "gfx/alt_btn_dice.png",
                 'right-top@-40,500',
                 overfn, outfn,
@@ -747,9 +742,9 @@ game_room = vnr {
                 enablefn
             );
             vn:show_btn(
-                function(v) if vn.stopped then next_turn_obj:act(); end; end,
                 "gfx/btn_next.png",
                 'right-top@-40,625',
+                nil, function(v) if vn.stopped then next_turn_obj:act(); end; end,
                 "gfx/alt_btn_next.png",
                 'right-top@-40,625',
                 nil, nil,
@@ -757,9 +752,9 @@ game_room = vnr {
                 enablefn
             );
             vn:show_btn(
-                function(v) if vn.stopped then increase_bet_obj:act(); end; end,
                 "gfx/btn_inc.png",
                 'right-top@-40,750',
+                nil, function(v) if vn.stopped then increase_bet_obj:act(); end; end,
                 "gfx/alt_btn_inc.png",
                 'right-top@-40,750',
                 nil, nil,
@@ -767,9 +762,9 @@ game_room = vnr {
                 enablefn
             );
             vn:show_btn(
-                function(v) if vn.stopped then play_game_obj:act(); end; end,
                 "gfx/btn_exit.png",
                 'right-top@-40,875',
+                nil, function(v) if vn.stopped then play_game_obj:act(); end; end,
                 "gfx/alt_btn_exit.png",
                 'right-top@-40,875',
                 nil, nil,
@@ -778,14 +773,12 @@ game_room = vnr {
             );
         end
         vn:start();
-        vn.txtfun = function() return rollStat:info(); end;
         take(rollStat);
         dice:set_callback(rollStat:setrolls());
         dice.pos = 2;
     end,
     left = function(s, t)
         remove(rollStat, me());
-        vn.txtfun = function() return {}; end;
         if rollStat.data then
             game.data = shallowcopy(rollStat.data);
             game.money = game.data.money[game.data.mainplr];

@@ -234,6 +234,7 @@ public class NonLinearBookFacade implements NLBObservable {
         }
         File gfxDir = new File(exportDir, "gfx");
         if (gfxDir.mkdir()) {
+            exportBundledVNSTEADFile(gfxDir, true, "empty.png");
             exportBundledVNSTEADFile(gfxDir, true, "fl.png");
             exportBundledVNSTEADFile(gfxDir, true, "fr.png");
             exportBundledVNSTEADFile(gfxDir, true, "aup.png");
