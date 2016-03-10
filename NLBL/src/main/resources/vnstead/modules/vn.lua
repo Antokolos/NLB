@@ -793,8 +793,7 @@ vn = obj {
         else
             idx, x, y = s:none(v)
         end
-        s:draw_hud(v, idx, x, y);
-        return idx;
+        return {["v"] = v, ["idx"] = idx, ["x"] = x, ["y"] = y};
     end;
     startcb = function(s, callback, effect)
         s.callback = callback;
@@ -991,26 +990,27 @@ vn = obj {
             theme.reset('scr.gfx.mode');
         end
     end;
-    do_effects = function(s, call_onhide, inc_steps)
-        local n = false;
+    do_effects = function(s)
+        local result = {["datas"] = {}, ["hasmore"] = false};
         for i, v in ipairs(s._effects) do
             local e = true;
             if v.enablefn then
                 e = v:enablefn();
             end
             if e then
-                s:do_effect(v);
+                local data = s:do_effect(v);
+                stead.table.insert(result.datas, data);
             else
-                if v.onhide and call_onhide then
+                if v.onhide then
                     v:onhide();
                 end
             end
-            if inc_steps and (v.step < v.max_step - v.from_stop) then
+            if (v.step < v.max_step - v.from_stop) then
                 v.step = v.step + 1
-                n = true
+                result.hasmore = true;
             end
         end
-        return n;
+        return result;
     end;
     process = function(s)
         local i, v
@@ -1018,10 +1018,11 @@ vn = obj {
         local cbresult = false;
         -- clear bg
         sprite.copy(s.bg_spr, s:screen())
-        local n = s:do_effects(true, true);
+        local res = s:do_effects();
+        local n = res.hasmore;
         local x, y = stead.mouse_pos();
         if n then
-            s:do_effects(false, false);
+            s:draw_huds(res.datas);
             s:tooltips(x, y);
         else
             if (vn.callback) then
@@ -1029,7 +1030,7 @@ vn = obj {
                 vn.callback = false;
                 cbresult = callback();
             end
-            s:do_effects(false, false);
+            s:draw_huds(res.datas);
             s:tooltips(x, y);
             if cbresult then
                 if type(cbresult) == 'function' then
@@ -1041,6 +1042,11 @@ vn = obj {
             end
         end
         return n
+    end;
+    draw_huds = function(s, datas)
+        for k, vv in ipairs(datas) do
+            s:draw_hud(vv.v, vv.idx, vv.x, vv.y)
+        end
     end;
     draw_hud = function(s, v, idx, x, y, target)
         if not idx then
