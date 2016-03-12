@@ -680,7 +680,7 @@ game_room = vnr {
         s:bgimg(game.table.bg);
 
         local txtfn = function() return rollStat:info(); end;
-        local paper = vn:show(game.table.paper, 'moveinright-right-top@-20,40', 10 * vn.hz);
+        local paper = vn:show(game.table.paper, 'moveinright-right-top@-20,40', 10 * vn.hz, 0, 2, nil, nil, nil, function(v) vn:set_step(v, nil, not v.forward); vn:start(); end);
 
         local overfn = function(v) set_sound('sfx/shake.ogg', 1, 0); end;
         local outfn = function(v) stop_sound(1); end;

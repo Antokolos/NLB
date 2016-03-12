@@ -292,7 +292,7 @@ vn = obj {
         end
     end;
     free_effect = function(s, v)
-        for sprStep = 0, v.max_step do
+        for sprStep = v.start, v.max_step do
             v.spr[sprStep]:free();
             v.spr[sprStep] = nil;
         end
@@ -424,6 +424,8 @@ vn = obj {
             pic = picture,
             nam = name,
             eff = t,
+            forward = true,
+            init_step = curStep,
             step = curStep,
             start = startFrame,
             from_stop = framesFromStop,
@@ -815,7 +817,7 @@ vn = obj {
         sprite.draw(v.spr[idx]:val(), s:screen(), x, y);
         return idx, x, y;
     end;
-    do_effect = function(s, v)
+    do_effect = function(s, v, with_children)
         local idx, x, y;
         local scale = 1.0;
         local alpha = 255;
@@ -1029,24 +1031,55 @@ vn = obj {
             theme.reset('scr.gfx.mode');
         end
     end;
-    do_effects = function(s)
-        local result = {["datas"] = {}, ["hasmore"] = false};
-        for i, v in ipairs(s._effects) do
-            local e = true;
-            if v.enablefn then
-                e = v:enablefn();
+    set_step = function(s, v, from_step, forward)
+        if from_step then
+            v.step = from_step;
+        end
+        if forward ~= nil then
+            v.forward = forward;
+        end
+        local r = s:do_step(v);
+        local data = r.data;
+        if data then
+            s:draw_hud(data.v, data.idx, data.x, data.y, data.scale, data.alpha);
+        end
+        for k, vv in ipairs(v.children) do
+            s:set_step(vv, from_step, forward);
+        end
+    end;
+    do_step = function(s, v)
+        local result = {["data"] = nil, ["hasmore"] = false};
+        local e = true;
+        if v.enablefn then
+            e = v:enablefn();
+        end
+        if e then
+            result.data = s:do_effect(v);
+        else
+            if v.onhide then
+                v:onhide();
             end
-            if e then
-                local data = s:do_effect(v);
-                stead.table.insert(result.datas, data);
-            else
-                if v.onhide then
-                    v:onhide();
-                end
-            end
+        end
+        if v.forward then
             if (v.step < v.max_step - v.from_stop) then
                 v.step = v.step + 1
                 result.hasmore = true;
+            end
+        else
+            if (v.step > v.init_step) then
+                v.step = v.step - 1
+                result.hasmore = true;
+            end
+        end
+        return result;
+    end;
+    do_effects = function(s)
+        local result = {["datas"] = {}, ["hasmore"] = false};
+        for i, v in ipairs(s._effects) do
+            local r = s:do_step(v);
+            if r.data then
+                stead.table.insert(result.datas, r.data);
+                result.hasmore = (result.hasmore or r.hasmore);
             end
         end
         return result;
