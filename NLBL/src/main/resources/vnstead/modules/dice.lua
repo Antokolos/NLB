@@ -144,14 +144,14 @@ dice = menu {
                 if ((s.lastRollFiles[i] ~= nil) and (s.lastRollFiles[i] ~= '')) then
                     local st = s:getStartFrame(lastRoll);
                     if fast then
-                        vn:hide(s.lastRollFiles[i], s:getPosStr(i).hidefast, vn.hz, 0, st, s:getArm());
+                        vn:hide(s.lastRollFiles[i], s:getPosStr(i).hidefast, vn.hz, 0, nil, st, s:getArm());
                     else
                         local img = s.lastRollFiles[i];
                         local hidestr = s:getPosStr(i).hide;
                         local spd = 100 * vn.hz;
                         local stt = st;
                         local arm = s:getArm();
-                        local pausecb = function() vn:hide(img, hidestr, spd, 0, stt, arm); end;
+                        local pausecb = function() vn:hide(img, hidestr, spd, 0, nil, stt, arm); end;
                         if rollStat.should_pass or (rollStat.data and s.pos ~= rollStat.data.mainplr) then
                             table.insert(pausecbs, i, pausecb);
                         else
@@ -189,7 +189,7 @@ dice = menu {
                 local st = s:getStartFrame(lastRoll);
                 table.insert(s.lastRolls, i, lastRoll);
                 table.insert(s.lastRollFiles, i, lastRollFile);
-                vn:show(lastRollFile, s:getPosStr(i).show, 100 * vn.hz, st, nil, s:getArm());
+                vn:show(lastRollFile, s:getPosStr(i).show, 100 * vn.hz, st, nil, nil, s:getArm());
                 result = true;
             end
         end

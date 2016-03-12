@@ -163,7 +163,7 @@ vn = obj {
         end
         local i, v, n
         for i, v in ipairs(s._effects) do
-            v.step = 0;
+            v.step = v.start;
             s:load_effect(v)
             if v.step < v.max_step - v.from_stop then
                 n = true
@@ -233,7 +233,7 @@ vn = obj {
     load_effect = function(s, v)
         local ss = s;
         if v.spr == nil then v.spr = {}; end;
-        for sprStep = 0, v.max_step do
+        for sprStep = v.start, v.max_step do
             v.spr[sprStep] = {
                 was_loaded = false,
                 cache = nil,
@@ -273,6 +273,8 @@ vn = obj {
                     local sprfile = prefix .. '.' .. string.format("%04d", sprStep) .. extension;
                     if ss:file_exists(sprfile) then
                         return s:load_file(sprfile);
+                    elseif sprStep == start then
+                        error("Can not load key sprite (" .. sprfile .. ")");
                     elseif sprStep > v.start then
                         return v.spr[sprStep - 1]:val();
                     end
@@ -389,12 +391,12 @@ vn = obj {
         return mxs, zstep;
     end;
 
-    effect = function(s, image, eff, speed, startFrame, framesFromStop, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
+    effect = function(s, image, eff, speed, startFrame, curStep, framesFromStop, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
         local maxStep = math.floor((speed or s.speed) / s.hz);
-        return s:effect_int(nil, image, eff, startFrame, maxStep, framesFromStop, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
+        return s:effect_int(nil, image, eff, startFrame, curStep, maxStep, framesFromStop, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
     end;
     
-    effect_int = function(s, parent_eff, image, eff, startFrame, maxStep, framesFromStop, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
+    effect_int = function(s, parent_eff, image, eff, startFrame, curStep, maxStep, framesFromStop, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
         local t = eff;
         local v
 
@@ -405,6 +407,10 @@ vn = obj {
 
         if not startFrame then
             startFrame = 0;
+        end
+        
+        if not curStep then
+            curStep = startFrame;
         end
 
         if not framesFromStop then
@@ -418,7 +424,7 @@ vn = obj {
             pic = picture,
             nam = name,
             eff = t,
-            step = startFrame,
+            step = curStep,
             start = startFrame,
             from_stop = framesFromStop,
             arm = armarr,
@@ -453,13 +459,13 @@ vn = obj {
             old_pos = oe.pos
             v = oe
         else
-            v.step = startFrame
+            v.step = curStep;
             v.max_step = maxStep;
             v.from_stop = framesFromStop
             s:load_effect(v)
         end
-        v.step = startFrame
-        v.start = startFrame
+        v.step = curStep;
+        v.start = startFrame;
         v.max_step = maxStep;
         v.from_stop = framesFromStop
         if not eff then
@@ -528,7 +534,7 @@ vn = obj {
     end;
     
     add_child_frames = function(s, parent, image, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
-        local child = s:effect_int(parent, image, nil, parent.start, parent.max_step, parent.from_stop, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
+        local child = s:effect_int(parent, image, nil, parent.start, parent.step, parent.max_step, parent.from_stop, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
         child.eff = parent.eff;
         child.from = parent.from;
         child.pos = parent.pos;
@@ -637,14 +643,17 @@ vn = obj {
         end
         x, y = s:postoxy(v, idx)
 
+        local alpha;
         if fadein then
-            spr = sprite.alpha(v.spr[idx]:val(), math.floor(255 * zstep / mxs))
+            alpha = math.floor(255 * zstep / mxs);
+            spr = sprite.alpha(v.spr[idx]:val(), alpha);
         else
-            spr = sprite.alpha(v.spr[idx]:val(), math.floor(255 * (1 - zstep / mxs)))
+            alpha = math.floor(255 * (1 - zstep / mxs));
+            spr = sprite.alpha(v.spr[idx]:val(), alpha);
         end
         sprite.draw(spr, s:screen(), x, y);
         sprite.free(spr)
-        return idx, x, y;
+        return idx, x, y, alpha;
     end;
     none = function(s, v)
         local x, y
@@ -678,14 +687,20 @@ vn = obj {
             x_end = -ws
             x = math.floor(x_start - zstep * (x_start - x_end) / mxs)
         elseif v.from == 'right' then
-            x = math.floor(x_start + zstep * (s.scr_w - x_start) / mxs)
+            x_end = s.scr_w;
+            if v.parent then
+                x_end = x_end + xarm;
+            end
+            x = math.floor(x_start + zstep * (x_end - x_start) / mxs)
         elseif v.from == 'top' then
             y_end = -hs
             y = math.floor(y_start - zstep * (y_start - y_end) / mxs)
         elseif v.from == 'bottom' then
-            y_end = s.scr_h
-            --y = math.floor(y_start + zstep * (s.scr_h - y_start + vh) / mxs)
-            y = math.floor(y_start + zstep * (s.scr_h - y_start) / mxs)
+            y_end = s.scr_h;
+            if v.parent then
+                y_end = y_end + yarm;
+            end
+            y = math.floor(y_start + zstep * (y_end - y_start) / mxs)
         end
         sprite.draw(v.spr[idx]:val(), s:screen(), x, y);
         return idx, x, y;
@@ -710,7 +725,7 @@ vn = obj {
         local xarm, yarm = s:arm(v, sprpos)
         local ws, hs = vw - xarm, vh - yarm
         if scale == 0 then
-            return
+            return v.start, 0, 0, 0;
         end
 
         if scale ~= 1.0 then
@@ -723,29 +738,45 @@ vn = obj {
 
         x, y = s:postoxy(v, sprpos)
 
-        if v.pos:find 'left' then
-            --x = x - math.floor((ws - w))
-            -- re-use x from postoxy()
-        elseif v.pos:find 'right' then
-            x = x + math.floor((ws - w))
+        local xdiff, xextent, ydiff, yextent;
+        if v.parent then
+            local wp, hp;
+            if scale ~= 1.0 then
+                local sprpar = sprite.scale(v.parent.spr[sprpos]:val(), scale, scale, false);
+                wp, hp = sprite.size(sprpar);
+                sprite.free(sprpar);
+            else
+                wp, hp = sprite.size(v.parent.spr[sprpos]:val());
+            end
+            xdiff = ws - wp;
+            ydiff = hs - hp;
+            xextent = math.floor(xarm * scale);
+            yextent = math.floor(yarm * scale);
         else
-            x = x + math.floor((ws - w) / 2)
+            xdiff = ws - w;
+            ydiff = hs - h;
+            xextent = 0;
+            yextent = 0;
+        end
+        if v.pos:find 'left' then
+            x = x - xarm + xextent;
+        elseif v.pos:find 'right' then
+            x = x + math.floor(xdiff) + xextent;
+        else
+            x = x + math.floor((xdiff - xarm) / 2) + xextent;
         end
         if v.pos:find 'top' then
-            --y = y - math.floor((hs - h))
-            -- re-use y from postoxy()
+            y = y - yarm + yextent;
         elseif v.pos:find 'bottom' then
-            y = y + math.floor((hs - h))
-        elseif v.pos:find 'middle' then
-            y = y + math.floor((hs - h) / 2)
+            y = y + math.floor(ydiff) + yextent;
         else
-            y = y + math.floor((hs - h) / 2)
+            y = y + math.floor((ydiff - yarm) / 2) + yextent;
         end
         sprite.draw(spr, s:screen(), x, y)
         if v.spr[sprpos]:val() ~= spr then
             sprite.free(spr)
         end
-        return sprpos, x, y;
+        return sprpos, x, y, scale;
     end;
 
     movein = function(s, v)
@@ -767,33 +798,41 @@ vn = obj {
             x = math.floor(x_start + zstep * (xarm - x_start) / mxs)
         elseif v.from == 'right' then
             x_start = s.scr_w
-            x = math.floor(x_start - zstep * (s.scr_w - x_end) / mxs)
+            if v.parent then
+                x_start = x_start + xarm;
+            end
+            x = math.floor(x_start - zstep * (x_start - x_end) / mxs)
         elseif v.from == 'top' then
             y_start = -hs
             y = math.floor(y_start + zstep * (yarm - y_start) / mxs)
         elseif v.from == 'bottom' then
             y_start = s.scr_h
-            y = math.floor(y_start - zstep * (s.scr_h - y_end) / mxs)
+            if v.parent then
+                y_start = y_start + yarm;
+            end
+            y = math.floor(y_start - zstep * (y_start - y_end) / mxs)
         end
         sprite.draw(v.spr[idx]:val(), s:screen(), x, y);
         return idx, x, y;
     end;
     do_effect = function(s, v)
         local idx, x, y;
+        local scale = 1.0;
+        local alpha = 255;
         if v.eff == 'movein' then
             idx, x, y = s:movein(v);
         elseif v.eff == 'moveout' then
             idx, x, y = s:moveout(v)
         elseif v.eff == 'fadein' or v.eff == 'fadeout' then
-            idx, x, y = s:fade(v)
+            idx, x, y, alpha = s:fade(v)
         elseif v.eff == 'zoomin' or v.eff == 'zoomout' then
-            idx, x, y = s:zoom(v)
+            idx, x, y, scale = s:zoom(v)
         elseif v.eff == 'reverse' then
             idx, x, y = s:reverse(v)
         else
             idx, x, y = s:none(v)
         end
-        return {["v"] = v, ["idx"] = idx, ["x"] = x, ["y"] = y};
+        return {["v"] = v, ["idx"] = idx, ["x"] = x, ["y"] = y, ["scale"] = scale, ["alpha"] = alpha};
     end;
     startcb = function(s, callback, effect)
         s.callback = callback;
@@ -1045,10 +1084,13 @@ vn = obj {
     end;
     draw_huds = function(s, datas)
         for k, vv in ipairs(datas) do
-            s:draw_hud(vv.v, vv.idx, vv.x, vv.y)
+            s:draw_hud(vv.v, vv.idx, vv.x, vv.y, vv.scale, vv.alpha)
         end
     end;
-    draw_hud = function(s, v, idx, x, y, target)
+    draw_hud = function(s, v, idx, x, y, scale, alpha, target)
+        if scale == 0 or alpha == 0 then
+            return;
+        end
         if not idx then
             idx = 0;
         end
@@ -1077,7 +1119,20 @@ vn = obj {
                 if not color then
                     color = s.hud_color;
                 end
-                local textSprite = sprite.text(hudFont, vv.text, color);
+                local textSpriteInit = sprite.text(hudFont, vv.text, color);
+                local textSpriteScaled;
+                if scale ~= 1.0 then
+                    textSpriteScaled = sprite.scale(textSpriteInit, scale, scale, false);
+                    sprite.free(textSpriteInit);
+                else
+                    textSpriteScaled = textSpriteInit;
+                end
+                local textSprite;
+                if alpha ~= 255 then
+                    textSprite = sprite.alpha(textSpriteScaled, alpha);
+                else
+                    textSprite = textSpriteScaled;
+                end
                 local w, h = sprite.size(textSprite);
                 w = w + s.extent;
                 local hudSprite = sprite.blank(w, h);
@@ -1160,7 +1215,7 @@ vn = obj {
                 s:hide(v);
                 s:show(ovrimg,
                     ovreff,
-                    ovrframes * s.hz, nil, nil, nil,
+                    ovrframes * s.hz, nil, nil, nil, nil,
                     txtfn,
                     actfn,
                     nil,
@@ -1183,7 +1238,7 @@ vn = obj {
         end
         s:show(btnimg,
             btneff,
-            btnframes * s.hz, nil, nil, nil,
+            btnframes * s.hz, nil, nil, nil, nil,
             txtfn,
             nil,
             onover,
