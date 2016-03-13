@@ -180,9 +180,8 @@ vn = obj {
         timer:set(1); --(s.hz)
     end;
     get_spr_rct = function(s, v)
-        local xs, ys = s:postoxy(v)
-        local ws, hs = sprite.size(v.spr[0]:val());
-        return { x = xs, y = ys, w = ws, h = hs };
+        local res = s:do_effect(v, true);
+        return { x = res.x, y = res.y, w = res.w, h = res.h };
     end;
     inside_spr = function(s, v, x, y)
         -- Click falls inside this picture
@@ -634,7 +633,7 @@ vn = obj {
         s._bg = picture
     end;
 
-    fade = function(s, v)
+    fade = function(s, v, only_compute)
         local mxs, zstep = s:steps(v);
         local x, y, idx
         local fadein = (v.eff == 'fadein');
@@ -653,24 +652,33 @@ vn = obj {
             alpha = math.floor(255 * (1 - zstep / mxs));
             spr = sprite.alpha(v.spr[idx]:val(), alpha);
         end
-        sprite.draw(spr, s:screen(), x, y);
+        local ww, hh = sprite.size(spr);
+        if not only_compute then
+            sprite.draw(spr, s:screen(), x, y);
+        end
         sprite.free(spr)
-        return idx, x, y, alpha;
+        return idx, x, y, ww, ss, alpha;
     end;
-    none = function(s, v)
+    none = function(s, v, only_compute)
         local x, y
         x, y = s:postoxy(v, v.step)
-        sprite.draw(v.spr[v.step]:val(), s:screen(), x, y);
-        return v.step, x, y;
+        local spr = v.spr[v.step]:val();
+        if not only_compute then
+            sprite.draw(spr, s:screen(), x, y);
+        end
+        return v.step, x, y, sprite.size(spr);
     end;
-    reverse = function(s, v)
+    reverse = function(s, v, only_compute)
         local x, y
         local idx = v.max_step - v.step;
         x, y = s:postoxy(v, idx)
-        sprite.draw(v.spr[idx]:val(), s:screen(), x, y);
-        return idx, x, y;
+        local spr = v.spr[idx]:val();
+        if not only_compute then
+            sprite.draw(spr, s:screen(), x, y);
+        end
+        return idx, x, y, sprite.size(spr);
     end;
-    moveout = function(s, v)
+    moveout = function(s, v, only_compute)
         local mxs, zstep = s:steps(v);
         local x_start, x_end
         local y_start, y_end
@@ -704,11 +712,14 @@ vn = obj {
             end
             y = math.floor(y_start + zstep * (y_end - y_start) / mxs)
         end
-        sprite.draw(v.spr[idx]:val(), s:screen(), x, y);
-        return idx, x, y;
+        local spr = v.spr[idx]:val();
+        if not only_compute then
+            sprite.draw(spr, s:screen(), x, y);
+        end
+        return idx, x, y, sprite.size(spr);
     end;
 
-    zoom = function(s, v)
+    zoom = function(s, v, only_compute)
         local mxs, zstep = s:steps(v);
         local x
         local y
@@ -774,14 +785,17 @@ vn = obj {
         else
             y = y + math.floor((ydiff - yarm) / 2) + yextent;
         end
-        sprite.draw(spr, s:screen(), x, y)
+        local ww, hh = sprite.size(spr);
+        if not only_compute then
+            sprite.draw(spr, s:screen(), x, y)
+        end
         if v.spr[sprpos]:val() ~= spr then
             sprite.free(spr)
         end
-        return sprpos, x, y, scale;
+        return sprpos, x, y, ww, hh, scale;
     end;
 
-    movein = function(s, v)
+    movein = function(s, v, only_compute)
         local mxs, zstep = s:steps(v);
         local x_start, y_start
         local x_end, y_end
@@ -814,27 +828,30 @@ vn = obj {
             end
             y = math.floor(y_start - zstep * (y_start - y_end) / mxs)
         end
-        sprite.draw(v.spr[idx]:val(), s:screen(), x, y);
-        return idx, x, y;
+        local spr = v.spr[idx]:val();
+        if not only_compute then
+            sprite.draw(spr, s:screen(), x, y);
+        end
+        return idx, x, y, sprite.size(spr);
     end;
-    do_effect = function(s, v, with_children)
-        local idx, x, y;
+    do_effect = function(s, v, only_compute)
+        local idx, x, y, w, h;
         local scale = 1.0;
         local alpha = 255;
         if v.eff == 'movein' then
-            idx, x, y = s:movein(v);
+            idx, x, y, w, h = s:movein(v, only_compute);
         elseif v.eff == 'moveout' then
-            idx, x, y = s:moveout(v)
+            idx, x, y, w, h = s:moveout(v, only_compute)
         elseif v.eff == 'fadein' or v.eff == 'fadeout' then
-            idx, x, y, alpha = s:fade(v)
+            idx, x, y, w, h, alpha = s:fade(v, only_compute)
         elseif v.eff == 'zoomin' or v.eff == 'zoomout' then
-            idx, x, y, scale = s:zoom(v)
+            idx, x, y, w, h, scale = s:zoom(v, only_compute)
         elseif v.eff == 'reverse' then
-            idx, x, y = s:reverse(v)
+            idx, x, y, w, h = s:reverse(v, only_compute)
         else
-            idx, x, y = s:none(v)
+            idx, x, y, w, h = s:none(v, only_compute)
         end
-        return {["v"] = v, ["idx"] = idx, ["x"] = x, ["y"] = y, ["scale"] = scale, ["alpha"] = alpha};
+        return {["v"] = v, ["idx"] = idx, ["x"] = x, ["y"] = y, ["w"] = w, ["h"] = h, ["scale"] = scale, ["alpha"] = alpha};
     end;
     startcb = function(s, callback, effect)
         s.callback = callback;

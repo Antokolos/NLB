@@ -57,7 +57,7 @@ dice = menu {
         end
     end,
     act = function(s)
-        vn:pause(10, function() set_sound('sfx/kosti.ogg', 2, 1); end);
+        vn:pause(10, function() set_sound(game_room:get_dice_sound(), 2, 1); end);
         return s:inv();
     end,
     inv = function(s)
@@ -677,6 +677,7 @@ game_room = vnr {
         end
         paginator:turnoff();
         vn:lock_direct();
+        rollStat:init();
         s:bgimg(game.table.bg);
 
         local txtfn = function() return rollStat:info(); end;
@@ -687,12 +688,14 @@ game_room = vnr {
         local enablefn = function(v) return (rollStat.data and not rollStat.data.ai[dice.pos] and rollStat:is_defined(rollStat.data.mainplr)); end;
         local enablefn2 = function(v) return (rollStat.data and not rollStat.data.ai[dice.pos]); end;
         if (game.table.plate) then
+            set_music('sfx/abu_ali.ogg');
             vn:add_child(paper, 'gfx/empty.png', 90, 100, txtfn);
             vn:show(game.table.plate, 'right-bottom@110,75', 0);
+            -- Using dice:inv() instead of dice:act() because of dice roll sound
             vn:show_btn(
                 "gfx/btn_dice2.png",
                 'right-bottom@-195,-440',
-                nil, function(v) if vn.stopped then set_sound('sfx/kosti.ogg', 1, 1); dice:act(); end; end,
+                nil, function(v) if vn.stopped then outfn(v); dice:act(); end; end,
                 "gfx/alt_btn_dice2.png",
                 'right-bottom@-195,-440',
                 overfn, outfn,
@@ -730,11 +733,12 @@ game_room = vnr {
                 enablefn2
             );
         else
+            set_music('sfx/tavernm.ogg');
             vn:add_child(paper, 'gfx/empty.png', 60, 100, txtfn);
             vn:show_btn(
                 "gfx/btn_dice.png",
                 'right-top@-40,500',
-                nil, function(v) if vn.stopped then set_sound('sfx/kosti.ogg', 1, 1); dice:act(); end; end,
+                nil, function(v) if vn.stopped then outfn(v); dice:act(); end; end,
                 "gfx/alt_btn_dice.png",
                 'right-top@-40,500',
                 overfn, outfn,
@@ -777,7 +781,15 @@ game_room = vnr {
         dice:set_callback(rollStat:setrolls());
         dice.pos = 2;
     end,
+    get_dice_sound = function(s)
+        if game.table and (game.table.surftype == 'stone') then
+            return 'sfx/kosti.ogg';
+        else
+            return 'sfx/dice_roll.ogg';
+        end
+    end,
     left = function(s, t)
+        stop_music();
         remove(rollStat, me());
         if rollStat.data then
             game.data = shallowcopy(rollStat.data);
