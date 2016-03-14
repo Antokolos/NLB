@@ -221,6 +221,9 @@ vn = obj {
     need_update = function(s)
         s._need_update = true;
     end;
+    is_sprite = function(s, obj)
+        return obj.pic:match("^spr\:");
+    end;
     file_exists = function(s, name)
         local f = io.open(name, "r")
         if f ~= nil then io.close(f) return true else return false end
@@ -243,6 +246,9 @@ vn = obj {
                     return s.cache;
                 end,
                 load = function(s)
+                    if ss:is_sprite(v) then
+                        return v.pic;
+                    end
                     if ss:file_exists(v.pic) then
                         if sprStep == v.start then
                             return s:load_file(v.pic);
