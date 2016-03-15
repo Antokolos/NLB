@@ -48,7 +48,9 @@ vntimer = function(f, s, cmd, ...)
     vn:out(x, y);
 
     if (get_ticks() - vnticks <= vn.hz) then
-        return;
+        if vn:preload() then
+            return;
+        end
     end
     vnticks = get_ticks();
     if vn.pause_frames > 0 then
@@ -118,6 +120,7 @@ vn = obj {
     nam = 'vn';
     system_type = true;
     sprite_cache = {};
+    sprite_cache_data = {};
     _effects = {};
     _bg = false;
     _need_effect = false;
@@ -277,6 +280,13 @@ vn = obj {
                             ss.sprite_cache[key] = {};
                         end
                         ss.sprite_cache[key][idx] = loaded;
+                        if idx > 0 then
+                            if not ss.sprite_cache_data[key] then
+                                ss.sprite_cache_data[key] = {};
+                                ss.sprite_cache_data[key][0] = v;
+                            end
+                            ss.sprite_cache_data[key][1] = idx;
+                        end
                     else
                         error("Can not load sprite: " .. tostring(sprfile));
                     end
@@ -312,14 +322,37 @@ vn = obj {
         end
         v.spr = nil;
     end;
+    preload = function(s)
+        for k, w in pairs(s.sprite_cache_data) do
+            local v = w[0];
+            local lastIdx = w[1];
+            if ((lastIdx > 0) and (lastIdx < v.max_step - v.from_stop)) then
+                for i = lastIdx + 1, (v.max_step - v.from_stop) do
+                    v.spr[i]:val();
+                    if (get_ticks() - vnticks > vn.hz) then
+                        return false;
+                    end
+                end
+            else
+                s.sprite_cache_data[k] = nil;
+            end
+            if (get_ticks() - vnticks > vn.hz) then
+                return false;
+            end
+        end
+        return true;
+    end;
     -- Call clear_cache periodically to free memory from possible garbage...
     clear_cache = function(s)
-        for k, v in pairs(s.sprite_cache) do
-            for i, ss in ipairs(v) do
-                sprite.free(ss);
+        for k, w in pairs(s.sprite_cache) do
+            for i, ss in ipairs(w) do
+                if i >= 0 then
+                    sprite.free(ss);
+                end
             end
         end
         s.sprite_cache = {};
+        s.sprite_cache_data = {};
     end;
     hide = function(s, image, eff, ...)
         local v
