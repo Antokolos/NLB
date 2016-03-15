@@ -222,7 +222,7 @@ vn = obj {
         s._need_update = true;
     end;
     is_sprite = function(s, obj)
-        return obj.pic:match("^spr\:");
+        return obj.pic:match("^spr:");
     end;
     file_exists = function(s, name)
         local f = io.open(name, "r")
@@ -260,14 +260,23 @@ vn = obj {
                     end
                     return nil;
                 end,
-                load_file = function(s, sprfile)
-                    if (ss.sprite_cache[sprfile]) then
-                        return ss.sprite_cache[sprfile];
+                load_file = function(s, sprfile, key, idx)
+                    if not key then
+                        key = sprfile;
+                    end
+                    if not idx then
+                        idx = 0;
+                    end
+                    if (ss.sprite_cache[key] and ss.sprite_cache[key][idx]) then
+                        return ss.sprite_cache[key][idx];
                     end
                     local loaded = sprite.load(sprfile);
                     if loaded then
                         s.was_loaded = true;
-                        ss.sprite_cache[sprfile] = loaded;
+                        if not ss.sprite_cache[key] then
+                            ss.sprite_cache[key] = {};
+                        end
+                        ss.sprite_cache[key][idx] = loaded;
                     else
                         error("Can not load sprite: " .. tostring(sprfile));
                     end
@@ -277,7 +286,7 @@ vn = obj {
                     local prefix, extension = ss:split_url(v.pic);
                     local sprfile = prefix .. '.' .. string.format("%04d", sprStep) .. extension;
                     if ss:file_exists(sprfile) then
-                        return s:load_file(sprfile);
+                        return s:load_file(sprfile, prefix, sprStep);
                     elseif sprStep == start then
                         error("Can not load key sprite (" .. sprfile .. ")");
                     elseif sprStep > v.start then
@@ -306,7 +315,9 @@ vn = obj {
     -- Call clear_cache periodically to free memory from possible garbage...
     clear_cache = function(s)
         for k, v in pairs(s.sprite_cache) do
-            sprite.free(v);
+            for i, ss in ipairs(v) do
+                sprite.free(ss);
+            end
         end
         s.sprite_cache = {};
     end;
