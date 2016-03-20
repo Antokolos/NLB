@@ -64,8 +64,8 @@ dice = menu {
     end,
     inv = function(s)
         if s.rewardOnScreen then
-            vn:hide('gfx/round_finished.png', 'fadeout-middle-middle@0,-18', vn.hz);
-            vn:hide('gfx/reward.png', 'fadeout-middle-middle@0,0', vn.hz);
+            vn:hide('gfx/round_finished.png');
+            vn:hide('gfx/reward.png');
             stop_sound();
             s.rewardOnScreen = false;
         end

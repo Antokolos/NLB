@@ -64,10 +64,6 @@ vntimer = function(f, s, cmd, ...)
             return;
         end
     end
-    if vn.tostop then
-        vn.tostop = false
-        return vn:stop()
-    end
     if vn.bg_changing then
         if vn.bg_changing == 1 then
             theme.gfx.bg(vn.offscreen)
@@ -80,11 +76,14 @@ vntimer = function(f, s, cmd, ...)
             --- timer:stop()
             theme.gfx.bg(vn.offscreen)
         end
-        RAW_TEXT = true
-        return game._lastdisp
+        RAW_TEXT = true;
+        return game._lastdisp;
     end
-    if not vn.stopped and not vn:process() then
-        vn.tostop = true
+    if not vn.stopped then
+        if not vn:process() then
+            RAW_TEXT = true;
+            return game._lastdisp;
+        end
     end
     if vn._need_update then
         vn._need_update = false;
@@ -122,6 +121,7 @@ vn = obj {
     sprite_cache = {};
     sprite_cache_data = {};
     _effects = {};
+    _pending_effects = {};
     _bg = false;
     _need_effect = false;
     _need_update = false;
@@ -231,13 +231,68 @@ vn = obj {
         local f = io.open(name, "r")
         if f ~= nil then io.close(f) return true else return false end
     end;
+    read_meta = function(s, name)
+        if not name then
+            return {};
+        end
+        local n = name .. ".meta";
+        local f = io.open(n, "r");
+        local content = nil;
+        if f then
+            content = f:read("*all");
+            f:close();
+        end
+        if content then
+            local meta = loadstring(content);
+            return meta();
+        else
+            return {};
+        end
+    end;
     split_url = function(s, url)
         -- Splits the url into main part and extension part
         return url:match("^(.+)(%..+)$")
     end;
+    busy = function(s, busy, job)
+        if busy then
+            vn:show(busy_spr, 'middle');
+            if job then
+                local cb = function()
+                    job();
+                    vn:hide(busy_spr);
+                    return true;
+                end
+                vn:startcb(cb);
+            else
+                vn:start();
+            end
+        else
+            vn:hide(busy_spr);
+            vn:start();
+        end
+    end;
+    preload_effect = function(s, image, startFrame, maxStep, fromStop, maxPreload)
+        local job = function()
+            if not fromStop then
+                fromStop = 0;
+            end
+            if not maxPreload then
+                maxPreload = startFrame + 2;
+            end
+            local v = { pic = image, nam = image, start = startFrame, max_step = maxStep, from_stop = fromStop };
+            s:load_effect(v);        
+            for i = startFrame,maxPreload do
+                v.spr[i]:val();
+            end
+        end;
+        s:busy(true, job);
+    end;
     load_effect = function(s, v)
         local ss = s;
         if v.spr == nil then v.spr = {}; end;
+        -- Will return nils if v is sprite
+        local prefix, extension = s:split_url(v.pic);
+        local meta = s:read_meta(prefix);
         for sprStep = v.start, v.max_step do
             v.spr[sprStep] = {
                 was_loaded = false,
@@ -263,42 +318,80 @@ vn = obj {
                     end
                     return nil;
                 end,
-                load_file = function(s, sprfile, key, idx)
+                load_file = function(s, sprfile, key, idx, united)
                     if not key then
                         key = sprfile;
                     end
                     if not idx then
-                        idx = 0;
+                        idx = v.start;
                     end
                     if (ss.sprite_cache[key] and ss.sprite_cache[key][idx]) then
                         return ss.sprite_cache[key][idx];
                     end
-                    local loaded = sprite.load(sprfile);
+                    local loaded;
+                    if united and ss.sprite_cache[key] then
+                        loaded = ss.sprite_cache[key][-1];
+                    else
+                        loaded = sprite.load(sprfile);
+                    end
                     if loaded then
                         s.was_loaded = true;
                         if not ss.sprite_cache[key] then
                             ss.sprite_cache[key] = {};
                         end
-                        ss.sprite_cache[key][idx] = loaded;
-                        if idx > 0 then
-                            if not ss.sprite_cache_data[key] then
-                                ss.sprite_cache_data[key] = {};
-                                ss.sprite_cache_data[key][0] = v;
+                        if united then
+                            if not ss.sprite_cache[key][-1] then
+                                ss.sprite_cache[key][-1] = loaded;
                             end
-                            ss.sprite_cache_data[key][1] = idx;
+                            local ystart = 0;
+                            local w, h;
+                            if meta then
+                                local cursize;
+                                for i = 1,idx do
+                                    cursize = meta[i];
+                                    if not cursize then
+                                        cursize = meta[1];
+                                    end
+                                    if cursize then
+                                        sw, sh = cursize:match("^(.*)x(.*)$");
+                                        w, h = tonumber(sw), tonumber(sh);
+                                    else
+                                        error("Metafile for " .. prefix .. " is not valid");
+                                    end
+                                    ystart = ystart + h;
+                                end
+                            end
+                            if not w or not h then
+                                ystart = h * idx;
+                                w, h = sprite.size(loaded);
+                                h = w;
+                            end
+                            ss.sprite_cache[key][idx] = {["loaded"] = loaded, ["x"] = 0, ["y"] = ystart, ["w"] = w, ["h"] = h};
+                        else
+                            ss.sprite_cache[key][idx] = loaded;
                         end
                     else
                         error("Can not load sprite: " .. tostring(sprfile));
                     end
-                    return loaded;
+                    if idx > v.start then
+                        if not ss.sprite_cache_data[key] then
+                            ss.sprite_cache_data[key] = {};
+                            ss.sprite_cache_data[key][0] = v;
+                        end
+                        ss.sprite_cache_data[key][1] = idx;
+                    end
+                    return ss.sprite_cache[key][idx];
                 end,
                 load_frame = function(s)
-                    local prefix, extension = ss:split_url(v.pic);
                     local sprfile = prefix .. '.' .. string.format("%04d", sprStep) .. extension;
                     if ss:file_exists(sprfile) then
                         return s:load_file(sprfile, prefix, sprStep);
+                    end
+                    local united_sprfile = prefix .. '.0000-' .. string.format("%04d", v.max_step) .. extension;
+                    if ss:file_exists(united_sprfile) then
+                        return s:load_file(united_sprfile, prefix, sprStep, true);
                     elseif sprStep == start then
-                        error("Can not load key sprite (" .. sprfile .. ")");
+                        error("Can not load key sprite (" .. sprfile .. " or " .. united_sprfile .. ")");
                     elseif sprStep > v.start then
                         return v.spr[sprStep - 1]:val();
                     end
@@ -326,9 +419,10 @@ vn = obj {
         for k, w in pairs(s.sprite_cache_data) do
             local v = w[0];
             local lastIdx = w[1];
-            if ((lastIdx > 0) and (lastIdx < v.max_step - v.from_stop)) then
+            if ((lastIdx > v.start) and (lastIdx < v.max_step - v.from_stop)) then
                 for i = lastIdx + 1, (v.max_step - v.from_stop) do
                     v.spr[i]:val();
+                    --print("preloaded " .. v.nam .. "@" .. i);
                     if (get_ticks() - vnticks > vn.hz) then
                         return false;
                     end
@@ -346,7 +440,7 @@ vn = obj {
     clear_cache = function(s)
         for k, w in pairs(s.sprite_cache) do
             for i, ss in ipairs(w) do
-                if i >= 0 then
+                if not ss.loaded then
                     sprite.free(ss);
                 end
             end
@@ -403,8 +497,11 @@ vn = obj {
             px, py = s:size(v.parent, idx);
         end
         local xarm, yarm = s:arm(v, idx);
-        local vw, vh = sprite.size(v.spr[idx]:val());
-        local rx, ry = vw + xarm, vh + yarm;
+        local sp = s:frame(v, idx);
+        if sp.tmp then
+            sprite.free(sp.spr);
+        end
+        local rx, ry = sp.w + xarm, sp.h + yarm;
         if px > rx then
             rx = px;
         end
@@ -470,6 +567,7 @@ vn = obj {
         local name = image.nam
         local v = {
             parent = parent_eff,
+            newborn = true,
             pic = picture,
             nam = name,
             eff = t,
@@ -573,7 +671,7 @@ vn = obj {
         --- end
 
         if not oe then
-            stead.table.insert(s._effects, v)
+            stead.table.insert(s._pending_effects, v)
         end
 
         return v
@@ -683,6 +781,37 @@ vn = obj {
         s._bg = picture
     end;
 
+    frame = function(s, v, idx, target, x, y, only_compute, free_immediately)
+        local ospr = v.spr[idx]:val();
+        if not x then
+            x = 0;
+        end
+        if not y then
+            y = 0;
+        end
+        if ospr.loaded then
+            local res = nil;
+            if not target then
+                res = sprite.blank(ospr.w, ospr.h);
+                target = res;
+            end
+            if not only_compute then
+                sprite.compose(ospr.loaded, ospr.x, ospr.y, ospr.w, ospr.h, target, x, y);
+            end
+            if free_immediately and res then
+                sprite.free(res);
+                res = nil;
+            end
+            return {["spr"] = res, ["w"] = ospr.w, ["h"] = ospr.h, ["tmp"] = (res ~= nil)};
+        else
+            local w, h = sprite.size(ospr);
+            if not only_compute and target then
+                sprite.draw(ospr, target, x, y);
+            end
+            return {["spr"] = ospr, ["w"] = w, ["h"] = h, ["tmp"] = false};
+        end
+    end;
+
     fade = function(s, v, only_compute)
         local mxs, zstep = s:steps(v);
         local x, y, idx
@@ -697,36 +826,32 @@ vn = obj {
         local alpha;
         if fadein then
             alpha = math.floor(255 * zstep / mxs);
-            spr = sprite.alpha(v.spr[idx]:val(), alpha);
         else
             alpha = math.floor(255 * (1 - zstep / mxs));
-            spr = sprite.alpha(v.spr[idx]:val(), alpha);
         end
-        local ww, hh = sprite.size(spr);
+        local sp = s:frame(v, idx);
+        local spr = sprite.alpha(sp.spr, alpha);
+        if sp.tmp then
+            sprite.free(sp.spr);
+        end
         if not only_compute then
             sprite.draw(spr, s:screen(), x, y);
         end
         sprite.free(spr)
-        return idx, x, y, ww, ss, alpha;
+        return idx, x, y, sp.w, sp.h, alpha;
     end;
     none = function(s, v, only_compute)
         local x, y
         x, y = s:postoxy(v, v.step)
-        local spr = v.spr[v.step]:val();
-        if not only_compute then
-            sprite.draw(spr, s:screen(), x, y);
-        end
-        return v.step, x, y, sprite.size(spr);
+        local sp = s:frame(v, v.step, s:screen(), x, y, only_compute, true);
+        return v.step, x, y, sp.w, sp.h;
     end;
     reverse = function(s, v, only_compute)
         local x, y
         local idx = v.max_step - v.step;
         x, y = s:postoxy(v, idx)
-        local spr = v.spr[idx]:val();
-        if not only_compute then
-            sprite.draw(spr, s:screen(), x, y);
-        end
-        return idx, x, y, sprite.size(spr);
+        local sp = s:frame(v, idx, s:screen(), x, y, only_compute, true);
+        return idx, x, y, sp.w, sp.h;
     end;
     moveout = function(s, v, only_compute)
         local mxs, zstep = s:steps(v);
@@ -762,11 +887,8 @@ vn = obj {
             end
             y = math.floor(y_start + zstep * (y_end - y_start) / mxs)
         end
-        local spr = v.spr[idx]:val();
-        if not only_compute then
-            sprite.draw(spr, s:screen(), x, y);
-        end
-        return idx, x, y, sprite.size(spr);
+        local sp = s:frame(v, idx, s:screen(), x, y, only_compute, true);
+        return idx, x, y, sp.w, sp.h;
     end;
 
     zoom = function(s, v, only_compute)
@@ -791,10 +913,11 @@ vn = obj {
             return v.start, 0, 0, 0;
         end
 
+        local sp = s:frame(v, sprpos);
         if scale ~= 1.0 then
-            spr = sprite.scale(v.spr[sprpos]:val(), scale, scale, false);
+            spr = sprite.scale(sp.spr, scale, scale, false);
         else
-            spr = v.spr[sprpos]:val()
+            spr = sp.spr;
         end
 
         local w, h = sprite.size(spr)
@@ -804,12 +927,16 @@ vn = obj {
         local xdiff, xextent, ydiff, yextent;
         if v.parent then
             local wp, hp;
+            local sprpart = s:frame(v.parent, sprpos);
             if scale ~= 1.0 then
-                local sprpar = sprite.scale(v.parent.spr[sprpos]:val(), scale, scale, false);
+                local sprpar = sprite.scale(sprpart.spr, scale, scale, false);
                 wp, hp = sprite.size(sprpar);
                 sprite.free(sprpar);
             else
-                wp, hp = sprite.size(v.parent.spr[sprpos]:val());
+                wp, hp = sprpart.w, sprpart.h;
+            end
+            if sprpart.tmp then
+                sprite.free(sprpart.spr);
             end
             xdiff = ws - wp;
             ydiff = hs - hp;
@@ -839,8 +966,11 @@ vn = obj {
         if not only_compute then
             sprite.draw(spr, s:screen(), x, y)
         end
-        if v.spr[sprpos]:val() ~= spr then
+        if sp.spr ~= spr then
             sprite.free(spr)
+        end
+        if sp.tmp then
+            sprite.free(sp.spr);
         end
         return sprpos, x, y, ww, hh, scale;
     end;
@@ -878,11 +1008,8 @@ vn = obj {
             end
             y = math.floor(y_start - zstep * (y_start - y_end) / mxs)
         end
-        local spr = v.spr[idx]:val();
-        if not only_compute then
-            sprite.draw(spr, s:screen(), x, y);
-        end
-        return idx, x, y, sprite.size(spr);
+        local sp = s:frame(v, idx, s:screen(), x, y, only_compute, true);
+        return idx, x, y, sp.w, sp.h;
     end;
     do_effect = function(s, v, only_compute)
         local idx, x, y, w, h;
@@ -901,30 +1028,40 @@ vn = obj {
         else
             idx, x, y, w, h = s:none(v, only_compute)
         end
+        if not only_compute then
+            v.newborn = false;
+        end
         return {["v"] = v, ["idx"] = idx, ["x"] = x, ["y"] = y, ["w"] = w, ["h"] = h, ["scale"] = scale, ["alpha"] = alpha};
     end;
     startcb = function(s, callback, effect)
         s.callback = callback;
         s:start(effect);
     end;
+    enable_pending_effects = function(s)
+        for i, v in ipairs(s._pending_effects) do
+            stead.table.insert(s._effects, v);
+        end
+        s._pending_effects = {};
+    end;
     start = function(s, effect, uiupdate)
         -- do first step
         if not s.bg_spr then
             error "No scene background specified!"
         end
+        s:enable_pending_effects();
         if s._need_effect then -- doing some effect(s)
-        s:enter_direct();
-        s.stopped = false;
-        if uiupdate then
-            s.uiupdate = true;
-        else
-            -- NB: uiupdate can be nil, but here I want it to be true or false, not nil
-            s.uiupdate = false;
-        end
-        s:process()
-        --- timer:set(s.hz)
-        -- s.stopped = false;
-        return
+            s:enter_direct();
+            s.stopped = false;
+            if uiupdate then
+                s.uiupdate = true;
+            else
+                -- NB: uiupdate can be nil, but here I want it to be true or false, not nil
+                s.uiupdate = false;
+            end
+            s:process()
+            --- timer:set(s.hz)
+            -- s.stopped = false;
+            return
         end
         if effect then
             s._scene_effect = effect
@@ -992,7 +1129,11 @@ vn = obj {
         for i, v in ipairs(s._effects) do
             s:free_effect(v)
         end
+        for i, v in ipairs(s._pending_effects) do
+            s:free_effect(v)
+        end
         s._effects = {}
+        s._pending_effects = {};
         if not preserve_cache then
             s:clear_cache();
         end
@@ -1075,10 +1216,10 @@ vn = obj {
         s:commit(s:screen())
         s:leave_direct();
 
-        RAW_TEXT = true
         s.stopped = true;
         s.uiupdate = false;
-        return game._lastdisp
+        --- RAW_TEXT = true
+        --- return game._lastdisp;
     end;
     lock_direct = function(s)
         s.direct_lock = true;
@@ -1116,6 +1257,21 @@ vn = obj {
     end;
     do_step = function(s, v)
         local result = {["data"] = nil, ["hasmore"] = false};
+        if v.newborn then
+            result.hasmore = true;
+        else
+            if v.forward then
+                if (v.step < v.max_step - v.from_stop) then
+                    v.step = v.step + 1
+                    result.hasmore = true;
+                end
+            else
+                if (v.step > v.init_step) then
+                    v.step = v.step - 1
+                    result.hasmore = true;
+                end
+            end
+        end
         local e = true;
         if v.enablefn then
             e = v:enablefn();
@@ -1125,17 +1281,6 @@ vn = obj {
         else
             if v.onhide then
                 v:onhide();
-            end
-        end
-        if v.forward then
-            if (v.step < v.max_step - v.from_stop) then
-                v.step = v.step + 1
-                result.hasmore = true;
-            end
-        else
-            if (v.step > v.init_step) then
-                v.step = v.step - 1
-                result.hasmore = true;
             end
         end
         return result;
@@ -1164,6 +1309,7 @@ vn = obj {
             s:draw_huds(res.datas);
             s:tooltips(x, y);
         else
+            s:stop();
             if (vn.callback) then
                 local callback = vn.callback;
                 vn.callback = false;
@@ -1178,6 +1324,8 @@ vn = obj {
                     s:start();
                     return true;
                 end
+            else
+                return false;
             end
         end
         return n
@@ -1252,9 +1400,9 @@ vn = obj {
         for i, v in ipairs(s._effects) do
             if s:enabled(v) and v.tooltipfn and s:inside_spr(v, x, y) then
                 local xx, yy = s:postoxy(v);
-                local vw, vh = sprite.size(v.spr[0]:val());
+                local sp = s:frame(v, 0);
                 local text, pos = v:tooltipfn();
-                s:tooltip(text, pos, xx, yy, vw, vh);
+                s:tooltip(text, pos, xx, yy, sp.w, sp.h);
             end
         end
     end;
@@ -1262,10 +1410,8 @@ vn = obj {
         return not v.enablefn or v:enablefn();
     end;
     tooltip = function(s, text, pos, x, y, vw, vh)
-        local spr = sprite.text(hudFont, text, '#000000');
-        local w, h = sprite.size(spr);
-        local tt_bg = sprite.box(w, h, 'white', 127);
         local target;
+        local label, w, h = s:label(text);
         if s.direct_lock then
             target = sprite.screen();
         else
@@ -1275,26 +1421,44 @@ vn = obj {
         if pos == "n" then
             local yy = y - h - 5;
             local txt_offset = (vw - w) / 2;
-            sprite.draw(tt_bg, target, x + txt_offset, yy);
-            sprite.draw(spr, target, x + txt_offset, yy);
+            sprite.draw(label, target, x + txt_offset, yy);
         elseif pos == "s" then
             local yy = y + vh + 5;
             local txt_offset = (vw - w) / 2;
-            sprite.draw(tt_bg, target, x + txt_offset, yy);
-            sprite.draw(spr, target, x + txt_offset, yy);
+            sprite.draw(label, target, x + txt_offset, yy);
         else
             local yy = y + vh / 2 - h / 2;
             local xx = x + vw + 5;
             if (xmax - xx > w) then
-                sprite.draw(tt_bg, target, xx, yy);
-                sprite.draw(spr, target, xx, yy);
+                sprite.draw(label, target, xx, yy);
             else
-                sprite.draw(tt_bg, target, x - w - 5, yy);
-                sprite.draw(spr, target, x - w - 5, yy);
+                sprite.draw(label, target, x - w - 5, yy);
             end
         end
+        sprite.free(label);
+    end;
+    -- Sprite with label text. You should call sprite.free(), when you no longer need this.
+    label = function(s, text, extent, color, bgcolor, bgalpha)
+        if not color then
+            color = '#000000';
+        end
+        if not bgcolor then
+            bgcolor = 'white';
+        end
+        if not bgalpha then
+            bgalpha = 127;
+        end
+        if not extent then
+            extent = 4;
+        end
+        local spr = sprite.text(hudFont, text, color);
+        local w, h = sprite.size(spr);
+        w = w + 2 * extent;
+        h = h + 2 * extent;
+        local label = sprite.box(w, h, bgcolor, bgalpha);
+        sprite.draw(spr, label, extent, extent);
         sprite.free(spr);
-        sprite.free(tt_bg);
+        return label, w, h;
     end;
     show_btn = function(s, btnimg, btneff, txtfn, actfn, ovrimg, ovreff, overfn, outfn, tooltipfn, enablefn, btnframes, ovrframes)
         if not btnframes then
@@ -1356,6 +1520,11 @@ stead.module_init(function()
     vn:init()
     vnticks = stead.ticks();
     hudFont = sprite.font('fonts/Medieval_English.ttf', 32);
+    if LANG == "ru" then
+        busy_spr = vn:label("Загрузка...", 40, "#ffffff", "black");
+    else
+        busy_spr = vn:label("Loading...", 40, "#ffffff", "black");
+    end
 end)
 
 function vnr(v)
