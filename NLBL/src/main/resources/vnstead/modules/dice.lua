@@ -152,7 +152,7 @@ dice = menu {
                         local arm = s:getArm();
                         local pausecb = function() vn:hide(img, hidestr, spd, 0, nil, stt, arm); end;
                         if rollStat.should_pass or (rollStat.data and s.pos ~= rollStat.data.mainplr) then
-                            table.insert(pausecbs, i, pausecb);
+                            stead.table.insert(pausecbs, pausecb);
                         else
                             pausecb();
                         end
@@ -168,7 +168,7 @@ dice = menu {
         if next(pausecbs) ~= nil then
             -- pausecbs is NOT empty
             --needStart = false;
-            --table.insert(pausecbs, s.die_count + 1, startfn);
+            --stead.table.insert(pausecbs, startfn);
             vn:pause(50, pausecbs);
         end
         if s.diceOnScreen then
@@ -186,8 +186,8 @@ dice = menu {
                 local lastRoll = rnd(6);
                 local lastRollFile = string.format(s:getPosStr(i).die .. '%d.png', lastRoll);
                 local st = s:getStartFrame(lastRoll);
-                table.insert(s.lastRolls, i, lastRoll);
-                table.insert(s.lastRollFiles, i, lastRollFile);
+                s.lastRolls[i] = lastRoll;
+                s.lastRollFiles[i] = lastRollFile;
                 vn:show(lastRollFile, s:getPosStr(i).show, 100 * vn.hz, st, nil, nil, s:getArm());
                 result = true;
             end
@@ -203,7 +203,7 @@ dice = menu {
         if s.pos == 1 or s.pos == 3 then
             local result = {};
             for i = 0, 100 do
-                table.insert(result, i, { 250 + r * 220, math.abs((i + 20) * (i - (40 * r + 70 * (1 - r))) * (i - 130) / 1000) });
+                result[i] = { 250 + r * 220, math.abs((i + 20) * (i - (40 * r + 70 * (1 - r))) * (i - 130) / 1000) };
             end
             return result;
         elseif s.pos == 2 or s.pos == 4 then

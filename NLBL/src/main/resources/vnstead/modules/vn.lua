@@ -796,7 +796,7 @@ vn = obj {
                 target = res;
             end
             if not only_compute then
-                sprite.compose(ospr.loaded, ospr.x, ospr.y, ospr.w, ospr.h, target, x, y);
+                sprite.draw(ospr.loaded, ospr.x, ospr.y, ospr.w, ospr.h, target, x, y);
             end
             if free_immediately and res then
                 sprite.free(res);
