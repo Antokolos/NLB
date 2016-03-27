@@ -23,7 +23,11 @@ dice = menu {
         callback = false,
         callbackName = '',
         pos = 2,
-        die_count = 2
+        die_count = 2,
+        die_frames_from_stop = 3,
+        die_frames_max = 100,
+        hotstep = 3,
+        acceleration = 1
     },
     set_orientation = function(s, o)
         if (o == "east") then
@@ -59,7 +63,7 @@ dice = menu {
         end
     end,
     act = function(s)
-        vn:pause(10, function() set_sound(s:get_roll_sound(), 2, 1); end);
+        --vn:pause(10, function() set_sound(s:get_roll_sound(), 2, 1); end);
         return s:inv();
     end,
     inv = function(s)
@@ -69,10 +73,13 @@ dice = menu {
             stop_sound();
             s.rewardOnScreen = false;
         end
-        if not s:show() then
-            s:hide(true);
-            s:show();
-        end
+        vn:pause(20, function()
+            set_sound(s:get_roll_sound(), 2, 1);
+            if not s:show() then
+                s:hide(true);
+                s:show();
+            end
+        end);
     end,
     next_player = function(s, act_immediately)
         if s.diceOnScreen then
@@ -143,14 +150,13 @@ dice = menu {
                 if ((s.lastRollFiles[i] ~= nil) and (s.lastRollFiles[i] ~= '')) then
                     local st = s:getStartFrame(lastRoll);
                     if fast then
-                        vn:hide(s.lastRollFiles[i], s:getPosStr(i).hidefast, vn.hz, 0, nil, st, s:getArm());
+                        vn:hide(s.lastRollFiles[i], s:getPosStr(i).hidefast, vn.hz, s.die_frames_from_stop, nil, st);
                     else
                         local img = s.lastRollFiles[i];
                         local hidestr = s:getPosStr(i).hide;
-                        local spd = 100 * vn.hz;
+                        local spd = s.die_frames_max * vn.hz;
                         local stt = st;
-                        local arm = s:getArm();
-                        local pausecb = function() vn:hide(img, hidestr, spd, 0, nil, stt, arm); end;
+                        local pausecb = function() vn:hide(img, hidestr, spd, s.die_frames_from_stop, nil, stt); end;
                         if rollStat.should_pass or (rollStat.data and s.pos ~= rollStat.data.mainplr) then
                             stead.table.insert(pausecbs, pausecb);
                         else
@@ -188,7 +194,7 @@ dice = menu {
                 local st = s:getStartFrame(lastRoll);
                 s.lastRolls[i] = lastRoll;
                 s.lastRollFiles[i] = lastRollFile;
-                vn:show(lastRollFile, s:getPosStr(i).show, 100 * vn.hz, st, nil, nil, s:getArm());
+                vn:show(lastRollFile, s:getPosStr(i).show, s.die_frames_max * vn.hz, st, nil, s.die_frames_from_stop, s:getArm(), s.hotstep, s.acceleration);
                 result = true;
             end
         end
@@ -202,12 +208,12 @@ dice = menu {
         local r = rnd();
         if s.pos == 1 or s.pos == 3 then
             local result = {};
-            for i = 0, 100 do
+            for i = 0, s.die_frames_max do
                 result[i] = { 250 + r * 220, math.abs((i + 20) * (i - (40 * r + 70 * (1 - r))) * (i - 130) / 1000) };
             end
             return result;
         elseif s.pos == 2 or s.pos == 4 then
-            return { [0] = { 0, 235 } };
+            return { [0] = { 0, 150 + r * 85 } };
         else
             return { [0] = { 0, 0 } };
         end

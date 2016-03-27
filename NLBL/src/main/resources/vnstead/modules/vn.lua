@@ -129,11 +129,15 @@ vn = obj {
     _fln = nil;
     _frn = nil;
     hz = 18;
-    var { speed = 500, fading = 8, bgalpha = 127 };
     var {
         on = true,
         stopped = true,
         uiupdate = false,
+        speed = 500,
+        fading = 8,
+        bgalpha = 127,
+        stp = 1,
+        hotstep = nil,
         win_x = 0,
         win_y = 0,
         win_w = 0,
@@ -409,9 +413,8 @@ vn = obj {
         end
     end;
     free_effect = function(s, v)
-        for sprStep = v.start, v.max_step do
-            v.spr[sprStep]:free();
-            v.spr[sprStep] = nil;
+        for i, vv in ipairs(v.spr) do
+            vv:free();
         end
         v.spr = nil;
     end;
@@ -537,12 +540,12 @@ vn = obj {
         return mxs, zstep;
     end;
 
-    effect = function(s, image, eff, speed, startFrame, curStep, framesFromStop, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
+    effect = function(s, image, eff, speed, startFrame, curStep, framesFromStop, armarr, hot_step, acceleration, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
         local maxStep = math.floor((speed or s.speed) / s.hz);
-        return s:effect_int(nil, image, eff, startFrame, curStep, maxStep, framesFromStop, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
+        return s:effect_int(nil, image, eff, startFrame, curStep, maxStep, framesFromStop, armarr, hot_step, acceleration, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
     end;
     
-    effect_int = function(s, parent_eff, image, eff, startFrame, curStep, maxStep, framesFromStop, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
+    effect_int = function(s, parent_eff, image, eff, startFrame, curStep, maxStep, framesFromStop, armarr, hot_step, acceleration, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
         local t = eff;
         local v
 
@@ -562,7 +565,15 @@ vn = obj {
         if not framesFromStop then
             framesFromStop = 0;
         end
-
+        
+        if not hot_step then
+            hot_step = s.hotstep;
+        end
+        
+        if not acceleration then
+            acceleration = 1;
+        end
+        
         local picture = image.pic
         local name = image.nam
         local v = {
@@ -577,6 +588,8 @@ vn = obj {
             start = startFrame,
             from_stop = framesFromStop,
             arm = armarr,
+            hotstep = hot_step,
+            accel = acceleration,
             txtfn = txt_fn,
             onclick = on_clk,
             onover = on_over,
@@ -683,7 +696,7 @@ vn = obj {
     end;
     
     add_child_frames = function(s, parent, image, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
-        local child = s:effect_int(parent, image, nil, parent.start, parent.step, parent.max_step, parent.from_stop, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
+        local child = s:effect_int(parent, image, nil, parent.start, parent.step, parent.max_step, parent.from_stop, armarr, parent.hotstep, parent.accel, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
         child.eff = parent.eff;
         child.from = parent.from;
         child.pos = parent.pos;
@@ -1246,7 +1259,7 @@ vn = obj {
         if forward ~= nil then
             v.forward = forward;
         end
-        local r = s:do_step(v);
+        local r = s:draw_step(v);
         local data = r.data;
         if data then
             s:draw_hud(data.v, data.idx, data.x, data.y, data.scale, data.alpha);
@@ -1256,22 +1269,37 @@ vn = obj {
         end
     end;
     do_step = function(s, v)
-        local result = {["data"] = nil, ["hasmore"] = false};
         if v.newborn then
-            result.hasmore = true;
+            return true;
         else
             if v.forward then
                 if (v.step < v.max_step - v.from_stop) then
-                    v.step = v.step + 1
-                    result.hasmore = true;
+                    v.step = v.step + s.stp;
+                    if v.hotstep and v.step % v.hotstep == 0 then
+                        v.step = v.step + v.accel * s.stp;
+                    end
+                    if v.step > v.max_step - v.from_stop then
+                        v.step = v.max_step - v.from_stop;
+                    end
+                    return true;
                 end
             else
                 if (v.step > v.init_step) then
-                    v.step = v.step - 1
-                    result.hasmore = true;
+                    v.step = v.step - s.stp;
+                    if v.hotstep and v.step % v.hotstep == 0 then
+                        v.step = v.step - v.accel * s.stp;
+                    end
+                    if v.step < v.init_step then
+                        v.step = v.init_step;
+                    end
+                    return true;
                 end
             end
         end
+        return false;
+    end;
+    draw_step = function(s, v)
+        local result = {["data"] = nil, ["hasmore"] = s:do_step(v)};
         local e = true;
         if v.enablefn then
             e = v:enablefn();
@@ -1288,7 +1316,7 @@ vn = obj {
     do_effects = function(s)
         local result = {["datas"] = {}, ["hasmore"] = false};
         for i, v in ipairs(s._effects) do
-            local r = s:do_step(v);
+            local r = s:draw_step(v);
             if r.data then
                 stead.table.insert(result.datas, r.data);
                 result.hasmore = (result.hasmore or r.hasmore);
@@ -1479,7 +1507,7 @@ vn = obj {
                 s:hide(v);
                 s:show(ovrimg,
                     ovreff,
-                    ovrframes * s.hz, nil, nil, nil, nil,
+                    ovrframes * s.hz, nil, nil, nil, nil, nil, nil,
                     txtfn,
                     actfn,
                     nil,
@@ -1502,7 +1530,7 @@ vn = obj {
         end
         s:show(btnimg,
             btneff,
-            btnframes * s.hz, nil, nil, nil, nil,
+            btnframes * s.hz, nil, nil, nil, nil, nil, nil,
             txtfn,
             nil,
             onover,
