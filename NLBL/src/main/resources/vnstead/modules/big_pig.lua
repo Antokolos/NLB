@@ -8,7 +8,7 @@ rollStat = stat {
     _rolls = {},
     _allRollsByPlayer = {},
     _curRollsByPlayer = {},
-    var { message = "", data = false, should_pass = false },
+    var { message = "", data = false, should_pass = false, hotstep = 6, acceleration = 1 },
     init = function(s)
         s._allRollsByPlayer[1] = 0;
         s._allRollsByPlayer[2] = 0;
@@ -139,7 +139,7 @@ rollStat = stat {
                     s.data.money[pos] = s.data.money[pos] + prize;
                     s:init();
                     vn:show('gfx/round_finished.png', 'middle-middle@0,-18', vn.hz);
-                    vn:show('gfx/reward.png', 'middle-middle@0,0', 270 * vn.hz, 0, 39);
+                    vn:show('gfx/reward.png', 'middle-middle@0,0', 270 * vn.hz, 0, 39, nil, nil, s.hotstep, s.acceleration);
                     set_sound('sfx/money.ogg', nil, 1);
                     if rollStat.data and not rollStat:is_defined(rollStat.data.mainplr) then
                         return function()
