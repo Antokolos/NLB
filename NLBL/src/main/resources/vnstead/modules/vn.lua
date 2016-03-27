@@ -47,11 +47,13 @@ vntimer = function(f, s, cmd, ...)
     vn:over(x, y);
     vn:out(x, y);
 
-    if (get_ticks() - vnticks <= vn.hz) then
+    vnticks_diff = get_ticks() - vnticks;
+    if (vnticks_diff <= vn.hz) then
         if vn:preload() then
             return;
         end
     end
+    vn.slowcpu = (vnticks_diff > vn.ticks_threshold);
     vnticks = get_ticks();
     if vn.pause_frames > 0 then
         vn.pause_frames = vn.pause_frames - 1;
@@ -129,6 +131,8 @@ vn = obj {
     _fln = nil;
     _frn = nil;
     hz = 18;
+    ticks_threshold = 36;
+    slowcpu = false;
     var {
         on = true,
         stopped = true,
@@ -379,8 +383,10 @@ vn = obj {
                     end
                     if idx > v.start then
                         if not ss.sprite_cache_data[key] then
-                            ss.sprite_cache_data[key] = {};
-                            ss.sprite_cache_data[key][0] = v;
+                            local scd = {};
+                            scd[0] = v;
+                            scd[1] = idx;
+                            ss.sprite_cache_data[key] = scd;
                         end
                         ss.sprite_cache_data[key][1] = idx;
                     end
@@ -422,9 +428,15 @@ vn = obj {
         for k, w in pairs(s.sprite_cache_data) do
             local v = w[0];
             local lastIdx = w[1];
-            if ((lastIdx > v.start) and (lastIdx < v.max_step - v.from_stop)) then
+            -- v.spr can be nil if free_effect() was already called
+            if (v.spr and (lastIdx > v.start) and (lastIdx < (v.max_step - v.from_stop))) then
                 for i = lastIdx + 1, (v.max_step - v.from_stop) do
-                    v.spr[i]:val();
+                    if v.spr[i] then
+                        v.spr[i]:val();
+                    else
+                        -- This error should actually never appear
+                        print("Error preloading sprite " .. v.pic .. "@" .. i);
+                    end
                     --print("preloaded " .. v.nam .. "@" .. i);
                     if (get_ticks() - vnticks > vn.hz) then
                         return false;
@@ -1269,14 +1281,25 @@ vn = obj {
         end
     end;
     do_step = function(s, v)
+        local hotstep = v.hotstep;
+        local accel = v.accel;
+        if hotstep and s.slowcpu then
+            hotstep = math.floor(hotstep / 3);
+            if hotstep == 0 then
+                hotstep = 1;
+            end
+        end
+        if accel and s.slowcpu then
+            accel = accel * 4;
+        end
         if v.newborn then
             return true;
         else
             if v.forward then
                 if (v.step < v.max_step - v.from_stop) then
                     v.step = v.step + s.stp;
-                    if v.hotstep and v.step % v.hotstep == 0 then
-                        v.step = v.step + v.accel * s.stp;
+                    if hotstep and v.step % hotstep == 0 then
+                        v.step = v.step + accel * s.stp;
                     end
                     if v.step > v.max_step - v.from_stop then
                         v.step = v.max_step - v.from_stop;
@@ -1286,8 +1309,8 @@ vn = obj {
             else
                 if (v.step > v.init_step) then
                     v.step = v.step - s.stp;
-                    if v.hotstep and v.step % v.hotstep == 0 then
-                        v.step = v.step - v.accel * s.stp;
+                    if hotstep and v.step % hotstep == 0 then
+                        v.step = v.step - accel * s.stp;
                     end
                     if v.step < v.init_step then
                         v.step = v.init_step;
@@ -1547,6 +1570,7 @@ vn = obj {
 stead.module_init(function()
     vn:init()
     vnticks = stead.ticks();
+    vnticks_diff = vn.ticks_threshold;
     hudFont = sprite.font('fonts/Medieval_English.ttf', 32);
     if LANG == "ru" then
         busy_spr = vn:label("Загрузка...", 40, "#ffffff", "black");
