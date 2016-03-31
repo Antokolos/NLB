@@ -58,6 +58,17 @@ rollStat = stat {
         end
         return false;
     end,
+    only_one_player = function(s)
+        local result = false;
+        for i = 1, 4 do
+            local defined = s:is_defined(i);
+            if result and defined then
+                return false;
+            end
+            result = result or defined;
+        end
+        return result;
+    end,
     info = function(s)
         local result = {};
         for i = 1, 4 do
@@ -141,9 +152,18 @@ rollStat = stat {
                     vn:show('gfx/round_finished.png', 'middle-middle@0,-18', vn.hz);
                     vn:show('gfx/reward.png', 'middle-middle@0,0', 270 * vn.hz, 0, 39, nil, nil, s.hotstep, s.acceleration);
                     set_sound('sfx/money.ogg', nil, 1);
-                    if rollStat.data and not rollStat:is_defined(rollStat.data.mainplr) then
+                    if s.data and not s:is_defined(rollStat.data.mainplr) then
                         return function()
-                            vn:show("gfx/loss.png", "fadein-middle-middle@0,0", 100 * vn.hz);
+                            vn:show(you_lose_label, "fadein-middle-middle@0,0", 100 * vn.hz);
+                            vn:startcb(function()
+                                play_game_obj:act();
+                                return true;
+                            end);
+                            return true;
+                        end
+                    elseif s:only_one_player() then
+                        return function()
+                            vn:show(you_win_label, "fadein-middle-middle@0,0", 100 * vn.hz);
                             vn:startcb(function()
                                 play_game_obj:act();
                                 return true;
@@ -567,7 +587,7 @@ play_bp_two_ais = menu {
             ["ai"] = {nil, nil, "aggressive", "cautious"},
             ["money"] = {0, game.money, 300, 400},
             ["bet"] = 100,
-            ["threshold"] = 100
+            ["threshold"] = 10
         };
         game.table.bg = 'images/table2.png';
         game.table.paper = 'images/paper2.png';
@@ -648,4 +668,13 @@ play_bp_two_hotseats = menu {
 stead.module_init(function()
     rollStat:init();
     dicegames['setrolls'] = function() rollStat:setrolls(); end;
+    local labelFont = sprite.font('fonts/STEINEMU.ttf', 48);
+    if LANG == "ru" then
+        you_win_label = vn:label("Вы победили!", 40, "#ffffff", "black", 127, labelFont);
+        you_lose_label = vn:label("Вы проиграли...", 40, "#ffffff", "black", 127, labelFont);
+    else
+        you_win_label = vn:label("You win!", 40, "#ffffff", "black", 127, labelFont);
+        you_lose_label = vn:label("You lose...", 40, "#ffffff", "black", 127, labelFont);
+    end
+    sprite.free_font(labelFont);
 end)

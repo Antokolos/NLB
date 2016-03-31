@@ -1489,7 +1489,7 @@ vn = obj {
         sprite.free(label);
     end;
     -- Sprite with label text. You should call sprite.free(), when you no longer need this.
-    label = function(s, text, extent, color, bgcolor, bgalpha)
+    label = function(s, text, extent, color, bgcolor, bgalpha, font)
         if not color then
             color = '#000000';
         end
@@ -1502,7 +1502,10 @@ vn = obj {
         if not extent then
             extent = 4;
         end
-        local spr = sprite.text(hudFont, text, color);
+        if not font then
+            font = hudFont;
+        end
+        local spr = sprite.text(font, text, color);
         local w, h = sprite.size(spr);
         w = w + 2 * extent;
         h = h + 2 * extent;
