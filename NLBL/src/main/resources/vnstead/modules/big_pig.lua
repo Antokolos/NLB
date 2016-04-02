@@ -587,7 +587,7 @@ play_bp_two_ais = menu {
             ["ai"] = {nil, nil, "aggressive", "cautious"},
             ["money"] = {0, game.money, 300, 400},
             ["bet"] = 100,
-            ["threshold"] = 10
+            ["threshold"] = 100
         };
         game.table.bg = 'images/table2.png';
         game.table.paper = 'images/paper2.png';
@@ -609,7 +609,7 @@ play_bp_one_ai = menu {
             ["ai"] = {nil, nil, nil, "optimum"},
             ["money"] = {0, game.money, 0, 1000},
             ["bet"] = 100,
-            ["threshold"] = 100,
+            ["threshold"] = 100
         };
         game.table.bg = 'images/table1.png';
         game.table.paper = 'images/paper1.png';
