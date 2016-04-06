@@ -162,7 +162,7 @@ vn = obj {
         s.on = false;
     end,
     screen = function(s)
-        if s._need_effect then
+        if (s._need_effect and not s.stopped and s:in_vnr()) or s.direct_lock then
             return sprite.screen()
         else
             return s.offscreen
@@ -790,8 +790,8 @@ vn = obj {
 
     set_bg = function(s, picture)
         if not picture then
-            s.bg_spr = sprite.box(s.scr_w, s.scr_h, theme.get 'scr.col.bg')
-            s._bg = picture;
+            s.bg_spr = sprite.box(s.scr_w, s.scr_h, theme.get 'scr.col.bg');
+            s._bg = false;
             return
         end
         if s.bg_spr then
@@ -801,7 +801,7 @@ vn = obj {
             s.bg_spr = sprite.load(picture)
         end
         if not s.bg_spr then
-            error("Can not load ng sprite:" .. tostring(picture))
+            error("Can not load bg sprite:" .. tostring(picture))
         end
         s._bg = picture
     end;
@@ -1167,9 +1167,12 @@ vn = obj {
         -- if bg is nil, simple box sprite will be set
         s:set_bg(bg)
     end;
+    in_vnr = function(s)
+        return here()._is_vnr;
+    end;
     textpad = 8;
     textbg = function(s, to)
-        if s.direct_lock then
+        if s.direct_lock or not s:in_vnr() then
             return;
         end
         local pad = vn.textpad;
@@ -1394,11 +1397,7 @@ vn = obj {
             idx = 0;
         end
         if not target then
-            if s.direct_lock then
-                target = sprite.screen();
-            else
-                target = s:screen();
-            end
+            target = s:screen();
         end
         if (v.txtfn) then
             local texts = v.txtfn();
@@ -1461,13 +1460,8 @@ vn = obj {
         return not v.enablefn or v:enablefn();
     end;
     tooltip = function(s, text, pos, x, y, vw, vh)
-        local target;
+        local target = s:screen();
         local label, w, h = s:label(text);
-        if s.direct_lock then
-            target = sprite.screen();
-        else
-            target = s:screen();
-        end
         local xmax = theme.get("scr.w");
         if pos == "n" then
             local yy = y - h - 5;
@@ -1513,6 +1507,18 @@ vn = obj {
         sprite.draw(spr, label, extent, extent);
         sprite.free(spr);
         return label, w, h;
+    end;
+    txt_line_fn = function(s, text, color)
+        local txt = text;
+        local clr = color;
+        if not clr then
+            clr = 'black';
+        end
+        return function()
+            local result = {};
+            stead.table.insert(result, { ["text"] = txt, ["color"] = clr });
+            return result;
+        end
     end;
     show_btn = function(s, btnimg, btneff, txtfn, actfn, ovrimg, ovreff, overfn, outfn, tooltipfn, enablefn, btnframes, ovrframes)
         if not btnframes then
@@ -1584,5 +1590,6 @@ end)
 
 function vnr(v)
     if not v.nam then v.nam = 'vn'; v.disp = false; end
+    v._is_vnr = true;
     return room(v)
 end
