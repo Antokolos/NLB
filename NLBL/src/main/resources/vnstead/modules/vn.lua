@@ -42,6 +42,7 @@ vntimer = function(f, s, cmd, ...)
     if not vn.on then
         return f(s, cmd, ...)
     end
+    local update_cursor_result = vn:update_cursor();
     -- NB: do not put heavy code in onover/onout
     local x, y = stead.mouse_pos();
     vn:over(x, y);
@@ -50,20 +51,20 @@ vntimer = function(f, s, cmd, ...)
     vnticks_diff = get_ticks() - vnticks;
     if (vnticks_diff <= vn.hz) then
         if vn:preload() then
-            return;
+            return update_cursor_result;
         end
     end
     vn.slowcpu = (vnticks_diff > vn.ticks_threshold);
     vnticks = get_ticks();
     if vn.pause_frames > 0 then
         vn.pause_frames = vn.pause_frames - 1;
-        return;
+        return update_cursor_result;
     else
         local pausecb = vn.pause_callback;
         vn.pause_callback = false;
         if (pausecb) then
             pausecb();
-            return;
+            return update_cursor_result;
         end
     end
     if vn.bg_changing then
@@ -91,6 +92,7 @@ vntimer = function(f, s, cmd, ...)
         vn._need_update = false;
         return true;
     end
+    return update_cursor_result;
 end
 
 --if not game.old_fading then
@@ -153,7 +155,9 @@ vn = obj {
         hud_color = '#000000',
         pause_frames = 0,
         pause_callback = false,
-        direct_lock = false;
+        direct_lock = false,
+        use_src = false,
+        cursor_need_update = false;
     };
     turnon = function(s)
         s.on = true;
@@ -551,13 +555,36 @@ vn = obj {
         local zstep = v.step - v.start;
         return mxs, zstep;
     end;
-
-    effect = function(s, image, eff, speed, startFrame, curStep, framesFromStop, armarr, hot_step, acceleration, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
-        local maxStep = math.floor((speed or s.speed) / s.hz);
-        return s:effect_int(nil, image, eff, startFrame, curStep, maxStep, framesFromStop, armarr, hot_step, acceleration, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
+    
+    update_cursor = function(s)
+        if s.cursor_need_update then
+            if s.use_src then
+                local use_cursor = theme.get("scr.gfx.cursor.use");
+                theme.set("scr.gfx.cursor.normal", use_cursor);
+            else
+                theme.reset("scr.gfx.cursor.normal");
+            end
+            s.cursor_need_update = false;
+            RAW_TEXT = true;
+            return game._lastdisp;
+        end
     end;
     
-    effect_int = function(s, parent_eff, image, eff, startFrame, curStep, maxStep, framesFromStop, armarr, hot_step, acceleration, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
+    set_use_src = function(s)
+        return function(v)
+            if s.stopped then
+                s.use_src = v.nam;
+                s.cursor_need_update = true;
+            end;
+        end
+    end;
+
+    effect = function(s, image, eff, speed, startFrame, curStep, framesFromStop, armarr, hot_step, acceleration, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn, use_fn)
+        local maxStep = math.floor((speed or s.speed) / s.hz);
+        return s:effect_int(nil, image, eff, startFrame, curStep, maxStep, framesFromStop, armarr, hot_step, acceleration, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn, use_fn);
+    end;
+    
+    effect_int = function(s, parent_eff, image, eff, startFrame, curStep, maxStep, framesFromStop, armarr, hot_step, acceleration, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn, use_fn)
         local t = eff;
         local v
 
@@ -588,6 +615,21 @@ vn = obj {
         
         local picture = image.pic
         local name = image.nam
+        local clk_handler = function(v)
+            if on_clk then
+                on_clk(v);
+            end
+            if use_fn and not s.use_src then
+                s:set_use_src()(v);
+            else
+                local use_src_obj = s:lookup(s.use_src);
+                if use_src_obj then
+                    use_src_obj:usefn(v);
+                    s.use_src = false;
+                    s.cursor_need_update = true;
+                end
+            end
+        end
         local v = {
             parent = parent_eff,
             newborn = true,
@@ -603,12 +645,13 @@ vn = obj {
             hotstep = hot_step,
             accel = acceleration,
             txtfn = txt_fn,
-            onclick = on_clk,
+            onclick = clk_handler,
             onover = on_over,
             onout = on_out,
             onhide = on_hide,
             tooltipfn = tooltip_fn,
-            enablefn = enable_fn
+            enablefn = enable_fn,
+            usefn = use_fn
             --children = {} - actually can be set here, but I'll set it later, after possible hide() call
         }
 
@@ -702,13 +745,13 @@ vn = obj {
         return v
     end;
     
-    add_child = function(s, parent, image, dx, dy, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
+    add_child = function(s, parent, image, dx, dy, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn, use_fn)
         local armarr = { [0] = { dx, dy } };
-        return s:add_child_frames(parent, image, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
+        return s:add_child_frames(parent, image, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn, use_fn);
     end;
     
-    add_child_frames = function(s, parent, image, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn)
-        local child = s:effect_int(parent, image, nil, parent.start, parent.step, parent.max_step, parent.from_stop, armarr, parent.hotstep, parent.accel, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn);
+    add_child_frames = function(s, parent, image, armarr, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn, use_fn)
+        local child = s:effect_int(parent, image, nil, parent.start, parent.step, parent.max_step, parent.from_stop, armarr, parent.hotstep, parent.accel, txt_fn, on_clk, on_over, on_out, on_hide, tooltip_fn, enable_fn, use_fn);
         child.eff = parent.eff;
         child.from = parent.from;
         child.pos = parent.pos;
@@ -1520,7 +1563,7 @@ vn = obj {
             return result;
         end
     end;
-    show_btn = function(s, btnimg, btneff, txtfn, actfn, ovrimg, ovreff, overfn, outfn, tooltipfn, enablefn, btnframes, ovrframes)
+    show_btn = function(s, btnimg, btneff, txtfn, actfn, ovrimg, ovreff, overfn, outfn, tooltipfn, enablefn, usefn, btnframes, ovrframes)
         if not btnframes then
             btnframes = 0;
         end
@@ -1548,12 +1591,13 @@ vn = obj {
                             return;
                         end
                         s:hide(vv);
-                        s:show_btn(btnimg, btneff, txtfn, actfn, ovrimg, ovreff, overfn, outfn, tooltipfn, enablefn, btnframes, ovrframes);
+                        s:show_btn(btnimg, btneff, txtfn, actfn, ovrimg, ovreff, overfn, outfn, tooltipfn, enablefn, usefn, btnframes, ovrframes);
                         s:start(nil, true);
                     end,
                     outfn,
                     tooltipfn,
                     enablefn,
+                    usefn,
                     btnframes,
                     ovrframes
                 );
@@ -1570,6 +1614,7 @@ vn = obj {
             nil,
             tooltipfn,
             enablefn,
+            usefn,
             btnframes,
             ovrframes
         );
