@@ -8,7 +8,7 @@ rollStat = stat {
     _rolls = {},
     _allRollsByPlayer = {},
     _curRollsByPlayer = {},
-    var { message = "", data = false, should_pass = false, hotstep = 6, acceleration = 1 },
+    var { message = "", data = false, should_pass = false, hotstep = 2, acceleration = 1 },
     init = function(s)
         s._allRollsByPlayer[1] = 0;
         s._allRollsByPlayer[2] = 0;

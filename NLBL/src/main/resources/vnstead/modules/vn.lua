@@ -299,12 +299,32 @@ vn = obj {
         end;
         s:busy(true, job);
     end;
+    find_interval = function(s, milestones, sprStep, max_step)
+        local mstl = 0;
+        local msth = max_step + 1;
+        local mstIdx = 1;
+        if milestones then
+            for i=1,#milestones do
+                mst = milestones[i];
+                if sprStep >= mst then
+                    mstl = mst;
+                    mstIdx = i;
+                end
+                if sprStep < mst then
+                    msth = mst;
+                    mstIdx = i - 1;
+                    break;
+                end
+            end
+        end
+        return string.format(".%04d-%04d", mstl, msth - 1), mstIdx;
+    end;
     load_effect = function(s, v)
         local ss = s;
         if v.spr == nil then v.spr = {}; end;
         -- Will return nils if v is sprite
         local prefix, extension = s:split_url(v.pic);
-        local meta = s:read_meta(prefix);
+        local meta, milestones = s:read_meta(prefix);
         for sprStep = v.start, v.max_step do
             v.spr[sprStep] = {
                 was_loaded = false,
@@ -330,19 +350,23 @@ vn = obj {
                     end
                     return nil;
                 end,
-                load_file = function(s, sprfile, key, idx, united)
+                load_file = function(s, sprfile, key, idx, united, milestoneIdx)
                     if not key then
                         key = sprfile;
                     end
                     if not idx then
                         idx = v.start;
                     end
+                    local startIdx = 0;
+                    if milestones then
+                        startIdx = milestones[milestoneIdx];
+                    end
                     if (ss.sprite_cache[key] and ss.sprite_cache[key][idx]) then
                         return ss.sprite_cache[key][idx];
                     end
                     local loaded;
-                    if united and ss.sprite_cache[key] then
-                        loaded = ss.sprite_cache[key][-1];
+                    if united and ss.sprite_cache[key] and ss.sprite_cache[key][-milestoneIdx] then
+                        loaded = ss.sprite_cache[key][-milestoneIdx];
                     else
                         loaded = sprite.load(sprfile);
                     end
@@ -352,17 +376,20 @@ vn = obj {
                             ss.sprite_cache[key] = {};
                         end
                         if united then
-                            if not ss.sprite_cache[key][-1] then
-                                ss.sprite_cache[key][-1] = loaded;
+                            if not ss.sprite_cache[key][-milestoneIdx] then
+                                ss.sprite_cache[key][-milestoneIdx] = loaded;
                             end
                             local ystart = 0;
                             local w, h;
                             if meta then
                                 local cursize;
-                                for i = 1,idx do
-                                    cursize = meta[i];
+                                for i = startIdx,idx do
+                                    cursize = meta[i + 1];
                                     if not cursize then
                                         cursize = meta[1];
+                                    end
+                                    if h then
+                                        ystart = ystart + h;
                                     end
                                     if cursize then
                                         sw, sh = cursize:match("^(.*)x(.*)$");
@@ -370,12 +397,11 @@ vn = obj {
                                     else
                                         error("Metafile for " .. prefix .. " is not valid");
                                     end
-                                    ystart = ystart + h;
                                 end
                             end
                             if not w or not h then
-                                ystart = h * idx;
                                 w, h = sprite.size(loaded);
+                                ystart = w * idx;
                                 h = w;
                             end
                             ss.sprite_cache[key][idx] = {["loaded"] = loaded, ["x"] = 0, ["y"] = ystart, ["w"] = w, ["h"] = h};
@@ -401,9 +427,10 @@ vn = obj {
                     if ss:file_exists(sprfile) then
                         return s:load_file(sprfile, prefix, sprStep);
                     end
-                    local united_sprfile = prefix .. '.0000-' .. string.format("%04d", v.max_step) .. extension;
+                    local interval, milestoneIdx = ss:find_interval(milestones, sprStep, v.max_step);
+                    local united_sprfile = prefix .. interval .. extension;
                     if ss:file_exists(united_sprfile) then
-                        return s:load_file(united_sprfile, prefix, sprStep, true);
+                        return s:load_file(united_sprfile, prefix, sprStep, true, milestoneIdx);
                     elseif sprStep == start then
                         error("Can not load key sprite (" .. sprfile .. " or " .. united_sprfile .. ")");
                     elseif sprStep > v.start then
