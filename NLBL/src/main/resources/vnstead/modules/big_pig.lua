@@ -1,6 +1,196 @@
 require "modules/vn"
 require "modules/dice"
 require "modules/dicegames"
+require "modules/gobj"
+
+reward = gobj {
+    nam = "reward",
+    pic = "gfx/reward.png",
+    eff = "middle-middle@0,0",
+    maxStep = 270,
+    startFrame = 0,
+    curStep = 39,
+    hot_step = 2,
+    acceleration = 1
+}
+
+txt1 = gobj {
+    nam = "txt1",
+    pic = sprite.blank(1, 1),
+    arm = { [0] = { 90, 100 } },
+    txtfn = function(s) return rollStat:info(); end
+}
+
+txt2 = gobj {
+    nam = "txt2",
+    pic = sprite.blank(1, 1),
+    arm = { [0] = { 60, 100 } },
+    txtfn = function(s) return rollStat:info(); end
+}
+
+paper = gobj {
+    nam = "paper",
+    pic = function(s) return game.table.paper; end,
+    eff = "moveinright-right-top@-20,40",
+    maxStep = 10,
+    startFrom = 0,
+    curStep = 2,
+    act = function(s)
+        local v = vn:glookup(stead.deref(s));
+        vn:set_step(v, nil, not v.forward);
+        vn:start();
+    end
+}
+
+btn_dice = gobj {
+    nam = "btn_dice",
+    pic = "gfx/btn_dice.png",
+    eff = "right-top@-40,500",
+    morphover = "alt_btn_dice",
+    enablefn = function(s) return enablefn(s); end
+}
+
+alt_btn_dice = gobj {
+    nam = "alt_btn_dice",
+    pic = "gfx/alt_btn_dice.png",
+    eff = "right-top@-40,500",
+    morphout = "btn_dice",
+    dsc = function(s) return dice:rollTxt(); end,
+    ttpos = "n",
+    act = function(s) if vn.stopped then s:onout(); dice:act(); end; end,
+    onover = function(s) set_sound('sfx/shake.ogg', 1, 0); end,
+    onout = function(s) stop_sound(1); end,
+    enablefn = function(s) return enablefn(s); end
+}
+
+btn_next = gobj {
+    nam = "btn_next",
+    pic = "gfx/btn_next.png",
+    eff = "right-top@-40,625",
+    morphover = "alt_btn_next",
+    enablefn = function(s) return enablefn(s); end
+}
+
+alt_btn_next = gobj {
+    nam = "alt_btn_next",
+    pic = "gfx/alt_btn_next.png",
+    eff = "right-top@-40,625",
+    morphout = "btn_next",
+    dsc = function(s) return next_turn_obj:disp(); end,
+    act = function(s) if vn.stopped then next_turn_obj:act(); end; end,
+    enablefn = function(s) return enablefn(s); end
+}
+
+btn_inc = gobj {
+    nam = "btn_inc",
+    pic = "gfx/btn_inc.png",
+    eff = "right-top@-40,750",
+    morphover = "alt_btn_inc",
+    enablefn = function(s) return enablefn(s); end
+}
+
+alt_btn_inc = gobj {
+    nam = "alt_btn_inc",
+    pic = "gfx/alt_btn_inc.png",
+    eff = "right-top@-40,750",
+    morphout = "btn_inc",
+    dsc = function(s) return increase_bet_obj:txt(); end,
+    act = function(s) if vn.stopped then increase_bet_obj:act(); end; end,
+    enablefn = function(s) return enablefn(s); end
+}
+
+btn_exit = gobj {
+    nam = "btn_exit",
+    pic = "gfx/btn_exit.png",
+    eff = "right-top@-40,875",
+    morphover = "alt_btn_exit",
+    enablefn = function(s) return enablefn2(s); end
+}
+
+alt_btn_exit = gobj {
+    nam = "alt_btn_exit",
+    pic = "gfx/alt_btn_exit.png",
+    eff = "right-top@-40,875",
+    morphout = "btn_exit",
+    dsc = function(s) return play_game_obj:txt(); end,
+    ttpos = "s",
+    act = function(s) if vn.stopped then play_game_obj:act(); end; end,
+    enablefn = function(s) return enablefn2(s); end
+}
+
+btn_dice2 = gobj {
+    nam = "btn_dice2",
+    pic = "gfx/btn_dice2.png",
+    eff = "right-bottom@-195,-440",
+    morphover = "alt_btn_dice2",
+    enablefn = function(s) return enablefn(s); end
+}
+
+alt_btn_dice2 = gobj {
+    nam = "alt_btn_dice2",
+    pic = "gfx/alt_btn_dice2.png",
+    eff = "right-bottom@-195,-440",
+    morphout = "btn_dice2",
+    dsc = function(s) return dice:rollTxt(); end,
+    act = function(s) if vn.stopped then s:onout(); dice:act(); end; end,
+    onover = function(s) set_sound('sfx/shake.ogg', 1, 0); end,
+    onout = function(s) stop_sound(1); end,
+    enablefn = function(s) return enablefn(s); end
+}
+
+btn_next2 = gobj {
+    nam = "btn_next2",
+    pic = "gfx/btn_next2.png",
+    eff = "right-bottom@-195,-280",
+    morphover = "alt_btn_next2",
+    enablefn = function(s) return enablefn(s); end
+}
+
+alt_btn_next2 = gobj {
+    nam = "alt_btn_next2",
+    pic = "gfx/alt_btn_next2.png",
+    eff = "right-bottom@-195,-280",
+    morphout = "btn_next2",
+    dsc = function(s) return next_turn_obj:disp(); end,
+    act = function(s) if vn.stopped then next_turn_obj:act(); end; end,
+    enablefn = function(s) return enablefn(s); end
+}
+
+btn_inc2 = gobj {
+    nam = "btn_inc2",
+    pic = "gfx/btn_inc2.png",
+    eff = "right-bottom@-195,-180",
+    morphover = "alt_btn_inc2",
+    enablefn = function(s) return enablefn(s); end
+}
+
+alt_btn_inc2 = gobj {
+    nam = "alt_btn_inc2",
+    pic = "gfx/alt_btn_inc2.png",
+    eff = "right-bottom@-195,-180",
+    morphout = "btn_inc2",
+    dsc = function(s) return increase_bet_obj:txt(); end,
+    act = function(s) if vn.stopped then increase_bet_obj:act(); end; end,
+    enablefn = function(s) return enablefn(s); end
+}
+
+btn_exit2 = gobj {
+    nam = "btn_exit2",
+    pic = "gfx/btn_exit2.png",
+    eff = "right-bottom@-195,-10",
+    morphover = "alt_btn_exit2",
+    enablefn = function(s) return enablefn2(s); end
+}
+
+alt_btn_exit2 = gobj {
+    nam = "alt_btn_exit2",
+    pic = "gfx/alt_btn_exit2.png",
+    eff = "right-bottom@-195,-10",
+    morphout = "btn_exit2",
+    dsc = function(s) return play_game_obj:txt(); end,
+    act = function(s) if vn.stopped then play_game_obj:act(); end; end,
+    enablefn = function(s) return enablefn2(s); end
+}
 
 rollStat = stat {
     nam = "rollStat",
@@ -8,7 +198,7 @@ rollStat = stat {
     _rolls = {},
     _allRollsByPlayer = {},
     _curRollsByPlayer = {},
-    var { message = "", data = false, should_pass = false, hotstep = 2, acceleration = 1 },
+    var { message = "", data = false, should_pass = false },
     init = function(s)
         s._allRollsByPlayer[1] = 0;
         s._allRollsByPlayer[2] = 0;
@@ -150,7 +340,7 @@ rollStat = stat {
                     s.data.money[pos] = s.data.money[pos] + prize;
                     s:init();
                     vn:show('gfx/round_finished.png', 'middle-middle@0,-18', vn.hz);
-                    vn:show('gfx/reward.png', 'middle-middle@0,0', 270 * vn.hz, 0, 39, nil, nil, s.hotstep, s.acceleration);
+                    vn:gshow(reward);
                     set_sound('sfx/money.ogg', nil, 1);
                     if s.data and not s:is_defined(rollStat.data.mainplr) then
                         return function()
@@ -432,99 +622,23 @@ game_room = vnr {
 
         vn:preload_effect('gfx/reward.png', 0, 270, 0, 270);
         local txtfn = function() return rollStat:info(); end;
-        local paper = vn:show(game.table.paper, 'moveinright-right-top@-20,40', 10 * vn.hz, 0, 2, nil, nil, nil, nil, nil, function(v) vn:set_step(v, nil, not v.forward); vn:start(); end);
+        local paper = vn:gshow(paper);
 
-        local overfn = function(v) set_sound('sfx/shake.ogg', 1, 0); end;
-        local outfn = function(v) stop_sound(1); end;
-        local enablefn = function(v) return (rollStat.data and not rollStat.data.ai[dice.pos] and rollStat:is_defined(rollStat.data.mainplr)); end;
-        local enablefn2 = function(v) return (rollStat.data and not rollStat.data.ai[dice.pos]); end;
         if (game.table.plate) then
             set_music('sfx/abu_ali.ogg');
-            vn:add_child(paper, 'gfx/empty.png', 90, 100, txtfn);
+            vn:add_child(paper, txt1);
             vn:show(game.table.plate, 'right-bottom@110,75', 0);
-            vn:show_btn(
-                "gfx/btn_dice2.png",
-                'right-bottom@-195,-440',
-                nil, function(v) if vn.stopped then outfn(v); dice:act(); end; end,
-                "gfx/alt_btn_dice2.png",
-                'right-bottom@-195,-440',
-                overfn, outfn,
-                function(v) return dice:rollTxt() end,
-                enablefn
-            );
-            vn:show_btn(
-                "gfx/btn_next2.png",
-                'right-bottom@-195,-280',
-                nil, function(v) if vn.stopped then next_turn_obj:act(); end; end,
-                "gfx/alt_btn_next2.png",
-                'right-bottom@-195,-280',
-                nil, nil,
-                function(v) return next_turn_obj:disp() end,
-                enablefn
-            );
-            vn:show_btn(
-                "gfx/btn_inc2.png",
-                'right-bottom@-195,-180',
-                nil, function(v) if vn.stopped then increase_bet_obj:act(); end; end,
-                "gfx/alt_btn_inc2.png",
-                'right-bottom@-195,-180',
-                nil, nil,
-                function(v) return increase_bet_obj:txt() end,
-                enablefn
-            );
-            vn:show_btn(
-                "gfx/btn_exit2.png",
-                'right-bottom@-195,-10',
-                nil, function(v) if vn.stopped then play_game_obj:act(); end; end,
-                "gfx/alt_btn_exit2.png",
-                'right-bottom@-195,-10',
-                nil, nil,
-                function(v) return play_game_obj:txt() end,
-                enablefn2
-            );
+            vn:gshow(btn_dice2);
+            vn:gshow(btn_next2);
+            vn:gshow(btn_inc2);
+            vn:gshow(btn_exit2);
         else
             set_music('sfx/tavernm.ogg');
-            vn:add_child(paper, 'gfx/empty.png', 60, 100, txtfn);
-            vn:show_btn(
-                "gfx/btn_dice.png",
-                'right-top@-40,500',
-                nil, function(v) if vn.stopped then outfn(v); dice:act(); end; end,
-                "gfx/alt_btn_dice.png",
-                'right-top@-40,500',
-                overfn, outfn,
-                function(v) return dice:rollTxt(), "n" end,
-                enablefn
-            );
-            vn:show_btn(
-                "gfx/btn_next.png",
-                'right-top@-40,625',
-                nil, function(v) if vn.stopped then next_turn_obj:act(); end; end,
-                "gfx/alt_btn_next.png",
-                'right-top@-40,625',
-                nil, nil,
-                function(v) return next_turn_obj:disp(), "h" end,
-                enablefn
-            );
-            vn:show_btn(
-                "gfx/btn_inc.png",
-                'right-top@-40,750',
-                nil, function(v) if vn.stopped then increase_bet_obj:act(); end; end,
-                "gfx/alt_btn_inc.png",
-                'right-top@-40,750',
-                nil, nil,
-                function(v) return increase_bet_obj:txt(), "h" end,
-                enablefn
-            );
-            vn:show_btn(
-                "gfx/btn_exit.png",
-                'right-top@-40,875',
-                nil, function(v) if vn.stopped then play_game_obj:act(); end; end,
-                "gfx/alt_btn_exit.png",
-                'right-top@-40,875',
-                nil, nil,
-                function(v) return play_game_obj:txt(), "s" end,
-                enablefn2
-            );
+            vn:add_child(paper, txt2);
+            vn:gshow(btn_dice);
+            vn:gshow(btn_next);
+            vn:gshow(btn_inc);
+            vn:gshow(btn_exit);
         end
         vn:start();
         take(rollStat);
@@ -677,4 +791,6 @@ stead.module_init(function()
         you_lose_label = vn:label("You lose...", 40, "#ffffff", "black", 127, labelFont);
     end
     sprite.free_font(labelFont);
+    enablefn = function(v) return (rollStat.data and not rollStat.data.ai[dice.pos] and rollStat:is_defined(rollStat.data.mainplr)); end;
+    enablefn2 = function(v) return (rollStat.data and not rollStat.data.ai[dice.pos]); end;
 end)
