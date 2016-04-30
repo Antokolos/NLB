@@ -224,13 +224,13 @@ vn = obj {
             return;
         end
         for i, v in ipairs(s._effects) do
-            if v.gob.onclick and s:inside_spr(v, x, y) then
-                v.gob:onclick(s);
+            if s:gobf(v).onclick and s:inside_spr(v, x, y) then
+                s:gobf(v):onclick(s);
             end
         end
     end;
     shapechange = function(s, v, is_over)
-        local gob = v.gob;
+        local gob = s:gobf(v);
         local morph = stead.ref(gob.morphout);
         if is_over then
             morph = stead.ref(gob.morphover);
@@ -248,8 +248,8 @@ vn = obj {
             return;
         end
         for i, v in ipairs(s._effects) do
-            if v.gob.onover and s:enabled(v) and not v.mouse_over and s:inside_spr(v, x, y) then
-                v.gob:onover();
+            if s:gobf(v).onover and s:enabled(v) and not v.mouse_over and s:inside_spr(v, x, y) then
+                s:gobf(v):onover();
                 if not s:shapechange(v, true) then
                     v.mouse_over = true;
                     s:update_tooltip(v);
@@ -263,8 +263,8 @@ vn = obj {
             return;
         end
         for i, v in ipairs(s._effects) do
-            if v.gob.onout and s:enabled(v) and v.mouse_over and not s:inside_spr(v, x, y) then
-                v.gob:onout();
+            if s:gobf(v).onout and s:enabled(v) and v.mouse_over and not s:inside_spr(v, x, y) then
+                s:gobf(v):onout();
                 if not s:shapechange(v, false) then
                     v.mouse_over = false;
                     vn.stopped = false;
@@ -554,8 +554,8 @@ vn = obj {
         for ii, vv in ipairs(i.children) do
             s:hide(vv, eff, ...);
         end
-        if i.gob.onhide then
-            i.gob:onhide();
+        if s:gobf(i).onhide then
+            s:gobf(i):onhide();
         end
         s:free_effect(i);
         stead.table.remove(s._effects, k)
@@ -584,7 +584,7 @@ vn = obj {
         if not n then return end
         local i, k
         for i, k in ipairs(s._effects) do
-            if stead.deref(k.gob) == n then
+            if k.gob == n then
                 return k, i
             end
         end
@@ -615,12 +615,12 @@ vn = obj {
     end;
 
     arm_by_idx = function(s, v, idx, subidx)
-        local varm = v.gob.arm;
+        local varm = s:gobf(v).arm;
         if not varm then
             return 0;
         end
         if type(varm) == 'function' then
-            varm = v.gob:arm();
+            varm = s:gobf(v):arm();
         end
         local arm = varm[idx];
         if not arm then
@@ -655,9 +655,9 @@ vn = obj {
     end;
     
     set_use_src = function(s)
-        return function(gob)
+        return function(gobl)
             if s.stopped then
-                s.use_src = stead.deref(gob);
+                s.use_src = stead.deref(gobl);
                 s.cursor_need_update = true;
             end;
         end
@@ -668,6 +668,8 @@ vn = obj {
         local gg = init_gobj(image, eff, maxStep, startFrame, curStep, framesFromStop, arm, hot_step, acceleration);
         return s:effect_int(nil, gg);
     end;
+    
+    gobf = function(s, v) return stead.ref(v.gob); end,
 
     effect_int = function(s, parent_eff, g, is_over)
         local image;
@@ -706,7 +708,7 @@ vn = obj {
             hotstep = g.hot_step,
             accel = g.acceleration,
             mouse_over = is_over,
-            gob = g
+            gob = stead.deref(g)
             --children = {} - actually can be set here, but I'll set it later, after possible hide() call
         }
 
@@ -1426,14 +1428,14 @@ vn = obj {
     draw_step = function(s, v)
         local result = {["data"] = nil, ["hasmore"] = s:do_step(v)};
         local e = true;
-        if v.gob.enablefn then
-            e = v.gob:enablefn();
+        if s:gobf(v).enablefn then
+            e = s:gobf(v):enablefn();
         end
         if e then
             result.data = s:do_effect(v);
         else
-            if v.gob.onhide then
-                v.gob:onhide();
+            if s:gobf(v).onhide then
+                s:gobf(v):onhide();
             end
         end
         return result;
@@ -1498,8 +1500,8 @@ vn = obj {
         if not target then
             target = s:screen();
         end
-        if (v.gob.txtfn) then
-            local texts = v.gob:txtfn();
+        if (s:gobf(v).txtfn) then
+            local texts = s:gobf(v):txtfn();
             local xpos, ypos = nil, nil;
             if not x or not y then
                 xpos, ypos = s:postoxy(v, idx);
@@ -1547,18 +1549,18 @@ vn = obj {
             return;
         end
         for i, v in ipairs(s._effects) do
-            if s:enabled(v) and v.gob.tooltipfn and s:inside_spr(v, x, y) then
+            if s:enabled(v) and s:gobf(v).tooltipfn and s:inside_spr(v, x, y) then
                 s:update_tooltip(v);
             end
         end
     end;
     enabled = function(s, v)
-        return not v.gob.enablefn or v.gob:enablefn();
+        return not s:gobf(v).enablefn or s:gobf(v):enablefn();
     end;
     update_tooltip = function(s, v)
         local xx, yy = s:postoxy(v);
         local sp = s:frame(v, 0);
-        local text, pos = v.gob:tooltipfn();
+        local text, pos = s:gobf(v):tooltipfn();
         if text then
             s:tooltip(text, pos, xx, yy, sp.w, sp.h, target);
         end

@@ -5,6 +5,7 @@ require "modules/gobj"
 
 reward = gobj {
     nam = "reward",
+    system_type = true,
     pic = "gfx/reward.png",
     eff = "middle-middle@0,0",
     maxStep = 270,
@@ -16,20 +17,23 @@ reward = gobj {
 
 txt1 = gobj {
     nam = "txt1",
-    pic = sprite.blank(1, 1),
+    system_type = true,
+    pic = "gfx/empty.png",
     arm = { [0] = { 90, 100 } },
     txtfn = function(s) return rollStat:info(); end
 }
 
 txt2 = gobj {
     nam = "txt2",
-    pic = sprite.blank(1, 1),
+    system_type = true,
+    pic = "gfx/empty.png",
     arm = { [0] = { 60, 100 } },
     txtfn = function(s) return rollStat:info(); end
 }
 
 paper = gobj {
     nam = "paper",
+    system_type = true,
     pic = function(s) return game.table.paper; end,
     eff = "moveinright-right-top@-20,40",
     maxStep = 10,
@@ -44,6 +48,7 @@ paper = gobj {
 
 btn_dice = gobj {
     nam = "btn_dice",
+    system_type = true,
     pic = "gfx/btn_dice.png",
     eff = "right-top@-40,500",
     morphover = "alt_btn_dice",
@@ -52,6 +57,7 @@ btn_dice = gobj {
 
 alt_btn_dice = gobj {
     nam = "alt_btn_dice",
+    system_type = true,
     pic = "gfx/alt_btn_dice.png",
     eff = "right-top@-40,500",
     morphout = "btn_dice",
@@ -65,6 +71,7 @@ alt_btn_dice = gobj {
 
 btn_next = gobj {
     nam = "btn_next",
+    system_type = true,
     pic = "gfx/btn_next.png",
     eff = "right-top@-40,625",
     morphover = "alt_btn_next",
@@ -73,6 +80,7 @@ btn_next = gobj {
 
 alt_btn_next = gobj {
     nam = "alt_btn_next",
+    system_type = true,
     pic = "gfx/alt_btn_next.png",
     eff = "right-top@-40,625",
     morphout = "btn_next",
@@ -83,6 +91,7 @@ alt_btn_next = gobj {
 
 btn_inc = gobj {
     nam = "btn_inc",
+    system_type = true,
     pic = "gfx/btn_inc.png",
     eff = "right-top@-40,750",
     morphover = "alt_btn_inc",
@@ -91,6 +100,7 @@ btn_inc = gobj {
 
 alt_btn_inc = gobj {
     nam = "alt_btn_inc",
+    system_type = true,
     pic = "gfx/alt_btn_inc.png",
     eff = "right-top@-40,750",
     morphout = "btn_inc",
@@ -101,6 +111,7 @@ alt_btn_inc = gobj {
 
 btn_exit = gobj {
     nam = "btn_exit",
+    system_type = true,
     pic = "gfx/btn_exit.png",
     eff = "right-top@-40,875",
     morphover = "alt_btn_exit",
@@ -109,6 +120,7 @@ btn_exit = gobj {
 
 alt_btn_exit = gobj {
     nam = "alt_btn_exit",
+    system_type = true,
     pic = "gfx/alt_btn_exit.png",
     eff = "right-top@-40,875",
     morphout = "btn_exit",
@@ -120,6 +132,7 @@ alt_btn_exit = gobj {
 
 btn_dice2 = gobj {
     nam = "btn_dice2",
+    system_type = true,
     pic = "gfx/btn_dice2.png",
     eff = "right-bottom@-195,-440",
     morphover = "alt_btn_dice2",
@@ -128,6 +141,7 @@ btn_dice2 = gobj {
 
 alt_btn_dice2 = gobj {
     nam = "alt_btn_dice2",
+    system_type = true,
     pic = "gfx/alt_btn_dice2.png",
     eff = "right-bottom@-195,-440",
     morphout = "btn_dice2",
@@ -140,6 +154,7 @@ alt_btn_dice2 = gobj {
 
 btn_next2 = gobj {
     nam = "btn_next2",
+    system_type = true,
     pic = "gfx/btn_next2.png",
     eff = "right-bottom@-195,-280",
     morphover = "alt_btn_next2",
@@ -148,6 +163,7 @@ btn_next2 = gobj {
 
 alt_btn_next2 = gobj {
     nam = "alt_btn_next2",
+    system_type = true,
     pic = "gfx/alt_btn_next2.png",
     eff = "right-bottom@-195,-280",
     morphout = "btn_next2",
@@ -158,6 +174,7 @@ alt_btn_next2 = gobj {
 
 btn_inc2 = gobj {
     nam = "btn_inc2",
+    system_type = true,
     pic = "gfx/btn_inc2.png",
     eff = "right-bottom@-195,-180",
     morphover = "alt_btn_inc2",
@@ -166,6 +183,7 @@ btn_inc2 = gobj {
 
 alt_btn_inc2 = gobj {
     nam = "alt_btn_inc2",
+    system_type = true,
     pic = "gfx/alt_btn_inc2.png",
     eff = "right-bottom@-195,-180",
     morphout = "btn_inc2",
@@ -176,6 +194,7 @@ alt_btn_inc2 = gobj {
 
 btn_exit2 = gobj {
     nam = "btn_exit2",
+    system_type = true,
     pic = "gfx/btn_exit2.png",
     eff = "right-bottom@-195,-10",
     morphover = "alt_btn_exit2",
@@ -184,6 +203,7 @@ btn_exit2 = gobj {
 
 alt_btn_exit2 = gobj {
     nam = "alt_btn_exit2",
+    system_type = true,
     pic = "gfx/alt_btn_exit2.png",
     eff = "right-bottom@-195,-10",
     morphout = "btn_exit2",
