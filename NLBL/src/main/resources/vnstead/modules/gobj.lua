@@ -46,7 +46,7 @@ gobj = function(v)
             else
                 local use_src_obj = vno:glookup(vno.use_src);
                 if use_src_obj then
-                    res = use_src_obj.gob:usefn(s);
+                    res = vno:gobf(use_src_obj):usefn(s);
                     vno.use_src = false;
                     vno.cursor_need_update = true;
                 end
