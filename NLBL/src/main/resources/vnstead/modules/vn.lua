@@ -194,7 +194,7 @@ vn = obj {
         end
         local i, v, n
         for i, v in ipairs(s._effects) do
-            v.step = v.start;
+            v.step = v.init_step;
             s:load_effect(v)
             if v.step < v.max_step - v.from_stop then
                 n = true
