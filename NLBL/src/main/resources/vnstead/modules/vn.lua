@@ -552,7 +552,7 @@ vn = obj {
         local i, k = s:lookup(nam)
         if not i then return end
         for ii, vv in ipairs(i.children) do
-            s:hide(vv, eff, ...);
+            s:hide(s:childf(vv), eff, ...);
         end
         if s:gobf(i).onhide then
             s:gobf(i):onhide();
@@ -592,8 +592,8 @@ vn = obj {
 
     size = function(s, v, idx)
         local px, py = 0, 0;
-        if v.parent then
-            px, py = s:size(v.parent, idx);
+        if s:parentf(v) then
+            px, py = s:size(s:parentf(v), idx);
         end
         local xarm, yarm = s:arm(v, idx);
         local sp = s:frame(v, idx);
@@ -668,8 +668,15 @@ vn = obj {
         local gg = init_gobj(image, eff, maxStep, startFrame, curStep, framesFromStop, arm, hot_step, acceleration);
         return s:effect_int(nil, gg);
     end;
+
+    gobf = function(s, v) return stead.ref(v.gob); end;
+
+    parentf = function(s, v) return s:lookup(v.parent); end;
     
-    gobf = function(s, v) return stead.ref(v.gob); end,
+    childf = function(s, v_nam)
+        local ch = s:lookup(v_nam);
+        return ch;
+    end;
 
     effect_int = function(s, parent_eff, g, is_over)
         local image;
@@ -694,8 +701,12 @@ vn = obj {
 
         local picture = image.pic
         local name = image.nam
+        local parent_nam = false;
+        if parent_eff then
+            parent_nam = parent_eff.nam;
+        end
         local v = {
-            parent = parent_eff,
+            parent = parent_nam,
             newborn = true,
             pic = picture,
             nam = name,
@@ -813,12 +824,12 @@ vn = obj {
         child.eff = parent.eff;
         child.from = parent.from;
         child.pos = parent.pos;
-        stead.table.insert(parent.children, child);
+        stead.table.insert(parent.children, child.nam);
         return child;
     end;
     
     remove_child = function(s, parent, child)
-        stead.table.remove(parent.children, child);
+        stead.table.remove(parent.children, child.nam);
     end;
 
     pause = function(s, frames, callback)
@@ -850,8 +861,8 @@ vn = obj {
     end;
 
     postoxy = function(s, v, idx)
-        if v.parent then
-            local x, y = s:postoxy(v.parent, idx);
+        if s:parentf(v) then
+            local x, y = s:postoxy(s:parentf(v), idx);
             local xarm, yarm = s:arm(v, idx);
             return x + xarm, y + yarm;
         else
@@ -999,7 +1010,7 @@ vn = obj {
             x = math.floor(x_start - zstep * (x_start - x_end) / mxs)
         elseif v.from == 'right' then
             x_end = s.scr_w;
-            if v.parent then
+            if s:parentf(v) then
                 x_end = x_end + xarm;
             end
             x = math.floor(x_start + zstep * (x_end - x_start) / mxs)
@@ -1008,7 +1019,7 @@ vn = obj {
             y = math.floor(y_start - zstep * (y_start - y_end) / mxs)
         elseif v.from == 'bottom' then
             y_end = s.scr_h;
-            if v.parent then
+            if s:parentf(v) then
                 y_end = y_end + yarm;
             end
             y = math.floor(y_start + zstep * (y_end - y_start) / mxs)
@@ -1051,9 +1062,9 @@ vn = obj {
         x, y = s:postoxy(v, sprpos)
 
         local xdiff, xextent, ydiff, yextent;
-        if v.parent then
+        if s:parentf(v) then
             local wp, hp;
-            local sprpart = s:frame(v.parent, sprpos);
+            local sprpart = s:frame(s:parentf(v), sprpos);
             if scale ~= 1.0 then
                 local sprpar = sprite.scale(sprpart.spr, scale, scale, false);
                 wp, hp = sprite.size(sprpar);
@@ -1120,7 +1131,7 @@ vn = obj {
             x = math.floor(x_start + zstep * (xarm - x_start) / mxs)
         elseif v.from == 'right' then
             x_start = s.scr_w
-            if v.parent then
+            if s:parentf(v) then
                 x_start = x_start + xarm;
             end
             x = math.floor(x_start - zstep * (x_start - x_end) / mxs)
@@ -1129,7 +1140,7 @@ vn = obj {
             y = math.floor(y_start + zstep * (yarm - y_start) / mxs)
         elseif v.from == 'bottom' then
             y_start = s.scr_h
-            if v.parent then
+            if s:parentf(v) then
                 y_start = y_start + yarm;
             end
             y = math.floor(y_start - zstep * (y_start - y_end) / mxs)
@@ -1381,7 +1392,7 @@ vn = obj {
             s:draw_hud(data.v, data.idx, data.x, data.y, data.scale, data.alpha);
         end
         for k, vv in ipairs(v.children) do
-            s:set_step(vv, from_step, forward);
+            s:set_step(s:childf(vv), from_step, forward);
         end
     end;
     do_step = function(s, v)
