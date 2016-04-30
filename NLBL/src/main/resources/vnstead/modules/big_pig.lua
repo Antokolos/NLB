@@ -3,6 +3,22 @@ require "modules/dice"
 require "modules/dicegames"
 require "modules/gobj"
 
+you_lose = gobj {
+    nam = "you_lose",
+    system_type = true,
+    pic = function(s) return you_lose_label end,
+    eff = "fadein-middle-middle@0,0",
+    maxStep = 100
+}
+
+you_win = gobj {
+    nam = "you_win",
+    system_type = true,
+    pic = function(s) return you_win_label end,
+    eff = "fadein-middle-middle@0,0",
+    maxStep = 100
+}
+
 reward = gobj {
     nam = "reward",
     system_type = true,
@@ -13,6 +29,13 @@ reward = gobj {
     curStep = 39,
     hot_step = 2,
     acceleration = 1
+}
+
+round_finished = gobj {
+    nam = "round_finished",
+    system_type = true,
+    pic = "gfx/round_finished.png",
+    eff = "middle-middle@0,-18"
 }
 
 txt1 = gobj {
@@ -44,6 +67,13 @@ paper = gobj {
         vn:set_step(v, nil, not v.forward);
         vn:start();
     end
+}
+
+plate = gobj {
+    nam = "plate",
+    system_type = true,
+    pic = function(s) return game.table.plate; end,
+    eff = "right-bottom@110,75"
 }
 
 btn_dice = gobj {
@@ -359,12 +389,12 @@ rollStat = stat {
                     end
                     s.data.money[pos] = s.data.money[pos] + prize;
                     s:init();
-                    vn:show('gfx/round_finished.png', 'middle-middle@0,-18', vn.hz);
+                    vn:gshow(round_finished);
                     vn:gshow(reward);
                     set_sound('sfx/money.ogg', nil, 1);
                     if s.data and not s:is_defined(rollStat.data.mainplr) then
                         return function()
-                            vn:show(you_lose_label, "fadein-middle-middle@0,0", 100 * vn.hz);
+                            vn:gshow(you_lose);
                             vn:startcb(function()
                                 play_game_obj:act();
                                 return true;
@@ -373,7 +403,7 @@ rollStat = stat {
                         end
                     elseif s:only_one_player() then
                         return function()
-                            vn:show(you_win_label, "fadein-middle-middle@0,0", 100 * vn.hz);
+                            vn:gshow(you_win);
                             vn:startcb(function()
                                 play_game_obj:act();
                                 return true;
@@ -647,7 +677,7 @@ game_room = vnr {
         if (game.table.plate) then
             set_music('sfx/abu_ali.ogg');
             vn:add_child(paper, txt1);
-            vn:show(game.table.plate, 'right-bottom@110,75', 0);
+            vn:gshow(plate);
             vn:gshow(btn_dice2);
             vn:gshow(btn_next2);
             vn:gshow(btn_inc2);
