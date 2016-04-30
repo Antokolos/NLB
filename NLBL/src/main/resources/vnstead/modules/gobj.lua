@@ -99,22 +99,30 @@ gobj = function(v)
             return true;
         end;
     end
+    if not v.is_dynamic then
+        v.is_dynamic = false;
+    end
     return obj(v);
 end
 
+arm_tostring = function(arm)
+    if not arm then
+        return "nil";
+    end
+    local res = "{";
+    for k, v in pairs(arm) do
+        res = res .. string.format("[%d] = {%d, %d}, ", k, v[1], v[2]);
+    end
+    res = res .. "}";
+    return res;
+end
+
 init_gobj = function(image, eff, maxStep, startFrame, curStep, framesFromStop, arm, hot_step, acceleration)
-    return gobj({
-        ["nam"] = image,
-        ["pic"] = image,
-        ["eff"] = eff,
-        ["maxStep"] = maxStep,
-        ["startFrame"] = startFrame,
-        ["curStep"] = curStep,
-        ["framesFromStop"] = framesFromStop,
-        ["arm"] = arm,
-        ["hot_step"] = hot_step,
-        ["acceleration"] = acceleration
-    });
+    local constr_string = string.format(
+        "gobj({['nam'] = '%s', ['pic'] = '%s', ['eff'] = '%s', ['maxStep'] = %s, ['startFrame'] = %s, ['curStep'] = %s, ['framesFromStop'] = %s, ['arm'] = %s, ['hot_step'] = %s, ['acceleration'] = %s, ['is_dynamic'] = true})",
+        tostring(image), tostring(image), tostring(eff), tostring(maxStep), tostring(startFrame), tostring(curStep), tostring(framesFromStop), arm_tostring(arm), tostring(hot_step), tostring(acceleration)
+    );
+    return new(constr_string);
 end
 
 stead.module_init(function()

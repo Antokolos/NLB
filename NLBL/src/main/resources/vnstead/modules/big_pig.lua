@@ -625,7 +625,7 @@ play_game_obj = menu {
     end,
     act = function(s)
         take(play_game_obj);
-        walk(game_room.returnto);
+        walk(stead.ref(game_room._returnto));
     end,
     inv = function(s)
         walk(game_room);
@@ -636,7 +636,6 @@ play_game_obj = menu {
 game_room = vnr {
     nam = true,
     nosave = true,
-    var { returnto = game_room; },
     bgimg = function(s, bg)
         vn:scene(bg);
         vn:geom(8, 864, 1904, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png');
@@ -663,7 +662,7 @@ game_room = vnr {
     end,
     entered = function(s, f)
         if f ~= nil then
-            s.returnto = f;
+            s._returnto = stead.deref(f);
         end
         paginator:turnoff();
         vn:lock_direct();
@@ -671,7 +670,6 @@ game_room = vnr {
         s:bgimg(game.table.bg);
 
         vn:preload_effect('gfx/reward.png', 0, 270, 0, 270);
-        local txtfn = function() return rollStat:info(); end;
         local paper = vn:gshow(paper);
 
         if (game.table.plate) then

@@ -120,22 +120,6 @@ image = function(name, pic)
     return { nam = name, pic = pic };
 end
 
--- should be moved to NLB API and used from here...
-deepcopy = function(t)
-    local k; local v;
-    if type(t) ~= "table" then return t end;
-    local mt = getmetatable(t);
-    local res = {};
-    for k,v in pairs(t) do
-        if type(v) == "table" and k ~= "container" then
-            v = deepcopy(v)
-        end;
-        res[k] = v;
-    end;
-    setmetatable(res,mt);
-    return res;
-end;
-
 vn = obj {
     nam = 'vn';
     system_type = true;
@@ -492,6 +476,10 @@ vn = obj {
         for i, vv in ipairs(v.spr) do
             vv:free();
         end
+        local gob = s:gobf(v);
+        if gob.is_dynamic then
+            delete(gob);
+        end
         v.spr = nil;
     end;
     preload = function(s)
@@ -551,6 +539,7 @@ vn = obj {
 
         local i, k = s:lookup(nam)
         if not i then return end
+        stead.table.remove(s._effects, k)
         for ii, vv in ipairs(i.children) do
             s:hide(s:childf(vv), eff, ...);
         end
@@ -558,7 +547,6 @@ vn = obj {
             s:gobf(i):onhide();
         end
         s:free_effect(i);
-        stead.table.remove(s._effects, k)
         return
     end;
 
@@ -1511,7 +1499,7 @@ vn = obj {
         if not target then
             target = s:screen();
         end
-        if (s:gobf(v).txtfn) then
+        if (s:gobf(v) and s:gobf(v).txtfn) then
             local texts = s:gobf(v):txtfn();
             local xpos, ypos = nil, nil;
             if not x or not y then
