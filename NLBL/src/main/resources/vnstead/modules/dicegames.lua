@@ -1,7 +1,7 @@
 
 dicegames = {
-    ['setluck'] = function() luckStat:setluck(); end;
-    ['getlucky'] = function() luckStat:getlucky(luckStat._threshold, luckStat._luckyObj, luckStat._unluckyObj); end;
+    ['setluck'] = function() return luckStat:setluck(); end;
+    ['getlucky'] = function() return luckStat:getlucky(luckStat._threshold, luckStat._luckyObj, luckStat._unluckyObj); end;
 }
 
 -- If you want to implement your own dice game, you should tell the dice, how to set your roll callback properly

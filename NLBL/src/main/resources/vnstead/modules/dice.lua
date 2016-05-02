@@ -107,7 +107,6 @@ dice = menu {
     -- Please always invoke the callback with the following function, never use s.callback directly!
     invoke_callback = function(s, ...)
         if (not s.callback) then
-            s:reset_callback();
             for key, initializer in pairs(dicegames) do
                 if (key == s.callbackName) then
                     s:set_callback(initializer());

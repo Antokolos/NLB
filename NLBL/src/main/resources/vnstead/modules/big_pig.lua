@@ -829,7 +829,7 @@ play_bp_two_hotseats = menu {
 
 stead.module_init(function()
     rollStat:init();
-    dicegames['setrolls'] = function() rollStat:setrolls(); end;
+    dicegames['setrolls'] = function() return rollStat:setrolls(); end;
     local labelFont = sprite.font('fonts/STEINEMU.ttf', 48);
     if LANG == "ru" then
         you_win_label = vn:label("Вы победили!", 40, "#ffffff", "black", 127, labelFont);
