@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.nlbhub.nlb.builder.form.DialogObjProperties">
   <grid id="cbd77" binding="contentPane" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="48" y="54" width="1062" height="415"/>
+      <xy x="48" y="54" width="1286" height="415"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -600,6 +600,12 @@
                                     <properties/>
                                     <border type="none"/>
                                     <children>
+                                      <component id="15379" class="javax.swing.JCheckBox" binding="m_objIsGraphical">
+                                        <constraints/>
+                                        <properties>
+                                          <text value="Graphical"/>
+                                        </properties>
+                                      </component>
                                       <component id="d887e" class="javax.swing.JCheckBox" binding="m_objIsTakable">
                                         <constraints/>
                                         <properties>

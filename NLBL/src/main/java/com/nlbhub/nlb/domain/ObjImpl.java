@@ -78,6 +78,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String SUPPRESS_DSC_FILE_NAME = "suppdsc";
     private static final String ANIMATED_FILE_NAME = "animated";
     private static final String DISP_SUBDIR_NAME = "disp";
+    private static final String GRAPHICAL_FILE_NAME = "graphical";
     private static final String TAKABLE_FILE_NAME = "takable";
     private static final String IMAGE_IN_SCENE_FILE_NAME = "imgscene";
     private static final String IMAGE_IN_INVENTORY_FILE_NAME = "imginv";
@@ -93,6 +94,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private MultiLangString m_disp = DEFAULT_DISP;
     private MultiLangString m_text = DEFAULT_TEXT;
     private MultiLangString m_actText = DEFAULT_ACT_TEXT;
+    private boolean m_graphical = DEFAULT_GRAPHICAL;
     /**
      * Object can be taken to the inventory
      */
@@ -140,6 +142,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         setDisps(source.getDisps());
         setTexts(source.getTexts());
         setActTexts(source.getActTexts());
+        m_graphical = source.isGraphical();
         m_takable = source.isTakable();
         m_suppressDsc = source.isSuppressDsc();
         m_imageInScene = source.isImageInScene();
@@ -307,6 +310,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         return MultiLangString.createCopy(m_disp);
     }
 
+    public void setGraphical(boolean graphical) {
+        m_graphical = graphical;
+    }
+
+    @Override
+    public boolean isGraphical() {
+        return m_graphical;
+    }
+
     public void setDisps(final MultiLangString disp) {
         m_disp = disp;
     }
@@ -425,6 +437,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(
                     objDir,
+                    GRAPHICAL_FILE_NAME,
+                    String.valueOf(m_graphical),
+                    String.valueOf(DEFAULT_GRAPHICAL)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
                     TAKABLE_FILE_NAME,
                     String.valueOf(m_takable),
                     String.valueOf(DEFAULT_TAKABLE)
@@ -535,6 +553,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                 FileManipulator.readOptionalMultiLangString(
                         new File(objDir, ACT_TEXT_SUBDIR_NAME),
                         DEFAULT_ACT_TEXT
+                )
+        );
+        m_graphical = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        GRAPHICAL_FILE_NAME,
+                        String.valueOf(DEFAULT_GRAPHICAL)
                 )
         );
         m_takable = "true".equals(

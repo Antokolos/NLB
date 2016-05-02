@@ -729,11 +729,14 @@ public abstract class ExportManager {
         blocks.setObjName(decorateObjName(obj.getName()));
         blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
-        final String objImage = decorateObjImage(getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage()));
+        final String objImage = decorateObjImage(getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage()), obj.isGraphical());
+        final String objEffect = decorateObjEffect("left-top@0,0", obj.isGraphical());
+        blocks.setObjEffect(objEffect);
         final boolean hasImage = StringHelper.notEmpty(imageFileName);
         blocks.setObjImage(objImage);
         blocks.setObjDisp(decorateObjDisp(expandVariables(StringHelper.getTextChunks(obj.getDisp())), hasImage && obj.isImageInInventory()));
-        blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), expandVariables(StringHelper.getTextChunks(obj.getText())), hasImage && obj.isImageInScene()));
+        blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), expandVariables(StringHelper.getTextChunks(obj.getText())), hasImage && obj.isImageInScene() && !obj.isGraphical()));
+        blocks.setGraphical(obj.isGraphical());
         blocks.setTakable(obj.isTakable());
         blocks.setObjTak(decorateObjTak(obj.getName()));
         blocks.setObjInv(decorateObjInv(objType));
@@ -761,7 +764,9 @@ public abstract class ExportManager {
     }
 
     private ObjType getObjType(final Obj obj, final ExportData exportData) {
-        if ((obj.getLinks().size() == 0) && !exportData.hasInwardLinks(obj.getId())) {
+        if (obj.isGraphical()) {
+            return ObjType.GOBJ;
+        } else if ((obj.getLinks().size() == 0) && !exportData.hasInwardLinks(obj.getId())) {
             if (
                     !obj.getDisps().isEmpty()
                             && obj.getTexts().isEmpty()
@@ -1337,6 +1342,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public boolean isGraphical() {
+                return obj.isGraphical();
+            }
+
+            @Override
             public boolean isTakable() {
                 return obj.isTakable();
             }
@@ -1489,7 +1499,11 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjImage(List<ImagePathData> objImagePathDatas) {
+    protected String decorateObjEffect(String effectString, boolean graphicalObj) {
+        return EMPTY_STRING;
+    }
+
+    protected String decorateObjImage(List<ImagePathData> objImagePathDatas, boolean graphicalObj) {
         return EMPTY_STRING;
     }
 

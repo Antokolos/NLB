@@ -153,6 +153,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public boolean isGraphical() {
+        return Obj.DEFAULT_GRAPHICAL;
+    }
+
+    @Override
     public boolean isTakable() {
         return Obj.DEFAULT_TAKABLE;
     }

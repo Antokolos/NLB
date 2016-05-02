@@ -777,6 +777,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private MultiLangString m_existingObjDisp;
         private MultiLangString m_existingObjText;
         private MultiLangString m_existingObjActText;
+        private boolean m_existingObjIsGraphical;
         private boolean m_existingObjIsTakable;
         private boolean m_existingImageInScene;
         private boolean m_existingImageInInventory;
@@ -789,6 +790,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private MultiLangString m_newObjDisp;
         private MultiLangString m_newObjText;
         private MultiLangString m_newObjActText;
+        private boolean m_newObjIsGraphical;
         private boolean m_newObjIsTakable;
         private boolean m_newImageInScene;
         private boolean m_newImageInInventory;
@@ -809,6 +811,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString objDisp,
                 final MultiLangString objText,
                 final MultiLangString objActText,
+                final boolean objIsGraphical,
                 final boolean objIsTakable,
                 final boolean imageInScene,
                 final boolean imageInInventory
@@ -829,6 +832,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     objDisp,
                     objText,
                     objActText,
+                    objIsGraphical,
                     objIsTakable,
                     imageInScene,
                     imageInInventory
@@ -851,6 +855,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString objDisp,
                 final MultiLangString objText,
                 final MultiLangString objActText,
+                final boolean objIsGraphical,
                 final boolean objIsTakable,
                 final boolean imageInScene,
                 final boolean imageInInventory
@@ -905,6 +910,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingObjDisp = obj.getDisps();
             m_existingObjText = obj.getTexts();
             m_existingObjActText = obj.getActTexts();
+            m_existingObjIsGraphical = obj.isGraphical();
             m_existingObjIsTakable = obj.isTakable();
             m_existingImageInScene = obj.isImageInScene();
             m_existingImageInInventory = obj.isImageInInventory();
@@ -917,6 +923,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newObjDisp = objDisp;
             m_newObjText = objText;
             m_newObjActText = objActText;
+            m_newObjIsGraphical = objIsGraphical;
             m_newObjIsTakable = objIsTakable;
             m_newImageInScene = imageInScene;
             m_newImageInInventory = imageInInventory;
@@ -937,6 +944,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setDisps(m_newObjDisp);
             m_obj.setTexts(m_newObjText);
             m_obj.setActTexts(m_newObjActText);
+            m_obj.setGraphical(m_newObjIsGraphical);
             m_obj.setTakable(m_newObjIsTakable);
             m_obj.setImageInScene(m_newImageInScene);
             m_obj.setImageInInventory(m_newImageInInventory);
@@ -958,6 +966,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setDisps(m_existingObjDisp);
             m_obj.setTexts(m_existingObjText);
             m_obj.setActTexts(m_existingObjActText);
+            m_obj.setGraphical(m_existingObjIsGraphical);
             m_obj.setTakable(m_existingObjIsTakable);
             m_obj.setImageInScene(m_existingImageInScene);
             m_obj.setImageInInventory(m_existingImageInInventory);
@@ -1767,6 +1776,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.getDisps(),
                         obj.getTexts(),
                         obj.getActTexts(),
+                        obj.isGraphical(),
                         obj.isTakable(),
                         obj.isImageInScene(),
                         obj.isImageInInventory()
@@ -2223,6 +2233,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final MultiLangString objDisp,
             final MultiLangString objText,
             final MultiLangString objActText,
+            final boolean objIsGraphical,
             final boolean objIsTakable,
             final boolean imageInScene,
             final boolean imageInInventory
@@ -2244,6 +2255,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         objDisp,
                         objText,
                         objActText,
+                        objIsGraphical,
                         objIsTakable,
                         imageInScene,
                         imageInInventory

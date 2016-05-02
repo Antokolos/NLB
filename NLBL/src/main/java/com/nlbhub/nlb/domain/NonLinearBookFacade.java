@@ -232,6 +232,8 @@ public class NonLinearBookFacade implements NLBObservable {
             exportBundledVNSTEADFile(modulesDir, true, "vn.lua");
             exportBundledVNSTEADFile(modulesDir, true, "dice.lua");
             exportBundledVNSTEADFile(modulesDir, true, "dicegames.lua");
+            exportBundledVNSTEADFile(modulesDir, true, "big_pig.lua");
+            exportBundledVNSTEADFile(modulesDir, true, "gobj.lua");
         }
         File gfxDir = new File(exportDir, "gfx");
         if (gfxDir.mkdir()) {
@@ -452,6 +454,7 @@ public class NonLinearBookFacade implements NLBObservable {
             final MultiLangString objDisp,
             final MultiLangString objText,
             final MultiLangString objActText,
+            final boolean objIsGraphical,
             final boolean objIsTakable,
             final boolean imageInScene,
             final boolean imageInInventory
@@ -472,6 +475,7 @@ public class NonLinearBookFacade implements NLBObservable {
                         objDisp,
                         objText,
                         objActText,
+                        objIsGraphical,
                         objIsTakable,
                         imageInScene,
                         imageInInventory

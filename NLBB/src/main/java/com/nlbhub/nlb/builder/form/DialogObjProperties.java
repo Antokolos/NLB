@@ -97,6 +97,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JCheckBox m_soundSFXCheckBox;
     private JTextField m_objCommonToTextField;
     private JTextField m_objDefaultTagTextField;
+    private JCheckBox m_objIsGraphical;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -291,6 +292,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objActTextTextArea.setText(obj.getActText());
         m_suppressDsc.setSelected(obj.isSuppressDsc());
         m_objIsTakable.setSelected(obj.isTakable());
+        m_objIsGraphical.setSelected(obj.isGraphical());
         m_imageInScene.setSelected(obj.isImageInScene());
         m_imageInInventory.setSelected(obj.isImageInInventory());
 
@@ -332,6 +334,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_objDisplayNames,
                 m_objTexts,
                 m_objActTexts,
+                m_objIsGraphical.isSelected(),
                 m_objIsTakable.isSelected(),
                 m_imageInScene.isSelected(),
                 m_imageInInventory.isSelected()
@@ -776,6 +779,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.gridy = 6;
         gbc.fill = GridBagConstraints.BOTH;
         panel25.add(panel32, gbc);
+        m_objIsGraphical = new JCheckBox();
+        m_objIsGraphical.setText("Graphical");
+        panel32.add(m_objIsGraphical);
         m_objIsTakable = new JCheckBox();
         m_objIsTakable.setText("Can be taken to the inventory");
         panel32.add(m_objIsTakable);

@@ -57,6 +57,8 @@ public class ObjBuildingBlocks {
     private String m_objDisp;
     private String m_objText;
     private String m_objActText;
+    private String m_objEffect;
+    private boolean m_graphical;
     private boolean m_takable;
     private String m_objTak;
     private String m_objInv;
@@ -152,6 +154,22 @@ public class ObjBuildingBlocks {
 
     public void setObjActText(String objActText) {
         m_objActText = objActText;
+    }
+
+    public String getObjEffect() {
+        return m_objEffect;
+    }
+
+    public void setObjEffect(String objEffect) {
+        m_objEffect = objEffect;
+    }
+
+    public boolean isGraphical() {
+        return m_graphical;
+    }
+
+    public void setGraphical(boolean graphical) {
+        m_graphical = graphical;
     }
 
     public boolean isTakable() {

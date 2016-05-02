@@ -105,6 +105,8 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("require 'modules/fonts'").append(LINE_SEPARATOR);
         stringBuilder.append("require 'modules/paginator'").append(LINE_SEPARATOR);
         stringBuilder.append("require 'modules/vn'").append(LINE_SEPARATOR);
+        stringBuilder.append("require 'modules/big_pig'").append(LINE_SEPARATOR);
+        stringBuilder.append("require 'modules/gobj'").append(LINE_SEPARATOR);
         stringBuilder.append("game.codepage=\"UTF-8\";").append(LINE_SEPARATOR);
         stringBuilder.append("stead.scene_delim = '^';").append(LINE_SEPARATOR);
         stringBuilder.append(LINE_SEPARATOR);
@@ -497,6 +499,7 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append(objBlocks.getObjLabel()).append(objBlocks.getObjStart());
         stringBuilder.append(objBlocks.getObjName());
+        stringBuilder.append(objBlocks.getObjEffect());
         stringBuilder.append(objBlocks.getObjSound());
         stringBuilder.append(objBlocks.getObjDisp());
         stringBuilder.append(objBlocks.getObjText());
@@ -857,6 +860,9 @@ public class STEADExportManager extends TextExportManager {
             case MENU:
                 result.append(" = menu {").append(LINE_SEPARATOR);
                 break;
+            case GOBJ:
+                result.append(" = gobj {").append(LINE_SEPARATOR);
+                break;
             default:
                 result.append(" = obj {").append(LINE_SEPARATOR);
         }
@@ -873,7 +879,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjImage(List<ImagePathData> objImagePathDatas) {
+    protected String decorateObjImage(List<ImagePathData> objImagePathDatas, boolean graphicalObj) {
         StringBuilder resultBuilder = new StringBuilder();
         boolean notFirst = false;
         String ifTermination = Constants.EMPTY_STRING;
@@ -888,22 +894,31 @@ public class STEADExportManager extends TextExportManager {
                 if (StringHelper.notEmpty(objImagePath)) {
                     ifTermination = "        end" + LINE_SEPARATOR;
                     resultBuilder.append(tempBuilder).append("            ");
-                    resultBuilder.append("return img('").append(objImagePath).append("');").append(LINE_SEPARATOR);
+                    resultBuilder.append("return '").append(objImagePath).append("';").append(LINE_SEPARATOR);
                 }
             } else {
                 ifTermination = "        end" + LINE_SEPARATOR;
                 resultBuilder.append(tempBuilder).append("            ");
-                resultBuilder.append("return img(string.format('").append(objImagePath).append("', curloc().time % ");
-                resultBuilder.append(objImagePathData.getMaxFrameNumber()).append(" + 1)); ").append(LINE_SEPARATOR);
+                resultBuilder.append("return string.format('").append(objImagePath).append("', curloc().time % ");
+                resultBuilder.append(objImagePathData.getMaxFrameNumber()).append(" + 1); ").append(LINE_SEPARATOR);
             }
             notFirst = true;
         }
-        String result = resultBuilder.toString();
-        return (
-                StringHelper.isEmpty(result)
-                        ? Constants.EMPTY_STRING
-                        : "    imgv = function(s)" + LINE_SEPARATOR + result + LINE_SEPARATOR + ifTermination + "end," + LINE_SEPARATOR
-        );
+        String funbody = resultBuilder.toString();
+        if (StringHelper.isEmpty(funbody)) {
+            return Constants.EMPTY_STRING;
+        } else {
+            String result = "    pic = function(s)" + LINE_SEPARATOR + funbody + LINE_SEPARATOR + ifTermination + "end," + LINE_SEPARATOR;
+            return result + "    imgv = function(s) return img(s.pic(s)); end," + LINE_SEPARATOR;
+        }
+    }
+
+    protected String decorateObjEffect(String effectString, boolean graphicalObj) {
+        if (graphicalObj) {
+            return "    eff = \"" + effectString + "\"," + LINE_SEPARATOR;
+        } else {
+            return EMPTY_STRING;
+        }
     }
 
     @Override
@@ -949,11 +964,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    dscf = function(s) ");
         if (StringHelper.notEmpty(objText)) {
             stringBuilder.append("return \"");
-            if (imageEnabled) {
-                stringBuilder.append(expandInteractionMarks(objId, objName, suppressDsc, objText, true));
-            } else {
-                stringBuilder.append(expandInteractionMarks(objId, objName, suppressDsc, objText, false));
-            }
+            stringBuilder.append(expandInteractionMarks(objId, objName, suppressDsc, objText, imageEnabled));
             stringBuilder.append("\"; ");
         }
         stringBuilder.append("end,").append(LINE_SEPARATOR);
