@@ -641,7 +641,7 @@ vn = obj {
             return game._lastdisp;
         end
     end;
-    
+
     set_use_src = function(s)
         return function(gobl)
             if s.stopped then
@@ -660,7 +660,7 @@ vn = obj {
     gobf = function(s, v) return stead.ref(v.gob); end;
 
     parentf = function(s, v) return s:lookup(v.parent); end;
-    
+
     childf = function(s, v_nam)
         local ch = s:lookup(v_nam);
         return ch;
@@ -677,7 +677,7 @@ vn = obj {
         local maxStep = g.maxStep;
         local t = eff;
         local v;
-        
+
         if not is_over then
             is_over = false;
         end
@@ -800,7 +800,7 @@ vn = obj {
 
         return v
     end;
-    
+
     add_child = function(s, parent, gob)
         gob.startFrame = parent.start;
         gob.curStep = parent.step;
@@ -808,6 +808,7 @@ vn = obj {
         gob.framesFromStop = parent.from_stop;
         gob.hot_step = parent.hotstep;
         gob.acceleration = parent.accel;
+        gob.is_paused = s:gobf(parent).is_paused;
         local child = s:effect_int(parent, gob);
         child.eff = parent.eff;
         child.from = parent.from;
@@ -815,9 +816,18 @@ vn = obj {
         stead.table.insert(parent.children, child.nam);
         return child;
     end;
-    
+
     remove_child = function(s, parent, child)
         stead.table.remove(parent.children, child.nam);
+    end;
+
+    vpause = function(s, v, is_paused)
+        local gob = stead.ref(v.gob);
+        gob.is_paused = is_paused;
+        for i, cnam in ipairs(v.children) do
+            local vv = s:lookup(cnam);
+            s:vpause(vv, is_paused);
+        end
     end;
 
     pause = function(s, frames, callback)
@@ -1397,7 +1407,7 @@ vn = obj {
         end
         if v.newborn then
             return true;
-        else
+        elseif not s:gobf(v).is_paused then
             if v.forward then
                 if (v.step < v.max_step - v.from_stop) then
                     v.step = v.step + s.stp;

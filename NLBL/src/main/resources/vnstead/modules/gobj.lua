@@ -102,6 +102,9 @@ gobj = function(v)
     if not v.is_dynamic then
         v.is_dynamic = false;
     end
+    if not v.is_paused then
+        v.is_paused = false;
+    end
     return obj(v);
 end
 

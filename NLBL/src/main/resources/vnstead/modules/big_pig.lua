@@ -64,9 +64,14 @@ paper = gobj {
     curStep = 2,
     act = function(s)
         local v = vn:glookup(stead.deref(s));
-        vn:set_step(v, nil, not v.forward);
+        if s.is_paused then
+            vn:vpause(v, false);
+        else
+            vn:set_step(v, nil, not v.forward);
+        end
         vn:start();
-    end
+    end,
+    is_paused = true;
 }
 
 plate = gobj {
