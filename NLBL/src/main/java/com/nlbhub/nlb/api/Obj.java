@@ -106,6 +106,8 @@ public interface Obj extends NodeItem {
 
     public boolean isGraphical();
 
+    public Coords getRelativeCoords();
+
     public boolean isTakable();
 
     public boolean isImageInScene();

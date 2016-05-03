@@ -45,23 +45,46 @@ package com.nlbhub.nlb.api;
  * @version 1.0 2/18/14
  */
 public class CoordsLw implements Coords {
+    public static final Coords ZERO_COORDS = new CoordsLw();
+
+    private float m_left = (float) 0.0;
+    private float m_top = (float) 0.0;
+    private float m_width = (float) 0.0;
+    private float m_height = (float) 0.0;
+
     @Override
     public float getLeft() {
-        return (float) 0.0;
+        return m_left;
     }
 
     @Override
     public float getTop() {
-        return (float) 0.0;
+        return m_top;
     }
 
     @Override
     public float getWidth() {
-        return (float) 0.0;
+        return m_width;
     }
 
     @Override
     public float getHeight() {
-        return (float) 0.0;
+        return m_height;
+    }
+
+    public void setLeft(float left) {
+        m_left = left;
+    }
+
+    public void setTop(float top) {
+        m_top = top;
+    }
+
+    public void setWidth(float width) {
+        m_width = width;
+    }
+
+    public void setHeight(float height) {
+        m_height = height;
     }
 }

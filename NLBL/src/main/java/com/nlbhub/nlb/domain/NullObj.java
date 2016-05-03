@@ -38,10 +38,7 @@
  */
 package com.nlbhub.nlb.domain;
 
-import com.nlbhub.nlb.api.Constants;
-import com.nlbhub.nlb.api.Obj;
-import com.nlbhub.nlb.api.Theme;
-import com.nlbhub.nlb.api.Variable;
+import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.util.MultiLangString;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -155,6 +152,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     @Override
     public boolean isGraphical() {
         return Obj.DEFAULT_GRAPHICAL;
+    }
+
+    @Override
+    public Coords getRelativeCoords() {
+        return CoordsLw.ZERO_COORDS;
     }
 
     @Override

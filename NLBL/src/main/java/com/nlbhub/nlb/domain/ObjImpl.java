@@ -319,6 +319,26 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         return m_graphical;
     }
 
+    @Override
+    public Coords getRelativeCoords() {
+        NonLinearBook nlb = getCurrentNLB();
+        NodeItem node = nlb.getPageById(m_containerId);
+        if (node == null) {
+            node = getCurrentNLB().getObjById(m_containerId);
+        }
+        if (node == null) {
+            return CoordsLw.ZERO_COORDS;
+        }
+        Coords coordsParent = node.getCoords();
+        Coords coordsThis = getCoords();
+        CoordsLw result = new CoordsLw();
+        result.setLeft(coordsThis.getLeft() - coordsParent.getLeft());
+        result.setTop(coordsThis.getTop() - coordsParent.getTop());
+        result.setWidth(coordsParent.getWidth());
+        result.setHeight(coordsParent.getHeight());
+        return result;
+    }
+
     public void setDisps(final MultiLangString disp) {
         m_disp = disp;
     }

@@ -326,6 +326,21 @@ public abstract class ExportManager {
         );
     }
 
+    private int getScreenWidth() {
+        return 1920;
+    }
+
+    private int getScreenHeight() {
+        return 1080;
+    }
+
+    private String getRelativeCoords(Obj obj) {
+        Coords coords = obj.getRelativeCoords();
+        String x = String.valueOf((int) Math.floor(coords.getLeft() * getScreenWidth() / coords.getWidth()));
+        String y = String.valueOf((int) Math.floor(coords.getTop() * getScreenHeight() / coords.getHeight()));
+        return x + "," + y;
+    }
+
     protected NLBBuildingBlocks createNLBBuildingBlocks() throws NLBConsistencyException, NLBExportException {
         return createNLBBuildingBlocks(m_exportDataMap.get(MAIN_DATA_KEY));
     }
@@ -734,7 +749,7 @@ public abstract class ExportManager {
         blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
         final String objImage = decorateObjImage(getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage()), obj.isGraphical());
-        final String objEffect = decorateObjEffect("left-top@0,0", obj.isGraphical());
+        final String objEffect = decorateObjEffect("left-top@" + getRelativeCoords(obj), obj.isGraphical());
         blocks.setObjEffect(objEffect);
         final boolean hasImage = StringHelper.notEmpty(imageFileName);
         blocks.setObjImage(objImage);
@@ -1348,6 +1363,11 @@ public abstract class ExportManager {
             @Override
             public boolean isGraphical() {
                 return obj.isGraphical();
+            }
+
+            @Override
+            public Coords getRelativeCoords() {
+                return obj.getRelativeCoords();
             }
 
             @Override
