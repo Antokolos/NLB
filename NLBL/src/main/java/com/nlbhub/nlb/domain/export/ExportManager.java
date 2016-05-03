@@ -449,7 +449,11 @@ public abstract class ExportManager {
             for (String containedObjId : containedObjIds) {
                 Obj obj = nlb.getObjById(containedObjId);
                 hasAnim = (hasAnim || obj.isAnimatedImage());
-                blocks.addContainedObjId(decorateContainedObjId(containedObjId));
+                if (obj.isGraphical()) {
+                    blocks.addContainedGraphicalObjId(decorateId(containedObjId));
+                } else {
+                    blocks.addContainedObjId(decorateContainedObjId(containedObjId));
+                }
             }
         }
         // TODO: NLB-24: workaround is used to determine animated images presence
@@ -734,8 +738,8 @@ public abstract class ExportManager {
         blocks.setObjEffect(objEffect);
         final boolean hasImage = StringHelper.notEmpty(imageFileName);
         blocks.setObjImage(objImage);
-        blocks.setObjDisp(decorateObjDisp(expandVariables(StringHelper.getTextChunks(obj.getDisp())), hasImage && obj.isImageInInventory()));
-        blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), expandVariables(StringHelper.getTextChunks(obj.getText())), hasImage && obj.isImageInScene() && !obj.isGraphical()));
+        blocks.setObjDisp(decorateObjDisp(expandVariables(StringHelper.getTextChunks(obj.getDisp())), hasImage && obj.isImageInInventory(), obj.isGraphical()));
+        blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), expandVariables(StringHelper.getTextChunks(obj.getText())), hasImage && obj.isImageInScene(), obj.isGraphical()));
         blocks.setGraphical(obj.isGraphical());
         blocks.setTakable(obj.isTakable());
         blocks.setObjTak(decorateObjTak(obj.getName()));
@@ -1507,11 +1511,11 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjDisp(String dispText, boolean imageEnabled) {
+    protected String decorateObjDisp(String dispText, boolean imageEnabled, boolean isGraphicalObj) {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjText(String objId, String objName, boolean suppressDsc, String objText, boolean imageEnabled) {
+    protected String decorateObjText(String objId, String objName, boolean suppressDsc, String objText, boolean imageEnabled, boolean isGraphicalObj) {
         return EMPTY_STRING;
     }
 

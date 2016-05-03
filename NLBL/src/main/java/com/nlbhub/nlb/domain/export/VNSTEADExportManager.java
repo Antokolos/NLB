@@ -124,6 +124,17 @@ public class VNSTEADExportManager extends STEADExportManager {
         return stringBuilder.toString();
     }
 
+    protected String getGraphicalObjectAppendingExpression(PageBuildingBlocks pageBlocks) {
+        StringBuilder stringBuilder = new StringBuilder("    add_gobj = function(s)").append(getLineSeparator());
+        if (pageBlocks.isHasGraphicalObjects()) {
+            for (String graphicalObjId : pageBlocks.getContainedGraphicalObjIds()) {
+                stringBuilder.append("        vn:gshow(" + graphicalObjId + ");").append(getLineSeparator());
+            }
+        }
+        stringBuilder.append("    end,").append(getLineSeparator());
+        return stringBuilder.toString();
+    }
+
     @Override
     protected String getDefaultThemeSwitchExpression() {
         return "    dofile('theme_vn.lua');" + getLineSeparator();
@@ -350,6 +361,7 @@ public class VNSTEADExportManager extends STEADExportManager {
             notFirst = true;
         }
         bgimgBuilder.append(bgimgIfTermination).append(lineSep);
+        bgimgBuilder.append("        s.add_gobj(s);").append(lineSep);
         if (!imageBackground) {
             bgimgBuilder.append("        vn:geom(8, 864, 1904, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png');").append(lineSep);
         }

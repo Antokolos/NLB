@@ -71,6 +71,7 @@ public class PageBuildingBlocks {
     private boolean m_imageBackground;
     private boolean m_hasPageTimer;
     private List<String> m_containedObjIds;
+    private List<String> m_containedGraphicalObjIds;
     private List<LinkBuildingBlocks> m_linksBuildingBlocks;
     /** Page blocks' links are considered trivial if each of them is trivial. */
     private boolean m_hasTrivialLinks;
@@ -78,6 +79,7 @@ public class PageBuildingBlocks {
 
     public PageBuildingBlocks() {
         m_containedObjIds = new ArrayList<>();
+        m_containedGraphicalObjIds = new ArrayList<>();
         m_linksBuildingBlocks = new ArrayList<>();
     }
 
@@ -159,6 +161,22 @@ public class PageBuildingBlocks {
 
     public void setAutowired(boolean autowired) {
         m_autowired = autowired;
+    }
+
+    public List<String> getContainedGraphicalObjIds() {
+        return m_containedGraphicalObjIds;
+    }
+
+    public void setContainedGraphicalObjIds(List<String> containedGraphicalObjIds) {
+        m_containedGraphicalObjIds = containedGraphicalObjIds;
+    }
+
+    public void addContainedGraphicalObjId(String containedGraphicalObjId) {
+        m_containedGraphicalObjIds.add(containedGraphicalObjId);
+    }
+
+    public boolean isHasGraphicalObjects() {
+        return !m_containedGraphicalObjIds.isEmpty();
     }
 
     public boolean isHasObjectsWithAnimatedImages() {

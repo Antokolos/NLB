@@ -222,6 +222,7 @@ public class NonLinearBookFacade implements NLBObservable {
     private void exportAdditionalMedia(File exportDir) throws NLBIOException {
         File fontsDir = new File(exportDir, "fonts");
         if (fontsDir.mkdir()) {
+            exportBundledVNSTEADFile(fontsDir, true, "Medieval_English.ttf");
             exportBundledVNSTEADFile(fontsDir, true, "STEINEMU.ttf");
             exportBundledVNSTEADFile(fontsDir, true, "sans.ttf");
         }

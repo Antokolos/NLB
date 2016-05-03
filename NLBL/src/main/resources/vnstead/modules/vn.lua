@@ -1523,33 +1523,35 @@ vn = obj {
             end
             local ycur = ypos;
             for k, vv in pairs(texts) do
-                local color = vv.color;
-                if not color then
-                    color = s.hud_color;
+                if vv.text then
+                    local color = vv.color;
+                    if not color then
+                        color = s.hud_color;
+                    end
+                    local textSpriteInit = sprite.text(hudFont, vv.text, color);
+                    local textSpriteScaled;
+                    if scale ~= 1.0 then
+                        textSpriteScaled = sprite.scale(textSpriteInit, scale, scale, false);
+                        sprite.free(textSpriteInit);
+                    else
+                        textSpriteScaled = textSpriteInit;
+                    end
+                    local textSprite;
+                    if alpha ~= 255 then
+                        textSprite = sprite.alpha(textSpriteScaled, alpha);
+                    else
+                        textSprite = textSpriteScaled;
+                    end
+                    local w, h = sprite.size(textSprite);
+                    w = w + s.extent;
+                    local hudSprite = sprite.blank(w, h);
+                    sprite.draw(target, xpos, ycur, w, h, hudSprite, 0, 0);
+                    sprite.draw(textSprite, hudSprite, 0, 0);
+                    sprite.draw(hudSprite, target, xpos, ycur);
+                    ycur = ycur + h;
+                    sprite.free(hudSprite);
+                    sprite.free(textSprite);
                 end
-                local textSpriteInit = sprite.text(hudFont, vv.text, color);
-                local textSpriteScaled;
-                if scale ~= 1.0 then
-                    textSpriteScaled = sprite.scale(textSpriteInit, scale, scale, false);
-                    sprite.free(textSpriteInit);
-                else
-                    textSpriteScaled = textSpriteInit;
-                end
-                local textSprite;
-                if alpha ~= 255 then
-                    textSprite = sprite.alpha(textSpriteScaled, alpha);
-                else
-                    textSprite = textSpriteScaled;
-                end
-                local w, h = sprite.size(textSprite);
-                w = w + s.extent;
-                local hudSprite = sprite.blank(w, h);
-                sprite.draw(target, xpos, ycur, w, h, hudSprite, 0, 0);
-                sprite.draw(textSprite, hudSprite, 0, 0);
-                sprite.draw(hudSprite, target, xpos, ycur);
-                ycur = ycur + h;
-                sprite.free(hudSprite);
-                sprite.free(textSprite);
             end
         end
     end;

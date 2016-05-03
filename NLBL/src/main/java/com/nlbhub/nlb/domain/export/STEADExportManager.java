@@ -715,6 +715,7 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR);
         }
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
+        stringBuilder.append(getGraphicalObjectAppendingExpression(pageBlocks));
         stringBuilder.append("    exit = function(s, t)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.sndout(s);").append(LINE_SEPARATOR);
         if (timerSet) {
@@ -727,6 +728,19 @@ public class STEADExportManager extends TextExportManager {
 
         stringBuilder.append(generateObjsCollection(pageBlocks, linksBlocks));
         stringBuilder.append(pageBlocks.getPageEnd());
+        return stringBuilder.toString();
+    }
+
+    protected String getGraphicalObjectAppendingExpression(PageBuildingBlocks pageBlocks) {
+        StringBuilder stringBuilder = new StringBuilder("    add_gobj = function(s)").append(LINE_SEPARATOR);
+        if (pageBlocks.isHasGraphicalObjects()) {
+            stringBuilder.append("        vn:turnon();").append(LINE_SEPARATOR);
+            for (String graphicalObjId : pageBlocks.getContainedGraphicalObjIds()) {
+                stringBuilder.append("        vn:gshow(" + graphicalObjId + ");").append(LINE_SEPARATOR);
+            }
+            stringBuilder.append("        vn:start();").append(LINE_SEPARATOR);
+        }
+        stringBuilder.append("    end,").append(LINE_SEPARATOR);
         return stringBuilder.toString();
     }
 
@@ -922,8 +936,8 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjDisp(String dispText, boolean imageEnabled) {
-        if (imageEnabled) {
+    protected String decorateObjDisp(String dispText, boolean imageEnabled, boolean isGraphicalObj) {
+        if (imageEnabled && !isGraphicalObj) {
             return (
                     "    disp = function(s) return s.imgv(s)..\"" +
                             dispText +
@@ -939,7 +953,7 @@ public class STEADExportManager extends TextExportManager {
         }
     }
 
-    private String expandInteractionMarks(String objId, String objName, boolean useReference, String text, boolean withImage) {
+    private String expandInteractionMarks(String objId, String objName, boolean useReference, String text, boolean withImage, boolean isGraphicalObj) {
         StringBuilder result = new StringBuilder();
         Matcher matcher = STEAD_OBJ_PATTERN.matcher(text);
         int start = 0;
@@ -948,7 +962,7 @@ public class STEADExportManager extends TextExportManager {
             if (useReference) {
                 result.append(StringHelper.isEmpty(objName) ? objId : objName).append("|");
             }
-            if (withImage) {
+            if (withImage && !isGraphicalObj) {
                 result.append("\"..s.imgv(s)..\"");
             }
             result.append(matcher.group(1)).append("}");
@@ -959,18 +973,22 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjText(String objId, String objName, boolean suppressDsc, String objText, boolean imageEnabled) {
+    protected String decorateObjText(String objId, String objName, boolean suppressDsc, String objText, boolean imageEnabled, boolean isGraphicalObj) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("    dscf = function(s) ");
         if (StringHelper.notEmpty(objText)) {
             stringBuilder.append("return \"");
-            stringBuilder.append(expandInteractionMarks(objId, objName, suppressDsc, objText, imageEnabled));
+            stringBuilder.append(expandInteractionMarks(objId, objName, suppressDsc, objText, imageEnabled, isGraphicalObj));
             stringBuilder.append("\"; ");
         }
         stringBuilder.append("end,").append(LINE_SEPARATOR);
         stringBuilder.append("    dsc = function(s) ");
-        if (!suppressDsc) {
-            stringBuilder.append("p(s.dscf(s)); ");
+        if (isGraphicalObj) {
+            stringBuilder.append("return s.dscf(s); ");
+        } else {
+            if (!suppressDsc) {
+                stringBuilder.append("p(s.dscf(s)); ");
+            }
         }
         stringBuilder.append("end,").append(LINE_SEPARATOR);
         return stringBuilder.toString();
@@ -1719,7 +1737,9 @@ public class STEADExportManager extends TextExportManager {
             }
             notFirst = true;
         }
-        bgimgBuilder.append(bgimgIfTermination).append("    end,").append(LINE_SEPARATOR);
+        bgimgBuilder.append(bgimgIfTermination);
+        bgimgBuilder.append("        s.add_gobj(s);").append(LINE_SEPARATOR);
+        bgimgBuilder.append("    end,").append(LINE_SEPARATOR);
         picBuilder.append(picIfTermination).append("    end,").append(LINE_SEPARATOR);
         return bgimgBuilder.toString() + picBuilder.toString();
     }

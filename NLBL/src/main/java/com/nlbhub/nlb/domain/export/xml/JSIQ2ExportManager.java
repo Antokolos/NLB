@@ -341,7 +341,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decorateObjDisp(String dispText, boolean imageEnabled) {
+    protected String decorateObjDisp(String dispText, boolean imageEnabled, boolean isGraphicalObj) {
         // TODO: resolve imageEnabled case
         // TODO: resolve variables output
         return dispText;

@@ -31,7 +31,9 @@ gobj = function(v)
             local txt = s:disp();
             local clr = 'black';
             local result = {};
-            stead.table.insert(result, { ["text"] = txt, ["color"] = clr });
+            if txt then
+                stead.table.insert(result, { ["text"] = txt, ["color"] = clr });
+            end
             return result;
         end;
     end
