@@ -646,7 +646,7 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append("        ").append(pageBlocks.getPageTimerVariable()).append(LINE_SEPARATOR);
             stringBuilder.append("        end; ").append(LINE_SEPARATOR);
             if (hasPageAnim) {
-                stringBuilder.append("        s.bgimg(s); ").append(LINE_SEPARATOR);
+                stringBuilder.append("        s.add_gobj(s); ").append(LINE_SEPARATOR);
             }
             stringBuilder.append("        local afl = s.autos(s); ").append(LINE_SEPARATOR);
             stringBuilder.append("        if (s.lasttext ~= nil) and not s.wastext then p(s.lasttext); elseif afl and not s.wastext then return true; end; ").append(LINE_SEPARATOR);
@@ -704,7 +704,7 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("        s.snd(s);").append(LINE_SEPARATOR);
-        stringBuilder.append("        s.bgimg(s);").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.add_gobj(s);").append(LINE_SEPARATOR);
         if (timerSet) {
             int timerRate = (hasFastAnim ? 1 : 200);
             stringBuilder.append("        ").append(pageBlocks.getPageTimerVariable()).append(LINE_SEPARATOR);
@@ -731,11 +731,19 @@ public class STEADExportManager extends TextExportManager {
         return stringBuilder.toString();
     }
 
-    protected String getGraphicalObjectAppendingExpression(PageBuildingBlocks pageBlocks) {
+    protected String getGraphicalObjectAppendingExpression(PageBuildingBlocks pageBuildingBlocks) {
+        if (isVN(pageBuildingBlocks.getTheme())) {
+            return m_vnsteadExportManager.getGraphicalObjectAppendingExpression(pageBuildingBlocks);
+        }
         StringBuilder stringBuilder = new StringBuilder("    add_gobj = function(s)").append(LINE_SEPARATOR);
-        if (pageBlocks.isHasGraphicalObjects()) {
+        stringBuilder.append("        local bg_img = s.bgimg(s);").append(getLineSeparator());
+        final boolean imageBackground = pageBuildingBlocks.isImageBackground();
+        if (imageBackground) {
+            stringBuilder.append("        vn:scene(bg_img);").append(getLineSeparator());
+        }
+        if (pageBuildingBlocks.isHasGraphicalObjects()) {
             stringBuilder.append("        vn:turnon();").append(LINE_SEPARATOR);
-            for (String graphicalObjId : pageBlocks.getContainedGraphicalObjIds()) {
+            for (String graphicalObjId : pageBuildingBlocks.getContainedGraphicalObjIds()) {
                 stringBuilder.append("        vn:gshow(" + graphicalObjId + ");").append(LINE_SEPARATOR);
             }
             stringBuilder.append("        vn:start();").append(LINE_SEPARATOR);
@@ -1728,7 +1736,7 @@ public class STEADExportManager extends TextExportManager {
                 if (imageBackground) {
                     bgimgIfTermination = "        end" + LINE_SEPARATOR;
                     bgimgBuilder.append(tempBuilder).append("            ");
-                    bgimgBuilder.append("theme.gfx.bg(").append(img).append(");").append(LINE_SEPARATOR);
+                    bgimgBuilder.append("return ").append(img).append(";").append(LINE_SEPARATOR);
                 } else {
                     picIfTermination = "        end" + LINE_SEPARATOR;
                     picBuilder.append(tempBuilder).append("            ");
@@ -1737,9 +1745,7 @@ public class STEADExportManager extends TextExportManager {
             }
             notFirst = true;
         }
-        bgimgBuilder.append(bgimgIfTermination);
-        bgimgBuilder.append("        s.add_gobj(s);").append(LINE_SEPARATOR);
-        bgimgBuilder.append("    end,").append(LINE_SEPARATOR);
+        bgimgBuilder.append(bgimgIfTermination).append("    end,").append(LINE_SEPARATOR);
         picBuilder.append(picIfTermination).append("    end,").append(LINE_SEPARATOR);
         return bgimgBuilder.toString() + picBuilder.toString();
     }

@@ -96,6 +96,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         stringBuilder.append("require 'modules/fonts'").append(lineSep);
         stringBuilder.append("require 'modules/paginator'").append(lineSep);
         stringBuilder.append("require 'modules/vn'").append(lineSep);
+        stringBuilder.append("require 'modules/gobj'").append(lineSep);
 
         stringBuilder.append("game.codepage=\"UTF-8\";").append(lineSep);
         stringBuilder.append("stead.scene_delim = '^';").append(lineSep);
@@ -124,12 +125,25 @@ public class VNSTEADExportManager extends STEADExportManager {
         return stringBuilder.toString();
     }
 
-    protected String getGraphicalObjectAppendingExpression(PageBuildingBlocks pageBlocks) {
+    protected String getGraphicalObjectAppendingExpression(PageBuildingBlocks pageBuildingBlocks) {
+        if (!isVN(pageBuildingBlocks.getTheme())) {
+            return super.getGraphicalObjectAppendingExpression(pageBuildingBlocks);
+        }
         StringBuilder stringBuilder = new StringBuilder("    add_gobj = function(s)").append(getLineSeparator());
-        if (pageBlocks.isHasGraphicalObjects()) {
-            for (String graphicalObjId : pageBlocks.getContainedGraphicalObjIds()) {
+        stringBuilder.append("        local bg_img = s.bgimg(s);").append(getLineSeparator());
+        final boolean imageBackground = pageBuildingBlocks.isImageBackground();
+        if (imageBackground) {
+            stringBuilder.append("        theme.gfx.bg(bg_img);").append(getLineSeparator());
+        }
+        // vn:scene should be called in all cases
+        stringBuilder.append("        vn:scene(bg_img);").append(getLineSeparator());
+        if (pageBuildingBlocks.isHasGraphicalObjects()) {
+            for (String graphicalObjId : pageBuildingBlocks.getContainedGraphicalObjIds()) {
                 stringBuilder.append("        vn:gshow(" + graphicalObjId + ");").append(getLineSeparator());
             }
+        }
+        if (!imageBackground) {
+            stringBuilder.append("        vn:geom(8, 864, 1904, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png');").append(getLineSeparator());
         }
         stringBuilder.append("    end,").append(getLineSeparator());
         return stringBuilder.toString();
@@ -349,11 +363,8 @@ public class VNSTEADExportManager extends STEADExportManager {
                     tempBuilder.append(lineSep);
                     bgimgIfTermination = "        end" + lineSep;
                     bgimgBuilder.append(tempBuilder).append("            ");
-                    if (imageBackground) {
-                        bgimgBuilder.append("theme.gfx.bg('").append(pageImagePath).append("');").append(lineSep);
-                    }
                     // vn:scene should be called in all cases
-                    bgimgBuilder.append("vn:scene('").append(pageImagePath).append("');").append(lineSep);
+                    bgimgBuilder.append("return '").append(pageImagePath).append("';").append(lineSep);
                 }
             } else {
                 // TODO: support animated images
@@ -361,10 +372,6 @@ public class VNSTEADExportManager extends STEADExportManager {
             notFirst = true;
         }
         bgimgBuilder.append(bgimgIfTermination).append(lineSep);
-        bgimgBuilder.append("        s.add_gobj(s);").append(lineSep);
-        if (!imageBackground) {
-            bgimgBuilder.append("        vn:geom(8, 864, 1904, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png');").append(lineSep);
-        }
         bgimgBuilder.append("    end,").append(lineSep);
         return bgimgBuilder.toString();
     }
