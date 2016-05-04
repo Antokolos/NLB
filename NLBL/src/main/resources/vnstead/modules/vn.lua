@@ -1521,6 +1521,11 @@ vn = obj {
             if y then
                 ypos = y;
             end
+            local f = s:frame(v, idx, nil, nil, nil, true, true);
+            if f then
+                xpos = xpos + f.w * scale;
+                ypos = ypos + f.h * scale / 2.0;
+            end
             local ycur = ypos;
             for k, vv in pairs(texts) do
                 if vv.text then
@@ -1591,7 +1596,7 @@ vn = obj {
         else
             local yy = y + vh / 2 - h / 2;
             local xx = x + vw + 5;
-            if (xmax - xx > w) then
+            if ((xmax - xx > w) or (pos == "e")) and not (pos == "w") then
                 sprite.draw(label, target, xx, yy);
             else
                 sprite.draw(label, target, x - w - 5, yy);
@@ -1616,13 +1621,32 @@ vn = obj {
         if not font then
             font = hudFont;
         end
-        local spr = sprite.text(font, text, color);
-        local w, h = sprite.size(spr);
+        local texts = {};
+        local src = {};
+        local w, h = 0, 0;
+        if type(text) == 'table' then
+            src = text;
+        else
+            stead.table.insert(src, text);
+        end
+        for i, t in ipairs(src) do
+            if t and t ~= "" then
+                local spr = sprite.text(font, t, color);
+                local ww, hh = sprite.size(spr);
+                if ww > w then
+                    w = ww;
+                end
+                stead.table.insert(texts, {["spr"] = spr, ["x"] = extent, ["y"] = h + extent});
+                h = h + extent + hh;
+            end
+        end
         w = w + 2 * extent;
-        h = h + 2 * extent;
+        h = h + extent;
         local label = sprite.box(w, h, bgcolor, bgalpha);
-        sprite.draw(spr, label, extent, extent);
-        sprite.free(spr);
+        for ii, tt in ipairs(texts) do
+            sprite.draw(tt.spr, label, tt.x, tt.y);
+            sprite.free(tt.spr);
+        end
         return label, w, h;
     end;
     txt_line_fn = function(s, text, color)

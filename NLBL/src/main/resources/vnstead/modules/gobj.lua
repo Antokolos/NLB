@@ -1,3 +1,10 @@
+function splitIntoLines(str)
+    local t = {}
+    local function helper(line) table.insert(t, line) return "" end
+    helper((str:gsub("(.-)^", helper)))
+    return t
+end
+
 gobj = function(v)
     if not v.startFrame then
         v.startFrame = 0;
@@ -32,7 +39,10 @@ gobj = function(v)
             local clr = 'black';
             local result = {};
             if txt then
-                stead.table.insert(result, { ["text"] = txt, ["color"] = clr });
+                local txts = splitIntoLines(txt);
+                for i, t in ipairs(txts) do
+                    stead.table.insert(result, { ["text"] = t, ["color"] = clr });
+                end
             end
             return result;
         end;
@@ -58,7 +68,9 @@ gobj = function(v)
             end
         end;
     end
-    if not v.usefn and v.use then
+    if v.is_menu then
+        v.usefn = nil;  -- ignore existing uses, if any
+    elseif not v.usefn and v.use then
         v.usefn = function(s, t)
             local res = s:use(t);
             if res then
@@ -93,7 +105,15 @@ gobj = function(v)
                 return nil;
             end
             local txt = s:dsc();
-            return txt, s.ttpos;
+            if txt then
+                local result = {};
+                local txts = splitIntoLines(txt);
+                for i, t in ipairs(txts) do
+                    stead.table.insert(result, t);
+                end
+                return result, s.ttpos;
+            end
+            return nil, s.ttpos;
         end;
     end
     if not v.enablefn then
@@ -108,6 +128,11 @@ gobj = function(v)
         v.is_paused = false;
     end
     return obj(v);
+end
+
+gmenu = function(v)
+    v.is_menu = true;
+    return gobj(v);
 end
 
 arm_tostring = function(arm)

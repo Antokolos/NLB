@@ -45,5 +45,5 @@ package com.nlbhub.nlb.domain.export;
  * @version 1.0
  */
 public enum ObjType {
-    OBJ, GOBJ, MENU, STAT
+    OBJ, GOBJ, MENU, GMENU, STAT
 }

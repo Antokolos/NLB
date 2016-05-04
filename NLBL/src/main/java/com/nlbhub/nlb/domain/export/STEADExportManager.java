@@ -885,6 +885,9 @@ public class STEADExportManager extends TextExportManager {
             case GOBJ:
                 result.append(" = gobj {").append(LINE_SEPARATOR);
                 break;
+            case GMENU:
+                result.append(" = gmenu {").append(LINE_SEPARATOR);
+                break;
             default:
                 result.append(" = obj {").append(LINE_SEPARATOR);
         }

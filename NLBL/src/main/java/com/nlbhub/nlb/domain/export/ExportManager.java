@@ -783,23 +783,29 @@ public abstract class ExportManager {
     }
 
     private ObjType getObjType(final Obj obj, final ExportData exportData) {
-        if (obj.isGraphical()) {
-            return ObjType.GOBJ;
-        } else if ((obj.getLinks().size() == 0) && !exportData.hasInwardLinks(obj.getId())) {
-            if (
-                    !obj.getDisps().isEmpty()
-                            && obj.getTexts().isEmpty()
-                            && obj.getActTexts().isEmpty()
-                            && obj.isTakable()
-                            && obj.hasNoModifications()
-                            && StringHelper.isEmpty(obj.getCommonToId())
-                    ) {
-                return ObjType.STAT;
+        if ((obj.getLinks().size() == 0) && !exportData.hasInwardLinks(obj.getId())) {
+            if (obj.isGraphical()) {
+                return ObjType.GMENU;
             } else {
-                return ObjType.MENU;
+                if (
+                        !obj.getDisps().isEmpty()
+                                && obj.getTexts().isEmpty()
+                                && obj.getActTexts().isEmpty()
+                                && obj.isTakable()
+                                && obj.hasNoModifications()
+                                && StringHelper.isEmpty(obj.getCommonToId())
+                        ) {
+                    return ObjType.STAT;
+                } else {
+                    return ObjType.MENU;
+                }
             }
         } else {
-            return ObjType.OBJ;
+            if (obj.isGraphical()) {
+                return ObjType.GOBJ;
+            } else {
+                return ObjType.OBJ;
+            }
         }
     }
 
