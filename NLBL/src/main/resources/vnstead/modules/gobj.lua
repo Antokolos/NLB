@@ -99,6 +99,9 @@ gobj = function(v)
     if not v.ttpos then
         v.ttpos = "h";
     end
+    if not v.clear_under_tooltip then
+        v.clear_under_tooltip = false;
+    end
     if not v.tooltipfn then
         v.tooltipfn = function(s)
             if not s.dsc then
@@ -111,7 +114,7 @@ gobj = function(v)
                 for i, t in ipairs(txts) do
                     stead.table.insert(result, t);
                 end
-                return result, s.ttpos;
+                return result, s.ttpos, s.clear_under_tooltip;
             end
             return nil, s.ttpos;
         end;

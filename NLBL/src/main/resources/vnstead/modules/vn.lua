@@ -1585,12 +1585,12 @@ vn = obj {
     update_tooltip = function(s, v)
         local xx, yy = s:postoxy(v);
         local sp = s:frame(v, 0);
-        local text, pos = s:gobf(v):tooltipfn();
+        local text, pos, clear_under_tooltip = s:gobf(v):tooltipfn();
         if text then
-            s:tooltip(text, pos, xx, yy, sp.w, sp.h, target);
+            s:tooltip(text, pos, xx, yy, sp.w, sp.h, clear_under_tooltip);
         end
     end;
-    tooltip = function(s, text, pos, x, y, vw, vh)
+    tooltip = function(s, text, pos, x, y, vw, vh, clear_under_tooltip)
         local target = s:screen();
         local label, w, h = s:label(text);
         local xmax = theme.get("scr.w");
@@ -1616,7 +1616,9 @@ vn = obj {
                 yt = yy;
             end
         end
-        sprite.copy(s.bg_spr, xt, yt, w, h, target, xt, yt); -- clear the area under tooltip
+        if clear_under_tooltip then
+            sprite.copy(s.bg_spr, xt, yt, w, h, target, xt, yt);
+        end
         sprite.draw(label, target, xt, yt);
         sprite.free(label);
     end;

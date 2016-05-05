@@ -42,7 +42,7 @@ txt1 = gobj {
     nam = "txt1",
     system_type = true,
     pic = "gfx/empty.png",
-    arm = { [0] = { 90, 100 } },
+    arm = { [0] = { 90, 170 } },
     txtfn = function(s) return rollStat:info(); end
 }
 
@@ -50,7 +50,7 @@ txt2 = gobj {
     nam = "txt2",
     system_type = true,
     pic = "gfx/empty.png",
-    arm = { [0] = { 60, 100 } },
+    arm = { [0] = { 60, 230 } },
     txtfn = function(s) return rollStat:info(); end
 }
 
