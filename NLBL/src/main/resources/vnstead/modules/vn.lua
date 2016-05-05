@@ -253,7 +253,6 @@ vn = obj {
                 s:gobf(v):onout();
                 if not s:shapechange(v, false) then
                     v.mouse_over = false;
-                    v.has_tooltip = false;
                     vn.stopped = false;
                 end
             end
@@ -710,7 +709,6 @@ vn = obj {
             hotstep = g.hot_step,
             accel = g.acceleration,
             mouse_over = is_over,
-            has_tooltip = false,
             gob = stead.deref(g)
             --children = {} - actually can be set here, but I'll set it later, after possible hide() call
         }
@@ -1474,8 +1472,8 @@ vn = obj {
         local n = res.hasmore;
         local x, y = stead.mouse_pos();
         if n then
-            s:tooltips(x, y);
             s:draw_huds(res.datas);
+            s:tooltips(x, y);
         else
             s:stop();
             if (vn.callback) then
@@ -1483,8 +1481,8 @@ vn = obj {
                 vn.callback = false;
                 cbresult = callback();
             end
-            s:tooltips(x, y);
             s:draw_huds(res.datas);
+            s:tooltips(x, y);
             if cbresult then
                 if type(cbresult) == 'function' then
                     return cbresult();
@@ -1513,7 +1511,7 @@ vn = obj {
         if not target then
             target = s:screen();
         end
-        if (s:gobf(v) and s:gobf(v).txtfn) and not v.has_tooltip then
+        if (s:gobf(v) and s:gobf(v).txtfn) then
             local texts = s:gobf(v):txtfn();
             local xpos, ypos = nil, nil;
             if not x or not y then
@@ -1576,7 +1574,6 @@ vn = obj {
             return;
         end
         for i, v in ipairs(s._effects) do
-            v.has_tooltip = false;
             if s:enabled(v) and s:gobf(v).tooltipfn and s:inside_spr(v, x, y) then
                 s:update_tooltip(v);
             end
@@ -1590,7 +1587,6 @@ vn = obj {
         local sp = s:frame(v, 0);
         local text, pos = s:gobf(v):tooltipfn();
         if text then
-            v.has_tooltip = true;
             s:tooltip(text, pos, xx, yy, sp.w, sp.h, target);
         end
     end;
@@ -1598,23 +1594,30 @@ vn = obj {
         local target = s:screen();
         local label, w, h = s:label(text);
         local xmax = theme.get("scr.w");
+        local xt, yt;
         if pos == "n" then
             local yy = y - h - s.default_tooltip_offset;
             local txt_offset = (vw - w) / 2;
-            sprite.draw(label, target, x + txt_offset, yy);
+            xt = x + txt_offset;
+            yt = yy;
         elseif pos == "s" then
             local yy = y + vh + s.default_tooltip_offset;
             local txt_offset = (vw - w) / 2;
-            sprite.draw(label, target, x + txt_offset, yy);
+            xt = x + txt_offset;
+            yt = yy;
         else
             local yy = y + vh / 2 - h / 2;
             local xx = x + vw + s.default_tooltip_offset;
             if ((xmax - xx > w) or (pos == "e")) and not (pos == "w") then
-                sprite.draw(label, target, xx, yy);
+                xt = xx;
+                yt = yy;
             else
-                sprite.draw(label, target, x - w - s.default_tooltip_offset, yy);
+                xt = x - w - s.default_tooltip_offset;
+                yt = yy;
             end
         end
+        sprite.copy(s.bg_spr, xt, yt, w, h, target, xt, yt); -- clear the area under tooltip
+        sprite.draw(label, target, xt, yt);
         sprite.free(label);
     end;
     -- Sprite with label text. You should call sprite.free(), when you no longer need this.
