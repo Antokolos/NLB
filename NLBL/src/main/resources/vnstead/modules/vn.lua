@@ -152,6 +152,8 @@ vn = obj {
         down_x = 0,
         callback = false,
         extent = 100,
+        default_label_extent = 4,
+        default_tooltip_offset = 5,
         hud_color = '#000000',
         pause_frames = 0,
         pause_callback = false,
@@ -251,6 +253,7 @@ vn = obj {
                 s:gobf(v):onout();
                 if not s:shapechange(v, false) then
                     v.mouse_over = false;
+                    v.has_tooltip = false;
                     vn.stopped = false;
                 end
             end
@@ -707,6 +710,7 @@ vn = obj {
             hotstep = g.hot_step,
             accel = g.acceleration,
             mouse_over = is_over,
+            has_tooltip = false,
             gob = stead.deref(g)
             --children = {} - actually can be set here, but I'll set it later, after possible hide() call
         }
@@ -1470,8 +1474,8 @@ vn = obj {
         local n = res.hasmore;
         local x, y = stead.mouse_pos();
         if n then
-            s:draw_huds(res.datas);
             s:tooltips(x, y);
+            s:draw_huds(res.datas);
         else
             s:stop();
             if (vn.callback) then
@@ -1479,8 +1483,8 @@ vn = obj {
                 vn.callback = false;
                 cbresult = callback();
             end
-            s:draw_huds(res.datas);
             s:tooltips(x, y);
+            s:draw_huds(res.datas);
             if cbresult then
                 if type(cbresult) == 'function' then
                     return cbresult();
@@ -1509,7 +1513,7 @@ vn = obj {
         if not target then
             target = s:screen();
         end
-        if (s:gobf(v) and s:gobf(v).txtfn) then
+        if (s:gobf(v) and s:gobf(v).txtfn) and not v.has_tooltip then
             local texts = s:gobf(v):txtfn();
             local xpos, ypos = nil, nil;
             if not x or not y then
@@ -1526,7 +1530,9 @@ vn = obj {
                 xpos = xpos + f.w * scale;
                 ypos = ypos + f.h * scale / 2.0;
             end
-            local ycur = ypos;
+            xpos = xpos + s.default_label_extent + s.default_tooltip_offset;
+            local sprites = {};
+            local htotal = 0;
             for k, vv in pairs(texts) do
                 if vv.text then
                     local color = vv.color;
@@ -1549,14 +1555,19 @@ vn = obj {
                     end
                     local w, h = sprite.size(textSprite);
                     w = w + s.extent;
-                    local hudSprite = sprite.blank(w, h);
-                    sprite.draw(target, xpos, ycur, w, h, hudSprite, 0, 0);
-                    sprite.draw(textSprite, hudSprite, 0, 0);
-                    sprite.draw(hudSprite, target, xpos, ycur);
-                    ycur = ycur + h;
-                    sprite.free(hudSprite);
-                    sprite.free(textSprite);
+                    htotal = htotal + h;
+                    stead.table.insert(sprites, {["spr"] = textSprite, ["xpos"] = xpos, ["w"] = w, ["h"] = h});
                 end
+            end
+            local ycur = ypos - htotal / 2.0;
+            for i, ss in ipairs(sprites) do
+                local hudSprite = sprite.blank(ss.w, ss.h);
+                sprite.draw(target, ss.xpos, ycur, ss.w, ss.h, hudSprite, 0, 0);
+                sprite.draw(ss.spr, hudSprite, 0, 0);
+                sprite.draw(hudSprite, target, ss.xpos, ycur);
+                ycur = ycur + ss.h;
+                sprite.free(hudSprite);
+                sprite.free(ss.spr);
             end
         end
     end;
@@ -1565,6 +1576,7 @@ vn = obj {
             return;
         end
         for i, v in ipairs(s._effects) do
+            v.has_tooltip = false;
             if s:enabled(v) and s:gobf(v).tooltipfn and s:inside_spr(v, x, y) then
                 s:update_tooltip(v);
             end
@@ -1578,6 +1590,7 @@ vn = obj {
         local sp = s:frame(v, 0);
         local text, pos = s:gobf(v):tooltipfn();
         if text then
+            v.has_tooltip = true;
             s:tooltip(text, pos, xx, yy, sp.w, sp.h, target);
         end
     end;
@@ -1586,20 +1599,20 @@ vn = obj {
         local label, w, h = s:label(text);
         local xmax = theme.get("scr.w");
         if pos == "n" then
-            local yy = y - h - 5;
+            local yy = y - h - s.default_tooltip_offset;
             local txt_offset = (vw - w) / 2;
             sprite.draw(label, target, x + txt_offset, yy);
         elseif pos == "s" then
-            local yy = y + vh + 5;
+            local yy = y + vh + s.default_tooltip_offset;
             local txt_offset = (vw - w) / 2;
             sprite.draw(label, target, x + txt_offset, yy);
         else
             local yy = y + vh / 2 - h / 2;
-            local xx = x + vw + 5;
+            local xx = x + vw + s.default_tooltip_offset;
             if ((xmax - xx > w) or (pos == "e")) and not (pos == "w") then
                 sprite.draw(label, target, xx, yy);
             else
-                sprite.draw(label, target, x - w - 5, yy);
+                sprite.draw(label, target, x - w - s.default_tooltip_offset, yy);
             end
         end
         sprite.free(label);
@@ -1616,7 +1629,7 @@ vn = obj {
             bgalpha = 127;
         end
         if not extent then
-            extent = 4;
+            extent = s.default_label_extent;
         end
         if not font then
             font = hudFont;
