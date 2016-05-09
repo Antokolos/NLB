@@ -71,7 +71,7 @@ paper = gobj {
         end
         vn:start();
     end,
-    is_paused = true;
+    --is_paused = true;
 }
 
 plate = gobj {
@@ -741,9 +741,9 @@ game.data = {
     ["bet"] = 100,
     ["threshold"] = 100
 };
-game.table = { ["bg"] = 'images/table2.png', ["paper"] = 'images/paper2.png' };
+game.table = { ["bg"] = 'gfx/table2.png', ["paper"] = 'gfx/paper2.png' };
 
-play_bp_two_ais = menu {
+_play_bp_two_ais = menu {
     nam = "play_bp_two_ais",
     dsc = function(s) return "{Сыграть с Горожанином и Торговцем}^" end, 
     act = function(s) 
@@ -756,8 +756,8 @@ play_bp_two_ais = menu {
             ["bet"] = 100,
             ["threshold"] = 100
         };
-        game.table.bg = 'images/table2.png';
-        game.table.paper = 'images/paper2.png';
+        game.table.bg = 'gfx/table2.png';
+        game.table.paper = 'gfx/paper2.png';
         game.table.plate = false;
         game.table.surftype = false;
 
@@ -765,7 +765,7 @@ play_bp_two_ais = menu {
     end
 }
 
-play_bp_one_ai = menu {
+_play_bp_one_ai = menu {
     nam = "play_bp_one_ai",
     dsc = function(s) return "{Сыграть с Абу-Али}^" end, 
     act = function(s) 
@@ -778,16 +778,16 @@ play_bp_one_ai = menu {
             ["bet"] = 100,
             ["threshold"] = 100
         };
-        game.table.bg = 'images/table1.png';
-        game.table.paper = 'images/paper1.png';
-        game.table.plate = 'images/plate.png';
+        game.table.bg = 'gfx/table1.png';
+        game.table.paper = 'gfx/paper1.png';
+        game.table.plate = 'gfx/plate.png';
         game.table.surftype = 'stone';
 
         play_game_obj:inv(); 
     end
 }
 
-play_bp_one_hotseat = menu {
+_play_bp_one_hotseat = menu {
     nam = "play_bp_one_hotseat",
     dsc = function(s) return "{Сыграть с другом}^" end, 
     act = function(s) 
@@ -800,9 +800,9 @@ play_bp_one_hotseat = menu {
             ["bet"] = 100,
             ["threshold"] = 100
         };
-        game.table.bg = 'images/table1.png';
-        game.table.paper = 'images/paper1.png';
-        game.table.plate = 'images/plate.png';
+        game.table.bg = 'gfx/table1.png';
+        game.table.paper = 'gfx/paper1.png';
+        game.table.plate = 'gfx/plate.png';
         game.table.surftype = false;
 
         play_game_obj:inv(); 
@@ -810,7 +810,7 @@ play_bp_one_hotseat = menu {
     end
 }
 
-play_bp_two_hotseats = menu {
+_play_bp_two_hotseats = menu {
     nam = "play_bp_two_hotseats",
     dsc = function(s) return "{Сыграть с двумя друзьями}^" end, 
     act = function(s) 
@@ -823,8 +823,8 @@ play_bp_two_hotseats = menu {
             ["bet"] = 100,
             ["threshold"] = 100
         };
-        game.table.bg = 'images/table2.png';
-        game.table.paper = 'images/paper2.png';
+        game.table.bg = 'gfx/table2.png';
+        game.table.paper = 'gfx/paper2.png';
         game.table.plate = false;
         game.table.surftype = false;
 

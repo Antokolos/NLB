@@ -290,25 +290,35 @@ vn = obj {
         -- Splits the url into main part and extension part
         return url:match("^(.+)(%..+)$")
     end;
-    busy = function(s, busy, job)
+    busy = function(s, busy, job, callback_to_run_after, do_not_show_label)
         if busy then
-            vn:show(busy_spr, 'middle');
+            if not do_not_show_label then
+                vn:show(busy_spr, 'middle');
+            end
             if job then
                 local cb = function()
                     job();
-                    vn:hide(busy_spr);
-                    return true;
+                    if not do_not_show_label then
+                        vn:hide(busy_spr);
+                    end
+                    if callback_to_run_after then
+                        return callback_to_run_after;
+                    else
+                        return true;
+                    end
                 end
                 vn:startcb(cb);
             else
                 vn:start();
             end
         else
-            vn:hide(busy_spr);
+            if not do_not_show_label then
+                vn:hide(busy_spr);
+            end
             vn:start();
         end
     end;
-    preload_effect = function(s, image, startFrame, maxStep, fromStop, maxPreload)
+    preload_effect = function(s, image, startFrame, maxStep, fromStop, maxPreload, callback_to_run_after, do_not_show_label)
         local job = function()
             if not fromStop then
                 fromStop = 0;
@@ -322,7 +332,7 @@ vn = obj {
                 v.spr[i]:val();
             end
         end;
-        s:busy(true, job);
+        s:busy(true, job, callback_to_run_after, do_not_show_label);
     end;
     find_interval = function(s, milestones, sprStep, max_step)
         local mstl = 0;
@@ -919,6 +929,10 @@ vn = obj {
     end;
 
     frame = function(s, v, idx, target, x, y, only_compute, free_immediately)
+        if not v.spr or not v.spr[idx] then
+            print("WARN: nonexistent sprite when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
+            return {["spr"] = empty_s, ["w"] = 0, ["h"] = 0, ["tmp"] = false};
+        end
         local ospr = v.spr[idx]:val();
         if not x then
             x = 0;
@@ -1686,6 +1700,7 @@ stead.module_init(function()
     vnticks = stead.ticks();
     vnticks_diff = vn.ticks_threshold;
     hudFont = sprite.font('fonts/Medieval_English.ttf', 32);
+    empty_s = sprite.load('gfx/empty.png');
     if LANG == "ru" then
         busy_spr = vn:label("Загрузка...", 40, "#ffffff", "black");
     else
