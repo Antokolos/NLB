@@ -925,7 +925,7 @@ vn = obj {
         if not s.bg_spr then
             error("Can not load bg sprite:" .. tostring(picture))
         end
-        s._bg = picture
+        s._bg = picture;
     end;
 
     frame = function(s, v, idx, target, x, y, only_compute, free_immediately)
@@ -1296,9 +1296,12 @@ vn = obj {
     in_vnr = function(s)
         return here()._is_vnr;
     end;
+    force_textbg = function(s)
+        return here().textbg;
+    end;
     textpad = 8;
     textbg = function(s, to)
-        if s.direct_lock or not s:in_vnr() then
+        if (s.direct_lock or not s:in_vnr()) and not s:force_textbg() then
             return;
         end
         local pad = vn.textpad;

@@ -159,9 +159,9 @@ alt_btn_exit = gobj {
     pic = "gfx/alt_btn_exit.png",
     eff = "right-top@-40,875",
     morphout = "btn_exit",
-    dsc = function(s) return play_game_obj:txt(); end,
+    dsc = function(s) return _play_game_obj:txt(); end,
     ttpos = "s",
-    act = function(s) if vn.stopped then play_game_obj:act(); end; end,
+    act = function(s) if vn.stopped then _play_game_obj:act(); end; end,
     enablefn = function(s) return enablefn2(s); end
 }
 
@@ -242,8 +242,8 @@ alt_btn_exit2 = gobj {
     pic = "gfx/alt_btn_exit2.png",
     eff = "right-bottom@-195,-10",
     morphout = "btn_exit2",
-    dsc = function(s) return play_game_obj:txt(); end,
-    act = function(s) if vn.stopped then play_game_obj:act(); end; end,
+    dsc = function(s) return _play_game_obj:txt(); end,
+    act = function(s) if vn.stopped then _play_game_obj:act(); end; end,
     enablefn = function(s) return enablefn2(s); end
 }
 
@@ -401,7 +401,7 @@ rollStat = stat {
                         return function()
                             vn:gshow(you_lose);
                             vn:startcb(function()
-                                play_game_obj:act();
+                                _play_game_obj:act();
                                 return true;
                             end);
                             return true;
@@ -410,7 +410,7 @@ rollStat = stat {
                         return function()
                             vn:gshow(you_win);
                             vn:startcb(function()
-                                play_game_obj:act();
+                                _play_game_obj:act();
                                 return true;
                             end);
                             return true;
@@ -609,7 +609,7 @@ increase_bet_obj = menu {
     end
 }
 
-play_game_obj = menu {
+_play_game_obj = menu {
     nam = "play_game_obj",
     dsc = function(s)
         return "{" .. s:txt() .. "}";
@@ -629,12 +629,12 @@ play_game_obj = menu {
         end
     end,
     act = function(s)
-        take(play_game_obj);
+        take(_play_game_obj);
         walk(stead.ref(game_room._returnto));
     end,
     inv = function(s)
         walk(game_room);
-        drop(play_game_obj, game_room);
+        drop(_play_game_obj, game_room);
     end
 }
 
@@ -664,8 +664,6 @@ game_room = vnr {
                 increase_bet_obj:enable();
             end
         end
-    end,
-    entered = function(s, f)
         if f ~= nil then
             s._returnto = stead.deref(f);
         end
@@ -703,13 +701,14 @@ game_room = vnr {
         dice:set_callback(rollStat:setrolls());
         dice.pos = 2;
     end,
-    left = function(s, t)
+    exit = function(s, t)
         stop_music();
         remove(rollStat, me());
         if rollStat.data then
             game.data = shallowcopy(rollStat.data);
             game.money = game.data.money[game.data.mainplr];
         end
+        remove(_play_game_obj, me());
         vn:unlock_direct();
         paginator:turnon();
     end,
@@ -761,7 +760,7 @@ _play_bp_two_ais = menu {
         game.table.plate = false;
         game.table.surftype = false;
 
-        play_game_obj:inv(); 
+        _play_game_obj:inv(); 
     end
 }
 
@@ -783,7 +782,7 @@ _play_bp_one_ai = menu {
         game.table.plate = 'gfx/plate.png';
         game.table.surftype = 'stone';
 
-        play_game_obj:inv(); 
+        _play_game_obj:inv(); 
     end
 }
 
@@ -805,7 +804,7 @@ _play_bp_one_hotseat = menu {
         game.table.plate = 'gfx/plate.png';
         game.table.surftype = false;
 
-        play_game_obj:inv(); 
+        _play_game_obj:inv(); 
 
     end
 }
@@ -828,7 +827,7 @@ _play_bp_two_hotseats = menu {
         game.table.plate = false;
         game.table.surftype = false;
 
-        play_game_obj:inv(); 
+        _play_game_obj:inv(); 
     end
 }
 
