@@ -130,7 +130,11 @@ gobj = function(v)
     if not v.is_paused then
         v.is_paused = false;
     end
-    return obj(v);
+    if v.is_menu then
+        return menu(v);
+    else
+        return obj(v);
+    end
 end
 
 gmenu = function(v)

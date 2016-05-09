@@ -525,8 +525,7 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append("    scene_use = true,").append(LINE_SEPARATOR);
         }
         stringBuilder.append(objBlocks.getObjImage());
-        if (objBlocks.isTakable() || hasUses) {
-            // If object is takable, then empty use function should be specified
+        if (hasUses) {
             stringBuilder.append(objBlocks.getObjUseStart());
         }
         if (hasUses) {
@@ -590,12 +589,6 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append("        end;").append(LINE_SEPARATOR);
             stringBuilder.append(objBlocks.getObjUseEnd());
             stringBuilder.append(usepBuilder);
-        } else if (objBlocks.isTakable()) {
-            // If object is takable, then empty use and usep functions should be specified anyway
-            stringBuilder.append(objBlocks.getObjUseEnd());
-            // TODO: make additional decorate method for usep function (something like decorateObjStart())
-            stringBuilder.append("    usep = function(s, w, ww)").append(LINE_SEPARATOR);
-            stringBuilder.append(objBlocks.getObjUseEnd());
         }
         stringBuilder.append(objBlocks.getObjCommonTo());
         List<String> containedObjIds = objBlocks.getContainedObjIds();
@@ -1028,7 +1021,7 @@ public class STEADExportManager extends TextExportManager {
             case OBJ:
                 return (
                         "    inv = function(s)" + LINE_SEPARATOR
-                                + "        s.use(s, s);" + LINE_SEPARATOR
+                                + "        if s.use then s.use(s, s); end;" + LINE_SEPARATOR
                                 + "    end," + LINE_SEPARATOR
                 );
             default:
