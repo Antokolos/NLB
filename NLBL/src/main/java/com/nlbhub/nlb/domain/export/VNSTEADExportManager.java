@@ -132,9 +132,6 @@ public class VNSTEADExportManager extends STEADExportManager {
         StringBuilder stringBuilder = new StringBuilder("    add_gobj = function(s)").append(getLineSeparator());
         stringBuilder.append("        local bg_img = s.bgimg(s);").append(getLineSeparator());
         final boolean imageBackground = pageBuildingBlocks.isImageBackground();
-        if (imageBackground) {
-            stringBuilder.append("        theme.gfx.bg(bg_img);").append(getLineSeparator());
-        }
         // vn:scene should be called in all cases
         stringBuilder.append("        vn:scene(bg_img);").append(getLineSeparator());
         if (pageBuildingBlocks.isHasGraphicalObjects()) {
@@ -142,9 +139,7 @@ public class VNSTEADExportManager extends STEADExportManager {
                 stringBuilder.append("        vn:gshow(" + graphicalObjId + ");").append(getLineSeparator());
             }
         }
-        if (!imageBackground) {
-            stringBuilder.append("        vn:geom(8, 864, 1904, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png');").append(getLineSeparator());
-        }
+        stringBuilder.append("        vn:geom(8, 864, 1904, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png');").append(getLineSeparator());
         stringBuilder.append("    end,").append(getLineSeparator());
         return stringBuilder.toString();
     }

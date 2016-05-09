@@ -731,15 +731,15 @@ public class STEADExportManager extends TextExportManager {
         StringBuilder stringBuilder = new StringBuilder("    add_gobj = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        local bg_img = s.bgimg(s);").append(getLineSeparator());
         final boolean imageBackground = pageBuildingBlocks.isImageBackground();
-        if (imageBackground) {
-            stringBuilder.append("        vn:scene(bg_img);").append(getLineSeparator());
-        }
         if (pageBuildingBlocks.isHasGraphicalObjects()) {
             stringBuilder.append("        vn:turnon();").append(LINE_SEPARATOR);
+            stringBuilder.append("        vn:scene(bg_img);").append(getLineSeparator());
             for (String graphicalObjId : pageBuildingBlocks.getContainedGraphicalObjIds()) {
                 stringBuilder.append("        vn:gshow(" + graphicalObjId + ");").append(LINE_SEPARATOR);
             }
             stringBuilder.append("        vn:start();").append(LINE_SEPARATOR);
+        } else if (imageBackground) {
+            stringBuilder.append("        theme.gfx.bg(bg_img);").append(getLineSeparator());
         }
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         return stringBuilder.toString();
@@ -1887,11 +1887,11 @@ public class STEADExportManager extends TextExportManager {
         }
         StringBuilder pageText = new StringBuilder();
         pageText.append("    dsc = function(s)").append(LINE_SEPARATOR);
+        pageText.append("p(\"");
         if (pageTextChunks.size() > 0) {
-            pageText.append("p(\"");
             pageText.append(expandVariables(pageTextChunks, theme));
-            pageText.append("\");").append(LINE_SEPARATOR);
         }
+        pageText.append("\");").append(LINE_SEPARATOR);
         pageText.append("    end,").append(LINE_SEPARATOR);
         pageText.append("    xdsc = function(s)").append(LINE_SEPARATOR);
         pageText.append("        p \"^\";").append(LINE_SEPARATOR);
