@@ -431,8 +431,6 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    act = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.acta(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local loc = curloc();").append(LINE_SEPARATOR);
-        stringBuilder.append("        loc.autos(loc);").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    acta = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.actf(s)").append(LINE_SEPARATOR);
@@ -448,8 +446,6 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    use = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.usea(s, w, w);").append(LINE_SEPARATOR);
-        stringBuilder.append("        local loc = curloc();").append(LINE_SEPARATOR);
-        stringBuilder.append("        loc.autos(loc);").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    usea = function(s, w, ww)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.usef(s, w, ww);").append(LINE_SEPARATOR);
@@ -465,8 +461,6 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    used = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.useda(s, w);").append(LINE_SEPARATOR);
-        stringBuilder.append("        local loc = curloc();").append(LINE_SEPARATOR);
-        stringBuilder.append("        loc.autos(loc);").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    useda = function(s, w)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.usedf(s, w);").append(LINE_SEPARATOR);
@@ -642,7 +636,7 @@ public class STEADExportManager extends TextExportManager {
                 stringBuilder.append("        s.add_gobj(s); ").append(LINE_SEPARATOR);
             }
             stringBuilder.append("        local afl = s.autos(s); ").append(LINE_SEPARATOR);
-            stringBuilder.append("        if (s.lasttext ~= nil) and not s.wastext then p(s.lasttext); elseif afl and not s.wastext then return true; end; ").append(LINE_SEPARATOR);
+            stringBuilder.append("        if (s.lasttext ~= nil) and not s.wastext then return s.lasttext; elseif afl and not s.wastext then return true; end; ").append(LINE_SEPARATOR);
             stringBuilder.append("        s.wastext = false; ").append(LINE_SEPARATOR);
             stringBuilder.append("    end,").append(LINE_SEPARATOR);
         }
@@ -675,6 +669,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
+        stringBuilder.append("        lifeon(s);").append(LINE_SEPARATOR);
         if (pageBlocks.getTheme() == Theme.STANDARD) {
             stringBuilder.append("    dofile('theme_standard.lua');").append(LINE_SEPARATOR);
         } else if (pageBlocks.getTheme() == Theme.VN) {
@@ -716,6 +711,11 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("        s.wastext = false;").append(LINE_SEPARATOR);
         stringBuilder.append("        s.lasttext = nil;").append(LINE_SEPARATOR);
+        stringBuilder.append("        lifeoff(s);").append(LINE_SEPARATOR);
+        stringBuilder.append("    end,").append(LINE_SEPARATOR);
+        stringBuilder.append("    life = function(s)").append(LINE_SEPARATOR);
+        stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR);
+        //stringBuilder.append("        return true;").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append(pageBlocks.getPageSound());
 
@@ -1004,7 +1004,7 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateObjTak(final String objName) {
         return (
                 "    tak = function(s)" + LINE_SEPARATOR +
-                        "        s.act(s);" + LINE_SEPARATOR +
+                        "        return s.act(s);" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR
         );
     }
@@ -1015,7 +1015,7 @@ public class STEADExportManager extends TextExportManager {
             case MENU:
                 return (
                         "    menu = function(s)" + LINE_SEPARATOR
-                                + "        s.act(s);" + LINE_SEPARATOR
+                                + "        return s.act(s);" + LINE_SEPARATOR
                                 + "    end," + LINE_SEPARATOR
                 );
             case OBJ:
@@ -1031,12 +1031,13 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateObjActStart(String actTextExpanded) {
-        String actText = getActText(StringHelper.notEmpty(actTextExpanded));
+        final boolean actTextNotEmpty = StringHelper.notEmpty(actTextExpanded);
+        final String returnStatement = (actTextNotEmpty) ? "" : "        return true;" + LINE_SEPARATOR;
+        String actText = getActText(actTextNotEmpty);
         return (
                 "    act = function(s)" + LINE_SEPARATOR +
                         "        s.acta(s);" + LINE_SEPARATOR +
-                        "        local loc = curloc();" + LINE_SEPARATOR +
-                        "        loc.autos(loc);" + LINE_SEPARATOR +
+                        returnStatement +
                         "    end," + LINE_SEPARATOR +
                         "    actt = function(s)" + LINE_SEPARATOR +
                         "        return \"" + actTextExpanded + "\";" + LINE_SEPARATOR +
@@ -1050,9 +1051,9 @@ public class STEADExportManager extends TextExportManager {
         );
     }
 
-    protected String getActText(boolean actTextEmpty) {
+    protected String getActText(boolean actTextNotEmpty) {
         return (
-                (actTextEmpty)
+                (actTextNotEmpty)
                         ? "        curloc().lasttext = s.actt(s); p(curloc().lasttext); curloc().wastext = true;" + LINE_SEPARATOR
                         : Constants.EMPTY_STRING
         );
@@ -1070,8 +1071,6 @@ public class STEADExportManager extends TextExportManager {
                 "    use = function(s, w)" + LINE_SEPARATOR +
                         "        s.actf(s);" + LINE_SEPARATOR +
                         "        s.usea(s, w, w);" + LINE_SEPARATOR +
-                        "        local loc = curloc();" + LINE_SEPARATOR +
-                        "        loc.autos(loc);" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    usea = function(s, w, ww)" + LINE_SEPARATOR +
                         "        s.usep(s, w, ww);" + LINE_SEPARATOR +
@@ -1143,8 +1142,6 @@ public class STEADExportManager extends TextExportManager {
         String id = hasCmn ? decorateId(commonObjId) : Constants.EMPTY_STRING;
         if (hasCmn) {
             result.append("        ").append("w.usea(w, ").append(id).append(", s);").append(LINE_SEPARATOR);
-            result.append("        local loc = curloc();").append(LINE_SEPARATOR);
-            result.append("        loc.autos(loc);").append(LINE_SEPARATOR);
         }
         result.append("    end,").append(LINE_SEPARATOR);
         result.append("    actcmn = function(s)").append(LINE_SEPARATOR);
