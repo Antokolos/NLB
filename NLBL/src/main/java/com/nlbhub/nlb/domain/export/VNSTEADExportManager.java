@@ -96,6 +96,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         stringBuilder.append("require 'modules/fonts'").append(lineSep);
         stringBuilder.append("require 'modules/paginator'").append(lineSep);
         stringBuilder.append("require 'modules/vn'").append(lineSep);
+        stringBuilder.append("require 'modules/big_pig'").append(lineSep);
         stringBuilder.append("require 'modules/gobj'").append(lineSep);
 
         stringBuilder.append("game.codepage=\"UTF-8\";").append(lineSep);
@@ -198,6 +199,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         List<LinkBuildingBlocks> linksBuildingBlocks = pageBlocks.getLinksBuildingBlocks();
         result.append(roomName).append("_choices").append(" = room {").append(lineSep);
         result.append("    nam = \"").append(roomName).append("_choices\",").append(lineSep);
+        result.append("        textbg = true,").append(lineSep);
         if (linksBuildingBlocks.isEmpty()) {
             result.append("    dsc = img 'blank:23x23'..'^'..fend:txt('The')..img 'blank:64x64'..fend:txt('End'),").append(lineSep);
         }

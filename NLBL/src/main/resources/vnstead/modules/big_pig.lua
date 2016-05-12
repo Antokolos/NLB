@@ -667,6 +667,7 @@ game_room = vnr {
         if f ~= nil then
             s._returnto = stead.deref(f);
         end
+        vn:turnon();
         paginator:turnoff();
         vn:lock_direct();
         rollStat:init();
@@ -761,7 +762,8 @@ _play_bp_two_ais = menu {
         game.table.surftype = false;
 
         _play_game_obj:inv(); 
-    end
+    end,
+    actf = function(s) return s:act(); end
 }
 
 _play_bp_one_ai = menu {
@@ -783,7 +785,8 @@ _play_bp_one_ai = menu {
         game.table.surftype = 'stone';
 
         _play_game_obj:inv(); 
-    end
+    end,
+    actf = function(s) return s:act(); end
 }
 
 _play_bp_one_hotseat = menu {
@@ -806,7 +809,8 @@ _play_bp_one_hotseat = menu {
 
         _play_game_obj:inv(); 
 
-    end
+    end,
+    actf = function(s) return s:act(); end
 }
 
 _play_bp_two_hotseats = menu {
@@ -828,7 +832,8 @@ _play_bp_two_hotseats = menu {
         game.table.surftype = false;
 
         _play_game_obj:inv(); 
-    end
+    end,
+    actf = function(s) return s:act(); end
 }
 
 stead.module_init(function()
