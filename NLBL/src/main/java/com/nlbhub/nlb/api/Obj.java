@@ -63,6 +63,8 @@ public interface Obj extends NodeItem {
     public static final String DEFAULT_NAME = Constants.EMPTY_STRING;
     public static final MultiLangString DEFAULT_DISP = MultiLangString.createEmptyText();
     public static final boolean DEFAULT_GRAPHICAL = false;
+    public static final String DEFAULT_MORPH_OVER = Constants.EMPTY_STRING;
+    public static final String DEFAULT_MORPH_OUT = Constants.EMPTY_STRING;
     public static final boolean DEFAULT_TAKABLE = false;
     public static final boolean DEFAULT_IMAGE_IN_SCENE = true;
     public static final boolean DEFAULT_IMAGE_IN_INVENTORY = true;
@@ -105,6 +107,10 @@ public interface Obj extends NodeItem {
     public MultiLangString getDisps();
 
     public boolean isGraphical();
+
+    public String getMorphOver();
+
+    public String getMorphOut();
 
     public Coords getRelativeCoords();
 

@@ -588,6 +588,8 @@ public class NonLinearBookFacade implements NLBObservable {
             final MultiLangString objText,
             final MultiLangString objActText,
             final boolean objIsGraphical,
+            final String objMorphOver,
+            final String objMorphOut,
             final boolean objIsTakable,
             final boolean imageInScene,
             final boolean imageInInventory
@@ -609,6 +611,8 @@ public class NonLinearBookFacade implements NLBObservable {
                         objText,
                         objActText,
                         objIsGraphical,
+                        objMorphOver,
+                        objMorphOut,
                         objIsTakable,
                         imageInScene,
                         imageInInventory

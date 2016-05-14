@@ -98,6 +98,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JTextField m_objCommonToTextField;
     private JTextField m_objDefaultTagTextField;
     private JCheckBox m_objIsGraphical;
+    private JTextField m_morphOver;
+    private JTextField m_morphOut;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -293,6 +295,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_suppressDsc.setSelected(obj.isSuppressDsc());
         m_objIsTakable.setSelected(obj.isTakable());
         m_objIsGraphical.setSelected(obj.isGraphical());
+        m_morphOver.setText(obj.getMorphOver());
+        m_morphOut.setText(obj.getMorphOut());
         m_imageInScene.setSelected(obj.isImageInScene());
         m_imageInInventory.setSelected(obj.isImageInInventory());
 
@@ -335,6 +339,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_objTexts,
                 m_objActTexts,
                 m_objIsGraphical.isSelected(),
+                m_morphOver.getText(),
+                m_morphOut.getText(),
                 m_objIsTakable.isSelected(),
                 m_imageInScene.isSelected(),
                 m_imageInInventory.isSelected()

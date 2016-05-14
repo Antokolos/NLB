@@ -79,6 +79,8 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String ANIMATED_FILE_NAME = "animated";
     private static final String DISP_SUBDIR_NAME = "disp";
     private static final String GRAPHICAL_FILE_NAME = "graphical";
+    private static final String MORPH_OVER_FILE_NAME = "morphover";
+    private static final String MORPH_OUT_FILE_NAME = "morphout";
     private static final String TAKABLE_FILE_NAME = "takable";
     private static final String IMAGE_IN_SCENE_FILE_NAME = "imgscene";
     private static final String IMAGE_IN_INVENTORY_FILE_NAME = "imginv";
@@ -95,6 +97,8 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private MultiLangString m_text = DEFAULT_TEXT;
     private MultiLangString m_actText = DEFAULT_ACT_TEXT;
     private boolean m_graphical = DEFAULT_GRAPHICAL;
+    private String m_morphOver = DEFAULT_MORPH_OVER;
+    private String m_morphOut = DEFAULT_MORPH_OUT;
     /**
      * Object can be taken to the inventory
      */
@@ -143,6 +147,8 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         setTexts(source.getTexts());
         setActTexts(source.getActTexts());
         m_graphical = source.isGraphical();
+        m_morphOver = source.getMorphOver();
+        m_morphOut = source.getMorphOut();
         m_takable = source.isTakable();
         m_suppressDsc = source.isSuppressDsc();
         m_imageInScene = source.isImageInScene();
@@ -320,6 +326,24 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public String getMorphOver() {
+        return m_morphOver;
+    }
+
+    public void setMorphOver(String morphOver) {
+        m_morphOver = morphOver;
+    }
+
+    @Override
+    public String getMorphOut() {
+        return m_morphOut;
+    }
+
+    public void setMorphOut(String morphOut) {
+        m_morphOut = morphOut;
+    }
+
+    @Override
     public Coords getRelativeCoords() {
         NonLinearBook nlb = getCurrentNLB();
         NodeItem node = nlb.getPageById(m_containerId);
@@ -463,6 +487,18 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(
                     objDir,
+                    MORPH_OVER_FILE_NAME,
+                    m_morphOver,
+                    DEFAULT_MORPH_OVER
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
+                    MORPH_OUT_FILE_NAME,
+                    m_morphOut,
+                    DEFAULT_MORPH_OUT
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
                     TAKABLE_FILE_NAME,
                     String.valueOf(m_takable),
                     String.valueOf(DEFAULT_TAKABLE)
@@ -580,6 +616,20 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         GRAPHICAL_FILE_NAME,
                         String.valueOf(DEFAULT_GRAPHICAL)
+                )
+        );
+        m_morphOver = (
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        MORPH_OVER_FILE_NAME,
+                        DEFAULT_MORPH_OVER
+                )
+        );
+        m_morphOut = (
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        MORPH_OUT_FILE_NAME,
+                        DEFAULT_MORPH_OUT
                 )
         );
         m_takable = "true".equals(

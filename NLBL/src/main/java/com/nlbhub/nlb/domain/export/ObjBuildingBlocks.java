@@ -59,6 +59,8 @@ public class ObjBuildingBlocks {
     private String m_objActText;
     private String m_objEffect;
     private boolean m_graphical;
+    private String m_morphOver;
+    private String m_morphOut;
     private boolean m_takable;
     private String m_objTak;
     private String m_objInv;
@@ -170,6 +172,22 @@ public class ObjBuildingBlocks {
 
     public void setGraphical(boolean graphical) {
         m_graphical = graphical;
+    }
+
+    public String getMorphOver() {
+        return m_morphOver;
+    }
+
+    public void setMorphOver(String morphOver) {
+        m_morphOver = morphOver;
+    }
+
+    public String getMorphOut() {
+        return m_morphOut;
+    }
+
+    public void setMorphOut(String morphOut) {
+        m_morphOut = morphOut;
     }
 
     public boolean isTakable() {

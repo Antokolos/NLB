@@ -494,6 +494,8 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(objBlocks.getObjLabel()).append(objBlocks.getObjStart());
         stringBuilder.append(objBlocks.getObjName());
         stringBuilder.append(objBlocks.getObjEffect());
+        stringBuilder.append(objBlocks.getMorphOver());
+        stringBuilder.append(objBlocks.getMorphOut());
         stringBuilder.append(objBlocks.getObjSound());
         stringBuilder.append(objBlocks.getObjDisp());
         stringBuilder.append(objBlocks.getObjText());
@@ -936,6 +938,24 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateObjEffect(String effectString, boolean graphicalObj) {
         if (graphicalObj) {
             return "    eff = \"" + effectString + "\"," + LINE_SEPARATOR;
+        } else {
+            return EMPTY_STRING;
+        }
+    }
+
+    @Override
+    protected String decorateMorphOver(String morphOver, boolean graphicalObj) {
+        if (graphicalObj) {
+            return "    morphover = \"" + morphOver + "\"," + LINE_SEPARATOR;
+        } else {
+            return EMPTY_STRING;
+        }
+    }
+
+    @Override
+    protected String decorateMorphOut(String morphOut, boolean graphicalObj) {
+        if (graphicalObj) {
+            return "    morphout = \"" + morphOut + "\"," + LINE_SEPARATOR;
         } else {
             return EMPTY_STRING;
         }

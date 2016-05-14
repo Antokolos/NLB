@@ -751,6 +751,8 @@ public abstract class ExportManager {
         final String objImage = decorateObjImage(getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage()), obj.isGraphical());
         final String objEffect = decorateObjEffect("left-top@" + getRelativeCoords(obj), obj.isGraphical());
         blocks.setObjEffect(objEffect);
+        blocks.setMorphOver(decorateMorphOver(obj.getMorphOver(), obj.isGraphical()));
+        blocks.setMorphOut(decorateMorphOut(obj.getMorphOut(), obj.isGraphical()));
         final boolean hasImage = StringHelper.notEmpty(imageFileName);
         blocks.setObjImage(objImage);
         blocks.setObjDisp(decorateObjDisp(expandVariables(StringHelper.getTextChunks(obj.getDisp())), hasImage && obj.isImageInInventory(), obj.isGraphical()));
@@ -1372,6 +1374,16 @@ public abstract class ExportManager {
             }
 
             @Override
+            public String getMorphOver() {
+                return obj.getMorphOver();
+            }
+
+            @Override
+            public String getMorphOut() {
+                return obj.getMorphOut();
+            }
+
+            @Override
             public Coords getRelativeCoords() {
                 return obj.getRelativeCoords();
             }
@@ -1530,6 +1542,14 @@ public abstract class ExportManager {
     }
 
     protected String decorateObjEffect(String effectString, boolean graphicalObj) {
+        return EMPTY_STRING;
+    }
+
+    protected String decorateMorphOver(String morphOver, boolean graphicalObj) {
+        return EMPTY_STRING;
+    }
+
+    protected String decorateMorphOut(String morphOut, boolean graphicalObj) {
         return EMPTY_STRING;
     }
 
