@@ -945,8 +945,8 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateMorphOver(String morphOver, boolean graphicalObj) {
-        if (graphicalObj) {
-            return "    morphover = \"" + morphOver + "\"," + LINE_SEPARATOR;
+        if (graphicalObj && StringHelper.notEmpty(morphOver)) {
+            return "    morphover = \"" + GLOBAL_VAR_PREFIX + morphOver + "\"," + LINE_SEPARATOR;
         } else {
             return EMPTY_STRING;
         }
@@ -954,8 +954,8 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateMorphOut(String morphOut, boolean graphicalObj) {
-        if (graphicalObj) {
-            return "    morphout = \"" + morphOut + "\"," + LINE_SEPARATOR;
+        if (graphicalObj && StringHelper.notEmpty(morphOut)) {
+            return "    morphout = \"" + GLOBAL_VAR_PREFIX + morphOut + "\"," + LINE_SEPARATOR;
         } else {
             return EMPTY_STRING;
         }
