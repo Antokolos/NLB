@@ -110,9 +110,13 @@ public interface Obj extends NodeItem {
 
     public String getMorphOver();
 
+    public Obj findMorphOverObj();
+
     public String getMorphOut();
 
-    public Coords getRelativeCoords();
+    public Obj findMorphOutObj();
+
+    public Coords getRelativeCoords(final boolean lookInMorphs);
 
     public boolean isTakable();
 

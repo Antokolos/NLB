@@ -330,6 +330,11 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         return m_morphOver;
     }
 
+    @Override
+    public Obj findMorphOverObj() {
+        return getCurrentNLB().getObjByName(m_morphOver);
+    }
+
     public void setMorphOver(String morphOver) {
         m_morphOver = morphOver;
     }
@@ -339,19 +344,24 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         return m_morphOut;
     }
 
+    @Override
+    public Obj findMorphOutObj() {
+        return getCurrentNLB().getObjByName(m_morphOut);
+    }
+
     public void setMorphOut(String morphOut) {
         m_morphOut = morphOut;
     }
 
     @Override
-    public Coords getRelativeCoords() {
+    public Coords getRelativeCoords(final boolean lookInMorphs) {
         NonLinearBook nlb = getCurrentNLB();
         NodeItem node = nlb.getPageById(m_containerId);
         if (node == null) {
             node = getCurrentNLB().getObjById(m_containerId);
         }
         if (node == null) {
-            return CoordsLw.ZERO_COORDS;
+            return getRelativeCoordsByMorph(lookInMorphs);
         }
         Coords coordsParent = node.getCoords();
         Coords coordsThis = getCoords();
@@ -361,6 +371,21 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         result.setWidth(coordsParent.getWidth());
         result.setHeight(coordsParent.getHeight());
         return result;
+    }
+
+    private Coords getRelativeCoordsByMorph(final boolean lookInMorphs) {
+        if (!lookInMorphs) {
+            return CoordsLw.ZERO_COORDS;
+        }
+        Obj morphOut = findMorphOutObj();
+        if (morphOut != null) {
+            return morphOut.getRelativeCoords(false);
+        }
+        Obj morphOver = findMorphOverObj();
+        if (morphOver != null) {
+            return morphOver.getRelativeCoords(false);
+        }
+        return CoordsLw.ZERO_COORDS;
     }
 
     public void setDisps(final MultiLangString disp) {

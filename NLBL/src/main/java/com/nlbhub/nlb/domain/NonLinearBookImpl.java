@@ -2781,6 +2781,30 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
+    @Override
+    public Obj getObjByName(String objName) {
+        Obj result = getObjImplByName(objName);
+        if (result != null) {
+            return result;
+        } else if (m_parentNLB != null) {
+            return m_parentNLB.getObjByName(objName);
+        } else {
+            return null;
+        }
+    }
+
+    public ObjImpl getObjImplByName(String objName) {
+        if (StringHelper.isEmpty(objName)) {
+            return null;
+        }
+        for (ObjImpl obj : m_objs.values()) {
+            if (obj.getName().equals(objName)) {
+                return obj;
+            }
+        }
+        return null;
+    }
+
     public ObjImpl getObjImplById(String objId) {
         return m_objs.get(objId);
     }

@@ -335,7 +335,7 @@ public abstract class ExportManager {
     }
 
     private String getRelativeCoords(Obj obj) {
-        Coords coords = obj.getRelativeCoords();
+        Coords coords = obj.getRelativeCoords(true);
         String x = String.valueOf((int) Math.floor(coords.getLeft() * getScreenWidth() / coords.getWidth()));
         String y = String.valueOf((int) Math.floor(coords.getTop() * getScreenHeight() / coords.getHeight()));
         return x + "," + y;
@@ -1379,13 +1379,23 @@ public abstract class ExportManager {
             }
 
             @Override
+            public Obj findMorphOverObj() {
+                return obj.findMorphOverObj();
+            }
+
+            @Override
             public String getMorphOut() {
                 return obj.getMorphOut();
             }
 
             @Override
-            public Coords getRelativeCoords() {
-                return obj.getRelativeCoords();
+            public Obj findMorphOutObj() {
+                return obj.findMorphOutObj();
+            }
+
+            @Override
+            public Coords getRelativeCoords(final boolean lookInMorphs) {
+                return obj.getRelativeCoords(lookInMorphs);
             }
 
             @Override

@@ -160,12 +160,22 @@ public class NullObj extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public Obj findMorphOverObj() {
+        return null;
+    }
+
+    @Override
     public String getMorphOut() {
         return Obj.DEFAULT_MORPH_OUT;
     }
 
     @Override
-    public Coords getRelativeCoords() {
+    public Obj findMorphOutObj() {
+        return null;
+    }
+
+    @Override
+    public Coords getRelativeCoords(final boolean lookInMorphs) {
         return CoordsLw.ZERO_COORDS;
     }
 
