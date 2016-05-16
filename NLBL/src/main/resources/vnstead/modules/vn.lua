@@ -931,9 +931,13 @@ vn = obj {
     frame = function(s, v, idx, target, x, y, only_compute, free_immediately)
         if not v.spr or not v.spr[idx] then
             print("WARN: nonexistent sprite when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
-            return {["spr"] = empty_s, ["w"] = 0, ["h"] = 0, ["tmp"] = false};
+            return empty_frame;
         end
         local ospr = v.spr[idx]:val();
+        if not ospr then -- Strange error when using resources in idf...
+            print("ERROR: filesystem access problem when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
+            return empty_frame;
+        end
         if not x then
             x = 0;
         end
@@ -1704,6 +1708,7 @@ stead.module_init(function()
     vnticks_diff = vn.ticks_threshold;
     hudFont = sprite.font('fonts/Medieval_English.ttf', 32);
     empty_s = sprite.load('gfx/empty.png');
+    empty_frame = {["spr"] = empty_s, ["w"] = 0, ["h"] = 0, ["tmp"] = false};
     if LANG == "ru" then
         busy_spr = vn:label("Загрузка...", 40, "#ffffff", "black");
     else
