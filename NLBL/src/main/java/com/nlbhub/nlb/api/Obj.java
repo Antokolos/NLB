@@ -63,8 +63,8 @@ public interface Obj extends NodeItem {
     public static final String DEFAULT_NAME = Constants.EMPTY_STRING;
     public static final MultiLangString DEFAULT_DISP = MultiLangString.createEmptyText();
     public static final boolean DEFAULT_GRAPHICAL = false;
-    public static final String DEFAULT_MORPH_OVER = Constants.EMPTY_STRING;
-    public static final String DEFAULT_MORPH_OUT = Constants.EMPTY_STRING;
+    public static final String DEFAULT_MORPH_OVER_ID = Constants.EMPTY_STRING;
+    public static final String DEFAULT_MORPH_OUT_ID = Constants.EMPTY_STRING;
     public static final boolean DEFAULT_TAKABLE = false;
     public static final boolean DEFAULT_IMAGE_IN_SCENE = true;
     public static final boolean DEFAULT_IMAGE_IN_INVENTORY = true;
@@ -108,13 +108,13 @@ public interface Obj extends NodeItem {
 
     public boolean isGraphical();
 
-    public String getMorphOver();
+    public String getMorphOverId();
 
-    public Obj findMorphOverObj();
+    public Obj getMorphOverObj();
 
-    public String getMorphOut();
+    public String getMorphOutId();
 
-    public Obj findMorphOutObj();
+    public Obj getMorphOutObj();
 
     public Coords getRelativeCoords(final boolean lookInMorphs);
 

@@ -195,11 +195,6 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
-    public Obj getObjByName(String objName) {
-        return null;
-    }
-
-    @Override
     public Page createFilteredPage(String sourceId, History history) throws ScriptException {
         throw new UnsupportedOperationException("This operation is unsupported!");
     }

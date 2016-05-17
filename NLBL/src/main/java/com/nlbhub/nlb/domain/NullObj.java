@@ -154,23 +154,21 @@ public class NullObj extends AbstractNodeItem implements Obj {
         return Obj.DEFAULT_GRAPHICAL;
     }
 
-    @Override
-    public String getMorphOver() {
-        return Obj.DEFAULT_MORPH_OVER;
+    public String getMorphOverId() {
+        return Obj.DEFAULT_MORPH_OVER_ID;
     }
 
     @Override
-    public Obj findMorphOverObj() {
+    public Obj getMorphOverObj() {
         return null;
     }
 
-    @Override
-    public String getMorphOut() {
-        return Obj.DEFAULT_MORPH_OUT;
+    public String getMorphOutId() {
+        return Obj.DEFAULT_MORPH_OUT_ID;
     }
 
     @Override
-    public Obj findMorphOutObj() {
+    public Obj getMorphOutObj() {
         return null;
     }
 

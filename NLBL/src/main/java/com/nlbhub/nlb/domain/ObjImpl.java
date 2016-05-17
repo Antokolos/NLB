@@ -97,8 +97,8 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private MultiLangString m_text = DEFAULT_TEXT;
     private MultiLangString m_actText = DEFAULT_ACT_TEXT;
     private boolean m_graphical = DEFAULT_GRAPHICAL;
-    private String m_morphOver = DEFAULT_MORPH_OVER;
-    private String m_morphOut = DEFAULT_MORPH_OUT;
+    private String m_morphOverId = DEFAULT_MORPH_OVER_ID;
+    private String m_morphOutId = DEFAULT_MORPH_OUT_ID;
     /**
      * Object can be taken to the inventory
      */
@@ -147,8 +147,8 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         setTexts(source.getTexts());
         setActTexts(source.getActTexts());
         m_graphical = source.isGraphical();
-        m_morphOver = source.getMorphOver();
-        m_morphOut = source.getMorphOut();
+        m_morphOverId = source.getMorphOverId();
+        m_morphOutId = source.getMorphOutId();
         m_takable = source.isTakable();
         m_suppressDsc = source.isSuppressDsc();
         m_imageInScene = source.isImageInScene();
@@ -325,32 +325,30 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         return m_graphical;
     }
 
-    @Override
-    public String getMorphOver() {
-        return m_morphOver;
+    public String getMorphOverId() {
+        return m_morphOverId;
     }
 
     @Override
-    public Obj findMorphOverObj() {
-        return getCurrentNLB().getObjByName(m_morphOver);
+    public Obj getMorphOverObj() {
+        return getCurrentNLB().getObjById(getObjIdByMorphId(m_morphOverId));
     }
 
-    public void setMorphOver(String morphOver) {
-        m_morphOver = morphOver;
+    public void setMorphOverId(String morphOverId) {
+        m_morphOverId = morphOverId;
+    }
+
+    public String getMorphOutId() {
+        return m_morphOutId;
     }
 
     @Override
-    public String getMorphOut() {
-        return m_morphOut;
+    public Obj getMorphOutObj() {
+        return getCurrentNLB().getObjById(getObjIdByMorphId(m_morphOutId));
     }
 
-    @Override
-    public Obj findMorphOutObj() {
-        return getCurrentNLB().getObjByName(m_morphOut);
-    }
-
-    public void setMorphOut(String morphOut) {
-        m_morphOut = morphOut;
+    public void setMorphOutId(String morphOutId) {
+        m_morphOutId = morphOutId;
     }
 
     @Override
@@ -377,15 +375,25 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         if (!lookInMorphs) {
             return CoordsLw.ZERO_COORDS;
         }
-        Obj morphOut = findMorphOutObj();
+        Obj morphOut = getMorphOutObj();
         if (morphOut != null) {
             return morphOut.getRelativeCoords(false);
         }
-        Obj morphOver = findMorphOverObj();
+        Obj morphOver = getMorphOverObj();
         if (morphOver != null) {
             return morphOver.getRelativeCoords(false);
         }
         return CoordsLw.ZERO_COORDS;
+    }
+
+    private String getObjIdByMorphId(String morphId) {
+        if (!StringHelper.isEmpty(morphId)) {
+            Variable morphVar = getCurrentNLB().getVariableById(morphId);
+            if (!morphVar.isDeleted()) {
+                return morphVar.getValue();
+            }
+        }
+        return Constants.EMPTY_STRING;
     }
 
     public void setDisps(final MultiLangString disp) {
@@ -513,14 +521,14 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             fileManipulator.writeOptionalString(
                     objDir,
                     MORPH_OVER_FILE_NAME,
-                    m_morphOver,
-                    DEFAULT_MORPH_OVER
+                    m_morphOverId,
+                    DEFAULT_MORPH_OVER_ID
             );
             fileManipulator.writeOptionalString(
                     objDir,
                     MORPH_OUT_FILE_NAME,
-                    m_morphOut,
-                    DEFAULT_MORPH_OUT
+                    m_morphOutId,
+                    DEFAULT_MORPH_OUT_ID
             );
             fileManipulator.writeOptionalString(
                     objDir,
@@ -643,18 +651,18 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         String.valueOf(DEFAULT_GRAPHICAL)
                 )
         );
-        m_morphOver = (
+        m_morphOverId = (
                 FileManipulator.getOptionalFileAsString(
                         objDir,
                         MORPH_OVER_FILE_NAME,
-                        DEFAULT_MORPH_OVER
+                        DEFAULT_MORPH_OVER_ID
                 )
         );
-        m_morphOut = (
+        m_morphOutId = (
                 FileManipulator.getOptionalFileAsString(
                         objDir,
                         MORPH_OUT_FILE_NAME,
-                        DEFAULT_MORPH_OUT
+                        DEFAULT_MORPH_OUT_ID
                 )
         );
         m_takable = "true".equals(

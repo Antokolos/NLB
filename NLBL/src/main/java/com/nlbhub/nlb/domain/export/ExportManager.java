@@ -751,8 +751,10 @@ public abstract class ExportManager {
         final String objImage = decorateObjImage(getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage()), obj.isGraphical());
         final String objEffect = decorateObjEffect("left-top@" + getRelativeCoords(obj), obj.isGraphical());
         blocks.setObjEffect(objEffect);
-        blocks.setMorphOver(decorateMorphOver(obj.getMorphOver(), obj.isGraphical()));
-        blocks.setMorphOut(decorateMorphOut(obj.getMorphOut(), obj.isGraphical()));
+        Obj morphOverObj = obj.getMorphOverObj();
+        blocks.setMorphOver(decorateMorphOver((morphOverObj != null) ? morphOverObj.getId() : EMPTY_STRING, obj.isGraphical()));
+        Obj morphOutObj = obj.getMorphOutObj();
+        blocks.setMorphOut(decorateMorphOut((morphOutObj != null) ? morphOutObj.getId() : EMPTY_STRING, obj.isGraphical()));
         final boolean hasImage = StringHelper.notEmpty(imageFileName);
         blocks.setObjImage(objImage);
         blocks.setObjDisp(decorateObjDisp(expandVariables(StringHelper.getTextChunks(obj.getDisp())), hasImage && obj.isImageInInventory(), obj.isGraphical()));
@@ -1373,24 +1375,22 @@ public abstract class ExportManager {
                 return obj.isGraphical();
             }
 
-            @Override
-            public String getMorphOver() {
-                return obj.getMorphOver();
+            public String getMorphOverId() {
+                return obj.getMorphOverId();
             }
 
             @Override
-            public Obj findMorphOverObj() {
-                return obj.findMorphOverObj();
+            public Obj getMorphOverObj() {
+                return obj.getMorphOverObj();
+            }
+
+            public String getMorphOutId() {
+                return obj.getMorphOutId();
             }
 
             @Override
-            public String getMorphOut() {
-                return obj.getMorphOut();
-            }
-
-            @Override
-            public Obj findMorphOutObj() {
-                return obj.findMorphOutObj();
+            public Obj getMorphOutObj() {
+                return obj.getMorphOutObj();
             }
 
             @Override
@@ -1555,11 +1555,11 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateMorphOver(String morphOver, boolean graphicalObj) {
+    protected String decorateMorphOver(String morphOverId, boolean graphicalObj) {
         return EMPTY_STRING;
     }
 
-    protected String decorateMorphOut(String morphOut, boolean graphicalObj) {
+    protected String decorateMorphOut(String morphOutId, boolean graphicalObj) {
         return EMPTY_STRING;
     }
 

@@ -283,6 +283,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         Variable deftag = m_nlbFacade.getNlb().getVariableById(obj.getDefaultTagId());
         Variable constraint = m_nlbFacade.getNlb().getVariableById(obj.getConstrId());
         Variable commonTo = m_nlbFacade.getNlb().getVariableById(obj.getCommonToId());
+        Variable morphOver = m_nlbFacade.getNlb().getVariableById(obj.getMorphOverId());
+        Variable morphOut = m_nlbFacade.getNlb().getVariableById(obj.getMorphOutId());
         m_objIdTextField.setText(obj.getId());
         m_objNameTextField.setText(obj.getName());
         m_objDispTextField.setText(obj.getDisp());
@@ -295,8 +297,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_suppressDsc.setSelected(obj.isSuppressDsc());
         m_objIsTakable.setSelected(obj.isTakable());
         m_objIsGraphical.setSelected(obj.isGraphical());
-        m_morphOver.setText(obj.getMorphOver());
-        m_morphOut.setText(obj.getMorphOut());
+        m_morphOver.setText(morphOver != null ? morphOver.getName() : "");
+        m_morphOut.setText(morphOut != null ? morphOut.getName() : "");
         m_imageInScene.setSelected(obj.isImageInScene());
         m_imageInInventory.setSelected(obj.isImageInInventory());
 

@@ -944,18 +944,18 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateMorphOver(String morphOver, boolean graphicalObj) {
-        if (graphicalObj && StringHelper.notEmpty(morphOver)) {
-            return "    morphover = \"" + GLOBAL_VAR_PREFIX + morphOver + "\"," + LINE_SEPARATOR;
+    protected String decorateMorphOver(String morphOverId, boolean graphicalObj) {
+        if (graphicalObj && StringHelper.notEmpty(morphOverId)) {
+            return "    morphover = function(s) return " + decorateId(morphOverId) + ".deref; end," + LINE_SEPARATOR;
         } else {
             return EMPTY_STRING;
         }
     }
 
     @Override
-    protected String decorateMorphOut(String morphOut, boolean graphicalObj) {
-        if (graphicalObj && StringHelper.notEmpty(morphOut)) {
-            return "    morphout = \"" + GLOBAL_VAR_PREFIX + morphOut + "\"," + LINE_SEPARATOR;
+    protected String decorateMorphOut(String morphOutId, boolean graphicalObj) {
+        if (graphicalObj && StringHelper.notEmpty(morphOutId)) {
+            return "    morphout = function(s) return " + decorateId(morphOutId) + ".deref; end," + LINE_SEPARATOR;
         } else {
             return EMPTY_STRING;
         }

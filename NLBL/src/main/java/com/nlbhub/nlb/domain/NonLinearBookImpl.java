@@ -767,6 +767,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         private VariableTracker m_deftagTracker;
         private VariableTracker m_constraintTracker;
         private VariableTracker m_commonToTracker;
+        private VariableTracker m_morphOverTracker;
+        private VariableTracker m_morphOutTracker;
 
         private String m_existingObjName;
         private String m_existingImageFileName;
@@ -778,8 +780,6 @@ public class NonLinearBookImpl implements NonLinearBook {
         private MultiLangString m_existingObjText;
         private MultiLangString m_existingObjActText;
         private boolean m_existingObjIsGraphical;
-        private String m_existingObjMorphOver;
-        private String m_existingObjMorphOut;
         private boolean m_existingObjIsTakable;
         private boolean m_existingImageInScene;
         private boolean m_existingImageInInventory;
@@ -793,8 +793,6 @@ public class NonLinearBookImpl implements NonLinearBook {
         private MultiLangString m_newObjText;
         private MultiLangString m_newObjActText;
         private boolean m_newObjIsGraphical;
-        private String m_newObjMorphOver;
-        private String m_newObjMorphOut;
         private boolean m_newObjIsTakable;
         private boolean m_newImageInScene;
         private boolean m_newImageInInventory;
@@ -816,8 +814,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString objText,
                 final MultiLangString objActText,
                 final boolean objIsGraphical,
-                final String objMorphOver,
-                final String objMorphOut,
+                final String objMorphOverName,
+                final String objMorphOutName,
                 final boolean objIsTakable,
                 final boolean imageInScene,
                 final boolean imageInInventory
@@ -839,8 +837,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                     objText,
                     objActText,
                     objIsGraphical,
-                    objMorphOver,
-                    objMorphOut,
+                    objMorphOverName,
+                    objMorphOutName,
                     objIsTakable,
                     imageInScene,
                     imageInInventory
@@ -864,8 +862,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString objText,
                 final MultiLangString objActText,
                 final boolean objIsGraphical,
-                final String objMorphOver,
-                final String objMorphOut,
+                final String objMorphOverName,
+                final String objMorphOutName,
                 final boolean objIsTakable,
                 final boolean imageInScene,
                 final boolean imageInInventory
@@ -911,6 +909,26 @@ public class NonLinearBookImpl implements NonLinearBook {
                     findObjByName(objCommonToName).getId(),
                     m_obj.getFullId()
             );
+            m_morphOverTracker = new VariableTracker(
+                    currentNLB,
+                    getVariableImplById(m_obj.getMorphOverId()),
+                    StringHelper.isEmpty(objMorphOverName),
+                    Variable.Type.COMMONTO,
+                    Variable.DataType.STRING,
+                    objMorphOverName,
+                    findObjByName(objMorphOverName).getId(),
+                    m_obj.getFullId()
+            );
+            m_morphOutTracker = new VariableTracker(
+                    currentNLB,
+                    getVariableImplById(m_obj.getMorphOutId()),
+                    StringHelper.isEmpty(objMorphOutName),
+                    Variable.Type.COMMONTO,
+                    Variable.DataType.STRING,
+                    objMorphOutName,
+                    findObjByName(objMorphOutName).getId(),
+                    m_obj.getFullId()
+            );
             m_existingObjName = obj.getName();
             m_existingImageFileName = obj.getImageFileName();
             m_existingSoundFileName = obj.getSoundFileName();
@@ -921,8 +939,6 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingObjText = obj.getTexts();
             m_existingObjActText = obj.getActTexts();
             m_existingObjIsGraphical = obj.isGraphical();
-            m_existingObjMorphOver = obj.getMorphOver();
-            m_existingObjMorphOut = obj.getMorphOut();
             m_existingObjIsTakable = obj.isTakable();
             m_existingImageInScene = obj.isImageInScene();
             m_existingImageInInventory = obj.isImageInInventory();
@@ -936,8 +952,6 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newObjText = objText;
             m_newObjActText = objActText;
             m_newObjIsGraphical = objIsGraphical;
-            m_newObjMorphOver = objMorphOver;
-            m_newObjMorphOut = objMorphOut;
             m_newObjIsTakable = objIsTakable;
             m_newImageInScene = imageInScene;
             m_newImageInInventory = imageInInventory;
@@ -949,6 +963,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setDefaultTagId(m_deftagTracker.execute());
             m_obj.setConstrId(m_constraintTracker.execute());
             m_obj.setCommonToId(m_commonToTracker.execute());
+            m_obj.setMorphOverId(m_morphOverTracker.execute());
+            m_obj.setMorphOutId(m_morphOutTracker.execute());
             m_obj.setName(m_newObjName);
             m_obj.setImageFileName(m_newImageFileName);
             m_obj.setSoundFileName(m_newSoundFileName);
@@ -959,8 +975,6 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setTexts(m_newObjText);
             m_obj.setActTexts(m_newObjActText);
             m_obj.setGraphical(m_newObjIsGraphical);
-            m_obj.setMorphOver(m_newObjMorphOver);
-            m_obj.setMorphOut(m_newObjMorphOut);
             m_obj.setTakable(m_newObjIsTakable);
             m_obj.setImageInScene(m_newImageInScene);
             m_obj.setImageInInventory(m_newImageInInventory);
@@ -973,6 +987,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setDefaultTagId(m_deftagTracker.revert());
             m_obj.setConstrId(m_constraintTracker.revert());
             m_obj.setCommonToId(m_commonToTracker.revert());
+            m_obj.setMorphOverId(m_morphOverTracker.revert());
+            m_obj.setMorphOutId(m_morphOutTracker.revert());
             m_obj.setName(m_existingObjName);
             m_obj.setImageFileName(m_existingImageFileName);
             m_obj.setSoundFileName(m_existingSoundFileName);
@@ -983,8 +999,6 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setTexts(m_existingObjText);
             m_obj.setActTexts(m_existingObjActText);
             m_obj.setGraphical(m_existingObjIsGraphical);
-            m_obj.setMorphOver(m_existingObjMorphOver);
-            m_obj.setMorphOut(m_existingObjMorphOut);
             m_obj.setTakable(m_existingObjIsTakable);
             m_obj.setImageInScene(m_existingImageInScene);
             m_obj.setImageInInventory(m_existingImageInInventory);
@@ -1778,6 +1792,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final Variable deftagVariable = nlbToPaste.getVariableById(obj.getDefaultTagId());
                 final Variable objConstraint = nlbToPaste.getVariableById(obj.getConstrId());
                 final Variable objCommonTo = nlbToPaste.getVariableById(obj.getCommonToId());
+                final Variable objMorphOver = nlbToPaste.getVariableById(obj.getMorphOverId());
+                final Variable objMorphOut = nlbToPaste.getVariableById(obj.getMorphOutId());
                 UpdateObjCommand updateObjCommand = new UpdateObjCommand(
                         currentNLB,
                         newObj,
@@ -1795,8 +1811,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.getTexts(),
                         obj.getActTexts(),
                         obj.isGraphical(),
-                        obj.getMorphOver(),
-                        obj.getMorphOut(),
+                        (objMorphOver != null) ? objMorphOver.getName() : Constants.EMPTY_STRING,
+                        (objMorphOut != null) ? objMorphOut.getName() : Constants.EMPTY_STRING,
                         obj.isTakable(),
                         obj.isImageInScene(),
                         obj.isImageInInventory()
@@ -1940,6 +1956,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                     VariableImpl objCommonTo = getVariableImplById(obj.getCommonToId());
                     if (objCommonTo != null && !objCommonTo.isDeleted()) {
                         m_newClipboardData.addVariable(objCommonTo);
+                    }
+                    VariableImpl objMorphOver = getVariableImplById(obj.getMorphOverId());
+                    if (objMorphOver != null && !objMorphOver.isDeleted()) {
+                        m_newClipboardData.addVariable(objMorphOver);
+                    }
+                    VariableImpl objMorphOut = getVariableImplById(obj.getMorphOutId());
+                    if (objMorphOut != null && !objMorphOut.isDeleted()) {
+                        m_newClipboardData.addVariable(objMorphOut);
                     }
 
                     checkContainedObjects(obj, objIds);
@@ -2779,30 +2803,6 @@ public class NonLinearBookImpl implements NonLinearBook {
         } else {
             return null;
         }
-    }
-
-    @Override
-    public Obj getObjByName(String objName) {
-        Obj result = getObjImplByName(objName);
-        if (result != null) {
-            return result;
-        } else if (m_parentNLB != null) {
-            return m_parentNLB.getObjByName(objName);
-        } else {
-            return null;
-        }
-    }
-
-    public ObjImpl getObjImplByName(String objName) {
-        if (StringHelper.isEmpty(objName)) {
-            return null;
-        }
-        for (ObjImpl obj : m_objs.values()) {
-            if (obj.getName().equals(objName)) {
-                return obj;
-            }
-        }
-        return null;
     }
 
     public ObjImpl getObjImplById(String objId) {
@@ -3665,7 +3665,13 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
         if (variable.isDeleted()) {
             // obj.getVarId() should be empty or set to another variable's Id
-            if (id.equals(obj.getVarId()) || id.equals(obj.getConstrId()) || id.equals(obj.getCommonToId())) {
+            if (
+                    id.equals(obj.getVarId())
+                            || id.equals(obj.getConstrId())
+                            || id.equals(obj.getCommonToId())
+                            || id.equals(obj.getMorphOverId())
+                            || id.equals(obj.getMorphOutId())
+                    ) {
                 throw new NLBConsistencyException(
                         "Obj variable for obj with Id = "
                                 + obj.getId()
@@ -4052,6 +4058,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final SearchResult deftagResult;
                 final SearchResult constrResult;
                 final SearchResult commontoResult;
+                final SearchResult morphOverResult;
+                final SearchResult morphOutResult;
                 final ObjImpl obj = entry.getValue();
                 if (!obj.isDeleted()) {
                     if ((objResult = obj.searchText(contract)) != null) {
@@ -4062,6 +4070,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                         final VariableImpl deftag = getVariableImplById(obj.getDefaultTagId());
                         final VariableImpl constraint = getVariableImplById(obj.getConstrId());
                         final VariableImpl commonto = getVariableImplById(obj.getCommonToId());
+                        final VariableImpl morphOver = getVariableImplById(obj.getMorphOverId());
+                        final VariableImpl morphOut = getVariableImplById(obj.getMorphOutId());
                         if (contract.isSearchInVars()) {
                             if (variable != null) {
                                 varResult = variable.searchText(contract);
@@ -4093,6 +4103,22 @@ public class NonLinearBookImpl implements NonLinearBook {
                                     commontoResult.setId(obj.getId());
                                     commontoResult.setModulePageId(modulePageId);
                                     result.addSearchResult(commontoResult);
+                                }
+                            }
+                            if (morphOver != null) {
+                                morphOverResult = morphOver.searchText(contract);
+                                if (morphOverResult != null) {
+                                    morphOverResult.setId(obj.getId());
+                                    morphOverResult.setModulePageId(modulePageId);
+                                    result.addSearchResult(morphOverResult);
+                                }
+                            }
+                            if (morphOut != null) {
+                                morphOutResult = morphOut.searchText(contract);
+                                if (morphOutResult != null) {
+                                    morphOutResult.setId(obj.getId());
+                                    morphOutResult.setModulePageId(modulePageId);
+                                    result.addSearchResult(morphOutResult);
                                 }
                             }
                             result.addSearchResults(getModificationSearchResults(obj, contract));

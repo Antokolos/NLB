@@ -217,9 +217,19 @@ vn = obj {
     end;
     shapechange = function(s, v, is_over)
         local gob = s:gobf(v);
-        local morph = stead.ref(gob.morphout);
+        local morph;
         if is_over then
-            morph = stead.ref(gob.morphover);
+            local morphover = gob.morphover;
+            if type(morphover) == 'function' then
+                morphover = morphover();
+            end
+            morph = stead.ref(morphover);
+        else
+            local morphout = gob.morphout;
+            if type(morphout) == 'function' then
+                morphout = morphout();
+            end
+            morph = stead.ref(morphout);
         end
         if not morph then
             return false;
