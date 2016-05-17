@@ -187,7 +187,7 @@ public interface NonLinearBook {
         private int m_pageTimerVariablesCount = 0;
         private int m_objVariablesCount = 0;
         private int m_objConstraintsCount = 0;
-        private int m_objCommonTosCount = 0;
+        private int m_objRefsCount = 0;
         private int m_linkVariablesCount = 0;
         private int m_linkConstraintVariablesCount = 0;
         private int m_plainVariablesCount = 0;
@@ -223,16 +223,16 @@ public interface NonLinearBook {
             return m_objConstraintsCount;
         }
 
-        public int getObjCommonTosCount() {
-            return m_objCommonTosCount;
+        public int getObjRefsCount() {
+            return m_objRefsCount;
         }
 
         public void incObjConstraintsCount() {
             m_objConstraintsCount++;
         }
 
-        public void incObjCommonTosCount() {
-            m_objCommonTosCount++;
+        public void incObjRefsCount() {
+            m_objRefsCount++;
         }
 
         public int getLinkVariablesCount() {

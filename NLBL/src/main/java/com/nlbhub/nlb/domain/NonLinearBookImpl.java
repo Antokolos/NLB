@@ -903,7 +903,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     currentNLB,
                     getVariableImplById(m_obj.getCommonToId()),
                     StringHelper.isEmpty(objCommonToName),
-                    Variable.Type.COMMONTO,
+                    Variable.Type.OBJREF,
                     Variable.DataType.STRING,
                     objCommonToName,
                     findObjByName(objCommonToName).getId(),
@@ -913,7 +913,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     currentNLB,
                     getVariableImplById(m_obj.getMorphOverId()),
                     StringHelper.isEmpty(objMorphOverName),
-                    Variable.Type.COMMONTO,
+                    Variable.Type.OBJREF,
                     Variable.DataType.STRING,
                     objMorphOverName,
                     findObjByName(objMorphOverName).getId(),
@@ -923,7 +923,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     currentNLB,
                     getVariableImplById(m_obj.getMorphOutId()),
                     StringHelper.isEmpty(objMorphOutName),
-                    Variable.Type.COMMONTO,
+                    Variable.Type.OBJREF,
                     Variable.DataType.STRING,
                     objMorphOutName,
                     findObjByName(objMorphOutName).getId(),
@@ -3615,7 +3615,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         } else if (
                 variable.getType() == VariableImpl.Type.OBJ
                         || variable.getType() == VariableImpl.Type.OBJCONSTRAINT
-                        || variable.getType() == VariableImpl.Type.COMMONTO
+                        || variable.getType() == VariableImpl.Type.OBJREF
                 ) {
             preprocessObjRelatedVariable(variable);
         } else if (
@@ -4171,7 +4171,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     break;
                 case OBJ:
                 case OBJCONSTRAINT:
-                case COMMONTO:
+                case OBJREF:
                     Obj obj = getObjById(variable.getTarget());
                     if (!obj.isDeleted()) {
                         searchResult.setId(obj.getId());
@@ -4422,8 +4422,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 case OBJCONSTRAINT:
                     result.incObjConstraintsCount();
                     break;
-                case COMMONTO:
-                    result.incObjCommonTosCount();
+                case OBJREF:
+                    result.incObjRefsCount();
                     break;
                 case LINK:
                     result.incLinkVariablesCount();
@@ -4526,7 +4526,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 case MODCONSTRAINT:
                 case AUTOWIRECONSTRAINT:
                 case OBJCONSTRAINT:
-                case COMMONTO:
+                case OBJREF:
                 default:
                     // Do nothing
             }

@@ -946,7 +946,7 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateMorphOver(String morphOverId, boolean graphicalObj) {
         if (graphicalObj && StringHelper.notEmpty(morphOverId)) {
-            return "    morphover = function(s) return " + decorateId(morphOverId) + ".deref; end," + LINE_SEPARATOR;
+            return "    morphover = function(s) return " + decorateId(morphOverId) + ":deref(); end," + LINE_SEPARATOR;
         } else {
             return EMPTY_STRING;
         }
@@ -955,7 +955,7 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateMorphOut(String morphOutId, boolean graphicalObj) {
         if (graphicalObj && StringHelper.notEmpty(morphOutId)) {
-            return "    morphout = function(s) return " + decorateId(morphOutId) + ".deref; end," + LINE_SEPARATOR;
+            return "    morphout = function(s) return " + decorateId(morphOutId) + ":deref(); end," + LINE_SEPARATOR;
         } else {
             return EMPTY_STRING;
         }

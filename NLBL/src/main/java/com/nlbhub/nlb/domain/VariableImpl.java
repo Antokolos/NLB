@@ -199,7 +199,9 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
                 m_type = Type.OBJCONSTRAINT;
                 break;
             case "COMMONTO":
-                m_type = Type.COMMONTO;
+            case "OBJREF":
+                // COMMONTO is for backward compatibility
+                m_type = Type.OBJREF;
                 break;
             case "LINK":
                 m_type = Type.LINK;
@@ -242,7 +244,7 @@ public class VariableImpl extends AbstractIdentifiableItem implements Variable {
             case TIMER:
                 m_dataType = DataType.NUMBER;
                 break;
-            case COMMONTO:
+            case OBJREF:
                 m_dataType = DataType.STRING;
                 break;
             default:
