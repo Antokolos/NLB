@@ -154,6 +154,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
         return Obj.DEFAULT_GRAPHICAL;
     }
 
+    @Override
+    public boolean isPreserved() {
+        return Obj.DEFAULT_PRESERVED;
+    }
+
     public String getMorphOverId() {
         return Obj.DEFAULT_MORPH_OVER_ID;
     }

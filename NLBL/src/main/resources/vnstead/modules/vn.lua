@@ -240,7 +240,7 @@ vn = obj {
         return true;
     end;
     over = function(s, x, y, a, b, c, d)
-        if not s.on or s.uiupdate then
+        if not s.on then -- or s.uiupdate then
             return;
         end
         for i, v in ipairs(s._effects) do
@@ -255,7 +255,7 @@ vn = obj {
         end
     end;
     out = function(s, x, y, a, b, c, d)
-        if not s.on or s.uiupdate then
+        if not s.on then -- or s.uiupdate then
             return;
         end
         for i, v in ipairs(s._effects) do
@@ -673,9 +673,9 @@ vn = obj {
         end
     end;
 
-    effect = function(s, image, eff, speed, startFrame, curStep, framesFromStop, arm, hot_step, acceleration)
+    effect = function(s, image, eff, speed, startFrame, curStep, framesFromStop, arm, hot_step, acceleration, is_preserved)
         local maxStep = math.floor((speed or s.speed) / s.hz);
-        local gg = init_gobj(image, eff, maxStep, startFrame, curStep, framesFromStop, arm, hot_step, acceleration);
+        local gg = init_gobj(image, eff, maxStep, startFrame, curStep, framesFromStop, arm, hot_step, acceleration, is_preserved);
         return s:effect_int(nil, gg);
     end;
 
@@ -704,6 +704,11 @@ vn = obj {
             is_over = false;
         end
 
+        local is_preserved = g.preserved;
+        if not is_preserved then
+            is_preserved = false;
+        end
+
         if type(image) == 'string' then
             v = { pic = image, nam = image };
             image = v
@@ -729,7 +734,8 @@ vn = obj {
             hotstep = g.hot_step,
             accel = g.acceleration,
             mouse_over = is_over,
-            gob = stead.deref(g)
+            gob = stead.deref(g),
+            preserved = is_preserved
             --children = {} - actually can be set here, but I'll set it later, after possible hide() call
         }
 
@@ -1291,14 +1297,24 @@ vn = obj {
     end;
     scene = function(s, bg, eff, preserve_cache)
         local i, v
+        local preserved_effects = {};
+        local preserved_pending_effects = {};
         for i, v in ipairs(s._effects) do
-            s:free_effect(v)
+            if v.preserved then
+                stead.table.insert(preserved_effects, v);
+            else
+                s:free_effect(v)
+            end
         end
         for i, v in ipairs(s._pending_effects) do
-            s:free_effect(v)
+            if v.preserved then
+                stead.table.insert(preserved_pending_effects, v);
+            else
+                s:free_effect(v)
+            end
         end
-        s._effects = {}
-        s._pending_effects = {};
+        s._effects = preserved_effects;
+        s._pending_effects = preserved_pending_effects;
         if not preserve_cache then
             s:clear_cache();
         end

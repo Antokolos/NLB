@@ -24,6 +24,9 @@ gobj = function(v)
     if not v.acceleration then
         v.acceleration = 1;
     end
+    if not v.preserved then
+        v.preserved = false;
+    end
     if not v.arm then
         v.arm = { [0] = { 0, 0 } };
     end
@@ -154,10 +157,10 @@ arm_tostring = function(arm)
     return res;
 end
 
-init_gobj = function(image, eff, maxStep, startFrame, curStep, framesFromStop, arm, hot_step, acceleration)
+init_gobj = function(image, eff, maxStep, startFrame, curStep, framesFromStop, arm, hot_step, acceleration, is_preserved)
     local constr_string = string.format(
-        "gobj({['nam'] = '%s', ['pic'] = '%s', ['eff'] = '%s', ['maxStep'] = %s, ['startFrame'] = %s, ['curStep'] = %s, ['framesFromStop'] = %s, ['arm'] = %s, ['hot_step'] = %s, ['acceleration'] = %s, ['is_dynamic'] = true})",
-        tostring(image), tostring(image), tostring(eff), tostring(maxStep), tostring(startFrame), tostring(curStep), tostring(framesFromStop), arm_tostring(arm), tostring(hot_step), tostring(acceleration)
+        "gobj({['nam'] = '%s', ['pic'] = '%s', ['eff'] = '%s', ['maxStep'] = %s, ['startFrame'] = %s, ['curStep'] = %s, ['framesFromStop'] = %s, ['arm'] = %s, ['hot_step'] = %s, ['acceleration'] = %s, ['preserved'] = %s, ['is_dynamic'] = true})",
+        tostring(image), tostring(image), tostring(eff), tostring(maxStep), tostring(startFrame), tostring(curStep), tostring(framesFromStop), arm_tostring(arm), tostring(hot_step), tostring(acceleration), tostring(is_preserved)
     );
     return new(constr_string);
 end

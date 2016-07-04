@@ -835,6 +835,12 @@
                                           <text value="Graphical"/>
                                         </properties>
                                       </component>
+                                      <component id="865f0" class="javax.swing.JCheckBox" binding="m_objIsPreserved">
+                                        <constraints/>
+                                        <properties>
+                                          <text value="Preserved"/>
+                                        </properties>
+                                      </component>
                                     </children>
                                   </grid>
                                   <grid id="a55ba" layout-manager="GridBagLayout">

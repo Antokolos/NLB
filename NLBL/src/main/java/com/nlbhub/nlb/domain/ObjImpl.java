@@ -79,6 +79,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String ANIMATED_FILE_NAME = "animated";
     private static final String DISP_SUBDIR_NAME = "disp";
     private static final String GRAPHICAL_FILE_NAME = "graphical";
+    private static final String PRESERVED_FILE_NAME = "preserved";
     private static final String MORPH_OVER_FILE_NAME = "morphover";
     private static final String MORPH_OUT_FILE_NAME = "morphout";
     private static final String TAKABLE_FILE_NAME = "takable";
@@ -97,6 +98,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private MultiLangString m_text = DEFAULT_TEXT;
     private MultiLangString m_actText = DEFAULT_ACT_TEXT;
     private boolean m_graphical = DEFAULT_GRAPHICAL;
+    private boolean m_preserved = DEFAULT_PRESERVED;
     private String m_morphOverId = DEFAULT_MORPH_OVER_ID;
     private String m_morphOutId = DEFAULT_MORPH_OUT_ID;
     /**
@@ -147,6 +149,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         setTexts(source.getTexts());
         setActTexts(source.getActTexts());
         m_graphical = source.isGraphical();
+        m_preserved = source.isPreserved();
         m_morphOverId = source.getMorphOverId();
         m_morphOutId = source.getMorphOutId();
         m_takable = source.isTakable();
@@ -323,6 +326,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     @Override
     public boolean isGraphical() {
         return m_graphical;
+    }
+
+    @Override
+    public boolean isPreserved() {
+        return m_preserved;
+    }
+
+    public void setPreserved(boolean preserved) {
+        m_preserved = preserved;
     }
 
     public String getMorphOverId() {
@@ -520,6 +532,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(
                     objDir,
+                    PRESERVED_FILE_NAME,
+                    String.valueOf(m_preserved),
+                    String.valueOf(DEFAULT_PRESERVED)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
                     MORPH_OVER_FILE_NAME,
                     m_morphOverId,
                     DEFAULT_MORPH_OVER_ID
@@ -649,6 +667,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         GRAPHICAL_FILE_NAME,
                         String.valueOf(DEFAULT_GRAPHICAL)
+                )
+        );
+        m_preserved = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        PRESERVED_FILE_NAME,
+                        String.valueOf(DEFAULT_PRESERVED)
                 )
         );
         m_morphOverId = (

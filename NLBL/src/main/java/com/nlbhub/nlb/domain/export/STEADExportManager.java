@@ -868,7 +868,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjStart(final String id, String containerRef, ObjType objType, String objDefaultTag) {
+    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean preserved, String objDefaultTag) {
         StringBuilder result = new StringBuilder();
         switch (objType) {
             case STAT:
@@ -880,10 +880,16 @@ public class STEADExportManager extends TextExportManager {
             case GOBJ:
                 result.append(" = gobj {").append(LINE_SEPARATOR);
                 result.append("clear_under_tooltip = true,").append(LINE_SEPARATOR);
+                if (preserved) {
+                    result.append("preserved = true,").append(LINE_SEPARATOR);
+                }
                 break;
             case GMENU:
                 result.append(" = gmenu {").append(LINE_SEPARATOR);
                 result.append("clear_under_tooltip = true,").append(LINE_SEPARATOR);
+                if (preserved) {
+                    result.append("preserved = true,").append(LINE_SEPARATOR);
+                }
                 break;
             default:
                 result.append(" = obj {").append(LINE_SEPARATOR);
