@@ -378,6 +378,7 @@ public class NonLinearBookFacade implements NLBObservable {
             exportBundledVNSTEADFile(gfxDir, true, "w.2.die6.meta");
         }
         exportBundledVNSTEADFile(exportDir, false, "theme.ini");
+        exportBundledVNSTEADFile(exportDir, false, "luapassing.lua");
         exportBundledVNSTEADFile(exportDir, false, "theme_standard.lua");
         exportBundledVNSTEADFile(exportDir, false, "theme_vn.lua");
     }
