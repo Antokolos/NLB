@@ -93,7 +93,10 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("--$Name:").append(title).append("$").append(LINE_SEPARATOR);
         stringBuilder.append("--$Version:").append(version).append("$").append(LINE_SEPARATOR);
         stringBuilder.append("--$Author:").append(author).append("$").append(LINE_SEPARATOR);
-        stringBuilder.append("instead_version \"2.3.0\"").append(LINE_SEPARATOR);
+        stringBuilder.append("instead_version \"2.3.0\"").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
+
+        stringBuilder.append("--package.cpath = \"./?.so\"").append(LINE_SEPARATOR);
+        stringBuilder.append("require \"luapassing\"").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
 
         stringBuilder.append("require \"xact\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"hideinv\"").append(LINE_SEPARATOR);
@@ -134,6 +137,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("end").append(LINE_SEPARATOR);
 
         stringBuilder.append("function init()").append(LINE_SEPARATOR);
+        stringBuilder.append("    statsAPI.init();").append(LINE_SEPARATOR);
         stringBuilder.append("    vn:scene(nil);").append(LINE_SEPARATOR);
         stringBuilder.append("    vn.fading = 8").append(LINE_SEPARATOR);
         stringBuilder.append("    nlbticks = stead.ticks();").append(LINE_SEPARATOR);
@@ -1488,6 +1492,12 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateRndOperation(String variableName, String maxValue) {
         return variableName + " = rnd(" + maxValue + ");" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateAchieveOperation(String achievementName) {
+        // TODO: implement
+        return "statsAPI.setAchievement('" + achievementName + "', true);" + LINE_SEPARATOR;
     }
 
     @Override

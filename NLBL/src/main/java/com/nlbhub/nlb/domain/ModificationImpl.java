@@ -176,7 +176,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             default:
                 // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, IFHAVE, ADD, ADDU, ADDINV, ADDALL, ADDALLU,
                 // REMOVE, RMINV, CLEAR, CLRINV, SPUSH, WPUSH, PUSH, SINJECT, INJECT, SHUFFLE, PDSC, ACT, USE
-                // SSND, WSND, SND
+                // SSND, WSND, SND, ACHIEVE
                 // It is funny, but RETURN operation currently does not actually return anything :)
                 return false;
         }
@@ -305,6 +305,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.SIZE;
         } else if (type.equals(Type.RND.name())) {
             m_type = Type.RND;
+        }  else if (type.equals(Type.ACHIEVE.name())) {
+            m_type = Type.ACHIEVE;
         } else {
             m_type = Type.ASSIGN;
         }
@@ -485,6 +487,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "RND":
                 m_type = Type.RND;
+                break;
+            case "ACHIEVE":
+                m_type = Type.ACHIEVE;
                 break;
             default:
                 throw new NLBConsistencyException(

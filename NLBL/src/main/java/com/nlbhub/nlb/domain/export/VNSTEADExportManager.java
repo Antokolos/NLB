@@ -84,7 +84,10 @@ public class VNSTEADExportManager extends STEADExportManager {
     protected String generatePreambleText(NLBBuildingBlocks nlbBuildingBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
         String lineSep = getLineSeparator();
-        stringBuilder.append("instead_version \"1.9.1\"").append(lineSep);
+        stringBuilder.append("instead_version \"1.9.1\"").append(lineSep).append(lineSep);
+
+        stringBuilder.append("--package.cpath = \"./?.so\"").append(lineSep);
+        stringBuilder.append("require \"luapassing\"").append(lineSep).append(lineSep);
 
         stringBuilder.append("require \"xact\"").append(lineSep);
         stringBuilder.append("require \"hideinv\"").append(lineSep);
@@ -118,6 +121,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         stringBuilder.append("end").append(lineSep);
 
         stringBuilder.append("function init()").append(lineSep);
+        stringBuilder.append("    statsAPI.init();").append(lineSep);
         stringBuilder.append("    vn:scene(nil);").append(lineSep);
         stringBuilder.append("    vn.fading = 8").append(lineSep);
         stringBuilder.append("end").append(lineSep);

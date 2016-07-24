@@ -561,6 +561,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
+    protected String decorateAchieveOperation(String achievementName) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateShuffleOperation(String listVariableName) {
         // TODO: implement
         return EMPTY_STRING;

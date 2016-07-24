@@ -90,7 +90,8 @@ public interface Modification extends IdentifiableItem {
         ACTF,
         USE,
         SIZE,
-        RND
+        RND,
+        ACHIEVE
     }
 
     public boolean isExternal();
