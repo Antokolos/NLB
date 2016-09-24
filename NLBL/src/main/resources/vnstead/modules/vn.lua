@@ -826,6 +826,17 @@ vn = obj {
             stead.table.insert(s._pending_effects, v)
         end
 
+        if g.obj then
+            local yarmc = 0;
+            for i, gg in ipairs(g.obj) do
+                local gch = stead.ref(gg);
+                gch.arm = { [0] = { 0, yarmc } };
+                local ch = s:add_child(v, gch);
+                local xarm, yarm = s:size(ch, 0);
+                yarmc = yarm;
+            end
+        end
+
         return v
     end;
 
