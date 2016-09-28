@@ -615,9 +615,9 @@ vn = obj {
         end
     end;
 
-    size = function(s, v, idx)
+    size = function(s, v, idx, real_size)
         local px, py = 0, 0;
-        if s:parentf(v) then
+        if s:parentf(v) and not real_size then
             px, py = s:size(s:parentf(v), idx);
         end
         local xarm, yarm = s:arm(v, idx);
@@ -866,7 +866,7 @@ vn = obj {
                     added = true;
                     ch = s:add_child(v, gch);                    
                 end
-                local xarm, yarm = s:size(ch, 0);
+                local xarm, yarm = s:size(ch, 0, true);
                 yarmc = yarm;
             end
         end
