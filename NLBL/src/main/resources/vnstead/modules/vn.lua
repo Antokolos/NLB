@@ -187,6 +187,7 @@ vn = obj {
             end
         end
         s:set_bg(s._bg)
+        vn:add_all_missing_children();
         s:start()
     end;
     init = function(s)
@@ -590,6 +591,20 @@ vn = obj {
         end
     end;
     
+    glookup_full = function(s, n)
+        if not n then return end        
+        local kk, ii = s:glookup(n);
+        if kk then
+            return kk, ii;
+        end
+        local i, k
+        for i, k in ipairs(s._pending_effects) do
+            if k.gob == n then
+                return k, i
+            end
+        end
+    end;
+
     glookup = function(s, n)
         if not n then return end
         local i, k
@@ -826,18 +841,36 @@ vn = obj {
             stead.table.insert(s._pending_effects, v)
         end
 
-        if g.obj then
+        s:add_missing_children(v);
+
+        return v
+    end;
+
+    add_all_missing_children = function(s)
+        local added = false;
+        for i, v in ipairs(s._effects) do
+            added = added or s:add_missing_children(v);
+        end
+        return added;
+    end;
+
+    add_missing_children = function(s, v)
+        local added = false;
+        local g = s:gobf(v);
+        if objs(g) then
             local yarmc = 0;
-            for i, gg in ipairs(g.obj) do
-                local gch = stead.ref(gg);
+            for i, gch in ipairs(objs(g)) do
                 gch.arm = { [0] = { 0, yarmc } };
-                local ch = s:add_child(v, gch);
+                local ch = s:glookup_full(stead.deref(gch));
+                if not ch then
+                    added = true;
+                    ch = s:add_child(v, gch);                    
+                end
                 local xarm, yarm = s:size(ch, 0);
                 yarmc = yarm;
             end
         end
-
-        return v
+        return added;
     end;
 
     add_child = function(s, parent, gob)
