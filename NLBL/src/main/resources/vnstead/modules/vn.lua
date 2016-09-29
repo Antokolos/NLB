@@ -44,10 +44,6 @@ vntimer = function(f, s, cmd, ...)
         return f(s, cmd, ...)
     end
     local update_cursor_result = vn:update_cursor();
-    -- NB: do not put heavy code in onover/onout
-    local x, y = stead.mouse_pos();
-    vn:over(x, y);
-    vn:out(x, y);
 
     vnticks_diff = get_ticks() - vnticks;
     if (vnticks_diff <= vn.hz) then
@@ -57,6 +53,12 @@ vntimer = function(f, s, cmd, ...)
     end
     vn.slowcpu = (vnticks_diff > vn.ticks_threshold);
     vnticks = get_ticks();
+
+    -- NB: do not put heavy code in onover/onout
+    local x, y = stead.mouse_pos();
+    vn:over(x, y);
+    vn:out(x, y);
+
     if vn.pause_frames > 0 then
         vn.pause_frames = vn.pause_frames - 1;
         return update_cursor_result;
@@ -128,7 +130,6 @@ vn = obj {
     _effects = {};
     _pending_effects = {};
     _bg = false;
-    _need_effect = false;
     _need_update = false;
     _wf = 0;
     _fln = nil;
@@ -168,7 +169,7 @@ vn = obj {
         s.on = false;
     end,
     screen = function(s)
-        if (s._need_effect and not s.stopped and s:in_vnr()) or s.direct_lock then
+        if s.direct_lock then
             return sprite.screen()
         else
             return s.offscreen
@@ -832,11 +833,6 @@ vn = obj {
             v.pos = old_pos
         end
 
-        --- because none can be animated now...
-        --- if v.eff ~= 'none' then
-        s._need_effect = true
-        --- end
-
         if not oe then
             stead.table.insert(s._pending_effects, v)
         end
@@ -1264,20 +1260,6 @@ vn = obj {
             error "No scene background specified!"
         end
         s:enable_pending_effects();
-        if s._need_effect then -- doing some effect(s)
-            s:enter_direct();
-            s.stopped = false;
-            if uiupdate then
-                s.uiupdate = true;
-            else
-                -- NB: uiupdate can be nil, but here I want it to be true or false, not nil
-                s.uiupdate = false;
-            end
-            s:process()
-            --- timer:set(s.hz)
-            -- s.stopped = false;
-            return
-        end
         if effect then
             s._scene_effect = effect
         end
@@ -1362,7 +1344,6 @@ vn = obj {
         if not preserve_cache then
             s:clear_cache();
         end
-        s._need_effect = false
         s._scene_effect = eff
         -- if bg is nil, simple box sprite will be set
         s:set_bg(bg)
