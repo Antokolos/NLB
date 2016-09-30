@@ -101,6 +101,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JTextField m_morphOver;
     private JTextField m_morphOut;
     private JCheckBox m_objIsPreserved;
+    private JCheckBox m_objIsClearUnderTooltip;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -299,6 +300,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objIsTakable.setSelected(obj.isTakable());
         m_objIsGraphical.setSelected(obj.isGraphical());
         m_objIsPreserved.setSelected(obj.isPreserved());
+        m_objIsClearUnderTooltip.setSelected(obj.isClearUnderTooltip());
         m_morphOver.setText(morphOver != null ? morphOver.getName() : "");
         m_morphOut.setText(morphOut != null ? morphOut.getName() : "");
         m_imageInScene.setSelected(obj.isImageInScene());
@@ -344,6 +346,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_objActTexts,
                 m_objIsGraphical.isSelected(),
                 m_objIsPreserved.isSelected(),
+                m_objIsClearUnderTooltip.isSelected(),
                 m_morphOver.getText(),
                 m_morphOut.getText(),
                 m_objIsTakable.isSelected(),
@@ -961,6 +964,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objIsPreserved = new JCheckBox();
         m_objIsPreserved.setText("Preserved");
         panel38.add(m_objIsPreserved);
+        m_objIsClearUnderTooltip = new JCheckBox();
+        m_objIsClearUnderTooltip.setText("Clear under tooltip");
+        panel38.add(m_objIsClearUnderTooltip);
         final JPanel panel39 = new JPanel();
         panel39.setLayout(new GridBagLayout());
         panel39.setMinimumSize(new Dimension(468, 33));

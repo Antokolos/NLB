@@ -50,6 +50,8 @@ import java.util.Map;
  * @version 1.0 1/15/14
  */
 public interface Obj extends NodeItem {
+    public static enum ContainerType {Page, Obj, None}
+
     public static final String DEFAULT_IMAGE_FILE_NAME = Constants.EMPTY_STRING;
     public static final boolean DEFAULT_ANIMATED_IMAGE = false;
     public static final String DEFAULT_SOUND_FILE_NAME = Constants.EMPTY_STRING;
@@ -64,6 +66,7 @@ public interface Obj extends NodeItem {
     public static final MultiLangString DEFAULT_DISP = MultiLangString.createEmptyText();
     public static final boolean DEFAULT_GRAPHICAL = false;
     public static final boolean DEFAULT_PRESERVED = false;
+    public static final boolean DEFAULT_CLEAR_UNDER_TOOLTIP = false;
     public static final String DEFAULT_MORPH_OVER_ID = Constants.EMPTY_STRING;
     public static final String DEFAULT_MORPH_OUT_ID = Constants.EMPTY_STRING;
     public static final boolean DEFAULT_TAKABLE = false;
@@ -111,6 +114,8 @@ public interface Obj extends NodeItem {
 
     public boolean isPreserved();
 
+    public boolean isClearUnderTooltip();
+
     public String getMorphOverId();
 
     public Obj getMorphOverObj();
@@ -128,6 +133,8 @@ public interface Obj extends NodeItem {
     public boolean isImageInInventory();
 
     public String getContainerId();
+
+    public ContainerType getContainerType();
 
     public String getCumulativeText(final List<String> objIdsToBeExcluded, Map<String, Object> visitedVars);
 }

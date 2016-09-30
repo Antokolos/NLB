@@ -781,6 +781,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private MultiLangString m_existingObjActText;
         private boolean m_existingObjIsGraphical;
         private boolean m_existingObjIsPreserved;
+        private boolean m_existingObjIsClearUnderTooltip;
         private boolean m_existingObjIsTakable;
         private boolean m_existingImageInScene;
         private boolean m_existingImageInInventory;
@@ -795,6 +796,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private MultiLangString m_newObjActText;
         private boolean m_newObjIsGraphical;
         private boolean m_newObjIsPreserved;
+        private boolean m_newObjIsClearUnderTooltip;
         private boolean m_newObjIsTakable;
         private boolean m_newImageInScene;
         private boolean m_newImageInInventory;
@@ -817,6 +819,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString objActText,
                 final boolean objIsGraphical,
                 final boolean objIsPreserved,
+                final boolean objIsClearUnderTooltip,
                 final String objMorphOverName,
                 final String objMorphOutName,
                 final boolean objIsTakable,
@@ -841,12 +844,12 @@ public class NonLinearBookImpl implements NonLinearBook {
                     objActText,
                     objIsGraphical,
                     objIsPreserved,
+                    objIsClearUnderTooltip,
                     objMorphOverName,
                     objMorphOutName,
                     objIsTakable,
                     imageInScene,
-                    imageInInventory
-            );
+                    imageInInventory);
         }
 
         private UpdateObjCommand(
@@ -867,6 +870,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString objActText,
                 final boolean objIsGraphical,
                 final boolean objIsPreserved,
+                final boolean objIsClearUnderTooltip,
                 final String objMorphOverName,
                 final String objMorphOutName,
                 final boolean objIsTakable,
@@ -945,6 +949,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingObjActText = obj.getActTexts();
             m_existingObjIsGraphical = obj.isGraphical();
             m_existingObjIsPreserved = obj.isPreserved();
+            m_existingObjIsClearUnderTooltip = obj.isClearUnderTooltip();
             m_existingObjIsTakable = obj.isTakable();
             m_existingImageInScene = obj.isImageInScene();
             m_existingImageInInventory = obj.isImageInInventory();
@@ -959,6 +964,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newObjActText = objActText;
             m_newObjIsGraphical = objIsGraphical;
             m_newObjIsPreserved = objIsPreserved;
+            m_newObjIsClearUnderTooltip = objIsClearUnderTooltip;
             m_newObjIsTakable = objIsTakable;
             m_newImageInScene = imageInScene;
             m_newImageInInventory = imageInInventory;
@@ -983,6 +989,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setActTexts(m_newObjActText);
             m_obj.setGraphical(m_newObjIsGraphical);
             m_obj.setPreserved(m_newObjIsPreserved);
+            m_obj.setClearUnderTooltip(m_newObjIsClearUnderTooltip);
             m_obj.setTakable(m_newObjIsTakable);
             m_obj.setImageInScene(m_newImageInScene);
             m_obj.setImageInInventory(m_newImageInInventory);
@@ -1008,6 +1015,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setActTexts(m_existingObjActText);
             m_obj.setGraphical(m_existingObjIsGraphical);
             m_obj.setPreserved(m_existingObjIsPreserved);
+            m_obj.setClearUnderTooltip(m_existingObjIsClearUnderTooltip);
             m_obj.setTakable(m_existingObjIsTakable);
             m_obj.setImageInScene(m_existingImageInScene);
             m_obj.setImageInInventory(m_existingImageInInventory);
@@ -1821,12 +1829,12 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.getActTexts(),
                         obj.isGraphical(),
                         obj.isPreserved(),
+                        obj.isClearUnderTooltip(),
                         (objMorphOver != null) ? objMorphOver.getName() : Constants.EMPTY_STRING,
                         (objMorphOut != null) ? objMorphOut.getName() : Constants.EMPTY_STRING,
                         obj.isTakable(),
                         obj.isImageInScene(),
-                        obj.isImageInInventory()
-                );
+                        obj.isImageInInventory());
                 m_commandChain.addCommand(updateObjCommand);
                 Coords coords = obj.getCoords();
                 Coords newCoords = newObj.getCoords();
@@ -2289,6 +2297,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final MultiLangString objActText,
             final boolean objIsGraphical,
             final boolean objIsPreserved,
+            final boolean objIsClearUnderTooltip,
             final String objMorphOver,
             final String objMorphOut,
             final boolean objIsTakable,
@@ -2314,6 +2323,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         objActText,
                         objIsGraphical,
                         objIsPreserved,
+                        objIsClearUnderTooltip,
                         objMorphOver,
                         objMorphOut,
                         objIsTakable,

@@ -744,13 +744,15 @@ public abstract class ExportManager {
         blocks.setObjLabel(decorateObjLabel(obj.getId()));
         blocks.setObjComment(decorateObjComment(obj.getName()));
         // blocks obj default tag variable was set earlier
-        blocks.setObjStart(decorateObjStart(obj.getId(), getContainerRef(obj, exportData), objType, obj.isPreserved(), blocks.getObjDefaultTagVariable()));
+        blocks.setObjStart(decorateObjStart(obj.getId(), getContainerRef(obj, exportData), objType, obj.isPreserved(), obj.isClearUnderTooltip(), blocks.getObjDefaultTagVariable()));
         blocks.setObjName(decorateObjName(obj.getName()));
         blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
         final String objImage = decorateObjImage(getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage()), obj.isGraphical());
         final String objEffect = decorateObjEffect("left-top@" + getRelativeCoords(obj), obj.isGraphical());
         blocks.setObjEffect(objEffect);
+        Coords coords = obj.getRelativeCoords(true);
+        blocks.setObjArm(obj.isGraphical() && (obj.getContainerType() == Obj.ContainerType.Obj) ? decorateObjArm(coords.getLeft(), coords.getTop()) : "");
         Obj morphOverObj = obj.getMorphOverObj();
         blocks.setMorphOver(decorateMorphOver((morphOverObj != null) ? morphOverObj.getId() : EMPTY_STRING, obj.isGraphical()));
         Obj morphOutObj = obj.getMorphOutObj();
@@ -1380,6 +1382,11 @@ public abstract class ExportManager {
                 return obj.isPreserved();
             }
 
+            @Override
+            public boolean isClearUnderTooltip() {
+                return obj.isClearUnderTooltip();
+            }
+
             public String getMorphOverId() {
                 return obj.getMorphOverId();
             }
@@ -1421,6 +1428,11 @@ public abstract class ExportManager {
             @Override
             public String getContainerId() {
                 return obj.getContainerId();
+            }
+
+            @Override
+            public ContainerType getContainerType() {
+                return obj.getContainerType();
             }
 
             @Override
@@ -1548,7 +1560,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean preserved, String objDefaultTag) {
+    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean preserved, boolean clearUnderTooltip, String objDefaultTag) {
         return EMPTY_STRING;
     }
 
@@ -1652,6 +1664,9 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
+    protected String decorateObjArm(float left, float top) {
+        return EMPTY_STRING;
+    }
 
     private LinkBuildingBlocks createLinkBuildingBlocks(
             final Page page,

@@ -841,6 +841,12 @@
                                           <text value="Preserved"/>
                                         </properties>
                                       </component>
+                                      <component id="6a09d" class="javax.swing.JCheckBox" binding="m_objIsClearUnderTooltip">
+                                        <constraints/>
+                                        <properties>
+                                          <text value="Clear under tooltip"/>
+                                        </properties>
+                                      </component>
                                     </children>
                                   </grid>
                                   <grid id="a55ba" layout-manager="GridBagLayout">

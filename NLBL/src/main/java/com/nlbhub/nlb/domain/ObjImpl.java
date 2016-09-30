@@ -80,6 +80,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String DISP_SUBDIR_NAME = "disp";
     private static final String GRAPHICAL_FILE_NAME = "graphical";
     private static final String PRESERVED_FILE_NAME = "preserved";
+    private static final String CLEARUTT_FILE_NAME = "clearutt";
     private static final String MORPH_OVER_FILE_NAME = "morphover";
     private static final String MORPH_OUT_FILE_NAME = "morphout";
     private static final String TAKABLE_FILE_NAME = "takable";
@@ -99,6 +100,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private MultiLangString m_actText = DEFAULT_ACT_TEXT;
     private boolean m_graphical = DEFAULT_GRAPHICAL;
     private boolean m_preserved = DEFAULT_PRESERVED;
+    private boolean m_clearUnderTooltip = DEFAULT_CLEAR_UNDER_TOOLTIP;
     private String m_morphOverId = DEFAULT_MORPH_OVER_ID;
     private String m_morphOutId = DEFAULT_MORPH_OUT_ID;
     /**
@@ -150,6 +152,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         setActTexts(source.getActTexts());
         m_graphical = source.isGraphical();
         m_preserved = source.isPreserved();
+        m_clearUnderTooltip = source.isClearUnderTooltip();
         m_morphOverId = source.getMorphOverId();
         m_morphOutId = source.getMorphOutId();
         m_takable = source.isTakable();
@@ -337,6 +340,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         m_preserved = preserved;
     }
 
+    @Override
+    public boolean isClearUnderTooltip() {
+        return m_clearUnderTooltip;
+    }
+
+    public void setClearUnderTooltip(boolean m_clearUnderTooltip) {
+        this.m_clearUnderTooltip = m_clearUnderTooltip;
+    }
+
     public String getMorphOverId() {
         return m_morphOverId;
     }
@@ -452,6 +464,22 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         return m_containerId;
     }
 
+    @Override
+    public ContainerType getContainerType() {
+        NonLinearBook nlb = getCurrentNLB();
+        NodeItem node = nlb.getPageById(m_containerId);
+        if (node != null) {
+            return ContainerType.Page;
+        } else {
+            node = getCurrentNLB().getObjById(m_containerId);
+        }
+        if (node != null) {
+            return ContainerType.Obj;
+        } else {
+            return ContainerType.None;
+        }
+    }
+
     public void setContainerId(String containerId) {
         m_containerId = containerId;
     }
@@ -535,6 +563,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                     PRESERVED_FILE_NAME,
                     String.valueOf(m_preserved),
                     String.valueOf(DEFAULT_PRESERVED)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
+                    CLEARUTT_FILE_NAME,
+                    String.valueOf(m_clearUnderTooltip),
+                    String.valueOf(DEFAULT_CLEAR_UNDER_TOOLTIP)
             );
             fileManipulator.writeOptionalString(
                     objDir,
@@ -674,6 +708,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         PRESERVED_FILE_NAME,
                         String.valueOf(DEFAULT_PRESERVED)
+                )
+        );
+        m_clearUnderTooltip = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        CLEARUTT_FILE_NAME,
+                        String.valueOf(DEFAULT_CLEAR_UNDER_TOOLTIP)
                 )
         );
         m_morphOverId = (

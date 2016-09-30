@@ -856,7 +856,11 @@ vn = obj {
         if objs(g) then
             local yarmc = 0;
             for i, gch in ipairs(objs(g)) do
-                gch.arm = { [0] = { 0, yarmc } };
+                if gch.iarm then
+                    gch.arm = gch.iarm;
+                else
+                    gch.arm = { [0] = { 0, yarmc } };
+                end
                 local ch = s:glookup_full(stead.deref(gch));
                 if not ch then
                     added = true;
@@ -1757,7 +1761,7 @@ stead.module_init(function()
     vn:init()
     vnticks = stead.ticks();
     vnticks_diff = vn.ticks_threshold;
-    hudFont = sprite.font('fonts/Medieval_English.ttf', 32);
+    hudFont = sprite.font('fonts/Medieval_English.ttf', 30);
     empty_s = sprite.load('gfx/empty.png');
     empty_frame = {["spr"] = empty_s, ["w"] = 0, ["h"] = 0, ["tmp"] = false};
     if LANG == "ru" then

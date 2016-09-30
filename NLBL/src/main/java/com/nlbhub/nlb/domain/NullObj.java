@@ -159,6 +159,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
         return Obj.DEFAULT_PRESERVED;
     }
 
+    @Override
+    public boolean isClearUnderTooltip() {
+        return Obj.DEFAULT_CLEAR_UNDER_TOOLTIP;
+    }
+
     public String getMorphOverId() {
         return Obj.DEFAULT_MORPH_OVER_ID;
     }
@@ -200,6 +205,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     @Override
     public String getContainerId() {
         return Obj.DEFAULT_CONTAINER_ID;
+    }
+
+    @Override
+    public ContainerType getContainerType() {
+        return ContainerType.None;
     }
 
     @Override

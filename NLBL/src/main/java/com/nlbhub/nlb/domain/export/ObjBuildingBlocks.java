@@ -80,6 +80,7 @@ public class ObjBuildingBlocks {
     private String m_containerRef;
     private List<String> m_containedObjIds;
     private List<UseBuildingBlocks> m_useBuildingBlocks;
+    private String m_objArm;
 
     public ObjBuildingBlocks() {
         m_useBuildingBlocks = new ArrayList<>();
@@ -348,5 +349,13 @@ public class ObjBuildingBlocks {
 
     public void addUseBuildingBlocks(final UseBuildingBlocks useBuildingBlocks) {
         m_useBuildingBlocks.add(useBuildingBlocks);
+    }
+
+    public void setObjArm(String objArm) {
+        m_objArm = objArm;
+    }
+
+    public String getObjArm() {
+        return m_objArm;
     }
 }
