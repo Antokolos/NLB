@@ -769,7 +769,7 @@
                                 <children>
                                   <vspacer id="a548f">
                                     <constraints>
-                                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                                      <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
                                       <gridbag weightx="0.0" weighty="1.0"/>
                                     </constraints>
                                   </vspacer>
@@ -891,6 +891,101 @@
                                       <text value="Morph out"/>
                                     </properties>
                                   </component>
+                                  <grid id="57a22" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+                                    <constraints>
+                                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties/>
+                                    <border type="none"/>
+                                    <children>
+                                      <grid id="8b4fc" layout-manager="BorderLayout" hgap="0" vgap="0">
+                                        <constraints/>
+                                        <properties>
+                                          <minimumSize width="300" height="150"/>
+                                          <preferredSize width="300" height="150"/>
+                                        </properties>
+                                        <border type="none" title="Movement direction"/>
+                                        <children>
+                                          <grid id="74919" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                                            <constraints border-constraint="North"/>
+                                            <properties/>
+                                            <border type="none"/>
+                                            <children>
+                                              <component id="f17d" class="javax.swing.JRadioButton" binding="m_movementDirectionTop">
+                                                <constraints/>
+                                                <properties>
+                                                  <minimumSize width="90" height="26"/>
+                                                  <preferredSize width="90" height="26"/>
+                                                  <text value="Top"/>
+                                                </properties>
+                                              </component>
+                                            </children>
+                                          </grid>
+                                          <grid id="3e737" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                                            <constraints border-constraint="South"/>
+                                            <properties/>
+                                            <border type="none"/>
+                                            <children>
+                                              <component id="b6882" class="javax.swing.JRadioButton" binding="m_movementDirectionBottom">
+                                                <constraints/>
+                                                <properties>
+                                                  <minimumSize width="90" height="26"/>
+                                                  <preferredSize width="90" height="26"/>
+                                                  <text value="Bottom"/>
+                                                </properties>
+                                              </component>
+                                            </children>
+                                          </grid>
+                                          <grid id="dd632" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                                            <constraints border-constraint="Center"/>
+                                            <properties/>
+                                            <border type="none"/>
+                                            <children>
+                                              <component id="cdb81" class="javax.swing.JRadioButton" binding="m_movementDirectionNone">
+                                                <constraints/>
+                                                <properties>
+                                                  <minimumSize width="90" height="26"/>
+                                                  <preferredSize width="90" height="26"/>
+                                                  <text value="None"/>
+                                                </properties>
+                                              </component>
+                                            </children>
+                                          </grid>
+                                          <grid id="3c820" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                                            <constraints border-constraint="West"/>
+                                            <properties/>
+                                            <border type="none"/>
+                                            <children>
+                                              <component id="adbe8" class="javax.swing.JRadioButton" binding="m_movementDirectionLeft">
+                                                <constraints/>
+                                                <properties>
+                                                  <minimumSize width="60" height="26"/>
+                                                  <preferredSize width="60" height="26"/>
+                                                  <text value="Left"/>
+                                                </properties>
+                                              </component>
+                                            </children>
+                                          </grid>
+                                          <grid id="82a17" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                                            <constraints border-constraint="East"/>
+                                            <properties/>
+                                            <border type="none"/>
+                                            <children>
+                                              <component id="e0f54" class="javax.swing.JRadioButton" binding="m_movementDirectionRight">
+                                                <constraints/>
+                                                <properties>
+                                                  <minimumSize width="60" height="26"/>
+                                                  <preferredSize width="60" height="26"/>
+                                                  <text value="Right"/>
+                                                </properties>
+                                              </component>
+                                            </children>
+                                          </grid>
+                                        </children>
+                                      </grid>
+                                    </children>
+                                  </grid>
                                 </children>
                               </grid>
                             </children>
@@ -913,4 +1008,14 @@
       </grid>
     </children>
   </grid>
+  <buttonGroups>
+    <group name="m_movementDirection">
+      <member id="cdb81"/>
+      <member id="cdb81"/>
+      <member id="b6882"/>
+      <member id="f17d"/>
+      <member id="e0f54"/>
+      <member id="adbe8"/>
+    </group>
+  </buttonGroups>
 </form>

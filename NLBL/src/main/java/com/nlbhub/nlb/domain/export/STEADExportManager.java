@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.Constants;
+import com.nlbhub.nlb.api.Obj;
 import com.nlbhub.nlb.api.TextChunk;
 import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
@@ -950,9 +951,29 @@ public class STEADExportManager extends TextExportManager {
         }
     }
 
-    protected String decorateObjEffect(String effectString, boolean graphicalObj) {
+    protected String decorateObjEffect(String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection) {
+        String effect = "left-top@0,0";
+        String steps = "    maxStep = 10," + LINE_SEPARATOR +
+                "    startFrame = 0," + LINE_SEPARATOR;// +
+                //"    curStep = 2," + LINE_SEPARATOR;
+        switch (movementDirection) {
+            case Top:
+                effect = "moveintop-" + effect;
+                break;
+            case Left:
+                effect = "moveinleft-" + effect;
+                break;
+            case Right:
+                effect = "moveinright-" + effect;
+                break;
+            case Bottom:
+                effect = "moveinbottom-" + effect;
+                break;
+            default:
+                steps = "";
+        }
         if (graphicalObj) {
-            return "    eff = \"" + effectString + "\"," + LINE_SEPARATOR;
+            return "    eff = \"" + effect + "\"," + LINE_SEPARATOR + steps + "    arm = { [0] = { " + coordString + " } }," + LINE_SEPARATOR;
         } else {
             return EMPTY_STRING;
         }

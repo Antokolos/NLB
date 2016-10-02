@@ -102,6 +102,11 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JTextField m_morphOut;
     private JCheckBox m_objIsPreserved;
     private JCheckBox m_objIsClearUnderTooltip;
+    private JRadioButton m_movementDirectionTop;
+    private JRadioButton m_movementDirectionBottom;
+    private JRadioButton m_movementDirectionLeft;
+    private JRadioButton m_movementDirectionRight;
+    private JRadioButton m_movementDirectionNone;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -300,6 +305,23 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objIsTakable.setSelected(obj.isTakable());
         m_objIsGraphical.setSelected(obj.isGraphical());
         m_objIsPreserved.setSelected(obj.isPreserved());
+        switch (obj.getMovementDirection()) {
+            case Top:
+                m_movementDirectionTop.setSelected(true);
+                break;
+            case Left:
+                m_movementDirectionLeft.setSelected(true);
+                break;
+            case Right:
+                m_movementDirectionRight.setSelected(true);
+                break;
+            case Bottom:
+                m_movementDirectionBottom.setSelected(true);
+                break;
+            case None:
+            default:
+                m_movementDirectionNone.setSelected(true);
+        }
         m_objIsClearUnderTooltip.setSelected(obj.isClearUnderTooltip());
         m_morphOver.setText(morphOver != null ? morphOver.getName() : "");
         m_morphOut.setText(morphOut != null ? morphOut.getName() : "");
@@ -346,6 +368,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_objActTexts,
                 m_objIsGraphical.isSelected(),
                 m_objIsPreserved.isSelected(),
+                getMovementDirection(),
                 m_objIsClearUnderTooltip.isSelected(),
                 m_morphOver.getText(),
                 m_morphOut.getText(),
@@ -355,6 +378,20 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         );
         m_nlbFacade.removeObserver(m_observerId);
         dispose();
+    }
+
+    Obj.MovementDirection getMovementDirection() {
+        if (m_movementDirectionTop.isSelected()) {
+            return Obj.MovementDirection.Top;
+        } else if (m_movementDirectionLeft.isSelected()) {
+            return Obj.MovementDirection.Left;
+        } else if (m_movementDirectionRight.isSelected()) {
+            return Obj.MovementDirection.Right;
+        } else if (m_movementDirectionBottom.isSelected()) {
+            return Obj.MovementDirection.Bottom;
+        } else {
+            return Obj.MovementDirection.None;
+        }
     }
 
     private void onCancel() {
@@ -910,7 +947,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         final JPanel spacer3 = new JPanel();
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.VERTICAL;
         panel36.add(spacer3, gbc);
@@ -999,8 +1036,63 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.anchor = GridBagConstraints.WEST;
         panel36.add(label11, gbc);
         final JPanel panel40 = new JPanel();
-        panel40.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel40, BorderLayout.CENTER);
+        panel40.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(5, 5, 5, 0);
+        panel36.add(panel40, gbc);
+        final JPanel panel41 = new JPanel();
+        panel41.setLayout(new BorderLayout(0, 0));
+        panel41.setMinimumSize(new Dimension(300, 150));
+        panel41.setPreferredSize(new Dimension(300, 150));
+        panel40.add(panel41);
+        panel41.setBorder(BorderFactory.createTitledBorder("Movement direction"));
+        final JPanel panel42 = new JPanel();
+        panel42.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel41.add(panel42, BorderLayout.NORTH);
+        m_movementDirectionTop = new JRadioButton();
+        m_movementDirectionTop.setMinimumSize(new Dimension(90, 26));
+        m_movementDirectionTop.setPreferredSize(new Dimension(90, 26));
+        m_movementDirectionTop.setText("Top");
+        panel42.add(m_movementDirectionTop);
+        final JPanel panel43 = new JPanel();
+        panel43.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel41.add(panel43, BorderLayout.SOUTH);
+        m_movementDirectionBottom = new JRadioButton();
+        m_movementDirectionBottom.setMinimumSize(new Dimension(90, 26));
+        m_movementDirectionBottom.setPreferredSize(new Dimension(90, 26));
+        m_movementDirectionBottom.setText("Bottom");
+        panel43.add(m_movementDirectionBottom);
+        final JPanel panel44 = new JPanel();
+        panel44.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel41.add(panel44, BorderLayout.CENTER);
+        m_movementDirectionNone = new JRadioButton();
+        m_movementDirectionNone.setMinimumSize(new Dimension(90, 26));
+        m_movementDirectionNone.setPreferredSize(new Dimension(90, 26));
+        m_movementDirectionNone.setText("None");
+        panel44.add(m_movementDirectionNone);
+        final JPanel panel45 = new JPanel();
+        panel45.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel41.add(panel45, BorderLayout.WEST);
+        m_movementDirectionLeft = new JRadioButton();
+        m_movementDirectionLeft.setMinimumSize(new Dimension(60, 26));
+        m_movementDirectionLeft.setPreferredSize(new Dimension(60, 26));
+        m_movementDirectionLeft.setText("Left");
+        panel45.add(m_movementDirectionLeft);
+        final JPanel panel46 = new JPanel();
+        panel46.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel41.add(panel46, BorderLayout.EAST);
+        m_movementDirectionRight = new JRadioButton();
+        m_movementDirectionRight.setMinimumSize(new Dimension(60, 26));
+        m_movementDirectionRight.setPreferredSize(new Dimension(60, 26));
+        m_movementDirectionRight.setText("Right");
+        panel46.add(m_movementDirectionRight);
+        final JPanel panel47 = new JPanel();
+        panel47.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel47, BorderLayout.CENTER);
         label1.setLabelFor(m_objDispTextField);
         label2.setLabelFor(m_objTextTextArea);
         label3.setLabelFor(m_objActTextTextArea);
@@ -1012,6 +1104,14 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         label9.setLabelFor(m_objDefaultTagTextField);
         label10.setLabelFor(m_morphOver);
         label11.setLabelFor(m_morphOut);
+        ButtonGroup buttonGroup;
+        buttonGroup = new ButtonGroup();
+        buttonGroup.add(m_movementDirectionNone);
+        buttonGroup.add(m_movementDirectionNone);
+        buttonGroup.add(m_movementDirectionBottom);
+        buttonGroup.add(m_movementDirectionTop);
+        buttonGroup.add(m_movementDirectionRight);
+        buttonGroup.add(m_movementDirectionLeft);
     }
 
     /**

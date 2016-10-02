@@ -80,6 +80,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String DISP_SUBDIR_NAME = "disp";
     private static final String GRAPHICAL_FILE_NAME = "graphical";
     private static final String PRESERVED_FILE_NAME = "preserved";
+    private static final String MVDIRECTION_FILE_NAME = "mvdirection";
     private static final String CLEARUTT_FILE_NAME = "clearutt";
     private static final String MORPH_OVER_FILE_NAME = "morphover";
     private static final String MORPH_OUT_FILE_NAME = "morphout";
@@ -100,6 +101,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private MultiLangString m_actText = DEFAULT_ACT_TEXT;
     private boolean m_graphical = DEFAULT_GRAPHICAL;
     private boolean m_preserved = DEFAULT_PRESERVED;
+    private MovementDirection m_movementDirection = DEFAULT_MOVEMENT_DIRECTION;
     private boolean m_clearUnderTooltip = DEFAULT_CLEAR_UNDER_TOOLTIP;
     private String m_morphOverId = DEFAULT_MORPH_OVER_ID;
     private String m_morphOutId = DEFAULT_MORPH_OUT_ID;
@@ -152,6 +154,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         setActTexts(source.getActTexts());
         m_graphical = source.isGraphical();
         m_preserved = source.isPreserved();
+        m_movementDirection = source.getMovementDirection();
         m_clearUnderTooltip = source.isClearUnderTooltip();
         m_morphOverId = source.getMorphOverId();
         m_morphOutId = source.getMorphOutId();
@@ -338,6 +341,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
 
     public void setPreserved(boolean preserved) {
         m_preserved = preserved;
+    }
+
+    @Override
+    public MovementDirection getMovementDirection() {
+        return m_movementDirection;
+    }
+
+    public void setMovementDirection(MovementDirection movementDirection) {
+        m_movementDirection = movementDirection;
     }
 
     @Override
@@ -566,6 +578,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(
                     objDir,
+                    MVDIRECTION_FILE_NAME,
+                    m_movementDirection.name(),
+                    DEFAULT_MOVEMENT_DIRECTION.name()
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
                     CLEARUTT_FILE_NAME,
                     String.valueOf(m_clearUnderTooltip),
                     String.valueOf(DEFAULT_CLEAR_UNDER_TOOLTIP)
@@ -710,6 +728,29 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         String.valueOf(DEFAULT_PRESERVED)
                 )
         );
+        String movementDirection = (
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        MVDIRECTION_FILE_NAME,
+                        DEFAULT_MOVEMENT_DIRECTION.name()
+                )
+        );
+        switch (movementDirection) {
+            case "Top":
+                m_movementDirection = MovementDirection.Top;
+                break;
+            case "Left":
+                m_movementDirection = MovementDirection.Left;
+                break;
+            case "Right":
+                m_movementDirection = MovementDirection.Right;
+                break;
+            case "Bottom":
+                m_movementDirection = MovementDirection.Bottom;
+                break;
+            default:
+                m_movementDirection = MovementDirection.None;
+        }
         m_clearUnderTooltip = "true".equals(
                 FileManipulator.getOptionalFileAsString(
                         objDir,

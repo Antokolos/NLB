@@ -51,6 +51,7 @@ import java.util.Map;
  */
 public interface Obj extends NodeItem {
     public static enum ContainerType {Page, Obj, None}
+    public static enum MovementDirection {Top, Left, None, Right, Bottom}
 
     public static final String DEFAULT_IMAGE_FILE_NAME = Constants.EMPTY_STRING;
     public static final boolean DEFAULT_ANIMATED_IMAGE = false;
@@ -73,6 +74,7 @@ public interface Obj extends NodeItem {
     public static final boolean DEFAULT_IMAGE_IN_SCENE = true;
     public static final boolean DEFAULT_IMAGE_IN_INVENTORY = true;
     public static final String DEFAULT_CONTAINER_ID = Constants.EMPTY_STRING;
+    public static final MovementDirection DEFAULT_MOVEMENT_DIRECTION = MovementDirection.None;
 
     public String getText();
 
@@ -113,6 +115,8 @@ public interface Obj extends NodeItem {
     public boolean isGraphical();
 
     public boolean isPreserved();
+
+    public MovementDirection getMovementDirection();
 
     public boolean isClearUnderTooltip();
 

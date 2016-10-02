@@ -160,6 +160,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public MovementDirection getMovementDirection() {
+        return Obj.DEFAULT_MOVEMENT_DIRECTION;
+    }
+
+    @Override
     public boolean isClearUnderTooltip() {
         return Obj.DEFAULT_CLEAR_UNDER_TOOLTIP;
     }

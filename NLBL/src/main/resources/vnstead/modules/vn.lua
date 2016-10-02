@@ -130,6 +130,7 @@ vn = obj {
     _effects = {};
     _pending_effects = {};
     _bg = false;
+    _need_effect = false;
     _need_update = false;
     _wf = 0;
     _fln = nil;
@@ -169,7 +170,7 @@ vn = obj {
         s.on = false;
     end,
     screen = function(s)
-        if s.direct_lock then
+        if (s._need_effect and not s.stopped and s:in_vnr()) or s.direct_lock then
             return sprite.screen()
         else
             return s.offscreen
@@ -618,9 +619,9 @@ vn = obj {
 
     size = function(s, v, idx, real_size)
         local px, py = 0, 0;
-        if s:parentf(v) and not real_size then
-            px, py = s:size(s:parentf(v), idx);
-        end
+        --if s:parentf(v) and not real_size then
+        --    px, py = s:size(s:parentf(v), idx);
+        --end
         local xarm, yarm = s:arm(v, idx);
         local sp = s:frame(v, idx);
         if sp.tmp then
@@ -637,7 +638,12 @@ vn = obj {
     end;
 
     arm = function(s, v, idx)
-        return s:arm_by_idx(v, idx, 1), s:arm_by_idx(v, idx, 2);
+        local parent = s:parentf(v);
+        local px, py = 0, 0;
+        if parent then
+            px, py = s:arm(parent, idx);
+        end
+        return s:arm_by_idx(v, idx, 1) + px, s:arm_by_idx(v, idx, 2) + py;
     end;
 
     arm_by_idx = function(s, v, idx, subidx)
@@ -833,6 +839,11 @@ vn = obj {
             v.pos = old_pos
         end
 
+        --- because none can be animated now...
+        --- if v.eff ~= 'none' then
+        s._need_effect = true
+        --- end
+
         if not oe then
             stead.table.insert(s._pending_effects, v)
         end
@@ -853,6 +864,7 @@ vn = obj {
     add_missing_children = function(s, v)
         local added = false;
         local g = s:gobf(v);
+        local px, py = s:arm(v);
         if objs(g) then
             local yarmc = 0;
             for i, gch in ipairs(objs(g)) do
@@ -866,8 +878,10 @@ vn = obj {
                     added = true;
                     ch = s:add_child(v, gch);                    
                 end
-                local xarm, yarm = s:size(ch, 0, true);
-                yarmc = yarm;
+                if not gch.iarm then
+                    local xarm, yarm = s:size(ch, 0, true);
+                    yarmc = yarmc + yarm - py;
+                end
             end
         end
         return added;
@@ -931,11 +945,11 @@ vn = obj {
     end;
 
     postoxy = function(s, v, idx)
-        if s:parentf(v) then
-            local x, y = s:postoxy(s:parentf(v), idx);
-            local xarm, yarm = s:arm(v, idx);
-            return x + xarm, y + yarm;
-        else
+        ---if s:parentf(v) then
+        ---    local x, y = s:postoxy(s:parentf(v), idx);
+        ---    local xarm, yarm = s:arm(v, idx);
+        ---    return x + xarm, y + yarm;
+        ---else
             if not idx then
                 idx = 0;
             end
@@ -967,7 +981,7 @@ vn = obj {
                 y = y + dy
             end
             return x, y
-        end
+        ---end
     end;
 
     set_bg = function(s, picture)
@@ -1264,6 +1278,20 @@ vn = obj {
             error "No scene background specified!"
         end
         s:enable_pending_effects();
+        if s._need_effect then -- doing some effect(s)
+            s:enter_direct();
+            s.stopped = false;
+            if uiupdate then
+                s.uiupdate = true;
+            else
+                -- NB: uiupdate can be nil, but here I want it to be true or false, not nil
+                s.uiupdate = false;
+            end
+            s:process()
+            --- timer:set(s.hz)
+            -- s.stopped = false;
+            return
+        end
         if effect then
             s._scene_effect = effect
         end
@@ -1348,6 +1376,7 @@ vn = obj {
         if not preserve_cache then
             s:clear_cache();
         end
+        s._need_effect = false
         s._scene_effect = eff
         -- if bg is nil, simple box sprite will be set
         s:set_bg(bg)

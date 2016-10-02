@@ -781,6 +781,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private MultiLangString m_existingObjActText;
         private boolean m_existingObjIsGraphical;
         private boolean m_existingObjIsPreserved;
+        private Obj.MovementDirection m_existingMovementDirection;
         private boolean m_existingObjIsClearUnderTooltip;
         private boolean m_existingObjIsTakable;
         private boolean m_existingImageInScene;
@@ -796,6 +797,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private MultiLangString m_newObjActText;
         private boolean m_newObjIsGraphical;
         private boolean m_newObjIsPreserved;
+        private Obj.MovementDirection m_newMovementDirection;
         private boolean m_newObjIsClearUnderTooltip;
         private boolean m_newObjIsTakable;
         private boolean m_newImageInScene;
@@ -819,6 +821,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString objActText,
                 final boolean objIsGraphical,
                 final boolean objIsPreserved,
+                final Obj.MovementDirection movementDirection,
                 final boolean objIsClearUnderTooltip,
                 final String objMorphOverName,
                 final String objMorphOutName,
@@ -844,6 +847,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     objActText,
                     objIsGraphical,
                     objIsPreserved,
+                    movementDirection,
                     objIsClearUnderTooltip,
                     objMorphOverName,
                     objMorphOutName,
@@ -870,6 +874,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString objActText,
                 final boolean objIsGraphical,
                 final boolean objIsPreserved,
+                final Obj.MovementDirection movementDirection,
                 final boolean objIsClearUnderTooltip,
                 final String objMorphOverName,
                 final String objMorphOutName,
@@ -949,6 +954,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingObjActText = obj.getActTexts();
             m_existingObjIsGraphical = obj.isGraphical();
             m_existingObjIsPreserved = obj.isPreserved();
+            m_existingMovementDirection = obj.getMovementDirection();
             m_existingObjIsClearUnderTooltip = obj.isClearUnderTooltip();
             m_existingObjIsTakable = obj.isTakable();
             m_existingImageInScene = obj.isImageInScene();
@@ -964,6 +970,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newObjActText = objActText;
             m_newObjIsGraphical = objIsGraphical;
             m_newObjIsPreserved = objIsPreserved;
+            m_newMovementDirection = movementDirection;
             m_newObjIsClearUnderTooltip = objIsClearUnderTooltip;
             m_newObjIsTakable = objIsTakable;
             m_newImageInScene = imageInScene;
@@ -989,6 +996,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setActTexts(m_newObjActText);
             m_obj.setGraphical(m_newObjIsGraphical);
             m_obj.setPreserved(m_newObjIsPreserved);
+            m_obj.setMovementDirection(m_newMovementDirection);
             m_obj.setClearUnderTooltip(m_newObjIsClearUnderTooltip);
             m_obj.setTakable(m_newObjIsTakable);
             m_obj.setImageInScene(m_newImageInScene);
@@ -1015,6 +1023,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setActTexts(m_existingObjActText);
             m_obj.setGraphical(m_existingObjIsGraphical);
             m_obj.setPreserved(m_existingObjIsPreserved);
+            m_obj.setMovementDirection(m_existingMovementDirection);
             m_obj.setClearUnderTooltip(m_existingObjIsClearUnderTooltip);
             m_obj.setTakable(m_existingObjIsTakable);
             m_obj.setImageInScene(m_existingImageInScene);
@@ -1829,6 +1838,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.getActTexts(),
                         obj.isGraphical(),
                         obj.isPreserved(),
+                        obj.getMovementDirection(),
                         obj.isClearUnderTooltip(),
                         (objMorphOver != null) ? objMorphOver.getName() : Constants.EMPTY_STRING,
                         (objMorphOut != null) ? objMorphOut.getName() : Constants.EMPTY_STRING,
@@ -2297,6 +2307,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final MultiLangString objActText,
             final boolean objIsGraphical,
             final boolean objIsPreserved,
+            final Obj.MovementDirection movementDirection,
             final boolean objIsClearUnderTooltip,
             final String objMorphOver,
             final String objMorphOut,
@@ -2323,6 +2334,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         objActText,
                         objIsGraphical,
                         objIsPreserved,
+                        movementDirection,
                         objIsClearUnderTooltip,
                         objMorphOver,
                         objMorphOut,
