@@ -107,6 +107,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JRadioButton m_movementDirectionLeft;
     private JRadioButton m_movementDirectionRight;
     private JRadioButton m_movementDirectionNone;
+    private JCheckBox m_objIsCollapsable;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -305,6 +306,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objIsTakable.setSelected(obj.isTakable());
         m_objIsGraphical.setSelected(obj.isGraphical());
         m_objIsPreserved.setSelected(obj.isPreserved());
+        m_objIsCollapsable.setSelected(obj.isCollapsable());
         switch (obj.getMovementDirection()) {
             case Top:
                 m_movementDirectionTop.setSelected(true);
@@ -368,6 +370,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_objActTexts,
                 m_objIsGraphical.isSelected(),
                 m_objIsPreserved.isSelected(),
+                m_objIsCollapsable.isSelected(),
                 getMovementDirection(),
                 m_objIsClearUnderTooltip.isSelected(),
                 m_morphOver.getText(),
@@ -1001,6 +1004,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objIsPreserved = new JCheckBox();
         m_objIsPreserved.setText("Preserved");
         panel38.add(m_objIsPreserved);
+        m_objIsCollapsable = new JCheckBox();
+        m_objIsCollapsable.setText("Collapsable");
+        panel38.add(m_objIsCollapsable);
         m_objIsClearUnderTooltip = new JCheckBox();
         m_objIsClearUnderTooltip.setText("Clear under tooltip");
         panel38.add(m_objIsClearUnderTooltip);

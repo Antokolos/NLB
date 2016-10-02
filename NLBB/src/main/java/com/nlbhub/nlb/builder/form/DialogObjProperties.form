@@ -841,6 +841,12 @@
                                           <text value="Preserved"/>
                                         </properties>
                                       </component>
+                                      <component id="75adc" class="javax.swing.JCheckBox" binding="m_objIsCollapsable">
+                                        <constraints/>
+                                        <properties>
+                                          <text value="Collapsable"/>
+                                        </properties>
+                                      </component>
                                       <component id="6a09d" class="javax.swing.JCheckBox" binding="m_objIsClearUnderTooltip">
                                         <constraints/>
                                         <properties>

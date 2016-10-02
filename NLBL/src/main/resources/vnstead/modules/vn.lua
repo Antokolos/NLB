@@ -616,9 +616,12 @@ vn = obj {
         end
     end;
 
-    size = function(s, v, idx)
+    size = function(s, v, idx, real_size)
         local px, py = 0, 0;
-        local xarm, yarm = s:arm(v, idx);
+        if s:parentf(v) and not real_size then
+            px, py = s:size(s:parentf(v), idx);
+        end
+        local xarm, yarm = s:rel_arm(v, idx);
         local sp = s:frame(v, idx);
         if sp.tmp then
             sprite.free(sp.spr);
@@ -631,6 +634,16 @@ vn = obj {
             ry = py;
         end
         return rx, ry;
+    end;
+
+    rel_arm = function(s, v, idx)
+        local parent = s:parentf(v);
+        local px, py = s:arm(v, idx);
+        if parent then
+            local px1, py1 = s:arm(parent, idx);
+            return px - px1, py - py1;
+        end
+        return px, py;
     end;
 
     arm = function(s, v, idx)
@@ -870,7 +883,7 @@ vn = obj {
                     ch = s:add_child(v, gch);                    
                 end
                 if not gch.iarm then
-                    local xarm, yarm = s:size(ch, 0);
+                    local xarm, yarm = s:size(ch, 0, true);
                     yarmc = yarmc + yarm - py;
                 end
             end
@@ -936,37 +949,43 @@ vn = obj {
     end;
 
     postoxy = function(s, v, idx)
-        if not idx then
-            idx = 0;
-        end
-        local vw, vh = s:size(v, idx)
-        local xarm, yarm = s:arm(v, idx)
-        local x, y = xarm, yarm
-        if v.pos:find 'left' then
-            x = xarm
-        elseif v.pos:find 'right' then
-            x = s.scr_w - vw
+        if s:parentf(v) then
+            local x, y = s:postoxy(s:parentf(v), idx);
+            local xarm, yarm = s:arm(v, idx);
+            return x + xarm, y + yarm;
         else
-            x = math.floor((s.scr_w - vw) / 2);
+            if not idx then
+                idx = 0;
+            end
+            local vw, vh = s:size(v, idx)
+            local xarm, yarm = s:arm(v, idx)
+            local x, y = xarm, yarm
+            if v.pos:find 'left' then
+                x = xarm
+            elseif v.pos:find 'right' then
+                x = s.scr_w - vw
+            else
+                x = math.floor((s.scr_w - vw) / 2);
+            end
+            if v.pos:find 'top' then
+                y = yarm
+            elseif v.pos:find 'bottom' then
+                y = s.scr_h - vh
+            elseif v.pos:find 'middle' then
+                y = math.floor((s.scr_h - vh) / 2)
+            else
+                y = s.scr_h - vh
+            end
+            if v.pos:find('@[ \t]*[0-9+%-]+[ \t]*,[ \t]*[0-9+%-]+') then
+                local dx, dy
+                local p = v.pos:gsub("^[^@]*@", "")
+                dx = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%1")
+                dy = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%2")
+                x = x + dx
+                y = y + dy
+            end
+            return x, y
         end
-        if v.pos:find 'top' then
-            y = yarm
-        elseif v.pos:find 'bottom' then
-            y = s.scr_h - vh
-        elseif v.pos:find 'middle' then
-            y = math.floor((s.scr_h - vh) / 2)
-        else
-            y = s.scr_h - vh
-        end
-        if v.pos:find('@[ \t]*[0-9+%-]+[ \t]*,[ \t]*[0-9+%-]+') then
-            local dx, dy
-            local p = v.pos:gsub("^[^@]*@", "")
-            dx = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%1")
-            dy = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%2")
-            x = x + dx
-            y = y + dy
-        end
-        return x, y
     end;
 
     set_bg = function(s, picture)

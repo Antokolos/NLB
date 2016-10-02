@@ -765,7 +765,7 @@ public abstract class ExportManager {
         blocks.setTakable(obj.isTakable());
         blocks.setObjTak(decorateObjTak(obj.getName()));
         blocks.setObjInv(decorateObjInv(objType));
-        blocks.setObjActStart(decorateObjActStart(expandVariables(StringHelper.getTextChunks(obj.getActText()))));
+        blocks.setObjActStart(decorateObjActStart(expandVariables(StringHelper.getTextChunks(obj.getActText())), obj.isCollapsable()));
         blocks.setObjActEnd(decorateObjActEnd());
         blocks.setObjUseStart(decorateObjUseStart());
         blocks.setObjUseEnd(decorateObjUseEnd());
@@ -1383,6 +1383,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public boolean isCollapsable() {
+                return obj.isCollapsable();
+            }
+
+            @Override
             public MovementDirection getMovementDirection() {
                 return obj.getMovementDirection();
             }
@@ -1621,7 +1626,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjActStart(String actTextExpanded) {
+    protected String decorateObjActStart(String actTextExpanded, boolean collapsable) {
         return EMPTY_STRING;
     }
 

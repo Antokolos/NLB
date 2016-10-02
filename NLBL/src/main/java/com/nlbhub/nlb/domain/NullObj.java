@@ -160,6 +160,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public boolean isCollapsable() {
+        return Obj.DEFAULT_COLLAPSABLE;
+    }
+
+    @Override
     public MovementDirection getMovementDirection() {
         return Obj.DEFAULT_MOVEMENT_DIRECTION;
     }

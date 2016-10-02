@@ -1086,12 +1086,26 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjActStart(String actTextExpanded) {
+    protected String decorateObjActStart(String actTextExpanded, boolean collapsable) {
         final boolean actTextNotEmpty = StringHelper.notEmpty(actTextExpanded);
         final String returnStatement = (actTextNotEmpty) ? "" : "        return true;" + LINE_SEPARATOR;
         String actText = getActText(actTextNotEmpty);
+        String prefix = "    act = function(s)" + LINE_SEPARATOR;
+        if (collapsable) {
+            prefix = (
+                    "    curStep = 2," + LINE_SEPARATOR +
+                    "    act = function(s)\n" + LINE_SEPARATOR +
+                    "        local v = vn:glookup(stead.deref(s));" + LINE_SEPARATOR +
+                    "        if s.is_paused then" + LINE_SEPARATOR +
+                    "            vn:vpause(v, false);" + LINE_SEPARATOR +
+                    "        else\n" +
+                    "            vn:set_step(v, nil, not v.forward);" + LINE_SEPARATOR +
+                    "        end" + LINE_SEPARATOR +
+                    "        vn:start();" + LINE_SEPARATOR
+            );
+        }
         return (
-                "    act = function(s)" + LINE_SEPARATOR +
+                 prefix +
                         "        s.acta(s);" + LINE_SEPARATOR +
                         returnStatement +
                         "    end," + LINE_SEPARATOR +

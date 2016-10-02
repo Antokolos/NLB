@@ -80,6 +80,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String DISP_SUBDIR_NAME = "disp";
     private static final String GRAPHICAL_FILE_NAME = "graphical";
     private static final String PRESERVED_FILE_NAME = "preserved";
+    private static final String COLLAPSABLE_FILE_NAME = "collapsable";
     private static final String MVDIRECTION_FILE_NAME = "mvdirection";
     private static final String CLEARUTT_FILE_NAME = "clearutt";
     private static final String MORPH_OVER_FILE_NAME = "morphover";
@@ -101,6 +102,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private MultiLangString m_actText = DEFAULT_ACT_TEXT;
     private boolean m_graphical = DEFAULT_GRAPHICAL;
     private boolean m_preserved = DEFAULT_PRESERVED;
+    private boolean m_collapsable = DEFAULT_COLLAPSABLE;
     private MovementDirection m_movementDirection = DEFAULT_MOVEMENT_DIRECTION;
     private boolean m_clearUnderTooltip = DEFAULT_CLEAR_UNDER_TOOLTIP;
     private String m_morphOverId = DEFAULT_MORPH_OVER_ID;
@@ -154,6 +156,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         setActTexts(source.getActTexts());
         m_graphical = source.isGraphical();
         m_preserved = source.isPreserved();
+        m_collapsable = source.isCollapsable();
         m_movementDirection = source.getMovementDirection();
         m_clearUnderTooltip = source.isClearUnderTooltip();
         m_morphOverId = source.getMorphOverId();
@@ -341,6 +344,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
 
     public void setPreserved(boolean preserved) {
         m_preserved = preserved;
+    }
+
+    @Override
+    public boolean isCollapsable() {
+        return m_collapsable;
+    }
+
+    public void setCollapsable(boolean collapsable) {
+        m_collapsable = collapsable;
     }
 
     @Override
@@ -578,6 +590,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(
                     objDir,
+                    COLLAPSABLE_FILE_NAME,
+                    String.valueOf(m_collapsable),
+                    String.valueOf(DEFAULT_COLLAPSABLE)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
                     MVDIRECTION_FILE_NAME,
                     m_movementDirection.name(),
                     DEFAULT_MOVEMENT_DIRECTION.name()
@@ -726,6 +744,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         PRESERVED_FILE_NAME,
                         String.valueOf(DEFAULT_PRESERVED)
+                )
+        );
+        m_collapsable = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        COLLAPSABLE_FILE_NAME,
+                        String.valueOf(DEFAULT_COLLAPSABLE)
                 )
         );
         String movementDirection = (
