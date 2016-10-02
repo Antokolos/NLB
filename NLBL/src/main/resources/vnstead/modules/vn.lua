@@ -130,7 +130,6 @@ vn = obj {
     _effects = {};
     _pending_effects = {};
     _bg = false;
-    _need_effect = false;
     _need_update = false;
     _wf = 0;
     _fln = nil;
@@ -170,7 +169,7 @@ vn = obj {
         s.on = false;
     end,
     screen = function(s)
-        if (s._need_effect and not s.stopped and s:in_vnr()) or s.direct_lock then
+        if theme.get('scr.gfx.mode') == 'direct' then
             return sprite.screen()
         else
             return s.offscreen
@@ -617,11 +616,8 @@ vn = obj {
         end
     end;
 
-    size = function(s, v, idx, real_size)
+    size = function(s, v, idx)
         local px, py = 0, 0;
-        --if s:parentf(v) and not real_size then
-        --    px, py = s:size(s:parentf(v), idx);
-        --end
         local xarm, yarm = s:arm(v, idx);
         local sp = s:frame(v, idx);
         if sp.tmp then
@@ -839,11 +835,6 @@ vn = obj {
             v.pos = old_pos
         end
 
-        --- because none can be animated now...
-        --- if v.eff ~= 'none' then
-        s._need_effect = true
-        --- end
-
         if not oe then
             stead.table.insert(s._pending_effects, v)
         end
@@ -879,7 +870,7 @@ vn = obj {
                     ch = s:add_child(v, gch);                    
                 end
                 if not gch.iarm then
-                    local xarm, yarm = s:size(ch, 0, true);
+                    local xarm, yarm = s:size(ch, 0);
                     yarmc = yarmc + yarm - py;
                 end
             end
@@ -945,43 +936,37 @@ vn = obj {
     end;
 
     postoxy = function(s, v, idx)
-        ---if s:parentf(v) then
-        ---    local x, y = s:postoxy(s:parentf(v), idx);
-        ---    local xarm, yarm = s:arm(v, idx);
-        ---    return x + xarm, y + yarm;
-        ---else
-            if not idx then
-                idx = 0;
-            end
-            local vw, vh = s:size(v, idx)
-            local xarm, yarm = s:arm(v, idx)
-            local x, y = xarm, yarm
-            if v.pos:find 'left' then
-                x = xarm
-            elseif v.pos:find 'right' then
-                x = s.scr_w - vw
-            else
-                x = math.floor((s.scr_w - vw) / 2);
-            end
-            if v.pos:find 'top' then
-                y = yarm
-            elseif v.pos:find 'bottom' then
-                y = s.scr_h - vh
-            elseif v.pos:find 'middle' then
-                y = math.floor((s.scr_h - vh) / 2)
-            else
-                y = s.scr_h - vh
-            end
-            if v.pos:find('@[ \t]*[0-9+%-]+[ \t]*,[ \t]*[0-9+%-]+') then
-                local dx, dy
-                local p = v.pos:gsub("^[^@]*@", "")
-                dx = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%1")
-                dy = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%2")
-                x = x + dx
-                y = y + dy
-            end
-            return x, y
-        ---end
+        if not idx then
+            idx = 0;
+        end
+        local vw, vh = s:size(v, idx)
+        local xarm, yarm = s:arm(v, idx)
+        local x, y = xarm, yarm
+        if v.pos:find 'left' then
+            x = xarm
+        elseif v.pos:find 'right' then
+            x = s.scr_w - vw
+        else
+            x = math.floor((s.scr_w - vw) / 2);
+        end
+        if v.pos:find 'top' then
+            y = yarm
+        elseif v.pos:find 'bottom' then
+            y = s.scr_h - vh
+        elseif v.pos:find 'middle' then
+            y = math.floor((s.scr_h - vh) / 2)
+        else
+            y = s.scr_h - vh
+        end
+        if v.pos:find('@[ \t]*[0-9+%-]+[ \t]*,[ \t]*[0-9+%-]+') then
+            local dx, dy
+            local p = v.pos:gsub("^[^@]*@", "")
+            dx = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%1")
+            dy = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%2")
+            x = x + dx
+            y = y + dy
+        end
+        return x, y
     end;
 
     set_bg = function(s, picture)
@@ -1278,20 +1263,6 @@ vn = obj {
             error "No scene background specified!"
         end
         s:enable_pending_effects();
-        if s._need_effect then -- doing some effect(s)
-            s:enter_direct();
-            s.stopped = false;
-            if uiupdate then
-                s.uiupdate = true;
-            else
-                -- NB: uiupdate can be nil, but here I want it to be true or false, not nil
-                s.uiupdate = false;
-            end
-            s:process()
-            --- timer:set(s.hz)
-            -- s.stopped = false;
-            return
-        end
         if effect then
             s._scene_effect = effect
         end
@@ -1303,6 +1274,7 @@ vn = obj {
         if s.skip_mode then
             s._scene_effect = false
         end
+        s:enter_direct();
         s.stopped = false;
         if uiupdate then
             s.uiupdate = true;
@@ -1376,7 +1348,6 @@ vn = obj {
         if not preserve_cache then
             s:clear_cache();
         end
-        s._need_effect = false
         s._scene_effect = eff
         -- if bg is nil, simple box sprite will be set
         s:set_bg(bg)
