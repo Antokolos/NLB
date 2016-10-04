@@ -635,7 +635,7 @@ vn = obj {
         if s:parentf(v) and not real_size then
             px, py = s:size(s:parentf(v), idx);
         end
-        local xarm, yarm = s:rel_arm(v, idx);
+        local xarm, yarm = s:abs_arm(v, idx);
         local sp = s:frame(v, idx);
         if sp.tmp then
             sprite.free(sp.spr);
@@ -651,22 +651,27 @@ vn = obj {
     end;
 
     rel_arm = function(s, v, idx)
-        local parent = s:parentf(v);
-        local px, py = s:arm(v, idx);
-        if parent then
-            local px1, py1 = s:arm(parent, idx);
-            return px - px1, py - py1;
-        end
-        return px, py;
+        --local parent = s:parentf(v);
+        --local px, py = s:abs_arm(v, idx);
+        --if parent then
+            --local px1, py1 = s:abs_arm(parent, idx);
+            --return px - px1, py - py1;
+        --end
+        --return px, py;
+        return s:arm_by_idx(v, idx, 1), s:arm_by_idx(v, idx, 2);
     end;
 
-    arm = function(s, v, idx)
+    abs_arm = function(s, v, idx)
         local parent = s:parentf(v);
         local px, py = 0, 0;
         if parent then
-            px, py = s:arm(parent, idx);
+            px, py = s:abs_arm(parent, idx);
         end
         return s:arm_by_idx(v, idx, 1) + px, s:arm_by_idx(v, idx, 2) + py;
+    end;
+
+    arm = function(s, v, idx)
+        return s:rel_arm(v, idx);
     end;
 
     arm_by_idx = function(s, v, idx, subidx)
@@ -987,14 +992,14 @@ vn = obj {
     postoxy = function(s, v, idx)
         if s:parentf(v) then
             local x, y = s:postoxy(s:parentf(v), idx);
-            local xarm, yarm = s:arm(v, idx);
+            local xarm, yarm = s:rel_arm(v, idx);
             return x + xarm, y + yarm;
         else
             if not idx then
                 idx = 0;
             end
             local vw, vh = s:size(v, idx)
-            local xarm, yarm = s:arm(v, idx)
+            local xarm, yarm = s:abs_arm(v, idx)
             local x, y = xarm, yarm
             if v.pos:find 'left' then
                 x = xarm
