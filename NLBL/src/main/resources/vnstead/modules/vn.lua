@@ -591,6 +591,20 @@ vn = obj {
             end
         end
     end;
+
+    lookup_full = function(s, n)
+        if not n then return end
+        local kk, ii = s:lookup(n);
+        if kk then
+            return kk, ii;
+        end
+        local i, k
+        for i, k in ipairs(s._pending_effects) do
+            if k.nam == n then
+                return k, i
+            end
+        end
+    end;
     
     glookup_full = function(s, n)
         if not n then return end        
@@ -712,10 +726,10 @@ vn = obj {
 
     gobf = function(s, v) return stead.ref(v.gob); end;
 
-    parentf = function(s, v) return s:lookup(v.parent); end;
+    parentf = function(s, v) return s:lookup_full(v.parent); end;
 
     childf = function(s, v_nam)
-        local ch = s:lookup(v_nam);
+        local ch = s:lookup_full(v_nam);
         return ch;
     end;
 
@@ -900,11 +914,33 @@ vn = obj {
         gob.acceleration = parent.accel;
         gob.is_paused = s:gobf(parent).is_paused;
         local child = s:effect_int(parent, gob);
+        --print("Added child = " .. child.nam .. " to " .. parent.nam);
         child.eff = parent.eff;
         child.from = parent.from;
         child.pos = parent.pos;
+        s:reconfigure_children(child);
         stead.table.insert(parent.children, child.nam);
         return child;
+    end;
+
+    -- Reconfigures properties of existing children
+    reconfigure_children = function(s, parent)
+        for i, cnam in ipairs(parent.children) do
+            local vv = s:childf(cnam);
+            vv.start = parent.start;
+            vv.step = parent.step;
+            vv.max_step = parent.max_step;
+            vv.from_stop = parent.from_stop;
+            vv.hotstep = parent.hotstep;
+            vv.accel = parent.accel;
+            vv.eff = parent.eff;
+            vv.from = parent.from;
+            vv.pos = parent.pos;
+            for ii, ccnam in ipairs(vv.children) do
+                local vvv = s:childf(ccnam);
+                s:reconfigure_children(vvv);
+            end
+        end
     end;
 
     remove_child = function(s, parent, child)
@@ -1487,6 +1523,7 @@ vn = obj {
             s:draw_hud(data.v, data.idx, data.x, data.y, data.scale, data.alpha);
         end
         for k, vv in ipairs(v.children) do
+            --print("nam = " .. v.nam .. "; child = " .. vv);
             s:set_step(s:childf(vv), from_step, forward);
         end
     end;
