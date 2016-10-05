@@ -339,7 +339,7 @@ vn = obj {
                 maxPreload = startFrame + 2;
             end
             local v = { pic = image, nam = image, start = startFrame, max_step = maxStep, from_stop = fromStop };
-            s:load_effect(v);        
+            s:load_effect(v);
             for i = startFrame,maxPreload do
                 v.spr[i]:val();
             end
@@ -577,7 +577,7 @@ vn = obj {
     show = function(s, ...)
         return s:effect(...)
     end;
-    
+
     gshow = function(s, gob)
         return s:effect_int(nil, gob);
     end;
@@ -605,9 +605,9 @@ vn = obj {
             end
         end
     end;
-    
+
     glookup_full = function(s, n)
-        if not n then return end        
+        if not n then return end
         local kk, ii = s:glookup(n);
         if kk then
             return kk, ii;
@@ -630,34 +630,36 @@ vn = obj {
         end
     end;
 
-    size = function(s, v, idx, real_size)
-        local px, py = 0, 0;
-        if s:parentf(v) and not real_size then
-            px, py = s:size(s:parentf(v), idx);
-        end
+    real_size = function(s, v, idx)
         local xarm, yarm = s:abs_arm(v, idx);
         local sp = s:frame(v, idx);
         if sp.tmp then
             sprite.free(sp.spr);
         end
-        local rx, ry = sp.w + xarm, sp.h + yarm;
-        if px > rx then
-            rx = px;
+        return sp.w + xarm, sp.h + yarm;
+    end;
+
+    -- return max size through hierarchy
+    max_size = function(s, v, idx)
+        local resx, resy = s:real_size(v, idx);
+        for i, cnam in ipairs(v.children) do
+            local vvx, vvy = s:max_size(s:childf(cnam), idx);
+            if vvx > resx then
+                resx = vvx;
+            end
+            if vvy > resy then
+                resy = vvy;
+            end
         end
-        if py > ry then
-            ry = py;
-        end
-        return rx, ry;
+        return resx, resy;
+    end;
+
+    size = function(s, v, idx)
+        local root = s:rootf(v);
+        return s:real_size(root, idx);
     end;
 
     rel_arm = function(s, v, idx)
-        --local parent = s:parentf(v);
-        --local px, py = s:abs_arm(v, idx);
-        --if parent then
-            --local px1, py1 = s:abs_arm(parent, idx);
-            --return px - px1, py - py1;
-        --end
-        --return px, py;
         return s:arm_by_idx(v, idx, 1), s:arm_by_idx(v, idx, 2);
     end;
 
@@ -667,11 +669,17 @@ vn = obj {
         if parent then
             px, py = s:abs_arm(parent, idx);
         end
-        return s:arm_by_idx(v, idx, 1) + px, s:arm_by_idx(v, idx, 2) + py;
+        local rx, ry = s:rel_arm(v, idx);
+        return rx + px, ry + py;
+    end;
+
+    root_arm = function(s, v, idx)
+        local root = s:rootf(v);
+        return s:rel_arm(root, idx);
     end;
 
     arm = function(s, v, idx)
-        return s:rel_arm(v, idx);
+        return s:abs_arm(v, idx);
     end;
 
     arm_by_idx = function(s, v, idx, subidx)
@@ -699,7 +707,7 @@ vn = obj {
         local zstep = v.step - v.start;
         return mxs, zstep;
     end;
-    
+
     update_cursor = function(s)
         if s.cursor_need_update then
             if s.use_src then
@@ -732,6 +740,15 @@ vn = obj {
     gobf = function(s, v) return stead.ref(v.gob); end;
 
     parentf = function(s, v) return s:lookup_full(v.parent); end;
+
+    rootf = function(s, v)
+        local vv = s:parentf(v);
+        if vv then
+            return s:rootf(vv);
+        else
+            return v;
+        end
+    end;
 
     childf = function(s, v_nam)
         local ch = s:lookup_full(v_nam);
@@ -899,10 +916,10 @@ vn = obj {
                 local ch = s:glookup_full(stead.deref(gch));
                 if not ch then
                     added = true;
-                    ch = s:add_child(v, gch);                    
+                    ch = s:add_child(v, gch);
                 end
                 if not gch.iarm then
-                    local xarm, yarm = s:size(ch, 0, true);
+                    local xarm, yarm = s:real_size(ch, 0);
                     yarmc = yarmc + yarm - py;
                 end
             end
