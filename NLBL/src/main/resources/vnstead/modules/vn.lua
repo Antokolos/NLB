@@ -884,7 +884,6 @@ vn = obj {
     add_missing_children = function(s, v)
         local added = false;
         local g = s:gobf(v);
-        local px, py = s:arm(v);
         if objs(g) then
             local yarmc = 0;
             for i, gch in ipairs(objs(g)) do
@@ -897,9 +896,12 @@ vn = obj {
                 if not ch then
                     added = true;
                     ch = s:add_child(v, gch);
+                else
+                    s:reconfigure_children(ch);
                 end
                 if not gch.iarm then
                     local xarm, yarm = s:real_size(ch, 0);
+                    local px, py = s:abs_arm(ch);
                     yarmc = yarmc + yarm - py;
                 end
             end
@@ -920,14 +922,16 @@ vn = obj {
         child.eff = parent.eff;
         child.from = parent.from;
         child.pos = parent.pos;
-        s:reconfigure_children(child);
         stead.table.insert(parent.children, child.nam);
+        s:reconfigure_children(parent);
         return child;
     end;
 
     -- Reconfigures properties of existing children
     reconfigure_children = function(s, parent)
+        --print("reconfiguring children of " .. parent.nam);
         for i, cnam in ipairs(parent.children) do
+            --print("reconfiguring " .. cnam);
             local vv = s:childf(cnam);
             vv.start = parent.start;
             vv.step = parent.step;
