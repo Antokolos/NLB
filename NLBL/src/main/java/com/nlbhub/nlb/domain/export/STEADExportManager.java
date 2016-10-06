@@ -1098,7 +1098,7 @@ public class STEADExportManager extends TextExportManager {
                     "        local v = vn:glookup(stead.deref(s));" + LINE_SEPARATOR +
                     "        if s.is_paused then" + LINE_SEPARATOR +
                     "            vn:vpause(v, false);" + LINE_SEPARATOR +
-                    "        else\n" +
+                    "        else" + LINE_SEPARATOR +
                     "            vn:set_step(v, nil, not v.forward);" + LINE_SEPARATOR +
                     "        end" + LINE_SEPARATOR +
                     "        vn:start();" + LINE_SEPARATOR
