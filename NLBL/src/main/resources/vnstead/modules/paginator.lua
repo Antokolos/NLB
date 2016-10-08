@@ -39,8 +39,8 @@ paginatorClick = function(x, y, a, b, c, d)
         return
     end
 
-    if clickInInvArea(x, y) then
-        -- Click in inventory area
+    if clickInInvArea(x, y) or vn:test_click(x, y) then
+        -- Click in inventory area or inside some gobj in vn
         return
     end
 

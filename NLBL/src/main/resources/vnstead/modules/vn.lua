@@ -207,6 +207,14 @@ vn = obj {
         local rct = s:get_spr_rct(v);
         return x >= rct.x and x <= rct.x + rct.w and y >= rct.y and y <= rct.y + rct.h;
     end;
+    test_click = function(s, x, y)
+        for i, v in ipairs(s._effects) do
+            if s:inside_spr(v, x, y) then
+                return true;
+            end
+        end
+        return false;
+    end;
     click = function(s, x, y, a, b, c, d)
         if not s.on then
             return;
@@ -1290,6 +1298,9 @@ vn = obj {
         local idx, x, y, w, h;
         local scale = 1.0;
         local alpha = 255;
+        if not only_compute and not s:gobf(v).is_paused and (v.step > v.init_step) and (v.step < v.max_step - v.from_stop) then
+            s:enter_direct();
+        end
         if v.eff == 'movein' then
             idx, x, y, w, h = s:movein(v, only_compute);
         elseif v.eff == 'moveout' then
@@ -1335,7 +1346,6 @@ vn = obj {
         if s.skip_mode then
             s._scene_effect = false
         end
-        s:enter_direct();
         s.stopped = false;
         if uiupdate then
             s.uiupdate = true;
@@ -1469,9 +1479,12 @@ vn = obj {
         local k, v
         local r
         for k, v in ipairs(s._effects) do
-            if v.step < v.max_step - v.from_stop and v.eff ~= 'none' then
+            if v.step < v.max_step - v.from_stop and v.forward and v.eff ~= 'none' then
                 r = true
                 v.step = v.max_step - v.from_stop
+            elseif v.step > v.init_step and not v.forward and v.eff ~= 'none' then
+                r = true
+                v.step = v.init_step
             end
         end
         return r
