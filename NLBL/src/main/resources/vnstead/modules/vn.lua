@@ -189,7 +189,7 @@ vn = obj {
         end
         s:set_bg(s._bg)
         vn:add_all_missing_children();
-        s:start()
+        s:start(nil, true)
     end;
     init = function(s)
         s.scr_w = theme.get 'scr.w'
@@ -259,7 +259,10 @@ vn = obj {
                 if not s:shapechange(v, true) then
                     v.mouse_over = true;
                     s:update_tooltip(v);
-                    vn.stopped = false;
+                    if s.stopped then
+                        s.uiupdate = true;
+                        s.stopped = false;
+                    end
                 end
             end
         end
@@ -273,7 +276,10 @@ vn = obj {
                 s:gobf(v):onout();
                 if not s:shapechange(v, false) then
                     v.mouse_over = false;
-                    vn.stopped = false;
+                    if s.stopped then
+                        s.uiupdate = true;
+                        s.stopped = false;
+                    end
                 end
             end
         end
@@ -1136,6 +1142,35 @@ vn = obj {
         local sp = s:frame(v, idx, s:screen(), x, y, only_compute, true);
         return idx, x, y, sp.w, sp.h;
     end;
+    clear = function(s, v)
+        local x, y
+        x, y = s:postoxy(v, v.step)
+        -- TODO: remove this doublecheck???
+        if not x then
+            x = 0;
+        end
+        if not y then
+            y = 0;
+        end
+        local idx = v.step;
+        if not v.spr or not v.spr[idx] then
+            print("WARN: nonexistent sprite when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
+            return v.step, x, y, 0, 0;
+        end
+        local ospr = v.spr[idx]:val();
+        if not ospr then -- Strange error when using resources in idf...
+            print("ERROR: filesystem access problem when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
+            return v.step, x, y, 0, 0;
+        end
+        local w, h = 0, 0;
+        if ospr.loaded then
+            w, h = ospr.w, ospr.h;
+        else
+            w, h = sprite.size(ospr);
+        end
+        sprite.draw(s.bg_spr, x, y, w, h, s:screen(), x, y);
+        return v.step, x, y, w, h;
+    end;
     moveout = function(s, v, only_compute)
         local mxs, zstep = s:steps(v);
         local x_start, x_end
@@ -1294,14 +1329,16 @@ vn = obj {
         local sp = s:frame(v, idx, s:screen(), x, y, only_compute, true);
         return idx, x, y, sp.w, sp.h;
     end;
-    do_effect = function(s, v, only_compute)
+    do_effect = function(s, v, only_compute, clear)
         local idx, x, y, w, h;
         local scale = 1.0;
         local alpha = 255;
         if not only_compute and not s:gobf(v).is_paused and (v.step > v.init_step) and (v.step < v.max_step - v.from_stop) then
             s:enter_direct();
         end
-        if v.eff == 'movein' then
+        if clear then
+            idx, x, y, w, h = s:clear(v)
+        elseif v.eff == 'movein' then
             idx, x, y, w, h = s:movein(v, only_compute);
         elseif v.eff == 'moveout' then
             idx, x, y, w, h = s:moveout(v, only_compute)
@@ -1314,7 +1351,7 @@ vn = obj {
         else
             idx, x, y, w, h = s:none(v, only_compute)
         end
-        if not only_compute then
+        if not only_compute and not clear then
             v.newborn = false;
         end
         return {["v"] = v, ["idx"] = idx, ["x"] = x, ["y"] = y, ["w"] = w, ["h"] = h, ["scale"] = scale, ["alpha"] = alpha};
@@ -1422,6 +1459,7 @@ vn = obj {
         s._scene_effect = eff
         -- if bg is nil, simple box sprite will be set
         s:set_bg(bg)
+        s:clear_bg(true);
     end;
     in_vnr = function(s)
         return here()._is_vnr;
@@ -1587,14 +1625,20 @@ vn = obj {
         end
         return false;
     end;
-    draw_step = function(s, v)
-        local result = {["data"] = nil, ["hasmore"] = s:do_step(v)};
+    draw_step = function(s, v, clear)
+        local hasmore = true;
+        if not clear then
+            -- If we should clear under the sprite, then don't do next step
+            -- So, then we'll clear the background under the previous position of the sprite
+            hasmore = s:do_step(v);
+        end
+        local result = {["data"] = nil, ["hasmore"] = hasmore};
         local e = true;
         if s:gobf(v).enablefn then
             e = s:gobf(v):enablefn();
         end
         if e then
-            result.data = s:do_effect(v);
+            result.data = s:do_effect(v, false, clear);
         else
             if s:gobf(v).onhide then
                 s:gobf(v):onhide();
@@ -1602,10 +1646,10 @@ vn = obj {
         end
         return result;
     end;
-    do_effects = function(s)
+    do_effects = function(s, clear)
         local result = {["datas"] = {}, ["hasmore"] = false};
         for i, v in ipairs(s._effects) do
-            local r = s:draw_step(v);
+            local r = s:draw_step(v, clear);
             if r.data then
                 stead.table.insert(result.datas, r.data);
                 result.hasmore = (result.hasmore or r.hasmore);
@@ -1613,12 +1657,31 @@ vn = obj {
         end
         return result;
     end;
+    clear_bg = function(s, full_clear)
+        -- clear bg
+        if full_clear then
+            sprite.copy(s.bg_spr, s:screen())
+        else
+            local res = s:do_effects(true);
+            s:draw_huds(res.datas, true);
+        end
+    end;
+    is_starting_frame = function(s)
+        for i, v in ipairs(s._effects) do
+            if v.step < v.max_step - v.from_stop and v.forward and v.eff ~= 'none' then
+                return false;
+            elseif v.step > v.init_step and not v.forward and v.eff ~= 'none' then
+                return false;
+            end
+        end
+        return true;
+    end;
     process = function(s)
         local i, v
         local first
         local cbresult = false;
-        -- clear bg
-        sprite.copy(s.bg_spr, s:screen())
+        s:clear_bg(s.uiupdate or s:is_starting_frame());
+        s.uiupdate = false;
         local res = s:do_effects();
         local n = res.hasmore;
         local x, y = stead.mouse_pos();
@@ -1647,12 +1710,12 @@ vn = obj {
         end
         return n
     end;
-    draw_huds = function(s, datas)
+    draw_huds = function(s, datas, clear)
         for k, vv in ipairs(datas) do
-            s:draw_hud(vv.v, vv.idx, vv.x, vv.y, vv.scale, vv.alpha)
+            s:draw_hud(vv.v, vv.idx, vv.x, vv.y, vv.scale, vv.alpha, nil, clear)
         end
     end;
-    draw_hud = function(s, v, idx, x, y, scale, alpha, target)
+    draw_hud = function(s, v, idx, x, y, scale, alpha, target, clear)
         if scale == 0 or alpha == 0 then
             return;
         end
@@ -1682,6 +1745,7 @@ vn = obj {
             xpos = xpos + s.default_label_extent + s.default_tooltip_offset;
             local sprites = {};
             local htotal = 0;
+            local wmax = 0;
             for k, vv in pairs(texts) do
                 if vv.text then
                     local color = vv.color;
@@ -1699,16 +1763,27 @@ vn = obj {
                     local textSprite;
                     if alpha ~= 255 then
                         textSprite = sprite.alpha(textSpriteScaled, alpha);
+                        sprite.free(textSpriteScaled);
                     else
                         textSprite = textSpriteScaled;
                     end
                     local w, h = sprite.size(textSprite);
+                    if clear then
+                        sprite.free(textSprite);
+                    end
                     w = w + s.extent;
+                    if w > wmax then
+                        wmax = w;
+                    end
                     htotal = htotal + h;
                     stead.table.insert(sprites, {["spr"] = textSprite, ["xpos"] = xpos, ["w"] = w, ["h"] = h});
                 end
             end
             local ycur = ypos - htotal / 2.0;
+            if clear then
+                sprite.draw(s.bg_spr, xpos, ycur, wmax, htotal, target, xpos, ycur);
+                return
+            end
             for i, ss in ipairs(sprites) do
                 local hudSprite = sprite.blank(ss.w, ss.h);
                 sprite.draw(target, ss.xpos, ycur, ss.w, ss.h, hudSprite, 0, 0);
