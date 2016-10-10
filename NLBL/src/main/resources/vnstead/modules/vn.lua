@@ -653,9 +653,24 @@ vn = obj {
         return sp.w + xarm, sp.h + yarm;
     end;
 
+    -- return max size through hierarchy
+    max_size = function(s, v, idx)
+        local resx, resy = s:real_size(v, idx);
+        for i, cnam in ipairs(v.children) do
+            local vvx, vvy = s:max_size(s:childf(cnam), idx);
+            if vvx > resx then
+                resx = vvx;
+            end
+            if vvy > resy then
+                resy = vvy;
+            end
+        end
+        return resx, resy;
+    end;
+
     size = function(s, v, idx)
         local root = s:rootf(v);
-        return s:real_size(root, idx);
+        return s:max_size(root, idx);
     end;
 
     rel_arm = function(s, v, idx)
@@ -672,8 +687,20 @@ vn = obj {
         return rx + px, ry + py;
     end;
 
+    total_rel_arm = function(s, v, idx)
+        local parent = s:parentf(v);
+        local px, py = 0, 0;
+        if parent then
+            px, py = s:total_rel_arm(parent, idx);
+        else
+            return 0, 0;
+        end
+        local rx, ry = s:rel_arm(v, idx);
+        return rx + px, ry + py;
+    end;
+
     arm = function(s, v, idx)
-        return s:abs_arm(v, idx);
+        return s:total_rel_arm(v, idx);
     end;
 
     arm_by_idx = function(s, v, idx, subidx)
