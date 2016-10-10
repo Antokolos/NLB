@@ -1169,34 +1169,8 @@ vn = obj {
         local sp = s:frame(v, idx, s:screen(), x, y, only_compute, true);
         return idx, x, y, sp.w, sp.h;
     end;
-    clear = function(s, v)
-        local x, y
-        x, y = s:postoxy(v, v.step)
-        -- TODO: remove this doublecheck???
-        if not x then
-            x = 0;
-        end
-        if not y then
-            y = 0;
-        end
-        local idx = v.step;
-        if not v.spr or not v.spr[idx] then
-            print("WARN: nonexistent sprite when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
-            return v.step, x, y, 0, 0;
-        end
-        local ospr = v.spr[idx]:val();
-        if not ospr then -- Strange error when using resources in idf...
-            print("ERROR: filesystem access problem when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
-            return v.step, x, y, 0, 0;
-        end
-        local w, h = 0, 0;
-        if ospr.loaded then
-            w, h = ospr.w, ospr.h;
-        else
-            w, h = sprite.size(ospr);
-        end
+    clear = function(s, x, y, w, h)
         sprite.draw(s.bg_spr, x, y, w, h, s:screen(), x, y);
-        return v.step, x, y, w, h;
     end;
     moveout = function(s, v, only_compute)
         local mxs, zstep = s:steps(v);
@@ -1363,9 +1337,7 @@ vn = obj {
         if not only_compute and not s:gobf(v).is_paused and (v.step > v.init_step) and (v.step < v.max_step - v.from_stop) then
             s:enter_direct();
         end
-        if clear then
-            idx, x, y, w, h = s:clear(v)
-        elseif v.eff == 'movein' then
+        if v.eff == 'movein' then
             idx, x, y, w, h = s:movein(v, only_compute);
         elseif v.eff == 'moveout' then
             idx, x, y, w, h = s:moveout(v, only_compute)
@@ -1377,6 +1349,9 @@ vn = obj {
             idx, x, y, w, h = s:reverse(v, only_compute)
         else
             idx, x, y, w, h = s:none(v, only_compute)
+        end
+        if clear then
+            s:clear(x, y, w, h);
         end
         if not only_compute and not clear then
             v.newborn = false;
