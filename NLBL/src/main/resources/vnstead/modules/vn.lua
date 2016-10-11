@@ -700,7 +700,7 @@ vn = obj {
     end;
 
     arm = function(s, v, idx)
-        return s:total_rel_arm(v, idx);
+        return s:abs_arm(v, idx);
     end;
 
     arm_by_idx = function(s, v, idx, subidx)
@@ -1192,8 +1192,9 @@ vn = obj {
             x = math.floor(x_start - zstep * (x_start - x_end) / mxs)
         elseif v.from == 'right' then
             x_end = s.scr_w;
+            local xarmr, yarmr = s:total_rel_arm(v, idx);
             if s:parentf(v) then
-                x_end = x_end + xarm;
+                x_end = x_end + xarmr;
             end
             x = math.floor(x_start + zstep * (x_end - x_start) / mxs)
         elseif v.from == 'top' then
@@ -1201,8 +1202,9 @@ vn = obj {
             y = math.floor(y_start - zstep * (y_start - y_end) / mxs)
         elseif v.from == 'bottom' then
             y_end = s.scr_h;
+            local xarmr, yarmr = s:total_rel_arm(v, idx);
             if s:parentf(v) then
-                y_end = y_end + yarm;
+                y_end = y_end + yarmr;
             end
             y = math.floor(y_start + zstep * (y_end - y_start) / mxs)
         end
@@ -1313,8 +1315,9 @@ vn = obj {
             x = math.floor(x_start + zstep * (xarm - x_start) / mxs)
         elseif v.from == 'right' then
             x_start = s.scr_w
+            local xarmr, yarmr = s:total_rel_arm(v, idx);
             if s:parentf(v) then
-                x_start = x_start + xarm;
+                x_start = x_start + xarmr;
             end
             x = math.floor(x_start - zstep * (x_start - x_end) / mxs)
         elseif v.from == 'top' then
@@ -1322,8 +1325,9 @@ vn = obj {
             y = math.floor(y_start + zstep * (yarm - y_start) / mxs)
         elseif v.from == 'bottom' then
             y_start = s.scr_h
+            local xarmr, yarmr = s:total_rel_arm(v, idx);
             if s:parentf(v) then
-                y_start = y_start + yarm;
+                y_start = y_start + yarmr;
             end
             y = math.floor(y_start - zstep * (y_start - y_end) / mxs)
         end
