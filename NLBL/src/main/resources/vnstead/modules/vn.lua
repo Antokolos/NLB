@@ -196,6 +196,7 @@ vn = obj {
         s.scr_h = theme.get 'scr.h'
         s.offscreen = sprite.blank(s.scr_w, s.scr_h)
         s.blackscreen = sprite.box(s.scr_w, s.scr_h, 'black')
+        s.uiupdate = true;
         timer:set(1); --(s.hz)
     end;
     get_spr_rct = function(s, v)
@@ -1235,55 +1236,37 @@ vn = obj {
         end
 
         local sp = s:frame(v, sprpos);
+        local w, h = sp.w, sp.h;
         if scale ~= 1.0 then
             spr = sprite.scale(sp.spr, scale, scale, false);
+            w, h = sprite.size(spr);
         else
             spr = sp.spr;
         end
 
-        local w, h = sprite.size(spr)
-
         x, y = s:postoxy(v, sprpos)
 
-        local xdiff, xextent, ydiff, yextent;
-        if s:parentf(v) then
-            local wp, hp;
-            local sprpart = s:frame(s:parentf(v), sprpos);
-            if scale ~= 1.0 then
-                local sprpar = sprite.scale(sprpart.spr, scale, scale, false);
-                wp, hp = sprite.size(sprpar);
-                sprite.free(sprpar);
-            else
-                wp, hp = sprpart.w, sprpart.h;
-            end
-            if sprpart.tmp then
-                sprite.free(sprpart.spr);
-            end
-            xdiff = ws - wp;
-            ydiff = hs - hp;
-            xextent = math.floor(xarm * scale);
-            yextent = math.floor(yarm * scale);
-        else
-            xdiff = ws - w;
-            ydiff = hs - h;
-            xextent = 0;
-            yextent = 0;
-        end
+        local xdiff, xextent, ydiff, yextent, xarmr, yarmr;
+        xdiff = ws * (1 - scale);
+        ydiff = hs * (1 - scale);
+        xarmr, yarmr = s:total_rel_arm(v, sprpos);
+        xextent = xarmr * scale;
+        yextent = yarmr * scale;
         if v.pos:find 'left' then
-            x = x - xarm + xextent;
+            x = x - xarmr + math.floor(xextent);
         elseif v.pos:find 'right' then
-            x = x + math.floor(xdiff) + xextent;
+            x = x + math.floor(xdiff);
         else
-            x = x + math.floor((xdiff - xarm) / 2) + xextent;
+            x = x + math.floor((xdiff - xarmr + xextent) / 2);
         end
         if v.pos:find 'top' then
-            y = y - yarm + yextent;
+            y = y - yarmr + math.floor(yextent);
         elseif v.pos:find 'bottom' then
-            y = y + math.floor(ydiff) + yextent;
+            y = y + math.floor(ydiff);
         else
-            y = y + math.floor((ydiff - yarm) / 2) + yextent;
+            y = y + math.floor((ydiff - yarmr + yextent) / 2);
         end
-        local ww, hh = sprite.size(spr);
+
         if not only_compute then
             sprite.draw(spr, s:screen(), x, y)
         end
@@ -1293,7 +1276,7 @@ vn = obj {
         if sp.tmp then
             sprite.free(sp.spr);
         end
-        return sprpos, x, y, ww, hh, scale;
+        return sprpos, x, y, w, h, scale;
     end;
 
     movein = function(s, v, only_compute)
@@ -1433,9 +1416,9 @@ vn = obj {
         s.win_x, s.win_y, s.win_w, s.win_h = x + s._wf, y, w - 2 * s._wf, h;
         theme.win.geom(s.win_x, s.win_y, s.win_w, s.win_h);
         if effect then
-            s:start(effect);
+            s:start(effect, true);
         else
-            s:start();
+            s:start(nil, true);
         end;
         s:commit();
     end;

@@ -954,20 +954,20 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateObjEffect(String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection) {
         String effect = "left-top@0,0";
         String steps = "    maxStep = 20," + LINE_SEPARATOR +
-                "    startFrame = 0," + LINE_SEPARATOR;// +
-                //"    curStep = 2," + LINE_SEPARATOR;
+                "    startFrame = 0," + LINE_SEPARATOR;
+        String anim = "movein";
         switch (movementDirection) {
             case Top:
-                effect = "moveintop-" + effect;
+                effect = anim + "top-" + effect;
                 break;
             case Left:
-                effect = "moveinleft-" + effect;
+                effect = anim + "left-" + effect;
                 break;
             case Right:
-                effect = "moveinright-" + effect;
+                effect = anim + "right-" + effect;
                 break;
             case Bottom:
-                effect = "moveinbottom-" + effect;
+                effect = anim + "bottom-" + effect;
                 break;
             default:
                 steps = "";
