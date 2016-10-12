@@ -578,6 +578,8 @@ vn = obj {
 
         local i, k = s:lookup(nam)
         if not i then return end
+        s:enter_direct();
+        s:clear_bg_under_sprite(i);
         stead.table.remove(s._effects, k)
         for ii, vv in ipairs(i.children) do
             s:hide(s:childf(vv), eff, ...);
@@ -1171,7 +1173,7 @@ vn = obj {
         return idx, x, y, sp.w, sp.h;
     end;
     clear = function(s, x, y, w, h)
-        sprite.draw(s.bg_spr, x, y, w, h, s:screen(), x, y);
+        sprite.copy(s.bg_spr, x, y, w, h, s:screen(), x, y);
     end;
     moveout = function(s, v, only_compute)
         local mxs, zstep = s:steps(v);
@@ -1448,7 +1450,7 @@ vn = obj {
         s._scene_effect = eff
         -- if bg is nil, simple box sprite will be set
         s:set_bg(bg)
-        s:clear_bg(true);
+        s:clear_bg();
     end;
     in_vnr = function(s)
         return here()._is_vnr;
@@ -1471,6 +1473,8 @@ vn = obj {
         local invx, invy = theme.get 'inv.x', theme.get 'inv.y'
         local sb = sprite.box(w + pad * 2, h + pad * 2, 'black', s.bgalpha)
         local si = sprite.box(invw, invh, 'black')
+        sprite.copy(s.bg_spr, x - pad - wf, y - pad, w + pad * 2 + wf * 2, h + pad * 2, to, x - pad - wf, y - pad);
+        sprite.copy(s.bg_spr, invx, invy, invw, invh, to, invx, invy);
         if (wf > 0) then
             local fl;
             if fln then
@@ -1557,6 +1561,8 @@ vn = obj {
         end
     end;
     set_step = function(s, v, from_step, forward)
+        s:enter_direct();
+        s:clear_bg_under_sprite(v);
         if from_step then
             v.step = from_step;
         end
@@ -1646,30 +1652,34 @@ vn = obj {
         end
         return result;
     end;
-    clear_bg = function(s, full_clear)
-        -- clear bg
-        if full_clear then
-            sprite.copy(s.bg_spr, s:screen())
+    clear_bg = function(s, partial_clear)
+        if partial_clear then
+            for i, v in ipairs(s._effects) do
+                s:clear_bg_under_sprite(v);
+            end
         else
-            local res = s:do_effects(true);
-            s:draw_huds(res.datas, true);
+            sprite.copy(s.bg_spr, s:screen());
         end
     end;
-    is_starting_frame = function(s)
+    clear_bg_under_sprite = function(s, v)
+        local data = s:do_effect(v, true, true);
+        s:draw_hud(data.v, data.idx, data.x, data.y, data.scale, data.alpha, nil, true);
+    end;
+    has_animation_in_progress = function(s)
         for i, v in ipairs(s._effects) do
             if v.step < v.max_step - v.from_stop and v.forward and v.eff ~= 'none' then
-                return false;
+                return true;
             elseif v.step > v.init_step and not v.forward and v.eff ~= 'none' then
-                return false;
+                return true;
             end
         end
-        return true;
+        return false;
     end;
     process = function(s)
         local i, v
         local first
         local cbresult = false;
-        s:clear_bg(s.uiupdate or s:is_starting_frame());
+        s:clear_bg(not s.uiupdate);
         s.uiupdate = false;
         local res = s:do_effects();
         local n = res.hasmore;
