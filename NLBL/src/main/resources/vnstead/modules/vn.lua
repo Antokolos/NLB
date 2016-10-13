@@ -140,7 +140,6 @@ vn = obj {
     var {
         on = true,
         stopped = true,
-        uiupdate = false,
         speed = 500,
         fading = 8,
         bgalpha = 127,
@@ -196,7 +195,6 @@ vn = obj {
         s.scr_h = theme.get 'scr.h'
         s.offscreen = sprite.blank(s.scr_w, s.scr_h)
         s.blackscreen = sprite.box(s.scr_w, s.scr_h, 'black')
-        s.uiupdate = true;
         timer:set(1); --(s.hz)
     end;
     get_spr_rct = function(s, v)
@@ -251,7 +249,7 @@ vn = obj {
         return true;
     end;
     over = function(s, x, y, a, b, c, d)
-        if not s.on then -- or s.uiupdate then
+        if not s.on then
             return;
         end
         for i, v in ipairs(s._effects) do
@@ -261,7 +259,6 @@ vn = obj {
                     v.mouse_over = true;
                     s:update_tooltip(v);
                     if s.stopped then
-                        s.uiupdate = true;
                         s.stopped = false;
                     end
                 end
@@ -269,7 +266,7 @@ vn = obj {
         end
     end;
     out = function(s, x, y, a, b, c, d)
-        if not s.on then -- or s.uiupdate then
+        if not s.on then
             return;
         end
         for i, v in ipairs(s._effects) do
@@ -278,7 +275,6 @@ vn = obj {
                 if not s:shapechange(v, false) then
                     v.mouse_over = false;
                     if s.stopped then
-                        s.uiupdate = true;
                         s.stopped = false;
                     end
                 end
@@ -1372,12 +1368,6 @@ vn = obj {
             s._scene_effect = false
         end
         s.stopped = false;
-        if uiupdate then
-            s.uiupdate = true;
-        else
-            -- NB: uiupdate can be nil, but here I want it to be true or false, not nil
-            s.uiupdate = false;
-        end
         s:process() -- draw frame to offscreen
         if s._scene_effect == 'fading' or s._scene_effect == 'fade' then
             theme.gfx.bg(s.blackscreen)
@@ -1540,7 +1530,6 @@ vn = obj {
         s:leave_direct();
 
         s.stopped = true;
-        s.uiupdate = false;
         --- RAW_TEXT = true
         --- return game._lastdisp;
     end;
@@ -1687,8 +1676,7 @@ vn = obj {
         local i, v
         local first
         local cbresult = false;
-        s:clear_bg(not s.uiupdate);
-        s.uiupdate = false;
+        s:clear_bg(true);
         if s:has_any_animation_in_progress() then
             s:enter_direct();
         end
