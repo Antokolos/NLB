@@ -181,9 +181,9 @@ vn = obj {
         end
         local i, v, n
         for i, v in ipairs(s._effects) do
-            v.step = v.init_step;
+            v.step = s:get_init_step(v);
             s:load_effect(v)
-            if v.step < v.max_step - v.from_stop then
+            if s:get_step(v) < s:get_max_step(v) - s:get_from_stop(v) then
                 n = true
             end
         end
@@ -387,7 +387,7 @@ vn = obj {
         -- Will return nils if v is sprite
         local prefix, extension = s:split_url(v.pic);
         local meta, milestones = s:read_meta(prefix);
-        for sprStep = v.start, v.max_step do
+        for sprStep = s:get_start(v), s:get_max_step(v) do
             v.spr[sprStep] = {
                 was_loaded = false,
                 cache = nil,
@@ -402,10 +402,10 @@ vn = obj {
                         return v.pic;
                     end
                     if ss:file_exists(v.pic) then
-                        if sprStep == v.start then
+                        if sprStep == ss:get_start(v) then
                             return s:load_file(v.pic);
-                        elseif sprStep > v.start then
-                            return v.spr[v.start]:val();
+                        elseif sprStep > ss:get_start(v) then
+                            return v.spr[ss:get_start(v)]:val();
                         end
                     else
                         return s:load_frame();
@@ -417,7 +417,7 @@ vn = obj {
                         key = sprfile;
                     end
                     if not idx then
-                        idx = v.start;
+                        idx = ss:get_start(v);
                     end
                     local startIdx = 0;
                     if milestones then
@@ -473,7 +473,7 @@ vn = obj {
                     else
                         error("Can not load sprite: " .. tostring(sprfile));
                     end
-                    if idx > v.start then
+                    if idx > ss:get_start(v) then
                         if not ss.sprite_cache_data[key] then
                             local scd = {};
                             scd[0] = v;
@@ -489,13 +489,13 @@ vn = obj {
                     if ss:file_exists(sprfile) then
                         return s:load_file(sprfile, prefix, sprStep);
                     end
-                    local interval, milestoneIdx = ss:find_interval(milestones, sprStep, v.max_step);
+                    local interval, milestoneIdx = ss:find_interval(milestones, sprStep, ss:get_max_step(v));
                     local united_sprfile = prefix .. interval .. extension;
                     if ss:file_exists(united_sprfile) then
                         return s:load_file(united_sprfile, prefix, sprStep, true, milestoneIdx);
                     elseif sprStep == start then
                         error("Can not load key sprite (" .. sprfile .. " or " .. united_sprfile .. ")");
-                    elseif sprStep > v.start then
+                    elseif sprStep > ss:get_start(v) then
                         return v.spr[sprStep - 1]:val();
                     end
                 end,
@@ -526,8 +526,8 @@ vn = obj {
             local v = w[0];
             local lastIdx = w[1];
             -- v.spr can be nil if free_effect() was already called
-            if (v.spr and (lastIdx > v.start) and (lastIdx < (v.max_step - v.from_stop))) then
-                for i = lastIdx + 1, (v.max_step - v.from_stop) do
+            if (v.spr and (lastIdx > s:get_start(v)) and (lastIdx < (s:get_max_step(v) - s:get_from_stop(v)))) then
+                for i = lastIdx + 1, (s:get_max_step(v) - s:get_from_stop(v)) do
                     if v.spr[i] then
                         v.spr[i]:val();
                     else
@@ -725,9 +725,9 @@ vn = obj {
     end;
 
     steps = function(s, v)
-        local mxs = v.max_step - v.from_stop - v.start;
-        --print("vstep="..tostring(v.step).."vstart="..tostring(v.start));
-        local zstep = v.step - v.start;
+        local mxs = s:get_max_step(v) - s:get_from_stop(v) - s:get_start(v);
+        --print("vstep="..tostring(s:get_step(v)).."vstart="..tostring(s:get_start(v));
+        local zstep = s:get_step(v) - s:get_start(v);
         return mxs, zstep;
     end;
 
@@ -777,6 +777,28 @@ vn = obj {
         local ch = s:lookup_full(v_nam);
         return ch;
     end;
+
+    get_start = function(s, v) return s:rootf(v).start; end;
+
+    get_init_step = function(s, v) return s:rootf(v).init_step; end;
+
+    get_step = function(s, v) return s:rootf(v).step; end;
+
+    get_max_step = function(s, v) return s:rootf(v).max_step; end;
+
+    get_from_stop = function(s, v) return s:rootf(v).from_stop; end;
+
+    get_hotstep = function(s, v) return s:rootf(v).hotstep; end;
+
+    get_accel = function(s, v) return s:rootf(v).accel; end;
+
+    get_eff = function(s, v) return s:rootf(v).eff; end;
+
+    get_from = function(s, v) return s:rootf(v).from; end;
+
+    get_pos = function(s, v) return s:rootf(v).pos; end;
+
+    get_forward = function(s, v) return s:rootf(v).forward; end;
 
     effect_int = function(s, parent_eff, g, is_over)
         local image;
@@ -847,7 +869,7 @@ vn = obj {
                 oe.pic = v.pic
                 s:load_effect(oe)
             end
-            old_pos = oe.pos
+            old_pos = s:get_pos(oe);
             v = oe
         else
             v.step = g.curStep;
@@ -893,7 +915,7 @@ vn = obj {
 
         if s.skip_mode then v.eff = 'none' end
 
-        if v.eff == 'none' then
+        if s:get_eff(v) == 'none' then
             v.pos = eff
         else
             if eff:find("%-") then
@@ -939,8 +961,6 @@ vn = obj {
                 if not ch then
                     added = true;
                     ch = s:add_child(v, gch);
-                else
-                    s:reconfigure_children(ch);
                 end
                 if not gch.iarm then
                     local xarm, yarm = s:real_size(ch, 0);
@@ -953,47 +973,20 @@ vn = obj {
     end;
 
     add_child = function(s, parent, gob)
-        gob.startFrame = parent.start;
-        gob.curStep = parent.step;
-        gob.maxStep = parent.max_step;
-        gob.framesFromStop = parent.from_stop;
-        gob.hot_step = parent.hotstep;
-        gob.acceleration = parent.accel;
+        gob.startFrame = s:get_start(parent);
+        gob.curStep = s:get_step(parent);
+        gob.maxStep = s:get_max_step(parent);
+        gob.framesFromStop = s:get_from_stop(parent);
+        gob.hot_step = s:get_hotstep(parent);
+        gob.acceleration = s:get_accel(parent);
         gob.is_paused = s:gobf(parent).is_paused;
         local child = s:effect_int(parent, gob);
         --print("Added child = " .. child.nam .. " to " .. parent.nam);
-        child.eff = parent.eff;
-        child.from = parent.from;
-        child.pos = parent.pos;
+        child.eff = s:get_eff(parent);
+        child.from = s:get_from(parent);
+        child.pos = s:get_pos(parent);
         stead.table.insert(parent.children, child.nam);
-        s:reconfigure_children(parent);
         return child;
-    end;
-
-    -- Reconfigures properties of existing children
-    reconfigure_children = function(s, parent)
-        --print("reconfiguring children of " .. parent.nam);
-        for i, cnam in ipairs(parent.children) do
-            --print("reconfiguring " .. cnam);
-            local vv = s:childf(cnam);
-            if vv.step ~= parent.step then
-                s:enter_direct();
-                s:clear_bg_under_sprite(vv);
-            end
-            vv.start = parent.start;
-            vv.step = parent.step;
-            vv.max_step = parent.max_step;
-            vv.from_stop = parent.from_stop;
-            vv.hotstep = parent.hotstep;
-            vv.accel = parent.accel;
-            vv.eff = parent.eff;
-            vv.from = parent.from;
-            vv.pos = parent.pos;
-            for ii, ccnam in ipairs(vv.children) do
-                local vvv = s:childf(ccnam);
-                s:reconfigure_children(vvv);
-            end
-        end
     end;
 
     remove_child = function(s, parent, child)
@@ -1049,25 +1042,25 @@ vn = obj {
             local vw, vh = s:size(v, idx)
             local xarm, yarm = s:abs_arm(v, idx)
             local x, y = xarm, yarm
-            if v.pos:find 'left' then
+            if s:get_pos(v):find 'left' then
                 x = xarm
-            elseif v.pos:find 'right' then
+            elseif s:get_pos(v):find 'right' then
                 x = s.scr_w - vw
             else
                 x = math.floor((s.scr_w - vw) / 2);
             end
-            if v.pos:find 'top' then
+            if s:get_pos(v):find 'top' then
                 y = yarm
-            elseif v.pos:find 'bottom' then
+            elseif s:get_pos(v):find 'bottom' then
                 y = s.scr_h - vh
-            elseif v.pos:find 'middle' then
+            elseif s:get_pos(v):find 'middle' then
                 y = math.floor((s.scr_h - vh) / 2)
             else
                 y = s.scr_h - vh
             end
-            if v.pos:find('@[ \t]*[0-9+%-]+[ \t]*,[ \t]*[0-9+%-]+') then
+            if s:get_pos(v):find('@[ \t]*[0-9+%-]+[ \t]*,[ \t]*[0-9+%-]+') then
                 local dx, dy
-                local p = v.pos:gsub("^[^@]*@", "")
+                local p = s:get_pos(v):gsub("^[^@]*@", "")
                 dx = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%1")
                 dy = p:gsub("^([0-9+%-]+)[ \t]*,[ \t]*([0-9+%-]+)", "%2")
                 x = x + dx
@@ -1137,11 +1130,11 @@ vn = obj {
     fade = function(s, v, only_compute)
         local mxs, zstep = s:steps(v);
         local x, y, idx
-        local fadein = (v.eff == 'fadein');
+        local fadein = (s:get_eff(v) == 'fadein');
         if fadein then
-            idx = v.step;
+            idx = s:get_step(v);
         else
-            idx = v.max_step - v.step;
+            idx = s:get_max_step(v) - s:get_step(v);
         end
         x, y = s:postoxy(v, idx)
 
@@ -1164,13 +1157,13 @@ vn = obj {
     end;
     none = function(s, v, only_compute)
         local x, y
-        x, y = s:postoxy(v, v.step)
-        local sp = s:frame(v, v.step, s:screen(), x, y, only_compute, true);
-        return v.step, x, y, sp.w, sp.h;
+        x, y = s:postoxy(v, s:get_step(v))
+        local sp = s:frame(v, s:get_step(v), s:screen(), x, y, only_compute, true);
+        return s:get_step(v), x, y, sp.w, sp.h;
     end;
     reverse = function(s, v, only_compute)
         local x, y
-        local idx = v.max_step - v.step;
+        local idx = s:get_max_step(v) - s:get_step(v);
         x, y = s:postoxy(v, idx)
         local sp = s:frame(v, idx, s:screen(), x, y, only_compute, true);
         return idx, x, y, sp.w, sp.h;
@@ -1187,30 +1180,30 @@ vn = obj {
         local x_start, x_end
         local y_start, y_end
         local x, y
-        local idx = v.max_step - v.step;
+        local idx = s:get_max_step(v) - s:get_step(v);
         local vw, vh = s:size(v, idx)
         local xarm, yarm = s:arm(v, idx)
         local ws, hs = vw - xarm, vh - yarm
         x_start, y = s:postoxy(v, idx)
-        if v.from == 'left' or v.from == 'right' then
+        if s:get_from(v) == 'left' or s:get_from(v) == 'right' then
             x_start, y = s:postoxy(v, idx)
-        elseif v.from == 'top' or v.from == 'bottom' then
+        elseif s:get_from(v) == 'top' or s:get_from(v) == 'bottom' then
             x, y_start = s:postoxy(v, idx)
         end
-        if v.from == 'left' then
+        if s:get_from(v) == 'left' then
             x_end = -ws
             x = math.floor(x_start - zstep * (x_start - x_end) / mxs)
-        elseif v.from == 'right' then
+        elseif s:get_from(v) == 'right' then
             x_end = s.scr_w;
             local xarmr, yarmr = s:total_rel_arm(v, idx);
             if s:parentf(v) then
                 x_end = x_end + xarmr;
             end
             x = math.floor(x_start + zstep * (x_end - x_start) / mxs)
-        elseif v.from == 'top' then
+        elseif s:get_from(v) == 'top' then
             y_end = -hs
             y = math.floor(y_start - zstep * (y_start - y_end) / mxs)
-        elseif v.from == 'bottom' then
+        elseif s:get_from(v) == 'bottom' then
             y_end = s.scr_h;
             local xarmr, yarmr = s:total_rel_arm(v, idx);
             if s:parentf(v) then
@@ -1229,19 +1222,19 @@ vn = obj {
         local spr
         local scale
         local sprpos;
-        if v.eff == 'zoomin' then
+        if s:get_eff(v) == 'zoomin' then
             scale = zstep / mxs;
-            sprpos = v.step;
+            sprpos = s:get_step(v);
         else
             scale = 1 - zstep / mxs
-            sprpos = v.max_step - v.step;
+            sprpos = s:get_max_step(v) - s:get_step(v);
         end
 
         local vw, vh = s:size(v, sprpos)
         local xarm, yarm = s:arm(v, sprpos)
         local ws, hs = vw - xarm, vh - yarm
         if scale == 0 then
-            return v.start, 0, 0, 0;
+            return s:get_start(v), 0, 0, 0;
         end
 
         local sp = s:frame(v, sprpos);
@@ -1261,16 +1254,16 @@ vn = obj {
         xarmr, yarmr = s:total_rel_arm(v, sprpos);
         xextent = xarmr * scale;
         yextent = yarmr * scale;
-        if v.pos:find 'left' then
+        if s:get_pos(v):find 'left' then
             x = x - xarmr + math.floor(xextent);
-        elseif v.pos:find 'right' then
+        elseif s:get_pos(v):find 'right' then
             x = x + math.floor(xdiff);
         else
             x = x + math.floor((xdiff - xarmr + xextent) / 2);
         end
-        if v.pos:find 'top' then
+        if s:get_pos(v):find 'top' then
             y = y - yarmr + math.floor(yextent);
-        elseif v.pos:find 'bottom' then
+        elseif s:get_pos(v):find 'bottom' then
             y = y + math.floor(ydiff);
         else
             y = y + math.floor((ydiff - yarmr + yextent) / 2);
@@ -1293,29 +1286,29 @@ vn = obj {
         local x_start, y_start
         local x_end, y_end
         local x, y
-        local idx = v.step;
-        if v.from == 'left' or v.from == 'right' then
+        local idx = s:get_step(v);
+        if s:get_from(v) == 'left' or s:get_from(v) == 'right' then
             x_end, y = s:postoxy(v, idx)
-        elseif v.from == 'top' or v.from == 'bottom' then
+        elseif s:get_from(v) == 'top' or s:get_from(v) == 'bottom' then
             x, y_end = s:postoxy(v, idx)
         end
         local vw, vh = s:size(v, idx)
         local xarm, yarm = s:arm(v, idx)
         local ws, hs = vw - xarm, vh - yarm
-        if v.from == 'left' then
+        if s:get_from(v) == 'left' then
             x_start = -ws
             x = math.floor(x_start + zstep * (xarm - x_start) / mxs)
-        elseif v.from == 'right' then
+        elseif s:get_from(v) == 'right' then
             x_start = s.scr_w
             local xarmr, yarmr = s:total_rel_arm(v, idx);
             if s:parentf(v) then
                 x_start = x_start + xarmr;
             end
             x = math.floor(x_start - zstep * (x_start - x_end) / mxs)
-        elseif v.from == 'top' then
+        elseif s:get_from(v) == 'top' then
             y_start = -hs
             y = math.floor(y_start + zstep * (yarm - y_start) / mxs)
-        elseif v.from == 'bottom' then
+        elseif s:get_from(v) == 'bottom' then
             y_start = s.scr_h
             local xarmr, yarmr = s:total_rel_arm(v, idx);
             if s:parentf(v) then
@@ -1330,15 +1323,15 @@ vn = obj {
         local idx, x, y, w, h;
         local scale = 1.0;
         local alpha = 255;
-        if v.eff == 'movein' then
+        if s:get_eff(v) == 'movein' then
             idx, x, y, w, h = s:movein(v, only_compute);
-        elseif v.eff == 'moveout' then
+        elseif s:get_eff(v) == 'moveout' then
             idx, x, y, w, h = s:moveout(v, only_compute)
-        elseif v.eff == 'fadein' or v.eff == 'fadeout' then
+        elseif s:get_eff(v) == 'fadein' or s:get_eff(v) == 'fadeout' then
             idx, x, y, w, h, alpha = s:fade(v, only_compute)
-        elseif v.eff == 'zoomin' or v.eff == 'zoomout' then
+        elseif s:get_eff(v) == 'zoomin' or s:get_eff(v) == 'zoomout' then
             idx, x, y, w, h, scale = s:zoom(v, only_compute)
-        elseif v.eff == 'reverse' then
+        elseif s:get_eff(v) == 'reverse' then
             idx, x, y, w, h = s:reverse(v, only_compute)
         else
             idx, x, y, w, h = s:none(v, only_compute)
@@ -1515,12 +1508,16 @@ vn = obj {
         local k, v
         local r
         for k, v in ipairs(s._effects) do
-            if v.step < v.max_step - v.from_stop and v.forward then
+            if s:get_step(v) < s:get_max_step(v) - s:get_from_stop(v) and s:get_forward(v) then
                 r = true
-                v.step = v.max_step - v.from_stop
-            elseif v.step > v.init_step and not v.forward then
+                s:enter_direct();
+                s:clear_bg_under_sprite(v);
+                v.step = s:get_max_step(v) - s:get_from_stop(v)
+            elseif s:get_step(v) > s:get_init_step(v) and not s:get_forward(v) then
                 r = true
-                v.step = v.init_step
+                s:enter_direct();
+                s:clear_bg_under_sprite(v);
+                v.step = s:get_init_step(v)
             end
         end
         return r
@@ -1531,7 +1528,7 @@ vn = obj {
         local i, v
 
         for i, v in ipairs(s._effects) do
-            if not v.eff:find("out") then
+            if not s:get_eff(v):find("out") then
                 stead.table.insert(e2, v)
             else
                 s:free_effect(v)
@@ -1585,8 +1582,8 @@ vn = obj {
         end
     end;
     do_step = function(s, v)
-        local hotstep = v.hotstep;
-        local accel = v.accel;
+        local hotstep = s:get_hotstep(v);
+        local accel = s:get_accel(v);
         if hotstep and s.slowcpu then
             hotstep = math.floor(hotstep / 3);
             if hotstep == 0 then
@@ -1599,25 +1596,25 @@ vn = obj {
         if v.newborn then
             return true;
         elseif not s:gobf(v).is_paused then
-            if v.forward then
-                if (v.step < v.max_step - v.from_stop) then
-                    v.step = v.step + s.stp;
-                    if hotstep and v.step % hotstep == 0 then
-                        v.step = v.step + accel * s.stp;
+            if s:get_forward(v) then
+                if (s:get_step(v) < s:get_max_step(v) - s:get_from_stop(v)) then
+                    v.step = s:get_step(v) + s.stp;
+                    if hotstep and s:get_step(v) % hotstep == 0 then
+                        v.step = s:get_step(v) + accel * s.stp;
                     end
-                    if v.step > v.max_step - v.from_stop then
-                        v.step = v.max_step - v.from_stop;
+                    if s:get_step(v) > s:get_max_step(v) - s:get_from_stop(v) then
+                        v.step = s:get_max_step(v) - s:get_from_stop(v);
                     end
                     return true;
                 end
             else
-                if (v.step > v.init_step) then
-                    v.step = v.step - s.stp;
-                    if hotstep and v.step % hotstep == 0 then
-                        v.step = v.step - accel * s.stp;
+                if (s:get_step(v) > s:get_init_step(v)) then
+                    v.step = s:get_step(v) - s.stp;
+                    if hotstep and s:get_step(v) % hotstep == 0 then
+                        v.step = s:get_step(v) - accel * s.stp;
                     end
-                    if v.step < v.init_step then
-                        v.step = v.init_step;
+                    if s:get_step(v) < s:get_init_step(v) then
+                        v.step = s:get_init_step(v);
                     end
                     return true;
                 end
@@ -1682,8 +1679,8 @@ vn = obj {
         if s:gobf(v).is_paused then
             return false;
         end
-        local f = (v.step < v.max_step - v.from_stop) and v.forward;
-        local b = (v.step > v.init_step) and not v.forward;
+        local f = (s:get_step(v) < s:get_max_step(v) - s:get_from_stop(v)) and s:get_forward(v);
+        local b = (s:get_step(v) > s:get_init_step(v)) and not s:get_forward(v);
         return f or b;
     end;
     process = function(s)

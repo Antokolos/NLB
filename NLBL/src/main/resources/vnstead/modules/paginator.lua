@@ -41,6 +41,7 @@ paginatorClick = function(x, y, a, b, c, d)
 
     if clickInInvArea(x, y) or vn:test_click(x, y) then
         -- Click in inventory area or inside some gobj in vn
+        vn:click(x, y, a, b, c, d);
         return
     end
 
@@ -169,10 +170,10 @@ end
 stead.module_init(function()
     game.click = function(s, x, y, a, b, c, d)
         local result;
-        vn:click(x, y, a, b, c, d);
         if paginator.on then
             result = paginatorClick(x, y, a, b, c, d);
         else
+            vn:click(x, y, a, b, c, d);
             return;
         end
         return result;
