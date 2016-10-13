@@ -193,6 +193,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public String getOffset() {
+        return DEFAULT_OFFSET;
+    }
+
+    @Override
     public Coords getRelativeCoords(final boolean lookInMorphs) {
         return CoordsLw.ZERO_COORDS;
     }

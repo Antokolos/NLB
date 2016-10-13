@@ -646,32 +646,32 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
         switch (orientation) {
             case RIGHT:
                 width = coords.getWidth() + (float) deltaX;
-                if (width < NodeItem.DEFAULT_NODE_WIDTH) {
-                    width = NodeItem.DEFAULT_NODE_WIDTH;
+                if (width < NodeItem.MIN_NODE_WIDTH) {
+                    width = NodeItem.MIN_NODE_WIDTH;
                 }
                 coords.setWidth(width);
                 break;
             case BOTTOM:
                 height = coords.getHeight() + (float) deltaY;
-                if (height < NodeItem.DEFAULT_NODE_HEIGHT) {
-                    height = NodeItem.DEFAULT_NODE_HEIGHT;
+                if (height < NodeItem.MIN_NODE_HEIGHT) {
+                    height = NodeItem.MIN_NODE_HEIGHT;
                 }
                 coords.setHeight(height);
                 break;
             case LEFT:
                 width = coords.getWidth() - (float) deltaX;
-                if (width < NodeItem.DEFAULT_NODE_WIDTH) {
-                    ignoredDistance = NodeItem.DEFAULT_NODE_WIDTH - width;
-                    width = NodeItem.DEFAULT_NODE_WIDTH;
+                if (width < NodeItem.MIN_NODE_WIDTH) {
+                    ignoredDistance = NodeItem.MIN_NODE_WIDTH - width;
+                    width = NodeItem.MIN_NODE_WIDTH;
                 }
                 coords.setLeft(coords.getLeft() + (float) deltaX - ignoredDistance);
                 coords.setWidth(width);
                 break;
             case TOP:
                 height = coords.getHeight() - (float) deltaY;
-                if (height < NodeItem.DEFAULT_NODE_HEIGHT) {
-                    ignoredDistance = NodeItem.DEFAULT_NODE_HEIGHT - height;
-                    height = NodeItem.DEFAULT_NODE_HEIGHT;
+                if (height < NodeItem.MIN_NODE_HEIGHT) {
+                    ignoredDistance = NodeItem.MIN_NODE_HEIGHT - height;
+                    height = NodeItem.MIN_NODE_HEIGHT;
                 }
                 coords.setTop(coords.getTop() + (float) deltaY - ignoredDistance);
                 coords.setHeight(height);

@@ -951,9 +951,11 @@ public class STEADExportManager extends TextExportManager {
         }
     }
 
-    protected String decorateObjEffect(String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection) {
-        String effect = "left-top@0,0";
-        String steps = "    maxStep = 20," + LINE_SEPARATOR +
+    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection) {
+        boolean hasDefinedOffset = StringHelper.notEmpty(offsetString);
+        String offset = hasDefinedOffset ? offsetString : "0,0";
+        String effect = "left-top@" + offset;
+        String steps = "    maxStep = 15," + LINE_SEPARATOR +
                 "    startFrame = 0," + LINE_SEPARATOR;
         String anim = "movein";
         switch (movementDirection) {
@@ -973,7 +975,8 @@ public class STEADExportManager extends TextExportManager {
                 steps = "";
         }
         if (graphicalObj) {
-            return "    eff = \"" + effect + "\"," + LINE_SEPARATOR + steps + "    arm = { [0] = { " + coordString + " } }," + LINE_SEPARATOR;
+            return "    eff = \"" + effect + "\"," + LINE_SEPARATOR + steps +
+                    (hasDefinedOffset ? "" : "    arm = { [0] = { " + coordString + " } }," + LINE_SEPARATOR);
         } else {
             return EMPTY_STRING;
         }
@@ -1090,11 +1093,11 @@ public class STEADExportManager extends TextExportManager {
         final boolean actTextNotEmpty = StringHelper.notEmpty(actTextExpanded);
         final String returnStatement = (actTextNotEmpty) ? "" : "        return true;" + LINE_SEPARATOR;
         String actText = getActText(actTextNotEmpty);
-        String prefix = "    act = function(s)" + LINE_SEPARATOR;
+        String suffix = "    actf = function(s)" + LINE_SEPARATOR;
         if (collapsable) {
-            prefix = (
+            suffix = (
                     "    curStep = 2," + LINE_SEPARATOR +
-                    "    act = function(s)\n" + LINE_SEPARATOR +
+                    "    actf = function(s)" + LINE_SEPARATOR +
                     "        local v = vn:glookup(stead.deref(s));" + LINE_SEPARATOR +
                     "        if s.is_paused then" + LINE_SEPARATOR +
                     "            vn:vpause(v, false);" + LINE_SEPARATOR +
@@ -1105,7 +1108,7 @@ public class STEADExportManager extends TextExportManager {
             );
         }
         return (
-                 prefix +
+                "    act = function(s)" + LINE_SEPARATOR +
                         "        s.acta(s);" + LINE_SEPARATOR +
                         returnStatement +
                         "    end," + LINE_SEPARATOR +
@@ -1117,7 +1120,7 @@ public class STEADExportManager extends TextExportManager {
                         "        s.actf(s);" + LINE_SEPARATOR +
                         "        s.actcmn(s);" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
-                        "    actf = function(s)" + LINE_SEPARATOR
+                        suffix
         );
     }
 

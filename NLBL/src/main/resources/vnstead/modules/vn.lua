@@ -578,7 +578,6 @@ vn = obj {
 
         local i, k = s:lookup(nam)
         if not i then return end
-        s:enter_direct();
         s:clear_bg_under_sprite(i);
         stead.table.remove(s._effects, k)
         for ii, vv in ipairs(i.children) do
@@ -1323,9 +1322,6 @@ vn = obj {
         local idx, x, y, w, h;
         local scale = 1.0;
         local alpha = 255;
-        if not only_compute and not s:gobf(v).is_paused and (v.step > v.init_step) and (v.step < v.max_step - v.from_stop) then
-            s:enter_direct();
-        end
         if v.eff == 'movein' then
             idx, x, y, w, h = s:movein(v, only_compute);
         elseif v.eff == 'moveout' then
@@ -1510,10 +1506,10 @@ vn = obj {
         local k, v
         local r
         for k, v in ipairs(s._effects) do
-            if v.step < v.max_step - v.from_stop and v.forward and v.eff ~= 'none' then
+            if v.step < v.max_step - v.from_stop and v.forward then
                 r = true
                 v.step = v.max_step - v.from_stop
-            elseif v.step > v.init_step and not v.forward and v.eff ~= 'none' then
+            elseif v.step > v.init_step and not v.forward then
                 r = true
                 v.step = v.init_step
             end
@@ -1665,15 +1661,21 @@ vn = obj {
         local data = s:do_effect(v, true, true);
         s:draw_hud(data.v, data.idx, data.x, data.y, data.scale, data.alpha, nil, true);
     end;
-    has_animation_in_progress = function(s)
+    has_any_animation_in_progress = function(s)
         for i, v in ipairs(s._effects) do
-            if v.step < v.max_step - v.from_stop and v.forward and v.eff ~= 'none' then
-                return true;
-            elseif v.step > v.init_step and not v.forward and v.eff ~= 'none' then
+            if s:has_animation_in_progress(v) then
                 return true;
             end
         end
         return false;
+    end;
+    has_animation_in_progress = function(s, v)
+        if s:gobf(v).is_paused then
+            return false;
+        end
+        local f = (v.step < v.max_step - v.from_stop) and v.forward;
+        local b = (v.step > v.init_step) and not v.forward;
+        return f or b;
     end;
     process = function(s)
         local i, v
@@ -1681,6 +1683,9 @@ vn = obj {
         local cbresult = false;
         s:clear_bg(not s.uiupdate);
         s.uiupdate = false;
+        if s:has_any_animation_in_progress() then
+            s:enter_direct();
+        end
         local res = s:do_effects();
         local n = res.hasmore;
         local x, y = stead.mouse_pos();

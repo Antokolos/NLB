@@ -66,6 +66,9 @@ public interface NodeItem extends ModifyingItem, NLBObservable {
     public static final int DEFAULT_NODE_WIDTH = 100;
     public static final int DEFAULT_NODE_HEIGHT = 50;
 
+    public static final int MIN_NODE_WIDTH = 70;
+    public static final int MIN_NODE_HEIGHT = 35;
+
     public String getDefaultTagId();
 
     public String getStroke();

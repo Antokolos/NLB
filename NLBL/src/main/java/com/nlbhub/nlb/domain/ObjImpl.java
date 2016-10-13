@@ -85,6 +85,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String CLEARUTT_FILE_NAME = "clearutt";
     private static final String MORPH_OVER_FILE_NAME = "morphover";
     private static final String MORPH_OUT_FILE_NAME = "morphout";
+    private static final String OFFSET_FILE_NAME = "offset";
     private static final String TAKABLE_FILE_NAME = "takable";
     private static final String IMAGE_IN_SCENE_FILE_NAME = "imgscene";
     private static final String IMAGE_IN_INVENTORY_FILE_NAME = "imginv";
@@ -107,6 +108,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private boolean m_clearUnderTooltip = DEFAULT_CLEAR_UNDER_TOOLTIP;
     private String m_morphOverId = DEFAULT_MORPH_OVER_ID;
     private String m_morphOutId = DEFAULT_MORPH_OUT_ID;
+    private String m_offset;
     /**
      * Object can be taken to the inventory
      */
@@ -157,6 +159,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         m_graphical = source.isGraphical();
         m_preserved = source.isPreserved();
         m_collapsable = source.isCollapsable();
+        m_offset = source.getOffset();
         m_movementDirection = source.getMovementDirection();
         m_clearUnderTooltip = source.isClearUnderTooltip();
         m_morphOverId = source.getMorphOverId();
@@ -353,6 +356,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
 
     public void setCollapsable(boolean collapsable) {
         m_collapsable = collapsable;
+    }
+
+    @Override
+    public String getOffset() {
+        return m_offset;
+    }
+
+    public void setOffset(String offset) {
+        m_offset = offset;
     }
 
     @Override
@@ -596,6 +608,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(
                     objDir,
+                    OFFSET_FILE_NAME,
+                    m_offset,
+                    DEFAULT_OFFSET
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
                     MVDIRECTION_FILE_NAME,
                     m_movementDirection.name(),
                     DEFAULT_MOVEMENT_DIRECTION.name()
@@ -752,6 +770,11 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         COLLAPSABLE_FILE_NAME,
                         String.valueOf(DEFAULT_COLLAPSABLE)
                 )
+        );
+        m_offset = FileManipulator.getOptionalFileAsString(
+            objDir,
+            OFFSET_FILE_NAME,
+            DEFAULT_OFFSET
         );
         String movementDirection = (
                 FileManipulator.getOptionalFileAsString(

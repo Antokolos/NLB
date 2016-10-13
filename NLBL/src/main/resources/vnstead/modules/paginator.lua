@@ -9,7 +9,7 @@ hook_keys('space', 'right ctrl', 'left ctrl')
 
 iface.cmd = stead.hook(iface.cmd, function(f, s, cmd, ...)
     if vn:add_all_missing_children() then
-        vn:start();
+        vn:start(nil, true);
     end
     return paginatorIfaceCmd(f, s, cmd, ...);
 end)

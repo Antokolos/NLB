@@ -108,6 +108,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JRadioButton m_movementDirectionRight;
     private JRadioButton m_movementDirectionNone;
     private JCheckBox m_objIsCollapsable;
+    private JTextField m_offset;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -307,6 +308,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objIsGraphical.setSelected(obj.isGraphical());
         m_objIsPreserved.setSelected(obj.isPreserved());
         m_objIsCollapsable.setSelected(obj.isCollapsable());
+        m_offset.setText(obj.getOffset());
         switch (obj.getMovementDirection()) {
             case Top:
                 m_movementDirectionTop.setSelected(true);
@@ -371,6 +373,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_objIsGraphical.isSelected(),
                 m_objIsPreserved.isSelected(),
                 m_objIsCollapsable.isSelected(),
+                m_offset.getText(),
                 getMovementDirection(),
                 m_objIsClearUnderTooltip.isSelected(),
                 m_morphOver.getText(),
@@ -950,7 +953,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         final JPanel spacer3 = new JPanel();
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.VERTICAL;
         panel36.add(spacer3, gbc);
@@ -995,7 +998,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         panel38.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         gbc.fill = GridBagConstraints.BOTH;
         panel36.add(panel38, gbc);
         m_objIsGraphical = new JCheckBox();
@@ -1045,7 +1048,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         panel40.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
@@ -1097,8 +1100,39 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_movementDirectionRight.setText("Right");
         panel46.add(m_movementDirectionRight);
         final JPanel panel47 = new JPanel();
-        panel47.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel47, BorderLayout.CENTER);
+        panel47.setLayout(new GridBagLayout());
+        panel47.setMinimumSize(new Dimension(468, 33));
+        panel47.setPreferredSize(new Dimension(468, 33));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(5, 5, 5, 0);
+        panel36.add(panel47, gbc);
+        final JScrollPane scrollPane12 = new JScrollPane();
+        scrollPane12.setHorizontalScrollBarPolicy(31);
+        scrollPane12.setVerticalScrollBarPolicy(21);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel47.add(scrollPane12, gbc);
+        m_offset = new JTextField();
+        m_offset.setColumns(40);
+        scrollPane12.setViewportView(m_offset);
+        final JLabel label12 = new JLabel();
+        label12.setText("Offset");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel36.add(label12, gbc);
+        final JPanel panel48 = new JPanel();
+        panel48.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel48, BorderLayout.CENTER);
         label1.setLabelFor(m_objDispTextField);
         label2.setLabelFor(m_objTextTextArea);
         label3.setLabelFor(m_objActTextTextArea);
@@ -1110,6 +1144,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         label9.setLabelFor(m_objDefaultTagTextField);
         label10.setLabelFor(m_morphOver);
         label11.setLabelFor(m_morphOut);
+        label12.setLabelFor(m_offset);
         ButtonGroup buttonGroup;
         buttonGroup = new ButtonGroup();
         buttonGroup.add(m_movementDirectionNone);

@@ -749,7 +749,7 @@ public abstract class ExportManager {
         blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
         final String objImage = decorateObjImage(getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage()), obj.isGraphical());
-        final String objEffect = decorateObjEffect((obj.getContainerType() == Obj.ContainerType.Obj) ? "0,0" : getRelativeCoords(obj), obj.isGraphical(), obj.getMovementDirection());
+        final String objEffect = decorateObjEffect(obj.getOffset(), (obj.getContainerType() == Obj.ContainerType.Obj) ? "0,0" : getRelativeCoords(obj), obj.isGraphical(), obj.getMovementDirection());
         blocks.setObjEffect(objEffect);
         Coords coords = obj.getRelativeCoords(true);
         blocks.setObjArm(obj.isGraphical() && (obj.getContainerType() == Obj.ContainerType.Obj) ? decorateObjArm(coords.getLeft(), coords.getTop()) : "");
@@ -1388,6 +1388,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public String getOffset() {
+                return obj.getOffset();
+            }
+
+            @Override
             public MovementDirection getMovementDirection() {
                 return obj.getMovementDirection();
             }
@@ -1578,7 +1583,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjEffect(String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection) {
+    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection) {
         return EMPTY_STRING;
     }
 

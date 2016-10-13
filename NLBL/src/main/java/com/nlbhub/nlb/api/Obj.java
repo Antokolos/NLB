@@ -71,6 +71,7 @@ public interface Obj extends NodeItem {
     public static final boolean DEFAULT_CLEAR_UNDER_TOOLTIP = false;
     public static final String DEFAULT_MORPH_OVER_ID = Constants.EMPTY_STRING;
     public static final String DEFAULT_MORPH_OUT_ID = Constants.EMPTY_STRING;
+    public static final String DEFAULT_OFFSET = Constants.EMPTY_STRING;
     public static final boolean DEFAULT_TAKABLE = false;
     public static final boolean DEFAULT_IMAGE_IN_SCENE = true;
     public static final boolean DEFAULT_IMAGE_IN_INVENTORY = true;
@@ -130,6 +131,8 @@ public interface Obj extends NodeItem {
     public String getMorphOutId();
 
     public Obj getMorphOutObj();
+
+    public String getOffset();
 
     public Coords getRelativeCoords(final boolean lookInMorphs);
 
