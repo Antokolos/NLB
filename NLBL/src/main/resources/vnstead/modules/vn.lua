@@ -188,7 +188,7 @@ vn = obj {
             end
         end
         s:set_bg(s._bg)
-        vn:add_all_missing_children();
+        s:add_all_missing_children();
         s:start(nil, true)
     end;
     init = function(s)
@@ -976,6 +976,10 @@ vn = obj {
         for i, cnam in ipairs(parent.children) do
             --print("reconfiguring " .. cnam);
             local vv = s:childf(cnam);
+            if vv.step ~= parent.step then
+                s:enter_direct();
+                s:clear_bg_under_sprite(vv);
+            end
             vv.start = parent.start;
             vv.step = parent.step;
             vv.max_step = parent.max_step;
@@ -1171,8 +1175,12 @@ vn = obj {
         local sp = s:frame(v, idx, s:screen(), x, y, only_compute, true);
         return idx, x, y, sp.w, sp.h;
     end;
-    clear = function(s, x, y, w, h)
-        sprite.copy(s.bg_spr, x, y, w, h, s:screen(), x, y);
+    clear = function(s, x, y, w, h, target)
+        local pad = s.spritepad;
+        if not target then
+            target = s:screen();
+        end
+        sprite.copy(s.bg_spr, x - pad, y - pad, w + 2 * pad, h + 2 * pad, target, x - pad, y - pad);
     end;
     moveout = function(s, v, only_compute)
         local mxs, zstep = s:steps(v);
@@ -1455,6 +1463,7 @@ vn = obj {
         return here().textbg;
     end;
     textpad = 8;
+    spritepad = 8;
     textbg = function(s, to)
         if (s.direct_lock or not s:in_vnr()) and not s:force_textbg() then
             return;
@@ -1785,7 +1794,7 @@ vn = obj {
             end
             local ycur = ypos - htotal / 2.0;
             if clear then
-                sprite.draw(s.bg_spr, xpos, ycur, wmax, htotal, target, xpos, ycur);
+                s:clear(xpos, ycur, wmax, htotal, target);
                 return
             end
             for i, ss in ipairs(sprites) do
