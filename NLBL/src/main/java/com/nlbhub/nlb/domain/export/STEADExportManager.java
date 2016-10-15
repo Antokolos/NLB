@@ -420,6 +420,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            s.wastext = wastext;").append(LINE_SEPARATOR);
         stringBuilder.append("            s.lasttext = lasttext;").append(LINE_SEPARATOR);
         stringBuilder.append("        end").append(LINE_SEPARATOR);
+        stringBuilder.append("        vn:request_full_clear();").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("}").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
         stringBuilder.append("listobj = {").append(LINE_SEPARATOR);
@@ -957,7 +958,7 @@ public class STEADExportManager extends TextExportManager {
         String effect = "left-top@" + offset;
         String steps = "    maxStep = 15," + LINE_SEPARATOR +
                 "    startFrame = 0," + LINE_SEPARATOR;
-        String anim = "movein";
+        String anim = "fadein";
         switch (movementDirection) {
             case Top:
                 effect = anim + "top-" + effect;

@@ -641,6 +641,7 @@ _play_game_obj = menu {
 game_room = vnr {
     nam = true,
     nosave = true,
+    ignore_preserved_gobjs = true,
     bgimg = function(s, bg)
         vn:scene(bg);
         vn:geom(8, 864, 1904, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png');

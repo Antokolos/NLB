@@ -204,6 +204,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         result.append(roomName).append("_choices").append(" = room {").append(lineSep);
         result.append("    nam = \"").append(roomName).append("_choices\",").append(lineSep);
         result.append("        textbg = true,").append(lineSep);
+        result.append("        ignore_preserved_gobjs = true,").append(lineSep);
         if (linksBuildingBlocks.isEmpty()) {
             result.append("    dsc = img 'blank:23x23'..'^'..fend:txt('The')..img 'blank:64x64'..fend:txt('End'),").append(lineSep);
         }

@@ -140,6 +140,7 @@ vn = obj {
     var {
         on = true,
         stopped = true,
+        partial_clear = true;
         speed = 500,
         fading = 8,
         bgalpha = 127,
@@ -175,6 +176,7 @@ vn = obj {
         end
     end;
     ini = function(s, load)
+        s:request_full_clear();
         if not load or not s.on then
             return
         end
@@ -188,13 +190,14 @@ vn = obj {
         end
         s:set_bg(s._bg)
         s:add_all_missing_children();
-        s:start(nil, true)
+        s:start()
     end;
     init = function(s)
         s.scr_w = theme.get 'scr.w'
         s.scr_h = theme.get 'scr.h'
         s.offscreen = sprite.blank(s.scr_w, s.scr_h)
         s.blackscreen = sprite.box(s.scr_w, s.scr_h, 'black')
+        s:request_full_clear();
         timer:set(1); --(s.hz)
     end;
     get_spr_rct = function(s, v)
@@ -219,7 +222,7 @@ vn = obj {
             return;
         end
         for i, v in ipairs(s._effects) do
-            if s:gobf(v).onclick and s:inside_spr(v, x, y) then
+            if s:gobf(v).onclick and s:enabled(v) and s:inside_spr(v, x, y) then
                 s:gobf(v):onclick(s);
             end
         end
@@ -245,7 +248,7 @@ vn = obj {
         end
         s:hide(v);
         s:effect_int(nil, morph, is_over);
-        s:start(nil, true);
+        s:start();
         return true;
     end;
     over = function(s, x, y, a, b, c, d)
@@ -280,6 +283,9 @@ vn = obj {
                 end
             end
         end
+    end;
+    request_full_clear = function(s)
+        s.partial_clear = false;
     end;
     need_update = function(s)
         s._need_update = true;
@@ -1350,7 +1356,7 @@ vn = obj {
         end
         s._pending_effects = {};
     end;
-    start = function(s, effect, uiupdate)
+    start = function(s, effect)
         -- do first step
         if not s.bg_spr then
             error "No scene background specified!"
@@ -1405,9 +1411,9 @@ vn = obj {
         s.win_x, s.win_y, s.win_w, s.win_h = x + s._wf, y, w - 2 * s._wf, h;
         theme.win.geom(s.win_x, s.win_y, s.win_w, s.win_h);
         if effect then
-            s:start(effect, true);
+            s:start(effect);
         else
-            s:start(nil, true);
+            s:start();
         end;
         s:commit();
     end;
@@ -1635,10 +1641,12 @@ vn = obj {
     do_effects = function(s, clear)
         local result = {["datas"] = {}, ["hasmore"] = false};
         for i, v in ipairs(s._effects) do
-            local r = s:draw_step(v, clear);
-            if r.data then
-                stead.table.insert(result.datas, r.data);
-                result.hasmore = (result.hasmore or r.hasmore);
+            if not s:should_ignore(v) then
+                local r = s:draw_step(v, clear);
+                if r.data then
+                    stead.table.insert(result.datas, r.data);
+                    result.hasmore = (result.hasmore or r.hasmore);
+                end
             end
         end
         return result;
@@ -1676,10 +1684,11 @@ vn = obj {
         local i, v
         local first
         local cbresult = false;
-        s:clear_bg(true);
         if s:has_any_animation_in_progress() then
             s:enter_direct();
         end
+        s:clear_bg(s.partial_clear);
+        s.partial_clear = true;
         local res = s:do_effects();
         local n = res.hasmore;
         local x, y = stead.mouse_pos();
@@ -1803,8 +1812,11 @@ vn = obj {
             end
         end
     end;
+    should_ignore = function(s, v)
+        return here().ignore_preserved_gobjs and v.preserved;
+    end;
     enabled = function(s, v)
-        return not s:gobf(v).enablefn or s:gobf(v):enablefn();
+        return (not s:gobf(v).enablefn or s:gobf(v):enablefn()) and not s:should_ignore(v);
     end;
     update_tooltip = function(s, v)
         local xx, yy = s:postoxy(v);
