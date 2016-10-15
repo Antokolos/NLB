@@ -84,12 +84,6 @@ gobj = function(v)
             -- Maybe add nouse
         end
     end
-    if not v.onover then
-        v.onover = function(s) end;
-    end
-    if not v.onout then
-        v.onout = function(s) end;
-    end
     if not v.onhide then
         v.onhide = function(s) end;
     end
@@ -121,6 +115,22 @@ gobj = function(v)
             end
             return nil, s.ttpos;
         end;
+    end
+    local text, pos, clear_under_tooltip = v:tooltipfn();
+    local has_morph_or_tooltip = (v.morphover or v.morphout or text);
+    if not v.onover then
+        if has_morph_or_tooltip then
+            v.onover = function(s) end;
+        else
+            v.onover = false;
+        end
+    end
+    if not v.onout then
+        if has_morph_or_tooltip then
+            v.onout = function(s) end;
+        else
+            v.onout = false;
+        end
     end
     if not v.enablefn then
         v.enablefn = function(s)

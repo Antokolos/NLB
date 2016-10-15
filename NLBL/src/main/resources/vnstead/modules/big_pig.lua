@@ -3,6 +3,85 @@ require "modules/dice"
 require "modules/dicegames"
 require "modules/gobj"
 
+next_turn_obj = menu {
+    nam = "next_turn_obj",
+    dsc = function(s)
+        return '{' .. s:disp() .. '}' .. img 'blank:64x64';
+    end,
+    disp = function(s)
+        if (LANG == "ru") then
+            return 'Передать ход';
+        else
+            return 'Next player';
+        end
+    end,
+    act = function(s)
+        return s:inv();
+    end,
+    inv = function(s)
+        rollStat:add_result();
+        rollStat:reset_cur();
+        dice:next_player();
+        dice:act();
+    end
+}
+
+increase_bet_obj = menu {
+    nam = "increase_bet_obj",
+    dsc = function(s)
+        local result = "{" .. s:txt() .. "}";
+        return result .. img 'blank:64x64';
+    end,
+    txt = function(s)
+        if (LANG == "ru") then
+            return "Удвоить ставку";
+        else
+            return "Double the bet";
+        end
+    end,
+    act = function(s)
+        if rollStat.data then
+            rollStat.data.bet = rollStat.data.bet * 2;
+            for i = 1, 4 do
+                if rollStat:is_defined(i) and rollStat.data.bet > rollStat.data.money[i] then
+                    rollStat.data.bet = rollStat.data.money[i];
+                end
+            end
+            vn:start();
+            vn:commit();
+        end
+    end
+}
+
+_play_game_obj = menu {
+    nam = "play_game_obj",
+    dsc = function(s)
+        return "{" .. s:txt() .. "}";
+    end,
+    txt = function(s)
+        if (LANG == "ru") then
+            return "Закончить игру";
+        else
+            return "Leave the game";
+        end
+    end,
+    disp = function(s)
+        if (LANG == "ru") then
+            return 'Сыграть в кости';
+        else
+            return 'Play the dice';
+        end
+    end,
+    act = function(s)
+        take(_play_game_obj);
+        walk(stead.ref(game_room._returnto));
+    end,
+    inv = function(s)
+        walk(game_room);
+        drop(_play_game_obj, game_room);
+    end
+}
+
 you_lose = gobj {
     nam = "you_lose",
     system_type = true,
@@ -558,85 +637,6 @@ function shallowcopy(orig)
     end
     return copy
 end
-
-next_turn_obj = menu {
-    nam = "next_turn_obj",
-    dsc = function(s)
-        return '{' .. s:disp() .. '}' .. img 'blank:64x64';
-    end,
-    disp = function(s)
-        if (LANG == "ru") then
-            return 'Передать ход';
-        else
-            return 'Next player';
-        end
-    end,
-    act = function(s)
-        return s:inv();
-    end,
-    inv = function(s)
-        rollStat:add_result();
-        rollStat:reset_cur();
-        dice:next_player();
-        dice:act();
-    end
-}
-
-increase_bet_obj = menu {
-    nam = "increase_bet_obj",
-    dsc = function(s)
-        local result = "{" .. s:txt() .. "}";
-        return result .. img 'blank:64x64';
-    end,
-    txt = function(s)
-        if (LANG == "ru") then
-            return "Удвоить ставку";
-        else
-            return "Double the bet";
-        end
-    end,
-    act = function(s)
-        if rollStat.data then
-            rollStat.data.bet = rollStat.data.bet * 2;
-            for i = 1, 4 do
-                if rollStat:is_defined(i) and rollStat.data.bet > rollStat.data.money[i] then
-                    rollStat.data.bet = rollStat.data.money[i];
-                end
-            end
-            vn:start();
-            vn:commit();
-        end
-    end
-}
-
-_play_game_obj = menu {
-    nam = "play_game_obj",
-    dsc = function(s)
-        return "{" .. s:txt() .. "}";
-    end,
-    txt = function(s)
-        if (LANG == "ru") then
-            return "Закончить игру";
-        else
-            return "Leave the game";
-        end
-    end,
-    disp = function(s)
-        if (LANG == "ru") then
-            return 'Сыграть в кости';
-        else
-            return 'Play the dice';
-        end
-    end,
-    act = function(s)
-        take(_play_game_obj);
-        walk(stead.ref(game_room._returnto));
-    end,
-    inv = function(s)
-        walk(game_room);
-        drop(_play_game_obj, game_room);
-    end
-}
 
 game_room = vnr {
     nam = true,

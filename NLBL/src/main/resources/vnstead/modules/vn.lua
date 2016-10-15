@@ -1697,7 +1697,6 @@ vn = obj {
             s:draw_huds(res.datas);
             s:tooltips(x, y);
         else
-            s:stop();
             if (vn.callback) then
                 local callback = vn.callback;
                 vn.callback = false;
@@ -1705,6 +1704,7 @@ vn = obj {
             end
             s:draw_huds(res.datas);
             s:tooltips(x, y);
+            s:stop();
             if cbresult then
                 if type(cbresult) == 'function' then
                     return cbresult();
