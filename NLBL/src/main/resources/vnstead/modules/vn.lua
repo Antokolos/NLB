@@ -1663,6 +1663,7 @@ vn = obj {
     clear_bg_under_sprite = function(s, v)
         local data = s:do_effect(v, true, true);
         s:draw_hud(data.v, data.idx, data.x, data.y, data.scale, data.alpha, nil, true);
+        s:update_tooltip(v, true);
     end;
     has_any_animation_in_progress = function(s)
         for i, v in ipairs(s._effects) do
@@ -1818,15 +1819,15 @@ vn = obj {
     enabled = function(s, v)
         return (not s:gobf(v).enablefn or s:gobf(v):enablefn()) and not s:should_ignore(v);
     end;
-    update_tooltip = function(s, v)
+    update_tooltip = function(s, v, erase)
         local xx, yy = s:postoxy(v);
         local sp = s:frame(v, 0);
         local text, pos, clear_under_tooltip = s:gobf(v):tooltipfn();
         if text then
-            s:tooltip(text, pos, xx, yy, sp.w, sp.h, clear_under_tooltip);
+            s:tooltip(text, pos, xx, yy, sp.w, sp.h, clear_under_tooltip, erase);
         end
     end;
-    tooltip = function(s, text, pos, x, y, vw, vh, clear_under_tooltip)
+    tooltip = function(s, text, pos, x, y, vw, vh, clear_under_tooltip, erase)
         local target = s:screen();
         local label, w, h = s:label(text);
         local xmax = theme.get("scr.w");
@@ -1852,10 +1853,12 @@ vn = obj {
                 yt = yy;
             end
         end
-        if clear_under_tooltip then
+        if clear_under_tooltip or erase then
             sprite.copy(s.bg_spr, xt, yt, w, h, target, xt, yt);
         end
-        sprite.draw(label, target, xt, yt);
+        if not erase then
+            sprite.draw(label, target, xt, yt);
+        end
         sprite.free(label);
     end;
     -- Sprite with label text. You should call sprite.free(), when you no longer need this.
