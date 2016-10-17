@@ -952,31 +952,32 @@ public class STEADExportManager extends TextExportManager {
         }
     }
 
-    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection) {
+    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection, Obj.Effect effect) {
         boolean hasDefinedOffset = StringHelper.notEmpty(offsetString);
         String offset = hasDefinedOffset ? offsetString : "0,0";
-        String effect = "left-top@" + offset;
-        String steps = "    maxStep = 15," + LINE_SEPARATOR +
-                "    startFrame = 0," + LINE_SEPARATOR;
-        String anim = "fadein";
-        switch (movementDirection) {
-            case Top:
-                effect = anim + "top-" + effect;
-                break;
-            case Left:
-                effect = anim + "left-" + effect;
-                break;
-            case Right:
-                effect = anim + "right-" + effect;
-                break;
-            case Bottom:
-                effect = anim + "bottom-" + effect;
-                break;
-            default:
-                steps = "";
+        String pos = "left-top@" + offset;
+        String steps = (effect == Obj.Effect.None) ? "" : "    maxStep = 15," + LINE_SEPARATOR + "    startFrame = 0," + LINE_SEPARATOR;
+        if (effect != Obj.Effect.None) {
+            String eff = effect.name().toLowerCase();
+            switch (movementDirection) {
+                case Top:
+                    pos = eff + "top-" + pos;
+                    break;
+                case Left:
+                    pos = eff + "left-" + pos;
+                    break;
+                case Right:
+                    pos = eff + "right-" + pos;
+                    break;
+                case Bottom:
+                    pos = eff + "bottom-" + pos;
+                    break;
+                default:
+                    pos = eff + "-" + pos;
+            }
         }
         if (graphicalObj) {
-            return "    eff = \"" + effect + "\"," + LINE_SEPARATOR + steps +
+            return "    eff = \"" + pos + "\"," + LINE_SEPARATOR + steps +
                     (hasDefinedOffset ? "" : "    arm = { [0] = { " + coordString + " } }," + LINE_SEPARATOR);
         } else {
             return EMPTY_STRING;
@@ -1090,14 +1091,14 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjActStart(String actTextExpanded, boolean collapsable) {
+    protected String decorateObjActStart(String actTextExpanded, boolean collapsable, int curStep) {
         final boolean actTextNotEmpty = StringHelper.notEmpty(actTextExpanded);
         final String returnStatement = (actTextNotEmpty) ? "" : "        return true;" + LINE_SEPARATOR;
         String actText = getActText(actTextNotEmpty);
         String suffix = "    actf = function(s)" + LINE_SEPARATOR;
         if (collapsable) {
             suffix = (
-                    "    curStep = 2," + LINE_SEPARATOR +
+                    ((curStep > 0) ? "    curStep = " + curStep + "," + LINE_SEPARATOR : "") +
                     "    actf = function(s)" + LINE_SEPARATOR +
                     "        local v = vn:glookup(stead.deref(s));" + LINE_SEPARATOR +
                     "        if s.is_paused then" + LINE_SEPARATOR +

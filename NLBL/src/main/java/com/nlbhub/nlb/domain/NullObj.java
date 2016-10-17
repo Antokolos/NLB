@@ -170,6 +170,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public Effect getEffect() {
+        return DEFAULT_EFFECT;
+    }
+
+    @Override
     public boolean isClearUnderTooltip() {
         return Obj.DEFAULT_CLEAR_UNDER_TOOLTIP;
     }

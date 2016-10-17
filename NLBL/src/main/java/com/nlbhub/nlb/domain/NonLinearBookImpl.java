@@ -784,6 +784,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private boolean m_existingObjIsCollapsable;
         private String m_existingOffset;
         private Obj.MovementDirection m_existingMovementDirection;
+        private Obj.Effect m_existingEffect;
         private boolean m_existingObjIsClearUnderTooltip;
         private boolean m_existingObjIsTakable;
         private boolean m_existingImageInScene;
@@ -802,6 +803,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private boolean m_newObjIsCollapsable;
         private String m_newOffset;
         private Obj.MovementDirection m_newMovementDirection;
+        private Obj.Effect m_newEffect;
         private boolean m_newObjIsClearUnderTooltip;
         private boolean m_newObjIsTakable;
         private boolean m_newImageInScene;
@@ -828,6 +830,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final boolean objIsCollapsable,
                 final String offset,
                 final Obj.MovementDirection movementDirection,
+                final Obj.Effect effect,
                 final boolean objIsClearUnderTooltip,
                 final String objMorphOverName,
                 final String objMorphOutName,
@@ -856,6 +859,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     objIsCollapsable,
                     offset,
                     movementDirection,
+                    effect,
                     objIsClearUnderTooltip,
                     objMorphOverName,
                     objMorphOutName,
@@ -885,6 +889,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final boolean objIsCollapsable,
                 final String offset,
                 final Obj.MovementDirection movementDirection,
+                final Obj.Effect effect,
                 final boolean objIsClearUnderTooltip,
                 final String objMorphOverName,
                 final String objMorphOutName,
@@ -967,6 +972,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingObjIsCollapsable = obj.isCollapsable();
             m_existingOffset = obj.getOffset();
             m_existingMovementDirection = obj.getMovementDirection();
+            m_existingEffect = obj.getEffect();
             m_existingObjIsClearUnderTooltip = obj.isClearUnderTooltip();
             m_existingObjIsTakable = obj.isTakable();
             m_existingImageInScene = obj.isImageInScene();
@@ -985,6 +991,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newObjIsCollapsable = objIsCollapsable;
             m_newOffset = offset;
             m_newMovementDirection = movementDirection;
+            m_newEffect = effect;
             m_newObjIsClearUnderTooltip = objIsClearUnderTooltip;
             m_newObjIsTakable = objIsTakable;
             m_newImageInScene = imageInScene;
@@ -1013,6 +1020,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setCollapsable(m_newObjIsCollapsable);
             m_obj.setOffset(m_newOffset);
             m_obj.setMovementDirection(m_newMovementDirection);
+            m_obj.setEffect(m_newEffect);
             m_obj.setClearUnderTooltip(m_newObjIsClearUnderTooltip);
             m_obj.setTakable(m_newObjIsTakable);
             m_obj.setImageInScene(m_newImageInScene);
@@ -1042,6 +1050,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setCollapsable(m_existingObjIsCollapsable);
             m_obj.setOffset(m_existingOffset);
             m_obj.setMovementDirection(m_existingMovementDirection);
+            m_obj.setEffect(m_existingEffect);
             m_obj.setClearUnderTooltip(m_existingObjIsClearUnderTooltip);
             m_obj.setTakable(m_existingObjIsTakable);
             m_obj.setImageInScene(m_existingImageInScene);
@@ -1859,6 +1868,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.isCollapsable(),
                         obj.getOffset(),
                         obj.getMovementDirection(),
+                        obj.getEffect(),
                         obj.isClearUnderTooltip(),
                         (objMorphOver != null) ? objMorphOver.getName() : Constants.EMPTY_STRING,
                         (objMorphOut != null) ? objMorphOut.getName() : Constants.EMPTY_STRING,
@@ -2330,6 +2340,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final boolean objIsCollapsable,
             final String offset,
             final Obj.MovementDirection movementDirection,
+            final Obj.Effect effect,
             final boolean objIsClearUnderTooltip,
             final String objMorphOver,
             final String objMorphOut,
@@ -2359,6 +2370,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         objIsCollapsable,
                         offset,
                         movementDirection,
+                        effect,
                         objIsClearUnderTooltip,
                         objMorphOver,
                         objMorphOut,

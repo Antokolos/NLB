@@ -990,6 +990,119 @@
                                           </grid>
                                         </children>
                                       </grid>
+                                      <grid id="50976" layout-manager="BorderLayout" hgap="0" vgap="0">
+                                        <constraints/>
+                                        <properties>
+                                          <minimumSize width="300" height="150"/>
+                                          <preferredSize width="300" height="150"/>
+                                        </properties>
+                                        <border type="none" title="Effect"/>
+                                        <children>
+                                          <grid id="39d17" layout-manager="BorderLayout" hgap="0" vgap="0">
+                                            <constraints border-constraint="Center"/>
+                                            <properties/>
+                                            <border type="none"/>
+                                            <children>
+                                              <grid id="9f506" layout-manager="GridBagLayout">
+                                                <constraints border-constraint="Center"/>
+                                                <properties/>
+                                                <border type="none"/>
+                                                <children>
+                                                  <component id="99aa4" class="javax.swing.JRadioButton" binding="m_effectMoveIn">
+                                                    <constraints>
+                                                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                                    </constraints>
+                                                    <properties>
+                                                      <minimumSize width="90" height="26"/>
+                                                      <preferredSize width="90" height="26"/>
+                                                      <text value="movein"/>
+                                                    </properties>
+                                                  </component>
+                                                  <hspacer id="ed711">
+                                                    <constraints>
+                                                      <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                                    </constraints>
+                                                  </hspacer>
+                                                  <vspacer id="d6fdf">
+                                                    <constraints>
+                                                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                                    </constraints>
+                                                  </vspacer>
+                                                  <component id="26b10" class="javax.swing.JRadioButton" binding="m_effectMoveOut">
+                                                    <constraints>
+                                                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                                    </constraints>
+                                                    <properties>
+                                                      <minimumSize width="90" height="26"/>
+                                                      <preferredSize width="90" height="26"/>
+                                                      <text value="moveout"/>
+                                                    </properties>
+                                                  </component>
+                                                  <component id="d816e" class="javax.swing.JRadioButton" binding="m_effectFadeIn">
+                                                    <constraints>
+                                                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                                    </constraints>
+                                                    <properties>
+                                                      <minimumSize width="90" height="26"/>
+                                                      <preferredSize width="90" height="26"/>
+                                                      <text value="fadein"/>
+                                                    </properties>
+                                                  </component>
+                                                  <component id="b703f" class="javax.swing.JRadioButton" binding="m_effectFadeOut">
+                                                    <constraints>
+                                                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                                    </constraints>
+                                                    <properties>
+                                                      <minimumSize width="90" height="26"/>
+                                                      <preferredSize width="90" height="26"/>
+                                                      <text value="fadeout"/>
+                                                    </properties>
+                                                  </component>
+                                                  <component id="c21dd" class="javax.swing.JRadioButton" binding="m_effectZoomIn">
+                                                    <constraints>
+                                                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                                    </constraints>
+                                                    <properties>
+                                                      <minimumSize width="90" height="26"/>
+                                                      <preferredSize width="90" height="26"/>
+                                                      <text value="zoomin"/>
+                                                    </properties>
+                                                  </component>
+                                                  <component id="3f37f" class="javax.swing.JRadioButton" binding="m_effectZoomOut">
+                                                    <constraints>
+                                                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                                    </constraints>
+                                                    <properties>
+                                                      <minimumSize width="90" height="26"/>
+                                                      <preferredSize width="90" height="26"/>
+                                                      <text value="zoomout"/>
+                                                    </properties>
+                                                  </component>
+                                                  <component id="855e4" class="javax.swing.JRadioButton" binding="m_effectNone">
+                                                    <constraints>
+                                                      <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                                    </constraints>
+                                                    <properties>
+                                                      <minimumSize width="90" height="26"/>
+                                                      <preferredSize width="90" height="26"/>
+                                                      <text value="none"/>
+                                                    </properties>
+                                                  </component>
+                                                </children>
+                                              </grid>
+                                            </children>
+                                          </grid>
+                                        </children>
+                                      </grid>
                                     </children>
                                   </grid>
                                   <grid id="7f99f" layout-manager="GridBagLayout">
@@ -1064,6 +1177,16 @@
       <member id="f17d"/>
       <member id="e0f54"/>
       <member id="adbe8"/>
+    </group>
+    <group name="m_effect">
+      <member id="855e4"/>
+      <member id="855e4"/>
+      <member id="d816e"/>
+      <member id="26b10"/>
+      <member id="c21dd"/>
+      <member id="99aa4"/>
+      <member id="3f37f"/>
+      <member id="b703f"/>
     </group>
   </buttonGroups>
 </form>

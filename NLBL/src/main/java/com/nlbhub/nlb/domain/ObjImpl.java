@@ -82,6 +82,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String PRESERVED_FILE_NAME = "preserved";
     private static final String COLLAPSABLE_FILE_NAME = "collapsable";
     private static final String MVDIRECTION_FILE_NAME = "mvdirection";
+    private static final String EFFECT_FILE_NAME = "effect";
     private static final String CLEARUTT_FILE_NAME = "clearutt";
     private static final String MORPH_OVER_FILE_NAME = "morphover";
     private static final String MORPH_OUT_FILE_NAME = "morphout";
@@ -105,6 +106,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private boolean m_preserved = DEFAULT_PRESERVED;
     private boolean m_collapsable = DEFAULT_COLLAPSABLE;
     private MovementDirection m_movementDirection = DEFAULT_MOVEMENT_DIRECTION;
+    private Effect m_effect = DEFAULT_EFFECT;
     private boolean m_clearUnderTooltip = DEFAULT_CLEAR_UNDER_TOOLTIP;
     private String m_morphOverId = DEFAULT_MORPH_OVER_ID;
     private String m_morphOutId = DEFAULT_MORPH_OUT_ID;
@@ -161,6 +163,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         m_collapsable = source.isCollapsable();
         m_offset = source.getOffset();
         m_movementDirection = source.getMovementDirection();
+        m_effect = source.getEffect();
         m_clearUnderTooltip = source.isClearUnderTooltip();
         m_morphOverId = source.getMorphOverId();
         m_morphOutId = source.getMorphOutId();
@@ -374,6 +377,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
 
     public void setMovementDirection(MovementDirection movementDirection) {
         m_movementDirection = movementDirection;
+    }
+
+    @Override
+    public Effect getEffect() {
+        return m_effect;
+    }
+
+    public void setEffect(Effect effect) {
+        m_effect = effect;
     }
 
     @Override
@@ -620,6 +632,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(
                     objDir,
+                    EFFECT_FILE_NAME,
+                    m_effect.name(),
+                    DEFAULT_EFFECT.name()
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
                     CLEARUTT_FILE_NAME,
                     String.valueOf(m_clearUnderTooltip),
                     String.valueOf(DEFAULT_CLEAR_UNDER_TOOLTIP)
@@ -798,6 +816,35 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                 break;
             default:
                 m_movementDirection = MovementDirection.None;
+        }
+        String effect = (
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        EFFECT_FILE_NAME,
+                        DEFAULT_EFFECT.name()
+                )
+        ).toLowerCase();
+        switch (effect) {
+            case "movein":
+                m_effect = Effect.MoveIn;
+                break;
+            case "moveout":
+                m_effect = Effect.MoveOut;
+                break;
+            case "zoomin":
+                m_effect = Effect.ZoomIn;
+                break;
+            case "zoomout":
+                m_effect = Effect.ZoomOut;
+                break;
+            case "fadein":
+                m_effect = Effect.FadeIn;
+                break;
+            case "fadeout":
+                m_effect = Effect.FadeOut;
+                break;
+            default:
+                m_effect = Effect.None;
         }
         m_clearUnderTooltip = "true".equals(
                 FileManipulator.getOptionalFileAsString(

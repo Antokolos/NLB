@@ -749,7 +749,7 @@ public abstract class ExportManager {
         blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
         final String objImage = decorateObjImage(getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage()), obj.isGraphical());
-        final String objEffect = decorateObjEffect(obj.getOffset(), (obj.getContainerType() == Obj.ContainerType.Obj) ? "0,0" : getRelativeCoords(obj), obj.isGraphical(), obj.getMovementDirection());
+        final String objEffect = decorateObjEffect(obj.getOffset(), (obj.getContainerType() == Obj.ContainerType.Obj) ? "0,0" : getRelativeCoords(obj), obj.isGraphical(), obj.getMovementDirection(), obj.getEffect());
         blocks.setObjEffect(objEffect);
         Coords coords = obj.getRelativeCoords(true);
         blocks.setObjArm(obj.isGraphical() && (obj.getContainerType() == Obj.ContainerType.Obj) ? decorateObjArm(coords.getLeft(), coords.getTop()) : "");
@@ -765,7 +765,7 @@ public abstract class ExportManager {
         blocks.setTakable(obj.isTakable());
         blocks.setObjTak(decorateObjTak(obj.getName()));
         blocks.setObjInv(decorateObjInv(objType));
-        blocks.setObjActStart(decorateObjActStart(expandVariables(StringHelper.getTextChunks(obj.getActText())), obj.isCollapsable()));
+        blocks.setObjActStart(decorateObjActStart(expandVariables(StringHelper.getTextChunks(obj.getActText())), obj.isCollapsable(), getCurStep(obj.getEffect())));
         blocks.setObjActEnd(decorateObjActEnd());
         blocks.setObjUseStart(decorateObjUseStart());
         blocks.setObjUseEnd(decorateObjUseEnd());
@@ -786,6 +786,17 @@ public abstract class ExportManager {
             }
         }
         return blocks;
+    }
+
+    private int getCurStep(Obj.Effect effect) {
+        switch (effect) {
+            case FadeIn:
+            case FadeOut:
+            case None:
+                return 0;
+            default:
+                return 2;
+        }
     }
 
     private ObjType getObjType(final Obj obj, final ExportData exportData) {
@@ -1398,6 +1409,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public Effect getEffect() {
+                return obj.getEffect();
+            }
+
+            @Override
             public boolean isClearUnderTooltip() {
                 return obj.isClearUnderTooltip();
             }
@@ -1583,7 +1599,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection) {
+    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection, Obj.Effect effect) {
         return EMPTY_STRING;
     }
 
@@ -1631,7 +1647,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjActStart(String actTextExpanded, boolean collapsable) {
+    protected String decorateObjActStart(String actTextExpanded, boolean collapsable, int curStep) {
         return EMPTY_STRING;
     }
 

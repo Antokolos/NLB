@@ -109,6 +109,13 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JRadioButton m_movementDirectionNone;
     private JCheckBox m_objIsCollapsable;
     private JTextField m_offset;
+    private JRadioButton m_effectMoveIn;
+    private JRadioButton m_effectMoveOut;
+    private JRadioButton m_effectFadeIn;
+    private JRadioButton m_effectFadeOut;
+    private JRadioButton m_effectZoomIn;
+    private JRadioButton m_effectZoomOut;
+    private JRadioButton m_effectNone;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -326,6 +333,29 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
             default:
                 m_movementDirectionNone.setSelected(true);
         }
+        switch (obj.getEffect()) {
+            case MoveIn:
+                m_effectMoveIn.setSelected(true);
+                break;
+            case MoveOut:
+                m_effectMoveOut.setSelected(true);
+                break;
+            case ZoomIn:
+                m_effectZoomIn.setSelected(true);
+                break;
+            case ZoomOut:
+                m_effectZoomOut.setSelected(true);
+                break;
+            case FadeIn:
+                m_effectFadeIn.setSelected(true);
+                break;
+            case FadeOut:
+                m_effectFadeOut.setSelected(true);
+                break;
+            case None:
+            default:
+                m_effectNone.setSelected(true);
+        }
         m_objIsClearUnderTooltip.setSelected(obj.isClearUnderTooltip());
         m_morphOver.setText(morphOver != null ? morphOver.getName() : "");
         m_morphOut.setText(morphOut != null ? morphOut.getName() : "");
@@ -375,6 +405,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_objIsCollapsable.isSelected(),
                 m_offset.getText(),
                 getMovementDirection(),
+                getEffect(),
                 m_objIsClearUnderTooltip.isSelected(),
                 m_morphOver.getText(),
                 m_morphOut.getText(),
@@ -384,6 +415,24 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         );
         m_nlbFacade.removeObserver(m_observerId);
         dispose();
+    }
+
+    private Obj.Effect getEffect() {
+        if (m_effectFadeIn.isSelected()) {
+            return Obj.Effect.FadeIn;
+        } else if (m_effectFadeOut.isSelected()) {
+            return Obj.Effect.FadeOut;
+        } else if (m_effectZoomIn.isSelected()) {
+            return Obj.Effect.ZoomIn;
+        } else if (m_effectZoomOut.isSelected()) {
+            return Obj.Effect.ZoomOut;
+        } else if (m_effectMoveIn.isSelected()) {
+            return Obj.Effect.MoveIn;
+        } else if (m_effectMoveOut.isSelected()) {
+            return Obj.Effect.MoveOut;
+        } else {
+            return Obj.Effect.None;
+        }
     }
 
     Obj.MovementDirection getMovementDirection() {
@@ -1100,16 +1149,96 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_movementDirectionRight.setText("Right");
         panel46.add(m_movementDirectionRight);
         final JPanel panel47 = new JPanel();
-        panel47.setLayout(new GridBagLayout());
-        panel47.setMinimumSize(new Dimension(468, 33));
-        panel47.setPreferredSize(new Dimension(468, 33));
+        panel47.setLayout(new BorderLayout(0, 0));
+        panel47.setMinimumSize(new Dimension(300, 150));
+        panel47.setPreferredSize(new Dimension(300, 150));
+        panel40.add(panel47);
+        panel47.setBorder(BorderFactory.createTitledBorder("Effect"));
+        final JPanel panel48 = new JPanel();
+        panel48.setLayout(new BorderLayout(0, 0));
+        panel47.add(panel48, BorderLayout.CENTER);
+        final JPanel panel49 = new JPanel();
+        panel49.setLayout(new GridBagLayout());
+        panel48.add(panel49, BorderLayout.CENTER);
+        m_effectMoveIn = new JRadioButton();
+        m_effectMoveIn.setMinimumSize(new Dimension(90, 26));
+        m_effectMoveIn.setPreferredSize(new Dimension(90, 26));
+        m_effectMoveIn.setText("movein");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panel49.add(m_effectMoveIn, gbc);
+        final JPanel spacer5 = new JPanel();
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel49.add(spacer5, gbc);
+        final JPanel spacer6 = new JPanel();
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.fill = GridBagConstraints.VERTICAL;
+        panel49.add(spacer6, gbc);
+        m_effectMoveOut = new JRadioButton();
+        m_effectMoveOut.setMinimumSize(new Dimension(90, 26));
+        m_effectMoveOut.setPreferredSize(new Dimension(90, 26));
+        m_effectMoveOut.setText("moveout");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        panel49.add(m_effectMoveOut, gbc);
+        m_effectFadeIn = new JRadioButton();
+        m_effectFadeIn.setMinimumSize(new Dimension(90, 26));
+        m_effectFadeIn.setPreferredSize(new Dimension(90, 26));
+        m_effectFadeIn.setText("fadein");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        panel49.add(m_effectFadeIn, gbc);
+        m_effectFadeOut = new JRadioButton();
+        m_effectFadeOut.setMinimumSize(new Dimension(90, 26));
+        m_effectFadeOut.setPreferredSize(new Dimension(90, 26));
+        m_effectFadeOut.setText("fadeout");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        panel49.add(m_effectFadeOut, gbc);
+        m_effectZoomIn = new JRadioButton();
+        m_effectZoomIn.setMinimumSize(new Dimension(90, 26));
+        m_effectZoomIn.setPreferredSize(new Dimension(90, 26));
+        m_effectZoomIn.setText("zoomin");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        panel49.add(m_effectZoomIn, gbc);
+        m_effectZoomOut = new JRadioButton();
+        m_effectZoomOut.setMinimumSize(new Dimension(90, 26));
+        m_effectZoomOut.setPreferredSize(new Dimension(90, 26));
+        m_effectZoomOut.setText("zoomout");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        panel49.add(m_effectZoomOut, gbc);
+        m_effectNone = new JRadioButton();
+        m_effectNone.setMinimumSize(new Dimension(90, 26));
+        m_effectNone.setPreferredSize(new Dimension(90, 26));
+        m_effectNone.setText("none");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 2;
+        panel49.add(m_effectNone, gbc);
+        final JPanel panel50 = new JPanel();
+        panel50.setLayout(new GridBagLayout());
+        panel50.setMinimumSize(new Dimension(468, 33));
+        panel50.setPreferredSize(new Dimension(468, 33));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 2;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
-        panel36.add(panel47, gbc);
+        panel36.add(panel50, gbc);
         final JScrollPane scrollPane12 = new JScrollPane();
         scrollPane12.setHorizontalScrollBarPolicy(31);
         scrollPane12.setVerticalScrollBarPolicy(21);
@@ -1119,7 +1248,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        panel47.add(scrollPane12, gbc);
+        panel50.add(scrollPane12, gbc);
         m_offset = new JTextField();
         m_offset.setColumns(40);
         scrollPane12.setViewportView(m_offset);
@@ -1130,9 +1259,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.gridy = 2;
         gbc.anchor = GridBagConstraints.WEST;
         panel36.add(label12, gbc);
-        final JPanel panel48 = new JPanel();
-        panel48.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel48, BorderLayout.CENTER);
+        final JPanel panel51 = new JPanel();
+        panel51.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel51, BorderLayout.CENTER);
         label1.setLabelFor(m_objDispTextField);
         label2.setLabelFor(m_objTextTextArea);
         label3.setLabelFor(m_objActTextTextArea);
@@ -1153,6 +1282,15 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         buttonGroup.add(m_movementDirectionTop);
         buttonGroup.add(m_movementDirectionRight);
         buttonGroup.add(m_movementDirectionLeft);
+        buttonGroup = new ButtonGroup();
+        buttonGroup.add(m_effectNone);
+        buttonGroup.add(m_effectNone);
+        buttonGroup.add(m_effectFadeIn);
+        buttonGroup.add(m_effectMoveOut);
+        buttonGroup.add(m_effectZoomIn);
+        buttonGroup.add(m_effectMoveIn);
+        buttonGroup.add(m_effectZoomOut);
+        buttonGroup.add(m_effectFadeOut);
     }
 
     /**
