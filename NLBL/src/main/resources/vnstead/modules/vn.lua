@@ -201,8 +201,11 @@ vn = obj {
         timer:set(1); --(s.hz)
     end;
     get_spr_rct = function(s, v)
-        local res = s:do_effect(v, true);
-        return { x = res.x, y = res.y, w = res.w, h = res.h };
+        if v.last_rct then
+            return v.last_rct;
+        else
+            return s:do_effect(v, true);
+        end
     end;
     inside_spr = function(s, v, x, y)
         -- Click falls inside this picture
@@ -276,6 +279,7 @@ vn = obj {
             if s:gobf(v).onout and s:enabled(v) and v.mouse_over and not s:inside_spr(v, x, y) then
                 s:gobf(v):onout();
                 if not s:shapechange(v, false) then
+                    s:update_tooltip(v, true);
                     v.mouse_over = false;
                     if s.stopped then
                         s.stopped = false;
@@ -388,7 +392,7 @@ vn = obj {
         if v.spr == nil then v.spr = {}; end;
         -- Will return nils if v is sprite
         local prefix, extension = s:split_url(v.pic);
-        local meta, milestones = s:read_meta(prefix);
+        local meta, milestones, bgcolors = s:read_meta(prefix);
         for sprStep = s:get_start(v), s:get_max_step(v) do
             v.spr[sprStep] = {
                 was_loaded = false,
@@ -432,7 +436,19 @@ vn = obj {
                     if united and ss.sprite_cache[key] and ss.sprite_cache[key][-milestoneIdx] then
                         loaded = ss.sprite_cache[key][-milestoneIdx];
                     else
-                        loaded = sprite.load(sprfile);
+                        local tmp = sprite.load(sprfile);
+                        if bgcolors then
+                            if bgcolors[milestoneIdx] then
+                                local ws, hs = sprite.size(tmp);
+                                loaded = sprite.box(ws, hs, bgcolors[milestoneIdx]);
+                                sprite.draw(tmp, loaded, 0, 0);
+                                sprite.free(tmp);
+                            else
+                                loaded = tmp;
+                            end
+                        else
+                            loaded = tmp;
+                        end
                     end
                     if loaded then
                         s.was_loaded = true;
@@ -849,7 +865,8 @@ vn = obj {
             accel = g.acceleration,
             mouse_over = is_over,
             gob = stead.deref(g),
-            preserved = is_preserved
+            preserved = is_preserved,
+            last_rct = false
             --children = {} - actually can be set here, but I'll set it later, after possible hide() call
         }
 
@@ -1157,6 +1174,9 @@ vn = obj {
         sprite.free(spr)
         return idx, x, y, sp.w, sp.h, alpha;
     end;
+    overlap = function(s, v, only_compute)
+        return s:none(v, only_compute);
+    end;
     none = function(s, v, only_compute)
         local x, y
         x, y = s:postoxy(v, s:get_step(v))
@@ -1335,6 +1355,8 @@ vn = obj {
             idx, x, y, w, h, scale = s:zoom(v, only_compute)
         elseif s:get_eff(v) == 'reverse' then
             idx, x, y, w, h = s:reverse(v, only_compute)
+        elseif s:get_eff(v) == 'overlap' then
+            idx, x, y, w, h = s:overlap(v, only_compute)
         else
             idx, x, y, w, h = s:none(v, only_compute)
         end
@@ -1344,7 +1366,8 @@ vn = obj {
         if not only_compute and not clear then
             v.newborn = false;
         end
-        return {["v"] = v, ["idx"] = idx, ["x"] = x, ["y"] = y, ["w"] = w, ["h"] = h, ["scale"] = scale, ["alpha"] = alpha};
+        v.last_rct = {["v"] = v, ["idx"] = idx, ["x"] = x, ["y"] = y, ["w"] = w, ["h"] = h, ["scale"] = scale, ["alpha"] = alpha};
+        return v.last_rct;
     end;
     startcb = function(s, callback, effect)
         s.callback = callback;
@@ -1641,7 +1664,7 @@ vn = obj {
     do_effects = function(s, clear)
         local result = {["datas"] = {}, ["hasmore"] = false};
         for i, v in ipairs(s._effects) do
-            if not s:should_ignore(v) then
+            if s:need_to_draw(v) then
                 local r = s:draw_step(v, clear);
                 if r.data then
                     stead.table.insert(result.datas, r.data);
@@ -1654,11 +1677,19 @@ vn = obj {
     clear_bg = function(s, partial_clear)
         if partial_clear then
             for i, v in ipairs(s._effects) do
-                s:clear_bg_under_sprite(v);
+                if s:need_to_clear(v) then
+                    s:clear_bg_under_sprite(v);
+                end
             end
         else
             sprite.copy(s.bg_spr, s:screen());
         end
+    end;
+    need_to_draw = function(s, v)
+        return not s:should_ignore(v);
+    end;
+    need_to_clear = function(s, v)
+        return s:need_to_draw(v) and s:has_animation_in_progress(v) and s:get_eff(v) ~= 'overlap';
     end;
     clear_bg_under_sprite = function(s, v)
         local data = s:do_effect(v, true, true);
