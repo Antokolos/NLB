@@ -853,6 +853,7 @@ vn = obj {
         local v = {
             parent = parent_nam,
             newborn = true,
+            hasmore = true,
             pic = picture,
             nam = name,
             eff = t,
@@ -1446,6 +1447,7 @@ vn = obj {
         local preserved_pending_effects = {};
         for i, v in ipairs(s._effects) do
             if v.preserved then
+                v.hasmore = true;
                 stead.table.insert(preserved_effects, v);
             else
                 s:free_effect(v)
@@ -1453,6 +1455,7 @@ vn = obj {
         end
         for i, v in ipairs(s._pending_effects) do
             if v.preserved then
+                v.hasmore = true;
                 stead.table.insert(preserved_pending_effects, v);
             else
                 s:free_effect(v)
@@ -1599,6 +1602,7 @@ vn = obj {
             s:set_step(s:childf(vv), from_step, forward);
         end
     end;
+    -- we use v.step instead of s:get_step(v) in this method, because we need to know when exactly child sprite will reach the end of its animation
     do_step = function(s, v)
         local hotstep = s:get_hotstep(v);
         local accel = s:get_accel(v);
@@ -1615,23 +1619,23 @@ vn = obj {
             return true;
         elseif not s:gobf(v).is_paused then
             if s:get_forward(v) then
-                if (s:get_step(v) < s:get_max_step(v) - s:get_from_stop(v)) then
-                    v.step = s:get_step(v) + s.stp;
-                    if hotstep and s:get_step(v) % hotstep == 0 then
-                        v.step = s:get_step(v) + accel * s.stp;
+                if (v.step < s:get_max_step(v) - s:get_from_stop(v)) then
+                    v.step = v.step + s.stp;
+                    if hotstep and v.step % hotstep == 0 then
+                        v.step = v.step + accel * s.stp;
                     end
-                    if s:get_step(v) > s:get_max_step(v) - s:get_from_stop(v) then
+                    if v.step > s:get_max_step(v) - s:get_from_stop(v) then
                         v.step = s:get_max_step(v) - s:get_from_stop(v);
                     end
                     return true;
                 end
             else
-                if (s:get_step(v) > s:get_init_step(v)) then
-                    v.step = s:get_step(v) - s.stp;
-                    if hotstep and s:get_step(v) % hotstep == 0 then
-                        v.step = s:get_step(v) - accel * s.stp;
+                if (v.step > s:get_init_step(v)) then
+                    v.step = v.step - s.stp;
+                    if hotstep and v.step % hotstep == 0 then
+                        v.step = v.step - accel * s.stp;
                     end
-                    if s:get_step(v) < s:get_init_step(v) then
+                    if v.step < s:get_init_step(v) then
                         v.step = s:get_init_step(v);
                     end
                     return true;
@@ -1647,13 +1651,17 @@ vn = obj {
             -- So, then we'll clear the background under the previous position of the sprite
             hasmore = s:do_step(v);
         end
+        local hadmore = v.hasmore;
+        v.hasmore = hasmore;
         local result = {["data"] = nil, ["hasmore"] = hasmore};
         local e = true;
         if s:gobf(v).enablefn then
             e = s:gobf(v):enablefn();
         end
         if e then
-            result.data = s:do_effect(v, false, clear);
+            if hadmore then
+                result.data = s:do_effect(v, false, clear);
+            end
         else
             if s:gobf(v).onhide then
                 s:gobf(v):onhide();
@@ -1689,7 +1697,7 @@ vn = obj {
         return not s:should_ignore(v);
     end;
     need_to_clear = function(s, v)
-        return s:need_to_draw(v) and s:has_animation_in_progress(v) and s:get_eff(v) ~= 'overlap';
+        return s:need_to_draw(v) and v.hasmore and s:get_eff(v) ~= 'overlap';
     end;
     clear_bg_under_sprite = function(s, v)
         local data = s:do_effect(v, true, true);
