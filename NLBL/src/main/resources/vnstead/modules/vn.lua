@@ -129,6 +129,7 @@ vn = obj {
     sprite_cache_data = {};
     _effects = {};
     _pending_effects = {};
+    _dirty_rects = {};
     _bg = false;
     _need_update = false;
     _wf = 0;
@@ -152,7 +153,7 @@ vn = obj {
         up_x = 0,
         down_x = 0,
         callback = false,
-        extent = 100,
+        extent = 5,
         default_label_extent = 4,
         default_tooltip_offset = 5,
         hud_color = '#000000',
@@ -207,6 +208,62 @@ vn = obj {
             return s:do_effect(v, true);
         end
     end;
+    collision_base = function(s, v, dirty_rect)
+        if not v or not dirty_rect then
+            return false;
+        end
+        local vv = dirty_rect.v;
+        --local morph_over = s:get_morph(v, true);
+        --local morph_out = s:get_morph(v, false);
+        --local info_over = s:get_base_info(morph_over);
+        --local info_out = s:get_base_info(morph_out);
+        if v.nam == vv.nam then --or info_over.nam == vv.nam or info_out.nam == vv.nam then
+            -- there is no collision if it is the same object
+            return false;
+        end
+        return true;
+    end;
+    --Input dirty_rect: dirty_rect to check for collision detection
+    --Return: return true if the rectangles overlap otherwise return false
+    collision = function(s, v, dirty_rect)
+        if not s:collision_base(v, dirty_rect) then
+            return false;
+        end
+
+        local rct = s:get_spr_rct(v);
+        return s:collisionr(rct, dirty_rect);
+    end;
+    collisionrt = function(s, v, dirty_rect)
+        if not v.last_rct or not dirty_rect then
+            return false;
+        end
+        local rct = s:draw_hud(v.last_rct, true);
+        return s:collisionr(rct, dirty_rect);
+    end;
+    collisionr = function(s, rct, dirty_rect)
+        if not rct or not dirty_rect then
+            return false;
+        end
+        local x, y, w, h = dirty_rect.x, dirty_rect.y, dirty_rect.w, dirty_rect.h;
+    	-- self bottom < other sprite top
+    	if rct.y + rct.h < y then
+    		return false
+    	end
+    	-- self top > other sprite bottom
+    	if rct.y > y + h then
+    		return false
+    	end
+    	-- self left > other sprite right
+    	if rct.x > x + w then
+    		return false
+    	end
+    	-- self right < other sprite left
+    	if rct.x + rct.w < x then
+    		return false
+    	end
+
+    	return true
+    end;
     inside_spr = function(s, v, x, y)
         -- Click falls inside this picture
         local rct = s:get_spr_rct(v);
@@ -230,7 +287,7 @@ vn = obj {
             end
         end
     end;
-    shapechange = function(s, v, is_over)
+    get_morph = function(s, v, is_over)
         local gob = s:gobf(v);
         local morph;
         if is_over then
@@ -246,6 +303,10 @@ vn = obj {
             end
             morph = stead.ref(morphout);
         end
+        return morph;
+    end;
+    shapechange = function(s, v, is_over)
+        local morph = s:get_morph(v, is_over);
         if not morph then
             return false;
         end
@@ -261,9 +322,9 @@ vn = obj {
         for i, v in ipairs(s._effects) do
             if s:gobf(v).onover and s:enabled(v) and not v.mouse_over and s:inside_spr(v, x, y) then
                 s:gobf(v):onover();
+                s:update_tooltip(v);
                 if not s:shapechange(v, true) then
                     v.mouse_over = true;
-                    s:update_tooltip(v);
                     if s.stopped then
                         s.stopped = false;
                     end
@@ -278,8 +339,8 @@ vn = obj {
         for i, v in ipairs(s._effects) do
             if s:gobf(v).onout and s:enabled(v) and v.mouse_over and not s:inside_spr(v, x, y) then
                 s:gobf(v):onout();
+                s:update_tooltip(v, true, true);
                 if not s:shapechange(v, false) then
-                    s:update_tooltip(v, true);
                     v.mouse_over = false;
                     if s.stopped then
                         s.stopped = false;
@@ -596,7 +657,7 @@ vn = obj {
 
         local i, k = s:lookup(nam)
         if not i then return end
-        s:clear_bg_under_sprite(i);
+        s:clear_bg_under_sprite(i, true);
         stead.table.remove(s._effects, k)
         for ii, vv in ipairs(i.children) do
             s:hide(s:childf(vv), eff, ...);
@@ -818,17 +879,29 @@ vn = obj {
 
     get_forward = function(s, v) return s:rootf(v).forward; end;
 
-    effect_int = function(s, parent_eff, g, is_over)
+    get_base_info = function(s, g)
+        if not g then
+            return {["picture"] = false, ["name"] = false};
+        end
         local image;
         if type(g.pic) == 'function' then
             image = g:pic();
         else
             image = g.pic;
         end
+        local v;
+        if type(image) == 'string' then
+            v = { pic = image, nam = image };
+            image = v
+        end
+        return {["picture"] = image.pic, ["name"] = image.nam};
+    end;
+
+    effect_int = function(s, parent_eff, g, is_over)
+        local info = s:get_base_info(g);
         local eff = g.eff;
         local maxStep = g.maxStep;
         local t = eff;
-        local v;
 
         if not is_over then
             is_over = false;
@@ -839,13 +912,6 @@ vn = obj {
             is_preserved = false;
         end
 
-        if type(image) == 'string' then
-            v = { pic = image, nam = image };
-            image = v
-        end
-
-        local picture = image.pic
-        local name = image.nam
         local parent_nam = false;
         if parent_eff then
             parent_nam = parent_eff.nam;
@@ -854,8 +920,8 @@ vn = obj {
             parent = parent_nam,
             newborn = true,
             hasmore = true,
-            pic = picture,
-            nam = name,
+            pic = info.picture,
+            nam = info.name,
             eff = t,
             forward = true,
             init_step = g.curStep,
@@ -1342,7 +1408,7 @@ vn = obj {
         local sp = s:frame(v, idx, s:screen(), x, y, only_compute, true);
         return idx, x, y, sp.w, sp.h;
     end;
-    do_effect = function(s, v, only_compute, clear)
+    do_effect = function(s, v, only_compute, clear, hide)
         local idx, x, y, w, h;
         local scale = 1.0;
         local alpha = 255;
@@ -1368,6 +1434,9 @@ vn = obj {
             v.newborn = false;
         end
         v.last_rct = {["v"] = v, ["idx"] = idx, ["x"] = x, ["y"] = y, ["w"] = w, ["h"] = h, ["scale"] = scale, ["alpha"] = alpha};
+        if hide then
+            stead.table.insert(s._dirty_rects, v.last_rct);
+        end
         return v.last_rct;
     end;
     startcb = function(s, callback, effect)
@@ -1447,7 +1516,6 @@ vn = obj {
         local preserved_pending_effects = {};
         for i, v in ipairs(s._effects) do
             if v.preserved then
-                v.hasmore = true;
                 stead.table.insert(preserved_effects, v);
             else
                 s:free_effect(v)
@@ -1455,7 +1523,6 @@ vn = obj {
         end
         for i, v in ipairs(s._pending_effects) do
             if v.preserved then
-                v.hasmore = true;
                 stead.table.insert(preserved_pending_effects, v);
             else
                 s:free_effect(v)
@@ -1463,6 +1530,7 @@ vn = obj {
         end
         s._effects = preserved_effects;
         s._pending_effects = preserved_pending_effects;
+        s._dirty_rects = {};
         if not preserve_cache then
             s:clear_cache();
         end
@@ -1595,7 +1663,7 @@ vn = obj {
         local r = s:draw_step(v);
         local data = r.data;
         if data then
-            s:draw_hud(data.v, data.idx, data.x, data.y, data.scale, data.alpha);
+            s:draw_hud(data, false);
         end
         for k, vv in ipairs(v.children) do
             --print("nam = " .. v.nam .. "; child = " .. vv);
@@ -1659,7 +1727,7 @@ vn = obj {
             e = s:gobf(v):enablefn();
         end
         if e then
-            if hadmore then
+            if v.preserved or hadmore or s:check_dirty(v) then
                 result.data = s:do_effect(v, false, clear);
             end
         else
@@ -1672,7 +1740,7 @@ vn = obj {
     do_effects = function(s, clear)
         local result = {["datas"] = {}, ["hasmore"] = false};
         for i, v in ipairs(s._effects) do
-            if s:need_to_draw(v) then
+            if s:enabled(v) then
                 local r = s:draw_step(v, clear);
                 if r.data then
                     stead.table.insert(result.datas, r.data);
@@ -1693,16 +1761,26 @@ vn = obj {
             sprite.copy(s.bg_spr, s:screen());
         end
     end;
-    need_to_draw = function(s, v)
-        return not s:should_ignore(v);
+    check_dirty = function(s, v)
+        for i, r in ipairs(s._dirty_rects) do
+            if s:collision(v, r) or s:collisionrt(v, r) then
+                return true;
+            end
+        end
+        return false;
+    end;
+    check_dirty_and_force_redraw = function(s, v)
+        if s:check_dirty(v) then
+            v.hasmore = true;
+        end
     end;
     need_to_clear = function(s, v)
-        return s:need_to_draw(v) and v.hasmore and s:get_eff(v) ~= 'overlap';
+        return not s:enabled(v) or (s:get_eff(v) ~= 'overlap' and (v.preserved or v.hasmore or s:check_dirty_and_force_redraw(v)));
     end;
-    clear_bg_under_sprite = function(s, v)
-        local data = s:do_effect(v, true, true);
-        s:draw_hud(data.v, data.idx, data.x, data.y, data.scale, data.alpha, nil, true);
-        s:update_tooltip(v, true);
+    clear_bg_under_sprite = function(s, v, hide)
+        local data = s:do_effect(v, true, true, hide);
+        s:draw_hud(data, false, nil, true, hide);
+        --s:update_tooltip(v, true, hide);
     end;
     has_any_animation_in_progress = function(s)
         for i, v in ipairs(s._effects) do
@@ -1735,7 +1813,9 @@ vn = obj {
         if n then
             s:draw_huds(res.datas);
             s:tooltips(x, y);
+            s._dirty_rects = {};
         else
+            s._dirty_rects = {};
             if (vn.callback) then
                 local callback = vn.callback;
                 vn.callback = false;
@@ -1757,14 +1837,15 @@ vn = obj {
         end
         return n
     end;
-    draw_huds = function(s, datas, clear)
+    draw_huds = function(s, datas, clear, hide)
         for k, vv in ipairs(datas) do
-            s:draw_hud(vv.v, vv.idx, vv.x, vv.y, vv.scale, vv.alpha, nil, clear)
+            s:draw_hud(vv, false, nil, clear, hide)
         end
     end;
-    draw_hud = function(s, v, idx, x, y, scale, alpha, target, clear)
+    draw_hud = function(s, data, only_compute, target, clear, hide)
+        local v, idx, x, y, scale, alpha = data.v, data.idx, data.x, data.y, data.scale, data.alpha;
         if scale == 0 or alpha == 0 then
-            return;
+            return false;
         end
         if not idx then
             idx = 0;
@@ -1784,11 +1865,8 @@ vn = obj {
             if y then
                 ypos = y;
             end
-            local f = s:frame(v, idx, nil, nil, nil, true, true);
-            if f then
-                xpos = xpos + f.w * scale;
-                ypos = ypos + f.h * scale / 2.0;
-            end
+            xpos = xpos + data.w * scale;
+            ypos = ypos + data.h * scale / 2.0;
             xpos = xpos + s.default_label_extent + s.default_tooltip_offset;
             local sprites = {};
             local htotal = 0;
@@ -1815,7 +1893,7 @@ vn = obj {
                         textSprite = textSpriteScaled;
                     end
                     local w, h = sprite.size(textSprite);
-                    if clear then
+                    if clear or only_compute then
                         sprite.free(textSprite);
                     end
                     w = w + s.extent;
@@ -1827,9 +1905,16 @@ vn = obj {
                 end
             end
             local ycur = ypos - htotal / 2.0;
+            local rct = {["v"] = v, ["x"] = xpos, ["y"] = ycur, ["w"] = wmax, ["h"] = htotal};
+            if only_compute then
+                return rct;
+            end
+            if hide then
+                stead.table.insert(s._dirty_rects, rct);
+            end
             if clear then
                 s:clear(xpos, ycur, wmax, htotal, target);
-                return
+                return rct;
             end
             for i, ss in ipairs(sprites) do
                 local hudSprite = sprite.blank(ss.w, ss.h);
@@ -1840,6 +1925,7 @@ vn = obj {
                 sprite.free(hudSprite);
                 sprite.free(ss.spr);
             end
+            return rct;
         end
     end;
     tooltips = function(s, x, y)
@@ -1856,17 +1942,22 @@ vn = obj {
         return here().ignore_preserved_gobjs and v.preserved;
     end;
     enabled = function(s, v)
-        return (not s:gobf(v).enablefn or s:gobf(v):enablefn()) and not s:should_ignore(v);
+        local result = (not s:gobf(v).enablefn or s:gobf(v):enablefn()) and not s:should_ignore(v);
+        if not result then
+            -- to redraw it when it will become enabled again
+            v.hasmore = true;
+        end
+        return result;
     end;
-    update_tooltip = function(s, v, erase)
+    update_tooltip = function(s, v, erase, hide)
         local xx, yy = s:postoxy(v);
         local sp = s:frame(v, 0);
         local text, pos, clear_under_tooltip = s:gobf(v):tooltipfn();
         if text then
-            s:tooltip(text, pos, xx, yy, sp.w, sp.h, clear_under_tooltip, erase);
+            s:tooltip(v, text, pos, xx, yy, sp.w, sp.h, clear_under_tooltip, erase, hide);
         end
     end;
-    tooltip = function(s, text, pos, x, y, vw, vh, clear_under_tooltip, erase)
+    tooltip = function(s, v, text, pos, x, y, vw, vh, clear_under_tooltip, erase, hide)
         local target = s:screen();
         local label, w, h = s:label(text);
         local xmax = theme.get("scr.w");
@@ -1894,6 +1985,9 @@ vn = obj {
         end
         if clear_under_tooltip or erase then
             sprite.copy(s.bg_spr, xt, yt, w, h, target, xt, yt);
+        end
+        if hide then
+            stead.table.insert(s._dirty_rects, {["v"] = v, ["x"] = xt, ["y"] = yt, ["w"] = w, ["h"] = h});
         end
         if not erase then
             sprite.draw(label, target, xt, yt);
