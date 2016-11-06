@@ -1806,7 +1806,7 @@ vn = obj {
         return false;
     end;
     need_to_clear = function(s, v)
-        return not s:enabled(v) or (s:get_eff(v) ~= 'overlap' and (v.preserved or v.hasmore or s:check_dirty_and_force_redraw(v)));
+        return s:enabled(v) and (s:get_eff(v) ~= 'overlap' and (v.preserved or v.hasmore or s:check_dirty_and_force_redraw(v)));
     end;
     clear_bg_under_sprite = function(s, v, hide)
         local data = s:do_effect(v, true, true, hide);
