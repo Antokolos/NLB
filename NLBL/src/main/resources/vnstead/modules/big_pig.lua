@@ -103,6 +103,7 @@ reward = gobj {
     system_type = true,
     pic = "gfx/reward.png",
     eff = "overlap-middle-middle@0,0",
+    dirty_draw = true,
     maxStep = 270,
     startFrame = 0,
     curStep = 39,

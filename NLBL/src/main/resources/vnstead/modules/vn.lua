@@ -183,6 +183,7 @@ vn = obj {
         end
         local i, v, n
         for i, v in ipairs(s._effects) do
+            v.hasmore = true;
             v.step = s:get_init_step(v);
             s:load_effect(v)
             if s:get_step(v) < s:get_max_step(v) - s:get_from_stop(v) then
@@ -833,9 +834,9 @@ vn = obj {
         end
     end;
 
-    effect = function(s, image, eff, speed, startFrame, curStep, framesFromStop, arm, hot_step, acceleration, is_preserved)
+    effect = function(s, image, eff, speed, startFrame, curStep, framesFromStop, arm, hot_step, acceleration, is_preserved, dirty_draw)
         local maxStep = math.floor((speed or s.speed) / s.hz);
-        local gg = init_gobj(image, eff, maxStep, startFrame, curStep, framesFromStop, arm, hot_step, acceleration, is_preserved);
+        local gg = init_gobj(image, eff, maxStep, startFrame, curStep, framesFromStop, arm, hot_step, acceleration, is_preserved, dirty_draw);
         return s:effect_int(nil, gg);
     end;
 
@@ -879,6 +880,13 @@ vn = obj {
 
     get_forward = function(s, v) return s:rootf(v).forward; end;
 
+    set_hasmore_all = function(s, v, hasmore)
+        v.hasmore = hasmore;
+        for ii, vv in ipairs(v.children) do
+            s:set_hasmore_all(s:childf(vv), hasmore);
+        end
+    end;
+
     get_base_info = function(s, g)
         if not g then
             return {["picture"] = false, ["name"] = false};
@@ -912,6 +920,11 @@ vn = obj {
             is_preserved = false;
         end
 
+        local dirty_draw = g.dirty_draw;
+        if not dirty_draw then
+            dirty_draw = false;
+        end
+
         local parent_nam = false;
         if parent_eff then
             parent_nam = parent_eff.nam;
@@ -933,6 +946,7 @@ vn = obj {
             mouse_over = is_over,
             gob = stead.deref(g),
             preserved = is_preserved,
+            dirty_draw = dirty_draw,
             last_rct = false
             --children = {} - actually can be set here, but I'll set it later, after possible hide() call
         }
@@ -995,6 +1009,8 @@ vn = obj {
             v.eff = 'zoomout'
         elseif eff:find("reverse") then
             v.eff = 'reverse';
+        elseif eff:find("overlap") then
+            v.eff = 'overlap';
         else
             v.eff = 'none'
         end
@@ -1434,8 +1450,9 @@ vn = obj {
             v.newborn = false;
         end
         v.last_rct = {["v"] = v, ["idx"] = idx, ["x"] = x, ["y"] = y, ["w"] = w, ["h"] = h, ["scale"] = scale, ["alpha"] = alpha};
-        if hide then
-            stead.table.insert(s._dirty_rects, v.last_rct);
+        if hide or v.dirty_draw then
+            --print(v.nam .. " is dirty");
+            s._dirty_rects[v.nam] = v.last_rct;
         end
         return v.last_rct;
     end;
@@ -1762,7 +1779,7 @@ vn = obj {
         end
     end;
     check_dirty = function(s, v)
-        for i, r in ipairs(s._dirty_rects) do
+        for k, r in pairs(s._dirty_rects) do
             if s:collision(v, r) or s:collisionrt(v, r) then
                 return true;
             end
@@ -1770,9 +1787,15 @@ vn = obj {
         return false;
     end;
     check_dirty_and_force_redraw = function(s, v)
-        if s:check_dirty(v) then
-            v.hasmore = true;
+        if v.hasmore then
+            -- redraw already forced
+            return true;
         end
+        if s:check_dirty(v) then
+            s:set_hasmore_all(v, true);
+            return true;
+        end
+        return false;
     end;
     need_to_clear = function(s, v)
         return not s:enabled(v) or (s:get_eff(v) ~= 'overlap' and (v.preserved or v.hasmore or s:check_dirty_and_force_redraw(v)));
@@ -1813,7 +1836,7 @@ vn = obj {
         if n then
             s:draw_huds(res.datas);
             s:tooltips(x, y);
-            s._dirty_rects = {};
+            --s._dirty_rects = {};
         else
             s._dirty_rects = {};
             if (vn.callback) then
@@ -1909,8 +1932,9 @@ vn = obj {
             if only_compute then
                 return rct;
             end
-            if hide then
-                stead.table.insert(s._dirty_rects, rct);
+            if hide or v.dirty_draw then
+                --print(v.nam .. " hud is dirty");
+                s._dirty_rects[v.nam .. '_hud'] = rct;
             end
             if clear then
                 s:clear(xpos, ycur, wmax, htotal, target);
@@ -1986,8 +2010,9 @@ vn = obj {
         if clear_under_tooltip or erase then
             sprite.copy(s.bg_spr, xt, yt, w, h, target, xt, yt);
         end
-        if hide then
-            stead.table.insert(s._dirty_rects, {["v"] = v, ["x"] = xt, ["y"] = yt, ["w"] = w, ["h"] = h});
+        if hide or v.dirty_draw then
+            --print(v.nam .. " tooltip is dirty");
+            s._dirty_rects[v.nam .. '_tooltip'] = {["v"] = v, ["x"] = xt, ["y"] = yt, ["w"] = w, ["h"] = h};
         end
         if not erase then
             sprite.draw(label, target, xt, yt);

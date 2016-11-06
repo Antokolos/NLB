@@ -143,6 +143,9 @@ gobj = function(v)
     if not v.is_paused then
         v.is_paused = false;
     end
+    if not v.dirty_draw then
+        v.dirty_draw = false;
+    end
     if v.is_menu then
         return menu(v);
     else
@@ -167,10 +170,10 @@ arm_tostring = function(arm)
     return res;
 end
 
-init_gobj = function(image, eff, maxStep, startFrame, curStep, framesFromStop, arm, hot_step, acceleration, is_preserved)
+init_gobj = function(image, eff, maxStep, startFrame, curStep, framesFromStop, arm, hot_step, acceleration, is_preserved, dirty_draw)
     local constr_string = string.format(
-        "gobj({['nam'] = '%s', ['pic'] = '%s', ['eff'] = '%s', ['maxStep'] = %s, ['startFrame'] = %s, ['curStep'] = %s, ['framesFromStop'] = %s, ['arm'] = %s, ['hot_step'] = %s, ['acceleration'] = %s, ['preserved'] = %s, ['is_dynamic'] = true})",
-        tostring(image), tostring(image), tostring(eff), tostring(maxStep), tostring(startFrame), tostring(curStep), tostring(framesFromStop), arm_tostring(arm), tostring(hot_step), tostring(acceleration), tostring(is_preserved)
+        "gobj({['nam'] = '%s', ['pic'] = '%s', ['eff'] = '%s', ['maxStep'] = %s, ['startFrame'] = %s, ['curStep'] = %s, ['framesFromStop'] = %s, ['arm'] = %s, ['hot_step'] = %s, ['acceleration'] = %s, ['preserved'] = %s, ['is_dynamic'] = true, ['is_paused'] = false, ['dirty_draw'] = %s})",
+        tostring(image), tostring(image), tostring(eff), tostring(maxStep), tostring(startFrame), tostring(curStep), tostring(framesFromStop), arm_tostring(arm), tostring(hot_step), tostring(acceleration), tostring(is_preserved), tostring(dirty_draw)
     );
     return new(constr_string);
 end
