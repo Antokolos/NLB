@@ -236,6 +236,13 @@ public class NonLinearBookFacade implements NLBObservable {
             exportBundledVNSTEADFile(modulesDir, true, "big_pig.lua");
             exportBundledVNSTEADFile(modulesDir, true, "gobj.lua");
         }
+        File sfxDir = new File(exportDir, "sfx");
+        if (sfxDir.mkdir()) {
+            exportBundledVNSTEADFile(sfxDir, true, "dice_roll.ogg");
+            exportBundledVNSTEADFile(sfxDir, true, "kosti.ogg");
+            exportBundledVNSTEADFile(sfxDir, true, "money.ogg");
+            exportBundledVNSTEADFile(sfxDir, true, "shake.ogg");
+        }
         File gfxDir = new File(exportDir, "gfx");
         if (gfxDir.mkdir()) {
             exportBundledVNSTEADFile(gfxDir, true, "empty.png");
