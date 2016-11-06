@@ -439,6 +439,7 @@ rollStat = stat {
                 s._curRollsByPlayer[pos] = s._curRollsByPlayer[pos] + v;
                 prev = v;
             end
+            vn:invalidate(paper);
             s.message = "";
             s.should_pass = false;
             if good_luck then

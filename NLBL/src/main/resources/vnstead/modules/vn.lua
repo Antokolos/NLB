@@ -887,6 +887,14 @@ vn = obj {
         end
     end;
 
+    invalidate = function(s, gobj)
+        local v = s:glookup_full(stead.deref(gobj));
+        if v then
+            s:set_hasmore_all(v, true);
+            s.stopped = false;
+        end
+    end;
+
     get_base_info = function(s, g)
         if not g then
             return {["picture"] = false, ["name"] = false};
@@ -1833,20 +1841,16 @@ vn = obj {
         local res = s:do_effects();
         local n = res.hasmore;
         local x, y = stead.mouse_pos();
-        if n then
-            s:draw_huds(res.datas);
-            s:tooltips(x, y);
-            --s._dirty_rects = {};
-        else
+        s:draw_huds(res.datas);
+        s:tooltips(x, y);
+        if not n then
+            s:stop();
             s._dirty_rects = {};
             if (vn.callback) then
                 local callback = vn.callback;
                 vn.callback = false;
                 cbresult = callback();
             end
-            s:draw_huds(res.datas);
-            s:tooltips(x, y);
-            s:stop();
             if cbresult then
                 if type(cbresult) == 'function' then
                     return cbresult();
