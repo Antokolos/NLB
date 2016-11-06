@@ -11,6 +11,7 @@ iface.cmd = stead.hook(iface.cmd, function(f, s, cmd, ...)
     if vn:add_all_missing_children() then
         vn:start();
     end
+    vn:invalidate_all();
     return paginatorIfaceCmd(f, s, cmd, ...);
 end)
 

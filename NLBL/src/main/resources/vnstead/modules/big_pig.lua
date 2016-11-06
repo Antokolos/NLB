@@ -166,6 +166,7 @@ btn_dice = gobj {
     system_type = true,
     pic = "gfx/btn_dice.png",
     eff = "right-top@-40,500",
+    onover = function(s) set_sound('sfx/shake.ogg', 1, 0); return true; end,
     morphover = "alt_btn_dice",
     enablefn = function(s) return enablefn(s); end
 }
@@ -179,8 +180,7 @@ alt_btn_dice = gobj {
     dsc = function(s) return dice:rollTxt(); end,
     ttpos = "n",
     act = function(s) if vn.stopped then s:onout(); dice:act(); end; end,
-    onover = function(s) set_sound('sfx/shake.ogg', 1, 0); end,
-    onout = function(s) stop_sound(1); end,
+    onout = function(s) stop_sound(1); return true; end,
     enablefn = function(s) return enablefn(s); end
 }
 
@@ -250,6 +250,7 @@ btn_dice2 = gobj {
     system_type = true,
     pic = "gfx/btn_dice2.png",
     eff = "right-bottom@-195,-440",
+    onover = function(s) set_sound('sfx/shake.ogg', 1, 0); return true; end,
     morphover = "alt_btn_dice2",
     enablefn = function(s) return enablefn(s); end
 }
@@ -262,8 +263,7 @@ alt_btn_dice2 = gobj {
     morphout = "btn_dice2",
     dsc = function(s) return dice:rollTxt(); end,
     act = function(s) if vn.stopped then s:onout(); dice:act(); end; end,
-    onover = function(s) set_sound('sfx/shake.ogg', 1, 0); end,
-    onout = function(s) stop_sound(1); end,
+    onout = function(s) stop_sound(1); return true; end,
     enablefn = function(s) return enablefn(s); end
 }
 
@@ -680,7 +680,7 @@ game_room = vnr {
         local paper = vn:gshow(paper);
 
         if (game.table.plate) then
-            set_music('sfx/abu_ali.ogg');
+            --set_music('sfx/abu_ali.ogg');
             vn:add_child(paper, txt1);
             vn:gshow(plate);
             vn:gshow(btn_dice2);
@@ -688,7 +688,7 @@ game_room = vnr {
             vn:gshow(btn_inc2);
             vn:gshow(btn_exit2);
         else
-            set_music('sfx/tavernm.ogg');
+            --set_music('sfx/tavernm.ogg');
             vn:add_child(paper, txt2);
             vn:gshow(btn_dice);
             vn:gshow(btn_next);
@@ -714,6 +714,7 @@ game_room = vnr {
         end
         remove(_play_game_obj, me());
         vn:unlock_direct();
+        _money = game.money;
         paginator:turnon();
     end,
     obj = { 'dice', 'next_turn_obj', 'increase_bet_obj' }
@@ -733,15 +734,15 @@ game.enable_autosave = function()
         return true
 end
 
-game.money = 200
-game.defaultbet = 100
+game.money = 150
+game.defaultbet = 50
 game.data = {
     ["mainplr"] = 2,
     ["names"] = {nil, "Ragnar", "Citizen", "Trader"},
     ["colors"] = {{nil, nil}, {"#ff0000", nil}, {"#ff0000", nil}, {"#ff0000", nil}},
     ["ai"] = {nil, nil, "aggressive", "cautious"},
-    ["money"] = {0, game.money, 300, 400},
-    ["bet"] = 100,
+    ["money"] = {0, game.money, 350, 500},
+    ["bet"] = 50,
     ["threshold"] = 100
 };
 game.table = { ["bg"] = 'gfx/table2.png', ["paper"] = 'gfx/paper2.png' };
@@ -749,14 +750,17 @@ game.table = { ["bg"] = 'gfx/table2.png', ["paper"] = 'gfx/paper2.png' };
 _play_bp_two_ais = menu {
     nam = "play_bp_two_ais",
     dsc = function(s) return "{Сыграть с Горожанином и Торговцем}^" end, 
-    act = function(s) 
+    act = function(s)
+        if _money then
+            game.money = _money;
+        end
         game.data = {
             ["mainplr"] = 2,
             ["names"] = {nil, "Ragnar", "Citizen", "Trader"},
             ["colors"] = {{nil, nil}, {"#ff0000", nil}, {"#ff0000", nil}, {"#ff0000", nil}},
             ["ai"] = {nil, nil, "aggressive", "cautious"},
-            ["money"] = {0, game.money, 300, 400},
-            ["bet"] = 100,
+            ["money"] = {0, game.money, 350, 500},
+            ["bet"] = 50,
             ["threshold"] = 100
         };
         game.table.bg = 'gfx/table2.png';
@@ -772,14 +776,17 @@ _play_bp_two_ais = menu {
 _play_bp_one_ai = menu {
     nam = "play_bp_one_ai",
     dsc = function(s) return "{Сыграть с Абу-Али}^" end, 
-    act = function(s) 
+    act = function(s)
+        if _money then
+            game.money = _money;
+        end
         game.data = {
             ["mainplr"] = 2,
             ["names"] = {nil, "Рагнар", nil, "Абу-Али"},
             ["colors"] = {{nil, nil}, {"#ff0000", nil}, {"#ff0000", nil}, {"#ff0000", nil}},
             ["ai"] = {nil, nil, nil, "optimum"},
             ["money"] = {0, game.money, 0, 1000},
-            ["bet"] = 100,
+            ["bet"] = 50,
             ["threshold"] = 100
         };
         game.table.bg = 'gfx/table1.png';
@@ -795,14 +802,17 @@ _play_bp_one_ai = menu {
 _play_bp_one_hotseat = menu {
     nam = "play_bp_one_hotseat",
     dsc = function(s) return "{Сыграть с другом}^" end, 
-    act = function(s) 
+    act = function(s)
+        if _money then
+            game.money = _money;
+        end
         game.data = {
             ["mainplr"] = 2,
             ["names"] = {nil, "Рагнар", nil, "Варвар"},
             ["colors"] = {{nil, nil}, {"#ff0000", nil}, {"#ff0000", nil}, {"#ff0000", nil}},
             ["ai"] = {nil, nil, nil, nil},
             ["money"] = {0, game.money, 0, game.money},
-            ["bet"] = 100,
+            ["bet"] = 50,
             ["threshold"] = 100
         };
         game.table.bg = 'gfx/table1.png';
@@ -819,14 +829,17 @@ _play_bp_one_hotseat = menu {
 _play_bp_two_hotseats = menu {
     nam = "play_bp_two_hotseats",
     dsc = function(s) return "{Сыграть с двумя друзьями}^" end, 
-    act = function(s) 
+    act = function(s)
+        if _money then
+            game.money = _money;
+        end
         game.data = {
             ["mainplr"] = 2,
             ["names"] = {nil, "Рагнар", "Варвар", "Воин"},
             ["colors"] = {{nil, nil}, {"#ff0000", nil}, {"#ff0000", nil}, {"#ff0000", nil}},
             ["ai"] = {nil, nil, nil, nil},
             ["money"] = {0, game.money, game.money, game.money},
-            ["bet"] = 100,
+            ["bet"] = 50,
             ["threshold"] = 100
         };
         game.table.bg = 'gfx/table2.png';

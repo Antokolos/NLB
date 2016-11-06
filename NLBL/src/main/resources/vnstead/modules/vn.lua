@@ -339,14 +339,17 @@ vn = obj {
         end
         for i, v in ipairs(s._effects) do
             if s:gobf(v).onout and s:enabled(v) and v.mouse_over and not s:inside_spr(v, x, y) then
-                s:gobf(v):onout();
-                s:update_tooltip(v, true, true);
-                if not s:shapechange(v, false) then
-                    v.mouse_over = false;
-                    if s.stopped then
-                        s.stopped = false;
-                    end
-                end
+                s:outf(v);
+            end
+        end
+    end;
+    outf = function(s, v)
+        s:gobf(v):onout();
+        s:update_tooltip(v, true, true);
+        if not s:shapechange(v, false) then
+            v.mouse_over = false;
+            if s.stopped then
+                s.stopped = false;
             end
         end
     end;
@@ -895,6 +898,16 @@ vn = obj {
         end
     end;
 
+    invalidate_all = function(s)
+        for i, v in ipairs(s._effects) do
+            v.hasmore = true;
+        end
+        for i, v in ipairs(s._pending_effects) do
+            v.hasmore = true;
+        end
+
+    end;
+
     get_base_info = function(s, g)
         if not g then
             return {["picture"] = false, ["name"] = false};
@@ -940,6 +953,7 @@ vn = obj {
         local v = {
             parent = parent_nam,
             newborn = true,
+            was_disabled = false,
             hasmore = true,
             pic = info.picture,
             nam = info.name,
@@ -1752,7 +1766,7 @@ vn = obj {
             e = s:gobf(v):enablefn();
         end
         if e then
-            if v.preserved or hadmore or s:check_dirty(v) then
+            if hadmore or s:check_dirty(v) then
                 result.data = s:do_effect(v, false, clear);
             end
         else
@@ -1784,6 +1798,7 @@ vn = obj {
             end
         else
             sprite.copy(s.bg_spr, s:screen());
+            s:invalidate_all();
         end
     end;
     check_dirty = function(s, v)
@@ -1806,12 +1821,12 @@ vn = obj {
         return false;
     end;
     need_to_clear = function(s, v)
-        return s:enabled(v) and (s:get_eff(v) ~= 'overlap' and (v.preserved or v.hasmore or s:check_dirty_and_force_redraw(v)));
+        return s:enabled(v) and (s:get_eff(v) ~= 'overlap' and (v.hasmore or s:check_dirty_and_force_redraw(v)));
     end;
     clear_bg_under_sprite = function(s, v, hide)
         local data = s:do_effect(v, true, true, hide);
         s:draw_hud(data, false, nil, true, hide);
-        --s:update_tooltip(v, true, hide);
+        --s:update_tooltip(v, true, hide); -- done in onout
     end;
     has_any_animation_in_progress = function(s)
         for i, v in ipairs(s._effects) do
@@ -1971,9 +1986,18 @@ vn = obj {
     end;
     enabled = function(s, v)
         local result = (not s:gobf(v).enablefn or s:gobf(v):enablefn()) and not s:should_ignore(v);
-        if not result then
+        if result then
+            v.was_disabled = false;
+        elseif not v.was_disabled then
+            -- disabled => clear this sprite
+            s:clear_bg_under_sprite(v, true);
+            -- simulate onout, if it is defined
+            if s:gobf(v).onout then
+                s:outf(v);
+            end
             -- to redraw it when it will become enabled again
             v.hasmore = true;
+            v.was_disabled = true;
         end
         return result;
     end;
