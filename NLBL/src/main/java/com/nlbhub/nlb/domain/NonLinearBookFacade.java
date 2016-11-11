@@ -453,6 +453,18 @@ public class NonLinearBookFacade implements NLBObservable {
         m_nlb.setMediaFileFlag(mediaType, fileName, flag);
     }
 
+    /**
+     * This method does not have undo and immediately sets export parameters preset of the media file with the specified
+     * type and name.
+     *
+     * @param mediaType
+     * @param fileName
+     * @param preset
+     */
+    public void setMediaFileExportParametersPreset(final MediaFile.Type mediaType, final String fileName, final MediaExportParameters.Preset preset) {
+        m_nlb.setMediaFileExportParametersPreset(mediaType, fileName, preset);
+    }
+
     public void updateBookProperties(
             final String license,
             final String language,

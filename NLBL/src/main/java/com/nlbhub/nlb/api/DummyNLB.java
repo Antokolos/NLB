@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.api;
 
+import com.nlbhub.nlb.domain.MediaExportParameters;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.exception.NLBIOException;
@@ -291,6 +292,11 @@ public class DummyNLB implements NonLinearBook {
 
     @Override
     public Map<String, String> getMediaRedirectsMap() {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public Map<String, MediaExportParameters> getMediaExportParametersMap() {
         return Collections.emptyMap();
     }
 

@@ -159,6 +159,12 @@ public class DialogMediaLibrary extends JDialog {
             constraints.addItem(value);
         }
         constraintColumn.setCellEditor(new DefaultCellEditor(constraints));
+        TableColumnExt presetColumn = m_mediaFileList.getColumnExt(4);
+        JComboBox<String> presets = new JComboBox<>();
+        for (String value : m_mediaFileModelSwing.getPresetsValues()) {
+            presets.addItem(value);
+        }
+        presetColumn.setCellEditor(new DefaultCellEditor(presets));
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 

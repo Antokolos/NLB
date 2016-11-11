@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.api;
 
+import com.nlbhub.nlb.domain.MediaExportParameters;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.exception.NLBIOException;
@@ -394,6 +395,8 @@ public interface NonLinearBook {
     public Map<String, String> getMediaToConstraintMap();
 
     public Map<String, String> getMediaRedirectsMap();
+
+    public Map<String, MediaExportParameters> getMediaExportParametersMap();
 
     public Map<String, Boolean> getMediaFlagsMap();
 }

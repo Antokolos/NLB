@@ -52,6 +52,7 @@ public class MediaFileImpl implements MediaFile {
     private String m_redirect;
     private String m_constrId;
     private boolean m_flagged;
+    private MediaExportParameters.Preset m_preset = MediaExportParameters.Preset.DEFAULT;
 
     public MediaFileImpl(String fileName) {
         m_fileName = fileName;
@@ -89,6 +90,19 @@ public class MediaFileImpl implements MediaFile {
         return m_flagged;
     }
 
+    @Override
+    public MediaExportParameters getMediaExportParameters() {
+        return MediaExportParameters.fromPreset(m_preset);
+    }
+
+    public MediaExportParameters.Preset getPreset() {
+        return m_preset;
+    }
+
+    public void setPreset(MediaExportParameters.Preset preset) {
+        m_preset = preset;
+    }
+
     public void setFlagged(boolean flagged) {
         m_flagged = flagged;
     }
@@ -103,7 +117,8 @@ public class MediaFileImpl implements MediaFile {
         if (m_flagged != mediaFile.m_flagged) return false;
         if (!m_fileName.equals(mediaFile.m_fileName)) return false;
         if (m_redirect != null ? !m_redirect.equals(mediaFile.m_redirect) : mediaFile.m_redirect != null) return false;
-        return !(m_constrId != null ? !m_constrId.equals(mediaFile.m_constrId) : mediaFile.m_constrId != null);
+        if (m_constrId != null ? !m_constrId.equals(mediaFile.m_constrId) : mediaFile.m_constrId != null) return false;
+        return m_preset == mediaFile.m_preset;
 
     }
 
@@ -113,6 +128,7 @@ public class MediaFileImpl implements MediaFile {
         result = 31 * result + (m_redirect != null ? m_redirect.hashCode() : 0);
         result = 31 * result + (m_constrId != null ? m_constrId.hashCode() : 0);
         result = 31 * result + (m_flagged ? 1 : 0);
+        result = 31 * result + (m_preset != null ? m_preset.hashCode() : 0);
         return result;
     }
 

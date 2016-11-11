@@ -38,6 +38,8 @@
  */
 package com.nlbhub.nlb.api;
 
+import com.nlbhub.nlb.domain.MediaExportParameters;
+
 /**
  * The MediaFile class
  *
@@ -51,4 +53,5 @@ public interface MediaFile extends Comparable<MediaFile> {
     String getRedirect();
     String getConstrId();
     boolean isFlagged();
+    MediaExportParameters getMediaExportParameters();
 }

@@ -41,6 +41,7 @@ package com.nlbhub.nlb.builder.model;
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.MediaFile;
 import com.nlbhub.nlb.api.Variable;
+import com.nlbhub.nlb.domain.MediaExportParameters;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.util.StringHelper;
 
@@ -119,6 +120,16 @@ public class MediaFileModelSwing extends AbstractTableModel {
         return result;
     }
 
+    public List<String> getPresetsValues() {
+        List<String> result = new ArrayList<>();
+        result.add(MediaExportParameters.Preset.CUSTOM.name());
+        result.add(MediaExportParameters.Preset.DEFAULT.name());
+        result.add(MediaExportParameters.Preset.NOCHANGE.name());
+        result.add(MediaExportParameters.Preset.COMPRESSED.name());
+        Collections.sort(result);
+        return result;
+    }
+
     @Override
     public int getRowCount() {
         switch (m_mediaType) {
@@ -133,7 +144,7 @@ public class MediaFileModelSwing extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 5;
+        return 6;
     }
 
     @Override
@@ -176,7 +187,14 @@ public class MediaFileModelSwing extends AbstractTableModel {
                 }
             case 4:
                 MediaFile mediaFile2 = getMediaFile(rowIndex);
-                if ((mediaFile2 != null) && m_usages.contains(mediaFile2.getFileName())) {
+                if (mediaFile2 != null) {
+                    return mediaFile2.getMediaExportParameters().getPreset().name();
+                } else {
+                    return MediaExportParameters.Preset.DEFAULT.name();
+                }
+            case 5:
+                MediaFile mediaFile3 = getMediaFile(rowIndex);
+                if ((mediaFile3 != null) && m_usages.contains(mediaFile3.getFileName())) {
                     return Constants.EMPTY_STRING;
                 } else {
                     return "UNUSED";
@@ -207,8 +225,19 @@ public class MediaFileModelSwing extends AbstractTableModel {
             case 3:
                 setMediaFileConstrId(rowIndex, m_namesToIdsMap.get(value));
                 break;
+            case 4:
+                setMediaFileExportParameters(rowIndex, value);
+                break;
             default:
                 super.setValueAt(aValue, rowIndex, columnIndex);
+        }
+    }
+
+    private void setMediaFileExportParameters(int rowIndex, String value) {
+        MediaFile mediaFile = getMediaFile(rowIndex);
+        if (mediaFile != null) {
+            MediaExportParameters.Preset preset = MediaExportParameters.Preset.valueOf(value);
+            m_nonLinearBookFacade.setMediaFileExportParametersPreset(m_mediaType, mediaFile.getFileName(), preset);
         }
     }
 
@@ -256,6 +285,8 @@ public class MediaFileModelSwing extends AbstractTableModel {
             case 3:
                 return "Constraint";
             case 4:
+                return "Export Parameters";
+            case 5:
                 return "Usages";
             default:
                 return super.getColumnName(column);
@@ -264,6 +295,6 @@ public class MediaFileModelSwing extends AbstractTableModel {
 
     @Override
     public boolean isCellEditable(final int rowIndex, final int columnIndex) {
-        return (columnIndex > 0) && (columnIndex <= 3);
+        return (columnIndex > 0) && (columnIndex <= 4);
     }
 }

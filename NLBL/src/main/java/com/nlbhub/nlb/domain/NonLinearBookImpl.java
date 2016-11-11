@@ -51,13 +51,22 @@ import com.nlbhub.user.domain.History;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
+import javax.imageio.stream.FileImageOutputStream;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -75,10 +84,11 @@ public class NonLinearBookImpl implements NonLinearBook {
     private static final String CONSTRID_EXT = ".constrid";
     private static final String FLAG_EXT = ".flag";
     private static final String REDIRECT_EXT = ".redirect";
+    private static final String PRESET_EXT = ".preset";
     private static final FilenameFilter NON_SPECIAL_FILTER = new FilenameFilter() {
         @Override
         public boolean accept(final File dir, final String name) {
-            return !name.endsWith(CONSTRID_EXT) && !name.endsWith(REDIRECT_EXT) && !name.endsWith(FLAG_EXT);
+            return !name.endsWith(CONSTRID_EXT) && !name.endsWith(REDIRECT_EXT) && !name.endsWith(FLAG_EXT) && !name.endsWith(PRESET_EXT);
         }
     };
     private static final String STARTPOINT_FILE_NAME = "startpoint";
@@ -2755,6 +2765,27 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
+    public void setMediaFileExportParametersPreset(final MediaFile.Type mediaType, final String fileName, final MediaExportParameters.Preset preset) {
+        switch (mediaType) {
+            case Image:
+                for (MediaFileImpl mediaFile : m_imageFiles) {
+                    if (mediaFile.getFileName().equals(fileName)) {
+                        mediaFile.setPreset(preset);
+                        break;
+                    }
+                }
+                break;
+            case Sound:
+                for (MediaFileImpl mediaFile : m_soundFiles) {
+                    if (mediaFile.getFileName().equals(fileName)) {
+                        mediaFile.setPreset(preset);
+                        break;
+                    }
+                }
+                break;
+        }
+    }
+
     public void setRootDir(final File rootDir) {
         m_rootDir = rootDir;
     }
@@ -3402,6 +3433,15 @@ public class NonLinearBookImpl implements NonLinearBook {
                                 )
                         )
                 );
+                imageFile.setPreset(
+                        MediaExportParameters.Preset.valueOf(
+                                FileManipulator.getOptionalFileAsString(
+                                        imagesDir,
+                                        file.getName() + PRESET_EXT,
+                                        MediaExportParameters.Preset.DEFAULT.name()
+                                )
+                        )
+                );
                 m_imageFiles.add(imageFile);
             }
         }
@@ -3438,6 +3478,15 @@ public class NonLinearBookImpl implements NonLinearBook {
                                         soundDir,
                                         file.getName() + FLAG_EXT,
                                         String.valueOf(false)
+                                )
+                        )
+                );
+                soundFile.setPreset(
+                        MediaExportParameters.Preset.valueOf(
+                                FileManipulator.getOptionalFileAsString(
+                                        soundDir,
+                                        file.getName() + PRESET_EXT,
+                                        MediaExportParameters.Preset.DEFAULT.name()
                                 )
                         )
                 );
@@ -3514,6 +3563,20 @@ public class NonLinearBookImpl implements NonLinearBook {
                 } else {
                     if (flagFile.exists()) {
                         fileManipulator.deleteFileOrDir(flagFile);
+                    }
+                }
+                File presetFile = new File(mediaDir, mediaFile.getFileName() + PRESET_EXT);
+                MediaExportParameters.Preset preset = mediaFile.getMediaExportParameters().getPreset();
+                if (preset != MediaExportParameters.Preset.DEFAULT) {
+                    fileManipulator.writeOptionalString(
+                            mediaDir,
+                            presetFile.getName(),
+                            preset.name(),
+                            MediaExportParameters.Preset.DEFAULT.name()
+                    );
+                } else {
+                    if (presetFile.exists()) {
+                        fileManipulator.deleteFileOrDir(presetFile);
                     }
                 }
             }
@@ -4671,6 +4734,24 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     @Override
+    public Map<String, MediaExportParameters> getMediaExportParametersMap() {
+        Map<String, MediaExportParameters> result = new HashMap<>();
+        List<MediaFile> imageFiles = getImageFiles();
+        for (MediaFile mediaFile : imageFiles) {
+            if (mediaFile.getMediaExportParameters().getPreset() != MediaExportParameters.Preset.DEFAULT) {
+                result.put(mediaFile.getFileName(), mediaFile.getMediaExportParameters());
+            }
+        }
+        List<MediaFile> soundFiles = getSoundFiles();
+        for (MediaFile mediaFile : soundFiles) {
+            if (mediaFile.getMediaExportParameters().getPreset() != MediaExportParameters.Preset.DEFAULT) {
+                result.put(mediaFile.getFileName(), mediaFile.getMediaExportParameters());
+            }
+        }
+        return result;
+    }
+
+    @Override
     public Map<String, Boolean> getMediaFlagsMap() {
         Map<String, Boolean> result = new HashMap<>();
         result.putAll(getMediaFlagsMapForModule(this));
@@ -5035,10 +5116,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             File mediaDir = new File(getRootDir(), mediaDirName);
             if (mediaDir.exists()) {
                 for (MediaFile mediaFile : mediaFiles) {
-                    String mediaFileName = mediaFile.getFileName();
-                    File targetMedia = new File(exportDir, mediaFileName);
-                    File sourceMedia = new File(mediaDir, mediaFileName);
-                    FileManipulator.transfer(sourceMedia, targetMedia);
+                    processMediaFile(mediaFile, exportDir, mediaDir, mediaType);
                 }
             }
             for (Map.Entry<String, NonLinearBook> entry : getExternalModules().entrySet()) {
@@ -5103,6 +5181,56 @@ public class NonLinearBookImpl implements NonLinearBook {
             */
         } catch (IOException e) {
             throw new NLBExportException("IOException when exporting media", e);
+        }
+    }
+
+    private void processMediaFile(
+            final MediaFile mediaFile,
+            final File exportDir,
+            final File mediaDir,
+            final MediaFile.Type mediaType
+    ) throws IOException, NLBExportException {
+        String mediaFileName = mediaFile.getFileName();
+        switch (mediaType) {
+            case Image:
+                final MediaExportParameters mediaExportParameters = mediaFile.getMediaExportParameters();
+                if (mediaExportParameters.isConvertPNG2JPG() && mediaFileName.endsWith(".png")) {
+                    File targetMedia = new File(exportDir, mediaFileName.replaceAll("\\.png$", ".jpg"));
+                    File sourceMedia = new File(mediaDir, mediaFileName);
+                    JPEGImageWriteParam jpegParams = new JPEGImageWriteParam(null);
+                    jpegParams.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                    jpegParams.setCompressionQuality(mediaExportParameters.getQuality() / 100.0f);
+
+                    BufferedImage bufferedImage = ImageIO.read(sourceMedia);
+
+                    // create a blank, RGB, same width and height, and a white background
+                    BufferedImage newBufferedImage = new BufferedImage(bufferedImage.getWidth(),
+                            bufferedImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+                    newBufferedImage.createGraphics().drawImage(bufferedImage, 0, 0, Color.WHITE, null);
+
+                    final ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
+                    // specifies where the jpg image has to be written
+                    writer.setOutput(new FileImageOutputStream(targetMedia));
+
+                    // writes the file with given compression level
+                    // from your JPEGImageWriteParam instance
+                    writer.write(null, new IIOImage(newBufferedImage, null, null), jpegParams);
+
+                    // write to jpeg file
+                    //ImageIO.write(newBufferedImage, "jpg", targetMedia);
+                } else {
+                    File targetMedia = new File(exportDir, mediaFileName);
+                    File sourceMedia = new File(mediaDir, mediaFileName);
+                    FileManipulator.transfer(sourceMedia, targetMedia);
+                }
+                break;
+            case Sound:
+                File targetMedia = new File(exportDir, mediaFileName);
+                File sourceMedia = new File(mediaDir, mediaFileName);
+                FileManipulator.transfer(sourceMedia, targetMedia);
+                break;
+            default:
+                throw new NLBExportException("Unknown media type = " + mediaType.name());
         }
     }
 }

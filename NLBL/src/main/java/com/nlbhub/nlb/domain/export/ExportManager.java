@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.*;
+import com.nlbhub.nlb.domain.MediaExportParameters;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.SearchResult;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
@@ -83,6 +84,7 @@ public abstract class ExportManager {
     private Map<String, Variable.DataType> m_dataTypeMap;
     private Map<String, String> m_mediaToConstraintMap;
     private Map<String, String> m_mediaRedirectsMap;
+    private Map<String, MediaExportParameters> m_mediaExportParametersMap;
     private Map<String, Boolean> m_mediaFlagsMap;
 
     /**
@@ -267,6 +269,7 @@ public abstract class ExportManager {
             m_dataTypeMap = nlb.getVariableDataTypes();
             m_mediaToConstraintMap = nlb.getMediaToConstraintMap();
             m_mediaRedirectsMap = nlb.getMediaRedirectsMap();
+            m_mediaExportParametersMap = nlb.getMediaExportParametersMap();
             m_mediaFlagsMap = nlb.getMediaFlagsMap();
         } catch (NLBConsistencyException e) {
             throw new NLBExportException("Export error", e);
@@ -2673,9 +2676,19 @@ public abstract class ExportManager {
             List<ImagePathData> result = new ArrayList<>();
             String[] fileNamesArr = imageFileNames.split(Constants.MEDIA_FILE_NAME_SEP);
             for (String fileName : fileNamesArr) {
-                result.add(getImagePath(externalHierarchy, fileName, animatedImage));
+                MediaExportParameters mediaExportParameters = getMediaExportParameters(fileName);
+                result.add(getImagePath(externalHierarchy, fileName, animatedImage, mediaExportParameters));
             }
             return result;
+        }
+    }
+
+    private MediaExportParameters getMediaExportParameters(String fileName) {
+        MediaExportParameters result = m_mediaExportParametersMap.get(fileName);
+        if (result != null) {
+            return result;
+        } else {
+            return MediaExportParameters.DEFAULT;
         }
     }
 
@@ -2685,12 +2698,14 @@ public abstract class ExportManager {
      *
      * @param externalHierarchy
      * @param imageFileName
+     * @param mediaExportParameters
      * @return
      */
     protected ImagePathData getImagePath(
             final String externalHierarchy,
             final String imageFileName,
-            final boolean animatedImage
+            final boolean animatedImage,
+            final MediaExportParameters mediaExportParameters
     ) throws NLBExportException {
         ImagePathData result = new ImagePathData();
         // Please note that here we use redirected file name.
@@ -2708,7 +2723,11 @@ public abstract class ExportManager {
                 result.setFileName(matcher.group(1) + matcher.group(2));
                 result.setMaxFrameNumber(0);
             }
-            result.setFileExtension(matcher.group(3));
+            if (mediaExportParameters.isConvertPNG2JPG()) {
+                result.setFileExtension(".jpg");
+            } else {
+                result.setFileExtension(matcher.group(3));
+            }
             // Please note that here we use initial file name, not redirected.
             // Thus we can use constraint for this initial file name.
             if (m_mediaToConstraintMap.containsKey(imageFileName)) {
