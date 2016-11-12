@@ -1,5 +1,5 @@
 /**
- * @(#)MediaExportParameters.java
+ * @(#)PropertiesBean.java
  *
  * This file is part of the Non-Linear Book project.
  * Copyright (c) 2012-2016 Anton P. Kolosov
@@ -34,72 +34,31 @@
  * For more information, please contact Anton P. Kolosov at this
  * address: antokolos@gmail.com
  *
- * Copyright (c) 2012 Anton P. Kolosov All rights reserved.
+ * Copyright (c) 2016 Anton P. Kolosov All rights reserved.
  */
-package com.nlbhub.nlb.domain;
-
-import com.nlbhub.nlb.api.PropertyManager;
+package com.nlbhub.nlb.api;
 
 /**
- * The MediaExportParameters class represents parameters used when saving media files during export of the scheme
- * to some end format (such as INSTEAD game).
- *
  * @author Anton P. Kolosov
- * @version 1.0 8/9/12
+ * @version 1.0
  */
-public class MediaExportParameters {
-    public enum Preset {CUSTOM, DEFAULT, NOCHANGE, COMPRESSED};
-    private static final MediaExportParameters NOCHANGE = new MediaExportParameters(Preset.NOCHANGE, false, 0);
-    private static final MediaExportParameters COMPRESSED = new MediaExportParameters(Preset.COMPRESSED, true, 80);
-    private static final MediaExportParameters DEFAULT = (
-            new MediaExportParameters(
-                    Preset.DEFAULT,
-                    PropertyManager.getProperties().isConvertPNG2JPG(),
-                    PropertyManager.getProperties().getQuality()
-            )
-    );
-    private Preset m_preset = Preset.CUSTOM;
+public class PropertiesBean {
     private boolean m_convertPNG2JPG;
     private int m_quality;
-
-    public static MediaExportParameters fromPreset(Preset preset) {
-        switch (preset) {
-            case NOCHANGE:
-                return MediaExportParameters.NOCHANGE;
-            case COMPRESSED:
-                return MediaExportParameters.COMPRESSED;
-            default:
-                return MediaExportParameters.DEFAULT;
-        }
-    }
-
-    public static MediaExportParameters getDefault() {
-        return DEFAULT;
-    }
-
-    /*
-    public MediaExportParameters(boolean convertPNG2JPG, int quality) {
-        m_preset = Preset.CUSTOM;
-        m_convertPNG2JPG = convertPNG2JPG;
-        m_quality = quality;
-    }
-    */
-
-    private MediaExportParameters(Preset preset, boolean convertPNG2JPG, int quality) {
-        m_preset = preset;
-        m_convertPNG2JPG = convertPNG2JPG;
-        m_quality = quality;
-    }
-
-    public Preset getPreset() {
-        return m_preset;
-    }
 
     public boolean isConvertPNG2JPG() {
         return m_convertPNG2JPG;
     }
 
+    public void setConvertPNG2JPG(boolean convertPNG2JPG) {
+        m_convertPNG2JPG = convertPNG2JPG;
+    }
+
     public int getQuality() {
         return m_quality;
+    }
+
+    public void setQuality(int quality) {
+        m_quality = quality;
     }
 }

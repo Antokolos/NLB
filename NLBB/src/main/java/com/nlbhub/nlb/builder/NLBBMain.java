@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.builder;
 
+import com.nlbhub.nlb.api.PropertyManager;
 import com.nlbhub.nlb.builder.form.MainFrame;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.vcs.Author;
@@ -179,6 +180,7 @@ public class NLBBMain implements Runnable {
     @Override
     public void run() {
         try {
+            PropertyManager.init();
             createAndShowGUI();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

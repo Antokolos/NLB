@@ -2688,7 +2688,7 @@ public abstract class ExportManager {
         if (result != null) {
             return result;
         } else {
-            return MediaExportParameters.DEFAULT;
+            return MediaExportParameters.getDefault();
         }
     }
 

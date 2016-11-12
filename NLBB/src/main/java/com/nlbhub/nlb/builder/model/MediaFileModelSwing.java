@@ -122,7 +122,7 @@ public class MediaFileModelSwing extends AbstractTableModel {
 
     public List<String> getPresetsValues() {
         List<String> result = new ArrayList<>();
-        result.add(MediaExportParameters.Preset.CUSTOM.name());
+        // result.add(MediaExportParameters.Preset.CUSTOM.name()); -- uncomment if CUSTOM presets will be actually used
         result.add(MediaExportParameters.Preset.DEFAULT.name());
         result.add(MediaExportParameters.Preset.NOCHANGE.name());
         result.add(MediaExportParameters.Preset.COMPRESSED.name());
