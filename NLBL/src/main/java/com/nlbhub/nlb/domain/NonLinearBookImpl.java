@@ -109,6 +109,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     private static final String AUTOWIRED_SEPARATOR = "\n";
     private static final String DEFAULT_AUTOWIRED_PAGES = Constants.EMPTY_STRING;
     public static final Color JPG_BGCOLOR = new Color(255, 0, 255);
+    public static final Pattern PNG_REGEX = Pattern.compile("\\.png$", Pattern.CASE_INSENSITIVE);
     /**
      * Path to the directory on the disk where this book will be stored.
      */
@@ -5195,8 +5196,10 @@ public class NonLinearBookImpl implements NonLinearBook {
         switch (mediaType) {
             case Image:
                 final MediaExportParameters mediaExportParameters = mediaFile.getMediaExportParameters();
-                if (mediaExportParameters.isConvertPNG2JPG() && mediaFileName.endsWith(".png")) {
-                    File targetMedia = new File(exportDir, mediaFileName.replaceAll("\\.png$", ".jpg"));
+                Matcher matcher = PNG_REGEX.matcher(mediaFileName);
+                if (mediaExportParameters.isConvertPNG2JPG() && matcher.find()) {
+                    String targetFileName = matcher.replaceAll(".jpg");
+                    File targetMedia = new File(exportDir, targetFileName);
                     File sourceMedia = new File(mediaDir, mediaFileName);
                     JPEGImageWriteParam jpegParams = new JPEGImageWriteParam(null);
                     jpegParams.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
