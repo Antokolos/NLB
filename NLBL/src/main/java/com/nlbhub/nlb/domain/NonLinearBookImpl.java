@@ -108,6 +108,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     private static final String GITIGNORE_FILENAME = ".gitignore";
     private static final String AUTOWIRED_SEPARATOR = "\n";
     private static final String DEFAULT_AUTOWIRED_PAGES = Constants.EMPTY_STRING;
+    public static final Color JPG_BGCOLOR = new Color(255, 0, 255);
     /**
      * Path to the directory on the disk where this book will be stored.
      */
@@ -5206,7 +5207,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     // create a blank, RGB, same width and height, and a white background
                     BufferedImage newBufferedImage = new BufferedImage(bufferedImage.getWidth(),
                             bufferedImage.getHeight(), BufferedImage.TYPE_INT_RGB);
-                    newBufferedImage.createGraphics().drawImage(bufferedImage, 0, 0, Color.WHITE, null);
+                    newBufferedImage.createGraphics().drawImage(bufferedImage, 0, 0, JPG_BGCOLOR, null);
 
                     final ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
                     // specifies where the jpg image has to be written
