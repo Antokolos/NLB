@@ -1506,7 +1506,7 @@ vn = obj {
             s._scene_effect = false
         end
         s.stopped = false;
-        s:process() -- draw frame to offscreen
+        s:process(true) -- draw frame to offscreen
         if s._scene_effect == 'fading' or s._scene_effect == 'fade' then
             theme.gfx.bg(s.blackscreen)
             vn.bg_changing = 1
@@ -1626,6 +1626,9 @@ vn = obj {
         sprite.free(si)
     end;
     commit = function(s, from)
+        if not from then
+            from = s:screen();
+        end
         if s.direct_lock then
             return;
         end
@@ -1844,7 +1847,7 @@ vn = obj {
         local b = (s:get_step(v) > s:get_init_step(v)) and not s:get_forward(v);
         return f or b;
     end;
-    process = function(s)
+    process = function(s, initpass)
         local i, v
         local first
         local cbresult = false;
@@ -1876,6 +1879,9 @@ vn = obj {
             else
                 return false;
             end
+        elseif initpass then
+            s:commit(s:screen())
+            s:leave_direct();
         end
         return n
     end;

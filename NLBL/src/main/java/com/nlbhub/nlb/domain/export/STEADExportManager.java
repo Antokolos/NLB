@@ -404,6 +404,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("    nlbwalk = function(s, loc)").append(LINE_SEPARATOR);
+        stringBuilder.append("        vn:request_full_clear();").append(LINE_SEPARATOR);
         stringBuilder.append("        if (s ~= loc) then").append(LINE_SEPARATOR);
         stringBuilder.append("            _curloc = loc;").append(LINE_SEPARATOR);
         stringBuilder.append("            walk(loc);").append(LINE_SEPARATOR);
@@ -420,7 +421,6 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            s.wastext = wastext;").append(LINE_SEPARATOR);
         stringBuilder.append("            s.lasttext = lasttext;").append(LINE_SEPARATOR);
         stringBuilder.append("        end").append(LINE_SEPARATOR);
-        stringBuilder.append("        vn:request_full_clear();").append(LINE_SEPARATOR);
         stringBuilder.append("    end;").append(LINE_SEPARATOR);
         stringBuilder.append("}").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
         stringBuilder.append("listobj = {").append(LINE_SEPARATOR);
