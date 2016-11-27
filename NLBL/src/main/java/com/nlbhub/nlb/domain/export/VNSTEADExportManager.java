@@ -96,6 +96,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         stringBuilder.append("require \"quotes\" ").append(lineSep);
         stringBuilder.append("require \"theme\" ").append(lineSep);
         stringBuilder.append("require \"timer\" ").append(lineSep);
+        stringBuilder.append("require 'modules/nlb'").append(lineSep);
         stringBuilder.append("require 'modules/fonts'").append(lineSep);
         stringBuilder.append("require 'modules/paginator'").append(lineSep);
         stringBuilder.append("require 'modules/vn'").append(lineSep);
@@ -292,7 +293,7 @@ public class VNSTEADExportManager extends STEADExportManager {
             return super.decorateLinkGoTo(linkId, linkText, linkTarget, targetPageNumber, theme);
         }
         return (
-                "        nlbwalk(s, "
+                "        nlb:nlbwalk(s, "
                         + (
                         getGoToPageNumbers()
                                 ? decorateId(String.valueOf(targetPageNumber))

@@ -106,6 +106,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("require \"quotes\" ").append(LINE_SEPARATOR);
         stringBuilder.append("require \"theme\" ").append(LINE_SEPARATOR);
         stringBuilder.append("require \"timer\" ").append(LINE_SEPARATOR);
+        stringBuilder.append("require 'modules/nlb'").append(LINE_SEPARATOR);
         stringBuilder.append("require 'modules/fonts'").append(LINE_SEPARATOR);
         stringBuilder.append("require 'modules/paginator'").append(LINE_SEPARATOR);
         stringBuilder.append("require 'modules/vn'").append(LINE_SEPARATOR);
@@ -115,9 +116,9 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("stead.scene_delim = '^';").append(LINE_SEPARATOR);
         stringBuilder.append(LINE_SEPARATOR);
 
-        stringBuilder.append("--game.act = function() curloc().lasttext = 'Nothing happens.'; p(curloc().lasttext); curloc().wastext = true; end;").append(LINE_SEPARATOR);
-        stringBuilder.append("--game.inv = function() curloc().lasttext = 'Hm... This is strange thing...'; p(curloc().lasttext); curloc().wastext = true; end;").append(LINE_SEPARATOR);
-        stringBuilder.append("--game.use = function() curloc().lasttext = 'Does not work...'; p(curloc().lasttext); curloc().wastext = true; end;").append(LINE_SEPARATOR);
+        stringBuilder.append("--game.act = function() nlb:curloc().lasttext = 'Nothing happens.'; p(nlb:curloc().lasttext); nlb:curloc().wastext = true; end;").append(LINE_SEPARATOR);
+        stringBuilder.append("--game.inv = function() nlb:curloc().lasttext = 'Hm... This is strange thing...'; p(nlb:curloc().lasttext); nlb:curloc().wastext = true; end;").append(LINE_SEPARATOR);
+        stringBuilder.append("--game.use = function() nlb:curloc().lasttext = 'Does not work...'; p(nlb:curloc().lasttext); nlb:curloc().wastext = true; end;").append(LINE_SEPARATOR);
         stringBuilder.append("game.act = function() return true; end;").append(LINE_SEPARATOR);
         stringBuilder.append("game.inv = function() return true; end;").append(LINE_SEPARATOR);
         stringBuilder.append("game.use = function() return true; end;").append(LINE_SEPARATOR);
@@ -151,336 +152,7 @@ public class STEADExportManager extends TextExportManager {
     protected String generateLibraryMethods() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(LINE_SEPARATOR);
-        stringBuilder.append("global {").append(LINE_SEPARATOR);
-        stringBuilder.append("    _fps = 25;").append(LINE_SEPARATOR);
-        stringBuilder.append("    _lists = {};").append(LINE_SEPARATOR);
-        stringBuilder.append("    _clones = {};").append(LINE_SEPARATOR);
-        stringBuilder.append("    _filter = {};").append(LINE_SEPARATOR);
-        stringBuilder.append("    _curloc = nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("    push = function(listname, v)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
-        stringBuilder.append("        _lists[listname] = {next = list, value = v};").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    pushObjs = function(listname, v)").append(LINE_SEPARATOR);
-        stringBuilder.append("        for k,vv in stead.opairs(objs(v)) do").append(LINE_SEPARATOR);
-        stringBuilder.append("            local o = stead.ref(vv);").append(LINE_SEPARATOR);
-        stringBuilder.append("            if (isObject(o)) then").append(LINE_SEPARATOR);
-        stringBuilder.append("                push(listname, o);").append(LINE_SEPARATOR);
-        stringBuilder.append("            end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    pop = function(listname)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
-        stringBuilder.append("        if list == nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("            return nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("        else").append(LINE_SEPARATOR);
-        stringBuilder.append("            _lists[listname] = list.next;").append(LINE_SEPARATOR);
-        stringBuilder.append("            return list.value;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    inject = function(listname, v)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
-        stringBuilder.append("        if list == nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("            _lists[listname] = {next = nil, value = v};").append(LINE_SEPARATOR);
-        stringBuilder.append("        else").append(LINE_SEPARATOR);
-        stringBuilder.append("            while list.next ~= nil do").append(LINE_SEPARATOR);
-        stringBuilder.append("                list = list.next").append(LINE_SEPARATOR);
-        stringBuilder.append("            end;").append(LINE_SEPARATOR);
-        stringBuilder.append("            list.next = {next = nil, value = v};").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    eject = function(listname)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
-        stringBuilder.append("        local prevlist = list;").append(LINE_SEPARATOR);
-        stringBuilder.append("        local islast = true;").append(LINE_SEPARATOR);
-        stringBuilder.append("        if list == nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("            return nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("        else").append(LINE_SEPARATOR);
-        stringBuilder.append("            while list.next ~= nil do").append(LINE_SEPARATOR);
-        stringBuilder.append("                prevlist = list").append(LINE_SEPARATOR);
-        stringBuilder.append("                list = list.next").append(LINE_SEPARATOR);
-        stringBuilder.append("                islast = false").append(LINE_SEPARATOR);
-        stringBuilder.append("            end;").append(LINE_SEPARATOR);
-        stringBuilder.append("            prevlist.next = nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("            if islast then").append(LINE_SEPARATOR);
-        stringBuilder.append("                _lists[listname] = nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("            end;").append(LINE_SEPARATOR);
-        stringBuilder.append("            return list.value;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    rmv = function(listname, v)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
-        stringBuilder.append("        local val;").append(LINE_SEPARATOR);
-        stringBuilder.append("        local prevlist = nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("        while list ~= nil do").append(LINE_SEPARATOR);
-        stringBuilder.append("            val = list.value;").append(LINE_SEPARATOR);
-        stringBuilder.append("            if (val.nlbid == v.nlbid) then").append(LINE_SEPARATOR);
-        stringBuilder.append("                if (prevlist == nil) then").append(LINE_SEPARATOR);
-        stringBuilder.append("                    _lists[listname] = list.next;").append(LINE_SEPARATOR);
-        stringBuilder.append("                    return;").append(LINE_SEPARATOR);
-        stringBuilder.append("                else").append(LINE_SEPARATOR);
-        stringBuilder.append("                    prevlist.next = list.next").append(LINE_SEPARATOR);
-        stringBuilder.append("                    return;").append(LINE_SEPARATOR);
-        stringBuilder.append("                end;").append(LINE_SEPARATOR);
-        stringBuilder.append("            end;").append(LINE_SEPARATOR);
-        stringBuilder.append("            prevlist = list;").append(LINE_SEPARATOR);
-        stringBuilder.append("            list = list.next;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    size = function(listname)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local list = _lists[listname];").append(LINE_SEPARATOR);
-        stringBuilder.append("        local result = 0;").append(LINE_SEPARATOR);
-        stringBuilder.append("        if list == nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("            return 0;").append(LINE_SEPARATOR);
-        stringBuilder.append("        else").append(LINE_SEPARATOR);
-        stringBuilder.append("            repeat").append(LINE_SEPARATOR);
-        stringBuilder.append("                list = list.next;").append(LINE_SEPARATOR);
-        stringBuilder.append("                result = result + 1;").append(LINE_SEPARATOR);
-        stringBuilder.append("            until list == nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        return result;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    shuffle = function(listname)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local arr = toArray(_lists[listname]);").append(LINE_SEPARATOR);
-        stringBuilder.append("        _lists[listname] = nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("        addArr(listname, shuffled(arr));").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    addAll = function(s, destination, destinationList, listName, unique)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local loclist = _lists[listName];").append(LINE_SEPARATOR);
-        stringBuilder.append("        if loclist == nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("            return;").append(LINE_SEPARATOR);
-        stringBuilder.append("        else").append(LINE_SEPARATOR);
-        stringBuilder.append("            repeat").append(LINE_SEPARATOR);
-        stringBuilder.append("                if destination ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("                    addf(destination, loclist.value, unique);").append(LINE_SEPARATOR);
-        stringBuilder.append("                elseif destinationList ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("                    push(destinationList, loclist.value);").append(LINE_SEPARATOR);
-        stringBuilder.append("                else").append(LINE_SEPARATOR);
-        stringBuilder.append("                    addf(s, loclist.value, unique);").append(LINE_SEPARATOR);
-        stringBuilder.append("                end;").append(LINE_SEPARATOR);
-        stringBuilder.append("                loclist = loclist.next;").append(LINE_SEPARATOR);
-        stringBuilder.append("            until loclist == nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    shuffled = function(tab)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local n, order, res = #tab, {}, {};").append(LINE_SEPARATOR);
-        stringBuilder.append("        for i=1,n do order[i] = { rand = rnd(n), idx = i } end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        table.sort(order, function(a,b) return a.rand < b.rand end);").append(LINE_SEPARATOR);
-        stringBuilder.append("        for i=1,n do res[i] = tab[order[i].idx] end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        return res;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    toArray = function(list)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local res = {}").append(LINE_SEPARATOR);
-        stringBuilder.append("        local loclist = list;").append(LINE_SEPARATOR);
-        stringBuilder.append("        local i = 1;").append(LINE_SEPARATOR);
-        stringBuilder.append("        if loclist == nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("            return nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("        else").append(LINE_SEPARATOR);
-        stringBuilder.append("            repeat").append(LINE_SEPARATOR);
-        stringBuilder.append("                res[i] = loclist.value;").append(LINE_SEPARATOR);
-        stringBuilder.append("                loclist = loclist.next;").append(LINE_SEPARATOR);
-        stringBuilder.append("                i = i + 1;").append(LINE_SEPARATOR);
-        stringBuilder.append("            until loclist == nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        return res;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    addArr = function(listname, arr)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local n = #arr").append(LINE_SEPARATOR);
-        stringBuilder.append("        for i=1,n do push(listname, arr[i]) end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    usea = function(actionObject, targetObject)").append(LINE_SEPARATOR);
-        stringBuilder.append("        if actionObject ~= nil and targetObject ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("            if actionObject.usea ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("                actionObject.usea(actionObject, targetObject);").append(LINE_SEPARATOR);
-        stringBuilder.append("            end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    acta = function(object)").append(LINE_SEPARATOR);
-        stringBuilder.append("        if object ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("            if object.acta ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("                object.acta(object);").append(LINE_SEPARATOR);
-        stringBuilder.append("            end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    actf = function(object)").append(LINE_SEPARATOR);
-        stringBuilder.append("        if object ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("            if object.actf ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("                object.actf(object);").append(LINE_SEPARATOR);
-        stringBuilder.append("            end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    clear = function(object)").append(LINE_SEPARATOR);
-        stringBuilder.append("        if object ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("            if object.clear ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("                object.clear(object);").append(LINE_SEPARATOR);
-        stringBuilder.append("            end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    addf = function(target, object, unique)").append(LINE_SEPARATOR);
-        stringBuilder.append("        if target == nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("            if not have(object) then").append(LINE_SEPARATOR);
-        stringBuilder.append("                take(object);").append(LINE_SEPARATOR);
-        stringBuilder.append("            elseif not unique then").append(LINE_SEPARATOR);
-        stringBuilder.append("                take(clone(object));").append(LINE_SEPARATOR);
-        stringBuilder.append("            end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        else").append(LINE_SEPARATOR);
-        stringBuilder.append("            local ores = nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("            if not exist(object, target) then").append(LINE_SEPARATOR);
-        stringBuilder.append("                ores = object;").append(LINE_SEPARATOR);
-        stringBuilder.append("            elseif not unique then").append(LINE_SEPARATOR);
-        stringBuilder.append("                ores = clone(object);").append(LINE_SEPARATOR);
-        stringBuilder.append("            end;").append(LINE_SEPARATOR);
-        stringBuilder.append("            if ores ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("                ores.container = function() return target; end;").append(LINE_SEPARATOR);
-        stringBuilder.append("                objs(target):add(ores);").append(LINE_SEPARATOR);
-        stringBuilder.append("            end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    clrcntnr = function(coll)").append(LINE_SEPARATOR);
-        stringBuilder.append("        -- TODO: add implementation (set container to nil func for every obj from coll)").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    revive = function()").append(LINE_SEPARATOR);
-        stringBuilder.append("        for k,v in pairs(_filter) do").append(LINE_SEPARATOR);
-        stringBuilder.append("            if v then").append(LINE_SEPARATOR);
-        stringBuilder.append("                local o = stead.ref(k);").append(LINE_SEPARATOR);
-        stringBuilder.append("                o.revive(o);").append(LINE_SEPARATOR);
-        stringBuilder.append("            end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    deepcopy = function(t)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local k; local v;").append(LINE_SEPARATOR);
-        stringBuilder.append("        if type(t) ~= \"table\" then return t end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        local mt = getmetatable(t);").append(LINE_SEPARATOR);
-        stringBuilder.append("        local res = {};").append(LINE_SEPARATOR);
-        stringBuilder.append("        for k,v in pairs(t) do").append(LINE_SEPARATOR);
-        stringBuilder.append("            if type(v) == \"table\" and k ~= \"container\" then").append(LINE_SEPARATOR);
-        stringBuilder.append("                v = deepcopy(v)").append(LINE_SEPARATOR);
-        stringBuilder.append("            end;").append(LINE_SEPARATOR);
-        stringBuilder.append("            res[k] = v;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        setmetatable(res,mt);").append(LINE_SEPARATOR);
-        stringBuilder.append("        return res;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    clone = function(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("        if s.nlbobj == \"listobj\" then").append(LINE_SEPARATOR);
-        stringBuilder.append("            return new('clonefdl(listobj, \\''..s.listnam..'\\')');").append(LINE_SEPARATOR);
-        stringBuilder.append("        else").append(LINE_SEPARATOR);
-        stringBuilder.append("            return new('clonef(\\''..s:deref()..'\\')');").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    clonelst = function(s, listnam)").append(LINE_SEPARATOR);
-        stringBuilder.append("        if s.nlbobj == \"listobj\" then").append(LINE_SEPARATOR);
-        stringBuilder.append("            return new('clonefdl(listobj, \\''..listnam..'\\')');").append(LINE_SEPARATOR);
-        stringBuilder.append("        else").append(LINE_SEPARATOR);
-        stringBuilder.append("            return nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    clonef = function(sref)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local s = stead.ref(sref);").append(LINE_SEPARATOR);
-        stringBuilder.append("        return clonefd(s);").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    clonefd = function(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local ret = deepcopy(s);").append(LINE_SEPARATOR);
-        stringBuilder.append("        local r = _clones[s.nlbid];").append(LINE_SEPARATOR);
-        stringBuilder.append("        if r == nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("            r = 1;").append(LINE_SEPARATOR);
-        stringBuilder.append("        else").append(LINE_SEPARATOR);
-        stringBuilder.append("            r = r + 1;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        _clones[s.nlbid] = r;").append(LINE_SEPARATOR);
-        stringBuilder.append("        ret.nam = s.nam..r;").append(LINE_SEPARATOR);
-        stringBuilder.append("        return ret;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    clonefdl = function(s, listnam)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local ret = clonefd(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("        ret.listnam = listnam;").append(LINE_SEPARATOR);
-        stringBuilder.append("        return ret;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    curloc = function()").append(LINE_SEPARATOR);
-        stringBuilder.append("        if _curloc == nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("            return here();").append(LINE_SEPARATOR);
-        stringBuilder.append("        else").append(LINE_SEPARATOR);
-        stringBuilder.append("            return _curloc;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    nlbwalk = function(s, loc)").append(LINE_SEPARATOR);
-        stringBuilder.append("        vn:request_full_clear();").append(LINE_SEPARATOR);
-        stringBuilder.append("        if (s ~= loc) then").append(LINE_SEPARATOR);
-        stringBuilder.append("            _curloc = loc;").append(LINE_SEPARATOR);
-        stringBuilder.append("            walk(loc);").append(LINE_SEPARATOR);
-        stringBuilder.append("            if _curloc.wastext then loc.wastext = true; end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        else").append(LINE_SEPARATOR);
-        stringBuilder.append("            local lasttext = s.lasttext;").append(LINE_SEPARATOR);
-        stringBuilder.append("            local wastext = s.wastext;").append(LINE_SEPARATOR);
-        stringBuilder.append("            if s.exit ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("                s.exit(s, s);").append(LINE_SEPARATOR);
-        stringBuilder.append("            end").append(LINE_SEPARATOR);
-        stringBuilder.append("            if s.enter ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("                s.enter(s, s);").append(LINE_SEPARATOR);
-        stringBuilder.append("            end").append(LINE_SEPARATOR);
-        stringBuilder.append("            s.wastext = wastext;").append(LINE_SEPARATOR);
-        stringBuilder.append("            s.lasttext = lasttext;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("}").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
-        stringBuilder.append("listobj = {").append(LINE_SEPARATOR);
-        stringBuilder.append("    nam = \"listobj\",").append(LINE_SEPARATOR);
-        stringBuilder.append("    nlbobj = \"listobj\",").append(LINE_SEPARATOR);
-        stringBuilder.append("    nlbid = \"listobj\",").append(LINE_SEPARATOR);
-        stringBuilder.append("    deref = function(s) return stead.deref(listobj); end,").append(LINE_SEPARATOR);
-        stringBuilder.append("    listnam = \"\",").append(LINE_SEPARATOR);
-        stringBuilder.append("    clear = function(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local r = eject(s.listnam);").append(LINE_SEPARATOR);
-        stringBuilder.append("        while r ~= nil do").append(LINE_SEPARATOR);
-        stringBuilder.append("            r = eject(s.listnam);").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end,").append(LINE_SEPARATOR);
-        stringBuilder.append("    act = function(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("        s.acta(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("    end,").append(LINE_SEPARATOR);
-        stringBuilder.append("    acta = function(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("        s.actf(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("    end,").append(LINE_SEPARATOR);
-        stringBuilder.append("    actf = function(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local list = _lists[s.listnam];").append(LINE_SEPARATOR);
-        stringBuilder.append("        if list ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("            repeat").append(LINE_SEPARATOR);
-        stringBuilder.append("                list.value.acta(list.value);").append(LINE_SEPARATOR);
-        stringBuilder.append("                list = list.next;").append(LINE_SEPARATOR);
-        stringBuilder.append("            until list == nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end,").append(LINE_SEPARATOR);
-        stringBuilder.append("    use = function(s, w)").append(LINE_SEPARATOR);
-        stringBuilder.append("        s.usea(s, w, w);").append(LINE_SEPARATOR);
-        stringBuilder.append("    end,").append(LINE_SEPARATOR);
-        stringBuilder.append("    usea = function(s, w, ww)").append(LINE_SEPARATOR);
-        stringBuilder.append("        s.usef(s, w, ww);").append(LINE_SEPARATOR);
-        stringBuilder.append("    end,").append(LINE_SEPARATOR);
-        stringBuilder.append("    usef = function(s, w, ww)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local list = _lists[s.listnam];").append(LINE_SEPARATOR);
-        stringBuilder.append("        if list ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("            repeat").append(LINE_SEPARATOR);
-        stringBuilder.append("                list.value.usea(list.value, w, ww);").append(LINE_SEPARATOR);
-        stringBuilder.append("                list = list.next;").append(LINE_SEPARATOR);
-        stringBuilder.append("            until list == nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end,").append(LINE_SEPARATOR);
-        stringBuilder.append("    used = function(s, w)").append(LINE_SEPARATOR);
-        stringBuilder.append("        s.useda(s, w);").append(LINE_SEPARATOR);
-        stringBuilder.append("    end,").append(LINE_SEPARATOR);
-        stringBuilder.append("    useda = function(s, w)").append(LINE_SEPARATOR);
-        stringBuilder.append("        s.usedf(s, w);").append(LINE_SEPARATOR);
-        stringBuilder.append("    end,").append(LINE_SEPARATOR);
-        stringBuilder.append("    usedf = function(s, w)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local list = _lists[s.listnam];").append(LINE_SEPARATOR);
-        stringBuilder.append("        if list ~= nil then").append(LINE_SEPARATOR);
-        stringBuilder.append("            repeat").append(LINE_SEPARATOR);
-        stringBuilder.append("                w.usea(w, list.value, list.value);").append(LINE_SEPARATOR);
-        stringBuilder.append("                list = list.next;").append(LINE_SEPARATOR);
-        stringBuilder.append("            until list == nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("    end;").append(LINE_SEPARATOR);
-        stringBuilder.append("}").append(LINE_SEPARATOR);
+
         return stringBuilder.toString();
     }
 
@@ -534,9 +206,9 @@ public class STEADExportManager extends TextExportManager {
         if (hasUses) {
             StringBuilder usepBuilder = new StringBuilder();
             usepBuilder.append("    usep = function(s, w, ww)").append(LINE_SEPARATOR);
-            usepBuilder.append("        local prevt = curloc().lasttext;").append(LINE_SEPARATOR);
+            usepBuilder.append("        local prevt = nlb:curloc().lasttext;").append(LINE_SEPARATOR);
             usepBuilder.append("        local wasnouses = true;").append(LINE_SEPARATOR);
-            usepBuilder.append("        curloc().lasttext = \"\";").append(LINE_SEPARATOR);
+            usepBuilder.append("        nlb:curloc().lasttext = \"\";").append(LINE_SEPARATOR);
             for (int i = 0; i < usesBuildingBlocks.size(); i++) {
                 StringBuilder usesStartBuilder = new StringBuilder();
                 StringBuilder usesEndBuilder = new StringBuilder();
@@ -575,15 +247,15 @@ public class STEADExportManager extends TextExportManager {
                 String useSuccessText = useBuildingBlocks.getUseSuccessText();
                 String useFailureText = useBuildingBlocks.getUseFailureText();
                 if (StringHelper.notEmpty(useSuccessText)) {
-                    usepBuilder.append("local t = \"").append(useSuccessText).append(" \"; curloc().lasttext = curloc().lasttext..t; p(t); curloc().wastext = true; wasnouses = false;").append(LINE_SEPARATOR);
+                    usepBuilder.append("local t = \"").append(useSuccessText).append(" \"; nlb:curloc().lasttext = nlb:curloc().lasttext..t; p(t); nlb:curloc().wastext = true; wasnouses = false;").append(LINE_SEPARATOR);
                     if (StringHelper.notEmpty(useFailureText)) {
                         usepBuilder.append(padding).append("    else").append(LINE_SEPARATOR);
-                        usepBuilder.append("local t = \"").append(useFailureText).append(" \"; curloc().lasttext = curloc().lasttext..t; p(t); curloc().wastext = true; wasnouses = false;").append(LINE_SEPARATOR);
+                        usepBuilder.append("local t = \"").append(useFailureText).append(" \"; nlb:curloc().lasttext = nlb:curloc().lasttext..t; p(t); nlb:curloc().wastext = true; wasnouses = false;").append(LINE_SEPARATOR);
                     }
                 }
                 usepBuilder.append(usesEndBuilder);
             }
-            usepBuilder.append("        if wasnouses then curloc().lasttext = prevt; end;").append(LINE_SEPARATOR);
+            usepBuilder.append("        if wasnouses then nlb:curloc().lasttext = prevt; end;").append(LINE_SEPARATOR);
             usepBuilder.append("        end;").append(LINE_SEPARATOR);
             usepBuilder.append(objBlocks.getObjUseEnd());
             stringBuilder.append("        end;").append(LINE_SEPARATOR);
@@ -633,7 +305,7 @@ public class STEADExportManager extends TextExportManager {
         if (timerSet) {
             stringBuilder.append("    timer = function(s)").append(LINE_SEPARATOR);
             if (hasFastAnim) {
-                stringBuilder.append("        if (_fps * (get_ticks() - nlbticks) <= 1000) then").append(LINE_SEPARATOR);
+                stringBuilder.append("        if (nlb._fps * (get_ticks() - nlbticks) <= 1000) then").append(LINE_SEPARATOR);
                 stringBuilder.append("            return;").append(LINE_SEPARATOR);
                 stringBuilder.append("        end").append(LINE_SEPARATOR);
                 stringBuilder.append("        nlbticks = get_ticks();").append(LINE_SEPARATOR);
@@ -651,7 +323,7 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append(pageBlocks.getPageTextStart());
         autosBuilder.append("    autos = function(s)").append(LINE_SEPARATOR);
-        autosBuilder.append("        revive();").append(LINE_SEPARATOR);
+        autosBuilder.append("        nlb:revive();").append(LINE_SEPARATOR);
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             if (linkBlocks.isAuto()) {
@@ -671,7 +343,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(autosBuilder.toString());
         // TODO: check that here() will not be used in modifications (for example, when automatically taking objects to the inventory)
         stringBuilder.append("    nextsnd = function(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("        local sndfile = pop('").append(pageBlocks.getPageName()).append("_snds');").append(LINE_SEPARATOR);
+        stringBuilder.append("        local sndfile = nlb:pop('").append(pageBlocks.getPageName()).append("_snds');").append(LINE_SEPARATOR);
         stringBuilder.append("        if sndfile ~= nil then").append(LINE_SEPARATOR);
         stringBuilder.append("            s.sndout(s);").append(LINE_SEPARATOR);
         stringBuilder.append("            add_sound(sndfile);").append(LINE_SEPARATOR);
@@ -938,7 +610,7 @@ public class STEADExportManager extends TextExportManager {
             } else {
                 ifTermination = "        end" + LINE_SEPARATOR;
                 resultBuilder.append(tempBuilder).append("            ");
-                resultBuilder.append("return string.format('").append(objImagePath).append("', curloc().time % ");
+                resultBuilder.append("return string.format('").append(objImagePath).append("', nlb:curloc().time % ");
                 resultBuilder.append(objImagePathData.getMaxFrameNumber()).append(" + 1); ").append(LINE_SEPARATOR);
             }
             notFirst = true;
@@ -1111,7 +783,7 @@ public class STEADExportManager extends TextExportManager {
         }
         return (
                 "    act = function(s)" + LINE_SEPARATOR +
-                        "        s.acta(s);" + LINE_SEPARATOR +
+                        "        s:acta();" + LINE_SEPARATOR +
                         returnStatement +
                         "    end," + LINE_SEPARATOR +
                         "    actt = function(s)" + LINE_SEPARATOR +
@@ -1119,8 +791,8 @@ public class STEADExportManager extends TextExportManager {
                         "    end," + LINE_SEPARATOR +
                         "    acta = function(s)" + LINE_SEPARATOR +
                         actText +
-                        "        s.actf(s);" + LINE_SEPARATOR +
-                        "        s.actcmn(s);" + LINE_SEPARATOR +
+                        "        s:actf();" + LINE_SEPARATOR +
+                        "        s:actcmn();" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         suffix
         );
@@ -1129,7 +801,7 @@ public class STEADExportManager extends TextExportManager {
     protected String getActText(boolean actTextNotEmpty) {
         return (
                 (actTextNotEmpty)
-                        ? "        curloc().lasttext = s.actt(s); p(curloc().lasttext); curloc().wastext = true;" + LINE_SEPARATOR
+                        ? "        nlb:curloc().lasttext = s.actt(s); p(nlb:curloc().lasttext); nlb:curloc().wastext = true;" + LINE_SEPARATOR
                         : Constants.EMPTY_STRING
         );
     }
@@ -1144,12 +816,12 @@ public class STEADExportManager extends TextExportManager {
         // Before use, execute possible act commands (without printing act text) -> s.actf(s)
         return (
                 "    use = function(s, w)" + LINE_SEPARATOR +
-                        "        s.actf(s);" + LINE_SEPARATOR +
-                        "        s.usea(s, w, w);" + LINE_SEPARATOR +
+                        "        s:actf();" + LINE_SEPARATOR +
+                        "        s:usea(w, w);" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    usea = function(s, w, ww)" + LINE_SEPARATOR +
-                        "        s.usep(s, w, ww);" + LINE_SEPARATOR +
-                        "        s.usef(s, w, ww);" + LINE_SEPARATOR +
+                        "        s:usep(w, ww);" + LINE_SEPARATOR +
+                        "        s:usef(w, ww);" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    usef = function(s, w, ww)" + LINE_SEPARATOR
         );
@@ -1195,13 +867,13 @@ public class STEADExportManager extends TextExportManager {
         if (StringHelper.notEmpty(constraintValue)) {
             result.append("    life = function(s)").append(LINE_SEPARATOR);
             result.append("        if not (").append(constraintValue).append(") then").append(LINE_SEPARATOR);
-            result.append("            _filter[").append("stead.deref(s)").append("] = true;").append(LINE_SEPARATOR);
+            result.append("            nlb._filter[").append("stead.deref(s)").append("] = true;").append(LINE_SEPARATOR);
             result.append("            s:disable();").append(LINE_SEPARATOR);
             result.append("        end;").append(LINE_SEPARATOR);
             result.append("    end,").append(LINE_SEPARATOR);
             result.append("    revive = function(s)").append(LINE_SEPARATOR);
             result.append("        if ").append(constraintValue).append(" then").append(LINE_SEPARATOR);
-            result.append("            _filter[").append("stead.deref(s)").append("] = false;").append(LINE_SEPARATOR);
+            result.append("            nlb._filter[").append("stead.deref(s)").append("] = false;").append(LINE_SEPARATOR);
             result.append("            s:enable();").append(LINE_SEPARATOR);
             result.append("        end;").append(LINE_SEPARATOR);
             result.append("    end,").append(LINE_SEPARATOR);
@@ -1216,7 +888,7 @@ public class STEADExportManager extends TextExportManager {
         result.append("    used = function(s, w)").append(LINE_SEPARATOR);
         String id = hasCmn ? decorateId(commonObjId) : Constants.EMPTY_STRING;
         if (hasCmn) {
-            result.append("        ").append("w.usea(w, ").append(id).append(", s);").append(LINE_SEPARATOR);
+            result.append("        ").append("w:usea(").append(id).append(", s);").append(LINE_SEPARATOR);
         }
         result.append("    end,").append(LINE_SEPARATOR);
         result.append("    actcmn = function(s)").append(LINE_SEPARATOR);
@@ -1337,11 +1009,11 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateCloneOperation(final String variableName, final String objId, final String objVar) {
         if (objId != null) {
-            return variableName + " = clone(" + decorateId(objId) + ");" + LINE_SEPARATOR;
+            return variableName + " = nlb:clone(" + decorateId(objId) + ");" + LINE_SEPARATOR;
         } else if (objVar != null) {
-            return variableName + " = clone(" + objVar + ");" + LINE_SEPARATOR;
+            return variableName + " = nlb:clone(" + objVar + ");" + LINE_SEPARATOR;
         } else {
-            return variableName + " = clone(s);" + LINE_SEPARATOR;
+            return variableName + " = nlb:clone(s);" + LINE_SEPARATOR;
         }
     }
 
@@ -1372,7 +1044,7 @@ public class STEADExportManager extends TextExportManager {
         String objToDel = (objectId != null) ? decorateId(objectId) : objectVar;
         if (destinationId == null) {
             if (destinationName != null) {
-                return "            rmv(\"" + destinationName + "\", " + objToDel + "); " + getClearContainerStatement(objToDel) + LINE_SEPARATOR;
+                return "            nlb:rmv(\"" + destinationName + "\", " + objToDel + "); " + getClearContainerStatement(objToDel) + LINE_SEPARATOR;
             } else {
                 return "            objs():del(" + objToDel + "); " + getClearContainerStatement(objToDel) + LINE_SEPARATOR;
             }
@@ -1396,7 +1068,7 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName, boolean unique) {
         return (
-                "            addf(" + ((destinationId != null) ? decorateId(destinationId) : "s") +
+                "            nlb:addf(" + ((destinationId != null) ? decorateId(destinationId) : "s") +
                         ", " + ((objectId != null) ? decorateId(objectId) : objectVar) +
                         (unique ? ", true" : ", false") +
                         ");" + LINE_SEPARATOR
@@ -1406,7 +1078,7 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
         return (
-                "            addf(nil, " + ((objectId != null) ? decorateId(objectId) : objectVar) + ", false);" + LINE_SEPARATOR
+                "            nlb:addf(nil, " + ((objectId != null) ? decorateId(objectId) : objectVar) + ", false);" + LINE_SEPARATOR
         );
     }
 
@@ -1415,7 +1087,7 @@ public class STEADExportManager extends TextExportManager {
         return (
                 createListObj(destinationListVariableName) +
                 createListObj(sourceListVariableName) +
-                        "        addAll(s, " + ((destinationId != null) ? decorateId(destinationId) : "nil") +
+                        "        nlb:addAll(s, " + ((destinationId != null) ? decorateId(destinationId) : "nil") +
                         ", " + ((destinationListVariableName != null) ? "(" + destinationListVariableName + " ~= nil) and " + destinationListVariableName + ".listnam or \"\"" : "nil") +
                         ", " + "(" + sourceListVariableName + " ~= nil) and " + sourceListVariableName + ".listnam or \"\"" +
                         (unique ? ", true" : ", false") +
@@ -1427,7 +1099,7 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateObjsOperation(String listVariableName, String srcObjId, String objectVar) {
         return (
                 createListObj(listVariableName) +
-                        "        pushObjs(" +
+                        "        nlb:pushObjs(" +
                         listVariableName + ".listnam, " + ((srcObjId != null) ? decorateId(srcObjId) : objectVar) +
                         ");" + LINE_SEPARATOR
         );
@@ -1456,19 +1128,19 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateSPushOperation(String listVariableName) {
-        return createListObj(listVariableName) + "        push(" + listVariableName + ".listnam, s);" + LINE_SEPARATOR;
+        return createListObj(listVariableName) + "        nlb:push(" + listVariableName + ".listnam, s);" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateWPushOperation(String listVariableName) {
-        return createListObj(listVariableName) + "        push(" + listVariableName + ".listnam, ww);  -- will push nil if undef" + LINE_SEPARATOR;
+        return createListObj(listVariableName) + "        nlb:push(" + listVariableName + ".listnam, ww);  -- will push nil if undef" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decoratePushOperation(String listVariableName, String objectId, String objectVar) {
         return (
                 createListObj(listVariableName) +
-                "        push(" +
+                "        nlb:push(" +
                         listVariableName + ".listnam, " + ((objectId != null) ? decorateId(objectId) : objectVar) +
                         ");" + LINE_SEPARATOR
         );
@@ -1478,7 +1150,7 @@ public class STEADExportManager extends TextExportManager {
         if (listVariableName != null) {
             return (
                     "        if " + listVariableName + " == nil then" + LINE_SEPARATOR +
-                            "            stead.add_var { " + listVariableName + " = clonelst(listobj, \"" + listVariableName + "\"); }" + LINE_SEPARATOR +
+                            "            stead.add_var { " + listVariableName + " = nlb:clonelst(listobj, \"" + listVariableName + "\"); }" + LINE_SEPARATOR +
                             "        end;" + LINE_SEPARATOR
             );
         } else {
@@ -1489,19 +1161,19 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decoratePopOperation(String variableName, String listVariableName) {
         // TODO: handle pops from nonexistent lists
-        return variableName + " = pop(" + listVariableName + ".listnam);" + LINE_SEPARATOR;
+        return variableName + " = nlb:pop(" + listVariableName + ".listnam);" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateSInjectOperation(String listVariableName) {
-        return createListObj(listVariableName) + "        inject(" + listVariableName + ".listnam, s);" + LINE_SEPARATOR;
+        return createListObj(listVariableName) + "        nlb:inject(" + listVariableName + ".listnam, s);" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateInjectOperation(String listVariableName, String objectId, String objectVar) {
         return (
                 createListObj(listVariableName) +
-                        "        inject(" +
+                        "        nlb:inject(" +
                         listVariableName + ".listnam, " + ((objectId != null) ? decorateId(objectId) : objectVar) +
                         ");" + LINE_SEPARATOR
         );
@@ -1510,17 +1182,17 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateEjectOperation(String variableName, String listVariableName) {
         // TODO: handle ejects from nonexistent lists
-        return variableName + " = eject(" + listVariableName + ".listnam);" + LINE_SEPARATOR;
+        return variableName + " = nlb:eject(" + listVariableName + ".listnam);" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateClearOperation(String destinationId, String destinationVar) {
         if (destinationId != null) {
-            return "clrcntnr(objs(" + decorateId(destinationId) + ")); " + "objs(" + decorateId(destinationId) + "):zap();" + LINE_SEPARATOR;
+            return "nlb:clrcntnr(objs(" + decorateId(destinationId) + ")); " + "objs(" + decorateId(destinationId) + "):zap();" + LINE_SEPARATOR;
         } else if (destinationVar != null) {
-            return "clear(" + destinationVar + ");" + LINE_SEPARATOR;
+            return "nlb:clear(" + destinationVar + ");" + LINE_SEPARATOR;
         } else {
-            return "clrcntnr(objs()); objs():zap();" + LINE_SEPARATOR;
+            return "nlb:clrcntnr(objs()); objs():zap();" + LINE_SEPARATOR;
         }
     }
 
@@ -1531,7 +1203,7 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateSizeOperation(String variableName, String listVariableName) {
-        return "if " + listVariableName + " ~= nil then " + variableName + " = size(" + listVariableName + ".listnam) else " + variableName + " = 0 end;" + LINE_SEPARATOR;
+        return "if " + listVariableName + " ~= nil then " + variableName + " = nlb:size(" + listVariableName + ".listnam) else " + variableName + " = 0 end;" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1549,14 +1221,14 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateShuffleOperation(String listVariableName) {
         return (
                 "        if (" + listVariableName + " ~= nil) then" + LINE_SEPARATOR +
-                        "            shuffle(" + listVariableName + ".listnam);" + LINE_SEPARATOR +
+                        "            nlb:shuffle(" + listVariableName + ".listnam);" + LINE_SEPARATOR +
                         "        end;" + LINE_SEPARATOR
         );
     }
 
     @Override
     protected String decoratePRNOperation(String variableName) {
-        return "curloc().lasttext = curloc().lasttext.." + variableName + "; p(" + variableName + "); curloc().wastext = true;" + LINE_SEPARATOR;
+        return "nlb:curloc().lasttext = nlb:curloc().lasttext.." + variableName + "; p(" + variableName + "); nlb:curloc().wastext = true;" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1566,13 +1238,13 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decoratePDscOperation(String objVariableName) {
-        return "curloc().lasttext = curloc().lasttext..\" \".." + objVariableName + ":dscf(); p(" + objVariableName + ":dscf()); curloc().wastext = true;" + LINE_SEPARATOR;
+        return "nlb:curloc().lasttext = nlb:curloc().lasttext..\" \".." + objVariableName + ":dscf(); p(" + objVariableName + ":dscf()); nlb:curloc().wastext = true;" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateActOperation(String actingObjVariable, String actingObjId) {
         String source = (actingObjId != null) ? decorateId(actingObjId) : actingObjVariable;
-        return "acta(" + source + ");" + LINE_SEPARATOR;
+        return "nlb:acta(" + source + ");" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1583,14 +1255,14 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateActfOperation(String actingObjVariable, String actingObjId) {
         String source = (actingObjId != null) ? decorateId(actingObjId) : actingObjVariable;
-        return "actf(" + source + ");" + LINE_SEPARATOR;
+        return "nlb:actf(" + source + ");" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateUseOperation(String sourceVariable, String sourceId, String targetVariable, String targetId) {
         String source = (sourceId != null) ? decorateId(sourceId) : sourceVariable;
         String target = (targetId != null) ? decorateId(targetId) : targetVariable;
-        return "usea(" + source + ", " + target + ");" + LINE_SEPARATOR;
+        return "nlb:usea(" + source + ", " + target + ");" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1713,7 +1385,7 @@ public class STEADExportManager extends TextExportManager {
         if (isVN(theme)) {
             return m_vnsteadExportManager.decorateLinkGoTo(linkId, linkText, linkTarget, targetPageNumber, theme);
         }
-        return "                nlbwalk(s, " + decoratePageName(linkTarget, targetPageNumber) + "); ";
+        return "                nlb:nlbwalk(s, " + decoratePageName(linkTarget, targetPageNumber) + "); ";
     }
 
     @Override
@@ -1828,7 +1500,7 @@ public class STEADExportManager extends TextExportManager {
 
     private String decorateImagePath(String imagePath, int maxFrameNumber) {
         if (maxFrameNumber > 0) {
-            return "string.format('" + imagePath + "', curloc().time % " + maxFrameNumber + " + 1)";
+            return "string.format('" + imagePath + "', nlb:curloc().time % " + maxFrameNumber + " + 1)";
         } else {
             return "'" + imagePath + "'";
         }
@@ -1899,7 +1571,7 @@ public class STEADExportManager extends TextExportManager {
                 } else {
                     if (soundSFX || pageSoundPathData.isSfx()) {
                         hasSFX = true;
-                        result.append("            push('").append(pageName).append("_snds").append("', '").append(pageSoundPath).append("');").append(LINE_SEPARATOR);
+                        result.append("            nlb:push('").append(pageName).append("_snds").append("', '").append(pageSoundPath).append("');").append(LINE_SEPARATOR);
                     } else {
                         result.append("            set_music('").append(pageSoundPath).append("', 0);").append(LINE_SEPARATOR);
                     }
@@ -2007,7 +1679,7 @@ public class STEADExportManager extends TextExportManager {
         String roomName = decoratePageName(labelText, pageNumber);
         if (pageNumber == 1) {
             roomBeginning.append("main, ").append(roomName);
-            roomBeginning.append(" = room { nam = \"main\", enter = function(s) nlbwalk(s, ").append(roomName).append("); end }, ");
+            roomBeginning.append(" = room { nam = \"main\", enter = function(s) nlb:nlbwalk(s, ").append(roomName).append("); end }, ");
         } else {
             roomBeginning.append(roomName).append(" = ");
         }
