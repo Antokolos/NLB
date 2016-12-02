@@ -1642,11 +1642,11 @@ public class STEADExportManager extends TextExportManager {
         }
         StringBuilder pageText = new StringBuilder();
         pageText.append("    dsc = function(s)").append(LINE_SEPARATOR);
-        pageText.append("p(\"");
         if (pageTextChunks.size() > 0) {
+            pageText.append("p(\"");
             pageText.append(expandVariables(pageTextChunks, theme));
+            pageText.append("\");").append(LINE_SEPARATOR);
         }
-        pageText.append("\");").append(LINE_SEPARATOR);
         pageText.append("    end,").append(LINE_SEPARATOR);
         pageText.append("    xdsc = function(s)").append(LINE_SEPARATOR);
         pageText.append("        p \"^\";").append(LINE_SEPARATOR);
