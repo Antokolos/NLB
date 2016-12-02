@@ -83,12 +83,12 @@ vntimer = function(f, s, cmd, ...)
             theme.gfx.bg(vn.offscreen)
         end
         RAW_TEXT = true;
-        return game._lastdisp;
+        return game._lastdisp or "";
     end
     if not vn.stopped then
         if not vn:process() then
             RAW_TEXT = true;
-            return game._lastdisp;
+            return game._lastdisp or "";
         end
     end
     if vn._need_update then
@@ -824,7 +824,7 @@ vn = obj {
             end
             s.cursor_need_update = false;
             RAW_TEXT = true;
-            return game._lastdisp;
+            return game._lastdisp or "";
         end
     end;
 
@@ -1673,7 +1673,7 @@ vn = obj {
 
         s.stopped = true;
         --- RAW_TEXT = true
-        --- return game._lastdisp;
+        --- return game._lastdisp or "";
     end;
     lock_direct = function(s)
         s.direct_lock = true;
