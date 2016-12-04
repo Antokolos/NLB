@@ -272,7 +272,7 @@ vn = obj {
     end;
     test_click = function(s, x, y)
         for i, v in ipairs(s._effects) do
-            if s:inside_spr(v, x, y) then
+            if not s:is_inactive_due_to_anim_state(v) and s:inside_spr(v, x, y) then
                 return true;
             end
         end
@@ -283,7 +283,8 @@ vn = obj {
             return;
         end
         for i, v in ipairs(s._effects) do
-            if s:gobf(v).onclick and s:enabled(v) and s:inside_spr(v, x, y) then
+            local active = not s:is_inactive_due_to_anim_state(v);
+            if active and s:gobf(v).onclick and s:enabled(v) and s:inside_spr(v, x, y) then
                 s:gobf(v):onclick(s);
             end
         end
@@ -1838,6 +1839,21 @@ vn = obj {
             end
         end
         return false;
+    end;
+    is_inactive_due_to_anim_state = function(s, v)
+        local init_frame = s:get_init_step(v);
+        if not init_frame then
+            return false;
+        end
+        local last_frame = s:get_max_step(v) - s:get_from_stop(v);
+        if s:get_eff(v) == 'none' or (init_frame > 0 and init_frame < last_frame) then
+            return false;
+        end
+        local fadein = s:get_eff(v) == 'fadein';
+        local fadeout = s:get_eff(v) == 'fadeout';
+        local last = (s:get_step(v) == last_frame) and s:get_forward(v);
+        local first = (s:get_step(v) == init_frame) and not s:get_forward(v);
+        return (last and fadeout) or (first and fadein);
     end;
     has_animation_in_progress = function(s, v)
         if s:gobf(v).is_paused then

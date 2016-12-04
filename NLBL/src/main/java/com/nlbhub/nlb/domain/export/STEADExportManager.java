@@ -628,7 +628,7 @@ public class STEADExportManager extends TextExportManager {
         boolean hasDefinedOffset = StringHelper.notEmpty(offsetString);
         String offset = hasDefinedOffset ? offsetString : "0,0";
         String pos = "left-top@" + offset;
-        String steps = (effect == Obj.Effect.None) ? "" : "    maxStep = 15," + LINE_SEPARATOR + "    startFrame = 0," + LINE_SEPARATOR;
+        String steps = (effect == Obj.Effect.None) ? "" : "    maxStep = 8," + LINE_SEPARATOR + "    startFrame = 0," + LINE_SEPARATOR;
         if (effect != Obj.Effect.None) {
             String eff = effect.name().toLowerCase();
             switch (movementDirection) {
