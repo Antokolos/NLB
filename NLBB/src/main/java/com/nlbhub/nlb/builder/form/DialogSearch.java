@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.NonLinearBook;
+import com.nlbhub.nlb.api.PropertyManager;
 import com.nlbhub.nlb.api.SearchContract;
 import com.nlbhub.nlb.api.SearchResultTableModel;
 import com.nlbhub.nlb.builder.model.SearchResultsTableModelSwing;
@@ -128,7 +129,8 @@ public class DialogSearch extends JDialog {
                         m_linksCheckBox.isSelected(),
                         m_variablesCheckBox.isSelected(),
                         m_ignoreCaseCheckBox.isSelected(),
-                        m_wholeWordsCheckBox.isSelected()
+                        m_wholeWordsCheckBox.isSelected(),
+                        PropertyManager.getProperties().isFindUnusualQuotes()
                 ),
                 m_modulePageId
         );

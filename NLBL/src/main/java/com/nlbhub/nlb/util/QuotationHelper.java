@@ -1,5 +1,5 @@
 /**
- * @(#)PropertiesBean.java
+ * @(#)QuotationHelper.java
  *
  * This file is part of the Non-Linear Book project.
  * Copyright (c) 2012-2016 Anton P. Kolosov
@@ -36,38 +36,28 @@
  *
  * Copyright (c) 2016 Anton P. Kolosov All rights reserved.
  */
-package com.nlbhub.nlb.api;
+package com.nlbhub.nlb.util;
+
+import com.nlbhub.nlb.util.StringHelper;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
+ * The QuotationHelper class
+ *
+ * Find any types of non-standard quotation marks in the input string.
+ *
  * @author Anton P. Kolosov
  * @version 1.0
  */
-public class PropertiesBean {
-    private boolean m_convertPNG2JPG;
-    private int m_quality;
-    private boolean m_findUnusualQuotes;
-
-    public boolean isConvertPNG2JPG() {
-        return m_convertPNG2JPG;
-    }
-
-    public void setConvertPNG2JPG(boolean convertPNG2JPG) {
-        m_convertPNG2JPG = convertPNG2JPG;
-    }
-
-    public int getQuality() {
-        return m_quality;
-    }
-
-    public void setQuality(int quality) {
-        m_quality = quality;
-    }
-
-    public boolean isFindUnusualQuotes() {
-        return m_findUnusualQuotes;
-    }
-
-    public void setFindUnusualQuotes(boolean findUnusualQuotes) {
-        m_findUnusualQuotes = findUnusualQuotes;
+public class QuotationHelper {
+    private static final Pattern QUOTES = Pattern.compile("[\\u2033\\u05F4\\u059E\\u00AB\\u2039\\u00BB\\u203A\\u201E\\u201A\\u201C\\u201F\\u2018\\u201B\\u201D\\u2019]+");
+    public static boolean find(String source) {
+        if (StringHelper.isEmpty(source)) {
+            return false;
+        }
+        Matcher matcher = QUOTES.matcher(source);
+        return matcher.find();
     }
 }

@@ -53,8 +53,9 @@ public class SearchContract {
     private final boolean m_searchInVars;
     private final boolean m_ignoreCase;
     private final boolean m_wholeWords;
+    private final boolean m_findUnusualQuotes;
 
-    public SearchContract(String searchText, boolean searchInIds, boolean searchInPages, boolean searchInObjects, boolean searchInLinks, boolean searchInVars, boolean ignoreCase, boolean wholeWords) {
+    public SearchContract(String searchText, boolean searchInIds, boolean searchInPages, boolean searchInObjects, boolean searchInLinks, boolean searchInVars, boolean ignoreCase, boolean wholeWords, boolean findUnusualQuotes) {
         m_searchText = searchText;
         m_searchInIds = searchInIds;
         m_searchInPages = searchInPages;
@@ -63,6 +64,7 @@ public class SearchContract {
         m_searchInVars = searchInVars;
         m_ignoreCase = ignoreCase;
         m_wholeWords = wholeWords;
+        m_findUnusualQuotes = findUnusualQuotes;
     }
 
     public String getSearchText() {
@@ -95,5 +97,9 @@ public class SearchContract {
 
     public boolean isWholeWords() {
         return m_wholeWords;
+    }
+
+    public boolean isFindUnusualQuotes() {
+        return m_findUnusualQuotes;
     }
 }

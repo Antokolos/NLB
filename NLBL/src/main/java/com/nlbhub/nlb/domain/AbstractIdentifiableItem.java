@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.domain;
 
 import com.nlbhub.nlb.api.*;
+import com.nlbhub.nlb.util.QuotationHelper;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.StringHelper;
@@ -198,7 +199,11 @@ public abstract class AbstractIdentifiableItem implements IdentifiableItem {
                         : Pattern.compile(patternText.toString())
         );
         Matcher matcher = pattern.matcher(stringToTest);
-        return matcher.find();
+        boolean result = matcher.find();
+        if (contract.isFindUnusualQuotes()) {
+            return result || QuotationHelper.find(stringToTest);
+        }
+        return result;
     }
 
     protected List<File> createSortedDirList(File[] dirs, List<String> orderList) throws NLBConsistencyException {

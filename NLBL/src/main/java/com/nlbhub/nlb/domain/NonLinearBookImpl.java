@@ -4176,7 +4176,18 @@ public class NonLinearBookImpl implements NonLinearBook {
                     if (!moduleImpl.isEmpty()) {
                         result.addSearchResultTableModel(
                                 moduleImpl.searchText(
-                                        new SearchContract(contract.getSearchText(), contract.isSearchInIds(), contract.isSearchInPages(), contract.isSearchInObjects(), contract.isSearchInLinks(), contract.isSearchInVars(), contract.isIgnoreCase(), contract.isWholeWords()), page.getId()
+                                        new SearchContract(
+                                                contract.getSearchText(),
+                                                contract.isSearchInIds(),
+                                                contract.isSearchInPages(),
+                                                contract.isSearchInObjects(),
+                                                contract.isSearchInLinks(),
+                                                contract.isSearchInVars(),
+                                                contract.isIgnoreCase(),
+                                                contract.isWholeWords(),
+                                                PropertyManager.getProperties().isFindUnusualQuotes()
+                                        ),
+                                        page.getId()
                                 )
                         );
                     }

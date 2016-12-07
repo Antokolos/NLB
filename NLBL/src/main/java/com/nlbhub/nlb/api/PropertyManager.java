@@ -81,8 +81,10 @@ public class PropertyManager {
             // load a properties file
             prop.load(input);
 
+            String findUnusualQuotes = getTrimmedProperty(prop, "nlb.general.parameters.default.find-unusual-quotes");
             String convertpng2jpg = getTrimmedProperty(prop, "media.export.parameters.default.convertpng2jpg");
             String quality = getTrimmedProperty(prop, "media.export.parameters.default.quality");
+            result.setFindUnusualQuotes("true".equalsIgnoreCase(findUnusualQuotes));
             result.setConvertPNG2JPG("true".equalsIgnoreCase(convertpng2jpg));
             result.setQuality(Integer.parseInt(quality));
             return result;
