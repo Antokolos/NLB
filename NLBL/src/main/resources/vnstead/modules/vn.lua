@@ -52,12 +52,17 @@ vntimer = function(f, s, cmd, ...)
         end
     end
     vn.slowcpu = (vnticks_diff > vn.ticks_threshold);
+    if vn.slowcpu then
+        print("Warn: slow CPU, ticks = " .. vnticks_diff);
+    end
     vnticks = get_ticks();
 
-    -- NB: do not put heavy code in onover/onout
-    local x, y = stead.mouse_pos();
-    vn:over(x, y);
-    vn:out(x, y);
+    if vn.stopped then
+        -- NB: do not put heavy code in onover/onout
+        local x, y = stead.mouse_pos();
+        vn:over(x, y);
+        vn:out(x, y);
+    end
 
     if vn.pause_frames > 0 then
         vn.pause_frames = vn.pause_frames - 1;
@@ -135,6 +140,7 @@ vn = obj {
     _wf = 0;
     _fln = nil;
     _frn = nil;
+    tmr = 5;
     hz = 18;
     ticks_threshold = 36;
     slowcpu = false;
@@ -200,7 +206,7 @@ vn = obj {
         s.offscreen = sprite.blank(s.scr_w, s.scr_h)
         s.blackscreen = sprite.box(s.scr_w, s.scr_h, 'black')
         s:request_full_clear();
-        timer:set(1); --(s.hz)
+        timer:set(s.tmr);
     end;
     get_spr_rct = function(s, v)
         if v.last_rct then
@@ -1521,13 +1527,15 @@ vn = obj {
                 s:textbg(s.offscreen)
                 theme.gfx.bg(s.offscreen)
             end
-            --s.stopped = false;
             return
-        end
-        --- timer:set(s.hz)
-        -- s.stopped = false;
+        end        
+        --- s:tmr_rst();
         return
         -- just transpose
+    end;
+    tmr_rst = function(s)
+        timer:stop();
+        timer:set(s.tmr);
     end;
     -- effect is effect name, like 'dissolve'
     -- wf is the fancy border width, in pixels
@@ -1867,6 +1875,7 @@ vn = obj {
         local i, v
         local first
         local cbresult = false;
+        timer:stop();
         if s:has_any_animation_in_progress() then
             s:enter_direct();
         end
@@ -1887,18 +1896,22 @@ vn = obj {
             end
             if cbresult then
                 if type(cbresult) == 'function' then
+                    s:tmr_rst();
                     return cbresult();
                 else
                     s:start();
+                    s:tmr_rst();
                     return true;
                 end
             else
+                s:tmr_rst();
                 return false;
             end
         elseif initpass then
             s:commit(s:screen())
             s:leave_direct();
         end
+        s:tmr_rst();
         return n
     end;
     draw_huds = function(s, datas, clear, hide)
