@@ -328,7 +328,8 @@ vn = obj {
             return;
         end
         for i, v in ipairs(s._effects) do
-            if s:gobf(v).onover and s:enabled(v) and not v.mouse_over and s:inside_spr(v, x, y) then
+            local active = not s:is_inactive_due_to_anim_state(v);
+            if active and s:gobf(v).onover and s:enabled(v) and not v.mouse_over and s:inside_spr(v, x, y) then
                 s:gobf(v):onover();
                 s:update_tooltip(v);
                 if not s:shapechange(v, true) then
@@ -345,6 +346,7 @@ vn = obj {
             return;
         end
         for i, v in ipairs(s._effects) do
+            -- Don't doing not s:is_inactive_due_to_anim_state(v); check, because I want to always hide tooltip
             if s:gobf(v).onout and s:enabled(v) and v.mouse_over and not s:inside_spr(v, x, y) then
                 s:outf(v);
             end
@@ -1113,6 +1115,7 @@ vn = obj {
         gob.is_paused = s:gobf(parent).is_paused;
         local child = s:effect_int(parent, gob);
         --print("Added child = " .. child.nam .. " to " .. parent.nam);
+        child.init_step = s:get_init_step(parent);
         child.eff = s:get_eff(parent);
         child.from = s:get_from(parent);
         child.pos = s:get_pos(parent);
@@ -1551,6 +1554,7 @@ vn = obj {
         s._frn = frn;
         s.win_x, s.win_y, s.win_w, s.win_h = x + s._wf, y, w - 2 * s._wf, h;
         theme.win.geom(s.win_x, s.win_y, s.win_w, s.win_h);
+        s:request_full_clear();
         if effect then
             s:start(effect);
         else
