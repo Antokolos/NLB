@@ -470,6 +470,8 @@ vn = obj {
         for sprStep = s:get_start(v), s:get_max_step(v) do
             v.spr[sprStep] = {
                 was_loaded = false,
+                preloaded_effect = false,
+                alpha = 1.0,
                 cache = nil,
                 val = function(s)
                     if not s.cache then
@@ -588,8 +590,24 @@ vn = obj {
                     elseif sprStep == start then
                         error("Can not load key sprite (" .. sprfile .. " or " .. united_sprfile .. ")");
                     elseif sprStep > ss:get_start(v) then
-                        return v.spr[sprStep - 1]:val();
+                        return s:prepare_effect(sprStep);
                     end
+                end,
+                prepare_effect = function(s, sprStep)
+                    local mxs, zstep = ss:steps(v, sprStep);
+                    local idx;
+                    if v.eff == 'fadein' then
+                        idx = s:get_step(v);
+                        s.alpha = math.floor(255 * zstep / mxs);
+                        s.preloaded_effect = true;
+                        return sprite.alpha(v.spr[ss:get_start(v)]:val(), s.alpha); 
+                    elseif v.eff == 'fadeout' then
+                        idx = s:get_max_step(v) - s:get_step(v);
+                        s.alpha = math.floor(255 * (1 - zstep / mxs));
+                        s.preloaded_effect = true;
+                        return sprite.alpha(v.spr[ss:get_start(v)]:val(), s.alpha);
+                    end
+                    return v.spr[sprStep - 1]:val();
                 end,
                 free = function(s)
                     if s.was_loaded and s.cache then
@@ -816,10 +834,13 @@ vn = obj {
         end
     end;
 
-    steps = function(s, v)
+    steps = function(s, v, stp)
+        if not stp then
+            stp = s:get_step(v);
+        end
         local mxs = s:get_max_step(v) - s:get_from_stop(v) - s:get_start(v);
         --print("vstep="..tostring(s:get_step(v)).."vstart="..tostring(s:get_start(v));
-        local zstep = s:get_step(v) - s:get_start(v);
+        local zstep = stp - s:get_start(v);
         return mxs, zstep;
     end;
 
@@ -994,24 +1015,6 @@ vn = obj {
 
         local oe = s:lookup(v.nam)
 
-        if oe then
-            if oe.pic ~= v.pic then -- new pic
-                s:free_effect(oe);
-                oe.pic = v.pic
-                s:load_effect(oe)
-            end
-            old_pos = s:get_pos(oe);
-            v = oe
-        else
-            v.step = g.curStep;
-            v.max_step = maxStep;
-            v.from_stop = g.framesFromStop
-            s:load_effect(v)
-        end
-        v.step = g.curStep;
-        v.start = g.startFrame;
-        v.max_step = maxStep;
-        v.from_stop = g.framesFromStop
         if not eff then
             eff = ''
         end
@@ -1045,6 +1048,25 @@ vn = obj {
         else
             v.eff = 'none'
         end
+
+        if oe then
+            if oe.pic ~= v.pic then -- new pic
+                s:free_effect(oe);
+                oe.pic = v.pic
+                s:load_effect(oe)
+            end
+            old_pos = s:get_pos(oe);
+            v = oe
+        else
+            v.step = g.curStep;
+            v.max_step = maxStep;
+            v.from_stop = g.framesFromStop
+            s:load_effect(v)
+        end
+        v.step = g.curStep;
+        v.start = g.startFrame;
+        v.max_step = maxStep;
+        v.from_stop = g.framesFromStop
 
         if s.skip_mode then v.eff = 'none' end
 
@@ -1227,7 +1249,8 @@ vn = obj {
             print("WARN: nonexistent sprite when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
             return empty_frame;
         end
-        local ospr = v.spr[idx]:val();
+        local sp = v.spr[idx];
+        local ospr = sp:val();
         if not ospr then -- Strange error when using resources in idf...
             print("ERROR: filesystem access problem when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
             return empty_frame;
@@ -1251,42 +1274,46 @@ vn = obj {
                 sprite.free(res);
                 res = nil;
             end
-            return {["spr"] = res, ["w"] = ospr.w, ["h"] = ospr.h, ["tmp"] = (res ~= nil)};
+            return {["spr"] = res, ["w"] = ospr.w, ["h"] = ospr.h, ["tmp"] = (res ~= nil), ["preloaded_effect"] = sp.preloaded_effect, ["alpha"] = sp.alpha};
         else
             local w, h = sprite.size(ospr);
             if not only_compute and target then
                 sprite.draw(ospr, target, x, y);
             end
-            return {["spr"] = ospr, ["w"] = w, ["h"] = h, ["tmp"] = false};
+            return {["spr"] = ospr, ["w"] = w, ["h"] = h, ["tmp"] = false, ["preloaded_effect"] = sp.preloaded_effect, ["alpha"] = sp.alpha};
         end
     end;
 
-    fade = function(s, v, only_compute)
-        local mxs, zstep = s:steps(v);
-        local x, y, idx
+    fade = function(s, v, only_compute)        
+        local x, y, idx, sp, alpha;
         local fadein = (s:get_eff(v) == 'fadein');
         if fadein then
             idx = s:get_step(v);
         else
             idx = s:get_max_step(v) - s:get_step(v);
         end
-        x, y = s:postoxy(v, idx)
+        x, y = s:postoxy(v, idx);
 
-        local alpha;
-        if fadein then
-            alpha = math.floor(255 * zstep / mxs);
+        if v.spr[idx].preloaded_effect then
+            sp = s:frame(v, s:get_step(v), s:screen(), x, y, only_compute, true);
+            alpha = sp.alpha;
         else
-            alpha = math.floor(255 * (1 - zstep / mxs));
+            sp = s:frame(v, idx);
+            local mxs, zstep = s:steps(v);        
+            if fadein then
+                alpha = math.floor(255 * zstep / mxs);
+            else
+                alpha = math.floor(255 * (1 - zstep / mxs));
+            end
+            local spr = sprite.alpha(sp.spr, alpha);
+            if sp.tmp then
+                sprite.free(sp.spr);
+            end
+            if not only_compute then
+                sprite.draw(spr, s:screen(), x, y);
+            end
+            sprite.free(spr);
         end
-        local sp = s:frame(v, idx);
-        local spr = sprite.alpha(sp.spr, alpha);
-        if sp.tmp then
-            sprite.free(sp.spr);
-        end
-        if not only_compute then
-            sprite.draw(spr, s:screen(), x, y);
-        end
-        sprite.free(spr)
         return idx, x, y, sp.w, sp.h, alpha;
     end;
     overlap = function(s, v, only_compute)
@@ -2151,7 +2178,7 @@ stead.module_init(function()
     vnticks_diff = vn.ticks_threshold;
     hudFont = sprite.font('fonts/Medieval_English.ttf', 30);
     empty_s = sprite.load('gfx/empty.png');
-    empty_frame = {["spr"] = empty_s, ["w"] = 0, ["h"] = 0, ["tmp"] = false};
+    empty_frame = {["spr"] = empty_s, ["w"] = 0, ["h"] = 0, ["tmp"] = false, ["preloaded_effect"] = false, ["alpha"] = 1.0};
     if LANG == "ru" then
         busy_spr = vn:label("Загрузка...", 40, "#ffffff", "black");
     else
