@@ -3,6 +3,7 @@ require 'timer'
 require 'theme'
 require 'sprites'
 require 'modules/gobj'
+require 'modules/log'
 
 local win_reset = function()
     if not vn._win_get then
@@ -53,7 +54,7 @@ vntimer = function(f, s, cmd, ...)
     end
     vn.slowcpu = (vnticks_diff > vn.ticks_threshold);
     if vn.slowcpu then
-        print("Warn: slow CPU, ticks = " .. vnticks_diff);
+        log:warn("Slow CPU, ticks = " .. vnticks_diff);
     end
     vnticks = get_ticks();
 
@@ -140,9 +141,10 @@ vn = obj {
     _wf = 0;
     _fln = nil;
     _frn = nil;
+    cache_effects = true;
     tmr = 5;
-    hz = 18;
-    ticks_threshold = 36;
+    hz = 36;
+    ticks_threshold = 72;
     slowcpu = false;
     var {
         on = true,
@@ -471,7 +473,7 @@ vn = obj {
             v.spr[sprStep] = {
                 was_loaded = false,
                 preloaded_effect = false,
-                alpha = 1.0,
+                alpha = 255,
                 cache = nil,
                 val = function(s)
                     if not s.cache then
@@ -487,7 +489,7 @@ vn = obj {
                         if sprStep == ss:get_start(v) then
                             return s:load_file(v.pic);
                         elseif sprStep > ss:get_start(v) then
-                            return v.spr[ss:get_start(v)]:val();
+                            return s:prepare_effect(sprStep);
                         end
                     else
                         return s:load_frame();
@@ -590,24 +592,29 @@ vn = obj {
                     elseif sprStep == start then
                         error("Can not load key sprite (" .. sprfile .. " or " .. united_sprfile .. ")");
                     elseif sprStep > ss:get_start(v) then
-                        return s:prepare_effect(sprStep);
+                        return v.spr[sprStep - 1]:val();
                     end
                 end,
-                prepare_effect = function(s, sprStep)
-                    local mxs, zstep = ss:steps(v, sprStep);
+                prepare_effect = function(s, spr_step)
+                    local base_spr = v.spr[ss:get_start(v)]:val();
+                    if not ss.cache_effects then
+                        log:dbg("Do not preparing effects, because vn.cache_effects = " .. tostring(ss.cache_effects));
+                        return base_spr;
+                    end
+                    local mxs, zstep = ss:steps(v, spr_step);
                     local idx;
+                    log:dbg("Preparing effects for " .. v.nam .. "; spr_step = " .. spr_step .. "; v.eff = " .. v.eff);
                     if v.eff == 'fadein' then
-                        idx = s:get_step(v);
                         s.alpha = math.floor(255 * zstep / mxs);
-                        s.preloaded_effect = true;
-                        return sprite.alpha(v.spr[ss:get_start(v)]:val(), s.alpha); 
+                        s.preloaded_effect = true;                        
+                        return sprite.alpha(base_spr, s.alpha); 
                     elseif v.eff == 'fadeout' then
-                        idx = s:get_max_step(v) - s:get_step(v);
                         s.alpha = math.floor(255 * (1 - zstep / mxs));
                         s.preloaded_effect = true;
-                        return sprite.alpha(v.spr[ss:get_start(v)]:val(), s.alpha);
+                        return sprite.alpha(base_spr, s.alpha);
                     end
-                    return v.spr[sprStep - 1]:val();
+                    log:dbg("Falling back to base_spr");
+                    return base_spr;
                 end,
                 free = function(s)
                     if s.was_loaded and s.cache then
@@ -642,9 +649,9 @@ vn = obj {
                         v.spr[i]:val();
                     else
                         -- This error should actually never appear
-                        print("Error preloading sprite " .. v.pic .. "@" .. i);
+                        log:err("Error preloading sprite " .. v.pic .. "@" .. i);
                     end
-                    --print("preloaded " .. v.nam .. "@" .. i);
+                    log:dbg("preloaded " .. v.nam .. "@" .. i);
                     if (get_ticks() - vnticks > vn.hz) then
                         return false;
                     end
@@ -834,13 +841,13 @@ vn = obj {
         end
     end;
 
-    steps = function(s, v, stp)
-        if not stp then
-            stp = s:get_step(v);
+    steps = function(s, v, cur_stp)
+        if not cur_stp then
+            cur_stp = s:get_step(v);
         end
         local mxs = s:get_max_step(v) - s:get_from_stop(v) - s:get_start(v);
-        --print("vstep="..tostring(s:get_step(v)).."vstart="..tostring(s:get_start(v));
-        local zstep = stp - s:get_start(v);
+        log:trace("vstep="..tostring(s:get_step(v)).."; vstart="..tostring(s:get_start(v)));
+        local zstep = cur_stp - s:get_start(v);
         return mxs, zstep;
     end;
 
@@ -1136,7 +1143,7 @@ vn = obj {
         gob.acceleration = s:get_accel(parent);
         gob.is_paused = s:gobf(parent).is_paused;
         local child = s:effect_int(parent, gob);
-        --print("Added child = " .. child.nam .. " to " .. parent.nam);
+        log:dbg("Added child = " .. child.nam .. " to " .. parent.nam);
         child.init_step = s:get_init_step(parent);
         child.eff = s:get_eff(parent);
         child.from = s:get_from(parent);
@@ -1246,13 +1253,13 @@ vn = obj {
 
     frame = function(s, v, idx, target, x, y, only_compute, free_immediately)
         if not v.spr or not v.spr[idx] then
-            print("WARN: nonexistent sprite when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
+            log:warn("nonexistent sprite when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
             return empty_frame;
         end
         local sp = v.spr[idx];
         local ospr = sp:val();
         if not ospr then -- Strange error when using resources in idf...
-            print("ERROR: filesystem access problem when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
+            log:err("filesystem access problem when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
             return empty_frame;
         end
         if not x then
@@ -1297,6 +1304,7 @@ vn = obj {
         if v.spr[idx].preloaded_effect then
             sp = s:frame(v, s:get_step(v), s:screen(), x, y, only_compute, true);
             alpha = sp.alpha;
+            log:dbg("Using preloaded effect in fade(), alpha = " .. alpha);
         else
             sp = s:frame(v, idx);
             local mxs, zstep = s:steps(v);        
@@ -1305,6 +1313,7 @@ vn = obj {
             else
                 alpha = math.floor(255 * (1 - zstep / mxs));
             end
+            log:dbg("Calculating effect on the fly in fade(), alpha = " .. alpha);
             local spr = sprite.alpha(sp.spr, alpha);
             if sp.tmp then
                 sprite.free(sp.spr);
@@ -1510,7 +1519,7 @@ vn = obj {
         end
         v.last_rct = {["v"] = v, ["idx"] = idx, ["x"] = x, ["y"] = y, ["w"] = w, ["h"] = h, ["scale"] = scale, ["alpha"] = alpha};
         if hide or v.dirty_draw then
-            --print(v.nam .. " is dirty");
+            log:trace(v.nam .. " is dirty");
             s._dirty_rects[v.nam] = v.last_rct;
         end
         return v.last_rct;
@@ -1748,7 +1757,7 @@ vn = obj {
             s:draw_hud(data, false);
         end
         for k, vv in ipairs(v.children) do
-            --print("nam = " .. v.nam .. "; child = " .. vv);
+            log:trace("nam = " .. v.nam .. "; child = " .. vv);
             s:set_step(s:childf(vv), from_step, forward);
         end
     end;
@@ -2018,7 +2027,7 @@ vn = obj {
                 return rct;
             end
             if hide or v.dirty_draw then
-                --print(v.nam .. " hud is dirty");
+                log:trace(v.nam .. " hud is dirty");
                 s._dirty_rects[v.nam .. '_hud'] = rct;
             end
             if clear then
@@ -2105,7 +2114,7 @@ vn = obj {
             sprite.copy(s.bg_spr, xt, yt, w, h, target, xt, yt);
         end
         if hide or v.dirty_draw then
-            --print(v.nam .. " tooltip is dirty");
+            log:trace(v.nam .. " tooltip is dirty");
             s._dirty_rects[v.nam .. '_tooltip'] = {["v"] = v, ["x"] = xt, ["y"] = yt, ["w"] = w, ["h"] = h};
         end
         if not erase then
