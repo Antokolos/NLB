@@ -474,6 +474,7 @@ vn = obj {
                 was_loaded = false,
                 preloaded_effect = false,
                 alpha = 255,
+                scale = 1.0,
                 cache = nil,
                 val = function(s)
                     if not s.cache then
@@ -602,16 +603,23 @@ vn = obj {
                         return base_spr;
                     end
                     local mxs, zstep = ss:steps(v, spr_step);
-                    local idx;
-                    log:dbg("Preparing effects for " .. v.nam .. "; spr_step = " .. spr_step .. "; v.eff = " .. v.eff);
-                    if v.eff == 'fadein' then
+                    log:dbg("Preparing effects for " .. v.nam .. "; spr_step = " .. spr_step .. "; v.eff = " .. ss:get_eff(v));
+                    if ss:get_eff(v) == 'fadein' then
                         s.alpha = math.floor(255 * zstep / mxs);
                         s.preloaded_effect = true;                        
                         return sprite.alpha(base_spr, s.alpha); 
-                    elseif v.eff == 'fadeout' then
+                    elseif ss:get_eff(v) == 'fadeout' then
                         s.alpha = math.floor(255 * (1 - zstep / mxs));
                         s.preloaded_effect = true;
                         return sprite.alpha(base_spr, s.alpha);
+                    elseif ss:get_eff(v) == 'zoomin' then
+                        s.scale = zstep / mxs;
+                        s.preloaded_effect = true;
+                        return sprite.scale(base_spr, s.scale, s.scale, false);
+                    elseif ss:get_eff(v) == 'zoomout' then
+                        s.scale = 1 - zstep / mxs
+                        s.preloaded_effect = true;
+                        return sprite.scale(base_spr, s.scale, s.scale, false);
                     end
                     log:dbg("Falling back to base_spr");
                     return base_spr;
@@ -1281,13 +1289,13 @@ vn = obj {
                 sprite.free(res);
                 res = nil;
             end
-            return {["spr"] = res, ["w"] = ospr.w, ["h"] = ospr.h, ["tmp"] = (res ~= nil), ["preloaded_effect"] = sp.preloaded_effect, ["alpha"] = sp.alpha};
+            return {["spr"] = res, ["w"] = ospr.w, ["h"] = ospr.h, ["tmp"] = (res ~= nil), ["preloaded_effect"] = sp.preloaded_effect, ["alpha"] = sp.alpha, ["scale"] = sp.scale};
         else
             local w, h = sprite.size(ospr);
             if not only_compute and target then
                 sprite.draw(ospr, target, x, y);
             end
-            return {["spr"] = ospr, ["w"] = w, ["h"] = h, ["tmp"] = false, ["preloaded_effect"] = sp.preloaded_effect, ["alpha"] = sp.alpha};
+            return {["spr"] = ospr, ["w"] = w, ["h"] = h, ["tmp"] = false, ["preloaded_effect"] = sp.preloaded_effect, ["alpha"] = sp.alpha, ["scale"] = sp.scale};
         end
     end;
 
@@ -1389,37 +1397,35 @@ vn = obj {
     end;
 
     zoom = function(s, v, only_compute)
-        local mxs, zstep = s:steps(v);
-        local x
-        local y
-        local spr
-        local scale
-        local sprpos;
+        local spr, sprpos;
         if s:get_eff(v) == 'zoomin' then
-            scale = zstep / mxs;
             sprpos = s:get_step(v);
         else
-            scale = 1 - zstep / mxs
             sprpos = s:get_max_step(v) - s:get_step(v);
         end
 
         local vw, vh = s:size(v, sprpos)
         local xarm, yarm = s:arm(v, sprpos)
-        local ws, hs = vw - xarm, vh - yarm
-        if scale == 0 then
-            return s:get_start(v), 0, 0, 0;
-        end
+        local ws, hs = vw - xarm, vh - yarm        
 
         local sp = s:frame(v, sprpos);
+        local scale = sp.scale;
+        if scale == 0 then
+            return s:get_start(v), 0, 0, 0;
+        end        
         local w, h = sp.w, sp.h;
         if scale ~= 1.0 then
-            spr = sprite.scale(sp.spr, scale, scale, false);
+            if sp.preloaded_effect then
+                spr = sp.spr;
+            else
+                spr = sprite.scale(sp.spr, scale, scale, false);
+            end
             w, h = sprite.size(spr);
         else
             spr = sp.spr;
         end
 
-        x, y = s:postoxy(v, sprpos)
+        local x, y = s:postoxy(v, sprpos)
 
         local xdiff, xextent, ydiff, yextent, xarmr, yarmr;
         xdiff = ws * (1 - scale);
@@ -1445,7 +1451,7 @@ vn = obj {
         if not only_compute then
             sprite.draw(spr, s:screen(), x, y)
         end
-        if sp.spr ~= spr then
+        if not sp.preloaded_effect and sp.spr ~= spr then
             sprite.free(spr)
         end
         if sp.tmp then
@@ -2187,7 +2193,7 @@ stead.module_init(function()
     vnticks_diff = vn.ticks_threshold;
     hudFont = sprite.font('fonts/Medieval_English.ttf', 30);
     empty_s = sprite.load('gfx/empty.png');
-    empty_frame = {["spr"] = empty_s, ["w"] = 0, ["h"] = 0, ["tmp"] = false, ["preloaded_effect"] = false, ["alpha"] = 1.0};
+    empty_frame = {["spr"] = empty_s, ["w"] = 0, ["h"] = 0, ["tmp"] = false, ["preloaded_effect"] = false, ["alpha"] = 255, ["scale"] = 1.0};
     if LANG == "ru" then
         busy_spr = vn:label("Загрузка...", 40, "#ffffff", "black");
     else
