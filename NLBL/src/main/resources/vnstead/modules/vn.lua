@@ -147,8 +147,8 @@ vn = obj {
     _frn = nil;
     cache_effects = true;
     tmr = 5;
-    hz = 36;
-    ticks_threshold = 72;
+    hz = 18;
+    ticks_threshold = 36;
     slowcpu = false;
     var {
         on = true,
@@ -616,7 +616,7 @@ vn = obj {
                         return;
                     end
                     local mxs, zstep = ss:steps(v, spr_step);
-                    log:dbg("Preparing parameters for " .. v.nam .. "; spr_step = " .. spr_step .. "; v.eff = " .. eff);
+                    log:dbg("Preparing parameters for " .. v.nam .. "; spr_step = " .. spr_step .. "; eff = " .. eff);
                     if eff == 'fadein' then
                         s.alpha = math.floor(255 * zstep / mxs);
                     elseif eff == 'fadeout' then
