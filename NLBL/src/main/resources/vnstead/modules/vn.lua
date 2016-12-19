@@ -475,10 +475,12 @@ vn = obj {
                 preloaded_effect = false,
                 alpha = 255,
                 scale = 1.0,
-                cache = nil,
+                origin = false,
+                cache = false,
                 val = function(s)
                     if not s.cache then
-                        s.cache = s:load();
+                        s.origin = s:load();
+                        s.cache = s:prepare_effect(sprStep, s.origin);
                     end
                     return s.cache;
                 end,
@@ -490,7 +492,8 @@ vn = obj {
                         if sprStep == ss:get_start(v) then
                             return s:load_file(v.pic);
                         elseif sprStep > ss:get_start(v) then
-                            return s:prepare_effect(sprStep);
+                            v.spr[ss:get_start(v)]:val();
+                            return v.spr[ss:get_start(v)].origin;
                         end
                     else
                         return s:load_frame();
@@ -596,8 +599,7 @@ vn = obj {
                         return v.spr[sprStep - 1]:val();
                     end
                 end,
-                prepare_effect = function(s, spr_step)
-                    local base_spr = v.spr[ss:get_start(v)]:val();
+                prepare_effect = function(s, spr_step, base_spr)
                     if not ss.cache_effects then
                         log:dbg("Do not preparing effects, because vn.cache_effects = " .. tostring(ss.cache_effects));
                         return base_spr;
@@ -612,25 +614,35 @@ vn = obj {
                         s.alpha = math.floor(255 * (1 - zstep / mxs));
                         s.preloaded_effect = true;
                         return sprite.alpha(base_spr, s.alpha);
-                    elseif ss:get_eff(v) == 'zoomin' then
+                    elseif ss:get_eff(v) == 'zoomin' or ss:get_eff(v) == 'zoomout' then
                         s.scale = zstep / mxs;
+                        if ss:get_eff(v) == 'zoomout' then
+                            s.scale = 1.0 - s.scale;
+                        end
                         s.preloaded_effect = true;
-                        return sprite.scale(base_spr, s.scale, s.scale, false);
-                    elseif ss:get_eff(v) == 'zoomout' then
-                        s.scale = 1 - zstep / mxs
-                        s.preloaded_effect = true;
-                        return sprite.scale(base_spr, s.scale, s.scale, false);
+                        if s.scale > 0.0 then
+                            return sprite.scale(base_spr, s.scale, s.scale, false);
+                        else
+                            return sprite.blank(1, 1);
+                        end
                     end
                     log:dbg("Falling back to base_spr");
                     return base_spr;
                 end,
                 free = function(s)
-                    if s.was_loaded and s.cache then
-                        if ss.nocache then
-                            -- Currently this code will not be executed, because cache is always used
+                    if s.was_loaded and s.origin then
+                        if s.preloaded_effect and s.cache then
+                            -- If effect was preloaded, then some additional sprite was created (via sprite.scale, sprite.alpha etc).
+                            -- It should be freed. If this sprite will be shown again, then origin can be restored from the sprite_cache,
+                            -- but this local cache will be recreated.
                             sprite.free(s.cache);
                         end
+                        if ss.nocache then
+                            -- Currently this code will not be executed, because cache is always used
+                            sprite.free(s.origin);
+                        end
                         s.cache = nil;
+                        s.origin = nil;
                     end
                 end
             };
@@ -1410,8 +1422,8 @@ vn = obj {
 
         local sp = s:frame(v, sprpos);
         local scale = sp.scale;
-        if scale == 0 then
-            return s:get_start(v), 0, 0, 0;
+        if scale == 0.0 then
+            return s:get_start(v), 0, 0, 0, 0, 0.0;
         end        
         local w, h = sp.w, sp.h;
         if scale ~= 1.0 then
