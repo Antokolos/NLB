@@ -611,15 +611,19 @@ vn = obj {
                     end
                 end,
                 prepare_params = function(s, spr_step)                    
+                    local eff = ss:get_eff(v);
+                    if not eff then
+                        return;
+                    end
                     local mxs, zstep = ss:steps(v, spr_step);
-                    log:dbg("Preparing parameters for " .. v.nam .. "; spr_step = " .. spr_step .. "; v.eff = " .. ss:get_eff(v));
-                    if ss:get_eff(v) == 'fadein' then
+                    log:dbg("Preparing parameters for " .. v.nam .. "; spr_step = " .. spr_step .. "; v.eff = " .. eff);
+                    if eff == 'fadein' then
                         s.alpha = math.floor(255 * zstep / mxs);
-                    elseif ss:get_eff(v) == 'fadeout' then
+                    elseif eff == 'fadeout' then
                         s.alpha = math.floor(255 * (1 - zstep / mxs));
-                    elseif ss:get_eff(v) == 'zoomin' or ss:get_eff(v) == 'zoomout' then
+                    elseif eff == 'zoomin' or eff == 'zoomout' then
                         s.scale = zstep / mxs;
-                        if ss:get_eff(v) == 'zoomout' then
+                        if eff == 'zoomout' then
                             s.scale = 1.0 - s.scale;
                         end
                     end
@@ -634,13 +638,14 @@ vn = obj {
                         log:dbg("Do not preparing effects, because base_spr is composite image");
                         return base_spr;
                     end
-                    if ss:get_eff(v) == 'fadein' then
+                    local eff = ss:get_eff(v);
+                    if eff == 'fadein' then
                         s.preloaded_effect = true;                        
                         return sprite.alpha(base_spr, s.alpha); 
-                    elseif ss:get_eff(v) == 'fadeout' then
+                    elseif eff == 'fadeout' then
                         s.preloaded_effect = true;
                         return sprite.alpha(base_spr, s.alpha);
-                    elseif ss:get_eff(v) == 'zoomin' or ss:get_eff(v) == 'zoomout' then
+                    elseif eff == 'zoomin' or eff == 'zoomout' then
                         s.preloaded_effect = true;
                         if s.scale > 0.0 then
                             return sprite.scale(base_spr, s.scale, s.scale, false);
