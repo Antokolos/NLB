@@ -46,16 +46,20 @@ vntimer = function(f, s, cmd, ...)
     end
     local update_cursor_result = vn:update_cursor();
 
-    vnticks_diff = get_ticks() - vnticks;
+    if vn.init_timer then
+        vnticks_diff = 0;
+        vn.init_timer = false;
+        log:trace("vnticks cleared");
+    else
+        vnticks_diff = get_ticks() - vnticks;
+    end
     if (vnticks_diff <= vn.hz) then
         if vn:preload() then
             return update_cursor_result;
         end
     end
     vn.slowcpu = (vnticks_diff > vn.ticks_threshold);
-    if vn.slowcpu then
-        log:warn("Slow CPU, ticks = " .. vnticks_diff);
-    end
+    log:trace("vnticks_diff = " .. vnticks_diff);
     vnticks = get_ticks();
 
     if vn.stopped then
@@ -148,8 +152,9 @@ vn = obj {
     slowcpu = false;
     var {
         on = true,
+        init_timer = true,
         stopped = true,
-        partial_clear = true;
+        partial_clear = true,
         speed = 500,
         fading = 8,
         bgalpha = 127,
@@ -479,10 +484,16 @@ vn = obj {
                 cache = false,
                 val = function(s)
                     if not s.cache then
-                        s.origin = s:load();
+                        s.origin = s:get_origin();
                         s.cache = s:prepare_effect(sprStep, s.origin);
                     end
                     return s.cache;
+                end,
+                get_origin = function(s)
+                    if not s.origin then
+                        s.origin = s:load();
+                    end
+                    return s.origin;
                 end,
                 load = function(s)
                     if ss:is_sprite(v) then
@@ -599,26 +610,37 @@ vn = obj {
                         return v.spr[sprStep - 1]:val();
                     end
                 end,
-                prepare_effect = function(s, spr_step, base_spr)
-                    if not ss.cache_effects then
-                        log:dbg("Do not preparing effects, because vn.cache_effects = " .. tostring(ss.cache_effects));
-                        return base_spr;
-                    end
+                prepare_params = function(s, spr_step)                    
                     local mxs, zstep = ss:steps(v, spr_step);
-                    log:dbg("Preparing effects for " .. v.nam .. "; spr_step = " .. spr_step .. "; v.eff = " .. ss:get_eff(v));
+                    log:dbg("Preparing parameters for " .. v.nam .. "; spr_step = " .. spr_step .. "; v.eff = " .. ss:get_eff(v));
                     if ss:get_eff(v) == 'fadein' then
                         s.alpha = math.floor(255 * zstep / mxs);
-                        s.preloaded_effect = true;                        
-                        return sprite.alpha(base_spr, s.alpha); 
                     elseif ss:get_eff(v) == 'fadeout' then
                         s.alpha = math.floor(255 * (1 - zstep / mxs));
-                        s.preloaded_effect = true;
-                        return sprite.alpha(base_spr, s.alpha);
                     elseif ss:get_eff(v) == 'zoomin' or ss:get_eff(v) == 'zoomout' then
                         s.scale = zstep / mxs;
                         if ss:get_eff(v) == 'zoomout' then
                             s.scale = 1.0 - s.scale;
                         end
+                    end
+                end,
+                prepare_effect = function(s, spr_step, base_spr)
+                    s:prepare_params(spr_step);
+                    if not ss.cache_effects then
+                        log:dbg("Do not preparing effects, because vn.cache_effects = " .. tostring(ss.cache_effects));
+                        return base_spr;
+                    end
+                    if base_spr.loaded then
+                        log:dbg("Do not preparing effects, because base_spr is composite image");
+                        return base_spr;
+                    end
+                    if ss:get_eff(v) == 'fadein' then
+                        s.preloaded_effect = true;                        
+                        return sprite.alpha(base_spr, s.alpha); 
+                    elseif ss:get_eff(v) == 'fadeout' then
+                        s.preloaded_effect = true;
+                        return sprite.alpha(base_spr, s.alpha);
+                    elseif ss:get_eff(v) == 'zoomin' or ss:get_eff(v) == 'zoomout' then
                         s.preloaded_effect = true;
                         if s.scale > 0.0 then
                             return sprite.scale(base_spr, s.scale, s.scale, false);
@@ -1301,13 +1323,14 @@ vn = obj {
                 sprite.free(res);
                 res = nil;
             end
-            return {["spr"] = res, ["w"] = ospr.w, ["h"] = ospr.h, ["tmp"] = (res ~= nil), ["preloaded_effect"] = sp.preloaded_effect, ["alpha"] = sp.alpha, ["scale"] = sp.scale};
+            return {["spr"] = res, ["wc"] = ospr.w, ["hc"] = ospr.h, ["w"] = ospr.w, ["h"] = ospr.h, ["tmp"] = (res ~= nil), ["preloaded_effect"] = sp.preloaded_effect, ["alpha"] = sp.alpha, ["scale"] = sp.scale};
         else
-            local w, h = sprite.size(ospr);
+            local w, h = sprite.size(sp:get_origin());
+            local wc, hc = sprite.size(ospr);
             if not only_compute and target then
                 sprite.draw(ospr, target, x, y);
             end
-            return {["spr"] = ospr, ["w"] = w, ["h"] = h, ["tmp"] = false, ["preloaded_effect"] = sp.preloaded_effect, ["alpha"] = sp.alpha, ["scale"] = sp.scale};
+            return {["spr"] = ospr, ["wc"] = wc, ["hc"] = hc, ["w"] = w, ["h"] = h, ["tmp"] = false, ["preloaded_effect"] = sp.preloaded_effect, ["alpha"] = sp.alpha, ["scale"] = sp.scale};
         end
     end;
 
@@ -1592,6 +1615,7 @@ vn = obj {
     end;
     tmr_rst = function(s)
         timer:stop();
+        s.init_timer = true;
         timer:set(s.tmr);
     end;
     -- effect is effect name, like 'dissolve'
