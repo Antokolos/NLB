@@ -46,13 +46,7 @@ vntimer = function(f, s, cmd, ...)
     end
     local update_cursor_result = vn:update_cursor();
 
-    if vn.init_timer then
-        vnticks_diff = 0;
-        vn.init_timer = false;
-        log:trace("vnticks cleared");
-    else
-        vnticks_diff = get_ticks() - vnticks;
-    end
+    vnticks_diff = get_ticks() - vnticks;
     if (vnticks_diff <= vn.hz) then
         if vn:preload() then
             return update_cursor_result;
@@ -152,7 +146,6 @@ vn = obj {
     slowcpu = false;
     var {
         on = true,
-        init_timer = true,
         stopped = true,
         partial_clear = true,
         speed = 500,
@@ -1620,7 +1613,6 @@ vn = obj {
     end;
     tmr_rst = function(s)
         timer:stop();
-        s.init_timer = true;
         timer:set(s.tmr);
     end;
     -- effect is effect name, like 'dissolve'
