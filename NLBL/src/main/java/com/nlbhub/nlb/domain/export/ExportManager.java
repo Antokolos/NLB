@@ -90,7 +90,7 @@ public abstract class ExportManager {
     /**
      * Use page numbers as destinations instead of page IDs.
      */
-    private static final boolean GOTO_PAGE_NUMBERS = true;
+    private static final boolean GOTO_PAGE_NUMBERS = false;
 
     private class ExportData {
         private NonLinearBook m_nlb;
