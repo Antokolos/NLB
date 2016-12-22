@@ -1163,6 +1163,9 @@ vn = obj {
                 if not ch then
                     added = true;
                     ch = s:add_child(v, gch);
+                    if not ch then
+                        return false;
+                    end
                 end
                 if not gch.iarm then
                     local xarm, yarm = s:real_size(ch, 0);
@@ -1175,6 +1178,12 @@ vn = obj {
     end;
 
     add_child = function(s, parent, gob)
+        local info = s:get_base_info(gob);
+        local ch = s:lookup_full(info.name);
+        if ch then
+            log:warn("Prevented repeated addition of child " .. ch.nam .. " to parent " .. parent.nam .. ", please fix your code!");
+            return false;
+        end
         gob.startFrame = s:get_start(parent);
         gob.curStep = s:get_step(parent);
         gob.maxStep = s:get_max_step(parent);
