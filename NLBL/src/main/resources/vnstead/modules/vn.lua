@@ -252,24 +252,24 @@ vn = obj {
             return false;
         end
         local x, y, w, h = dirty_rect.x, dirty_rect.y, dirty_rect.w, dirty_rect.h;
-    	-- self bottom < other sprite top
-    	if rct.y + rct.h < y then
-    		return false
-    	end
-    	-- self top > other sprite bottom
-    	if rct.y > y + h then
-    		return false
-    	end
-    	-- self left > other sprite right
-    	if rct.x > x + w then
-    		return false
-    	end
-    	-- self right < other sprite left
-    	if rct.x + rct.w < x then
-    		return false
-    	end
+        -- self bottom < other sprite top
+        if rct.y + rct.h < y then
+            return false
+        end
+        -- self top > other sprite bottom
+        if rct.y > y + h then
+            return false
+        end
+        -- self left > other sprite right
+        if rct.x > x + w then
+            return false
+        end
+        -- self right < other sprite left
+        if rct.x + rct.w < x then
+            return false
+        end
 
-    	return true
+        return true
     end;
     inside_spr = function(s, v, x, y)
         -- Click falls inside this picture
@@ -738,13 +738,19 @@ vn = obj {
 
         local i, k = s:lookup(nam)
         if not i then return end
-        s:clear_bg_under_sprite(i, true);
         stead.table.remove(s._effects, k)
         for ii, vv in pairs(i.children) do
             s:hide(vv, eff, ...);
         end
         if s:gobf(i).onhide then
             s:gobf(i):onhide();
+        end
+        local parent = s:parentf(i);
+        if parent then
+            parent.hasmore = true;
+            s.stopped = false;
+        else
+            s:clear_bg_under_sprite(i, true);
         end
         s:free_effect(i);
         return
@@ -934,11 +940,6 @@ vn = obj {
         else
             return v;
         end
-    end;
-
-    childf = function(s, v_nam)
-        local ch = s:lookup_full(v_nam);
-        return ch;
     end;
 
     get_start = function(s, v) return s:rootf(v).start; end;
@@ -1329,6 +1330,10 @@ vn = obj {
             return empty_frame;
         end
         local sp = v.spr[idx];
+        if not sp.val then
+            log:err("val() method is missing when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
+            return empty_frame;
+        end
         local ospr = sp:val();
         if not ospr then -- Strange error when using resources in idf...
             log:err("filesystem access problem when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
