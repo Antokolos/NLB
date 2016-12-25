@@ -2,6 +2,7 @@ require "modules/vn"
 require "modules/dice"
 require "modules/dicegames"
 require "modules/gobj"
+require "modules/nlb"
 
 next_turn_obj = menu {
     nam = "next_turn_obj",
@@ -122,7 +123,7 @@ txt1 = gobj {
     nam = "txt1",
     system_type = true,
     pic = "gfx/empty.png",
-    arm = { [0] = { 90, 170 } },
+    iarm = { [0] = { 90, 170 } },
     txtfn = function(s) return rollStat:info(); end
 }
 
@@ -130,7 +131,7 @@ txt2 = gobj {
     nam = "txt2",
     system_type = true,
     pic = "gfx/empty.png",
-    arm = { [0] = { 60, 230 } },
+    iarm = { [0] = { 60, 230 } },
     txtfn = function(s) return rollStat:info(); end
 }
 
@@ -431,7 +432,7 @@ rollStat = stat {
             local good_luck = true;
             local is_double = true;
             local prev = 0;
-            rollStat._rolls = shallowcopy(rolls);
+            rollStat._rolls = nlb:shallowcopy(rolls);
             for k, v in pairs(s._rolls) do
                 good_luck = good_luck and (v == 1);
                 should_pass_turn = should_pass_turn or (v == 1);
@@ -623,23 +624,6 @@ rollStat = stat {
     end,
 }
 
-function shallowcopy(orig)
-    if not orig then
-        return nil;
-    end
-    local orig_type = type(orig)
-    local copy
-    if orig_type == 'table' then
-        copy = {}
-        for orig_key, orig_value in pairs(orig) do
-            copy[orig_key] = orig_value
-        end
-    else -- number, string, boolean, etc
-    copy = orig
-    end
-    return copy
-end
-
 game_room = vnr {
     nam = true,
     nosave = true,
@@ -652,7 +636,7 @@ game_room = vnr {
         return "";
     end,
     enter = function(s, f)
-        rollStat.data = shallowcopy(game.data);
+        rollStat.data = nlb:shallowcopy(game.data);
         if rollStat.data then
             rollStat._rolls = {};
             rollStat.message = "";
@@ -677,11 +661,13 @@ game_room = vnr {
         s:bgimg(game.table.bg);
 
         vn:preload_effect('gfx/reward.png', 0, 270, 0, 270);
-        local paper = vn:gshow(paper);
+
+        local paper_eff = vn:gshow(paper);
 
         if (game.table.plate) then
             --set_music('sfx/abu_ali.ogg');
-            vn:add_child(paper, txt1);
+            objs(paper):add(txt1);
+            --vn:add_child(paper_eff, txt1); -- will be done automatically via vn:add_all_missing_children()
             vn:gshow(plate);
             vn:gshow(btn_dice2);
             vn:gshow(btn_next2);
@@ -689,7 +675,8 @@ game_room = vnr {
             vn:gshow(btn_exit2);
         else
             --set_music('sfx/tavernm.ogg');
-            vn:add_child(paper, txt2);
+            objs(paper):add(txt2);
+            --vn:add_child(paper_eff, txt2); -- will be done automatically via vn:add_all_missing_children()
             vn:gshow(btn_dice);
             vn:gshow(btn_next);
             vn:gshow(btn_inc);
@@ -709,7 +696,7 @@ game_room = vnr {
         stop_music();
         remove(rollStat, me());
         if rollStat.data then
-            game.data = shallowcopy(rollStat.data);
+            game.data = nlb:shallowcopy(rollStat.data);
             game.money = game.data.money[game.data.mainplr];
         end
         remove(_play_game_obj, me());

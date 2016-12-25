@@ -196,6 +196,22 @@ nlb = obj {
             end;
         end;
     end;
+    shallowcopy = function(s, orig)
+        if not orig then
+            return nil;
+        end
+        local orig_type = type(orig)
+        local copy
+        if orig_type == 'table' then
+            copy = {}
+            for orig_key, orig_value in pairs(orig) do
+                copy[orig_key] = orig_value
+            end
+        else -- number, string, boolean, etc
+            copy = orig
+        end
+        return copy
+    end;
     deepcopy = function(s, t)
         local k; local v;
         if type(t) ~= "table" then return t end;
@@ -207,7 +223,7 @@ nlb = obj {
             end;
             res[k] = v;
         end;
-        setmetatable(res,mt);
+        setmetatable(res, mt);
         return res;
     end;
     clone = function(s, obj)

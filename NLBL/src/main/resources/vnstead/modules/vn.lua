@@ -467,7 +467,10 @@ vn = obj {
         -- Will return nils if v is sprite
         local prefix, extension = s:split_url(v.pic);
         local meta, milestones, bgcolors = s:read_meta(prefix);
-        for sprStep = s:get_start(v), s:get_max_step(v) do
+        local start = s:get_start(v);
+        local maxstep = s:get_max_step(v);
+        log:dbg("Loading effect " .. v.nam .. "; start = " .. start .. "; maxstep = " .. maxstep);
+        for sprStep = start, maxstep do
             v.spr[sprStep] = {
                 was_loaded = false,
                 preloaded_effect = false,
@@ -737,8 +740,8 @@ vn = obj {
         if not i then return end
         s:clear_bg_under_sprite(i, true);
         stead.table.remove(s._effects, k)
-        for ii, vv in ipairs(i.children) do
-            s:hide(s:childf(vv), eff, ...);
+        for ii, vv in pairs(i.children) do
+            s:hide(vv, eff, ...);
         end
         if s:gobf(i).onhide then
             s:gobf(i):onhide();
@@ -815,8 +818,8 @@ vn = obj {
     -- return max size through hierarchy
     max_size = function(s, v, idx)
         local resx, resy = s:real_size(v, idx);
-        for i, cnam in ipairs(v.children) do
-            local vvx, vvy = s:max_size(s:childf(cnam), idx);
+        for cnam, child in pairs(v.children) do
+            local vvx, vvy = s:max_size(child, idx);
             if vvx > resx then
                 resx = vvx;
             end
@@ -962,8 +965,8 @@ vn = obj {
 
     set_hasmore_all = function(s, v, hasmore)
         v.hasmore = hasmore;
-        for ii, vv in ipairs(v.children) do
-            s:set_hasmore_all(s:childf(vv), hasmore);
+        for ii, vv in pairs(v.children) do
+            s:set_hasmore_all(vv, hasmore);
         end
     end;
 
@@ -1096,6 +1099,10 @@ vn = obj {
             v.eff = 'none'
         end
 
+        v.step = g.curStep;
+        v.start = g.startFrame;
+        v.max_step = maxStep;
+        v.from_stop = g.framesFromStop
         if oe then
             if oe.pic ~= v.pic then -- new pic
                 s:free_effect(oe);
@@ -1105,15 +1112,8 @@ vn = obj {
             old_pos = s:get_pos(oe);
             v = oe
         else
-            v.step = g.curStep;
-            v.max_step = maxStep;
-            v.from_stop = g.framesFromStop
             s:load_effect(v)
         end
-        v.step = g.curStep;
-        v.start = g.startFrame;
-        v.max_step = maxStep;
-        v.from_stop = g.framesFromStop
 
         if s.skip_mode then v.eff = 'none' end
 
@@ -1142,18 +1142,38 @@ vn = obj {
 
     add_all_missing_children = function(s)
         local added = false;
+        local effects_to_remove = {}
+        local added_effects = {};
         for i, v in ipairs(s._effects) do
-            added = added or s:add_missing_children(v);
+            added = added or s:add_missing_children(v, added_effects, effects_to_remove);
+        end
+        for added_effect_nam, added_effect in pairs(added_effects) do
+            log:info("Effect " .. added_effect_nam .. " was re-added and should not be removed");
+            effects_to_remove[added_effect_nam] = nil;
+        end
+        for effect_to_remove_nam, effect_to_remove in pairs(effects_to_remove) do
+            log:info("Effect " .. effect_to_remove_nam .. " should be removed");
+            s:hide(effect_to_remove);
         end
         return added;
     end;
 
-    add_missing_children = function(s, v)
+    add_missing_children = function(s, v, added_effects, effects_to_remove)
         local added = false;
         local g = s:gobf(v);
-        if objs(g) then
+        local objects = objs(g);
+        if objects then
+            if not added_effects then
+                added_effects = {};
+            end
+            if not effects_to_remove then
+                effects_to_remove = {};
+            end
+            local children = nlb:shallowcopy(v.children);
             local yarmc = 0;
-            for i, gch in ipairs(objs(g)) do
+            for i, gch in ipairs(objects) do
+                local info = s:get_base_info(gch);
+                children[info.name] = nil;
                 if gch.iarm then
                     gch.arm = gch.iarm;
                 else
@@ -1166,12 +1186,16 @@ vn = obj {
                     if not ch then
                         return false;
                     end
+                    added_effects[ch.nam] = ch;
                 end
                 if not gch.iarm then
                     local xarm, yarm = s:real_size(ch, 0);
                     local px, py = s:abs_arm(ch);
                     yarmc = yarmc + yarm - py;
                 end
+            end
+            for child_nam, child in pairs(children) do
+                effects_to_remove[child_nam] = child;
             end
         end
         return added;
@@ -1192,25 +1216,24 @@ vn = obj {
         gob.acceleration = s:get_accel(parent);
         gob.is_paused = s:gobf(parent).is_paused;
         local child = s:effect_int(parent, gob);
-        log:dbg("Added child = " .. child.nam .. " to " .. parent.nam);
+        log:info("Added child = " .. child.nam .. " to " .. parent.nam);
         child.init_step = s:get_init_step(parent);
         child.eff = s:get_eff(parent);
         child.from = s:get_from(parent);
         child.pos = s:get_pos(parent);
-        stead.table.insert(parent.children, child.nam);
+        parent.children[child.nam] = child;
         return child;
     end;
 
     remove_child = function(s, parent, child)
-        stead.table.remove(parent.children, child.nam);
+        parent.children[child.nam] = nil;
     end;
 
     vpause = function(s, v, is_paused)
         local gob = stead.ref(v.gob);
         gob.is_paused = is_paused;
-        for i, cnam in ipairs(v.children) do
-            local vv = s:lookup(cnam);
-            s:vpause(vv, is_paused);
+        for cnam, child in pairs(v.children) do
+            s:vpause(child, is_paused);
         end
     end;
 
@@ -1804,9 +1827,9 @@ vn = obj {
         if data then
             s:draw_hud(data, false);
         end
-        for k, vv in ipairs(v.children) do
-            log:trace("nam = " .. v.nam .. "; child = " .. vv);
-            s:set_step(s:childf(vv), from_step, forward);
+        for k, vv in pairs(v.children) do
+            log:trace("nam = " .. v.nam .. "; child = " .. k);
+            s:set_step(vv, from_step, forward);
         end
     end;
     -- we use v.step instead of s:get_step(v) in this method, because we need to know when exactly child sprite will reach the end of its animation

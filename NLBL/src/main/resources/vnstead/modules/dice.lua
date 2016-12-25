@@ -26,7 +26,7 @@ dice = menu {
         die_count = 2,
         die_frames_from_stop = 3,
         die_frames_max = 100,
-        hotstep = 3,
+        hotstep = 2,
         acceleration = 1
     },
     set_orientation = function(s, o)
@@ -193,6 +193,7 @@ dice = menu {
                 local st = s:getStartFrame(lastRoll);
                 s.lastRolls[i] = lastRoll;
                 s.lastRollFiles[i] = lastRollFile;
+                vn:preload_effect(lastRollFile, st, s.die_frames_max, s.die_frames_from_stop, s.die_frames_max, nil, true);
                 vn:show(lastRollFile, s:getPosStr(i).show, s.die_frames_max * vn.hz, st, nil, s.die_frames_from_stop, s:getArm(), s.hotstep, s.acceleration);
                 result = true;
             end
