@@ -739,13 +739,14 @@ vn = obj {
         local i, k = s:lookup(nam)
         if not i then return end
         stead.table.remove(s._effects, k)
-        for ii, vv in pairs(i.children) do
-            s:hide(vv, eff, ...);
+        for ii, vv in ipairs(i.children) do
+            s:hide(s:childf(vv), eff, ...);
         end
         if s:gobf(i).onhide then
             s:gobf(i):onhide();
         end
         local parent = s:parentf(i);
+        -- NB: parent should fully contain its child
         if parent then
             parent.hasmore = true;
             s.stopped = false;
@@ -824,8 +825,8 @@ vn = obj {
     -- return max size through hierarchy
     max_size = function(s, v, idx)
         local resx, resy = s:real_size(v, idx);
-        for cnam, child in pairs(v.children) do
-            local vvx, vvy = s:max_size(child, idx);
+        for i, cnam in ipairs(v.children) do
+            local vvx, vvy = s:max_size(s:childf(cnam), idx);
             if vvx > resx then
                 resx = vvx;
             end
@@ -942,6 +943,11 @@ vn = obj {
         end
     end;
 
+    childf = function(s, v_nam)
+        local ch = s:lookup_full(v_nam);
+        return ch;
+    end;
+
     get_start = function(s, v) return s:rootf(v).start; end;
 
     get_init_step = function(s, v) return s:rootf(v).init_step; end;
@@ -966,8 +972,8 @@ vn = obj {
 
     set_hasmore_all = function(s, v, hasmore)
         v.hasmore = hasmore;
-        for ii, vv in pairs(v.children) do
-            s:set_hasmore_all(vv, hasmore);
+        for ii, vv in ipairs(v.children) do
+            s:set_hasmore_all(s:childf(vv), hasmore);
         end
     end;
 
@@ -1170,7 +1176,10 @@ vn = obj {
             if not effects_to_remove then
                 effects_to_remove = {};
             end
-            local children = nlb:shallowcopy(v.children);
+            local children = {};
+            for ii, vv in ipairs(v.children) do
+                children[vv] = s:childf(vv);
+            end
             local yarmc = 0;
             for i, gch in ipairs(objects) do
                 local info = s:get_base_info(gch);
@@ -1222,19 +1231,20 @@ vn = obj {
         child.eff = s:get_eff(parent);
         child.from = s:get_from(parent);
         child.pos = s:get_pos(parent);
-        parent.children[child.nam] = child;
+        stead.table.insert(parent.children, child.nam);
         return child;
     end;
 
     remove_child = function(s, parent, child)
-        parent.children[child.nam] = nil;
+        stead.table.remove(parent.children, child.nam);
     end;
 
     vpause = function(s, v, is_paused)
         local gob = stead.ref(v.gob);
         gob.is_paused = is_paused;
-        for cnam, child in pairs(v.children) do
-            s:vpause(child, is_paused);
+        for i, cnam in ipairs(v.children) do
+            local vv = s:lookup(cnam);
+            s:vpause(vv, is_paused);
         end
     end;
 
@@ -1330,10 +1340,6 @@ vn = obj {
             return empty_frame;
         end
         local sp = v.spr[idx];
-        if not sp.val then
-            log:err("val() method is missing when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
-            return empty_frame;
-        end
         local ospr = sp:val();
         if not ospr then -- Strange error when using resources in idf...
             log:err("filesystem access problem when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
@@ -1832,9 +1838,9 @@ vn = obj {
         if data then
             s:draw_hud(data, false);
         end
-        for k, vv in pairs(v.children) do
-            log:trace("nam = " .. v.nam .. "; child = " .. k);
-            s:set_step(vv, from_step, forward);
+        for k, vv in ipairs(v.children) do
+            log:trace("nam = " .. v.nam .. "; child = " .. vv);
+            s:set_step(s:childf(vv), from_step, forward);
         end
     end;
     -- we use v.step instead of s:get_step(v) in this method, because we need to know when exactly child sprite will reach the end of its animation
