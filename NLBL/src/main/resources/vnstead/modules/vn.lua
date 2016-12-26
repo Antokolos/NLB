@@ -738,20 +738,21 @@ vn = obj {
 
         local i, k = s:lookup(nam)
         if not i then return end
-        stead.table.remove(s._effects, k)
-        for ii, vv in ipairs(i.children) do
-            s:hide(s:childf(vv), eff, ...);
-        end
         if s:gobf(i).onhide then
             s:gobf(i):onhide();
         end
         local parent = s:parentf(i);
         -- NB: parent should fully contain its child
         if parent then
+            s:remove_child(parent, i);
             parent.hasmore = true;
             s.stopped = false;
         else
             s:clear_bg_under_sprite(i, true);
+        end
+        stead.table.remove(s._effects, k);
+        for ii, vv in ipairs(i.children) do
+            s:hide(s:childf(vv), eff, ...);
         end
         s:free_effect(i);
         return
@@ -1236,7 +1237,12 @@ vn = obj {
     end;
 
     remove_child = function(s, parent, child)
-        stead.table.remove(parent.children, child.nam);
+        for i, v in ipairs(parent.children) do
+            if v == child.nam then
+                stead.table.remove(parent.children, i);
+                return;
+            end
+        end
     end;
 
     vpause = function(s, v, is_paused)
