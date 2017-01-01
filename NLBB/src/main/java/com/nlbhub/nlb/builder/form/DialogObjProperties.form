@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.nlbhub.nlb.builder.form.DialogObjProperties">
   <grid id="cbd77" binding="contentPane" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="48" y="54" width="1286" height="487"/>
+      <xy x="48" y="54" width="1311" height="487"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -905,6 +905,141 @@
                                     <properties/>
                                     <border type="none"/>
                                     <children>
+                                      <grid id="a2b58" layout-manager="BorderLayout" hgap="0" vgap="0">
+                                        <constraints/>
+                                        <properties>
+                                          <minimumSize width="390" height="150"/>
+                                          <preferredSize width="390" height="150"/>
+                                        </properties>
+                                        <border type="none" title="Coords origin"/>
+                                        <children>
+                                          <grid id="8f039" layout-manager="BorderLayout" hgap="0" vgap="0">
+                                            <constraints border-constraint="Center"/>
+                                            <properties/>
+                                            <border type="none"/>
+                                            <children>
+                                              <grid id="e6cc6" layout-manager="GridBagLayout">
+                                                <constraints border-constraint="Center"/>
+                                                <properties/>
+                                                <border type="none"/>
+                                                <children>
+                                                  <component id="6585e" class="javax.swing.JRadioButton" binding="m_coordsOriginLeftTop">
+                                                    <constraints>
+                                                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.33" weighty="0.33"/>
+                                                    </constraints>
+                                                    <properties>
+                                                      <minimumSize width="130" height="26"/>
+                                                      <preferredSize width="130" height="26"/>
+                                                      <text value="left-top"/>
+                                                    </properties>
+                                                  </component>
+                                                  <hspacer id="f86f">
+                                                    <constraints>
+                                                      <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                                    </constraints>
+                                                  </hspacer>
+                                                  <vspacer id="37c88">
+                                                    <constraints>
+                                                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                                    </constraints>
+                                                  </vspacer>
+                                                  <component id="395df" class="javax.swing.JRadioButton" binding="m_coordsOriginMiddleTop">
+                                                    <constraints>
+                                                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.33" weighty="0.33"/>
+                                                    </constraints>
+                                                    <properties>
+                                                      <minimumSize width="130" height="26"/>
+                                                      <preferredSize width="130" height="26"/>
+                                                      <text value="middle-top"/>
+                                                    </properties>
+                                                  </component>
+                                                  <component id="39427" class="javax.swing.JRadioButton" binding="m_coordsOriginLeftMiddle">
+                                                    <constraints>
+                                                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.33" weighty="0.33"/>
+                                                    </constraints>
+                                                    <properties>
+                                                      <minimumSize width="130" height="26"/>
+                                                      <preferredSize width="130" height="26"/>
+                                                      <text value="left-middle"/>
+                                                    </properties>
+                                                  </component>
+                                                  <component id="f5948" class="javax.swing.JRadioButton" binding="m_coordsOriginMiddleMiddle">
+                                                    <constraints>
+                                                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.33" weighty="0.33"/>
+                                                    </constraints>
+                                                    <properties>
+                                                      <minimumSize width="130" height="26"/>
+                                                      <preferredSize width="130" height="26"/>
+                                                      <text value="middle-middle"/>
+                                                    </properties>
+                                                  </component>
+                                                  <component id="afe24" class="javax.swing.JRadioButton" binding="m_coordsOriginLeftBottom">
+                                                    <constraints>
+                                                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.33" weighty="0.33"/>
+                                                    </constraints>
+                                                    <properties>
+                                                      <minimumSize width="130" height="26"/>
+                                                      <preferredSize width="130" height="26"/>
+                                                      <text value="left-bottom"/>
+                                                    </properties>
+                                                  </component>
+                                                  <component id="c12af" class="javax.swing.JRadioButton" binding="m_coordsOriginMiddleBottom">
+                                                    <constraints>
+                                                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.33" weighty="0.33"/>
+                                                    </constraints>
+                                                    <properties>
+                                                      <minimumSize width="130" height="26"/>
+                                                      <preferredSize width="130" height="26"/>
+                                                      <text value="middle-bottom"/>
+                                                    </properties>
+                                                  </component>
+                                                  <component id="b096a" class="javax.swing.JRadioButton" binding="m_coordsOriginRightBottom">
+                                                    <constraints>
+                                                      <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.33" weighty="0.33"/>
+                                                    </constraints>
+                                                    <properties>
+                                                      <minimumSize width="130" height="26"/>
+                                                      <preferredSize width="130" height="26"/>
+                                                      <text value="right-bottom"/>
+                                                    </properties>
+                                                  </component>
+                                                  <component id="df65d" class="javax.swing.JRadioButton" binding="m_coordsOriginRightMiddle">
+                                                    <constraints>
+                                                      <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.33" weighty="0.33"/>
+                                                    </constraints>
+                                                    <properties>
+                                                      <minimumSize width="130" height="26"/>
+                                                      <preferredSize width="130" height="26"/>
+                                                      <text value="right-middle"/>
+                                                    </properties>
+                                                  </component>
+                                                  <component id="54ef5" class="javax.swing.JRadioButton" binding="m_coordsOriginRightTop">
+                                                    <constraints>
+                                                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.33" weighty="0.33"/>
+                                                    </constraints>
+                                                    <properties>
+                                                      <minimumSize width="130" height="26"/>
+                                                      <preferredSize width="130" height="26"/>
+                                                      <text value="right-top"/>
+                                                    </properties>
+                                                  </component>
+                                                </children>
+                                              </grid>
+                                            </children>
+                                          </grid>
+                                        </children>
+                                      </grid>
                                       <grid id="8b4fc" layout-manager="BorderLayout" hgap="0" vgap="0">
                                         <constraints/>
                                         <properties>
@@ -1097,6 +1232,17 @@
                                                       <text value="none"/>
                                                     </properties>
                                                   </component>
+                                                  <component id="fd413" class="javax.swing.JRadioButton" binding="m_effectOverlap">
+                                                    <constraints>
+                                                      <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                                    </constraints>
+                                                    <properties>
+                                                      <minimumSize width="90" height="26"/>
+                                                      <preferredSize width="90" height="26"/>
+                                                      <text value="overlap"/>
+                                                    </properties>
+                                                  </component>
                                                 </children>
                                               </grid>
                                             </children>
@@ -1187,6 +1333,19 @@
       <member id="99aa4"/>
       <member id="3f37f"/>
       <member id="b703f"/>
+      <member id="fd413"/>
+    </group>
+    <group name="m_coordsOrigin">
+      <member id="afe24"/>
+      <member id="afe24"/>
+      <member id="395df"/>
+      <member id="df65d"/>
+      <member id="54ef5"/>
+      <member id="39427"/>
+      <member id="6585e"/>
+      <member id="c12af"/>
+      <member id="f5948"/>
+      <member id="b096a"/>
     </group>
   </buttonGroups>
 </form>
