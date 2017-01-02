@@ -460,7 +460,7 @@ public abstract class ExportManager {
         boolean isAnimatedImage = page.isImageAnimated();
         blocks.setHasAnimatedPageImage(isAnimatedImage);
         blocks.setImageBackground(page.isImageBackground());
-        blocks.setPageImage(decoratePageImage(getImagePaths(page.getExternalHierarchy(), imageFileName, isAnimatedImage), page.isImageBackground(), page.getTheme()));
+        blocks.setPageImage(decoratePageImage(getImagePaths(page.getExternalHierarchy(), imageFileName, isAnimatedImage, false), page.isImageBackground(), page.getTheme()));
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
         blocks.setPageSound(decoratePageSound(pageName, getSoundPaths(page.getExternalHierarchy(), soundFileName), page.isSoundSFX(), page.getTheme()));
         blocks.setPageTextStart(decoratePageTextStart(page.getId(), pageNumber, StringHelper.getTextChunks(page.getText()), page.getTheme()));
@@ -799,8 +799,10 @@ public abstract class ExportManager {
         blocks.setObjName(decorateObjName(obj.getName()));
         blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
-        final String objImage = decorateObjImage(getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage()), obj.isGraphical());
-        final String objEffect = decorateObjEffect(obj.getOffset(), (obj.getContainerType() == Obj.ContainerType.Obj) ? "0,0" : getRelativeCoords(obj), obj.isGraphical(), obj.getMovementDirection(), obj.getEffect(), obj.getCoordsOrigin());
+        List<ImagePathData> imagePaths = getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage(), obj.isAnimatedImage() && obj.isGraphical());
+        int maxStep = (imagePaths.size() > 0 && imagePaths.get(0).getMaxFrameNumber() > 0) ? imagePaths.get(0).getMaxFrameNumber() : 8;
+        final String objImage = decorateObjImage(imagePaths, obj.isGraphical());
+        final String objEffect = decorateObjEffect(obj.getOffset(), (obj.getContainerType() == Obj.ContainerType.Obj) ? "0,0" : getRelativeCoords(obj), obj.isGraphical(), obj.getMovementDirection(), obj.getEffect(), obj.getCoordsOrigin(), maxStep);
         blocks.setObjEffect(objEffect);
         Coords coords = obj.getRelativeCoords(true);
         blocks.setObjArm(obj.isGraphical() && (obj.getContainerType() == Obj.ContainerType.Obj) ? decorateObjArm(coords.getLeft(), coords.getTop()) : "");
@@ -1655,7 +1657,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin) {
+    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin, int maxStep) {
         return EMPTY_STRING;
     }
 
@@ -2714,12 +2716,14 @@ public abstract class ExportManager {
      *
      * @param externalHierarchy
      * @param imageFileNames
+     * @param removeFrameNumber
      * @return
      */
     protected List<ImagePathData> getImagePaths(
             final String externalHierarchy,
             final String imageFileNames,
-            final boolean animatedImage
+            final boolean animatedImage,
+            final boolean removeFrameNumber
     ) throws NLBExportException {
         if (StringHelper.isEmpty(imageFileNames)) {
             return new ArrayList<ImagePathData>() {{
@@ -2730,7 +2734,7 @@ public abstract class ExportManager {
             String[] fileNamesArr = imageFileNames.split(Constants.MEDIA_FILE_NAME_SEP);
             for (String fileName : fileNamesArr) {
                 MediaExportParameters mediaExportParameters = getMediaExportParameters(fileName);
-                result.add(getImagePath(externalHierarchy, fileName, animatedImage, mediaExportParameters));
+                result.add(getImagePath(externalHierarchy, fileName, animatedImage, removeFrameNumber, mediaExportParameters));
             }
             return result;
         }
@@ -2751,16 +2755,18 @@ public abstract class ExportManager {
      *
      * @param externalHierarchy
      * @param imageFileName
-     * @param mediaExportParameters
-     * @return
+     * @param removeFrameNumber
+     *@param mediaExportParameters  @return
      */
     protected ImagePathData getImagePath(
             final String externalHierarchy,
             final String imageFileName,
             final boolean animatedImage,
+            final boolean removeFrameNumber,
             final MediaExportParameters mediaExportParameters
     ) throws NLBExportException {
         ImagePathData result = new ImagePathData();
+        result.setRemoveFrameNumber(removeFrameNumber);
         // Please note that here we use redirected file name.
         Matcher matcher = FILE_NAME_PATTERN.matcher(getRedirectMediaOrSelf(imageFileName));
         if (matcher.find()) {
@@ -2770,7 +2776,13 @@ public abstract class ExportManager {
                 result.setParentFolderPath(NonLinearBook.IMAGES_DIR_NAME + "/" + externalHierarchy);
             }
             if (animatedImage) {
-                result.setFileName(matcher.group(1));
+                String fileName = matcher.group(1);
+                int len = fileName.length();
+                if (removeFrameNumber && fileName.endsWith(".") && (len > 0)) {
+                    result.setFileName(fileName.substring(0, len - 1));
+                } else {
+                    result.setFileName(fileName);
+                }
                 result.setMaxFrameNumber(Integer.parseInt(matcher.group(2)));
             } else {
                 result.setFileName(matcher.group(1) + matcher.group(2));

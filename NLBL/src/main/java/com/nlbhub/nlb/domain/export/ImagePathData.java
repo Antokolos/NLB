@@ -58,6 +58,7 @@ public class ImagePathData {
     private String m_fileName;
     private String m_constraint;
     private int m_maxFrameNumber;
+    private boolean m_removeFrameNumber;
     private String m_fileExtension;
 
     public String getParentFolderPath() {
@@ -92,11 +93,19 @@ public class ImagePathData {
         m_fileExtension = fileExtension;
     }
 
+    public boolean isRemoveFrameNumber() {
+        return m_removeFrameNumber;
+    }
+
+    public void setRemoveFrameNumber(boolean removeFrameNumber) {
+        m_removeFrameNumber = removeFrameNumber;
+    }
+
     public String getImagePath() {
         if (EMPTY.equals(this)) {
             return Constants.EMPTY_STRING;
         } else {
-            if (m_maxFrameNumber == 0) {
+            if (m_maxFrameNumber == 0 || m_removeFrameNumber) {
                 return m_parentFolderPath + "/" + m_fileName + m_fileExtension;
             } else {
                 return m_parentFolderPath + "/" + m_fileName + "%d" + m_fileExtension;

@@ -299,7 +299,7 @@ public class STEADExportManager extends TextExportManager {
         boolean hasAnim = pageBlocks.isHasObjectsWithAnimatedImages();
         boolean hasPageAnim = pageBlocks.isHasAnimatedPageImage();
         boolean hasFastAnim = hasAnim || hasPageAnim;
-        boolean timerSet =  hasFastAnim || pageBlocks.isHasPageTimer();
+        boolean timerSet = (hasFastAnim || pageBlocks.isHasPageTimer()) && !pageBlocks.isHasGraphicalObjects();
         stringBuilder.append("    var { time = 0; wastext = false; lasttext = nil; tag = '").append(pageBlocks.getPageDefaultTag()).append("'; ");
         stringBuilder.append("autowired = ").append(pageBlocks.isAutowired() ? "true" : "false").append("; ");
         stringBuilder.append("},").append(LINE_SEPARATOR);
@@ -382,7 +382,10 @@ public class STEADExportManager extends TextExportManager {
             // Timer will be triggered first time immediately after timer:set()
             stringBuilder.append("        timer:set(").append(timerRate).append(");").append(LINE_SEPARATOR);
         } else {
-            stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR);
+            if (!pageBlocks.isHasGraphicalObjects()) {
+                // if we have graphical objects, then autos() will be called as a callback in add_gobj()
+                stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR);
+            }
         }
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append(getGraphicalObjectAppendingExpression(pageBlocks));
@@ -419,7 +422,7 @@ public class STEADExportManager extends TextExportManager {
             for (String graphicalObjId : pageBuildingBlocks.getContainedGraphicalObjIds()) {
                 stringBuilder.append("        vn:gshow(" + graphicalObjId + ");").append(LINE_SEPARATOR);
             }
-            stringBuilder.append("        vn:start();").append(LINE_SEPARATOR);
+            stringBuilder.append("        vn:startcb(function() s.autos(s); end);").append(LINE_SEPARATOR);
         } else if (imageBackground) {
             stringBuilder.append("        theme.gfx.bg(bg_img);").append(getLineSeparator());
         }
@@ -602,7 +605,7 @@ public class STEADExportManager extends TextExportManager {
             String constraint = objImagePathData.getConstraint();
             tempBuilder.append(StringHelper.notEmpty(constraint) ? "s.tag == '" + constraint + "'" : "true").append(") then");
             tempBuilder.append(LINE_SEPARATOR);
-            if (objImagePathData.getMaxFrameNumber() == 0) {
+            if (objImagePathData.getMaxFrameNumber() == 0 || objImagePathData.isRemoveFrameNumber()) {
                 if (StringHelper.notEmpty(objImagePath)) {
                     ifTermination = "        end" + LINE_SEPARATOR;
                     resultBuilder.append(tempBuilder).append("            ");
@@ -625,11 +628,11 @@ public class STEADExportManager extends TextExportManager {
         }
     }
 
-    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin) {
+    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin, int maxStep) {
         boolean hasDefinedOffset = StringHelper.notEmpty(offsetString);
         String offset = hasDefinedOffset ? offsetString : "0,0";
         String pos = getPos(coordsOrigin, offset);
-        String steps = (effect == Obj.Effect.None) ? "" : "    maxStep = 8," + LINE_SEPARATOR + "    startFrame = 0," + LINE_SEPARATOR;
+        String steps = (effect == Obj.Effect.None) ? "" : "    maxStep = " + maxStep + "," + LINE_SEPARATOR + "    startFrame = 0," + LINE_SEPARATOR + "    curStep = 0," + LINE_SEPARATOR;
         if (effect != Obj.Effect.None) {
             String eff = effect.name().toLowerCase();
             switch (movementDirection) {
