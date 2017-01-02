@@ -45,6 +45,7 @@ import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
 import java.util.List;
@@ -624,10 +625,10 @@ public class STEADExportManager extends TextExportManager {
         }
     }
 
-    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection, Obj.Effect effect) {
+    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin) {
         boolean hasDefinedOffset = StringHelper.notEmpty(offsetString);
         String offset = hasDefinedOffset ? offsetString : "0,0";
-        String pos = "left-top@" + offset;
+        String pos = getPos(coordsOrigin, offset);
         String steps = (effect == Obj.Effect.None) ? "" : "    maxStep = 8," + LINE_SEPARATOR + "    startFrame = 0," + LINE_SEPARATOR;
         if (effect != Obj.Effect.None) {
             String eff = effect.name().toLowerCase();
@@ -654,6 +655,40 @@ public class STEADExportManager extends TextExportManager {
         } else {
             return EMPTY_STRING;
         }
+    }
+
+    @NotNull
+    private String getPos(Obj.CoordsOrigin coordsOrigin, String offset) {
+        String pos = "left-top";
+        switch (coordsOrigin) {
+            case LeftTop:
+                pos = "left-top";
+                break;
+            case MiddleTop:
+                pos = "middle-top";
+                break;
+            case RightTop:
+                pos = "right-top";
+                break;
+            case LeftMiddle:
+                pos = "left-middle";
+                break;
+            case MiddleMiddle:
+                pos = "middle-middle";
+                break;
+            case RightMiddle:
+                pos = "right-middle";
+                break;
+            case LeftBottom:
+                pos = "left-bottom";
+                break;
+            case MiddleBottom:
+                pos = "middle-bottom";
+                break;
+            case RightBottom:
+                pos = "right-bottom";
+        }
+        return pos + "@" + offset;
     }
 
     @Override

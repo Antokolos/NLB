@@ -175,6 +175,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public CoordsOrigin getCoordsOrigin() {
+        return CoordsOrigin.LeftTop;
+    }
+
+    @Override
     public boolean isClearUnderTooltip() {
         return Obj.DEFAULT_CLEAR_UNDER_TOOLTIP;
     }

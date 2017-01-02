@@ -362,9 +362,43 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
             case FadeOut:
                 m_effectFadeOut.setSelected(true);
                 break;
+            case Overlap:
+                m_effectOverlap.setSelected(true);
+                break;
             case None:
             default:
                 m_effectNone.setSelected(true);
+        }
+        switch (obj.getCoordsOrigin()) {
+            case LeftTop:
+                m_coordsOriginLeftTop.setSelected(true);
+                break;
+            case MiddleTop:
+                m_coordsOriginMiddleTop.setSelected(true);
+                break;
+            case RightTop:
+                m_coordsOriginRightTop.setSelected(true);
+                break;
+            case LeftMiddle:
+                m_coordsOriginLeftMiddle.setSelected(true);
+                break;
+            case MiddleMiddle:
+                m_coordsOriginMiddleMiddle.setSelected(true);
+                break;
+            case RightMiddle:
+                m_coordsOriginRightMiddle.setSelected(true);
+                break;
+            case LeftBottom:
+                m_coordsOriginLeftBottom.setSelected(true);
+                break;
+            case MiddleBottom:
+                m_coordsOriginMiddleBottom.setSelected(true);
+                break;
+            case RightBottom:
+                m_coordsOriginRightBottom.setSelected(true);
+                break;
+            default:
+                m_coordsOriginLeftTop.setSelected(true);
         }
         m_objIsClearUnderTooltip.setSelected(obj.isClearUnderTooltip());
         m_morphOver.setText(morphOver != null ? morphOver.getName() : "");
@@ -416,6 +450,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_offset.getText(),
                 getMovementDirection(),
                 getEffect(),
+                getCoordsOrigin(),
                 m_objIsClearUnderTooltip.isSelected(),
                 m_morphOver.getText(),
                 m_morphOut.getText(),
@@ -425,6 +460,30 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         );
         m_nlbFacade.removeObserver(m_observerId);
         dispose();
+    }
+
+    private Obj.CoordsOrigin getCoordsOrigin() {
+        if (m_coordsOriginLeftTop.isSelected()) {
+            return Obj.CoordsOrigin.LeftTop;
+        } else if (m_coordsOriginMiddleTop.isSelected()) {
+            return Obj.CoordsOrigin.MiddleTop;
+        } else if (m_coordsOriginRightTop.isSelected()) {
+            return Obj.CoordsOrigin.RightTop;
+        } else if (m_coordsOriginLeftMiddle.isSelected()) {
+            return Obj.CoordsOrigin.LeftMiddle;
+        } else if (m_coordsOriginMiddleMiddle.isSelected()) {
+            return Obj.CoordsOrigin.MiddleMiddle;
+        } else if (m_coordsOriginRightMiddle.isSelected()) {
+            return Obj.CoordsOrigin.RightMiddle;
+        } else if (m_coordsOriginLeftBottom.isSelected()) {
+            return Obj.CoordsOrigin.LeftBottom;
+        } else if (m_coordsOriginMiddleBottom.isSelected()) {
+            return Obj.CoordsOrigin.MiddleBottom;
+        } else if (m_coordsOriginRightBottom.isSelected()) {
+            return Obj.CoordsOrigin.RightBottom;
+        } else {
+            return Obj.CoordsOrigin.LeftTop;
+        }
     }
 
     private Obj.Effect getEffect() {
@@ -440,6 +499,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
             return Obj.Effect.MoveIn;
         } else if (m_effectMoveOut.isSelected()) {
             return Obj.Effect.MoveOut;
+        } else if (m_effectOverlap.isSelected()) {
+            return Obj.Effect.Overlap;
         } else {
             return Obj.Effect.None;
         }

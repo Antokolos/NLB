@@ -797,6 +797,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private String m_existingOffset;
         private Obj.MovementDirection m_existingMovementDirection;
         private Obj.Effect m_existingEffect;
+        private Obj.CoordsOrigin m_existingCoordsOrigin;
         private boolean m_existingObjIsClearUnderTooltip;
         private boolean m_existingObjIsTakable;
         private boolean m_existingImageInScene;
@@ -816,6 +817,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private String m_newOffset;
         private Obj.MovementDirection m_newMovementDirection;
         private Obj.Effect m_newEffect;
+        private Obj.CoordsOrigin m_newCoordsOrigin;
         private boolean m_newObjIsClearUnderTooltip;
         private boolean m_newObjIsTakable;
         private boolean m_newImageInScene;
@@ -843,6 +845,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String offset,
                 final Obj.MovementDirection movementDirection,
                 final Obj.Effect effect,
+                final Obj.CoordsOrigin coordsOrigin,
                 final boolean objIsClearUnderTooltip,
                 final String objMorphOverName,
                 final String objMorphOutName,
@@ -872,6 +875,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     offset,
                     movementDirection,
                     effect,
+                    coordsOrigin,
                     objIsClearUnderTooltip,
                     objMorphOverName,
                     objMorphOutName,
@@ -902,6 +906,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String offset,
                 final Obj.MovementDirection movementDirection,
                 final Obj.Effect effect,
+                final Obj.CoordsOrigin coordsOrigin,
                 final boolean objIsClearUnderTooltip,
                 final String objMorphOverName,
                 final String objMorphOutName,
@@ -985,6 +990,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingOffset = obj.getOffset();
             m_existingMovementDirection = obj.getMovementDirection();
             m_existingEffect = obj.getEffect();
+            m_existingCoordsOrigin = obj.getCoordsOrigin();
             m_existingObjIsClearUnderTooltip = obj.isClearUnderTooltip();
             m_existingObjIsTakable = obj.isTakable();
             m_existingImageInScene = obj.isImageInScene();
@@ -1004,6 +1010,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newOffset = offset;
             m_newMovementDirection = movementDirection;
             m_newEffect = effect;
+            m_newCoordsOrigin = coordsOrigin;
             m_newObjIsClearUnderTooltip = objIsClearUnderTooltip;
             m_newObjIsTakable = objIsTakable;
             m_newImageInScene = imageInScene;
@@ -1033,6 +1040,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setOffset(m_newOffset);
             m_obj.setMovementDirection(m_newMovementDirection);
             m_obj.setEffect(m_newEffect);
+            m_obj.setCoordsOrigin(m_newCoordsOrigin);
             m_obj.setClearUnderTooltip(m_newObjIsClearUnderTooltip);
             m_obj.setTakable(m_newObjIsTakable);
             m_obj.setImageInScene(m_newImageInScene);
@@ -1063,6 +1071,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setOffset(m_existingOffset);
             m_obj.setMovementDirection(m_existingMovementDirection);
             m_obj.setEffect(m_existingEffect);
+            m_obj.setCoordsOrigin(m_existingCoordsOrigin);
             m_obj.setClearUnderTooltip(m_existingObjIsClearUnderTooltip);
             m_obj.setTakable(m_existingObjIsTakable);
             m_obj.setImageInScene(m_existingImageInScene);
@@ -1881,6 +1890,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.getOffset(),
                         obj.getMovementDirection(),
                         obj.getEffect(),
+                        obj.getCoordsOrigin(),
                         obj.isClearUnderTooltip(),
                         (objMorphOver != null) ? objMorphOver.getName() : Constants.EMPTY_STRING,
                         (objMorphOut != null) ? objMorphOut.getName() : Constants.EMPTY_STRING,
@@ -2353,6 +2363,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String offset,
             final Obj.MovementDirection movementDirection,
             final Obj.Effect effect,
+            final Obj.CoordsOrigin coordsOrigin,
             final boolean objIsClearUnderTooltip,
             final String objMorphOver,
             final String objMorphOut,
@@ -2383,6 +2394,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         offset,
                         movementDirection,
                         effect,
+                        coordsOrigin,
                         objIsClearUnderTooltip,
                         objMorphOver,
                         objMorphOut,

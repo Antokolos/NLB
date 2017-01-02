@@ -52,7 +52,8 @@ import java.util.Map;
 public interface Obj extends NodeItem {
     public static enum ContainerType {Page, Obj, None}
     public static enum MovementDirection {Top, Left, None, Right, Bottom}
-    public static enum Effect {MoveIn, MoveOut, FadeIn, FadeOut, ZoomIn, ZoomOut, None}
+    public static enum Effect {MoveIn, MoveOut, FadeIn, FadeOut, ZoomIn, ZoomOut, Overlap, None}
+    public static enum CoordsOrigin {LeftTop, MiddleTop, RightTop, LeftMiddle, MiddleMiddle, RightMiddle, LeftBottom, MiddleBottom, RightBottom};
 
     public static final String DEFAULT_IMAGE_FILE_NAME = Constants.EMPTY_STRING;
     public static final boolean DEFAULT_ANIMATED_IMAGE = false;
@@ -125,6 +126,8 @@ public interface Obj extends NodeItem {
     public MovementDirection getMovementDirection();
 
     public Effect getEffect();
+
+    public CoordsOrigin getCoordsOrigin();
 
     public boolean isClearUnderTooltip();
 

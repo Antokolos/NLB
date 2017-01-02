@@ -83,6 +83,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String COLLAPSABLE_FILE_NAME = "collapsable";
     private static final String MVDIRECTION_FILE_NAME = "mvdirection";
     private static final String EFFECT_FILE_NAME = "effect";
+    private static final String COORDSOR_FILE_NAME = "coordsor";
     private static final String CLEARUTT_FILE_NAME = "clearutt";
     private static final String MORPH_OVER_FILE_NAME = "morphover";
     private static final String MORPH_OUT_FILE_NAME = "morphout";
@@ -107,6 +108,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private boolean m_collapsable = DEFAULT_COLLAPSABLE;
     private MovementDirection m_movementDirection = DEFAULT_MOVEMENT_DIRECTION;
     private Effect m_effect = DEFAULT_EFFECT;
+    private CoordsOrigin m_coordsOrigin = CoordsOrigin.LeftTop;
     private boolean m_clearUnderTooltip = DEFAULT_CLEAR_UNDER_TOOLTIP;
     private String m_morphOverId = DEFAULT_MORPH_OVER_ID;
     private String m_morphOutId = DEFAULT_MORPH_OUT_ID;
@@ -164,6 +166,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         m_offset = source.getOffset();
         m_movementDirection = source.getMovementDirection();
         m_effect = source.getEffect();
+        m_coordsOrigin = source.getCoordsOrigin();
         m_clearUnderTooltip = source.isClearUnderTooltip();
         m_morphOverId = source.getMorphOverId();
         m_morphOutId = source.getMorphOutId();
@@ -386,6 +389,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
 
     public void setEffect(Effect effect) {
         m_effect = effect;
+    }
+
+    @Override
+    public CoordsOrigin getCoordsOrigin() {
+        return m_coordsOrigin;
+    }
+
+    public void setCoordsOrigin(CoordsOrigin coordsOrigin) {
+        m_coordsOrigin = coordsOrigin;
     }
 
     @Override
@@ -638,6 +650,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(
                     objDir,
+                    COORDSOR_FILE_NAME,
+                    m_coordsOrigin.name(),
+                    CoordsOrigin.LeftTop.name()
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
                     CLEARUTT_FILE_NAME,
                     String.valueOf(m_clearUnderTooltip),
                     String.valueOf(DEFAULT_CLEAR_UNDER_TOOLTIP)
@@ -843,8 +861,49 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             case "fadeout":
                 m_effect = Effect.FadeOut;
                 break;
+            case "overlap":
+                m_effect = Effect.Overlap;
+                break;
             default:
                 m_effect = Effect.None;
+        }
+        String coordsOrigin = (
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        COORDSOR_FILE_NAME,
+                        CoordsOrigin.LeftTop.name()
+                )
+        ).toLowerCase();
+        switch (coordsOrigin) {
+            case "lefttop":
+                m_coordsOrigin = CoordsOrigin.LeftTop;
+                break;
+            case "middletop":
+                m_coordsOrigin = CoordsOrigin.MiddleTop;
+                break;
+            case "righttop":
+                m_coordsOrigin = CoordsOrigin.RightTop;
+                break;
+            case "leftmiddle":
+                m_coordsOrigin = CoordsOrigin.LeftMiddle;
+                break;
+            case "middlemiddle":
+                m_coordsOrigin = CoordsOrigin.MiddleMiddle;
+                break;
+            case "rightmiddle":
+                m_coordsOrigin = CoordsOrigin.RightMiddle;
+                break;
+            case "leftbottom":
+                m_coordsOrigin = CoordsOrigin.LeftBottom;
+                break;
+            case "middlebottom":
+                m_coordsOrigin = CoordsOrigin.MiddleBottom;
+                break;
+            case "rightbottom":
+                m_coordsOrigin = CoordsOrigin.RightBottom;
+                break;
+            default:
+                m_coordsOrigin = CoordsOrigin.LeftTop;
         }
         m_clearUnderTooltip = "true".equals(
                 FileManipulator.getOptionalFileAsString(

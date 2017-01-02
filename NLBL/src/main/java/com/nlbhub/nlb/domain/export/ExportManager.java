@@ -339,9 +339,57 @@ public abstract class ExportManager {
 
     private String getRelativeCoords(Obj obj) {
         Coords coords = obj.getRelativeCoords(true);
-        String x = String.valueOf((int) Math.floor(coords.getLeft() * getScreenWidth() / coords.getWidth()));
-        String y = String.valueOf((int) Math.floor(coords.getTop() * getScreenHeight() / coords.getHeight()));
+        double left = Math.floor(coords.getLeft() * getScreenWidth() / coords.getWidth());
+        double top = Math.floor(coords.getTop() * getScreenHeight() / coords.getHeight());
+        Coords transformedCoords = getTransformedCoords(obj, left, top);
+        String x = String.valueOf((int) transformedCoords.getLeft());
+        String y = String.valueOf((int) transformedCoords.getTop());
         return x + "," + y;
+    }
+
+    private Coords getTransformedCoords(Obj obj, double left, double top) {
+        CoordsLw coords = new CoordsLw();
+        coords.setLeft((float) left);
+        coords.setTop((float) top);
+        switch (obj.getCoordsOrigin()) {
+            case LeftTop:
+                coords.setLeft((float) left);
+                coords.setTop((float) top);
+                break;
+            case MiddleTop:
+                coords.setLeft((float) left - getScreenWidth() / 2.0f);
+                coords.setTop((float) top);
+                break;
+            case RightTop:
+                coords.setLeft(getScreenWidth() - (float) left);
+                coords.setTop(0.0f);
+                break;
+            case LeftMiddle:
+                coords.setLeft((float) left);
+                coords.setTop(getScreenHeight() / 2.0f - (float) top);
+                break;
+            case MiddleMiddle:
+                coords.setLeft((float) left - getScreenWidth() / 2.0f);
+                coords.setTop(getScreenHeight() / 2.0f - (float) top);
+                break;
+            case RightMiddle:
+                coords.setLeft(getScreenWidth() - (float) left);
+                coords.setTop(getScreenHeight() / 2.0f - (float) top);
+                break;
+            case LeftBottom:
+                coords.setLeft((float) left);
+                coords.setTop(getScreenHeight() - (float) top);
+                break;
+            case MiddleBottom:
+                coords.setLeft((float) left - getScreenWidth() / 2.0f);
+                coords.setTop(getScreenHeight() - (float) top);
+                break;
+            case RightBottom:
+                coords.setLeft(getScreenWidth() - (float) left);
+                coords.setTop(getScreenHeight() - (float) top);
+                break;
+        }
+        return coords;
     }
 
     protected NLBBuildingBlocks createNLBBuildingBlocks() throws NLBConsistencyException, NLBExportException {
@@ -752,7 +800,7 @@ public abstract class ExportManager {
         blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
         final String objImage = decorateObjImage(getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage()), obj.isGraphical());
-        final String objEffect = decorateObjEffect(obj.getOffset(), (obj.getContainerType() == Obj.ContainerType.Obj) ? "0,0" : getRelativeCoords(obj), obj.isGraphical(), obj.getMovementDirection(), obj.getEffect());
+        final String objEffect = decorateObjEffect(obj.getOffset(), (obj.getContainerType() == Obj.ContainerType.Obj) ? "0,0" : getRelativeCoords(obj), obj.isGraphical(), obj.getMovementDirection(), obj.getEffect(), obj.getCoordsOrigin());
         blocks.setObjEffect(objEffect);
         Coords coords = obj.getRelativeCoords(true);
         blocks.setObjArm(obj.isGraphical() && (obj.getContainerType() == Obj.ContainerType.Obj) ? decorateObjArm(coords.getLeft(), coords.getTop()) : "");
@@ -1417,6 +1465,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public CoordsOrigin getCoordsOrigin() {
+                return obj.getCoordsOrigin();
+            }
+
+            @Override
             public boolean isClearUnderTooltip() {
                 return obj.isClearUnderTooltip();
             }
@@ -1602,7 +1655,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection, Obj.Effect effect) {
+    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin) {
         return EMPTY_STRING;
     }
 
