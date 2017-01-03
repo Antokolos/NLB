@@ -289,6 +289,51 @@ nlb = obj {
     end;
 };
 
+_syscall_hidemenubtn  = menu {
+    nam = "syscall_hidemenubtn",
+    system_type = true,
+    act = function(s)
+        theme.menu.gfx.button('gfx/empty.png', 0, 0);
+    end,
+    actf = function(s) return s:act(); end
+}
+
+_syscall_showmenubtn  = menu {
+    nam = "syscall_showmenubtn",
+    system_type = true,
+    act = function(s)
+        theme.menu.gfx.button('gfx/menubtn.png', 1827, 0);
+    end,
+    actf = function(s) return s:act(); end
+}
+
+_syscall_starten = menu {
+    nam = "syscall_starten",
+    system_type = true,
+    act = function(s)
+        gamefile('module_en.lua', true);
+    end,
+    actf = function(s) return s:act(); end
+}
+
+_syscall_startru = menu {
+    nam = "syscall_startru",
+    system_type = true,
+    act = function(s)
+        gamefile('module_ru.lua', true);
+    end,
+    actf = function(s) return s:act(); end
+}
+
+_syscall_menu = menu {
+    nam = "syscall_menu",
+    system_type = true,
+    act = function(s)
+        stead.menu_toggle();
+    end,
+    actf = function(s) return s:act(); end
+}
+
 listobj = {
     nam = "listobj",
     nlbobj = "listobj",
