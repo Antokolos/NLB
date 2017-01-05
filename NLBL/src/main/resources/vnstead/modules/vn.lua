@@ -1667,7 +1667,7 @@ vn = obj {
     -- effect is effect name, like 'dissolve'
     -- wf is the fancy border width, in pixels
     -- fln and frn are paths to the borders' images
-    geom = function(s, x, y, w, h, effect, wf, fln, frn)
+    geom = function(s, x, y, w, h, effect, wf, fln, frn, callback)
         -- wf can be zero, this means do not use borders
         if wf then
             s._wf = wf;
@@ -1679,10 +1679,10 @@ vn = obj {
         s.win_x, s.win_y, s.win_w, s.win_h = x + s._wf, y, w - 2 * s._wf, h;
         theme.win.geom(s.win_x, s.win_y, s.win_w, s.win_h);
         s:request_full_clear();
-        if effect then
-            s:start(effect);
+        if callback then
+            s:startcb(callback, effect);
         else
-            s:start();
+            s:start(effect);
         end;
         s:commit();
     end;

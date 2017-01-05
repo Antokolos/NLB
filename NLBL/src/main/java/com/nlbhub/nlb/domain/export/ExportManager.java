@@ -447,6 +447,7 @@ public abstract class ExportManager {
     ) throws NLBConsistencyException, NLBExportException {
         NonLinearBook nlb = exportData.getNlb();
         PageBuildingBlocks blocks = new PageBuildingBlocks();
+        blocks.setHasPageText(StringHelper.notEmpty(page.getText()));
         blocks.setTheme(page.getTheme());
         final Integer pageNumber = checkedGetPageNumber(page.getId());
         blocks.setAutowired(page.isAutowire());

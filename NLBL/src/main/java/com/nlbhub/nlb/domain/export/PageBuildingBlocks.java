@@ -70,6 +70,7 @@ public class PageBuildingBlocks {
     private boolean m_hasAnimatedPageImage;
     private boolean m_imageBackground;
     private boolean m_hasPageTimer;
+    private boolean m_hasPageText;
     private List<String> m_containedObjIds;
     private List<String> m_containedGraphicalObjIds;
     private List<LinkBuildingBlocks> m_linksBuildingBlocks;
@@ -209,6 +210,18 @@ public class PageBuildingBlocks {
 
     public void setHasPageTimer(boolean hasPageTimer) {
         m_hasPageTimer = hasPageTimer;
+    }
+
+    public boolean isDirectMode() {
+        return !isHasPageText();
+    }
+
+    public boolean isHasPageText() {
+        return m_hasPageText;
+    }
+
+    public void setHasPageText(boolean hasPageText) {
+        m_hasPageText = hasPageText;
     }
 
     public String getPageVariable() {

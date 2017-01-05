@@ -88,6 +88,9 @@ local text_page = function(txt)
     local pg = paginator
     local ss = pg._page
     local res = ''
+    if not txt then
+        return nil;
+    end
     txt = txt:gsub("[ \t\n]+$", ""):gsub("^[ \t\n]+", "");
 
     s, e = txt:find(pg.delim, ss)
@@ -158,6 +161,11 @@ paginatorIfaceCmd = function(f, s, cmd, ...)
         if paginator.process or not RAW_TEXT then
             while true do
                 r = text_page(r)
+                if not r then
+                    paginator._last = true;
+                    game._lastdisp = "\n";
+                    return "\n", v;
+                end
                 --- if timer:get() ~= 0 or not r:find("^[ \t\n]*$") or paginator._last then
                 if not r:find("^[ \t\n]*$") or paginator._last then
                     break

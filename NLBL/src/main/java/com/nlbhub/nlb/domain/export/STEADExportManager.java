@@ -350,15 +350,21 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            add_sound(sndfile);").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
-        stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
-        stringBuilder.append("        lifeon(s);").append(LINE_SEPARATOR);
+        stringBuilder.append("    entered = function(s, f)").append(LINE_SEPARATOR);
         if (pageBlocks.getTheme() == Theme.STANDARD) {
-            stringBuilder.append("    dofile('theme_standard.lua');").append(LINE_SEPARATOR);
+            stringBuilder.append("        dofile('theme_standard.lua');").append(LINE_SEPARATOR);
         } else if (pageBlocks.getTheme() == Theme.VN) {
-            stringBuilder.append("    dofile('theme_vn.lua');").append(LINE_SEPARATOR);
+            stringBuilder.append("        dofile('theme_vn.lua');").append(LINE_SEPARATOR);
         } else {
             stringBuilder.append(getDefaultThemeSwitchExpression());
         }
+        if (pageBlocks.isDirectMode()) {
+            stringBuilder.append("        vn:request_full_clear();").append(LINE_SEPARATOR);
+            stringBuilder.append("        vn:lock_direct();").append(LINE_SEPARATOR);
+        }
+        stringBuilder.append("    end,").append(LINE_SEPARATOR);
+        stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
+        stringBuilder.append("        lifeon(s);").append(LINE_SEPARATOR);
         if (hasFastAnim) {
             stringBuilder.append("        nlbticks = stead.ticks();").append(LINE_SEPARATOR);
         }
@@ -382,14 +388,18 @@ public class STEADExportManager extends TextExportManager {
             // Timer will be triggered first time immediately after timer:set()
             stringBuilder.append("        timer:set(").append(timerRate).append(");").append(LINE_SEPARATOR);
         } else {
-            if (!pageBlocks.isHasGraphicalObjects()) {
-                // if we have graphical objects, then autos() will be called as a callback in add_gobj()
+            if (!isVN(pageBlocks.getTheme())) {
+                // if theme is VN, then autos() will be called as a callback in geom() call
                 stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR);
             }
         }
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append(getGraphicalObjectAppendingExpression(pageBlocks));
         stringBuilder.append("    exit = function(s, t)").append(LINE_SEPARATOR);
+        if (pageBlocks.isDirectMode()) {
+            stringBuilder.append("        vn:request_full_clear();").append(LINE_SEPARATOR);
+            stringBuilder.append("        vn:unlock_direct();").append(LINE_SEPARATOR);
+        }
         stringBuilder.append("        s.sndout(s);").append(LINE_SEPARATOR);
         if (timerSet) {
             stringBuilder.append("        timer:stop();").append(LINE_SEPARATOR);
@@ -422,7 +432,7 @@ public class STEADExportManager extends TextExportManager {
             for (String graphicalObjId : pageBuildingBlocks.getContainedGraphicalObjIds()) {
                 stringBuilder.append("        vn:gshow(" + graphicalObjId + ");").append(LINE_SEPARATOR);
             }
-            stringBuilder.append("        vn:startcb(function() s.autos(s); end);").append(LINE_SEPARATOR);
+            // Do not calling vn:startcb(function() s.autos(s); end), because it is NOT VN
         } else if (imageBackground) {
             stringBuilder.append("        theme.gfx.bg(bg_img);").append(getLineSeparator());
         }
@@ -431,7 +441,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     protected String getDefaultThemeSwitchExpression() {
-        return "    dofile('theme_standard.lua');" + LINE_SEPARATOR;
+        return "        dofile('theme_standard.lua');" + LINE_SEPARATOR;
     }
 
     protected String generateOrdinaryLinkTextInsideRoom(PageBuildingBlocks pageBuildingBlocks) {
