@@ -395,11 +395,13 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append(getGraphicalObjectAppendingExpression(pageBlocks));
-        stringBuilder.append("    exit = function(s, t)").append(LINE_SEPARATOR);
+        stringBuilder.append("    left = function(s, t)").append(LINE_SEPARATOR);
         if (pageBlocks.isDirectMode()) {
             stringBuilder.append("        vn:request_full_clear();").append(LINE_SEPARATOR);
             stringBuilder.append("        vn:unlock_direct();").append(LINE_SEPARATOR);
         }
+        stringBuilder.append("    end,").append(LINE_SEPARATOR);
+        stringBuilder.append("    exit = function(s, t)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.sndout(s);").append(LINE_SEPARATOR);
         if (timerSet) {
             stringBuilder.append("        timer:stop();").append(LINE_SEPARATOR);
