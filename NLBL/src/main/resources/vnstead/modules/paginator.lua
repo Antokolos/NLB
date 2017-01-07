@@ -5,8 +5,6 @@ require "theme"
 require "modules/dice"
 require "modules/vn"
 
-hook_keys('space', 'right ctrl', 'left ctrl')
-
 iface.cmd = stead.hook(iface.cmd, function(f, s, cmd, ...)
     if vn:add_all_missing_children() then
         vn:invalidate_all();
@@ -180,6 +178,7 @@ paginatorIfaceCmd = function(f, s, cmd, ...)
 end
 
 stead.module_init(function()
+    hook_keys('space', 'right ctrl', 'left ctrl');
     game.click = function(s, x, y, a, b, c, d)
         local result;
         if paginator.on then
