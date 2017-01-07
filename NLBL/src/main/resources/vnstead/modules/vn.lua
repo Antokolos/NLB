@@ -676,7 +676,7 @@ vn = obj {
             vv:free();
         end
         local gob = s:gobf(v);
-        if gob.is_dynamic then
+        if gob and gob.is_dynamic then
             delete(gob);
         end
         v.spr = nil;
