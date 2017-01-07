@@ -801,7 +801,7 @@ public abstract class ExportManager {
         blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
         List<ImagePathData> imagePaths = getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage(), obj.isAnimatedImage() && obj.isGraphical());
-        int maxStep = (imagePaths.size() > 0 && imagePaths.get(0).getMaxFrameNumber() > 0) ? imagePaths.get(0).getMaxFrameNumber() : 8;
+        int maxStep = (imagePaths.size() > 0 && imagePaths.get(0).getMaxFrameNumber() > 0) ? imagePaths.get(0).getMaxFrameNumber() : obj.getMaxFrame();
         final String objImage = decorateObjImage(imagePaths, obj.isGraphical());
         final String objEffect = decorateObjEffect(obj.getOffset(), (obj.getContainerType() == Obj.ContainerType.Obj) ? "0,0" : getRelativeCoords(obj), obj.isGraphical(), obj.getMovementDirection(), obj.getEffect(), obj.getCoordsOrigin(), maxStep);
         blocks.setObjEffect(objEffect);
@@ -1465,6 +1465,11 @@ public abstract class ExportManager {
             @Override
             public Effect getEffect() {
                 return obj.getEffect();
+            }
+
+            @Override
+            public int getMaxFrame() {
+                return obj.getMaxFrame();
             }
 
             @Override

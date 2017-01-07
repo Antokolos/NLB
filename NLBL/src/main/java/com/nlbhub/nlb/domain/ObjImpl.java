@@ -83,6 +83,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String COLLAPSABLE_FILE_NAME = "collapsable";
     private static final String MVDIRECTION_FILE_NAME = "mvdirection";
     private static final String EFFECT_FILE_NAME = "effect";
+    private static final String MAX_FRAME_FILE_NAME = "maxframe";
     private static final String COORDSOR_FILE_NAME = "coordsor";
     private static final String CLEARUTT_FILE_NAME = "clearutt";
     private static final String MORPH_OVER_FILE_NAME = "morphover";
@@ -108,6 +109,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private boolean m_collapsable = DEFAULT_COLLAPSABLE;
     private MovementDirection m_movementDirection = DEFAULT_MOVEMENT_DIRECTION;
     private Effect m_effect = DEFAULT_EFFECT;
+    private int m_maxFrame = DEFAULT_MAX_FRAME;
     private CoordsOrigin m_coordsOrigin = CoordsOrigin.LeftTop;
     private boolean m_clearUnderTooltip = DEFAULT_CLEAR_UNDER_TOOLTIP;
     private String m_morphOverId = DEFAULT_MORPH_OVER_ID;
@@ -166,6 +168,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         m_offset = source.getOffset();
         m_movementDirection = source.getMovementDirection();
         m_effect = source.getEffect();
+        m_maxFrame = source.getMaxFrame();
         m_coordsOrigin = source.getCoordsOrigin();
         m_clearUnderTooltip = source.isClearUnderTooltip();
         m_morphOverId = source.getMorphOverId();
@@ -389,6 +392,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
 
     public void setEffect(Effect effect) {
         m_effect = effect;
+    }
+
+    @Override
+    public int getMaxFrame() {
+        return m_maxFrame;
+    }
+
+    public void setMaxFrame(int maxFrame) {
+        m_maxFrame = maxFrame;
     }
 
     @Override
@@ -650,6 +662,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(
                     objDir,
+                    MAX_FRAME_FILE_NAME,
+                    String.valueOf(m_maxFrame),
+                    String.valueOf(DEFAULT_MAX_FRAME)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
                     COORDSOR_FILE_NAME,
                     m_coordsOrigin.name(),
                     CoordsOrigin.LeftTop.name()
@@ -867,6 +885,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             default:
                 m_effect = Effect.None;
         }
+        m_maxFrame = Integer.parseInt(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        MAX_FRAME_FILE_NAME,
+                        String.valueOf(DEFAULT_MAX_FRAME)
+                )
+        );
         String coordsOrigin = (
                 FileManipulator.getOptionalFileAsString(
                         objDir,

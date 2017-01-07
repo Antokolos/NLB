@@ -1243,6 +1243,27 @@
                                                       <text value="overlap"/>
                                                     </properties>
                                                   </component>
+                                                  <grid id="6a540" layout-manager="BorderLayout" hgap="0" vgap="0">
+                                                    <constraints>
+                                                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                                    </constraints>
+                                                    <properties/>
+                                                    <border type="none"/>
+                                                    <children>
+                                                      <component id="7a29" class="javax.swing.JLabel">
+                                                        <constraints border-constraint="North"/>
+                                                        <properties>
+                                                          <labelFor value="80e32"/>
+                                                          <text value="Max Frame"/>
+                                                        </properties>
+                                                      </component>
+                                                      <component id="80e32" class="javax.swing.JSpinner" binding="m_spinnerMaxFrame">
+                                                        <constraints border-constraint="Center"/>
+                                                        <properties/>
+                                                      </component>
+                                                    </children>
+                                                  </grid>
                                                 </children>
                                               </grid>
                                             </children>

@@ -175,6 +175,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public int getMaxFrame() {
+        return DEFAULT_MAX_FRAME;
+    }
+
+    @Override
     public CoordsOrigin getCoordsOrigin() {
         return CoordsOrigin.LeftTop;
     }

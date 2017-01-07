@@ -126,6 +126,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JRadioButton m_coordsOriginRightMiddle;
     private JRadioButton m_coordsOriginRightBottom;
     private JRadioButton m_effectOverlap;
+    private JSpinner m_spinnerMaxFrame;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -343,6 +344,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
             default:
                 m_movementDirectionNone.setSelected(true);
         }
+        m_spinnerMaxFrame.setValue(obj.getMaxFrame());
         switch (obj.getEffect()) {
             case MoveIn:
                 m_effectMoveIn.setSelected(true);
@@ -450,6 +452,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_offset.getText(),
                 getMovementDirection(),
                 getEffect(),
+                Integer.parseInt(m_spinnerMaxFrame.getValue().toString()),
                 getCoordsOrigin(),
                 m_objIsClearUnderTooltip.isSelected(),
                 m_morphOver.getText(),
@@ -1422,16 +1425,28 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.gridy = 1;
         panel52.add(m_effectOverlap, gbc);
         final JPanel panel53 = new JPanel();
-        panel53.setLayout(new GridBagLayout());
-        panel53.setMinimumSize(new Dimension(468, 33));
-        panel53.setPreferredSize(new Dimension(468, 33));
+        panel53.setLayout(new BorderLayout(0, 0));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel52.add(panel53, gbc);
+        final JLabel label12 = new JLabel();
+        label12.setText("Max Frame");
+        panel53.add(label12, BorderLayout.NORTH);
+        m_spinnerMaxFrame = new JSpinner();
+        panel53.add(m_spinnerMaxFrame, BorderLayout.CENTER);
+        final JPanel panel54 = new JPanel();
+        panel54.setLayout(new GridBagLayout());
+        panel54.setMinimumSize(new Dimension(468, 33));
+        panel54.setPreferredSize(new Dimension(468, 33));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 2;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
-        panel36.add(panel53, gbc);
+        panel36.add(panel54, gbc);
         final JScrollPane scrollPane12 = new JScrollPane();
         scrollPane12.setHorizontalScrollBarPolicy(31);
         scrollPane12.setVerticalScrollBarPolicy(21);
@@ -1441,20 +1456,20 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        panel53.add(scrollPane12, gbc);
+        panel54.add(scrollPane12, gbc);
         m_offset = new JTextField();
         m_offset.setColumns(40);
         scrollPane12.setViewportView(m_offset);
-        final JLabel label12 = new JLabel();
-        label12.setText("Offset");
+        final JLabel label13 = new JLabel();
+        label13.setText("Offset");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.anchor = GridBagConstraints.WEST;
-        panel36.add(label12, gbc);
-        final JPanel panel54 = new JPanel();
-        panel54.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel54, BorderLayout.CENTER);
+        panel36.add(label13, gbc);
+        final JPanel panel55 = new JPanel();
+        panel55.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel55, BorderLayout.CENTER);
         label1.setLabelFor(m_objDispTextField);
         label2.setLabelFor(m_objTextTextArea);
         label3.setLabelFor(m_objActTextTextArea);
@@ -1466,7 +1481,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         label9.setLabelFor(m_objDefaultTagTextField);
         label10.setLabelFor(m_morphOver);
         label11.setLabelFor(m_morphOut);
-        label12.setLabelFor(m_offset);
+        label12.setLabelFor(m_spinnerMaxFrame);
+        label13.setLabelFor(m_offset);
         ButtonGroup buttonGroup;
         buttonGroup = new ButtonGroup();
         buttonGroup.add(m_movementDirectionNone);

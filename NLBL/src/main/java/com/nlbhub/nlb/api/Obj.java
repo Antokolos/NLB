@@ -80,6 +80,7 @@ public interface Obj extends NodeItem {
     public static final String DEFAULT_CONTAINER_ID = Constants.EMPTY_STRING;
     public static final MovementDirection DEFAULT_MOVEMENT_DIRECTION = MovementDirection.None;
     public static final Effect DEFAULT_EFFECT = Effect.None;
+    public static final int DEFAULT_MAX_FRAME = 8;
 
     public String getText();
 
@@ -126,6 +127,8 @@ public interface Obj extends NodeItem {
     public MovementDirection getMovementDirection();
 
     public Effect getEffect();
+
+    public int getMaxFrame();
 
     public CoordsOrigin getCoordsOrigin();
 
