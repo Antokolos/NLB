@@ -242,7 +242,7 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme) {
+    protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme, boolean hasChoicesOrLeaf) {
         return LINE_SEPARATOR;
     }
 

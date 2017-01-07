@@ -797,7 +797,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme) {
+    protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme, boolean hasChoicesOrLeaf) {
         return Constants.EMPTY_STRING;
     }
 

@@ -175,14 +175,16 @@ public class VNSTEADExportManager extends STEADExportManager {
     }
 
     @Override
-    protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme) {
+    protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme, boolean hasChoicesOrLeaf) {
         if (!isVN(theme)) {
-            return super.decoratePageTextEnd(labelText, pageNumber, theme);
+            return super.decoratePageTextEnd(labelText, pageNumber, theme, hasChoicesOrLeaf);
         }
         String lineSep = getLineSeparator();
         StringBuilder pageText = new StringBuilder();
         pageText.append("    end,").append(lineSep);
-        pageText.append("    walk_to = \"").append(decoratePageName(labelText, pageNumber)).append("_choices\",").append(lineSep);
+        if (hasChoicesOrLeaf) {
+            pageText.append("    walk_to = \"").append(decoratePageName(labelText, pageNumber)).append("_choices\",").append(lineSep);
+        }
         return pageText.toString();
     }
 
@@ -199,16 +201,20 @@ public class VNSTEADExportManager extends STEADExportManager {
         if (!isVN(pageBlocks.getTheme())) {
             return super.generatePostPageText(pageBlocks);
         }
+        List<LinkBuildingBlocks> linksBuildingBlocks = pageBlocks.getLinksBuildingBlocks();
+        final boolean theEnd = linksBuildingBlocks.isEmpty();
+        if (!hasChoicesOrLeaf(pageBlocks)) {
+            return Constants.EMPTY_STRING;
+        }
         StringBuilder result = new StringBuilder();
         StringBuilder linksBuilder = new StringBuilder();
         String lineSep = getLineSeparator();
         String roomName = pageBlocks.getPageName();
-        List<LinkBuildingBlocks> linksBuildingBlocks = pageBlocks.getLinksBuildingBlocks();
         result.append(roomName).append("_choices").append(" = room {").append(lineSep);
         result.append("    nam = \"").append(roomName).append("_choices\",").append(lineSep);
         result.append("        textbg = true,").append(lineSep);
         result.append("        ignore_preserved_gobjs = true,").append(lineSep);
-        if (linksBuildingBlocks.isEmpty()) {
+        if (theEnd) {
             result.append("    dsc = img 'blank:23x23'..'^'..fend:txt('The')..img 'blank:64x64'..fend:txt('End'),").append(lineSep);
         }
         result.append("    enter = function(s) ").append(lineSep);
@@ -243,7 +249,7 @@ public class VNSTEADExportManager extends STEADExportManager {
                     linksBuilder.append(generateOrdinaryLinkCode(linkBlock));
                 }
             }
-            if (linksBuildingBlocks.isEmpty()) {
+            if (theEnd) {
                 result.append("        vn:geom(470, 400, 980, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png');").append(lineSep);
             } else {
                 result.append("        vn:geom(320, 320, 1280, 480, 'dissolve');").append(lineSep);

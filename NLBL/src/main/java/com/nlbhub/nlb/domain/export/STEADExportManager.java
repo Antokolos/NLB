@@ -395,12 +395,12 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append(getGraphicalObjectAppendingExpression(pageBlocks));
-        stringBuilder.append("    left = function(s, t)").append(LINE_SEPARATOR);
         if (pageBlocks.isDirectMode()) {
+            stringBuilder.append("    left = function(s, t)").append(LINE_SEPARATOR);
             stringBuilder.append("        vn:request_full_clear();").append(LINE_SEPARATOR);
             stringBuilder.append("        vn:unlock_direct();").append(LINE_SEPARATOR);
+            stringBuilder.append("    end,").append(LINE_SEPARATOR);
         }
-        stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    exit = function(s, t)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.sndout(s);").append(LINE_SEPARATOR);
         if (timerSet) {
@@ -1709,9 +1709,9 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme) {
+    protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme, boolean hasChoicesOrLeaf) {
         if (isVN(theme)) {
-            return m_vnsteadExportManager.decoratePageTextEnd(labelText, pageNumber, theme);
+            return m_vnsteadExportManager.decoratePageTextEnd(labelText, pageNumber, theme, true);
         }
         return "    end," + LINE_SEPARATOR;
     }

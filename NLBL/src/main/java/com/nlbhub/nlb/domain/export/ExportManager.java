@@ -465,7 +465,7 @@ public abstract class ExportManager {
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
         blocks.setPageSound(decoratePageSound(pageName, getSoundPaths(page.getExternalHierarchy(), soundFileName), page.isSoundSFX(), page.getTheme()));
         blocks.setPageTextStart(decoratePageTextStart(page.getId(), pageNumber, StringHelper.getTextChunks(page.getText()), page.getTheme()));
-        blocks.setPageTextEnd(decoratePageTextEnd(page.getId(), pageNumber, page.getTheme()));
+        blocks.setPageTextEnd(decoratePageTextEnd(page.getId(), pageNumber, page.getTheme(), hasChoicesOrLeaf(page)));
         if (!StringHelper.isEmpty(page.getVarId())) {
             Variable variable = nlb.getVariableById(page.getVarId());
             // TODO: Add cases with deleted pages/links/variables etc. to the unit test
@@ -663,6 +663,32 @@ public abstract class ExportManager {
         }
         blocks.setHasTrivialLinks(determineTrivialStatus(blocks));
         return blocks;
+    }
+
+    private boolean hasChoicesOrLeaf(final Page page) {
+        List<Link> links = page.getLinks();
+        if (links.isEmpty()) {
+            return true;
+        }
+        for (final Link link : links) {
+            if (!link.isAuto()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected boolean hasChoicesOrLeaf(final PageBuildingBlocks pageBuildingBlocks) {
+        List<LinkBuildingBlocks> linksBuildingBlocks = pageBuildingBlocks.getLinksBuildingBlocks();
+        if (linksBuildingBlocks.isEmpty()) {
+            return true;
+        }
+        for (final LinkBuildingBlocks linkBuildingBlocks : linksBuildingBlocks) {
+            if (!linkBuildingBlocks.isAuto()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected Map<String, String> getInitValuesMap() {
@@ -2867,7 +2893,7 @@ public abstract class ExportManager {
 
     protected abstract String getLineSeparator();
 
-    protected abstract String decoratePageTextEnd(String labelText, int pageNumber, Theme theme);
+    protected abstract String decoratePageTextEnd(String labelText, int pageNumber, Theme theme, boolean hasChoicesOrLeaf);
 
     protected boolean getGoToPageNumbers() {
         return GOTO_PAGE_NUMBERS;
