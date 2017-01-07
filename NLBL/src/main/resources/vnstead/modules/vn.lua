@@ -1602,13 +1602,13 @@ vn = obj {
         if clear then
             s:clear(x, y, w, h);
         end
-        if not only_compute and not clear then
-            v.newborn = false;
-        end
         v.last_rct = {["v"] = v, ["idx"] = idx, ["x"] = x, ["y"] = y, ["w"] = w, ["h"] = h, ["scale"] = scale, ["alpha"] = alpha};
-        if hide or v.dirty_draw then
+        if hide or v.dirty_draw or v.newborn then
             log:trace(v.nam .. " is dirty");
             s._dirty_rects[v.nam] = v.last_rct;
+        end
+        if not only_compute and not clear then
+            v.newborn = false;
         end
         return v.last_rct;
     end;
