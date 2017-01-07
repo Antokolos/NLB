@@ -6,6 +6,7 @@ require "modules/nlb"
 
 next_turn_obj = menu {
     nam = "next_turn_obj",
+    system_type = true,
     dsc = function(s)
         return '{' .. s:disp() .. '}' .. img 'blank:64x64';
     end,
@@ -29,6 +30,7 @@ next_turn_obj = menu {
 
 increase_bet_obj = menu {
     nam = "increase_bet_obj",
+    system_type = true,
     dsc = function(s)
         local result = "{" .. s:txt() .. "}";
         return result .. img 'blank:64x64';
@@ -56,6 +58,7 @@ increase_bet_obj = menu {
 
 _play_game_obj = menu {
     nam = "play_game_obj",
+    system_type = true,
     dsc = function(s)
         return "{" .. s:txt() .. "}";
     end,
@@ -627,6 +630,7 @@ rollStat = stat {
 game_room = vnr {
     nam = true,
     nosave = true,
+    system_type = true,
     ignore_preserved_gobjs = true,
     bgimg = function(s, bg)
         vn:scene(bg);
@@ -736,6 +740,7 @@ game.table = { ["bg"] = 'gfx/table2.png', ["paper"] = 'gfx/paper2.png' };
 
 _play_bp_two_ais = menu {
     nam = "play_bp_two_ais",
+    system_type = true,
     dsc = function(s) return "{Сыграть с Горожанином и Торговцем}^" end, 
     act = function(s)
         if _money then
@@ -762,6 +767,7 @@ _play_bp_two_ais = menu {
 
 _play_bp_one_ai = menu {
     nam = "play_bp_one_ai",
+    system_type = true,
     dsc = function(s) return "{Сыграть с Абу-Али}^" end, 
     act = function(s)
         if _money then
@@ -788,6 +794,7 @@ _play_bp_one_ai = menu {
 
 _play_bp_one_hotseat = menu {
     nam = "play_bp_one_hotseat",
+    system_type = true,
     dsc = function(s) return "{Сыграть с другом}^" end, 
     act = function(s)
         if _money then
@@ -815,6 +822,7 @@ _play_bp_one_hotseat = menu {
 
 _play_bp_two_hotseats = menu {
     nam = "play_bp_two_hotseats",
+    system_type = true,
     dsc = function(s) return "{Сыграть с двумя друзьями}^" end, 
     act = function(s)
         if _money then
