@@ -46,6 +46,7 @@ import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,8 +57,10 @@ import java.util.regex.Pattern;
  * @version 1.0 03/25/15
  */
 public class VNSTEADExportManager extends STEADExportManager {
+    private static final Logger LOG = Logger.getLogger(VNSTEADExportManager.class.getName());
     private static final Pattern SENTENCE_PATTERN = Pattern.compile("((?:^|[^\\.\\?!]+)(?:[\\.\\?!]+(?:\\\\\")?|$))");
     private static final int PARAGRAPH_THRESHOLD = 100;
+    private static final int PARAGRAPH_THRESHOLD_WARN = 330;
     private boolean m_technicalInstance = false;
 
     public VNSTEADExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
@@ -428,6 +431,9 @@ public class VNSTEADExportManager extends STEADExportManager {
         while (matcher.find()) {
             intermediateText = intermediateText + matcher.group(1);
             if (intermediateText.length() > PARAGRAPH_THRESHOLD) {
+                if (intermediateText.length() > PARAGRAPH_THRESHOLD_WARN) {
+                    LOG.warning("Length of the line during VN export is " + intermediateText.length() + ": " + intermediateText);
+                }
                 result.append(intermediateText);
                 intermediateText = Constants.EMPTY_STRING;
                 result.append("\");").append(lineSep);
