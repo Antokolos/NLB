@@ -2148,14 +2148,15 @@ vn = obj {
         return here().ignore_preserved_gobjs and v.preserved;
     end;
     enabled = function(s, v)
-        local result = (not s:gobf(v).enablefn or s:gobf(v):enablefn()) and not s:should_ignore(v);
+        local gob = s:gobf(v);
+        local result = not disabled(gob) and (not gob.enablefn or gob:enablefn()) and not s:should_ignore(v);
         if result then
             v.was_disabled = false;
         elseif not v.was_disabled then
             -- disabled => clear this sprite
             s:clear_bg_under_sprite(v, true);
             -- simulate onout, if it is defined
-            if s:gobf(v).onout then
+            if gob.onout then
                 s:outf(v);
             end
             -- to redraw it when it will become enabled again
