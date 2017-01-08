@@ -182,6 +182,18 @@ vn = obj {
             return s.offscreen
         end
     end;
+    rst = function(s)
+        s.sprite_cache = {};
+        s.sprite_cache_data = {};
+        s._effects = {};
+        s._pending_effects = {};
+        s._dirty_rects = {};
+        s._bg = false;
+        s._need_update = false;
+        s._wf = 0;
+        s._fln = nil;
+        s._frn = nil;
+    end;
     ini = function(s, load)
         s:request_full_clear();
         if not load or not s.on then
@@ -1918,13 +1930,26 @@ vn = obj {
     end;
     do_effects = function(s, clear)
         local result = {["datas"] = {}, ["hasmore"] = false};
+        local topmost = {};
         for i, v in ipairs(s._effects) do
             if s:enabled(v) then
-                local r = s:draw_step(v, clear);
-                if r.data then
-                    stead.table.insert(result.datas, r.data);
-                    result.hasmore = (result.hasmore or r.hasmore);
+                if v.preserved then
+                    stead.table.insert(topmost, i);
+                else
+                    local r = s:draw_step(v, clear);
+                    if r.data then
+                        stead.table.insert(result.datas, r.data);
+                        result.hasmore = (result.hasmore or r.hasmore);
+                    end
                 end
+            end
+        end
+        for ii, kk in ipairs(topmost) do
+            local vv = s._effects[kk];
+            local r = s:draw_step(vv, clear);
+            if r.data then
+                stead.table.insert(result.datas, r.data);
+                result.hasmore = (result.hasmore or r.hasmore);
             end
         end
         return result;
@@ -2149,7 +2174,7 @@ vn = obj {
     end;
     enabled = function(s, v)
         local gob = s:gobf(v);
-        local result = not disabled(gob) and (not gob.enablefn or gob:enablefn()) and not s:should_ignore(v);
+        local result = not disabled(gob) and (not gob.alive or gob:alive()) and (not gob.enablefn or gob:enablefn()) and not s:should_ignore(v);
         if result then
             v.was_disabled = false;
         elseif not v.was_disabled then
@@ -2271,6 +2296,7 @@ vn = obj {
 }
 
 stead.module_init(function()
+    vn:rst();
     vn:init()
     vnticks = stead.ticks();
     vnticks_diff = vn.ticks_threshold;

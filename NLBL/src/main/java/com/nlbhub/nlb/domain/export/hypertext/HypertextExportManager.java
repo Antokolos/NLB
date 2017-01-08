@@ -387,6 +387,12 @@ public abstract class HypertextExportManager
     }
 
     @Override
+    protected String decorateGoToOperation(String locationId) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateShuffleOperation(String listVariableName) {
         // TODO: implement
         return EMPTY_STRING;

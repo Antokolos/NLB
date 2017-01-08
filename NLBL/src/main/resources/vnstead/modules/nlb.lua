@@ -270,6 +270,9 @@ nlb = obj {
     end;
     nlbwalk = function(s, src, tgt)
         vn:request_full_clear();
+        if not src then
+            src = s:curloc();
+        end
         if (src ~= tgt) then
             s._curloc = tgt;
             walk(tgt);

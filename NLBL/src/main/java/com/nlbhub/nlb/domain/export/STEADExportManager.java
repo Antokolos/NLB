@@ -915,8 +915,11 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateObjConstraint(String constraintValue) {
         StringBuilder result = new StringBuilder();
         if (StringHelper.notEmpty(constraintValue)) {
+            result.append("    alive = function(s)").append(LINE_SEPARATOR);
+            result.append("        return ").append(constraintValue).append(";").append(LINE_SEPARATOR);
+            result.append("    end,").append(LINE_SEPARATOR);
             result.append("    life = function(s)").append(LINE_SEPARATOR);
-            result.append("        if not (").append(constraintValue).append(") then").append(LINE_SEPARATOR);
+            result.append("        if not s:alive() then").append(LINE_SEPARATOR);
             result.append("            nlb._filter[").append("stead.deref(s)").append("] = true;").append(LINE_SEPARATOR);
             result.append("            s:disable();").append(LINE_SEPARATOR);
             result.append("        end;").append(LINE_SEPARATOR);
@@ -1265,6 +1268,11 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateAchieveOperation(String achievementName) {
         // TODO: implement
         return "statsAPI.setAchievement('" + achievementName + "', true);" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateGoToOperation(String locationId) {
+        return "nlb:nlbwalk(nil, " + decorateId(locationId) + ");" + LINE_SEPARATOR;
     }
 
     @Override

@@ -2510,6 +2510,9 @@ public abstract class ExportManager {
                     case ACHIEVE:
                         stringBuilder.append(decorateAchieveOperation(expression.getValue()));
                         break;
+                    case GOTO:
+                        stringBuilder.append(decorateGoToOperation(expression.getValue()));
+                        break;
                     default:
                         throw new NLBConsistencyException(
                                 "Operation has unknown type for modification with id = "
@@ -2590,6 +2593,8 @@ public abstract class ExportManager {
     protected abstract String decorateRndOperation(String variableName, String maxValue);
 
     protected abstract String decorateAchieveOperation(String achievementName);
+
+    protected abstract String decorateGoToOperation(String locationId);
 
     protected abstract String decorateShuffleOperation(String listVariableName);
 
