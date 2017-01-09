@@ -358,10 +358,6 @@ public class STEADExportManager extends TextExportManager {
         } else {
             stringBuilder.append(getDefaultThemeSwitchExpression());
         }
-        if (pageBlocks.isDirectMode()) {
-            stringBuilder.append("        vn:request_full_clear();").append(LINE_SEPARATOR);
-            stringBuilder.append("        vn:lock_direct();").append(LINE_SEPARATOR);
-        }
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
         stringBuilder.append("        lifeon(s);").append(LINE_SEPARATOR);
@@ -380,6 +376,10 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("        s.snd(s);").append(LINE_SEPARATOR);
+        if (pageBlocks.isDirectMode()) {
+            stringBuilder.append("        vn:request_full_clear();").append(LINE_SEPARATOR);
+            stringBuilder.append("        vn:lock_direct();").append(LINE_SEPARATOR);
+        }
         stringBuilder.append("        s.add_gobj(s);").append(LINE_SEPARATOR);
         if (timerSet) {
             int timerRate = (hasFastAnim ? 1 : 200);
@@ -395,12 +395,6 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append(getGraphicalObjectAppendingExpression(pageBlocks));
-        if (pageBlocks.isDirectMode()) {
-            stringBuilder.append("    left = function(s, t)").append(LINE_SEPARATOR);
-            stringBuilder.append("        vn:request_full_clear();").append(LINE_SEPARATOR);
-            stringBuilder.append("        vn:unlock_direct();").append(LINE_SEPARATOR);
-            stringBuilder.append("    end,").append(LINE_SEPARATOR);
-        }
         stringBuilder.append("    exit = function(s, t)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.sndout(s);").append(LINE_SEPARATOR);
         if (timerSet) {
@@ -409,6 +403,10 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        s.wastext = false;").append(LINE_SEPARATOR);
         stringBuilder.append("        s.lasttext = nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        lifeoff(s);").append(LINE_SEPARATOR);
+        if (pageBlocks.isDirectMode()) {
+            stringBuilder.append("        vn:request_full_clear();").append(LINE_SEPARATOR);
+            stringBuilder.append("        vn:unlock_direct();").append(LINE_SEPARATOR);
+        }
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    life = function(s)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR);

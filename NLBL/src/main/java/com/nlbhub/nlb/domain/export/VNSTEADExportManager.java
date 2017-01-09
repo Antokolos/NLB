@@ -111,7 +111,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         stringBuilder.append(lineSep);
 
         stringBuilder.append("f1 = font('fonts/STEINEMU.ttf', 32);").append(lineSep);
-        stringBuilder.append("fend = font('fonts/STEINEMU.ttf', 128);").append(lineSep);
+        stringBuilder.append("fend = font('fonts/STEINEMU.ttf', 96);").append(lineSep);
         stringBuilder.append("function pname(n, c)").append(lineSep);
         stringBuilder.append("    return function()").append(lineSep);
         stringBuilder.append("        pn(img 'blank:8x1',f1:txt(n, c, 1))").append(lineSep);
@@ -253,7 +253,8 @@ public class VNSTEADExportManager extends STEADExportManager {
                 }
             }
             if (theEnd) {
-                result.append("        vn:geom(470, 400, 980, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png');").append(lineSep);
+                result.append("        put(_try_again);").append(lineSep);
+                result.append("        vn:geom(530, 400, 860, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png');").append(lineSep);
             } else {
                 result.append("        vn:geom(320, 320, 1280, 480, 'dissolve');").append(lineSep);
             }

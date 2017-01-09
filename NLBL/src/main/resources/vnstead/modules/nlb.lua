@@ -6,6 +6,12 @@ nlb = obj {
     _clones = {};
     _filter = {};
     _curloc = nil;
+    rst = function(s)
+        s._lists = {};
+        s._clones = {};
+        s._filter = {};
+        s._curloc = nil;
+    end;
     push = function(s, listname, v)
         local list = s._lists[listname];
         s._lists[listname] = {next = list, value = v};
@@ -292,6 +298,16 @@ nlb = obj {
     end;
 };
 
+_try_again = menu {
+    nam = "try_again",
+    system_type = true,
+    dsc = function(s) return img 'blank:132x23'.."{Try again}^" end,
+    act = function(s)
+        stead.restart();
+    end,
+    actf = function(s) return s:act(); end
+}
+
 _syscall_hidemenubtn  = menu {
     nam = "syscall_hidemenubtn",
     system_type = true,
@@ -397,4 +413,5 @@ listobj = {
 }
 
 stead.module_init(function()
+    nlb:rst();
 end)
