@@ -456,7 +456,9 @@ public abstract class ExportManager {
         blocks.setPageLabel(decoratePageLabel(page.getId(), pageNumber, page.getTheme()));
         blocks.setPageNumber(decoratePageNumber(pageNumber));
         blocks.setPageComment(decoratePageComment(page.getCaption()));
-        blocks.setPageCaption(decoratePageCaption(page.getCaption(), page.isUseCaption()));
+        final String title = getNonEmptyTitle(nlb);
+        blocks.setPageCaption(decoratePageCaption(page.getCaption(), page.isUseCaption(), title));
+        blocks.setModuleTitle(title);
         String imageFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_IMAGE_FILE_NAME: page.getImageFileName());
         boolean isAnimatedImage = page.isImageAnimated();
         blocks.setHasAnimatedPageImage(isAnimatedImage);
@@ -2688,7 +2690,20 @@ public abstract class ExportManager {
 
     protected abstract String decorateLinkModifications(final String modificationsText);
 
-    protected abstract String decoratePageCaption(String caption, boolean useCaption);
+    protected abstract String decoratePageCaption(String caption, boolean useCaption, String moduleTitle);
+
+    @NotNull
+    protected String getNonEmptyTitle(String moduleTitle) {
+        return StringHelper.notEmpty(moduleTitle) ? moduleTitle : "...";
+    }
+
+    private String getNonEmptyTitle(NonLinearBook module) {
+        String title = module.getTitle();
+        if (StringHelper.isEmpty(title) && module.getParentNLB() != null && !module.getParentNLB().isDummy()) {
+            return getNonEmptyTitle(module.getParentNLB());
+        }
+        return getNonEmptyTitle(title);
+    }
 
     protected abstract String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground, Theme theme);
 

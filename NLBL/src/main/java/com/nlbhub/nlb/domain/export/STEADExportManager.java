@@ -1510,11 +1510,12 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageCaption(String caption, boolean useCaption) {
+    protected String decoratePageCaption(String caption, boolean useCaption, String moduleTitle) {
+        String title = getNonEmptyTitle(moduleTitle);
         if (StringHelper.notEmpty(caption) && useCaption) {
             return "    nam = \"" + caption + "\"," + LINE_SEPARATOR;
         } else {
-            return "    nam = \"...\"," + LINE_SEPARATOR;
+            return "    nam = \"" + title + "\"," + LINE_SEPARATOR;
         }
     }
 

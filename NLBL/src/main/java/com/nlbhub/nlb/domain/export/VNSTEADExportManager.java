@@ -214,7 +214,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         String lineSep = getLineSeparator();
         String roomName = pageBlocks.getPageName();
         result.append(roomName).append("_choices").append(" = room {").append(lineSep);
-        result.append("    nam = \"").append(roomName).append("_choices\",").append(lineSep);
+        result.append("    nam = \"").append(getNonEmptyTitle(pageBlocks.getModuleTitle())).append("\",").append(lineSep);
         result.append("        textbg = true,").append(lineSep);
         result.append("        ignore_preserved_gobjs = true,").append(lineSep);
         if (theEnd) {

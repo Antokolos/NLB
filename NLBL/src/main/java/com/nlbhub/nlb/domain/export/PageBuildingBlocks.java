@@ -77,6 +77,7 @@ public class PageBuildingBlocks {
     /** Page blocks' links are considered trivial if each of them is trivial. */
     private boolean m_hasTrivialLinks;
     private Theme m_theme = Theme.DEFAULT;
+    private String m_moduleTitle;
 
     public PageBuildingBlocks() {
         m_containedObjIds = new ArrayList<>();
@@ -310,5 +311,13 @@ public class PageBuildingBlocks {
 
     public void setTheme(Theme theme) {
         m_theme = theme;
+    }
+
+    public String getModuleTitle() {
+        return m_moduleTitle;
+    }
+
+    public void setModuleTitle(String moduleTitle) {
+        m_moduleTitle = moduleTitle;
     }
 }
