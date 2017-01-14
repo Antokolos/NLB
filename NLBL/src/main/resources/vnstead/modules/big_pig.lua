@@ -3,6 +3,7 @@ require "modules/dice"
 require "modules/dicegames"
 require "modules/gobj"
 require "modules/nlb"
+require "modules/rulesdlg"
 
 next_turn_obj = menu {
     nam = "next_turn_obj",
@@ -640,6 +641,7 @@ game_room = vnr {
         return "";
     end,
     enter = function(s, f)
+        _dlg_visible = true;
         rollStat.data = nlb:shallowcopy(game.data);
         if rollStat.data then
             rollStat._rolls = {};
@@ -665,6 +667,9 @@ game_room = vnr {
         s:bgimg(game.table.bg);
 
         vn:preload_effect('gfx/reward.png', 0, 270, 0, 270);
+
+        vn:gshow(v_c7c2ac92_ac1b_4557_8265_8adddb054136);
+        vn:gshow(v_d9296379_6fb6_445d_b503_3e04a7bc36d2);
 
         local paper_eff = vn:gshow(paper);
 

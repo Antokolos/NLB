@@ -638,9 +638,9 @@ public class STEADExportManager extends TextExportManager {
         }
     }
 
-    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin, int maxStep) {
+    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, boolean hasParentObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin, int maxStep) {
         boolean hasDefinedOffset = StringHelper.notEmpty(offsetString);
-        String offset = hasDefinedOffset ? offsetString : "0,0";
+        String offset = (hasDefinedOffset && !hasParentObj) ? offsetString : "0,0";
         String pos = getPos(coordsOrigin, offset);
         String steps = (effect == Obj.Effect.None) ? "" : "    maxStep = " + maxStep + "," + LINE_SEPARATOR + "    startFrame = 0," + LINE_SEPARATOR + "    curStep = 0," + LINE_SEPARATOR;
         if (effect != Obj.Effect.None) {
@@ -811,24 +811,10 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjActStart(String actTextExpanded, boolean collapsable, int curStep) {
+    protected String decorateObjActStart(String actTextExpanded) {
         final boolean actTextNotEmpty = StringHelper.notEmpty(actTextExpanded);
         final String returnStatement = (actTextNotEmpty) ? "" : "        return true;" + LINE_SEPARATOR;
         String actText = getActText(actTextNotEmpty);
-        String suffix = "    actf = function(s)" + LINE_SEPARATOR;
-        if (collapsable) {
-            suffix = (
-                    ((curStep > 0) ? "    curStep = " + curStep + "," + LINE_SEPARATOR : "") +
-                    "    actf = function(s)" + LINE_SEPARATOR +
-                    "        local v = vn:glookup(stead.deref(s));" + LINE_SEPARATOR +
-                    "        if s.is_paused then" + LINE_SEPARATOR +
-                    "            vn:vpause(v, false);" + LINE_SEPARATOR +
-                    "        else" + LINE_SEPARATOR +
-                    "            vn:set_step(v, nil, not v.forward);" + LINE_SEPARATOR +
-                    "        end" + LINE_SEPARATOR +
-                    "        vn:start();" + LINE_SEPARATOR
-            );
-        }
         return (
                 "    act = function(s)" + LINE_SEPARATOR +
                         "        s:acta();" + LINE_SEPARATOR +
@@ -842,7 +828,7 @@ public class STEADExportManager extends TextExportManager {
                         "        s:actf();" + LINE_SEPARATOR +
                         "        s:actcmn();" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
-                        suffix
+                        "    actf = function(s)" + LINE_SEPARATOR
         );
     }
 
@@ -855,8 +841,19 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjActEnd() {
-        return "    end," + LINE_SEPARATOR;
+    protected String decorateObjActEnd(boolean collapsable, int curStep) {
+        final String suffix = ((curStep > 0) ? "    curStep = " + curStep + "," + LINE_SEPARATOR : "");
+        final String prefix = (collapsable)
+            ? (
+                            "        local v = vn:glookup(stead.deref(s));" + LINE_SEPARATOR +
+                            "        if s.is_paused then" + LINE_SEPARATOR +
+                            "            vn:vpause(v, false);" + LINE_SEPARATOR +
+                            "        else" + LINE_SEPARATOR +
+                            "            vn:set_step(v, nil, not v.forward);" + LINE_SEPARATOR +
+                            "        end" + LINE_SEPARATOR +
+                            "        vn:start();" + LINE_SEPARATOR
+            ) : "";
+        return prefix + "    end," + LINE_SEPARATOR + suffix;
     }
 
     @Override

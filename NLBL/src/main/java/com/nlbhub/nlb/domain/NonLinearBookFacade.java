@@ -237,6 +237,7 @@ public class NonLinearBookFacade implements NLBObservable {
             exportBundledVNSTEADFile(modulesDir, true, "gobj.lua");
             exportBundledVNSTEADFile(modulesDir, true, "log.lua");
             exportBundledVNSTEADFile(modulesDir, true, "nlb.lua");
+            exportBundledVNSTEADFile(modulesDir, true, "rulesdlg.lua");
         }
         File sfxDir = new File(exportDir, "sfx");
         if (sfxDir.mkdir()) {
@@ -247,6 +248,10 @@ public class NonLinearBookFacade implements NLBObservable {
         }
         File gfxDir = new File(exportDir, "gfx");
         if (gfxDir.mkdir()) {
+            exportBundledVNSTEADFile(gfxDir, true, "dialog_bg.png");
+            exportBundledVNSTEADFile(gfxDir, true, "dlg_text_bg.png");
+            exportBundledVNSTEADFile(gfxDir, true, "dlgbuttonok_out.png");
+            exportBundledVNSTEADFile(gfxDir, true, "open_dialog.png");
             exportBundledVNSTEADFile(gfxDir, true, "empty.png");
             exportBundledVNSTEADFile(gfxDir, true, "fl.png");
             exportBundledVNSTEADFile(gfxDir, true, "fr.png");

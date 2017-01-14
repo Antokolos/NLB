@@ -831,10 +831,11 @@ public abstract class ExportManager {
         List<ImagePathData> imagePaths = getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage(), obj.isAnimatedImage() && obj.isGraphical());
         int maxStep = (imagePaths.size() > 0 && imagePaths.get(0).getMaxFrameNumber() > 0) ? imagePaths.get(0).getMaxFrameNumber() : obj.getMaxFrame();
         final String objImage = decorateObjImage(imagePaths, obj.isGraphical());
-        final String objEffect = decorateObjEffect(obj.getOffset(), (obj.getContainerType() == Obj.ContainerType.Obj) ? "0,0" : getRelativeCoords(obj), obj.isGraphical(), obj.getMovementDirection(), obj.getEffect(), obj.getCoordsOrigin(), maxStep);
+        boolean hasParentObj = (obj.getContainerType() == Obj.ContainerType.Obj);
+        final String objEffect = decorateObjEffect(obj.getOffset(), (hasParentObj) ? "0,0" : getRelativeCoords(obj), obj.isGraphical(), hasParentObj, obj.getMovementDirection(), obj.getEffect(), obj.getCoordsOrigin(), maxStep);
         blocks.setObjEffect(objEffect);
-        Coords coords = obj.getRelativeCoords(true);
-        blocks.setObjArm(obj.isGraphical() && (obj.getContainerType() == Obj.ContainerType.Obj) ? decorateObjArm(coords.getLeft(), coords.getTop()) : "");
+        Coords coords = getRelativeCoordsOrOffset(obj);
+        blocks.setObjArm(obj.isGraphical() && hasParentObj ? decorateObjArm(coords.getLeft(), coords.getTop()) : "");
         Obj morphOverObj = obj.getMorphOverObj();
         blocks.setMorphOver(decorateMorphOver((morphOverObj != null) ? morphOverObj.getId() : EMPTY_STRING, obj.isGraphical()));
         Obj morphOutObj = obj.getMorphOutObj();
@@ -847,8 +848,8 @@ public abstract class ExportManager {
         blocks.setTakable(obj.isTakable());
         blocks.setObjTak(decorateObjTak(obj.getName()));
         blocks.setObjInv(decorateObjInv(objType));
-        blocks.setObjActStart(decorateObjActStart(expandVariables(StringHelper.getTextChunks(obj.getActText())), obj.isCollapsable(), getCurStep(obj.getEffect())));
-        blocks.setObjActEnd(decorateObjActEnd());
+        blocks.setObjActStart(decorateObjActStart(expandVariables(StringHelper.getTextChunks(obj.getActText()))));
+        blocks.setObjActEnd(decorateObjActEnd(obj.isCollapsable(), getCurStep(obj.getEffect())));
         blocks.setObjUseStart(decorateObjUseStart());
         blocks.setObjUseEnd(decorateObjUseEnd());
         blocks.setObjEnd(decorateObjEnd());
@@ -868,6 +869,23 @@ public abstract class ExportManager {
             }
         }
         return blocks;
+    }
+
+    private Coords getRelativeCoordsOrOffset(Obj obj) {
+        String offset = obj.getOffset();
+        if (StringHelper.isEmpty(offset)) {
+            return obj.getRelativeCoords(true);
+        } else {
+            String[] offsets = offset.split(",");
+            if (offsets.length == 2) {
+                CoordsLw coords = new CoordsLw();
+                coords.setLeft(Integer.parseInt(offsets[0].trim()));
+                coords.setTop(Integer.parseInt(offsets[1].trim()));
+                return coords;
+            } else {
+                return CoordsLw.ZERO_COORDS;
+            }
+        }
     }
 
     private int getCurStep(Obj.Effect effect) {
@@ -1691,7 +1709,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin, int maxStep) {
+    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, boolean hasParentObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin, int maxStep) {
         return EMPTY_STRING;
     }
 
@@ -1739,11 +1757,11 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjActStart(String actTextExpanded, boolean collapsable, int curStep) {
+    protected String decorateObjActStart(String actTextExpanded) {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjActEnd() {
+    protected String decorateObjActEnd(boolean collapsable, int curStep) {
         return EMPTY_STRING;
     }
 

@@ -1050,6 +1050,10 @@ vn = obj {
         if parent_eff then
             parent_nam = parent_eff.nam;
         end
+        local topmost = false;
+        if g.topmost then
+            topmost = true;
+        end
         local v = {
             parent = parent_nam,
             newborn = true,
@@ -1068,6 +1072,7 @@ vn = obj {
             mouse_over = is_over,
             gob = stead.deref(g),
             preserved = is_preserved,
+            topmost = topmost,
             dirty_draw = dirty_draw,
             last_rct = false
             --children = {} - actually can be set here, but I'll set it later, after possible hide() call
@@ -1933,7 +1938,7 @@ vn = obj {
         local topmost = {};
         for i, v in ipairs(s._effects) do
             if s:enabled(v) then
-                if v.preserved then
+                if v.preserved or v.topmost then
                     stead.table.insert(topmost, i);
                 else
                     local r = s:draw_step(v, clear);
