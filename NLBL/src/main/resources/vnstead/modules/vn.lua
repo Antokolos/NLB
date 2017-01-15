@@ -131,6 +131,7 @@ vn = obj {
     system_type = true;
     sprite_cache = {};
     sprite_cache_data = {};
+    text_sprites_cache = {};
     _effects = {};
     _pending_effects = {};
     _dirty_rects = {};
@@ -185,6 +186,7 @@ vn = obj {
     rst = function(s)
         s.sprite_cache = {};
         s.sprite_cache_data = {};
+        s.text_sprites_cache = {};
         s._effects = {};
         s._pending_effects = {};
         s._dirty_rects = {};
@@ -729,8 +731,14 @@ vn = obj {
                 end
             end
         end
+        for kk, ww in pairs(s.text_sprites_cache) do
+            for ii, sss in ipairs(ww.sprites) do
+                sprite.free(sss.spr);
+            end
+        end
         s.sprite_cache = {};
         s.sprite_cache_data = {};
+        s.text_sprites_cache = {};
     end;
     hide = function(s, image, eff, ...)
         local v
@@ -1054,6 +1062,10 @@ vn = obj {
         if g.topmost then
             topmost = true;
         end
+        local cache_text = false;
+        if g.cache_text then
+            cache_text = true;
+        end
         local v = {
             parent = parent_nam,
             newborn = true,
@@ -1073,6 +1085,7 @@ vn = obj {
             gob = stead.deref(g),
             preserved = is_preserved,
             topmost = topmost,
+            cache_text = cache_text,
             dirty_draw = dirty_draw,
             last_rct = false
             --children = {} - actually can be set here, but I'll set it later, after possible hide() call
@@ -2103,41 +2116,53 @@ vn = obj {
             xpos = xpos + data.w * scale;
             ypos = ypos + data.h * scale / 2.0;
             xpos = xpos + s.default_label_extent + s.default_tooltip_offset;
+            local cached_sprites_idx = v.nam .. '@' .. tostring(scale) .. '_' .. tostring(alpha);
+            local cached_sprites = s.text_sprites_cache[cached_sprites_idx];
             local sprites = {};
             local htotal = 0;
             local wmax = 0;
-            for k, vv in pairs(texts) do
-                if vv.text then
-                    local color = vv.color;
-                    if not color then
-                        color = s.hud_color;
+            if not cached_sprites then
+                for k, vv in pairs(texts) do
+                    if vv.text then
+                        local color = vv.color;
+                        if not color then
+                            color = s.hud_color;
+                        end
+                        local textSpriteInit = sprite.text(hudFont, vv.text, color);
+                        local textSpriteScaled;
+                        if scale ~= 1.0 then
+                            textSpriteScaled = sprite.scale(textSpriteInit, scale, scale, false);
+                            sprite.free(textSpriteInit);
+                        else
+                            textSpriteScaled = textSpriteInit;
+                        end
+                        local textSprite;
+                        if alpha ~= 255 then
+                            textSprite = sprite.alpha(textSpriteScaled, alpha);
+                            sprite.free(textSpriteScaled);
+                        else
+                            textSprite = textSpriteScaled;
+                        end
+                        local w, h = sprite.size(textSprite);
+                        if clear or only_compute then
+                            sprite.free(textSprite);
+                        end
+                        w = w + s.extent;
+                        if w > wmax then
+                            wmax = w;
+                        end
+                        htotal = htotal + h;
+                        stead.table.insert(sprites, {["spr"] = textSprite, ["w"] = w, ["h"] = h});
                     end
-                    local textSpriteInit = sprite.text(hudFont, vv.text, color);
-                    local textSpriteScaled;
-                    if scale ~= 1.0 then
-                        textSpriteScaled = sprite.scale(textSpriteInit, scale, scale, false);
-                        sprite.free(textSpriteInit);
-                    else
-                        textSpriteScaled = textSpriteInit;
-                    end
-                    local textSprite;
-                    if alpha ~= 255 then
-                        textSprite = sprite.alpha(textSpriteScaled, alpha);
-                        sprite.free(textSpriteScaled);
-                    else
-                        textSprite = textSpriteScaled;
-                    end
-                    local w, h = sprite.size(textSprite);
-                    if clear or only_compute then
-                        sprite.free(textSprite);
-                    end
-                    w = w + s.extent;
-                    if w > wmax then
-                        wmax = w;
-                    end
-                    htotal = htotal + h;
-                    stead.table.insert(sprites, {["spr"] = textSprite, ["xpos"] = xpos, ["w"] = w, ["h"] = h});
                 end
+                if v.cache_text then
+                    cached_sprites = {["sprites"] = sprites, ["htotal"] = htotal, ["wmax"] = wmax}
+                    s.text_sprites_cache[cached_sprites_idx] = cached_sprites;
+                end
+            else
+                sprites = cached_sprites.sprites;
+                htotal = cached_sprites.htotal;
+                wmax = cached_sprites.wmax;
             end
             local ycur = ypos - htotal / 2.0;
             local rct = {["v"] = v, ["x"] = xpos, ["y"] = ycur, ["w"] = wmax, ["h"] = htotal};
@@ -2154,12 +2179,14 @@ vn = obj {
             end
             for i, ss in ipairs(sprites) do
                 local hudSprite = sprite.blank(ss.w, ss.h);
-                sprite.draw(target, ss.xpos, ycur, ss.w, ss.h, hudSprite, 0, 0);
+                sprite.draw(target, xpos, ycur, ss.w, ss.h, hudSprite, 0, 0);
                 sprite.draw(ss.spr, hudSprite, 0, 0);
-                sprite.draw(hudSprite, target, ss.xpos, ycur);
+                sprite.draw(hudSprite, target, xpos, ycur);
                 ycur = ycur + ss.h;
                 sprite.free(hudSprite);
-                sprite.free(ss.spr);
+                if not cached_sprites then
+                    sprite.free(ss.spr);
+                end
             end
             return rct;
         end

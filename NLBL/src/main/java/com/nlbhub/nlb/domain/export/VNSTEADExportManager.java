@@ -130,9 +130,8 @@ public class VNSTEADExportManager extends STEADExportManager {
         stringBuilder.append("    dofile(\"theme_vn.lua\");").append(lineSep);  // Reset theme to VN (default is non-VN)
         stringBuilder.append("    vn:scene(nil);").append(lineSep);
         stringBuilder.append("    vn.fading = 8").append(lineSep);
+        stringBuilder.append(generateVarsInitBlock(nlbBuildingBlocks));
         stringBuilder.append("end").append(lineSep);
-
-        stringBuilder.append(generateLibraryMethods());
         return stringBuilder.toString();
     }
 

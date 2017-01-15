@@ -51,13 +51,15 @@ public class NLBBuildingBlocks {
     private String m_title;
     private String m_author;
     private String m_version;
+    private String m_lang;
     private List<PageBuildingBlocks> m_pagesBuildingBlocks;
     private List<ObjBuildingBlocks> m_objsBuildingBlocks;
 
-    public NLBBuildingBlocks(String title, String author, String version) {
+    public NLBBuildingBlocks(String title, String author, String version, String lang) {
         m_title = title;
         m_author = author;
         m_version = version;
+        m_lang = lang;
         m_pagesBuildingBlocks = new ArrayList<>();
         m_objsBuildingBlocks = new ArrayList<>();
     }
@@ -84,6 +86,14 @@ public class NLBBuildingBlocks {
 
     public void setVersion(String version) {
         m_version = version;
+    }
+
+    public String getLang() {
+        return m_lang;
+    }
+
+    public void setLang(String lang) {
+        m_lang = lang;
     }
 
     public List<PageBuildingBlocks> getPagesBuildingBlocks() {

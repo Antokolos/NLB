@@ -140,6 +140,7 @@ v_c757b8a3_210e_4966_8fb5_a853c8f0512c = gmenu {
     system_type = true,
     var { tag = ''; container = function() return v_c7c2ac92_ac1b_4557_8265_8adddb054136; end; topmost = true; },
     nlbid = 'c757b8a3-210e-4966-8fb5-a853c8f0512c',
+    cache_text = true,
     deref = function(s) return stead.deref(v_c757b8a3_210e_4966_8fb5_a853c8f0512c); end,
     nam = "dialogTextObj",
     eff = "left-top@0,0",
@@ -147,7 +148,7 @@ v_c757b8a3_210e_4966_8fb5_a853c8f0512c = gmenu {
     iarm = { [0] = { 3.0, 404.0 } };
     snd = function(s)
     end,
-    disp = function(s) if _lang_ru then return s:disp_ru(); else return s:disp_en(); end end,
+    disp = function(s) if _export_lang == 'ru' then return s:disp_ru(); else return s:disp_en(); end end,
     disp_ru = function(s) return "Правила игры в кости. «Большая свинья».^"..
             "Цель игры первым набрать 100 или больше очков.^"..
             "Вы бросаете две кости, полученное число складываете с уже имеющимся.^"..

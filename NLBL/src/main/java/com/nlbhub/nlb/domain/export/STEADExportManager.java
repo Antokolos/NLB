@@ -144,15 +144,14 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    vn:scene(nil);").append(LINE_SEPARATOR);
         stringBuilder.append("    vn.fading = 8").append(LINE_SEPARATOR);
         stringBuilder.append("    nlbticks = stead.ticks();").append(LINE_SEPARATOR);
+        stringBuilder.append(generateVarsInitBlock(nlbBuildingBlocks));
         stringBuilder.append("end").append(LINE_SEPARATOR);
-
-        stringBuilder.append(generateLibraryMethods());
         return stringBuilder.toString();
     }
 
-    protected String generateLibraryMethods() {
+    protected String generateVarsInitBlock(NLBBuildingBlocks nlbBuildingBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(LINE_SEPARATOR);
+        stringBuilder.append("    _export_lang = '").append(nlbBuildingBlocks.getLang()).append("';").append(LINE_SEPARATOR);
 
         return stringBuilder.toString();
     }
