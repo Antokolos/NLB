@@ -251,7 +251,8 @@ public class NonLinearBookFacade implements NLBObservable {
             exportBundledVNSTEADFile(gfxDir, true, "dialog_bg.png");
             exportBundledVNSTEADFile(gfxDir, true, "dlg_text_bg.png");
             exportBundledVNSTEADFile(gfxDir, true, "dlgbuttonok_out.png");
-            exportBundledVNSTEADFile(gfxDir, true, "open_dialog.png");
+            exportBundledVNSTEADFile(gfxDir, true, "dices_help.png");
+            exportBundledVNSTEADFile(gfxDir, true, "dices_help_alt.png");
             exportBundledVNSTEADFile(gfxDir, true, "empty.png");
             exportBundledVNSTEADFile(gfxDir, true, "fl.png");
             exportBundledVNSTEADFile(gfxDir, true, "fr.png");
