@@ -669,7 +669,7 @@ game_room = vnr {
         vn:preload_effect('gfx/reward.png', 0, 270, 0, 270);
 
         vn:gshow(v_c7c2ac92_ac1b_4557_8265_8adddb054136);
-        vn:gshow(v_d9296379_6fb6_445d_b503_3e04a7bc36d2);
+        vn:gshow(_dices_help);
 
         local paper_eff = vn:gshow(paper);
 

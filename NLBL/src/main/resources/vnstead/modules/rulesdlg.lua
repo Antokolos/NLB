@@ -46,7 +46,8 @@ v_c7c2ac92_ac1b_4557_8265_8adddb054136 = gmenu {
     nlbid = 'c7c2ac92-ac1b-4557-8265-8adddb054136',
     deref = function(s) return stead.deref(v_c7c2ac92_ac1b_4557_8265_8adddb054136); end,
     nam = "dialogObj",
-    eff = "fadein-middle-middle@0,0",
+    eff = "zoomin-left-bottom@0,0",
+    arm = {[0] = {460, 140}},
     maxStep = 8,
     startFrame = 0,
     curStep = 0,
@@ -94,47 +95,25 @@ v_c7c2ac92_ac1b_4557_8265_8adddb054136 = gmenu {
 };
 
 _dialogObj = v_c7c2ac92_ac1b_4557_8265_8adddb054136
--- dialogTriggerObj
-v_d9296379_6fb6_445d_b503_3e04a7bc36d2 = gmenu {
+
+_dices_help = gobj {
+    nam = "dices_help",
     system_type = true,
-    var { tag = ''; container = function() return v_0e49cfc2_eb54_4db1_926d_79ce4d67836c; end; topmost = true; },
-    nlbid = 'd9296379-6fb6-445d-b503-3e04a7bc36d2',
-    deref = function(s) return stead.deref(v_d9296379_6fb6_445d_b503_3e04a7bc36d2); end,
-    nam = "dialogTriggerObj",
-    eff = "left-bottom@0,0",
-    snd = function(s)
-    end,
-    disp = function(s) end,
-    dscf = function(s) end,
-    dsc = function(s) return s.dscf(s); end,
-    act = function(s)
-        s:acta();
-        return true;
-    end,
-    actt = function(s)
-        return "";
-    end,
-    acta = function(s)
-        s:actf();
-        s:actcmn();
-    end,
-    actf = function(s)
-        nlb:actf(v_c7c2ac92_ac1b_4557_8265_8adddb054136);
-    end,
-    pic = function(s)
-        if (true) then
-            return 'gfx/open_dialog.png';
+    pic = "gfx/dices_help.png",
+    eff = "left-top@40,875",
+    morphover = "_alt_dices_help"
+}
 
-        end
-    end,
-    imgv = function(s) return img(s.pic(s)); end,
-    used = function(s, w)
-    end,
-    actcmn = function(s)
-    end,
-};
+_alt_dices_help = gobj {
+    nam = "alt_dices_help",
+    system_type = true,
+    pic = "gfx/dices_help_alt.png",
+    eff = "left-top@40,875",
+    morphout = "_dices_help",
+    dsc = function(s) return "Help"; end,
+    act = function(s) if vn.stopped then nlb:actf(v_c7c2ac92_ac1b_4557_8265_8adddb054136); end; end
+}
 
-_dialogTriggerObj = v_d9296379_6fb6_445d_b503_3e04a7bc36d2
 -- dialogTextObj
 v_c757b8a3_210e_4966_8fb5_a853c8f0512c = gmenu {
     system_type = true,
@@ -149,7 +128,7 @@ v_c757b8a3_210e_4966_8fb5_a853c8f0512c = gmenu {
     snd = function(s)
     end,
     disp = function(s) if _export_lang == 'ru' then return s:disp_ru(); else return s:disp_en(); end end,
-    disp_ru = function(s) return "Правила игры в кости. «Большая свинья».^"..
+    disp_ru = function(s) return "Правила игры в кости «Большая свинья».^"..
             "Цель игры первым набрать 100 или больше очков.^"..
             "Вы бросаете две кости, полученное число складываете с уже имеющимся.^"..
             "Вы можете бросать кости до тех пор, пока сами не решите передать ход или^"..
