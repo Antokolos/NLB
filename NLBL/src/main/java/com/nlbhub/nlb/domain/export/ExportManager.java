@@ -51,6 +51,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -61,6 +62,8 @@ import java.util.regex.Pattern;
  * @version 1.0 12/4/13
  */
 public abstract class ExportManager {
+    private static final Logger LOG = Logger.getLogger(VNSTEADExportManager.class.getName());
+
     private static final String EQ_PLACEHOLDER = "000369f3-943a-4696-9c20-f6471b5c131d";
     private static final String NEQ_PLACEHOLDER = "211c47bf-dad2-49d1-9ab0-162082d2664c";
     private static final String GT_PLACEHOLDER = "74ea093d-1918-4e02-b2bd-a929d7db4b0c";
@@ -447,7 +450,8 @@ public abstract class ExportManager {
     ) throws NLBConsistencyException, NLBExportException {
         NonLinearBook nlb = exportData.getNlb();
         PageBuildingBlocks blocks = new PageBuildingBlocks();
-        blocks.setHasPageText(StringHelper.notEmpty(page.getText()));
+        boolean hasPageText = StringHelper.notEmpty(page.getText());
+        blocks.setHasPageText(hasPageText);
         blocks.setTheme(page.getTheme());
         final Integer pageNumber = checkedGetPageNumber(page.getId());
         blocks.setAutowired(page.isAutowire());
@@ -467,7 +471,8 @@ public abstract class ExportManager {
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
         blocks.setPageSound(decoratePageSound(pageName, getSoundPaths(page.getExternalHierarchy(), soundFileName), page.isSoundSFX(), page.getTheme()));
         blocks.setPageTextStart(decoratePageTextStart(page.getId(), pageNumber, StringHelper.getTextChunks(page.getText()), page.getTheme()));
-        blocks.setPageTextEnd(decoratePageTextEnd(page.getId(), pageNumber, page.getTheme(), hasChoicesOrLeaf(page)));
+        boolean hasChoicesOrLeaf = hasChoicesOrLeaf(page);
+        blocks.setPageTextEnd(decoratePageTextEnd(page.getId(), pageNumber, page.getTheme(), hasChoicesOrLeaf));
         if (!StringHelper.isEmpty(page.getVarId())) {
             Variable variable = nlb.getVariableById(page.getVarId());
             // TODO: Add cases with deleted pages/links/variables etc. to the unit test
@@ -514,11 +519,13 @@ public abstract class ExportManager {
         blocks.setPageEnd(decoratePageEnd(page.isFinish()));
         List<String> containedObjIds = page.getContainedObjIds();
         boolean hasAnim = false;
+        boolean hasGraphicalObjs = false;
         if (!containedObjIds.isEmpty()) {
             for (String containedObjId : containedObjIds) {
                 Obj obj = nlb.getObjById(containedObjId);
                 hasAnim = (hasAnim || obj.isAnimatedImage());
                 if (obj.isGraphical()) {
+                    hasGraphicalObjs = true;
                     blocks.addContainedGraphicalObjId(decorateId(containedObjId));
                 } else {
                     blocks.addContainedObjId(decorateContainedObjId(containedObjId));
@@ -664,6 +671,9 @@ public abstract class ExportManager {
             }
         }
         blocks.setHasTrivialLinks(determineTrivialStatus(blocks));
+        if (!hasPageText && StringHelper.notEmpty(imageFileName) && !hasGraphicalObjs && !page.isLeaf()) {
+            LOG.warning("Page " + page.getId() + " has empty text and non-empty image, and it is not leaf and not pure graphical page");
+        }
         return blocks;
     }
 
