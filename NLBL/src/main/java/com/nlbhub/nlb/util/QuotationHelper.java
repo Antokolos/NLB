@@ -52,7 +52,7 @@ import java.util.regex.Pattern;
  * @version 1.0
  */
 public class QuotationHelper {
-    private static final Pattern QUOTES = Pattern.compile("[\\u2033\\u05F4\\u059E\\u00AB\\u2039\\u00BB\\u203A\\u201E\\u201A\\u201C\\u201F\\u2018\\u201B\\u201D\\u2019]+");
+    private static final Pattern QUOTES = Pattern.compile("[`\\u2033\\u05F4\\u059E\\u00AB\\u2039\\u00BB\\u203A\\u201E\\u201A\\u201C\\u201F\\u2018\\u201B\\u201D\\u2019]+");
     public static boolean find(String source) {
         if (StringHelper.isEmpty(source)) {
             return false;
