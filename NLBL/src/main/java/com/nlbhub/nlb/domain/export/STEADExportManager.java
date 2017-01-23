@@ -1685,6 +1685,12 @@ public class STEADExportManager extends TextExportManager {
         return expandVariables(textChunks);
     }
 
+    @Override
+    protected String expandVariablesForLinks(List<TextChunk> textChunks, Theme theme) {
+        // Expand variables for links should not use VN-related logic at all, even for VN case we should use plain INSTEAD approach
+        return expandVariables(textChunks);
+    }
+
     protected String getGlobalVarPrefix() {
         return GLOBAL_VAR_PREFIX;
     }

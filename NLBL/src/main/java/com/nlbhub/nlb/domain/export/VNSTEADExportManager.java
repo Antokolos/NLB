@@ -45,6 +45,7 @@ import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -425,8 +426,23 @@ public class VNSTEADExportManager extends STEADExportManager {
 
     protected String preprocessText(String text) {
         StringBuilder result = new StringBuilder();
-        String intermediateText = Constants.EMPTY_STRING;
+        List<String> preprocessedChunks = getPreprocessedChunks(text);
+        if (preprocessedChunks.size() == 1) {
+            return preprocessedChunks.get(0);
+        }
+        preprocessedChunks.stream().map(this::getChunkText).forEach(result::append);
+        return result.toString();
+    }
+
+    private String getChunkText(String chunk) {
         String lineSep = getLineSeparator();
+        return chunk + "\");" + lineSep + "pn();" + lineSep + "pn(\"";
+    }
+
+    private List<String> getPreprocessedChunks(String text) {
+        String prevText = Constants.EMPTY_STRING;
+        String intermediateText = Constants.EMPTY_STRING;
+        List<String> result = new ArrayList<>();
         Matcher matcher = SENTENCE_PATTERN.matcher(text);
         while (matcher.find()) {
             intermediateText = intermediateText + matcher.group(1);
@@ -434,16 +450,29 @@ public class VNSTEADExportManager extends STEADExportManager {
                 if (intermediateText.length() > PARAGRAPH_THRESHOLD_WARN) {
                     LOG.warning("Length of the line during VN export is " + intermediateText.length() + ": " + intermediateText);
                 }
-                result.append(intermediateText);
+                if (StringHelper.notEmpty(prevText)) {
+                    result.add(prevText);
+                }
+                prevText = intermediateText;
                 intermediateText = Constants.EMPTY_STRING;
-                result.append("\");").append(lineSep);
-                result.append("pn();").append(lineSep);
-                result.append("pn(\"");
             }
         }
-        if (intermediateText.length() > 0) {
-            result.append(intermediateText);
+        String tmpText = prevText + intermediateText;
+        if (tmpText.length() <= PARAGRAPH_THRESHOLD_WARN) {
+            if (StringHelper.notEmpty(tmpText)) {
+                result.add(tmpText);
+            }
+        } else {
+            if (StringHelper.notEmpty(prevText)) {
+                result.add(prevText);
+            }
+            if (StringHelper.notEmpty(intermediateText)) {
+                if (intermediateText.length() > PARAGRAPH_THRESHOLD_WARN) {
+                    LOG.warning("Length of the line during VN export is " + intermediateText.length() + ": " + intermediateText);
+                }
+                result.add(intermediateText);
+            }
         }
-        return result.toString();
+        return result;
     }
 }

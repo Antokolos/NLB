@@ -1828,8 +1828,8 @@ public abstract class ExportManager {
         blocks.setTheme(page.getTheme());
         final boolean trivial = determineTrivialStatus(link);
         blocks.setAuto(link.isAuto());
-        String expandedLinkText = expandVariables(StringHelper.getTextChunks(link.getText()), page.getTheme());
-        blocks.setLinkAltText(decorateLinkAltText(expandVariables(StringHelper.getTextChunks(link.getAltText()), page.getTheme())));
+        String expandedLinkText = expandVariablesForLinks(StringHelper.getTextChunks(link.getText()), page.getTheme());
+        blocks.setLinkAltText(decorateLinkAltText(expandVariablesForLinks(StringHelper.getTextChunks(link.getAltText()), page.getTheme())));
         blocks.setTrivial(trivial);
         blocks.setLinkLabel(decorateLinkLabel(link.getId(), expandedLinkText, page.getTheme()));
         blocks.setLinkComment(decorateLinkComment(link.getText()));
@@ -1914,8 +1914,8 @@ public abstract class ExportManager {
     ) throws NLBConsistencyException {
         UseBuildingBlocks blocks = new UseBuildingBlocks();
         blocks.setUseTarget(decorateUseTarget(link.getTarget()));
-        blocks.setUseSuccessText(expandVariables(StringHelper.getTextChunks(link.getText()), obj.getTheme()));
-        blocks.setUseFailureText(expandVariables(StringHelper.getTextChunks(link.getAltText()), obj.getTheme()));
+        blocks.setUseSuccessText(expandVariablesForLinks(StringHelper.getTextChunks(link.getText()), obj.getTheme()));
+        blocks.setUseFailureText(expandVariablesForLinks(StringHelper.getTextChunks(link.getAltText()), obj.getTheme()));
         Variable variable = exportData.getNlb().getVariableById(link.getVarId());
         if (variable != null && !variable.isDeleted()) {
             blocks.setUseVariable(decorateUseVariable(variable.getName()));
@@ -2762,6 +2762,18 @@ public abstract class ExportManager {
      */
     protected String expandVariables(List<TextChunk> textChunks, Theme theme) {
         return expandVariables(textChunks);
+    }
+
+    /**
+     * Expands variables from text chunks for links.
+     * By default it is the same as expandVariables()
+     *
+     * @param textChunks
+     * @param theme
+     * @return
+     */
+    protected String expandVariablesForLinks(List<TextChunk> textChunks, Theme theme) {
+        return expandVariables(textChunks, theme);
     }
 
     /**
