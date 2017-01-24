@@ -89,13 +89,7 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String generatePreambleText(NLBBuildingBlocks nlbBuildingBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
-        String title = StringHelper.notEmpty(nlbBuildingBlocks.getTitle()) ? nlbBuildingBlocks.getTitle() : "NLBB_" + new Date().toString();
-        String version = StringHelper.notEmpty(nlbBuildingBlocks.getVersion()) ? nlbBuildingBlocks.getVersion() : "0.1";
-        String author = StringHelper.notEmpty(nlbBuildingBlocks.getAuthor()) ? nlbBuildingBlocks.getAuthor() : "Unknown";
-        stringBuilder.append("--$Name:").append(title).append("$").append(LINE_SEPARATOR);
-        stringBuilder.append("--$Version:").append(version).append("$").append(LINE_SEPARATOR);
-        stringBuilder.append("--$Author:").append(author).append("$").append(LINE_SEPARATOR);
-        stringBuilder.append("instead_version \"2.3.0\"").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
+        stringBuilder.append(getGameFileHeader(nlbBuildingBlocks));
 
         stringBuilder.append("--package.cpath = \"./?.so\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"luapassing\"").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
@@ -146,6 +140,18 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    nlbticks = stead.ticks();").append(LINE_SEPARATOR);
         stringBuilder.append(generateVarsInitBlock(nlbBuildingBlocks));
         stringBuilder.append("end").append(LINE_SEPARATOR);
+        return stringBuilder.toString();
+    }
+
+    protected String getGameFileHeader(NLBBuildingBlocks nlbBuildingBlocks) {
+        StringBuilder stringBuilder = new StringBuilder();
+        String title = StringHelper.notEmpty(nlbBuildingBlocks.getTitle()) ? nlbBuildingBlocks.getTitle() : "NLBB_" + new Date().toString();
+        String version = StringHelper.notEmpty(nlbBuildingBlocks.getVersion()) ? nlbBuildingBlocks.getVersion() : "0.1";
+        String author = StringHelper.notEmpty(nlbBuildingBlocks.getAuthor()) ? nlbBuildingBlocks.getAuthor() : "Unknown";
+        stringBuilder.append("--$Name:").append(title).append("$").append(LINE_SEPARATOR);
+        stringBuilder.append("--$Version:").append(version).append("$").append(LINE_SEPARATOR);
+        stringBuilder.append("--$Author:").append(author).append("$").append(LINE_SEPARATOR);
+        stringBuilder.append("instead_version \"2.3.0\"").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
         return stringBuilder.toString();
     }
 

@@ -88,7 +88,7 @@ public class VNSTEADExportManager extends STEADExportManager {
     protected String generatePreambleText(NLBBuildingBlocks nlbBuildingBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
         String lineSep = getLineSeparator();
-        stringBuilder.append("instead_version \"1.9.1\"").append(lineSep).append(lineSep);
+        stringBuilder.append(getGameFileHeader(nlbBuildingBlocks));
 
         stringBuilder.append("--package.cpath = \"./?.so\"").append(lineSep);
         stringBuilder.append("require \"luapassing\"").append(lineSep).append(lineSep);
