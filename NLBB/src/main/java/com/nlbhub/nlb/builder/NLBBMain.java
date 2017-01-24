@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.builder;
 
+import com.nlbhub.nlb.api.PropertiesBean;
 import com.nlbhub.nlb.api.PropertyManager;
 import com.nlbhub.nlb.builder.form.MainFrame;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
@@ -52,7 +53,6 @@ import java.awt.*;
 import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 
@@ -124,16 +124,21 @@ public class NLBBMain implements Runnable {
         // TODO: uncomment the following line to use the menu
         //frame.setJMenuBar(menuBar);
         mf.serrext();
-        try {
-            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    UIManager.setLookAndFeel(info.getClassName());
-                    break;
+
+        PropertiesBean properties = PropertyManager.getProperties();
+        if (properties.isSetLookAndFeel()) {
+            try {
+                for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                    if (properties.getLookAndFeel().equals(info.getName())) {
+                        UIManager.setLookAndFeel(info.getClassName());
+                        break;
+                    }
                 }
+            } catch (Exception e) {
+                // If Nimbus is not available, you can set the GUI to another look and feel.
             }
-        } catch (Exception e) {
-            // If Nimbus is not available, you can set the GUI to another look and feel.
         }
+
         setUIFont(loadFont());
         SwingUtilities.updateComponentTreeUI(component);
         SwingUtilities.updateComponentTreeUI(menuBar);

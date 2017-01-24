@@ -133,6 +133,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         stringBuilder.append("    vn.fading = 8").append(lineSep);
         stringBuilder.append(generateVarsInitBlock(nlbBuildingBlocks));
         stringBuilder.append("end").append(lineSep);
+        stringBuilder.append(generateSysObjectsBlock(nlbBuildingBlocks));
         return stringBuilder.toString();
     }
 

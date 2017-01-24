@@ -46,6 +46,8 @@ public class PropertiesBean {
     private boolean m_convertPNG2JPG;
     private int m_quality;
     private boolean m_findUnusualQuotes;
+    private boolean m_setLookAndFeel;
+    private String m_lookAndFeel;
 
     public boolean isConvertPNG2JPG() {
         return m_convertPNG2JPG;
@@ -69,5 +71,21 @@ public class PropertiesBean {
 
     public void setFindUnusualQuotes(boolean findUnusualQuotes) {
         m_findUnusualQuotes = findUnusualQuotes;
+    }
+
+    public boolean isSetLookAndFeel() {
+        return m_setLookAndFeel;
+    }
+
+    public void setSetLookAndFeel(boolean setLookAndFeel) {
+        m_setLookAndFeel = setLookAndFeel;
+    }
+
+    public String getLookAndFeel() {
+        return m_lookAndFeel;
+    }
+
+    public void setLookAndFeel(String lookAndFeel) {
+        m_lookAndFeel = lookAndFeel;
     }
 }

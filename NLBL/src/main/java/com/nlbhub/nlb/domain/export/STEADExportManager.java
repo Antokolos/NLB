@@ -140,19 +140,35 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    nlbticks = stead.ticks();").append(LINE_SEPARATOR);
         stringBuilder.append(generateVarsInitBlock(nlbBuildingBlocks));
         stringBuilder.append("end").append(LINE_SEPARATOR);
+        stringBuilder.append(generateSysObjectsBlock(nlbBuildingBlocks));
         return stringBuilder.toString();
     }
 
+    protected String generateSysObjectsBlock(NLBBuildingBlocks nlbBuildingBlocks) {
+        String version = StringHelper.notEmpty(nlbBuildingBlocks.getVersion()) ? nlbBuildingBlocks.getVersion() : "0.1";
+        StringBuilder result = new StringBuilder();
+        result.append(LINE_SEPARATOR).append("_version_obj = gobj {").append(LINE_SEPARATOR)
+                .append("    nam = \"version_obj\",").append(LINE_SEPARATOR)
+                .append("    system_type = true,").append(LINE_SEPARATOR)
+                .append("    pic = \"gfx/version.png\",").append(LINE_SEPARATOR)
+                .append("    txtfn = function(s) return { [1] = {[\"text\"] = '").append(version).append("', [\"color\"] = 'white' } }; end,").append(LINE_SEPARATOR)
+                .append("    eff = \"left-top@0,0\",").append(LINE_SEPARATOR)
+                .append("    iarm = {[0] = {0, 16}}").append(LINE_SEPARATOR)
+                .append(LINE_SEPARATOR).append("}")
+                .append(LINE_SEPARATOR);
+        return result.toString();
+    }
+
     protected String getGameFileHeader(NLBBuildingBlocks nlbBuildingBlocks) {
-        StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder result = new StringBuilder();
         String title = StringHelper.notEmpty(nlbBuildingBlocks.getTitle()) ? nlbBuildingBlocks.getTitle() : "NLBB_" + new Date().toString();
         String version = StringHelper.notEmpty(nlbBuildingBlocks.getVersion()) ? nlbBuildingBlocks.getVersion() : "0.1";
         String author = StringHelper.notEmpty(nlbBuildingBlocks.getAuthor()) ? nlbBuildingBlocks.getAuthor() : "Unknown";
-        stringBuilder.append("--$Name:").append(title).append("$").append(LINE_SEPARATOR);
-        stringBuilder.append("--$Version:").append(version).append("$").append(LINE_SEPARATOR);
-        stringBuilder.append("--$Author:").append(author).append("$").append(LINE_SEPARATOR);
-        stringBuilder.append("instead_version \"2.3.0\"").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
-        return stringBuilder.toString();
+        result.append("--$Name:").append(title).append("$").append(LINE_SEPARATOR);
+        result.append("--$Version:").append(version).append("$").append(LINE_SEPARATOR);
+        result.append("--$Author:").append(author).append("$").append(LINE_SEPARATOR);
+        result.append("instead_version \"2.3.0\"").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
+        return result.toString();
     }
 
     protected String generateVarsInitBlock(NLBBuildingBlocks nlbBuildingBlocks) {
