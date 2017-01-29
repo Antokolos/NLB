@@ -615,6 +615,12 @@ public abstract class HypertextExportManager
     }
 
     @Override
+    protected String decoratePageNotes(String notes) {
+        // TODO: implement
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
     protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme, boolean hasChoicesOrLeaf) {
         return "";
     }

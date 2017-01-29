@@ -330,6 +330,15 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     @Override
+    public String getNotes() {
+        final String caption = getCaption();
+        if (StringHelper.notEmpty(caption)) {
+            return caption;
+        }
+        return m_caption.get(Constants.RU);
+    }
+
+    @Override
     public MultiLangString getCaptions() {
         return MultiLangString.createCopy(m_caption);
     }

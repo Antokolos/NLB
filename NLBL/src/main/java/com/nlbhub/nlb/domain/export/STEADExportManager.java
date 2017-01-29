@@ -324,6 +324,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageLabel());
         // Do not check pageBlocks.isUseCaption() here, because in INSTEAD all rooms must have name
         stringBuilder.append(pageBlocks.getPageCaption());
+        stringBuilder.append(pageBlocks.getNotes());
         stringBuilder.append(pageBlocks.getPageImage());
         boolean hasAnim = pageBlocks.isHasObjectsWithAnimatedImages();
         boolean hasPageAnim = pageBlocks.isHasAnimatedPageImage();
@@ -1545,12 +1546,19 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageCaption(String caption, boolean useCaption, String moduleTitle) {
+        StringBuilder result = new StringBuilder();
         String title = getNonEmptyTitle(moduleTitle);
         if (StringHelper.notEmpty(caption) && useCaption) {
-            return "    nam = \"" + caption + "\"," + LINE_SEPARATOR;
+            result.append("    nam = \"").append(caption).append("\",").append(LINE_SEPARATOR);
         } else {
-            return "    nam = \"" + title + "\"," + LINE_SEPARATOR;
+            result.append("    nam = \"").append(title).append("\",").append(LINE_SEPARATOR);
         }
+        return result.toString();
+    }
+
+    @Override
+    protected String decoratePageNotes(String notes) {
+        return "    notes = \"" + notes + "\"," + LINE_SEPARATOR;
     }
 
     @Override

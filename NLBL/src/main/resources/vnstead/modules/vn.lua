@@ -147,6 +147,7 @@ vn = obj {
     slowcpu = false;
     var {
         on = true,
+        debug = false,
         stopped = true,
         partial_clear = true,
         speed = 500,
@@ -1744,6 +1745,11 @@ vn = obj {
         -- if bg is nil, simple box sprite will be set
         s:set_bg(bg)
         s:clear_bg();
+        if s.debug then
+            local label, w, h = s:label(nlb:curloc().notes);
+            sprite.draw(label, s.bg_spr, 0, 0);
+            sprite.free(label);
+        end
     end;
     in_vnr = function(s)
         return here()._is_vnr;

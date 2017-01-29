@@ -102,6 +102,8 @@ public interface Page extends NodeItem {
 
     public String getCaption();
 
+    public String getNotes();
+
     public MultiLangString getCaptions();
 
     public boolean isUseCaption();

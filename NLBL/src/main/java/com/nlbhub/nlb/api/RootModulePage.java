@@ -116,6 +116,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public String getNotes() {
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
     public MultiLangString getCaptions() {
         return MultiLangString.createCopy(DEFAULT_CAPTION);
     }

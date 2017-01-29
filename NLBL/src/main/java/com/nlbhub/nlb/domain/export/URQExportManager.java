@@ -294,6 +294,12 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decoratePageNotes(String notes) {
+        // TODO: implement
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
     protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground, Theme theme) {
         // TODO: support image constraints
         ImagePathData pageImagePathData = pageImagePathDatas.get(0);

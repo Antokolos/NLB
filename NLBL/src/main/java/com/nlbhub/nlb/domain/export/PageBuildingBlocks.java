@@ -55,6 +55,7 @@ public class PageBuildingBlocks {
     private String m_pageNumber;
     private String m_pageComment;
     private String m_pageCaption;
+    private String m_notes;
     private String m_pageImage;
     private String m_pageSound;
     private String m_pageTextStart;
@@ -123,6 +124,14 @@ public class PageBuildingBlocks {
 
     public void setPageCaption(String pageCaption) {
         m_pageCaption = pageCaption;
+    }
+
+    public String getNotes() {
+        return m_notes;
+    }
+
+    public void setNotes(String notes) {
+        m_notes = notes;
     }
 
     public String getPageImage() {

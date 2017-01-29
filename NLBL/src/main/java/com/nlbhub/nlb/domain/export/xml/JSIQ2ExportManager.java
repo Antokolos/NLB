@@ -768,6 +768,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
+    protected String decoratePageNotes(String notes) {
+        // TODO: implement
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
     protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground, Theme theme) {
         // TODO: implement and use
         return Constants.EMPTY_STRING;

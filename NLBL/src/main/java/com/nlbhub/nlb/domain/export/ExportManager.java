@@ -462,6 +462,7 @@ public abstract class ExportManager {
         blocks.setPageComment(decoratePageComment(page.getCaption()));
         final String title = getNonEmptyTitle(nlb);
         blocks.setPageCaption(decoratePageCaption(page.getCaption(), page.isUseCaption(), title));
+        blocks.setNotes(decoratePageNotes(page.getNotes()));
         blocks.setModuleTitle(title);
         String imageFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_IMAGE_FILE_NAME: page.getImageFileName());
         boolean isAnimatedImage = page.isImageAnimated();
@@ -1154,6 +1155,11 @@ public abstract class ExportManager {
             @Override
             public String getCaption() {
                 return escapeText(page.getCaption());
+            }
+
+            @Override
+            public String getNotes() {
+                return escapeText(page.getNotes());
             }
 
             @Override
@@ -2724,6 +2730,8 @@ public abstract class ExportManager {
     protected abstract String decorateLinkModifications(final String modificationsText);
 
     protected abstract String decoratePageCaption(String caption, boolean useCaption, String moduleTitle);
+
+    protected abstract String decoratePageNotes(String notes);
 
     @NotNull
     protected String getNonEmptyTitle(String moduleTitle) {
