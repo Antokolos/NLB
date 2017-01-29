@@ -4,13 +4,13 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>NLBB</artifactId>
     <packaging>jar</packaging>
-    <version>0.10.53</version>
+    <version>0.10.56</version>
     <name>NLBB</name>
     <url>http://maven.apache.org</url>
     <parent>
         <groupId>com.nlbhub</groupId>
         <artifactId>NLB</artifactId>
-        <version>0.10.53</version>
+        <version>0.10.56</version>
     </parent>
     <build>
         <plugins>
@@ -50,12 +50,12 @@
         <dependency>
             <groupId>com.nlbhub</groupId>
             <artifactId>NLBL</artifactId>
-            <version>0.10.53</version>
+            <version>0.10.56</version>
         </dependency>
         <dependency>
             <groupId>com.nlbhub</groupId>
             <artifactId>NLBW</artifactId>
-            <version>0.10.53</version>
+            <version>0.10.56</version>
         </dependency>
     </dependencies>
 </project>
