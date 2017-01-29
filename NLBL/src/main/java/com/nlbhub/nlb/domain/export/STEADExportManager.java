@@ -590,7 +590,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean preserved, boolean clearUnderTooltip, String objDefaultTag) {
+    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean preserved, boolean clearUnderTooltip, boolean actOnKey, String objDefaultTag) {
         StringBuilder result = new StringBuilder();
         switch (objType) {
             case STAT:
@@ -623,6 +623,14 @@ public class STEADExportManager extends TextExportManager {
         result.append("    var { tag = '").append(objDefaultTag).append("'; ").append(getContainerExpression(containerRef));
         result.append(" },").append(LINE_SEPARATOR);
         result.append("    nlbid = '").append(id).append("',").append(LINE_SEPARATOR);
+        if (actOnKey) {
+            result.append("    actonkey = function(s, down, key)").append(LINE_SEPARATOR);
+            result.append("        if down then").append(LINE_SEPARATOR);
+            result.append("            s:actf();").append(LINE_SEPARATOR);
+            result.append("        end").append(LINE_SEPARATOR);
+            result.append("        return down;").append(LINE_SEPARATOR);
+            result.append("    end,").append(LINE_SEPARATOR);
+        }
         result.append("    deref = function(s) return stead.deref(").append(decorateObjLabel(id)).append("); end,").append(LINE_SEPARATOR);
         return result.toString();
     }

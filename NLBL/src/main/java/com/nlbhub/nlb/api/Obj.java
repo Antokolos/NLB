@@ -71,6 +71,7 @@ public interface Obj extends NodeItem {
     public static final boolean DEFAULT_PRESERVED = false;
     public static final boolean DEFAULT_COLLAPSABLE = false;
     public static final boolean DEFAULT_CLEAR_UNDER_TOOLTIP = false;
+    public static final boolean DEFAULT_ACT_ON_KEY = false;
     public static final String DEFAULT_MORPH_OVER_ID = Constants.EMPTY_STRING;
     public static final String DEFAULT_MORPH_OUT_ID = Constants.EMPTY_STRING;
     public static final String DEFAULT_OFFSET = Constants.EMPTY_STRING;
@@ -133,6 +134,8 @@ public interface Obj extends NodeItem {
     public CoordsOrigin getCoordsOrigin();
 
     public boolean isClearUnderTooltip();
+
+    public boolean isActOnKey();
 
     public String getMorphOverId();
 

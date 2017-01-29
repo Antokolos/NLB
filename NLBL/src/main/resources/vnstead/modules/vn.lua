@@ -1803,6 +1803,15 @@ vn = obj {
         s:textbg(s.offscreen);
         theme.gfx.bg(s.offscreen);
     end;
+    actonkey = function(s, down, key)
+        for k, v in ipairs(s._effects) do
+            local gob = s:gobf(v);
+            if gob.actonkey and s:enabled(gob) and gob:actonkey(down, key) then
+                return true;
+            end
+        end
+        return false;
+    end;
     finish = function(s)
         local k, v
         local r

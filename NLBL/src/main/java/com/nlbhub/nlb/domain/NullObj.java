@@ -186,7 +186,12 @@ public class NullObj extends AbstractNodeItem implements Obj {
 
     @Override
     public boolean isClearUnderTooltip() {
-        return Obj.DEFAULT_CLEAR_UNDER_TOOLTIP;
+        return DEFAULT_CLEAR_UNDER_TOOLTIP;
+    }
+
+    @Override
+    public boolean isActOnKey() {
+        return DEFAULT_ACT_ON_KEY;
     }
 
     public String getMorphOverId() {

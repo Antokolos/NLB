@@ -59,6 +59,11 @@ paginatorKbd = function(down, key)
     if key:find("ctrl") then
         vn.skip_mode = down
     end
+
+    if vn:actonkey(down, key) then
+        return
+    end
+
     if down and key == 'space' then
         if vn:finish() then
             return

@@ -86,6 +86,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String MAX_FRAME_FILE_NAME = "maxframe";
     private static final String COORDSOR_FILE_NAME = "coordsor";
     private static final String CLEARUTT_FILE_NAME = "clearutt";
+    private static final String ACTONKEY_FILE_NAME = "actonkey";
     private static final String MORPH_OVER_FILE_NAME = "morphover";
     private static final String MORPH_OUT_FILE_NAME = "morphout";
     private static final String OFFSET_FILE_NAME = "offset";
@@ -112,6 +113,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private int m_maxFrame = DEFAULT_MAX_FRAME;
     private CoordsOrigin m_coordsOrigin = CoordsOrigin.LeftTop;
     private boolean m_clearUnderTooltip = DEFAULT_CLEAR_UNDER_TOOLTIP;
+    private boolean m_actOnKey = DEFAULT_ACT_ON_KEY;
     private String m_morphOverId = DEFAULT_MORPH_OVER_ID;
     private String m_morphOutId = DEFAULT_MORPH_OUT_ID;
     private String m_offset;
@@ -171,6 +173,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         m_maxFrame = source.getMaxFrame();
         m_coordsOrigin = source.getCoordsOrigin();
         m_clearUnderTooltip = source.isClearUnderTooltip();
+        m_actOnKey = source.isActOnKey();
         m_morphOverId = source.getMorphOverId();
         m_morphOutId = source.getMorphOutId();
         m_takable = source.isTakable();
@@ -417,8 +420,17 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         return m_clearUnderTooltip;
     }
 
-    public void setClearUnderTooltip(boolean m_clearUnderTooltip) {
-        this.m_clearUnderTooltip = m_clearUnderTooltip;
+    public void setClearUnderTooltip(boolean clearUnderTooltip) {
+        m_clearUnderTooltip = clearUnderTooltip;
+    }
+
+    @Override
+    public boolean isActOnKey() {
+        return m_actOnKey;
+    }
+
+    public void setActOnKey(boolean actOnKey) {
+        m_actOnKey = actOnKey;
     }
 
     public String getMorphOverId() {
@@ -680,6 +692,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(
                     objDir,
+                    ACTONKEY_FILE_NAME,
+                    String.valueOf(m_actOnKey),
+                    String.valueOf(DEFAULT_ACT_ON_KEY)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
                     MORPH_OVER_FILE_NAME,
                     m_morphOverId,
                     DEFAULT_MORPH_OVER_ID
@@ -935,6 +953,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         CLEARUTT_FILE_NAME,
                         String.valueOf(DEFAULT_CLEAR_UNDER_TOOLTIP)
+                )
+        );
+        m_actOnKey = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        ACTONKEY_FILE_NAME,
+                        String.valueOf(DEFAULT_ACT_ON_KEY)
                 )
         );
         m_morphOverId = (

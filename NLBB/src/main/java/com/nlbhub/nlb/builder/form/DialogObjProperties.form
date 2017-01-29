@@ -856,6 +856,12 @@
                                           <text value="Clear under tooltip"/>
                                         </properties>
                                       </component>
+                                      <component id="d49ef" class="javax.swing.JCheckBox" binding="m_objIsActOnKey">
+                                        <constraints/>
+                                        <properties>
+                                          <text value="Act on key"/>
+                                        </properties>
+                                      </component>
                                     </children>
                                   </grid>
                                   <grid id="a55ba" layout-manager="GridBagLayout">

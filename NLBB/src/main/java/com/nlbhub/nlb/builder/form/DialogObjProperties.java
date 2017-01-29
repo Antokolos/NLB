@@ -128,6 +128,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JRadioButton m_effectOverlap;
     private JSpinner m_spinnerMaxFrame;
     private JTextArea m_objDispTextArea;
+    private JCheckBox m_objIsActOnKey;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -404,6 +405,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_coordsOriginLeftTop.setSelected(true);
         }
         m_objIsClearUnderTooltip.setSelected(obj.isClearUnderTooltip());
+        m_objIsActOnKey.setSelected(obj.isActOnKey());
         m_morphOver.setText(morphOver != null ? morphOver.getName() : "");
         m_morphOut.setText(morphOut != null ? morphOut.getName() : "");
         m_imageInScene.setSelected(obj.isImageInScene());
@@ -456,6 +458,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 Integer.parseInt(m_spinnerMaxFrame.getValue().toString()),
                 getCoordsOrigin(),
                 m_objIsClearUnderTooltip.isSelected(),
+                m_objIsActOnKey.isSelected(),
                 m_morphOver.getText(),
                 m_morphOut.getText(),
                 m_objIsTakable.isSelected(),
@@ -1141,6 +1144,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objIsClearUnderTooltip = new JCheckBox();
         m_objIsClearUnderTooltip.setText("Clear under tooltip");
         panel38.add(m_objIsClearUnderTooltip);
+        m_objIsActOnKey = new JCheckBox();
+        m_objIsActOnKey.setText("Act on key");
+        panel38.add(m_objIsActOnKey);
         final JPanel panel39 = new JPanel();
         panel39.setLayout(new GridBagLayout());
         panel39.setMinimumSize(new Dimension(468, 33));

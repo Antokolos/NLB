@@ -800,6 +800,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private int m_existingMaxFrame;
         private Obj.CoordsOrigin m_existingCoordsOrigin;
         private boolean m_existingObjIsClearUnderTooltip;
+        private boolean m_existingObjIsActOnKey;
         private boolean m_existingObjIsTakable;
         private boolean m_existingImageInScene;
         private boolean m_existingImageInInventory;
@@ -821,6 +822,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private int m_newMaxFrame;
         private Obj.CoordsOrigin m_newCoordsOrigin;
         private boolean m_newObjIsClearUnderTooltip;
+        private boolean m_newObjIsActOnKey;
         private boolean m_newObjIsTakable;
         private boolean m_newImageInScene;
         private boolean m_newImageInInventory;
@@ -850,6 +852,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final int maxFrame,
                 final Obj.CoordsOrigin coordsOrigin,
                 final boolean objIsClearUnderTooltip,
+                final boolean objIsActOnKey,
                 final String objMorphOverName,
                 final String objMorphOutName,
                 final boolean objIsTakable,
@@ -881,6 +884,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     maxFrame,
                     coordsOrigin,
                     objIsClearUnderTooltip,
+                    objIsActOnKey,
                     objMorphOverName,
                     objMorphOutName,
                     objIsTakable,
@@ -914,6 +918,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final int maxFrame,
                 final Obj.CoordsOrigin coordsOrigin,
                 final boolean objIsClearUnderTooltip,
+                final boolean objIsActOnKey,
                 final String objMorphOverName,
                 final String objMorphOutName,
                 final boolean objIsTakable,
@@ -999,6 +1004,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingMaxFrame = obj.getMaxFrame();
             m_existingCoordsOrigin = obj.getCoordsOrigin();
             m_existingObjIsClearUnderTooltip = obj.isClearUnderTooltip();
+            m_existingObjIsActOnKey = obj.isActOnKey();
             m_existingObjIsTakable = obj.isTakable();
             m_existingImageInScene = obj.isImageInScene();
             m_existingImageInInventory = obj.isImageInInventory();
@@ -1020,6 +1026,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newMaxFrame = maxFrame;
             m_newCoordsOrigin = coordsOrigin;
             m_newObjIsClearUnderTooltip = objIsClearUnderTooltip;
+            m_newObjIsActOnKey = objIsActOnKey;
             m_newObjIsTakable = objIsTakable;
             m_newImageInScene = imageInScene;
             m_newImageInInventory = imageInInventory;
@@ -1051,6 +1058,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setMaxFrame(m_newMaxFrame);
             m_obj.setCoordsOrigin(m_newCoordsOrigin);
             m_obj.setClearUnderTooltip(m_newObjIsClearUnderTooltip);
+            m_obj.setActOnKey(m_newObjIsActOnKey);
             m_obj.setTakable(m_newObjIsTakable);
             m_obj.setImageInScene(m_newImageInScene);
             m_obj.setImageInInventory(m_newImageInInventory);
@@ -1083,6 +1091,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setMaxFrame(m_existingMaxFrame);
             m_obj.setCoordsOrigin(m_existingCoordsOrigin);
             m_obj.setClearUnderTooltip(m_existingObjIsClearUnderTooltip);
+            m_obj.setActOnKey(m_existingObjIsActOnKey);
             m_obj.setTakable(m_existingObjIsTakable);
             m_obj.setImageInScene(m_existingImageInScene);
             m_obj.setImageInInventory(m_existingImageInInventory);
@@ -1903,11 +1912,13 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.getMaxFrame(),
                         obj.getCoordsOrigin(),
                         obj.isClearUnderTooltip(),
+                        obj.isActOnKey(),
                         (objMorphOver != null) ? objMorphOver.getName() : Constants.EMPTY_STRING,
                         (objMorphOut != null) ? objMorphOut.getName() : Constants.EMPTY_STRING,
                         obj.isTakable(),
                         obj.isImageInScene(),
-                        obj.isImageInInventory());
+                        obj.isImageInInventory()
+                );
                 m_commandChain.addCommand(updateObjCommand);
                 Coords coords = obj.getCoords();
                 Coords newCoords = newObj.getCoords();
@@ -2377,6 +2388,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final int maxFrame,
             final Obj.CoordsOrigin coordsOrigin,
             final boolean objIsClearUnderTooltip,
+            final boolean objIsActOnKey,
             final String objMorphOver,
             final String objMorphOut,
             final boolean objIsTakable,
@@ -2409,6 +2421,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         maxFrame,
                         coordsOrigin,
                         objIsClearUnderTooltip,
+                        objIsActOnKey,
                         objMorphOver,
                         objMorphOut,
                         objIsTakable,
