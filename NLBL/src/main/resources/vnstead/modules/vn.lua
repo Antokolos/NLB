@@ -1806,7 +1806,7 @@ vn = obj {
     actonkey = function(s, down, key)
         for k, v in ipairs(s._effects) do
             local gob = s:gobf(v);
-            if gob.actonkey and s:enabled(gob) and gob:actonkey(down, key) then
+            if gob and gob.actonkey and s:enabled(v) and gob:actonkey(down, key) then
                 return true;
             end
         end
