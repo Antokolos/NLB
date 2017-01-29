@@ -12,7 +12,7 @@ next_turn_obj = menu {
         return '{' .. s:disp() .. '}' .. img 'blank:64x64';
     end,
     disp = function(s)
-        if (LANG == "ru") then
+        if _export_lang == 'ru' then
             return 'Передать ход';
         else
             return 'Next player';
@@ -37,10 +37,10 @@ increase_bet_obj = menu {
         return result .. img 'blank:64x64';
     end,
     txt = function(s)
-        if (LANG == "ru") then
+        if _export_lang == 'ru' then
             return "Удвоить ставку";
         else
-            return "Double the bet";
+            return "Double the stake";
         end
     end,
     act = function(s)
@@ -64,14 +64,14 @@ _play_game_obj = menu {
         return "{" .. s:txt() .. "}";
     end,
     txt = function(s)
-        if (LANG == "ru") then
+        if _export_lang == 'ru' then
             return "Закончить игру";
         else
             return "Leave the game";
         end
     end,
     disp = function(s)
-        if (LANG == "ru") then
+        if _export_lang == 'ru' then
             return 'Сыграть в кости';
         else
             return 'Play the dice';
@@ -364,7 +364,7 @@ rollStat = stat {
     disp = function(s)
         local result = "";
         local prefix;
-        if (LANG == "ru") then
+        if _export_lang == 'ru' then
             prefix = "Броски: ";
         else
             prefix = "Rolls: ";
@@ -571,59 +571,59 @@ rollStat = stat {
         end
     end,
     good_luck_message = function(s)
-        if (LANG == "ru") then
+        if _export_lang == 'ru' then
             return 'Результат: 1 + 1, большая удача! Вы получаете +25 очков!';
         else
             return "Result: 1 + 1, you are very lucky! You've got +25!";
         end
     end,
     is_double_message = function(s, value)
-        if (LANG == "ru") then
+        if _export_lang == 'ru' then
             return "Дубль, вам повезло! Вы получаете +" .. tostring(value) .. " очков!";
         else
             return "Double, you are lucky! You've got +" .. tostring(value);
         end
     end,
     should_pass_turn_message = function(s)
-        if (LANG == "ru") then
+        if _export_lang == 'ru' then
             return "Результат: выпало 1, вам не повезло! Ход переходит к противнику.";
         else
             return "Result: 1 rolled, you are unlucky! Miss the turn.";
         end
     end,
     win_message = function(s, name)
-        if (LANG == "ru") then
+        if _export_lang == 'ru' then
             return "Игрок " .. name .. " побеждает в этом раунде!";
         else
             return "Player " .. name .. " wins this round!";
         end
     end,
     get_player_string = function(s)
-        if (LANG == "ru") then
+        if _export_lang == 'ru' then
             return "Игрок: ";
         else
             return "Player: ";
         end
     end,
     get_pts_string = function(s)
-        if (LANG == "ru") then
+        if _export_lang == 'ru' then
             return "Очки: ";
         else
             return "Points: ";
         end
     end,
     get_money_string = function(s)
-        if (LANG == "ru") then
+        if _export_lang == 'ru' then
             return "Деньги: ";
         else
             return "Money: ";
         end
     end,
     get_bet_string = function(s)
-        if (LANG == "ru") then
+        if _export_lang == 'ru' then
             return "Ставка: ";
         else
-            return "Bet: ";
+            return "Stake: ";
         end
     end,
 }
@@ -856,7 +856,7 @@ stead.module_init(function()
     rollStat:init();
     dicegames['setrolls'] = function() return rollStat:setrolls(); end;
     local labelFont = sprite.font('fonts/STEINEMU.ttf', 48);
-    if LANG == "ru" then
+    if _export_lang == 'ru' then
         you_win_label = vn:label("Вы победили!", 40, "#ffffff", "black", 127, labelFont);
         you_lose_label = vn:label("Вы проиграли...", 40, "#ffffff", "black", 127, labelFont);
     else

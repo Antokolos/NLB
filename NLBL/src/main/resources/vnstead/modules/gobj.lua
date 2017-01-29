@@ -93,9 +93,6 @@ gobj = function(v)
     if not v.morphout then
         v.morphout = false;
     end
-    if not v.ttpos then
-        v.ttpos = "h";
-    end
     if not v.clear_under_tooltip then
         v.clear_under_tooltip = false;
     end

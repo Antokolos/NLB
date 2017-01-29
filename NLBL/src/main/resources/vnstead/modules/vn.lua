@@ -2248,7 +2248,15 @@ vn = obj {
         else
             local yy = y + vh / 2 - h / 2;
             local xx = x + vw + s.default_tooltip_offset;
-            if ((xmax - xx > w) or (pos == "e")) and not (pos == "w") then
+            local ttpos = pos;
+            if not ttpos then
+                if xmax - x - vw > x then
+                    ttpos = "e";
+                else
+                    ttpos = "w";
+                end
+            end
+            if ((xmax - xx > w) or (ttpos == "e")) and not (ttpos == "w") then
                 xt = xx;
                 yt = yy;
             else

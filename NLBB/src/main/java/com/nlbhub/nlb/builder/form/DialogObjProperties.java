@@ -127,6 +127,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JRadioButton m_coordsOriginRightBottom;
     private JRadioButton m_effectOverlap;
     private JSpinner m_spinnerMaxFrame;
+    private JTextArea m_objDispTextArea;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -204,7 +205,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 JComboBox cb = (JComboBox) e.getSource();
                 refreshTextsForCurrentLanguage();
                 String selectedLanguage = (String) cb.getSelectedItem();
-                m_objDispTextField.setText(m_objDisplayNames.get(selectedLanguage));
+                m_objDispTextArea.setText(m_objDisplayNames.get(selectedLanguage));
                 m_objTextTextArea.setText(m_objTexts.get(selectedLanguage));
                 m_objActTextTextArea.setText(m_objActTexts.get(selectedLanguage));
                 m_selectedLanguage = selectedLanguage;
@@ -285,7 +286,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     }
 
     private void refreshTextsForCurrentLanguage() {
-        m_objDisplayNames.put(m_selectedLanguage, m_objDispTextField.getText());
+        m_objDisplayNames.put(m_selectedLanguage, m_objDispTextArea.getText());
         m_objTexts.put(m_selectedLanguage, m_objTextTextArea.getText());
         m_objActTexts.put(m_selectedLanguage, m_objActTextTextArea.getText());
     }
@@ -314,7 +315,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         Variable morphOut = m_nlbFacade.getNlb().getVariableById(obj.getMorphOutId());
         m_objIdTextField.setText(obj.getId());
         m_objNameTextField.setText(obj.getName());
-        m_objDispTextField.setText(obj.getDisp());
+        m_objDispTextArea.setText(obj.getDisp());
         m_objVariableTextField.setText(variable != null ? variable.getName() : "");
         m_objDefaultTagTextField.setText(deftag != null ? deftag.getValue() : "");
         m_objConstraintTextField.setText(constraint != null ? constraint.getValue() : "");
@@ -712,6 +713,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
         panel21.add(panel22, gbc);
@@ -725,9 +727,12 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         panel22.add(scrollPane1, gbc);
-        m_objDispTextField = new JTextField();
-        m_objDispTextField.setColumns(40);
-        scrollPane1.setViewportView(m_objDispTextField);
+        m_objDispTextArea = new JTextArea();
+        m_objDispTextArea.setColumns(50);
+        m_objDispTextArea.setLineWrap(true);
+        m_objDispTextArea.setRows(10);
+        m_objDispTextArea.setWrapStyleWord(true);
+        scrollPane1.setViewportView(m_objDispTextArea);
         final JLabel label1 = new JLabel();
         label1.setFont(new Font(label1.getFont().getName(), label1.getFont().getStyle(), label1.getFont().getSize()));
         label1.setText("Obj display name");
@@ -1470,7 +1475,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         final JPanel panel55 = new JPanel();
         panel55.setLayout(new BorderLayout(0, 0));
         panel1.add(panel55, BorderLayout.CENTER);
-        label1.setLabelFor(m_objDispTextField);
+        label1.setLabelFor(m_objDispTextArea);
         label2.setLabelFor(m_objTextTextArea);
         label3.setLabelFor(m_objActTextTextArea);
         label4.setLabelFor(m_objIdTextField);

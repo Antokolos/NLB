@@ -98,7 +98,11 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("require \"hideinv\"").append(LINE_SEPARATOR);
         stringBuilder.append("--require \"para\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"dash\"").append(LINE_SEPARATOR);
-        stringBuilder.append("require \"quotes\" ").append(LINE_SEPARATOR);
+        String lang = nlbBuildingBlocks.getLang();
+        if (Constants.RU.equalsIgnoreCase(lang)) {
+            // quotes module should be used only for russian language
+            stringBuilder.append("require \"quotes\" ").append(LINE_SEPARATOR);
+        }
         stringBuilder.append("require \"theme\" ").append(LINE_SEPARATOR);
         stringBuilder.append("require \"timer\" ").append(LINE_SEPARATOR);
         stringBuilder.append("require 'modules/nlb'").append(LINE_SEPARATOR);
@@ -173,7 +177,11 @@ public class STEADExportManager extends TextExportManager {
 
     protected String generateVarsInitBlock(NLBBuildingBlocks nlbBuildingBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("    _export_lang = '").append(nlbBuildingBlocks.getLang()).append("';").append(LINE_SEPARATOR);
+        String lang = nlbBuildingBlocks.getLang();
+        stringBuilder.append("    _export_lang = '").append(lang).append("';").append(LINE_SEPARATOR);
+        if (!Constants.RU.equalsIgnoreCase(lang)) {
+            stringBuilder.append("    format.quotes = false;").append(LINE_SEPARATOR);
+        }
 
         return stringBuilder.toString();
     }

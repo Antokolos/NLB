@@ -46,9 +46,9 @@ dice = menu {
     end,
     rollTxt = function(s)
         if (LANG == "ru") then
-            return 'Бросить кубик';
+            return 'Бросить кубики';
         else
-            return 'Roll the die';
+            return 'Roll the dice';
         end
     end,
     hideTxt = function(s)
@@ -57,9 +57,9 @@ dice = menu {
         end
         -- Or, alternatively...
         if (LANG == "ru") then
-            return 'Убрать кубик';
+            return 'Убрать кубики';
         else
-            return 'Hide the die';
+            return 'Hide the dice';
         end
     end,
     act = function(s)
