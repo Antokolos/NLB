@@ -147,7 +147,7 @@ vn = obj {
     slowcpu = false;
     var {
         on = true,
-        debug = false,
+        dbg = false,
         stopped = true,
         partial_clear = true,
         speed = 500,
@@ -211,9 +211,10 @@ vn = obj {
                 n = true
             end
         end
-        s:set_bg(s._bg)
+        s:set_bg(s._bg);
+        s:draw_notes();
         s:add_all_missing_children();
-        s:start()
+        s:start();
     end;
     init = function(s)
         s.scr_w = theme.get 'scr.w'
@@ -1745,7 +1746,10 @@ vn = obj {
         -- if bg is nil, simple box sprite will be set
         s:set_bg(bg)
         s:clear_bg();
-        if s.debug then
+        s:draw_notes();
+    end;
+    draw_notes = function(s)
+        if s.dbg then
             local label, w, h = s:label(nlb:curloc().notes);
             sprite.draw(label, s.bg_spr, 0, 0);
             sprite.free(label);
