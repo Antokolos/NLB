@@ -353,6 +353,33 @@ _syscall_menu = menu {
     actf = function(s) return s:act(); end
 }
 
+_syscall_menu_save = menu {
+    nam = "syscall_menu_save",
+    system_type = true,
+    act = function(s)
+        stead.menu_toggle('save');
+    end,
+    actf = function(s) return s:act(); end
+}
+
+_syscall_menu_load = menu {
+    nam = "syscall_menu_load",
+    system_type = true,
+    act = function(s)
+        stead.menu_toggle('load');
+    end,
+    actf = function(s) return s:act(); end
+}
+
+_syscall_menu_exit = menu {
+    nam = "syscall_menu_exit",
+    system_type = true,
+    act = function(s)
+        stead.menu_toggle('exit');
+    end,
+    actf = function(s) return s:act(); end
+}
+
 listobj = {
     nam = "listobj",
     nlbobj = "listobj",
