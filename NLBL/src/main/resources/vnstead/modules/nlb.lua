@@ -1,3 +1,5 @@
+require 'prefs'
+
 nlb = obj {
     nam = 'nlb';
     system_type = true;
@@ -295,6 +297,31 @@ nlb = obj {
             src.wastext = wastext;
             src.lasttext = lasttext;
         end
+    end;
+    setAchievement = function(s, statsAPI, achievementName)
+        if prefs.achievements[achievementName] then
+            return prefs.achievements[achievementNamePerfectGame];
+        end
+        local achievementNamePerfectGame = prefs.achievementNamePerfectGame;
+        statsAPI.setAchievement(achievementName, true);
+        prefs.achievements[achievementName] = true;
+        if achievementNamePerfectGame then
+            prefs.achievements[achievementNamePerfectGame] = true; -- let's assume we already got all achievements
+        end
+        for k, v in pairs(prefs.achievements) do
+            if not v then
+                if achievementNamePerfectGame then
+                    prefs.achievements[achievementNamePerfectGame] = false;
+                end
+                prefs:store();
+                return false;
+            end
+        end
+        if achievementNamePerfectGame then
+            statsAPI.setAchievement(achievementNamePerfectGame, true);
+        end
+        prefs:store();
+        return true;
     end;
 };
 

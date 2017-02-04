@@ -403,7 +403,7 @@ public abstract class ExportManager {
             final ExportData exportData
     ) throws NLBConsistencyException, NLBExportException {
         final NonLinearBook nlb = exportData.getNlb();
-        NLBBuildingBlocks blocks = new NLBBuildingBlocks(nlb.getTitle(), nlb.getAuthor(), nlb.getVersion(), nlb.getLanguage());
+        NLBBuildingBlocks blocks = new NLBBuildingBlocks(nlb.getTitle(), nlb.getAuthor(), nlb.getVersion(), nlb.getLanguage(), nlb.getAllAchievementNames(false), nlb.getPerfectGameAchievementName());
         //stringBuilder.append("#mode quote").append(LINE_SEPARATOR);
         for (final Obj obj : exportData.getObjList()) {
             blocks.addObjBuildingBlocks(createObjBuildingBlocks(createPreprocessedObj(obj), exportData));
@@ -413,9 +413,9 @@ public abstract class ExportManager {
                 blocks.addPageBuildingBlocks(createPageBuildingBlocks(createPreprocessedPage(page), exportData));
             } else {
                 blocks.addPageBuildingBlocks(createPageBuildingBlocks(createPreprocessedPage(page), exportData));
-                blocks.addNLBBuildingBlocks(
-                        createNLBBuildingBlocks(m_exportDataMap.get(page.getId()))
-                );
+                NLBBuildingBlocks module = createNLBBuildingBlocks(m_exportDataMap.get(page.getId()));
+                blocks.addAchievements(module.getAchievements());
+                blocks.addNLBBuildingBlocks(module);
             }
         }
 

@@ -93,6 +93,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         stringBuilder.append("--package.cpath = \"./?.so\"").append(lineSep);
         stringBuilder.append("require \"luapassing\"").append(lineSep).append(lineSep);
 
+        stringBuilder.append("require \"prefs\"").append(lineSep);
         stringBuilder.append("require \"xact\"").append(lineSep);
         stringBuilder.append("require \"hideinv\"").append(lineSep);
         stringBuilder.append("--require \"para\"").append(lineSep);

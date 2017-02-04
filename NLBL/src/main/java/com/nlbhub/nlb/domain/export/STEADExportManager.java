@@ -94,6 +94,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("--package.cpath = \"./?.so\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"luapassing\"").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
 
+        stringBuilder.append("require \"prefs\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"xact\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"hideinv\"").append(LINE_SEPARATOR);
         stringBuilder.append("--require \"para\"").append(LINE_SEPARATOR);
@@ -184,7 +185,23 @@ public class STEADExportManager extends TextExportManager {
         } else {
             stringBuilder.append("    format.quotes = false;").append(LINE_SEPARATOR);
         }
+        stringBuilder.append("    if not prefs.achievements then").append(LINE_SEPARATOR);
+        stringBuilder.append("        prefs.achievements = {};").append(LINE_SEPARATOR);
+        stringBuilder.append(initBlockAchievements(nlbBuildingBlocks));
+        String perfectGame = nlbBuildingBlocks.getAchievementNamePerfectGame();
+        if (StringHelper.notEmpty(perfectGame)) {
+            stringBuilder.append("        prefs.achievementNamePerfectGame = '").append(perfectGame).append("';").append(LINE_SEPARATOR);
+        }
+        stringBuilder.append("        prefs:store();").append(LINE_SEPARATOR);
+        stringBuilder.append("    end").append(LINE_SEPARATOR);
+        return stringBuilder.toString();
+    }
 
+    private String initBlockAchievements(NLBBuildingBlocks nlbBuildingBlocks) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String achievement : nlbBuildingBlocks.getAchievements()) {
+            stringBuilder.append("        prefs.achievements['").append(achievement).append("'] = false;").append(LINE_SEPARATOR);
+        }
         return stringBuilder.toString();
     }
 
@@ -1302,7 +1319,7 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateAchieveOperation(String achievementName) {
         // TODO: implement
-        return "statsAPI.setAchievement('" + achievementName + "', true);" + LINE_SEPARATOR;
+        return "nlb:setAchievement(statsAPI, '" + achievementName + "');" + LINE_SEPARATOR;
     }
 
     @Override

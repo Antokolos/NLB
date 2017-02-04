@@ -131,7 +131,7 @@
                               </grid>
                               <vspacer id="9e52e">
                                 <constraints>
-                                  <grid row="9" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                                  <grid row="10" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
                                   <gridbag weightx="0.0" weighty="1.0"/>
                                 </constraints>
                               </vspacer>
@@ -248,7 +248,7 @@
                               </component>
                               <grid id="4c2b7" layout-manager="GridBagLayout">
                                 <constraints>
-                                  <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                  <grid row="7" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                   <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
                                 </constraints>
                                 <properties/>
@@ -278,7 +278,7 @@
                               </grid>
                               <grid id="c39b8" layout-manager="GridBagLayout">
                                 <constraints>
-                                  <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                  <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                   <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
                                 </constraints>
                                 <properties/>
@@ -304,7 +304,7 @@
                               </grid>
                               <grid id="6d88f" layout-manager="GridBagLayout">
                                 <constraints>
-                                  <grid row="7" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                  <grid row="8" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                   <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
                                 </constraints>
                                 <properties/>
@@ -334,7 +334,7 @@
                               </grid>
                               <grid id="b8118" layout-manager="GridBagLayout">
                                 <constraints>
-                                  <grid row="8" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                  <grid row="9" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                                   <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
                                 </constraints>
                                 <properties/>
@@ -397,6 +397,43 @@
                                 <properties>
                                   <labelFor value="95456"/>
                                   <text value="Title"/>
+                                </properties>
+                              </component>
+                              <grid id="b7de1" layout-manager="GridBagLayout">
+                                <constraints>
+                                  <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                  <gridbag top="5" left="5" bottom="5" right="0" weightx="1.0" weighty="0.0"/>
+                                </constraints>
+                                <properties/>
+                                <border type="none"/>
+                                <children>
+                                  <scrollpane id="57337">
+                                    <constraints>
+                                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="1.0" weighty="1.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <horizontalScrollBarPolicy value="31"/>
+                                      <verticalScrollBarPolicy value="21"/>
+                                    </properties>
+                                    <border type="none"/>
+                                    <children>
+                                      <component id="8910a" class="javax.swing.JTextField" binding="m_perfectGameAchievementTextField">
+                                        <constraints/>
+                                        <properties/>
+                                      </component>
+                                    </children>
+                                  </scrollpane>
+                                </children>
+                              </grid>
+                              <component id="adcba" class="javax.swing.JLabel">
+                                <constraints>
+                                  <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                                  <gridbag weightx="0.0" weighty="0.0"/>
+                                </constraints>
+                                <properties>
+                                  <labelFor value="8910a"/>
+                                  <text value="Perfect game achievement"/>
                                 </properties>
                               </component>
                             </children>

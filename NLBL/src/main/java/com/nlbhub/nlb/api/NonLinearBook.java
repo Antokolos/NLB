@@ -75,6 +75,11 @@ public interface NonLinearBook {
     public static final String DEFAULT_TITLE = Constants.EMPTY_STRING;
     public static final String DEFAULT_AUTHOR = Constants.EMPTY_STRING;
     public static final String DEFAULT_VERSION = Constants.EMPTY_STRING;
+    public static final String DEFAULT_PERFECT_GAME_ACHIEVEMENT_NAME = Constants.EMPTY_STRING;
+
+    Set<String> getAllAchievementNames(boolean recursive);
+
+    String getPerfectGameAchievementName();
 
     public class ModuleInfo {
         private String m_modulePageId;

@@ -100,6 +100,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     private static final String TITLE_FILE_NAME = "title";
     private static final String AUTHOR_FILE_NAME = "author";
     private static final String VERSION_FILE_NAME = "version";
+    private static final String PERFECT_GAME_ACHIEVEMENT_FILE_NAME = "perfgame";
     private static final String PAGES_DIR_NAME = "pages";
     private static final String OBJS_DIR_NAME = "objs";
     private static final String VARS_DIR_NAME = "vars";
@@ -123,6 +124,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     private String m_title;
     private String m_author;
     private String m_version;
+    private String m_perfectGameAchievementName;
     private boolean m_fullAutowire;
     private boolean m_suppressMedia;
     private boolean m_suppressSound;
@@ -1685,6 +1687,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final String m_prevLicense;
         private final String m_prevLanguage;
         private final String m_prevTitle;
+        private final String m_prevPerfectGameAchievementName;
         private final String m_prevAuthor;
         private final String m_prevVersion;
         private final Boolean m_prevFullAutowire;
@@ -1693,6 +1696,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final String m_newLicense;
         private final String m_newLanguage;
         private final String m_newTitle;
+        private final String m_newPerfectGameAchievementName;
         private final String m_newAuthor;
         private final String m_newVersion;
         private final Boolean m_newFullAutowire;
@@ -1706,6 +1710,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String title,
                 final String author,
                 final String version,
+                final String perfectGameAchievementName,
                 final Boolean fullAutowire,
                 final Boolean suppressMedia,
                 final Boolean suppressSound,
@@ -1716,6 +1721,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_prevTitle = m_title;
             m_prevAuthor = m_author;
             m_prevVersion = m_version;
+            m_prevPerfectGameAchievementName = m_perfectGameAchievementName;
             m_prevFullAutowire = m_fullAutowire;
             m_prevSuppressMedia = m_suppressMedia;
             m_prevSuppressSound = m_suppressSound;
@@ -1724,6 +1730,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newTitle = title;
             m_newAuthor = author;
             m_newVersion = version;
+            m_newPerfectGameAchievementName = perfectGameAchievementName;
             m_newFullAutowire = fullAutowire;
             m_newSuppressMedia = suppressMedia;
             m_newSuppressSound = suppressSound;
@@ -1738,6 +1745,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                                         title,
                                         author,
                                         version,
+                                        null,  // Do not change perfect game achievement name for submodules
                                         fullAutowire,
                                         suppressMedia,
                                         suppressSound,
@@ -1766,6 +1774,9 @@ public class NonLinearBookImpl implements NonLinearBook {
             if (m_newVersion != null) {
                 m_version = m_newVersion;
             }
+            if (m_newPerfectGameAchievementName != null) {
+                m_perfectGameAchievementName = m_newPerfectGameAchievementName;
+            }
             if (m_newFullAutowire != null) {
                 m_fullAutowire = m_newFullAutowire;
             }
@@ -1788,6 +1799,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_title = m_prevTitle;
             m_author = m_prevAuthor;
             m_version = m_prevVersion;
+            m_perfectGameAchievementName = m_prevPerfectGameAchievementName;
             m_fullAutowire = m_prevFullAutowire;
             m_suppressMedia = m_prevSuppressMedia;
             m_suppressSound = m_prevSuppressSound;
@@ -2254,6 +2266,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_title = DEFAULT_TITLE;
         m_author = DEFAULT_AUTHOR;
         m_version = DEFAULT_VERSION;
+        m_perfectGameAchievementName = DEFAULT_PERFECT_GAME_ACHIEVEMENT_NAME;
         m_parentPage = null;
         m_pages = new HashMap<>();
         m_autowiredPages = new ArrayList<>();
@@ -2274,6 +2287,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_title = parentNLB.getTitle();
         m_author = parentNLB.getAuthor();
         m_version = parentNLB.getVersion();
+        m_perfectGameAchievementName = DEFAULT_PERFECT_GAME_ACHIEVEMENT_NAME;
         m_parentPage = parentPage;
         m_pages = new HashMap<>();
         m_autowiredPages = new ArrayList<>();
@@ -2468,6 +2482,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String title,
             final String author,
             final String version,
+            final String perfectGameAchievementName,
             final Boolean fullAutowire,
             final Boolean suppressMedia,
             final Boolean suppressSound,
@@ -2482,6 +2497,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 m_title.equals(title) ? null : title,
                 m_author.equals(author) ? null : author,
                 m_version.equals(version) ? null : version,
+                m_perfectGameAchievementName.equals(perfectGameAchievementName) ? null : perfectGameAchievementName,
                 ((fullAutowire != null) && (m_fullAutowire == fullAutowire)) ? null : fullAutowire,
                 ((suppressMedia != null) && (m_suppressMedia == suppressMedia)) ? null : suppressMedia,
                 ((suppressSound != null) && (m_suppressSound == suppressSound)) ? null : suppressSound,
@@ -2560,6 +2576,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_title = operand.getTitle();
         m_author = operand.getAuthor();
         m_version = operand.getVersion();
+        // m_perfectGameAchievementName = operand.getPerfectGameAchievementName(); don't touching it...
     }
 
     public List<Link> getAssociatedLinks(NodeItem nodeItem) {
@@ -2603,6 +2620,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_title = (m_parentNLB != null) ? m_parentNLB.getTitle() : DEFAULT_TITLE;
         m_author = (m_parentNLB != null) ? m_parentNLB.getAuthor() : DEFAULT_AUTHOR;
         m_version = (m_parentNLB != null) ? m_parentNLB.getVersion() : DEFAULT_VERSION;
+        m_perfectGameAchievementName = DEFAULT_PERFECT_GAME_ACHIEVEMENT_NAME;
         m_fullAutowire = (m_parentNLB != null) ? m_parentNLB.isFullAutowire() : DEFAULT_FULL_AUTOWIRE;
         m_suppressMedia = (m_parentNLB != null) ? m_parentNLB.isSuppressMedia() : DEFAULT_SUPPRESS_MEDIA;
         m_suppressSound = (m_parentNLB != null) ? m_parentNLB.isSuppressSound() : DEFAULT_SUPPRESS_SOUND;
@@ -2619,6 +2637,46 @@ public class NonLinearBookImpl implements NonLinearBook {
             }
         }
         return NullObj.create();
+    }
+
+    @Override
+    public Set<String> getAllAchievementNames(boolean recursive) {
+        Set<String> result = new TreeSet<>();
+        for (Map.Entry<String, PageImpl> pageEntry : m_pages.entrySet()) {
+            PageImpl page = pageEntry.getValue();
+            result.addAll(getAllAchievementsForModifyingItem(page));
+            for (Link link : page.getLinks()) {
+                result.addAll(getAllAchievementsForModifyingItem(link));
+            }
+            NonLinearBook module = page.getModule();
+            if (recursive && !module.isEmpty()) {
+                result.addAll(module.getAllAchievementNames(true));
+            }
+        }
+        for (Map.Entry<String, ObjImpl> objEntry : m_objs.entrySet()) {
+            ObjImpl obj = objEntry.getValue();
+            result.addAll(getAllAchievementsForModifyingItem(obj));
+            for (Link link : obj.getLinks()) {
+                result.addAll(getAllAchievementsForModifyingItem(link));
+            }
+        }
+        return result;
+    }
+
+    private Set<String> getAllAchievementsForModifyingItem(ModifyingItem item) {
+        Set<String> result = new HashSet<>();
+        for (Modification modification : item.getModifications()) {
+            if (modification.getType() == Modification.Type.ACHIEVE) {
+                Variable variable = getVariableById(modification.getExprId());
+                result.add(variable.getValue());
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public String getPerfectGameAchievementName() {
+        return m_perfectGameAchievementName;
     }
 
     @Override
@@ -3384,6 +3442,13 @@ public class NonLinearBookImpl implements NonLinearBook {
                         (m_parentNLB != null) ? m_parentNLB.getVersion() : DEFAULT_VERSION
                 )
         );
+        m_perfectGameAchievementName = (
+                FileManipulator.getOptionalFileAsString(
+                        rootDir,
+                        PERFECT_GAME_ACHIEVEMENT_FILE_NAME,
+                        DEFAULT_PERFECT_GAME_ACHIEVEMENT_NAME
+                )
+        );
     }
 
     private void readPages(
@@ -4037,6 +4102,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final File rootDir
     ) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
         fileManipulator.writeOptionalString(rootDir, STARTPOINT_FILE_NAME, m_startPoint, DEFAULT_STARTPOINT);
+        fileManipulator.writeOptionalString(rootDir, PERFECT_GAME_ACHIEVEMENT_FILE_NAME, m_perfectGameAchievementName, DEFAULT_PERFECT_GAME_ACHIEVEMENT_NAME);
         if (m_parentNLB != null) {
             fileManipulator.writeOptionalString(
                     rootDir,

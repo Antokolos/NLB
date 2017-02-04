@@ -66,6 +66,16 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
+    public Set<String> getAllAchievementNames(boolean recursive) {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public String getPerfectGameAchievementName() {
+        return DEFAULT_PERFECT_GAME_ACHIEVEMENT_NAME;
+    }
+
+    @Override
     public boolean isEmpty() {
         return true;
     }

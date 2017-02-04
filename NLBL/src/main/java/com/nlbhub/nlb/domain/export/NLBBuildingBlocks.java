@@ -40,6 +40,8 @@ package com.nlbhub.nlb.domain.export;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * The NLBBuildingBlocks class
@@ -52,16 +54,20 @@ public class NLBBuildingBlocks {
     private String m_author;
     private String m_version;
     private String m_lang;
+    private Set<String> m_achievements = new TreeSet<>();
+    private String m_achievementNamePerfectGame;
     private List<PageBuildingBlocks> m_pagesBuildingBlocks;
     private List<ObjBuildingBlocks> m_objsBuildingBlocks;
 
-    public NLBBuildingBlocks(String title, String author, String version, String lang) {
+    public NLBBuildingBlocks(String title, String author, String version, String lang, Set<String> achievements, String achievementNamePerfectGame) {
         m_title = title;
         m_author = author;
         m_version = version;
         m_lang = lang;
         m_pagesBuildingBlocks = new ArrayList<>();
         m_objsBuildingBlocks = new ArrayList<>();
+        m_achievements.addAll(achievements);
+        m_achievementNamePerfectGame = achievementNamePerfectGame;
     }
 
     public String getTitle() {
@@ -123,5 +129,21 @@ public class NLBBuildingBlocks {
     public void addNLBBuildingBlocks(final NLBBuildingBlocks nlbBuildingBlocks) {
         m_pagesBuildingBlocks.addAll(nlbBuildingBlocks.m_pagesBuildingBlocks);
         m_objsBuildingBlocks.addAll(nlbBuildingBlocks.m_objsBuildingBlocks);
+    }
+
+    public String getAchievementNamePerfectGame() {
+        return m_achievementNamePerfectGame;
+    }
+
+    public void setAchievementNamePerfectGame(String achievementNamePerfectGame) {
+        m_achievementNamePerfectGame = achievementNamePerfectGame;
+    }
+
+    public Set<String> getAchievements() {
+        return m_achievements;
+    }
+
+    public void addAchievements(Set<String> achievements) {
+        m_achievements.addAll(achievements);
     }
 }
