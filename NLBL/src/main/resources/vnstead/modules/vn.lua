@@ -306,8 +306,9 @@ vn = obj {
         end
         for i, v in ipairs(s._effects) do
             local active = not s:is_inactive_due_to_anim_state(v);
-            if active and s:gobf(v).onclick and s:enabled(v) and s:inside_spr(v, x, y) then
-                s:gobf(v):onclick(s);
+            local gob = s:gobf(v);
+            if active and gob and gob.onclick and s:enabled(v) and s:inside_spr(v, x, y) then
+                gob:onclick(s);
             end
         end
     end;
