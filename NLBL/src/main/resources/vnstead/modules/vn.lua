@@ -820,8 +820,10 @@ vn = obj {
             return kk, ii;
         end
         local i, k
+        local g1 = stead.ref(n);
         for i, k in ipairs(s._pending_effects) do
-            if k.gob == n then
+            local g2 = stead.ref(k.gob);
+            if g1 == g2 then
                 return k, i
             end
         end
@@ -830,8 +832,10 @@ vn = obj {
     glookup = function(s, n)
         if not n then return end
         local i, k
+        local g1 = stead.ref(n);
         for i, k in ipairs(s._effects) do
-            if k.gob == n then
+            local g2 = stead.ref(k.gob);
+            if g1 == g2 then
                 return k, i
             end
         end
