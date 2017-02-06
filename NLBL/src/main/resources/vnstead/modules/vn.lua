@@ -823,7 +823,7 @@ vn = obj {
         local g1 = stead.ref(n);
         for i, k in ipairs(s._pending_effects) do
             local g2 = stead.ref(k.gob);
-            if g1 == g2 then
+            if stead.nameof(g1) == stead.nameof(g2) then
                 return k, i
             end
         end
@@ -835,7 +835,7 @@ vn = obj {
         local g1 = stead.ref(n);
         for i, k in ipairs(s._effects) do
             local g2 = stead.ref(k.gob);
-            if g1 == g2 then
+            if stead.nameof(g1) == stead.nameof(g2) then
                 return k, i
             end
         end
