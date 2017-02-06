@@ -656,8 +656,8 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjName(String name) {
-        return "    nam = \"" + name + "\"," + LINE_SEPARATOR;
+    protected String decorateObjName(String name, String id) {
+        return "    nam = \"" + (StringHelper.notEmpty(name) ? name : decorateId(id)) + "\"," + LINE_SEPARATOR;
     }
 
     @Override

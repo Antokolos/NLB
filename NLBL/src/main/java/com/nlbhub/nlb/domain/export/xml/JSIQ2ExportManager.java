@@ -353,7 +353,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decorateObjName(String name) {
+    protected String decorateObjName(String name, String id) {
         return name;
     }
 

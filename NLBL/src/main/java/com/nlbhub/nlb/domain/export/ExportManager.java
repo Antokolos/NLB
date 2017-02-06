@@ -836,7 +836,7 @@ public abstract class ExportManager {
         blocks.setObjComment(decorateObjComment(obj.getName()));
         // blocks obj default tag variable was set earlier
         blocks.setObjStart(decorateObjStart(obj.getId(), getContainerRef(obj, exportData), objType, obj.isPreserved(), obj.isClearUnderTooltip(), obj.isActOnKey(), blocks.getObjDefaultTagVariable()));
-        blocks.setObjName(decorateObjName(obj.getName()));
+        blocks.setObjName(decorateObjName(obj.getName(), obj.getId()));
         blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
         List<ImagePathData> imagePaths = getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage(), obj.isAnimatedImage() && obj.isGraphical());
@@ -1726,7 +1726,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjName(String name) {
+    protected String decorateObjName(String name, String id) {
         return EMPTY_STRING;
     }
 
