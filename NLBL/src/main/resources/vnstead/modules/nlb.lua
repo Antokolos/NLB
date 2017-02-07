@@ -299,12 +299,9 @@ nlb = obj {
         end
     end;
     setAchievement = function(s, statsAPI, achievementName)
-        if prefs.achievements[achievementName] > 0 then
-            return prefs.achievements[achievementNamePerfectGame] > 0;
-        end
         local achievementNamePerfectGame = prefs.achievementNamePerfectGame;
-        statsAPI.setAchievement(achievementName, true);
         prefs.achievements[achievementName] = 1;
+        statsAPI.setAchievement(achievementName, true);
         if achievementNamePerfectGame then
             prefs.achievements[achievementNamePerfectGame] = 1; -- let's assume we already got all achievements
         end
