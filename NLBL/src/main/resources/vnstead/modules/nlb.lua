@@ -299,19 +299,19 @@ nlb = obj {
         end
     end;
     setAchievement = function(s, statsAPI, achievementName)
-        if prefs.achievements[achievementName] then
-            return prefs.achievements[achievementNamePerfectGame];
+        if prefs.achievements[achievementName] > 0 then
+            return prefs.achievements[achievementNamePerfectGame] > 0;
         end
         local achievementNamePerfectGame = prefs.achievementNamePerfectGame;
         statsAPI.setAchievement(achievementName, true);
-        prefs.achievements[achievementName] = true;
+        prefs.achievements[achievementName] = 1;
         if achievementNamePerfectGame then
-            prefs.achievements[achievementNamePerfectGame] = true; -- let's assume we already got all achievements
+            prefs.achievements[achievementNamePerfectGame] = 1; -- let's assume we already got all achievements
         end
         for k, v in pairs(prefs.achievements) do
-            if not v then
+            if v <= 0 then
                 if achievementNamePerfectGame then
-                    prefs.achievements[achievementNamePerfectGame] = false;
+                    prefs.achievements[achievementNamePerfectGame] = 0;
                 end
                 prefs:store();
                 return false;
