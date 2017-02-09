@@ -192,8 +192,8 @@ public class STEADExportManager extends TextExportManager {
         String perfectGame = nlbBuildingBlocks.getAchievementNamePerfectGame();
         if (StringHelper.notEmpty(perfectGame)) {
             String achievementItemPerfectGame = "prefs.achievements['" + perfectGame + "']";
-            stringBuilder.append("    if not ").append(achievementItemPerfectGame).append(" then ").append(achievementItemPerfectGame).append(" = 0;").append(LINE_SEPARATOR);
-            stringBuilder.append("    if not prefs.achievementNamePerfectGame then prefs.achievementNamePerfectGame = '").append(perfectGame).append("';").append(LINE_SEPARATOR);
+            stringBuilder.append("    if not ").append(achievementItemPerfectGame).append(" then ").append(achievementItemPerfectGame).append(" = 0; end;").append(LINE_SEPARATOR);
+            stringBuilder.append("    if not prefs.achievementNamePerfectGame then prefs.achievementNamePerfectGame = '").append(perfectGame).append("'; end;").append(LINE_SEPARATOR);
         }
         stringBuilder.append("    prefs:store();").append(LINE_SEPARATOR);
         return stringBuilder.toString();
@@ -203,7 +203,7 @@ public class STEADExportManager extends TextExportManager {
         StringBuilder stringBuilder = new StringBuilder();
         for (String achievement : nlbBuildingBlocks.getAchievements()) {
             String achievementItem = "prefs.achievements['" + achievement + "']";
-            stringBuilder.append("    if not ").append(achievementItem).append(" then ").append(achievementItem).append(" = 0;").append(LINE_SEPARATOR);
+            stringBuilder.append("    if not ").append(achievementItem).append(" then ").append(achievementItem).append(" = 0; end;").append(LINE_SEPARATOR);
         }
         return stringBuilder.toString();
     }
