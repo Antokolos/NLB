@@ -187,21 +187,23 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("    if not prefs.achievements then").append(LINE_SEPARATOR);
         stringBuilder.append("        prefs.achievements = {};").append(LINE_SEPARATOR);
+        stringBuilder.append("    end").append(LINE_SEPARATOR);
         stringBuilder.append(initBlockAchievements(nlbBuildingBlocks));
         String perfectGame = nlbBuildingBlocks.getAchievementNamePerfectGame();
         if (StringHelper.notEmpty(perfectGame)) {
-            stringBuilder.append("        prefs.achievements['").append(perfectGame).append("'] = 0;").append(LINE_SEPARATOR);
-            stringBuilder.append("        prefs.achievementNamePerfectGame = '").append(perfectGame).append("';").append(LINE_SEPARATOR);
+            String achievementItemPerfectGame = "prefs.achievements['" + perfectGame + "']";
+            stringBuilder.append("    if not ").append(achievementItemPerfectGame).append(" then ").append(achievementItemPerfectGame).append(" = 0;").append(LINE_SEPARATOR);
+            stringBuilder.append("    if not prefs.achievementNamePerfectGame then prefs.achievementNamePerfectGame = '").append(perfectGame).append("';").append(LINE_SEPARATOR);
         }
-        stringBuilder.append("        prefs:store();").append(LINE_SEPARATOR);
-        stringBuilder.append("    end").append(LINE_SEPARATOR);
+        stringBuilder.append("    prefs:store();").append(LINE_SEPARATOR);
         return stringBuilder.toString();
     }
 
     private String initBlockAchievements(NLBBuildingBlocks nlbBuildingBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
         for (String achievement : nlbBuildingBlocks.getAchievements()) {
-            stringBuilder.append("        prefs.achievements['").append(achievement).append("'] = 0;").append(LINE_SEPARATOR);
+            String achievementItem = "prefs.achievements['" + achievement + "']";
+            stringBuilder.append("    if not ").append(achievementItem).append(" then ").append(achievementItem).append(" = 0;").append(LINE_SEPARATOR);
         }
         return stringBuilder.toString();
     }
