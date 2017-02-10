@@ -324,6 +324,13 @@ nlb = obj {
         prefs:store();
         return true;
     end;
+    resendAchievements = function(s, statsAPI)
+        for k, v in pairs(prefs.achievements) do
+            if v and v > 0 then
+                statsAPI.setAchievement(k, true);
+            end
+        end
+    end;
 };
 
 _try_again = menu {

@@ -196,6 +196,7 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append("    if not prefs.achievementNamePerfectGame then prefs.achievementNamePerfectGame = '").append(perfectGame).append("'; end;").append(LINE_SEPARATOR);
         }
         stringBuilder.append("    prefs:store();").append(LINE_SEPARATOR);
+        stringBuilder.append("    nlb:resendAchievements(statsAPI);").append(LINE_SEPARATOR);
         return stringBuilder.toString();
     }
 
