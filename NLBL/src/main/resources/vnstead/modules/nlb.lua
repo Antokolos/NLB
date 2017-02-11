@@ -299,6 +299,9 @@ nlb = obj {
         end
     end;
     setAchievement = function(s, statsAPI, achievementName)
+        -- There is no harm to call statsAPI.init() one more time,
+        -- we are just trying to init Stats one more time in case of failure to init on start
+        statsAPI.init();
         local achievementNamePerfectGame = prefs.achievementNamePerfectGame;
         if not prefs.achievements[achievementName] then
             prefs.achievements[achievementName] = 1;
