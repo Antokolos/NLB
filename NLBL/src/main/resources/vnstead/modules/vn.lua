@@ -202,14 +202,11 @@ vn = obj {
         if not load or not s.on then
             return
         end
-        local i, v, n
+        local i, v;
         for i, v in ipairs(s._effects) do
             v.hasmore = true;
-            v.step = s:get_init_step(v);
-            s:load_effect(v)
-            if s:get_step(v) < s:get_max_step(v) - s:get_from_stop(v) then
-                n = true
-            end
+            -- v.step = s:get_init_step(v); -- This causes bug with text when traversing through the auto links, text line is not shown after game load. It is better to just remove that :)
+            s:load_effect(v);
         end
         s:set_bg(s._bg);
         s:draw_notes();
