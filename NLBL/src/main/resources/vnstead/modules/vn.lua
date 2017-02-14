@@ -301,13 +301,35 @@ vn = obj {
         if not s.on then
             return;
         end
+        local clickTargets = {};
+        local clickParentNames = {};
         for i, v in ipairs(s._effects) do
             local active = not s:is_inactive_due_to_anim_state(v);
             local gob = s:gobf(v);
             if active and gob and gob.onclick and s:enabled(v) and s:inside_spr(v, x, y) then
-                gob:onclick(s);
+                clickTargets[v.nam] = v;
+                local hierarchy = s:get_hierarchy(v);
+                for kk, vv in pairs(hierarchy) do
+                    clickParentNames[vv] = true;
+                end
             end
         end
+        -- The idea is to NOT call onclick handler for gobj, which have a child, for which onclick handler should be called too.
+        for kkk, vvv in pairs(clickTargets) do
+            if not clickParentNames[kkk] then
+                local g = s:gobf(vvv);
+                g:onclick(s);
+            end
+        end
+    end;
+    get_hierarchy = function(s, v)
+        local vv = v;
+        local result = {};
+        while vv.parent do
+            result[vv.nam] = vv.parent;
+            vv = s:parentf(vv);
+        end
+        return result;
     end;
     get_morph = function(s, v, is_over)
         local gob = s:gobf(v);
@@ -965,6 +987,7 @@ vn = obj {
 
     gobf = function(s, v) return stead.ref(v.gob); end;
 
+    -- todo: if _effects will be map instead of array, this method can be much faster...
     parentf = function(s, v) return s:lookup_full(v.parent); end;
 
     rootf = function(s, v)
