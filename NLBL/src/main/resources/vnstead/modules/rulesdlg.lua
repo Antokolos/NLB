@@ -42,6 +42,7 @@ _dlgButtonOK_Out = v_53b088b4_4b84_4939_89a7_191607467229
 -- dialogObj
 v_c7c2ac92_ac1b_4557_8265_8adddb054136 = gmenu {
     system_type = true,
+    accept_child_clicks = true,
     var { tag = ''; container = function() return v_0e49cfc2_eb54_4db1_926d_79ce4d67836c; end; topmost = true; },
     nlbid = 'c7c2ac92-ac1b-4557-8265-8adddb054136',
     deref = function(s) return stead.deref(v_c7c2ac92_ac1b_4557_8265_8adddb054136); end,

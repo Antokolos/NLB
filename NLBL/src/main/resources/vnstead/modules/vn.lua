@@ -316,8 +316,8 @@ vn = obj {
         end
         -- The idea is to NOT call onclick handler for gobj, which have a child, for which onclick handler should be called too.
         for kkk, vvv in pairs(clickTargets) do
-            if not clickParentNames[kkk] then
-                local g = s:gobf(vvv);
+            local g = s:gobf(vvv);
+            if g.accept_child_clicks or not clickParentNames[kkk] then
                 g:onclick(s);
             end
         end
