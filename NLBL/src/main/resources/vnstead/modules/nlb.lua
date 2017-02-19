@@ -359,7 +359,11 @@ _syscall_showmenubtn  = menu {
     nam = "syscall_showmenubtn",
     system_type = true,
     act = function(s)
-        theme.menu.gfx.button('gfx/menubtn.png', 1827, 0);
+        if _export_lang == 'ru' then
+            theme.menu.gfx.button('gfx/menubtn_ru.png', 1827, 0);
+        else
+            theme.menu.gfx.button('gfx/menubtn.png', 1827, 0);
+        end
     end,
     actf = function(s) return s:act(); end
 }

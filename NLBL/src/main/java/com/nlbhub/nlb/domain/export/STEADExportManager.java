@@ -180,6 +180,7 @@ public class STEADExportManager extends TextExportManager {
         StringBuilder stringBuilder = new StringBuilder();
         String lang = nlbBuildingBlocks.getLang();
         stringBuilder.append("    _export_lang = '").append(lang).append("';").append(LINE_SEPARATOR);
+        stringBuilder.append("    _syscall_showmenubtn:act();").append(LINE_SEPARATOR);
         if (Constants.RU.equalsIgnoreCase(lang)) {
             stringBuilder.append("    format.quotes = true;").append(LINE_SEPARATOR);
         } else {

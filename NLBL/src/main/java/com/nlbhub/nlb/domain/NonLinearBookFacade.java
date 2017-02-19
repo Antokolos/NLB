@@ -259,6 +259,7 @@ public class NonLinearBookFacade implements NLBObservable {
             exportBundledVNSTEADFile(gfxDir, true, "aup.png");
             exportBundledVNSTEADFile(gfxDir, true, "adown.png");
             exportBundledVNSTEADFile(gfxDir, true, "menubtn.png");
+            exportBundledVNSTEADFile(gfxDir, true, "menubtn_ru.png");
             exportBundledVNSTEADFile(gfxDir, true, "adown.png");
             exportBundledVNSTEADFile(gfxDir, true, "alt_btn_dice.png");
             exportBundledVNSTEADFile(gfxDir, true, "alt_btn_dice2.png");
@@ -305,7 +306,6 @@ public class NonLinearBookFacade implements NLBObservable {
             exportBundledVNSTEADFile(gfxDir, true, "empty.png");
             exportBundledVNSTEADFile(gfxDir, true, "fl.png");
             exportBundledVNSTEADFile(gfxDir, true, "fr.png");
-            exportBundledVNSTEADFile(gfxDir, true, "menubtn.png");
             exportBundledVNSTEADFile(gfxDir, true, "n.1.die1.0000-0100.png");
             exportBundledVNSTEADFile(gfxDir, true, "n.1.die1.meta");
             exportBundledVNSTEADFile(gfxDir, true, "n.1.die2.0000-0100.png");
