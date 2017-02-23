@@ -15,6 +15,10 @@ iface.cmd = stead.hook(iface.cmd, function(f, s, cmd, ...)
     return paginatorIfaceCmd(f, s, cmd, ...);
 end)
 
+iface.fmt = stead.hook(iface.fmt, function(f, self, cmd, st, moved, r, av, objs, pv)
+    return paginatorIfaceFmt(f, self, cmd, st, moved, r, av, objs, pv);
+end)
+
 instead.get_title = stead.hook(instead.get_title, function(f, s, cmd, ...)
     return paginatorGetTitle(f, s, cmd, ...);
 end)
@@ -180,6 +184,23 @@ paginatorIfaceCmd = function(f, s, cmd, ...)
         game._lastdisp = r
     end
     return r, v
+end
+
+paginatorIfaceFmt = function(f, self, cmd, st, moved, r, av, objs, pv)
+    if paginator.on then
+        -- st -- changed state (main win), move -- loc changed
+        -- maybe we should print action reactions and life texts somewhere, but we shouldn't print it to the main window
+        local l, vv
+        if st then
+            if isForcedsc(stead.here()) or NEED_SCENE then
+                l = stead.here():scene(); -- статическая часть сцены
+            end
+        end
+        vv = stead.fmt(stead.cat(stead.par(stead.scene_delim, l, nil, nil, objs, nil), '^'));
+        return vv
+    else
+        return f(self, cmd, st, moved, r, av, objs, pv);
+    end
 end
 
 stead.module_init(function()

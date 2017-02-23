@@ -109,6 +109,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         stringBuilder.append("require 'modules/gobj'").append(lineSep);
 
         stringBuilder.append("game.codepage=\"UTF-8\";").append(lineSep);
+        stringBuilder.append("game.forcedsc=true;").append(lineSep);
         stringBuilder.append("stead.scene_delim = '^';").append(lineSep);
         stringBuilder.append(lineSep);
 
