@@ -404,15 +404,6 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            add_sound(sndfile);").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
-        stringBuilder.append("    entered = function(s, f)").append(LINE_SEPARATOR);
-        if (pageBlocks.getTheme() == Theme.STANDARD) {
-            stringBuilder.append("        dofile('theme_standard.lua');").append(LINE_SEPARATOR);
-        } else if (pageBlocks.getTheme() == Theme.VN) {
-            stringBuilder.append("        dofile('theme_vn.lua');").append(LINE_SEPARATOR);
-        } else {
-            stringBuilder.append(getDefaultThemeSwitchExpression());
-        }
-        stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
         stringBuilder.append("        lifeon(s);").append(LINE_SEPARATOR);
         if (hasFastAnim) {
@@ -422,6 +413,13 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        s.wastext = false;").append(LINE_SEPARATOR);
         if (timerSet) {
             stringBuilder.append("        ").append(pageBlocks.getPageTimerVariableInit()).append(LINE_SEPARATOR);
+        }
+        if (pageBlocks.getTheme() == Theme.STANDARD) {
+            stringBuilder.append("        dofile('theme_standard.lua');").append(LINE_SEPARATOR);
+        } else if (pageBlocks.getTheme() == Theme.VN) {
+            stringBuilder.append("        dofile('theme_vn.lua');").append(LINE_SEPARATOR);
+        } else {
+            stringBuilder.append(getDefaultThemeSwitchExpression());
         }
         stringBuilder.append("        if not (f.autowired) then").append(LINE_SEPARATOR);
         if (varsOrModsPresent) {
@@ -481,7 +479,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        local bg_img = s.bgimg(s);").append(getLineSeparator());
         final boolean imageBackground = pageBuildingBlocks.isImageBackground();
         if (pageBuildingBlocks.isHasGraphicalObjects()) {
-            stringBuilder.append("        vn:turnon();").append(LINE_SEPARATOR);
+            //stringBuilder.append("        vn:turnon();").append(LINE_SEPARATOR);
             stringBuilder.append("        vn:scene(bg_img);").append(getLineSeparator());
             for (String graphicalObjId : pageBuildingBlocks.getContainedGraphicalObjIds()) {
                 stringBuilder.append("        vn:gshow(" + graphicalObjId + ");").append(LINE_SEPARATOR);
