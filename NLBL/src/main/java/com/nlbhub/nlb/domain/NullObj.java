@@ -160,6 +160,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public boolean isLoadOnce() {
+        return DEFAULT_LOAD_ONCE;
+    }
+
+    @Override
     public boolean isCollapsable() {
         return Obj.DEFAULT_COLLAPSABLE;
     }
@@ -177,6 +182,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     @Override
     public int getMaxFrame() {
         return DEFAULT_MAX_FRAME;
+    }
+
+    @Override
+    public int getPreloadFrames() {
+        return DEFAULT_PRELOAD_FRAMES;
     }
 
     @Override

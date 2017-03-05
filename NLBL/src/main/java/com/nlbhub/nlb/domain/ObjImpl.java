@@ -80,10 +80,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String DISP_SUBDIR_NAME = "disp";
     private static final String GRAPHICAL_FILE_NAME = "graphical";
     private static final String PRESERVED_FILE_NAME = "preserved";
+    private static final String LOADONCE_FILE_NAME = "loadonce";
     private static final String COLLAPSABLE_FILE_NAME = "collapsable";
     private static final String MVDIRECTION_FILE_NAME = "mvdirection";
     private static final String EFFECT_FILE_NAME = "effect";
     private static final String MAX_FRAME_FILE_NAME = "maxframe";
+    private static final String PRELOAD_FRAMES_FILE_NAME = "preloadf";
     private static final String COORDSOR_FILE_NAME = "coordsor";
     private static final String CLEARUTT_FILE_NAME = "clearutt";
     private static final String ACTONKEY_FILE_NAME = "actonkey";
@@ -107,10 +109,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private MultiLangString m_actText = DEFAULT_ACT_TEXT;
     private boolean m_graphical = DEFAULT_GRAPHICAL;
     private boolean m_preserved = DEFAULT_PRESERVED;
+    private boolean m_loadOnce = DEFAULT_LOAD_ONCE;
     private boolean m_collapsable = DEFAULT_COLLAPSABLE;
     private MovementDirection m_movementDirection = DEFAULT_MOVEMENT_DIRECTION;
     private Effect m_effect = DEFAULT_EFFECT;
     private int m_maxFrame = DEFAULT_MAX_FRAME;
+    private int m_preloadFrames = DEFAULT_PRELOAD_FRAMES;
     private CoordsOrigin m_coordsOrigin = CoordsOrigin.LeftTop;
     private boolean m_clearUnderTooltip = DEFAULT_CLEAR_UNDER_TOOLTIP;
     private boolean m_actOnKey = DEFAULT_ACT_ON_KEY;
@@ -166,11 +170,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         setActTexts(source.getActTexts());
         m_graphical = source.isGraphical();
         m_preserved = source.isPreserved();
+        m_loadOnce = source.isLoadOnce();
         m_collapsable = source.isCollapsable();
         m_offset = source.getOffset();
         m_movementDirection = source.getMovementDirection();
         m_effect = source.getEffect();
         m_maxFrame = source.getMaxFrame();
+        m_preloadFrames = source.getPreloadFrames();
         m_coordsOrigin = source.getCoordsOrigin();
         m_clearUnderTooltip = source.isClearUnderTooltip();
         m_actOnKey = source.isActOnKey();
@@ -362,6 +368,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public boolean isLoadOnce() {
+        return m_loadOnce;
+    }
+
+    public void setLoadOnce(boolean loadOnce) {
+        m_loadOnce = loadOnce;
+    }
+
+    @Override
     public boolean isCollapsable() {
         return m_collapsable;
     }
@@ -404,6 +419,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
 
     public void setMaxFrame(int maxFrame) {
         m_maxFrame = maxFrame;
+    }
+
+    @Override
+    public int getPreloadFrames() {
+        return m_preloadFrames;
+    }
+
+    public void setPreloadFrames(int preloadFrames) {
+        m_preloadFrames = preloadFrames;
     }
 
     @Override
@@ -650,6 +674,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(
                     objDir,
+                    LOADONCE_FILE_NAME,
+                    String.valueOf(m_loadOnce),
+                    String.valueOf(DEFAULT_LOAD_ONCE)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
                     COLLAPSABLE_FILE_NAME,
                     String.valueOf(m_collapsable),
                     String.valueOf(DEFAULT_COLLAPSABLE)
@@ -677,6 +707,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                     MAX_FRAME_FILE_NAME,
                     String.valueOf(m_maxFrame),
                     String.valueOf(DEFAULT_MAX_FRAME)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
+                    PRELOAD_FRAMES_FILE_NAME,
+                    String.valueOf(m_preloadFrames),
+                    String.valueOf(DEFAULT_PRELOAD_FRAMES)
             );
             fileManipulator.writeOptionalString(
                     objDir,
@@ -836,6 +872,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         String.valueOf(DEFAULT_PRESERVED)
                 )
         );
+        m_loadOnce = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        LOADONCE_FILE_NAME,
+                        String.valueOf(DEFAULT_LOAD_ONCE)
+                )
+        );
         m_collapsable = "true".equals(
                 FileManipulator.getOptionalFileAsString(
                         objDir,
@@ -908,6 +951,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         MAX_FRAME_FILE_NAME,
                         String.valueOf(DEFAULT_MAX_FRAME)
+                )
+        );
+        m_preloadFrames = Integer.parseInt(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        PRELOAD_FRAMES_FILE_NAME,
+                        String.valueOf(DEFAULT_PRELOAD_FRAMES)
                 )
         );
         String coordsOrigin = (

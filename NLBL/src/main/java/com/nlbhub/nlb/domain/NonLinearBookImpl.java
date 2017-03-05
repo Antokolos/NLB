@@ -795,11 +795,13 @@ public class NonLinearBookImpl implements NonLinearBook {
         private MultiLangString m_existingObjActText;
         private boolean m_existingObjIsGraphical;
         private boolean m_existingObjIsPreserved;
+        private boolean m_existingObjIsLoadOnce;
         private boolean m_existingObjIsCollapsable;
         private String m_existingOffset;
         private Obj.MovementDirection m_existingMovementDirection;
         private Obj.Effect m_existingEffect;
         private int m_existingMaxFrame;
+        private int m_existingPreloadFrames;
         private Obj.CoordsOrigin m_existingCoordsOrigin;
         private boolean m_existingObjIsClearUnderTooltip;
         private boolean m_existingObjIsActOnKey;
@@ -817,11 +819,13 @@ public class NonLinearBookImpl implements NonLinearBook {
         private MultiLangString m_newObjActText;
         private boolean m_newObjIsGraphical;
         private boolean m_newObjIsPreserved;
+        private boolean m_newObjIsLoadOnce;
         private boolean m_newObjIsCollapsable;
         private String m_newOffset;
         private Obj.MovementDirection m_newMovementDirection;
         private Obj.Effect m_newEffect;
         private int m_newMaxFrame;
+        private int m_newPreloadFrames;
         private Obj.CoordsOrigin m_newCoordsOrigin;
         private boolean m_newObjIsClearUnderTooltip;
         private boolean m_newObjIsActOnKey;
@@ -847,11 +851,13 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString objActText,
                 final boolean objIsGraphical,
                 final boolean objIsPreserved,
+                final boolean objIsLoadOnce,
                 final boolean objIsCollapsable,
                 final String offset,
                 final Obj.MovementDirection movementDirection,
                 final Obj.Effect effect,
                 final int maxFrame,
+                final int preloadFrames,
                 final Obj.CoordsOrigin coordsOrigin,
                 final boolean objIsClearUnderTooltip,
                 final boolean objIsActOnKey,
@@ -879,11 +885,13 @@ public class NonLinearBookImpl implements NonLinearBook {
                     objActText,
                     objIsGraphical,
                     objIsPreserved,
+                    objIsLoadOnce,
                     objIsCollapsable,
                     offset,
                     movementDirection,
                     effect,
                     maxFrame,
+                    preloadFrames,
                     coordsOrigin,
                     objIsClearUnderTooltip,
                     objIsActOnKey,
@@ -913,11 +921,13 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString objActText,
                 final boolean objIsGraphical,
                 final boolean objIsPreserved,
+                final boolean objIsLoadOnce,
                 final boolean objIsCollapsable,
                 final String offset,
                 final Obj.MovementDirection movementDirection,
                 final Obj.Effect effect,
                 final int maxFrame,
+                final int preloadFrames,
                 final Obj.CoordsOrigin coordsOrigin,
                 final boolean objIsClearUnderTooltip,
                 final boolean objIsActOnKey,
@@ -999,11 +1009,13 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingObjActText = obj.getActTexts();
             m_existingObjIsGraphical = obj.isGraphical();
             m_existingObjIsPreserved = obj.isPreserved();
+            m_existingObjIsLoadOnce = obj.isLoadOnce();
             m_existingObjIsCollapsable = obj.isCollapsable();
             m_existingOffset = obj.getOffset();
             m_existingMovementDirection = obj.getMovementDirection();
             m_existingEffect = obj.getEffect();
             m_existingMaxFrame = obj.getMaxFrame();
+            m_existingPreloadFrames = obj.getPreloadFrames();
             m_existingCoordsOrigin = obj.getCoordsOrigin();
             m_existingObjIsClearUnderTooltip = obj.isClearUnderTooltip();
             m_existingObjIsActOnKey = obj.isActOnKey();
@@ -1021,11 +1033,13 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newObjActText = objActText;
             m_newObjIsGraphical = objIsGraphical;
             m_newObjIsPreserved = objIsPreserved;
+            m_newObjIsLoadOnce = objIsLoadOnce;
             m_newObjIsCollapsable = objIsCollapsable;
             m_newOffset = offset;
             m_newMovementDirection = movementDirection;
             m_newEffect = effect;
             m_newMaxFrame = maxFrame;
+            m_newPreloadFrames = preloadFrames;
             m_newCoordsOrigin = coordsOrigin;
             m_newObjIsClearUnderTooltip = objIsClearUnderTooltip;
             m_newObjIsActOnKey = objIsActOnKey;
@@ -1053,11 +1067,13 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setActTexts(m_newObjActText);
             m_obj.setGraphical(m_newObjIsGraphical);
             m_obj.setPreserved(m_newObjIsPreserved);
+            m_obj.setLoadOnce(m_newObjIsLoadOnce);
             m_obj.setCollapsable(m_newObjIsCollapsable);
             m_obj.setOffset(m_newOffset);
             m_obj.setMovementDirection(m_newMovementDirection);
             m_obj.setEffect(m_newEffect);
             m_obj.setMaxFrame(m_newMaxFrame);
+            m_obj.setPreloadFrames(m_newPreloadFrames);
             m_obj.setCoordsOrigin(m_newCoordsOrigin);
             m_obj.setClearUnderTooltip(m_newObjIsClearUnderTooltip);
             m_obj.setActOnKey(m_newObjIsActOnKey);
@@ -1086,11 +1102,13 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setActTexts(m_existingObjActText);
             m_obj.setGraphical(m_existingObjIsGraphical);
             m_obj.setPreserved(m_existingObjIsPreserved);
+            m_obj.setLoadOnce(m_existingObjIsLoadOnce);
             m_obj.setCollapsable(m_existingObjIsCollapsable);
             m_obj.setOffset(m_existingOffset);
             m_obj.setMovementDirection(m_existingMovementDirection);
             m_obj.setEffect(m_existingEffect);
             m_obj.setMaxFrame(m_existingMaxFrame);
+            m_obj.setPreloadFrames(m_existingPreloadFrames);
             m_obj.setCoordsOrigin(m_existingCoordsOrigin);
             m_obj.setClearUnderTooltip(m_existingObjIsClearUnderTooltip);
             m_obj.setActOnKey(m_existingObjIsActOnKey);
@@ -1917,11 +1935,13 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.getActTexts(),
                         obj.isGraphical(),
                         obj.isPreserved(),
+                        obj.isLoadOnce(),
                         obj.isCollapsable(),
                         obj.getOffset(),
                         obj.getMovementDirection(),
                         obj.getEffect(),
                         obj.getMaxFrame(),
+                        obj.getPreloadFrames(),
                         obj.getCoordsOrigin(),
                         obj.isClearUnderTooltip(),
                         obj.isActOnKey(),
@@ -2395,11 +2415,13 @@ public class NonLinearBookImpl implements NonLinearBook {
             final MultiLangString objActText,
             final boolean objIsGraphical,
             final boolean objIsPreserved,
+            final boolean objIsLoadOnce,
             final boolean objIsCollapsable,
             final String offset,
             final Obj.MovementDirection movementDirection,
             final Obj.Effect effect,
             final int maxFrame,
+            final int preloadFrames,
             final Obj.CoordsOrigin coordsOrigin,
             final boolean objIsClearUnderTooltip,
             final boolean objIsActOnKey,
@@ -2428,11 +2450,13 @@ public class NonLinearBookImpl implements NonLinearBook {
                         objActText,
                         objIsGraphical,
                         objIsPreserved,
+                        objIsLoadOnce,
                         objIsCollapsable,
                         offset,
                         movementDirection,
                         effect,
                         maxFrame,
+                        preloadFrames,
                         coordsOrigin,
                         objIsClearUnderTooltip,
                         objIsActOnKey,

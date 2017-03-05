@@ -1510,6 +1510,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public boolean isLoadOnce() {
+                return obj.isLoadOnce();
+            }
+
+            @Override
             public boolean isCollapsable() {
                 return obj.isCollapsable();
             }
@@ -1532,6 +1537,11 @@ public abstract class ExportManager {
             @Override
             public int getMaxFrame() {
                 return obj.getMaxFrame();
+            }
+
+            @Override
+            public int getPreloadFrames() {
+                return obj.getPreloadFrames();
             }
 
             @Override

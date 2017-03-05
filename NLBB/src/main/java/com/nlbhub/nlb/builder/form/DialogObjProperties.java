@@ -129,6 +129,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JSpinner m_spinnerMaxFrame;
     private JTextArea m_objDispTextArea;
     private JCheckBox m_objIsActOnKey;
+    private JSpinner m_spinnerPreloadFrames;
+    private JCheckBox m_objLoadOnce;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -327,6 +329,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objIsTakable.setSelected(obj.isTakable());
         m_objIsGraphical.setSelected(obj.isGraphical());
         m_objIsPreserved.setSelected(obj.isPreserved());
+        m_objLoadOnce.setSelected(obj.isLoadOnce());
         m_objIsCollapsable.setSelected(obj.isCollapsable());
         m_offset.setText(obj.getOffset());
         switch (obj.getMovementDirection()) {
@@ -347,6 +350,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_movementDirectionNone.setSelected(true);
         }
         m_spinnerMaxFrame.setValue(obj.getMaxFrame());
+        m_spinnerPreloadFrames.setValue(obj.getPreloadFrames());
         switch (obj.getEffect()) {
             case MoveIn:
                 m_effectMoveIn.setSelected(true);
@@ -451,11 +455,13 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_objActTexts,
                 m_objIsGraphical.isSelected(),
                 m_objIsPreserved.isSelected(),
+                m_objLoadOnce.isSelected(),
                 m_objIsCollapsable.isSelected(),
                 m_offset.getText(),
                 getMovementDirection(),
                 getEffect(),
                 Integer.parseInt(m_spinnerMaxFrame.getValue().toString()),
+                Integer.parseInt(m_spinnerPreloadFrames.getValue().toString()),
                 getCoordsOrigin(),
                 m_objIsClearUnderTooltip.isSelected(),
                 m_objIsActOnKey.isSelected(),
@@ -1138,6 +1144,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objIsPreserved = new JCheckBox();
         m_objIsPreserved.setText("Preserved");
         panel38.add(m_objIsPreserved);
+        m_objLoadOnce = new JCheckBox();
+        m_objLoadOnce.setText("Load once");
+        panel38.add(m_objLoadOnce);
         m_objIsCollapsable = new JCheckBox();
         m_objIsCollapsable.setText("Collapsable");
         panel38.add(m_objIsCollapsable);
@@ -1189,8 +1198,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         panel36.add(panel40, gbc);
         final JPanel panel41 = new JPanel();
         panel41.setLayout(new BorderLayout(0, 0));
-        panel41.setMinimumSize(new Dimension(390, 150));
-        panel41.setPreferredSize(new Dimension(390, 150));
+        panel41.setMinimumSize(new Dimension(380, 150));
+        panel41.setPreferredSize(new Dimension(380, 150));
         panel40.add(panel41);
         panel41.setBorder(BorderFactory.createTitledBorder("Coords origin"));
         final JPanel panel42 = new JPanel();
@@ -1303,8 +1312,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         panel43.add(m_coordsOriginRightTop, gbc);
         final JPanel panel44 = new JPanel();
         panel44.setLayout(new BorderLayout(0, 0));
-        panel44.setMinimumSize(new Dimension(300, 150));
-        panel44.setPreferredSize(new Dimension(300, 150));
+        panel44.setMinimumSize(new Dimension(260, 150));
+        panel44.setPreferredSize(new Dimension(260, 150));
         panel40.add(panel44);
         panel44.setBorder(BorderFactory.createTitledBorder("Movement direction"));
         final JPanel panel45 = new JPanel();
@@ -1349,8 +1358,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         panel49.add(m_movementDirectionRight);
         final JPanel panel50 = new JPanel();
         panel50.setLayout(new BorderLayout(0, 0));
-        panel50.setMinimumSize(new Dimension(300, 150));
-        panel50.setPreferredSize(new Dimension(300, 150));
+        panel50.setMinimumSize(new Dimension(260, 150));
+        panel50.setPreferredSize(new Dimension(260, 150));
         panel40.add(panel50);
         panel50.setBorder(BorderFactory.createTitledBorder("Effect"));
         final JPanel panel51 = new JPanel();
@@ -1436,28 +1445,44 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.gridy = 1;
         panel52.add(m_effectOverlap, gbc);
         final JPanel panel53 = new JPanel();
-        panel53.setLayout(new BorderLayout(0, 0));
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 0;
-        gbc.fill = GridBagConstraints.BOTH;
-        panel52.add(panel53, gbc);
+        panel53.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        panel53.setMinimumSize(new Dimension(130, 150));
+        panel53.setPreferredSize(new Dimension(130, 150));
+        panel40.add(panel53);
+        panel53.setBorder(BorderFactory.createTitledBorder("Frames"));
+        final JPanel panel54 = new JPanel();
+        panel54.setLayout(new BorderLayout(0, 0));
+        panel54.setMinimumSize(new Dimension(95, 42));
+        panel54.setPreferredSize(new Dimension(95, 42));
+        panel53.add(panel54);
         final JLabel label12 = new JLabel();
         label12.setText("Max Frame");
-        panel53.add(label12, BorderLayout.NORTH);
+        panel54.add(label12, BorderLayout.NORTH);
         m_spinnerMaxFrame = new JSpinner();
-        panel53.add(m_spinnerMaxFrame, BorderLayout.CENTER);
-        final JPanel panel54 = new JPanel();
-        panel54.setLayout(new GridBagLayout());
-        panel54.setMinimumSize(new Dimension(468, 33));
-        panel54.setPreferredSize(new Dimension(468, 33));
+        m_spinnerMaxFrame.setMinimumSize(new Dimension(90, 26));
+        m_spinnerMaxFrame.setPreferredSize(new Dimension(90, 26));
+        panel54.add(m_spinnerMaxFrame, BorderLayout.WEST);
+        final JPanel panel55 = new JPanel();
+        panel55.setLayout(new BorderLayout(0, 0));
+        panel53.add(panel55);
+        final JLabel label13 = new JLabel();
+        label13.setText("Preload Frames");
+        panel55.add(label13, BorderLayout.NORTH);
+        m_spinnerPreloadFrames = new JSpinner();
+        m_spinnerPreloadFrames.setMinimumSize(new Dimension(90, 26));
+        m_spinnerPreloadFrames.setPreferredSize(new Dimension(90, 26));
+        panel55.add(m_spinnerPreloadFrames, BorderLayout.WEST);
+        final JPanel panel56 = new JPanel();
+        panel56.setLayout(new GridBagLayout());
+        panel56.setMinimumSize(new Dimension(468, 33));
+        panel56.setPreferredSize(new Dimension(468, 33));
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 2;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
-        panel36.add(panel54, gbc);
+        panel36.add(panel56, gbc);
         final JScrollPane scrollPane12 = new JScrollPane();
         scrollPane12.setHorizontalScrollBarPolicy(31);
         scrollPane12.setVerticalScrollBarPolicy(21);
@@ -1467,20 +1492,20 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        panel54.add(scrollPane12, gbc);
+        panel56.add(scrollPane12, gbc);
         m_offset = new JTextField();
         m_offset.setColumns(40);
         scrollPane12.setViewportView(m_offset);
-        final JLabel label13 = new JLabel();
-        label13.setText("Offset");
+        final JLabel label14 = new JLabel();
+        label14.setText("Offset");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.anchor = GridBagConstraints.WEST;
-        panel36.add(label13, gbc);
-        final JPanel panel55 = new JPanel();
-        panel55.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel55, BorderLayout.CENTER);
+        panel36.add(label14, gbc);
+        final JPanel panel57 = new JPanel();
+        panel57.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel57, BorderLayout.CENTER);
         label1.setLabelFor(m_objDispTextArea);
         label2.setLabelFor(m_objTextTextArea);
         label3.setLabelFor(m_objActTextTextArea);
@@ -1493,7 +1518,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         label10.setLabelFor(m_morphOver);
         label11.setLabelFor(m_morphOut);
         label12.setLabelFor(m_spinnerMaxFrame);
-        label13.setLabelFor(m_offset);
+        label13.setLabelFor(m_spinnerPreloadFrames);
+        label14.setLabelFor(m_offset);
         ButtonGroup buttonGroup;
         buttonGroup = new ButtonGroup();
         buttonGroup.add(m_movementDirectionNone);

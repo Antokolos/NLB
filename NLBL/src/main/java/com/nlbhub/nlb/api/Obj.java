@@ -69,6 +69,7 @@ public interface Obj extends NodeItem {
     public static final MultiLangString DEFAULT_DISP = MultiLangString.createEmptyText();
     public static final boolean DEFAULT_GRAPHICAL = false;
     public static final boolean DEFAULT_PRESERVED = false;
+    public static final boolean DEFAULT_LOAD_ONCE = false;
     public static final boolean DEFAULT_COLLAPSABLE = false;
     public static final boolean DEFAULT_CLEAR_UNDER_TOOLTIP = false;
     public static final boolean DEFAULT_ACT_ON_KEY = false;
@@ -82,6 +83,7 @@ public interface Obj extends NodeItem {
     public static final MovementDirection DEFAULT_MOVEMENT_DIRECTION = MovementDirection.None;
     public static final Effect DEFAULT_EFFECT = Effect.None;
     public static final int DEFAULT_MAX_FRAME = 8;
+    public static final int DEFAULT_PRELOAD_FRAMES = 0;
 
     public String getText();
 
@@ -123,6 +125,8 @@ public interface Obj extends NodeItem {
 
     public boolean isPreserved();
 
+    public boolean isLoadOnce();
+
     public boolean isCollapsable();
 
     public MovementDirection getMovementDirection();
@@ -130,6 +134,8 @@ public interface Obj extends NodeItem {
     public Effect getEffect();
 
     public int getMaxFrame();
+
+    public int getPreloadFrames();
 
     public CoordsOrigin getCoordsOrigin();
 
