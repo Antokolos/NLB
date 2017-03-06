@@ -148,12 +148,20 @@ public class VNSTEADExportManager extends STEADExportManager {
         final boolean imageBackground = pageBuildingBlocks.isImageBackground();
         // vn:scene should be called in all cases
         stringBuilder.append("        vn:scene(bg_img);").append(getLineSeparator());
+        stringBuilder.append("        local geomFuncNeedToCall = true;").append(getLineSeparator());
         if (pageBuildingBlocks.isHasGraphicalObjects()) {
             for (String graphicalObjId : pageBuildingBlocks.getContainedGraphicalObjIds()) {
-                stringBuilder.append("        vn:gshow(" + graphicalObjId + ");").append(getLineSeparator());
+                stringBuilder.append("        if " + graphicalObjId + ".preload then").append(getLineSeparator());
+                stringBuilder.append("            geomFuncNeedToCall = false;").append(getLineSeparator());
+                stringBuilder.append("            " + graphicalObjId + ":preload(s);").append(getLineSeparator());
+                stringBuilder.append("        else").append(getLineSeparator());
+                stringBuilder.append("            vn:gshow(" + graphicalObjId + ");").append(getLineSeparator());
+                stringBuilder.append("        end").append(getLineSeparator());
             }
         }
-        stringBuilder.append("        vn:geom(8, 864, 1904, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png', function() s.autos(s); end);").append(getLineSeparator());
+        stringBuilder.append("        if geomFuncNeedToCall then").append(getLineSeparator());
+        stringBuilder.append("            vn:geom(8, 864, 1904, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png', function() s.autos(s); end);").append(getLineSeparator());
+        stringBuilder.append("        end;").append(getLineSeparator());
         stringBuilder.append("    end,").append(getLineSeparator());
         return stringBuilder.toString();
     }

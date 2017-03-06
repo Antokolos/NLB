@@ -841,6 +841,7 @@ public abstract class ExportManager {
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
         List<ImagePathData> imagePaths = getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage(), obj.isAnimatedImage() && obj.isGraphical());
         int maxStep = (imagePaths.size() > 0 && imagePaths.get(0).getMaxFrameNumber() > 0) ? imagePaths.get(0).getMaxFrameNumber() : obj.getMaxFrame();
+        blocks.setObjPreload(decorateObjPreload(maxStep, obj.getPreloadFrames()));
         final String objImage = decorateObjImage(imagePaths, obj.isGraphical());
         boolean hasParentObj = (obj.getContainerType() == Obj.ContainerType.Obj);
         final String objEffect = decorateObjEffect(obj.getOffset(), (hasParentObj) ? "0,0" : getRelativeCoords(obj), obj.isGraphical(), hasParentObj, obj.getMovementDirection(), obj.getEffect(), obj.getCoordsOrigin(), maxStep);
@@ -1741,6 +1742,10 @@ public abstract class ExportManager {
     }
 
     protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, boolean hasParentObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin, int maxStep) {
+        return EMPTY_STRING;
+    }
+
+    protected String decorateObjPreload(int maxFrames, int preloadFrames) {
         return EMPTY_STRING;
     }
 

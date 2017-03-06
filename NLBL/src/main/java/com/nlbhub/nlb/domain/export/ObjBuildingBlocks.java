@@ -81,6 +81,7 @@ public class ObjBuildingBlocks {
     private List<String> m_containedObjIds;
     private List<UseBuildingBlocks> m_useBuildingBlocks;
     private String m_objArm;
+    private String m_objPreload;
 
     public ObjBuildingBlocks() {
         m_useBuildingBlocks = new ArrayList<>();
@@ -357,5 +358,13 @@ public class ObjBuildingBlocks {
 
     public String getObjArm() {
         return m_objArm;
+    }
+
+    public void setObjPreload(String objPreload) {
+        m_objPreload = objPreload;
+    }
+
+    public String getObjPreload() {
+        return m_objPreload;
     }
 }

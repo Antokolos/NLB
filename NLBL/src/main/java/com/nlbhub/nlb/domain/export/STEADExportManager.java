@@ -254,6 +254,7 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append("    scene_use = true,").append(LINE_SEPARATOR);
         }
         stringBuilder.append(objBlocks.getObjImage());
+        stringBuilder.append(objBlocks.getObjPreload());
         if (hasUses) {
             stringBuilder.append(objBlocks.getObjUseStart());
         }
@@ -482,7 +483,11 @@ public class STEADExportManager extends TextExportManager {
             //stringBuilder.append("        vn:turnon();").append(LINE_SEPARATOR);
             stringBuilder.append("        vn:scene(bg_img);").append(getLineSeparator());
             for (String graphicalObjId : pageBuildingBlocks.getContainedGraphicalObjIds()) {
-                stringBuilder.append("        vn:gshow(" + graphicalObjId + ");").append(LINE_SEPARATOR);
+                stringBuilder.append("        if " + graphicalObjId + ".preload then").append(LINE_SEPARATOR);
+                stringBuilder.append("            " + graphicalObjId + ":preload();").append(LINE_SEPARATOR);
+                stringBuilder.append("        else").append(LINE_SEPARATOR);
+                stringBuilder.append("            vn:gshow(" + graphicalObjId + ");").append(LINE_SEPARATOR);
+                stringBuilder.append("        end").append(LINE_SEPARATOR);
             }
             // Do not calling vn:startcb(function() s.autos(s); end), because it is NOT VN
         } else if (imageBackground) {
@@ -725,6 +730,20 @@ public class STEADExportManager extends TextExportManager {
         if (graphicalObj) {
             return "    eff = \"" + pos + "\"," + LINE_SEPARATOR + steps +
                     (hasDefinedOffset ? "" : "    arm = { [0] = { " + coordString + " } }," + LINE_SEPARATOR);
+        } else {
+            return EMPTY_STRING;
+        }
+    }
+
+    @Override
+    protected String decorateObjPreload(int maxFrames, int preloadFrames) {
+        if (preloadFrames > 0) {
+            return "    preload = function(s, room)" + LINE_SEPARATOR +
+                    "        vn:preload_effect(s:pic(), 0, " + maxFrames + ", 0, " + preloadFrames + ", function()" + LINE_SEPARATOR +
+                    "            vn:gshow(s);" + LINE_SEPARATOR +
+                    "            if room then vn:geom(8, 864, 1904, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png', function() room.autos(room); end); end;" + LINE_SEPARATOR +
+                    "        end);" + LINE_SEPARATOR +
+                    "    end," + LINE_SEPARATOR;
         } else {
             return EMPTY_STRING;
         }
