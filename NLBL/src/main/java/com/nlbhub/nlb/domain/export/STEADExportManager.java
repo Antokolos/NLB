@@ -618,7 +618,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean preserved, boolean clearUnderTooltip, boolean actOnKey, String objDefaultTag) {
+    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean preserved, boolean loadOnce, boolean clearUnderTooltip, boolean actOnKey, String objDefaultTag) {
         StringBuilder result = new StringBuilder();
         switch (objType) {
             case STAT:
@@ -635,6 +635,9 @@ public class STEADExportManager extends TextExportManager {
                 if (preserved) {
                     result.append("preserved = true,").append(LINE_SEPARATOR);
                 }
+                if (loadOnce) {
+                    result.append("load_once = true,").append(LINE_SEPARATOR);
+                }
                 break;
             case GMENU:
                 result.append(" = gmenu {").append(LINE_SEPARATOR);
@@ -643,6 +646,9 @@ public class STEADExportManager extends TextExportManager {
                 }
                 if (preserved) {
                     result.append("preserved = true,").append(LINE_SEPARATOR);
+                }
+                if (loadOnce) {
+                    result.append("load_once = true,").append(LINE_SEPARATOR);
                 }
                 break;
             default:
@@ -739,10 +745,11 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateObjPreload(int maxFrames, int preloadFrames) {
         if (preloadFrames > 0) {
             return "    preload = function(s, room)" + LINE_SEPARATOR +
+                    "        vn.hz = vn.hz_preloaded;" + LINE_SEPARATOR +
                     "        vn:preload_effect(s:pic(), 0, " + maxFrames + ", 0, " + preloadFrames + ", function()" + LINE_SEPARATOR +
                     "            vn:gshow(s);" + LINE_SEPARATOR +
-                    "            if room then vn:geom(8, 864, 1904, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png', function() room.autos(room); end); end;" + LINE_SEPARATOR +
-                    "        end);" + LINE_SEPARATOR +
+                    "            if room then vn:geom(8, 864, 1904, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png', function() room.autos(room); vn.hz = vn.hz_onthefly; end); end;" + LINE_SEPARATOR +
+                    "        end, false, s.load_once);" + LINE_SEPARATOR +
                     "    end," + LINE_SEPARATOR;
         } else {
             return EMPTY_STRING;

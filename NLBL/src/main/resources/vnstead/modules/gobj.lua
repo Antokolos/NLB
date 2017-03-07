@@ -27,6 +27,9 @@ gobj = function(v)
     if not v.preserved then
         v.preserved = false;
     end
+    if not v.load_once then
+        v.load_once = false;
+    end
     if not v.arm then
         v.arm = { [0] = { 0, 0 } };
     end

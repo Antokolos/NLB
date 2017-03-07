@@ -52,7 +52,7 @@ vntimer = function(f, s, cmd, ...)
             return update_cursor_result;
         end
     end
-    vn.slowcpu = (vnticks_diff > vn.ticks_threshold);
+    vn.slowcpu = (vnticks_diff > vn:ticks_threshold());
     log:trace("vnticks_diff = " .. vnticks_diff);
     vnticks = get_ticks();
 
@@ -132,6 +132,7 @@ vn = obj {
     sprite_cache = {};
     sprite_cache_data = {};
     text_sprites_cache = {};
+    load_once_sprite_keys = {};
     _effects = {};
     _pending_effects = {};
     _dirty_rects = {};
@@ -142,8 +143,9 @@ vn = obj {
     _frn = nil;
     cache_effects = true;
     tmr = 5;
+    hz_onthefly = 18;
+    hz_preloaded = 40;
     hz = 18;
-    ticks_threshold = 36;
     slowcpu = false;
     var {
         on = true,
@@ -171,6 +173,9 @@ vn = obj {
         use_src = false,
         cursor_need_update = false;
     };
+    ticks_threshold = function(s)
+        return s.hz * 2;
+    end,
     turnon = function(s)
         s.on = true;
     end,
@@ -188,6 +193,7 @@ vn = obj {
         s.sprite_cache = {};
         s.sprite_cache_data = {};
         s.text_sprites_cache = {};
+        s.load_once_sprite_keys = {};
         s._effects = {};
         s._pending_effects = {};
         s._dirty_rects = {};
@@ -219,6 +225,7 @@ vn = obj {
         s.offscreen = sprite.blank(s.scr_w, s.scr_h)
         s.blackscreen = sprite.box(s.scr_w, s.scr_h, 'black')
         s:request_full_clear();
+        s.hz = s.hz_onthefly;
         timer:set(s.tmr);
     end;
     get_spr_rct = function(s, v)
@@ -461,7 +468,14 @@ vn = obj {
             vn:start();
         end
     end;
-    preload_effect = function(s, image, startFrame, maxStep, fromStop, maxPreload, callback_to_run_after, do_not_show_label)
+    preload_effect = function(s, image, startFrame, maxStep, fromStop, maxPreload, callback_to_run_after, do_not_show_label, load_once)
+        local prefix, extension = s:split_url(image);
+        if (s.load_once_sprite_keys[prefix]) then
+            if callback_to_run_after then
+                vn:startcb(callback_to_run_after);
+            end
+            return;
+        end
         local job = function()
             if not fromStop then
                 fromStop = 0;
@@ -470,7 +484,7 @@ vn = obj {
                 maxPreload = startFrame + 2;
             end
             local v = { pic = image, nam = image, start = startFrame, max_step = maxStep, from_stop = fromStop };
-            s:load_effect(v);
+            s:load_effect(v, load_once);
             for i = startFrame,maxPreload do
                 v.spr[i]:val();
             end
@@ -497,11 +511,14 @@ vn = obj {
         end
         return string.format(".%04d-%04d", mstl, msth - 1), mstIdx;
     end;
-    load_effect = function(s, v)
+    load_effect = function(s, v, load_once)
         local ss = s;
         if v.spr == nil then v.spr = {}; end;
         -- Will return nils if v is sprite
         local prefix, extension = s:split_url(v.pic);
+        if load_once then
+            s.load_once_sprite_keys[prefix] = true;
+        end
         local meta, milestones, bgcolors = s:read_meta(prefix);
         local start = s:get_start(v);
         local maxstep = s:get_max_step(v);
@@ -746,11 +763,22 @@ vn = obj {
     end;
     -- Call clear_cache periodically to free memory from possible garbage...
     clear_cache = function(s)
+        local load_once_cache = {};
+        local load_once_cache_data = {};
         for k, w in pairs(s.sprite_cache) do
-            for i, ss in ipairs(w) do
-                if not ss.loaded then
-                    sprite.free(ss);
+            if s.load_once_sprite_keys[k] then
+                load_once_cache[k] = w;
+            else
+                for i, ss in ipairs(w) do
+                    if not ss.loaded then
+                        sprite.free(ss);
+                    end
                 end
+            end
+        end
+        for k, w in pairs(s.sprite_cache_data) do
+            if s.load_once_sprite_keys[k] then
+                load_once_cache_data[k] = w;
             end
         end
         for kk, ww in pairs(s.text_sprites_cache) do
@@ -759,7 +787,13 @@ vn = obj {
             end
         end
         s.sprite_cache = {};
+        for k, w in pairs(load_once_cache) do
+            s.sprite_cache[k] = w;
+        end
         s.sprite_cache_data = {};
+        for k, w in pairs(load_once_cache_data) do
+            s.sprite_cache_data[k] = w;
+        end
         s.text_sprites_cache = {};
     end;
     hide = function(s, image, eff, ...)
@@ -1084,6 +1118,11 @@ vn = obj {
             is_preserved = false;
         end
 
+        local is_load_once = g.load_once;
+        if not is_load_once then
+            is_load_once = false;
+        end
+
         local dirty_draw = g.dirty_draw;
         if not dirty_draw then
             dirty_draw = false;
@@ -1119,6 +1158,7 @@ vn = obj {
             mouse_over = is_over,
             gob = stead.deref(g),
             preserved = is_preserved,
+            load_once = is_load_once,
             topmost = topmost,
             cache_text = cache_text,
             dirty_draw = dirty_draw,
@@ -1758,14 +1798,14 @@ vn = obj {
         for i, v in ipairs(s._effects) do
             if v.preserved then
                 stead.table.insert(preserved_effects, v);
-            else
+            elseif not v.load_once then
                 s:free_effect(v)
             end
         end
         for i, v in ipairs(s._pending_effects) do
             if v.preserved then
                 stead.table.insert(preserved_pending_effects, v);
-            else
+            elseif not v.load_once then
                 s:free_effect(v)
             end
         end
@@ -2391,7 +2431,7 @@ stead.module_init(function()
     vn:rst();
     vn:init()
     vnticks = stead.ticks();
-    vnticks_diff = vn.ticks_threshold;
+    vnticks_diff = vn:ticks_threshold();
     hudFont = sprite.font('fonts/Medieval_English.ttf', 29);
     empty_s = sprite.load('gfx/empty.png');
     empty_frame = {["spr"] = empty_s, ["w"] = 0, ["h"] = 0, ["tmp"] = false, ["preloaded_effect"] = false, ["alpha"] = 255, ["scale"] = 1.0};
