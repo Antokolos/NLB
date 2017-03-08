@@ -172,6 +172,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case DSC:
             case ACTT:
             case OBJS:
+            case ACHIEVED:
                 return true;
             default:
                 // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, IFHAVE, ADD, ADDU, ADDINV, ADDALL, ADDALLU,
@@ -307,6 +308,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.RND;
         } else if (type.equals(Type.ACHIEVE.name())) {
             m_type = Type.ACHIEVE;
+        } else if (type.equals(Type.ACHIEVED.name())) {
+            m_type = Type.ACHIEVED;
         } else if (type.equals(Type.GOTO.name())) {
             m_type = Type.GOTO;
         } else {
@@ -492,6 +495,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "ACHIEVE":
                 m_type = Type.ACHIEVE;
+                break;
+            case "ACHIEVED":
+                m_type = Type.ACHIEVED;
                 break;
             case "GOTO":
                 m_type = Type.GOTO;

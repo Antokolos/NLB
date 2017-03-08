@@ -2566,6 +2566,11 @@ public abstract class ExportManager {
                     case ACHIEVE:
                         stringBuilder.append(decorateAchieveOperation(expression.getValue()));
                         break;
+                    case ACHIEVED:
+                        assert variable != null;
+                        // Achieved always returns number of achievements
+                        stringBuilder.append(decorateAchievedOperation(decorateAutoVar(variable.getName()), expression.getValue()));
+                        break;
                     case GOTO:
                         stringBuilder.append(decorateGoToOperation(expression.getValue()));
                         break;
@@ -2649,6 +2654,8 @@ public abstract class ExportManager {
     protected abstract String decorateRndOperation(String variableName, String maxValue);
 
     protected abstract String decorateAchieveOperation(String achievementName);
+
+    protected abstract String decorateAchievedOperation(String variableName, String achievementName);
 
     protected abstract String decorateGoToOperation(String locationId);
 

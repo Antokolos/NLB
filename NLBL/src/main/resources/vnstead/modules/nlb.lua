@@ -327,6 +327,13 @@ nlb = obj {
         prefs:store();
         return true;
     end;
+    getAchievement = function(s, statsAPI, achievementName)
+        if prefs.achievements[achievementName] then
+            return prefs.achievements[achievementName];
+        else
+            return 0;
+        end
+    end;
     resendAchievements = function(s, statsAPI)
         for k, v in pairs(prefs.achievements) do
             if v and v > 0 then

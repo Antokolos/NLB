@@ -1352,6 +1352,11 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateAchievedOperation(String variableName, String achievementName) {
+        return variableName + " = nlb:getAchievement(statsAPI, '" + achievementName + "');" + LINE_SEPARATOR;
+    }
+
+    @Override
     protected String decorateGoToOperation(String locationId) {
         return "nlb:nlbwalk(nil, " + decorateId(locationId) + ");" + LINE_SEPARATOR;
     }

@@ -549,6 +549,12 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateAchievedOperation(String variableName, String achievementName) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateGoToOperation(String locationId) {
         // TODO: implement
         return EMPTY_STRING;
