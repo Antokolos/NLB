@@ -171,6 +171,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         return "        dofile('theme_vn.lua');" + getLineSeparator();
     }
 
+
     @Override
     protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks, Theme theme) {
         if (!isVN(theme)) {
@@ -200,6 +201,26 @@ public class VNSTEADExportManager extends STEADExportManager {
             pageText.append("    walk_to = \"").append(decoratePageName(labelText, pageNumber)).append("_choices\",").append(lineSep);
         }
         return pageText.toString();
+    }
+
+    protected String generateDirectModeStartText(PageBuildingBlocks pageBlocks) {
+        String lineSep = getLineSeparator();
+        StringBuilder stringBuilder = new StringBuilder();
+        if (pageBlocks.isDirectMode() && pageBlocks.getTheme() != Theme.STANDARD) {
+            stringBuilder.append("        vn:request_full_clear();").append(lineSep);
+            stringBuilder.append("        vn:lock_direct();").append(lineSep);
+        }
+        return stringBuilder.toString();
+    }
+
+    protected String generateDirectModeStopText(PageBuildingBlocks pageBlocks) {
+        String lineSep = getLineSeparator();
+        StringBuilder stringBuilder = new StringBuilder();
+        if (pageBlocks.isDirectMode() && pageBlocks.getTheme() != Theme.STANDARD) {
+            stringBuilder.append("        vn:request_full_clear();").append(lineSep);
+            stringBuilder.append("        vn:unlock_direct();").append(lineSep);
+        }
+        return stringBuilder.toString();
     }
 
     @Override
