@@ -313,8 +313,16 @@ vn = obj {
         for i, v in ipairs(s._effects) do
             local active = not s:is_inactive_due_to_anim_state(v);
             local gob = s:gobf(v);
-            if active and gob and gob.onclick and s:enabled(v) and s:inside_spr(v, x, y) then
-                clickTargets[v.nam] = v;
+            local morphover = s:get_morph(v, true);
+            local has_gob_click_handler = (gob and gob.onclick);
+            local has_morph_click_handler = (morphover and morphover.onclick);
+            local has_gob_or_morph = has_gob_click_handler or has_morph_click_handler;
+            if active and has_gob_or_morph and s:enabled(v) and s:inside_spr(v, x, y) then
+                if has_gob_click_handler then
+                    clickTargets[v.nam] = gob;
+                else  -- has_morph_click_handler, or else we won't get there at all
+                    clickTargets[v.nam] = morphover;
+                end
                 local hierarchy = s:get_hierarchy(v);
                 for kk, vv in pairs(hierarchy) do
                     clickParentNames[vv] = true;
@@ -322,10 +330,10 @@ vn = obj {
             end
         end
         -- The idea is to NOT call onclick handler for gobj, which have a child, for which onclick handler should be called too.
-        for kkk, vvv in pairs(clickTargets) do
-            local g = s:gobf(vvv);
+        for kkk, g in pairs(clickTargets) do
             if g.accept_child_clicks or not clickParentNames[kkk] then
                 g:onclick(s);
+                return;  -- Call onclick handler only for first suitable gobj
             end
         end
     end;
