@@ -630,7 +630,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean preserved, boolean loadOnce, boolean clearUnderTooltip, boolean actOnKey, String objDefaultTag) {
+    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean preserved, boolean loadOnce, boolean clearUnderTooltip, boolean actOnKey, boolean cacheText, String objDefaultTag) {
         StringBuilder result = new StringBuilder();
         switch (objType) {
             case STAT:
@@ -650,6 +650,9 @@ public class STEADExportManager extends TextExportManager {
                 if (loadOnce) {
                     result.append("load_once = true,").append(LINE_SEPARATOR);
                 }
+                if (cacheText) {
+                    result.append("cache_text = true,").append(LINE_SEPARATOR);
+                }
                 break;
             case GMENU:
                 result.append(" = gmenu {").append(LINE_SEPARATOR);
@@ -661,6 +664,9 @@ public class STEADExportManager extends TextExportManager {
                 }
                 if (loadOnce) {
                     result.append("load_once = true,").append(LINE_SEPARATOR);
+                }
+                if (cacheText) {
+                    result.append("cache_text = true,").append(LINE_SEPARATOR);
                 }
                 break;
             default:

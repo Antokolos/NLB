@@ -131,6 +131,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JCheckBox m_objIsActOnKey;
     private JSpinner m_spinnerPreloadFrames;
     private JCheckBox m_objLoadOnce;
+    private JCheckBox m_objIsCacheText;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -410,6 +411,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         }
         m_objIsClearUnderTooltip.setSelected(obj.isClearUnderTooltip());
         m_objIsActOnKey.setSelected(obj.isActOnKey());
+        m_objIsCacheText.setSelected(obj.isCacheText());
         m_morphOver.setText(morphOver != null ? morphOver.getName() : "");
         m_morphOut.setText(morphOut != null ? morphOut.getName() : "");
         m_imageInScene.setSelected(obj.isImageInScene());
@@ -465,6 +467,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 getCoordsOrigin(),
                 m_objIsClearUnderTooltip.isSelected(),
                 m_objIsActOnKey.isSelected(),
+                m_objIsCacheText.isSelected(),
                 m_morphOver.getText(),
                 m_morphOut.getText(),
                 m_objIsTakable.isSelected(),
@@ -1156,6 +1159,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objIsActOnKey = new JCheckBox();
         m_objIsActOnKey.setText("Act on key");
         panel38.add(m_objIsActOnKey);
+        m_objIsCacheText = new JCheckBox();
+        m_objIsCacheText.setText("Cache text");
+        panel38.add(m_objIsCacheText);
         final JPanel panel39 = new JPanel();
         panel39.setLayout(new GridBagLayout());
         panel39.setMinimumSize(new Dimension(468, 33));

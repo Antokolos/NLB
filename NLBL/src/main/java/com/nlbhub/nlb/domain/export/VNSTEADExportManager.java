@@ -247,13 +247,17 @@ public class VNSTEADExportManager extends STEADExportManager {
         String roomName = pageBlocks.getPageName();
         result.append(roomName).append("_choices").append(" = room {").append(lineSep);
         result.append("    nam = \"").append(getNonEmptyTitle(pageBlocks.getModuleTitle())).append("\",").append(lineSep);
-        result.append("        textbg = true,").append(lineSep);
-        result.append("        ignore_preserved_gobjs = true,").append(lineSep);
+        result.append("    disp = true,").append(lineSep);
+        result.append("    textbg = true,").append(lineSep);
+        result.append("    ignore_preserved_gobjs = true,").append(lineSep);
         if (theEnd) {
             result.append("    dsc = img 'blank:23x23'..'^'..fend:txt('The')..img 'blank:64x64'..fend:txt('End'),").append(lineSep);
         }
+        result.append("    var { paginator_state = false; },").append(lineSep);
         result.append("    enter = function(s) ").append(lineSep);
+        result.append("        s.paginator_state = paginator.on;").append(lineSep);
         result.append("        objs():zap();").append(lineSep);
+        result.append("        paginator:turnoff();").append(lineSep);
         if (pageBlocks.isHasTrivialLinks()) {
             for (LinkBuildingBlocks linkBlock : linksBuildingBlocks) {
                 if (!linkBlock.isAuto()) {
@@ -291,7 +295,11 @@ public class VNSTEADExportManager extends STEADExportManager {
                 result.append("        vn:geom(320, 320, 1280, 480, 'dissolve');").append(lineSep);
             }
         }
-        result.append("    end").append(lineSep).append("}").append(lineSep).append(lineSep);
+        result.append("    end,").append(lineSep);
+        result.append("    exit = function(s) ").append(lineSep);
+        result.append("        if s.paginator_state then paginator:turnon(); end;").append(lineSep);
+        result.append("    end").append(lineSep);
+        result.append("}").append(lineSep).append(lineSep);
         result.append(linksBuilder.toString());
         return result.toString();
     }
@@ -321,7 +329,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         StringBuilder result = new StringBuilder();
         result.append(decorateId(linkId)).append(" = menu {").append(lineSep);
         result.append("    nam = \"").append(decorateId(linkId)).append("\",").append(lineSep);
-        result.append("    dsc = function(s) ").append("return \"{").append(linkText).append("}^\" end, ").append(lineSep);
+        result.append("    dsc = function(s) ").append("return \"{").append(linkText).append("}^^\" end, ").append(lineSep);
         return result.toString();
     }
 

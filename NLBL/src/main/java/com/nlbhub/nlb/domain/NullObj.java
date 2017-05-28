@@ -204,6 +204,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
         return DEFAULT_ACT_ON_KEY;
     }
 
+    @Override
+    public boolean isCacheText() {
+        return DEFAULT_CACHE_TEXT;
+    }
+
     public String getMorphOverId() {
         return Obj.DEFAULT_MORPH_OVER_ID;
     }

@@ -868,6 +868,12 @@
                                           <text value="Act on key"/>
                                         </properties>
                                       </component>
+                                      <component id="299d8" class="javax.swing.JCheckBox" binding="m_objIsCacheText">
+                                        <constraints/>
+                                        <properties>
+                                          <text value="Cache text"/>
+                                        </properties>
+                                      </component>
                                     </children>
                                   </grid>
                                   <grid id="a55ba" layout-manager="GridBagLayout">

@@ -835,7 +835,7 @@ public abstract class ExportManager {
         blocks.setObjLabel(decorateObjLabel(obj.getId()));
         blocks.setObjComment(decorateObjComment(obj.getName()));
         // blocks obj default tag variable was set earlier
-        blocks.setObjStart(decorateObjStart(obj.getId(), getContainerRef(obj, exportData), objType, obj.isPreserved(), obj.isLoadOnce(), obj.isClearUnderTooltip(), obj.isActOnKey(), blocks.getObjDefaultTagVariable()));
+        blocks.setObjStart(decorateObjStart(obj.getId(), getContainerRef(obj, exportData), objType, obj.isPreserved(), obj.isLoadOnce(), obj.isClearUnderTooltip(), obj.isActOnKey(), obj.isCacheText(), blocks.getObjDefaultTagVariable()));
         blocks.setObjName(decorateObjName(obj.getName(), obj.getId()));
         blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
@@ -1560,6 +1560,11 @@ public abstract class ExportManager {
                 return obj.isActOnKey();
             }
 
+            @Override
+            public boolean isCacheText() {
+                return obj.isCacheText();
+            }
+
             public String getMorphOverId() {
                 return obj.getMorphOverId();
             }
@@ -1733,7 +1738,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean preserved, boolean loadOnce, boolean clearUnderTooltip, boolean actOnKey, String objDefaultTag) {
+    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean preserved, boolean loadOnce, boolean clearUnderTooltip, boolean actOnKey, boolean cacheText, String objDefaultTag) {
         return EMPTY_STRING;
     }
 

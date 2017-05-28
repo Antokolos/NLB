@@ -89,6 +89,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String COORDSOR_FILE_NAME = "coordsor";
     private static final String CLEARUTT_FILE_NAME = "clearutt";
     private static final String ACTONKEY_FILE_NAME = "actonkey";
+    private static final String CACHETEXT_FILE_NAME = "cachetxt";
     private static final String MORPH_OVER_FILE_NAME = "morphover";
     private static final String MORPH_OUT_FILE_NAME = "morphout";
     private static final String OFFSET_FILE_NAME = "offset";
@@ -118,6 +119,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private CoordsOrigin m_coordsOrigin = CoordsOrigin.LeftTop;
     private boolean m_clearUnderTooltip = DEFAULT_CLEAR_UNDER_TOOLTIP;
     private boolean m_actOnKey = DEFAULT_ACT_ON_KEY;
+    private boolean m_cacheText = DEFAULT_CACHE_TEXT;
     private String m_morphOverId = DEFAULT_MORPH_OVER_ID;
     private String m_morphOutId = DEFAULT_MORPH_OUT_ID;
     private String m_offset;
@@ -180,6 +182,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         m_coordsOrigin = source.getCoordsOrigin();
         m_clearUnderTooltip = source.isClearUnderTooltip();
         m_actOnKey = source.isActOnKey();
+        m_cacheText = source.isCacheText();
         m_morphOverId = source.getMorphOverId();
         m_morphOutId = source.getMorphOutId();
         m_takable = source.isTakable();
@@ -455,6 +458,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
 
     public void setActOnKey(boolean actOnKey) {
         m_actOnKey = actOnKey;
+    }
+
+    @Override
+    public boolean isCacheText() {
+        return m_cacheText;
+    }
+
+    public void setCacheText(boolean cacheText) {
+        m_cacheText = cacheText;
     }
 
     public String getMorphOverId() {
@@ -734,6 +746,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(
                     objDir,
+                    CACHETEXT_FILE_NAME,
+                    String.valueOf(m_cacheText),
+                    String.valueOf(DEFAULT_CACHE_TEXT)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
                     MORPH_OVER_FILE_NAME,
                     m_morphOverId,
                     DEFAULT_MORPH_OVER_ID
@@ -1010,6 +1028,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         ACTONKEY_FILE_NAME,
                         String.valueOf(DEFAULT_ACT_ON_KEY)
+                )
+        );
+        m_cacheText = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        CACHETEXT_FILE_NAME,
+                        String.valueOf(DEFAULT_CACHE_TEXT)
                 )
         );
         m_morphOverId = (

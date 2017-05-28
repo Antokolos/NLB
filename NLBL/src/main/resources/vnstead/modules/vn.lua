@@ -505,7 +505,7 @@ vn = obj {
         local mstIdx = 1;
         if milestones then
             for i=1,#milestones do
-                mst = milestones[i];
+                local mst = milestones[i];
                 if sprStep >= mst then
                     mstl = mst;
                     mstIdx = i;
@@ -551,6 +551,12 @@ vn = obj {
                         s.origin = s:load();
                     end
                     return s.origin;
+                end,
+                visible = function(s)
+                    return s.alpha > 0 and s.scale > 0.0;
+                end,
+                invisible = function(s)
+                    return not s:visible();
                 end,
                 load = function(s)
                     if ss:is_sprite(v) then
@@ -667,7 +673,7 @@ vn = obj {
                         return v.spr[sprStep - 1]:val();
                     end
                 end,
-                prepare_params = function(s, spr_step)                    
+                prepare_params = function(s, spr_step)
                     local eff = ss:get_eff(v);
                     if not eff then
                         return;
@@ -1456,13 +1462,13 @@ vn = obj {
     frame = function(s, v, idx, target, x, y, only_compute, free_immediately)
         if not v.spr or not v.spr[idx] then
             log:warn("nonexistent sprite when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
-            return empty_frame;
+            return s:empty_frame(0, 0);
         end
         local sp = v.spr[idx];
         local ospr = sp:val();
         if not ospr then -- Strange error when using resources in idf...
             log:err("filesystem access problem when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
-            return empty_frame;
+            return s:empty_frame(0, 0);
         end
         if not x then
             x = 0;
@@ -1471,6 +1477,10 @@ vn = obj {
             y = 0;
         end
         if ospr.loaded then
+            if sp:invisible() then
+                log:dbg("Frame " .. tostring(idx) .. " of " .. v.nam .. " is invisible");
+                return s:empty_frame(ospr.w, ospr.h);
+            end
             local res = nil;
             if not target then
                 res = sprite.blank(ospr.w, ospr.h);
@@ -1483,18 +1493,21 @@ vn = obj {
                 sprite.free(res);
                 res = nil;
             end
-            return {["spr"] = res, ["wc"] = ospr.w, ["hc"] = ospr.h, ["w"] = ospr.w, ["h"] = ospr.h, ["tmp"] = (res ~= nil), ["preloaded_effect"] = sp.preloaded_effect, ["alpha"] = sp.alpha, ["scale"] = sp.scale};
+            return {["spr"] = res, ["w"] = ospr.w, ["h"] = ospr.h, ["tmp"] = (res ~= nil), ["preloaded_effect"] = sp.preloaded_effect, ["alpha"] = sp.alpha, ["scale"] = sp.scale};
         else
             local w, h = sprite.size(sp:get_origin());
-            local wc, hc = sprite.size(ospr);
+            if sp:invisible() then
+                log:dbg("Frame " .. tostring(idx) .. " of " .. v.nam .. " is invisible");
+                return s:empty_frame(w, h);
+            end
             if not only_compute and target then
                 sprite.draw(ospr, target, x, y);
             end
-            return {["spr"] = ospr, ["wc"] = wc, ["hc"] = hc, ["w"] = w, ["h"] = h, ["tmp"] = false, ["preloaded_effect"] = sp.preloaded_effect, ["alpha"] = sp.alpha, ["scale"] = sp.scale};
+            return {["spr"] = ospr, ["w"] = w, ["h"] = h, ["tmp"] = false, ["preloaded_effect"] = sp.preloaded_effect, ["alpha"] = sp.alpha, ["scale"] = sp.scale};
         end
     end;
 
-    fade = function(s, v, only_compute)        
+    fade = function(s, v, only_compute)
         local x, y, idx, sp, alpha;
         local fadein = (s:get_eff(v) == 'fadein');
         if fadein then
@@ -2192,7 +2205,7 @@ vn = obj {
     end;
     draw_hud = function(s, data, only_compute, target, clear, hide)
         local v, idx, x, y, scale, alpha = data.v, data.idx, data.x, data.y, data.scale, data.alpha;
-        if scale == 0 or alpha == 0 then
+        if scale <= 0.0 or alpha <= 0 then
             return false;
         end
         if not idx then
@@ -2324,9 +2337,9 @@ vn = obj {
     end;
     update_tooltip = function(s, v, erase, hide)
         local xx, yy = s:postoxy(v);
-        local sp = s:frame(v, 0);
         local text, pos, clear_under_tooltip = s:gobf(v):tooltipfn();
         if text then
+            local sp = s:frame(v, 0);
             s:tooltip(v, text, pos, xx, yy, sp.w, sp.h, clear_under_tooltip, erase, hide);
         end
     end;
@@ -2433,6 +2446,9 @@ vn = obj {
             return result;
         end
     end;
+    empty_frame = function(s, w, h)
+        return {["spr"] = empty_s, ["w"] = w, ["h"] = h, ["tmp"] = false, ["preloaded_effect"] = false, ["alpha"] = 0, ["scale"] = 0.0};
+    end;
 }
 
 stead.module_init(function()
@@ -2442,7 +2458,6 @@ stead.module_init(function()
     vnticks_diff = vn:ticks_threshold();
     hudFont = sprite.font('fonts/Medieval_English.ttf', 29);
     empty_s = sprite.load('gfx/empty.png');
-    empty_frame = {["spr"] = empty_s, ["w"] = 0, ["h"] = 0, ["tmp"] = false, ["preloaded_effect"] = false, ["alpha"] = 255, ["scale"] = 1.0};
     if LANG == "ru" then
         busy_spr = vn:label("Загрузка...", 40, "#ffffff", "black");
     else
