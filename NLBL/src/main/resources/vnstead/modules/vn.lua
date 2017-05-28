@@ -47,6 +47,7 @@ vntimer = function(f, s, cmd, ...)
     local update_cursor_result = vn:update_cursor();
 
     vnticks_diff = get_ticks() - vnticks;
+    renewticks_diff = get_ticks() - renewticks;
     if (vnticks_diff <= vn.hz) then
         if vn:preload() then
             return update_cursor_result;
@@ -95,6 +96,11 @@ vntimer = function(f, s, cmd, ...)
             return game._lastdisp or "";
         end
     end
+    if vn._need_renew and (renewticks_diff > vn:renew_threshold()) then
+        vn._need_renew = false;
+        renewticks = get_ticks();
+        vn:renew();
+    end
     if vn._need_update then
         vn._need_update = false;
         return true;
@@ -138,6 +144,7 @@ vn = obj {
     _dirty_rects = {};
     _bg = false;
     _need_update = false;
+    _need_renew = false;
     _wf = 0;
     _fln = nil;
     _frn = nil;
@@ -189,6 +196,17 @@ vn = obj {
             return s.offscreen
         end
     end;
+    renew = function(s)
+        if s:add_all_missing_children() then
+            s:invalidate_all();
+            s:start();
+        else
+            s:invalidate_all();
+        end;
+    end;
+    renew_threshold = function(s)
+        return 350;
+    end;
     rst = function(s)
         s.sprite_cache = {};
         s.sprite_cache_data = {};
@@ -199,6 +217,7 @@ vn = obj {
         s._dirty_rects = {};
         s._bg = false;
         s._need_update = false;
+        s._need_renew = false;
         s._wf = 0;
         s._fln = nil;
         s._frn = nil;
@@ -418,6 +437,9 @@ vn = obj {
     end;
     need_update = function(s)
         s._need_update = true;
+    end;
+    need_renew = function(s)
+        s._need_renew = true;
     end;
     is_sprite = function(s, obj)
         return obj.pic:match("^spr:");
@@ -2455,7 +2477,9 @@ stead.module_init(function()
     vn:rst();
     vn:init()
     vnticks = stead.ticks();
+    renewticks = vnticks;
     vnticks_diff = vn:ticks_threshold();
+    renewticks_diff = vn:renew_threshold();
     hudFont = sprite.font('fonts/Medieval_English.ttf', 29);
     empty_s = sprite.load('gfx/empty.png');
     if LANG == "ru" then

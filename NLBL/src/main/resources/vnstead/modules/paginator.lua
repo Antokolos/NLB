@@ -4,14 +4,10 @@ require "click"
 require "theme"
 require "modules/dice"
 require "modules/vn"
+require 'modules/log'
 
 iface.cmd = stead.hook(iface.cmd, function(f, s, cmd, ...)
-    if vn:add_all_missing_children() then
-        vn:invalidate_all();
-        vn:start();
-    else
-        vn:invalidate_all();
-    end
+    vn:need_renew();
     return paginatorIfaceCmd(f, s, cmd, ...);
 end)
 
