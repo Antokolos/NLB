@@ -2257,6 +2257,7 @@ vn = obj {
             local htotal = 0;
             local wmax = 0;
             if not cached_sprites then
+                local tmp_sprite = clear or only_compute;
                 for k, vv in pairs(texts) do
                     if vv.text then
                         local color = vv.color;
@@ -2279,7 +2280,7 @@ vn = obj {
                             textSprite = textSpriteScaled;
                         end
                         local w, h = sprite.size(textSprite);
-                        if clear or only_compute then
+                        if tmp_sprite then
                             sprite.free(textSprite);
                         end
                         w = w + s.extent;
@@ -2290,7 +2291,7 @@ vn = obj {
                         stead.table.insert(sprites, {["spr"] = textSprite, ["w"] = w, ["h"] = h});
                     end
                 end
-                if v.cache_text then
+                if v.cache_text and not tmp_sprite then
                     cached_sprites = {["sprites"] = sprites, ["htotal"] = htotal, ["wmax"] = wmax}
                     s.text_sprites_cache[cached_sprites_idx] = cached_sprites;
                 end
