@@ -146,8 +146,6 @@ vn = obj {
     _need_update = false;
     _need_renew = false;
     _wf = 0;
-    _fln = nil;
-    _frn = nil;
     cache_effects = true;
     tmr = 5;
     hz_onthefly = 18;
@@ -219,8 +217,6 @@ vn = obj {
         s._need_update = false;
         s._need_renew = false;
         s._wf = 0;
-        s._fln = nil;
-        s._frn = nil;
     end;
     ini = function(s, load)
         s:request_full_clear();
@@ -1815,15 +1811,13 @@ vn = obj {
     -- effect is effect name, like 'dissolve'
     -- wf is the fancy border width, in pixels
     -- fln and frn are paths to the borders' images
-    geom = function(s, x, y, w, h, effect, wf, fln, frn, callback)
+    geom = function(s, x, y, w, h, effect, wf, callback)
         -- wf can be zero, this means do not use borders
         if wf then
             s._wf = wf;
         else
             s._wf = 0;
         end
-        s._fln = fln;
-        s._frn = frn;
         s.win_x, s.win_y, s.win_w, s.win_h = x + s._wf, y, w - 2 * s._wf, h;
         theme.win.geom(s.win_x, s.win_y, s.win_w, s.win_h);
         s:request_full_clear();
@@ -1885,8 +1879,6 @@ vn = obj {
         end
         local pad = vn.textpad;
         local wf = vn._wf;
-        local fln = vn._fln;
-        local frn = vn._frn;
         local w, h = theme.get 'win.w', theme.get 'win.h'
         local x, y = theme.get 'win.x', theme.get 'win.y'
         local invw, invh = theme.get 'inv.w', theme.get 'inv.h'
@@ -1896,22 +1888,9 @@ vn = obj {
         sprite.copy(s.bg_spr, x - pad - wf, y - pad, w + pad * 2 + wf * 2, h + pad * 2, to, x - pad - wf, y - pad);
         sprite.copy(s.bg_spr, invx, invy, invw, invh, to, invx, invy);
         if (wf > 0) then
-            local fl;
-            if fln then
-                fl = sprite.load(fln);
-            else
-                fl = sprite.box(wf, h + pad * 2, 'black', s.bgalpha);
-            end
-            local fr;
-            if frn then
-                fr = sprite.load(frn);
-            else
-                fr = sprite.box(wf, h + pad * 2, 'black', s.bgalpha);
-            end
-            sprite.draw(fl, to, x - pad - wf, y - pad);
-            sprite.draw(fr, to, x + w + pad, y - pad);
-            sprite.free(fl)
-            sprite.free(fr)
+            -- You can use this instead of fln and frn sprite.box(wf, h + pad * 2, 'black', s.bgalpha);
+            sprite.draw(fln_s, to, x - pad - wf, y - pad);
+            sprite.draw(frn_s, to, x + w + pad, y - pad);
         end
         sprite.draw(sb, to, x - pad, y - pad)
         sprite.draw(si, to, invx, invy)
@@ -2483,6 +2462,12 @@ stead.module_init(function()
     renewticks_diff = vn:renew_threshold();
     hudFont = sprite.font('fonts/Medieval_English.ttf', 29);
     empty_s = sprite.load('gfx/empty.png');
+    if vn:file_exists('gfx/fl.png') then
+        fln_s = sprite.load('gfx/fl.png');
+    end
+    if vn:file_exists('gfx/fr.png') then
+        frn_s = sprite.load('gfx/fr.png');
+    end
     if LANG == "ru" then
         busy_spr = vn:label("Загрузка...", 40, "#ffffff", "black");
     else

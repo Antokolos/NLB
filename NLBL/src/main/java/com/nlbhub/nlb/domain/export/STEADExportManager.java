@@ -766,7 +766,7 @@ public class STEADExportManager extends TextExportManager {
                     "        vn.hz = vn.hz_preloaded;" + LINE_SEPARATOR +
                     "        vn:preload_effect(s:pic(), 0, " + maxFrames + ", 0, " + preloadFrames + ", function()" + LINE_SEPARATOR +
                     "            vn:gshow(s);" + LINE_SEPARATOR +
-                    "            if room then vn:geom(8, 864, 1904, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png', function() room.autos(room); vn.hz = vn.hz_onthefly; end); end;" + LINE_SEPARATOR +
+                    "            if room then vn:geom(8, 864, 1904, 184, 'dissolve', 240, function() room.autos(room); vn.hz = vn.hz_onthefly; end); end;" + LINE_SEPARATOR +
                     "        end, false, s.load_once);" + LINE_SEPARATOR +
                     "    end," + LINE_SEPARATOR;
         } else {

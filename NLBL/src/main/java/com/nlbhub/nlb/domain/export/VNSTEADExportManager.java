@@ -160,7 +160,7 @@ public class VNSTEADExportManager extends STEADExportManager {
             }
         }
         stringBuilder.append("        if geomFuncNeedToCall then").append(getLineSeparator());
-        stringBuilder.append("            vn:geom(8, 864, 1904, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png', function() s.autos(s); end);").append(getLineSeparator());
+        stringBuilder.append("            vn:geom(8, 864, 1904, 184, 'dissolve', 240, function() s.autos(s); end);").append(getLineSeparator());
         stringBuilder.append("        end;").append(getLineSeparator());
         stringBuilder.append("    end,").append(getLineSeparator());
         return stringBuilder.toString();
@@ -290,7 +290,7 @@ public class VNSTEADExportManager extends STEADExportManager {
             }
             if (theEnd) {
                 result.append("        put(_try_again);").append(lineSep);
-                result.append("        vn:geom(530, 400, 860, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png');").append(lineSep);
+                result.append("        vn:geom(530, 400, 860, 184, 'dissolve', 240);").append(lineSep);
             } else {
                 result.append("        vn:geom(320, 320, 1280, 480, 'dissolve');").append(lineSep);
             }

@@ -635,7 +635,7 @@ game_room = vnr {
     ignore_preserved_gobjs = true,
     bgimg = function(s, bg)
         vn:scene(bg);
-        vn:geom(8, 864, 1904, 184, 'dissolve', 240, 'gfx/fl.png', 'gfx/fr.png');
+        vn:geom(8, 864, 1904, 184, 'dissolve', 240);
     end,
     dsc = function(s)
         return "";
