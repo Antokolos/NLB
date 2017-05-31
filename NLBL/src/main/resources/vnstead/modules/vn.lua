@@ -2464,9 +2464,13 @@ stead.module_init(function()
     empty_s = sprite.load('gfx/empty.png');
     if vn:file_exists('gfx/fl.png') then
         fln_s = sprite.load('gfx/fl.png');
+    else
+        fln_s = sprite.blank(1, 1);
     end
     if vn:file_exists('gfx/fr.png') then
         frn_s = sprite.load('gfx/fr.png');
+    else
+        frn_s = sprite.blank(1, 1);
     end
     if LANG == "ru" then
         busy_spr = vn:label("Загрузка...", 40, "#ffffff", "black");
