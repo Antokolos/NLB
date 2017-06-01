@@ -136,59 +136,75 @@ gr = obj {
     nam = 'gr';
     system_type = true;
     screen = function(s)
-        log:dbg("gr:screen()");
+        --log:dbg("gr:screen()");
         return sprite.screen();
     end;
     alpha = function(s, spr, alpha)
         local res = sprite.alpha(spr, alpha);
-        log:dbg("gr:alpha(" .. tostring(spr) .. ", " .. tostring(alpha) .. ") = " .. tostring(res));
+        --log:dbg("gr:alpha(" .. tostring(spr) .. ", " .. tostring(alpha) .. ") = " .. tostring(res));
         return res;
     end;
     blank = function(s, w, h)
         local res = sprite.blank(w, h);
-        log:dbg("gr:blank(" .. tostring(w) .. ", " .. tostring(h) .. ") = " .. tostring(res));
+        --log:dbg("gr:blank(" .. tostring(w) .. ", " .. tostring(h) .. ") = " .. tostring(res));
         return res;
     end;
     box = function(s, w, h, color, alpha)
         local res = sprite.box(w, h, color, alpha);
-        log:dbg("gr:box(" .. tostring(w) .. ", " .. tostring(h) .. ", " .. tostring(color) .. ", " .. tostring(alpha) .. ") = " .. tostring(res));
+        --log:dbg("gr:box(" .. tostring(w) .. ", " .. tostring(h) .. ", " .. tostring(color) .. ", " .. tostring(alpha) .. ") = " .. tostring(res));
         return res;
     end;
     load = function(s, file_name)
         local res = sprite.load(file_name);
-        log:dbg("gr:load(" .. file_name .. ") = " .. tostring(res));
+        --log:dbg("gr:load(" .. file_name .. ") = " .. tostring(res));
         return res;
     end;
     size = function(s, spr)
         local w, h = sprite.size(spr);
-        log:dbg("gr:size(" .. tostring(spr) .. ") = " .. tostring(w) .. ", " .. tostring(h));
+        --log:dbg("gr:size(" .. tostring(spr) .. ") = " .. tostring(w) .. ", " .. tostring(h));
         return w, h;
     end;
     free = function(s, spr)
-        log:dbg("gr:free(" .. tostring(spr) .. ");");
+        --log:dbg("gr:free(" .. tostring(spr) .. ");");
         sprite.free(spr);
     end;
-    draw = function(s, src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha)
-        log:dbg("gr:draw()");
+    draw = function(s, src_spr, dst_spr, x, y)
+        --log:dbg("gr:draw()");
+        sprite.draw(src_spr, dst_spr, x, y);
+    end;
+    draw_ext = function(s, src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha)
+        --log:dbg("gr:draw_ext()");
         sprite.draw(src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha);
     end;
-    copy = function(s, src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha)
-        log:dbg("gr:copy()");
+    copy = function(s, src_spr, dst_spr)
+        --log:dbg("gr:copy()");
+        sprite.copy(src_spr, dst_spr);
+    end;
+    copy_ext = function(s, src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha)
+        --log:dbg("gr:copy_ext()");
         sprite.copy(src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha);
+    end;
+    compose = function(s, src_spr, dst_spr, x, y)
+        --log:dbg("gr:compose()");
+        sprite.compose(src_spr, dst_spr, x, y);
+    end;
+    compose_ext = function(s, src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha)
+        --log:dbg("gr:compose_ext()");
+        sprite.compose(src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha);
     end;
     scale = function(s, spr, xs, ys, smooth)
         local res = sprite.scale(spr, xs, ys, smooth);
-        log:dbg("gr:scale(" .. tostring(spr) .. ", " .. tostring(xs) .. ", " .. tostring(ys) .. ", " .. tostring(smooth) .. ") = " .. tostring(res));
+        --log:dbg("gr:scale(" .. tostring(spr) .. ", " .. tostring(xs) .. ", " .. tostring(ys) .. ", " .. tostring(smooth) .. ") = " .. tostring(res));
         return res;
     end;
     text = function(s, font, text, col, style)
         local res = sprite.text(font, text, col, style);
-        log:dbg("gr:text(" .. text .. ") = " .. tostring(res));
+        --log:dbg("gr:text(" .. text .. ") = " .. tostring(res));
         return res;
     end;
     font = function(s, font_path, size)
         local res = sprite.font(font_path, size);
-        log:dbg("gr:font(" .. font_path .. ", " .. tostring(size) .. ") = " .. tostring(res));
+        --log:dbg("gr:font(" .. font_path .. ", " .. tostring(size) .. ") = " .. tostring(res));
         return res;
     end;
 }
@@ -199,6 +215,9 @@ vn = obj {
     sprite_cache = {};
     sprite_cache_data = {};
     text_sprites_cache = {};
+    undertextb_cache = {};
+    undertexti_cache = {};
+    scraps_cache = {};
     load_once_sprite_keys = {};
     _effects = {};
     _pending_effects = {};
@@ -267,9 +286,13 @@ vn = obj {
         return 350;
     end;
     rst = function(s)
+        s:clear_cache();
         s.sprite_cache = {};
         s.sprite_cache_data = {};
         s.text_sprites_cache = {};
+        s.undertextb_cache = {};
+        s.undertexti_cache = {};
+        s.scraps_cache = {};
         s.load_once_sprite_keys = {};
         s._effects = {};
         s._pending_effects = {};
@@ -888,6 +911,18 @@ vn = obj {
             s.sprite_cache_data[k] = w;
         end
         s.text_sprites_cache = {};
+        for k, w in pairs(s.undertextb_cache) do
+            gr:free(w);
+        end
+        s.undertextb_cache = {};
+        for k, w in pairs(s.undertexti_cache) do
+            gr:free(w);
+        end
+        s.undertexti_cache = {};
+        for k, w in pairs(s.scraps_cache) do
+            gr:free(w);
+        end
+        s.scraps_cache = {};
     end;
     hide = function(s, image, eff, ...)
         local v
@@ -1528,7 +1563,8 @@ vn = obj {
         end
         if s.bg_spr then
             local bg_spr = gr:load(picture);
-            gr:copy(bg_spr, s.bg_spr)
+            gr:copy(bg_spr, s.bg_spr);
+            gr:free(bg_spr);
         else
             s.bg_spr = gr:load(picture)
         end
@@ -1566,7 +1602,7 @@ vn = obj {
                 target = res;
             end
             if not only_compute then
-                gr:draw(ospr.loaded, ospr.x, ospr.y, ospr.w, ospr.h, target, x, y);
+                gr:draw_ext(ospr.loaded, ospr.x, ospr.y, ospr.w, ospr.h, target, x, y);
             end
             if free_immediately and res then
                 gr:free(res);
@@ -1636,12 +1672,13 @@ vn = obj {
         local sp = s:frame(v, idx, s:screen(), x, y, only_compute, true);
         return idx, x, y, sp.w, sp.h;
     end;
+    spritepad = 8;
     clear = function(s, x, y, w, h, target)
         local pad = s.spritepad;
         if not target then
             target = s:screen();
         end
-        gr:copy(s.bg_spr, x - pad, y - pad, w + 2 * pad, h + 2 * pad, target, x - pad, y - pad);
+        gr:copy_ext(s.bg_spr, x - pad, y - pad, w + 2 * pad, h + 2 * pad, target, x - pad, y - pad);
     end;
     moveout = function(s, v, only_compute)
         local mxs, zstep = s:steps(v);
@@ -1933,30 +1970,26 @@ vn = obj {
         return here().textbg;
     end;
     textpad = 8;
-    spritepad = 8;
     textbg = function(s, to)
         if (s.direct_lock or not s:in_vnr()) and not s:force_textbg() then
             return;
         end
-        local pad = vn.textpad;
-        local wf = vn._wf;
+        local pad = s.textpad;
+        local wf = s._wf;
         local w, h = theme.get 'win.w', theme.get 'win.h'
         local x, y = theme.get 'win.x', theme.get 'win.y'
         local invw, invh = theme.get 'inv.w', theme.get 'inv.h'
         local invx, invy = theme.get 'inv.x', theme.get 'inv.y'
-        local sb = gr:box(w + pad * 2, h + pad * 2, 'black', s.bgalpha)
-        local si = gr:box(invw, invh, 'black')
-        gr:copy(s.bg_spr, x - pad - wf, y - pad, w + pad * 2 + wf * 2, h + pad * 2, to, x - pad - wf, y - pad);
-        gr:copy(s.bg_spr, invx, invy, invw, invh, to, invx, invy);
+        gr:copy_ext(s.bg_spr, x - pad - wf, y - pad, w + pad * 2 + wf * 2, h + pad * 2, to, x - pad - wf, y - pad);
+        gr:copy_ext(s.bg_spr, invx, invy, invw, invh, to, invx, invy);
         if (wf > 0) then
             -- You can use this instead of fln and frn gr:box(wf, h + pad * 2, 'black', s.bgalpha);
             gr:draw(fln_s, to, x - pad - wf, y - pad);
             gr:draw(frn_s, to, x + w + pad, y - pad);
         end
+        local sb, si = s:undertext(w, h, invw, invh);
         gr:draw(sb, to, x - pad, y - pad)
         gr:draw(si, to, invx, invy)
-        gr:free(sb)
-        gr:free(si)
     end;
     commit = function(s, from)
         if not from then
@@ -2354,12 +2387,11 @@ vn = obj {
                 return rct;
             end
             for i, ss in ipairs(sprites) do
-                local hudSprite = gr:blank(ss.w, ss.h);
-                gr:draw(target, xpos, ycur, ss.w, ss.h, hudSprite, 0, 0);
-                gr:draw(ss.spr, hudSprite, 0, 0);
-                gr:draw(hudSprite, target, xpos, ycur);
+                local hudSprite = s:scrap(ss.w, ss.h);
+                gr:compose_ext(target, xpos, ycur, ss.w, ss.h, hudSprite, 0, 0);
+                gr:compose(ss.spr, hudSprite, 0, 0);
+                gr:compose(hudSprite, target, xpos, ycur);
                 ycur = ycur + ss.h;
-                gr:free(hudSprite);
                 if not cached_sprites then
                     gr:free(ss.spr);
                 end
@@ -2441,7 +2473,7 @@ vn = obj {
             end
         end
         if clear_under_tooltip or erase then
-            gr:copy(s.bg_spr, xt, yt, w, h, target, xt, yt);
+            gr:copy_ext(s.bg_spr, xt, yt, w, h, target, xt, yt);
         end
         if hide or v.dirty_draw then
             log:trace(v.nam .. " tooltip is dirty");
@@ -2511,6 +2543,25 @@ vn = obj {
     end;
     empty_frame = function(s, w, h)
         return {["spr"] = empty_s, ["w"] = w, ["h"] = h, ["tmp"] = false, ["preloaded_effect"] = false, ["alpha"] = 0, ["scale"] = 0.0};
+    end;
+    undertext = function(s, w, h, invw, invh)
+        local pad = s.textpad;
+        local sb_index = tostring(w) .. "x" .. tostring(h);
+        local si_index = tostring(invw) .. "x" .. tostring(invh);
+        if not s.undertextb_cache[sb_index] then
+            s.undertextb_cache[sb_index] = gr:box(w + pad * 2, h + pad * 2, 'black', s.bgalpha);
+        end
+        if not s.undertexti_cache[si_index] then
+            s.undertexti_cache[si_index] = gr:box(invw, invh, 'black');
+        end
+        return s.undertextb_cache[sb_index], s.undertexti_cache[si_index];
+    end;
+    scrap = function(s, w, h)
+        local sb_index = tostring(w) .. "x" .. tostring(h);
+        if not s.scraps_cache[sb_index] then
+            s.scraps_cache[sb_index] = gr:blank(w, h);
+        end
+        return s.scraps_cache[sb_index];
     end;
 }
 
