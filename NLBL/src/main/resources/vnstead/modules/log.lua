@@ -12,7 +12,7 @@ log = obj {
     end;
     do_log = function(s, loglevel, message)
         if loglevel >= s.loglevel then
-            print(message);
+            print(tostring(os.clock()) .. " " .. message);
         end
     end;
     trace = function(s, message)

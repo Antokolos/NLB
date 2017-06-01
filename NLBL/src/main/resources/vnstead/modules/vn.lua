@@ -132,6 +132,67 @@ image = function(name, pic)
     return { nam = name, pic = pic };
 end
 
+gr = obj {
+    nam = 'gr';
+    system_type = true;
+    screen = function(s)
+        log:dbg("gr:screen()");
+        return sprite.screen();
+    end;
+    alpha = function(s, spr, alpha)
+        local res = sprite.alpha(spr, alpha);
+        log:dbg("gr:alpha(" .. tostring(spr) .. ", " .. tostring(alpha) .. ") = " .. tostring(res));
+        return res;
+    end;
+    blank = function(s, w, h)
+        local res = sprite.blank(w, h);
+        log:dbg("gr:blank(" .. tostring(w) .. ", " .. tostring(h) .. ") = " .. tostring(res));
+        return res;
+    end;
+    box = function(s, w, h, color, alpha)
+        local res = sprite.box(w, h, color, alpha);
+        log:dbg("gr:box(" .. tostring(w) .. ", " .. tostring(h) .. ", " .. tostring(color) .. ", " .. tostring(alpha) .. ") = " .. tostring(res));
+        return res;
+    end;
+    load = function(s, file_name)
+        local res = sprite.load(file_name);
+        log:dbg("gr:load(" .. file_name .. ") = " .. tostring(res));
+        return res;
+    end;
+    size = function(s, spr)
+        local w, h = sprite.size(spr);
+        log:dbg("gr:size(" .. tostring(spr) .. ") = " .. tostring(w) .. ", " .. tostring(h));
+        return w, h;
+    end;
+    free = function(s, spr)
+        log:dbg("gr:free(" .. tostring(spr) .. ");");
+        sprite.free(spr);
+    end;
+    draw = function(s, src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha)
+        log:dbg("gr:draw()");
+        sprite.draw(src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha);
+    end;
+    copy = function(s, src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha)
+        log:dbg("gr:copy()");
+        sprite.copy(src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha);
+    end;
+    scale = function(s, spr, xs, ys, smooth)
+        local res = sprite.scale(spr, xs, ys, smooth);
+        log:dbg("gr:scale(" .. tostring(spr) .. ", " .. tostring(xs) .. ", " .. tostring(ys) .. ", " .. tostring(smooth) .. ") = " .. tostring(res));
+        return res;
+    end;
+    text = function(s, font, text, col, style)
+        local res = sprite.text(font, text, col, style);
+        log:dbg("gr:text(" .. text .. ") = " .. tostring(res));
+        return res;
+    end;
+    font = function(s, font_path, size)
+        local res = sprite.font(font_path, size);
+        log:dbg("gr:font(" .. font_path .. ", " .. tostring(size) .. ") = " .. tostring(res));
+        return res;
+    end;
+}
+
 vn = obj {
     nam = 'vn';
     system_type = true;
@@ -189,7 +250,7 @@ vn = obj {
     end,
     screen = function(s)
         if theme.get('scr.gfx.mode') == 'direct' then
-            return sprite.screen()
+            return gr:screen();
         else
             return s.offscreen
         end
@@ -237,8 +298,8 @@ vn = obj {
     init = function(s)
         s.scr_w = theme.get 'scr.w'
         s.scr_h = theme.get 'scr.h'
-        s.offscreen = sprite.blank(s.scr_w, s.scr_h)
-        s.blackscreen = sprite.box(s.scr_w, s.scr_h, 'black')
+        s.offscreen = gr:blank(s.scr_w, s.scr_h)
+        s.blackscreen = gr:box(s.scr_w, s.scr_h, 'black')
         s:request_full_clear();
         s.hz = s.hz_onthefly;
         timer:set(s.tmr);
@@ -260,8 +321,8 @@ vn = obj {
         --local info_over = s:get_base_info(morph_over);
         --local info_out = s:get_base_info(morph_out);
         if v.nam == vv.nam then --or info_over.nam == vv.nam or info_out.nam == vv.nam then
-            -- there is no collision if it is the same object
-            return false;
+        -- there is no collision if it is the same object
+        return false;
         end
         return true;
     end;
@@ -336,7 +397,7 @@ vn = obj {
                 if has_gob_click_handler then
                     clickTargets[v.nam] = gob;
                 else  -- has_morph_click_handler, or else we won't get there at all
-                    clickTargets[v.nam] = morphover;
+                clickTargets[v.nam] = morphover;
                 end
                 local hierarchy = s:get_hierarchy(v);
                 for kk, vv in pairs(hierarchy) do
@@ -610,13 +671,13 @@ vn = obj {
                     if united and ss.sprite_cache[key] and ss.sprite_cache[key][-milestoneIdx] then
                         loaded = ss.sprite_cache[key][-milestoneIdx];
                     else
-                        local tmp = sprite.load(sprfile);
+                        local tmp = gr:load(sprfile);
                         if bgcolors then
                             if bgcolors[milestoneIdx] then
-                                local ws, hs = sprite.size(tmp);
-                                loaded = sprite.box(ws, hs, bgcolors[milestoneIdx]);
-                                sprite.draw(tmp, loaded, 0, 0);
-                                sprite.free(tmp);
+                                local ws, hs = gr:size(tmp);
+                                loaded = gr:box(ws, hs, bgcolors[milestoneIdx]);
+                                gr:draw(tmp, loaded, 0, 0);
+                                gr:free(tmp);
                             else
                                 loaded = tmp;
                             end
@@ -654,7 +715,7 @@ vn = obj {
                                 end
                             end
                             if not w or not h then
-                                w, h = sprite.size(loaded);
+                                w, h = gr:size(loaded);
                                 ystart = w * idx;
                                 h = w;
                             end
@@ -721,17 +782,17 @@ vn = obj {
                     end
                     local eff = ss:get_eff(v);
                     if eff == 'fadein' then
-                        s.preloaded_effect = true;                        
-                        return sprite.alpha(base_spr, s.alpha); 
+                        s.preloaded_effect = true;
+                        return gr:alpha(base_spr, s.alpha);
                     elseif eff == 'fadeout' then
                         s.preloaded_effect = true;
-                        return sprite.alpha(base_spr, s.alpha);
+                        return gr:alpha(base_spr, s.alpha);
                     elseif eff == 'zoomin' or eff == 'zoomout' then
                         s.preloaded_effect = true;
                         if s.scale > 0.0 then
-                            return sprite.scale(base_spr, s.scale, s.scale, false);
+                            return gr:scale(base_spr, s.scale, s.scale, false);
                         else
-                            return sprite.blank(1, 1);
+                            return gr:blank(1, 1);
                         end
                     end
                     log:dbg("Falling back to base_spr");
@@ -740,14 +801,14 @@ vn = obj {
                 free = function(s)
                     if s.was_loaded and s.origin then
                         if s.preloaded_effect and s.cache then
-                            -- If effect was preloaded, then some additional sprite was created (via sprite.scale, sprite.alpha etc).
+                            -- If effect was preloaded, then some additional sprite was created (via gr:scale, gr:alpha etc).
                             -- It should be freed. If this sprite will be shown again, then origin can be restored from the sprite_cache,
                             -- but this local cache will be recreated.
-                            sprite.free(s.cache);
+                            gr:free(s.cache);
                         end
                         if ss.nocache then
                             -- Currently this code will not be executed, because cache is always used
-                            sprite.free(s.origin);
+                            gr:free(s.origin);
                         end
                         s.cache = nil;
                         s.origin = nil;
@@ -803,7 +864,7 @@ vn = obj {
             else
                 for i, ss in ipairs(w) do
                     if not ss.loaded then
-                        sprite.free(ss);
+                        gr:free(ss);
                     end
                 end
             end
@@ -815,7 +876,7 @@ vn = obj {
         end
         for kk, ww in pairs(s.text_sprites_cache) do
             for ii, sss in ipairs(ww.sprites) do
-                sprite.free(sss.spr);
+                gr:free(sss.spr);
             end
         end
         s.sprite_cache = {};
@@ -938,7 +999,7 @@ vn = obj {
         local xarm, yarm = s:abs_arm(v, idx);
         local sp = s:frame(v, idx);
         if sp.tmp then
-            sprite.free(sp.spr);
+            gr:free(sp.spr);
         end
         return sp.w + xarm, sp.h + yarm;
     end;
@@ -1250,9 +1311,9 @@ vn = obj {
         v.from_stop = g.framesFromStop
         if oe then
             if oe.pic ~= v.pic then -- new pic
-                s:free_effect(oe);
-                oe.pic = v.pic
-                s:load_effect(oe)
+            s:free_effect(oe);
+            oe.pic = v.pic
+            s:load_effect(oe)
             end
             old_pos = s:get_pos(oe);
             v = oe
@@ -1461,15 +1522,15 @@ vn = obj {
 
     set_bg = function(s, picture)
         if not picture then
-            s.bg_spr = sprite.box(s.scr_w, s.scr_h, theme.get 'scr.col.bg');
+            s.bg_spr = gr:box(s.scr_w, s.scr_h, theme.get 'scr.col.bg');
             s._bg = false;
             return
         end
         if s.bg_spr then
-            local bg_spr = sprite.load(picture);
-            sprite.copy(bg_spr, s.bg_spr)
+            local bg_spr = gr:load(picture);
+            gr:copy(bg_spr, s.bg_spr)
         else
-            s.bg_spr = sprite.load(picture)
+            s.bg_spr = gr:load(picture)
         end
         if not s.bg_spr then
             error("Can not load bg sprite:" .. tostring(picture))
@@ -1485,8 +1546,8 @@ vn = obj {
         local sp = v.spr[idx];
         local ospr = sp:val();
         if not ospr then -- Strange error when using resources in idf...
-            log:err("filesystem access problem when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
-            return s:empty_frame(0, 0);
+        log:err("filesystem access problem when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
+        return s:empty_frame(0, 0);
         end
         if not x then
             x = 0;
@@ -1501,25 +1562,25 @@ vn = obj {
             end
             local res = nil;
             if not target then
-                res = sprite.blank(ospr.w, ospr.h);
+                res = gr:blank(ospr.w, ospr.h);
                 target = res;
             end
             if not only_compute then
-                sprite.draw(ospr.loaded, ospr.x, ospr.y, ospr.w, ospr.h, target, x, y);
+                gr:draw(ospr.loaded, ospr.x, ospr.y, ospr.w, ospr.h, target, x, y);
             end
             if free_immediately and res then
-                sprite.free(res);
+                gr:free(res);
                 res = nil;
             end
             return {["spr"] = res, ["w"] = ospr.w, ["h"] = ospr.h, ["tmp"] = (res ~= nil), ["preloaded_effect"] = sp.preloaded_effect, ["alpha"] = sp.alpha, ["scale"] = sp.scale};
         else
-            local w, h = sprite.size(sp:get_origin());
+            local w, h = gr:size(sp:get_origin());
             if sp:invisible() then
                 log:dbg("Frame " .. tostring(idx) .. " of " .. v.nam .. " is invisible");
                 return s:empty_frame(w, h);
             end
             if not only_compute and target then
-                sprite.draw(ospr, target, x, y);
+                gr:draw(ospr, target, x, y);
             end
             return {["spr"] = ospr, ["w"] = w, ["h"] = h, ["tmp"] = false, ["preloaded_effect"] = sp.preloaded_effect, ["alpha"] = sp.alpha, ["scale"] = sp.scale};
         end
@@ -1541,21 +1602,21 @@ vn = obj {
             log:dbg("Using preloaded effect in fade(), alpha = " .. alpha);
         else
             sp = s:frame(v, idx);
-            local mxs, zstep = s:steps(v);        
+            local mxs, zstep = s:steps(v);
             if fadein then
                 alpha = math.floor(255 * zstep / mxs);
             else
                 alpha = math.floor(255 * (1 - zstep / mxs));
             end
             log:dbg("Calculating effect on the fly in fade(), alpha = " .. alpha);
-            local spr = sprite.alpha(sp.spr, alpha);
+            local spr = gr:alpha(sp.spr, alpha);
             if sp.tmp then
-                sprite.free(sp.spr);
+                gr:free(sp.spr);
             end
             if not only_compute then
-                sprite.draw(spr, s:screen(), x, y);
+                gr:draw(spr, s:screen(), x, y);
             end
-            sprite.free(spr);
+            gr:free(spr);
         end
         return idx, x, y, sp.w, sp.h, alpha;
     end;
@@ -1580,7 +1641,7 @@ vn = obj {
         if not target then
             target = s:screen();
         end
-        sprite.copy(s.bg_spr, x - pad, y - pad, w + 2 * pad, h + 2 * pad, target, x - pad, y - pad);
+        gr:copy(s.bg_spr, x - pad, y - pad, w + 2 * pad, h + 2 * pad, target, x - pad, y - pad);
     end;
     moveout = function(s, v, only_compute)
         local mxs, zstep = s:steps(v);
@@ -1632,21 +1693,21 @@ vn = obj {
 
         local vw, vh = s:size(v, sprpos)
         local xarm, yarm = s:arm(v, sprpos)
-        local ws, hs = vw - xarm, vh - yarm        
+        local ws, hs = vw - xarm, vh - yarm
 
         local sp = s:frame(v, sprpos);
         local scale = sp.scale;
         if scale == 0.0 then
             return s:get_start(v), 0, 0, 0, 0, 0.0;
-        end        
+        end
         local w, h = sp.w, sp.h;
         if scale ~= 1.0 then
             if sp.preloaded_effect then
                 spr = sp.spr;
             else
-                spr = sprite.scale(sp.spr, scale, scale, false);
+                spr = gr:scale(sp.spr, scale, scale, false);
             end
-            w, h = sprite.size(spr);
+            w, h = gr:size(spr);
         else
             spr = sp.spr;
         end
@@ -1675,13 +1736,13 @@ vn = obj {
         end
 
         if not only_compute then
-            sprite.draw(spr, s:screen(), x, y)
+            gr:draw(spr, s:screen(), x, y)
         end
         if not sp.preloaded_effect and sp.spr ~= spr then
-            sprite.free(spr)
+            gr:free(spr)
         end
         if sp.tmp then
-            sprite.free(sp.spr);
+            gr:free(sp.spr);
         end
         return sprpos, x, y, w, h, scale;
     end;
@@ -1799,7 +1860,7 @@ vn = obj {
                 theme.gfx.bg(s.offscreen)
             end
             return
-        end        
+        end
         --- s:tmr_rst();
         return
         -- just transpose
@@ -1861,8 +1922,8 @@ vn = obj {
     draw_notes = function(s)
         if s.dbg then
             local label, w, h = s:label(nlb:curloc().notes);
-            sprite.draw(label, s.bg_spr, 0, 0);
-            sprite.free(label);
+            gr:draw(label, s.bg_spr, 0, 0);
+            gr:free(label);
         end
     end;
     in_vnr = function(s)
@@ -1883,19 +1944,19 @@ vn = obj {
         local x, y = theme.get 'win.x', theme.get 'win.y'
         local invw, invh = theme.get 'inv.w', theme.get 'inv.h'
         local invx, invy = theme.get 'inv.x', theme.get 'inv.y'
-        local sb = sprite.box(w + pad * 2, h + pad * 2, 'black', s.bgalpha)
-        local si = sprite.box(invw, invh, 'black')
-        sprite.copy(s.bg_spr, x - pad - wf, y - pad, w + pad * 2 + wf * 2, h + pad * 2, to, x - pad - wf, y - pad);
-        sprite.copy(s.bg_spr, invx, invy, invw, invh, to, invx, invy);
+        local sb = gr:box(w + pad * 2, h + pad * 2, 'black', s.bgalpha)
+        local si = gr:box(invw, invh, 'black')
+        gr:copy(s.bg_spr, x - pad - wf, y - pad, w + pad * 2 + wf * 2, h + pad * 2, to, x - pad - wf, y - pad);
+        gr:copy(s.bg_spr, invx, invy, invw, invh, to, invx, invy);
         if (wf > 0) then
-            -- You can use this instead of fln and frn sprite.box(wf, h + pad * 2, 'black', s.bgalpha);
-            sprite.draw(fln_s, to, x - pad - wf, y - pad);
-            sprite.draw(frn_s, to, x + w + pad, y - pad);
+            -- You can use this instead of fln and frn gr:box(wf, h + pad * 2, 'black', s.bgalpha);
+            gr:draw(fln_s, to, x - pad - wf, y - pad);
+            gr:draw(frn_s, to, x + w + pad, y - pad);
         end
-        sprite.draw(sb, to, x - pad, y - pad)
-        sprite.draw(si, to, invx, invy)
-        sprite.free(sb)
-        sprite.free(si)
+        gr:draw(sb, to, x - pad, y - pad)
+        gr:draw(si, to, invx, invy)
+        gr:free(sb)
+        gr:free(si)
     end;
     commit = function(s, from)
         if not from then
@@ -1904,7 +1965,7 @@ vn = obj {
         if s.direct_lock then
             return;
         end
-        sprite.copy(from, s.offscreen);
+        gr:copy(from, s.offscreen);
         s:textbg(s.offscreen);
         theme.gfx.bg(s.offscreen);
     end;
@@ -2094,7 +2155,7 @@ vn = obj {
                 end
             end
         else
-            sprite.copy(s.bg_spr, s:screen());
+            gr:copy(s.bg_spr, s:screen());
             s:invalidate_all();
         end
     end;
@@ -2243,24 +2304,24 @@ vn = obj {
                         if not color then
                             color = s.hud_color;
                         end
-                        local textSpriteInit = sprite.text(hudFont, vv.text, color);
+                        local textSpriteInit = gr:text(hudFont, vv.text, color);
                         local textSpriteScaled;
                         if scale ~= 1.0 then
-                            textSpriteScaled = sprite.scale(textSpriteInit, scale, scale, false);
-                            sprite.free(textSpriteInit);
+                            textSpriteScaled = gr:scale(textSpriteInit, scale, scale, false);
+                            gr:free(textSpriteInit);
                         else
                             textSpriteScaled = textSpriteInit;
                         end
                         local textSprite;
                         if alpha ~= 255 then
-                            textSprite = sprite.alpha(textSpriteScaled, alpha);
-                            sprite.free(textSpriteScaled);
+                            textSprite = gr:alpha(textSpriteScaled, alpha);
+                            gr:free(textSpriteScaled);
                         else
                             textSprite = textSpriteScaled;
                         end
-                        local w, h = sprite.size(textSprite);
+                        local w, h = gr:size(textSprite);
                         if tmp_sprite then
-                            sprite.free(textSprite);
+                            gr:free(textSprite);
                         end
                         w = w + s.extent;
                         if w > wmax then
@@ -2293,14 +2354,14 @@ vn = obj {
                 return rct;
             end
             for i, ss in ipairs(sprites) do
-                local hudSprite = sprite.blank(ss.w, ss.h);
-                sprite.draw(target, xpos, ycur, ss.w, ss.h, hudSprite, 0, 0);
-                sprite.draw(ss.spr, hudSprite, 0, 0);
-                sprite.draw(hudSprite, target, xpos, ycur);
+                local hudSprite = gr:blank(ss.w, ss.h);
+                gr:draw(target, xpos, ycur, ss.w, ss.h, hudSprite, 0, 0);
+                gr:draw(ss.spr, hudSprite, 0, 0);
+                gr:draw(hudSprite, target, xpos, ycur);
                 ycur = ycur + ss.h;
-                sprite.free(hudSprite);
+                gr:free(hudSprite);
                 if not cached_sprites then
-                    sprite.free(ss.spr);
+                    gr:free(ss.spr);
                 end
             end
             return rct;
@@ -2380,18 +2441,18 @@ vn = obj {
             end
         end
         if clear_under_tooltip or erase then
-            sprite.copy(s.bg_spr, xt, yt, w, h, target, xt, yt);
+            gr:copy(s.bg_spr, xt, yt, w, h, target, xt, yt);
         end
         if hide or v.dirty_draw then
             log:trace(v.nam .. " tooltip is dirty");
             s._dirty_rects[v.nam .. '_tooltip'] = {["v"] = v, ["x"] = xt, ["y"] = yt, ["w"] = w, ["h"] = h};
         end
         if not erase then
-            sprite.draw(label, target, xt, yt);
+            gr:draw(label, target, xt, yt);
         end
-        sprite.free(label);
+        gr:free(label);
     end;
-    -- Sprite with label text. You should call sprite.free(), when you no longer need this.
+    -- Sprite with label text. You should call gr:free(), when you no longer need this.
     label = function(s, text, extent, color, bgcolor, bgalpha, font)
         if not color then
             color = '#000000';
@@ -2418,8 +2479,8 @@ vn = obj {
         end
         for i, t in ipairs(src) do
             if t and t ~= "" then
-                local spr = sprite.text(font, t, color);
-                local ww, hh = sprite.size(spr);
+                local spr = gr:text(font, t, color);
+                local ww, hh = gr:size(spr);
                 if ww > w then
                     w = ww;
                 end
@@ -2429,10 +2490,10 @@ vn = obj {
         end
         w = w + 2 * extent;
         h = h + extent;
-        local label = sprite.box(w, h, bgcolor, bgalpha);
+        local label = gr:box(w, h, bgcolor, bgalpha);
         for ii, tt in ipairs(texts) do
-            sprite.draw(tt.spr, label, tt.x, tt.y);
-            sprite.free(tt.spr);
+            gr:draw(tt.spr, label, tt.x, tt.y);
+            gr:free(tt.spr);
         end
         return label, w, h;
     end;
@@ -2460,17 +2521,17 @@ stead.module_init(function()
     renewticks = vnticks;
     vnticks_diff = vn:ticks_threshold();
     renewticks_diff = vn:renew_threshold();
-    hudFont = sprite.font('fonts/Medieval_English.ttf', 29);
-    empty_s = sprite.load('gfx/empty.png');
+    hudFont = gr:font('fonts/Medieval_English.ttf', 29);
+    empty_s = gr:load('gfx/empty.png');
     if vn:file_exists('gfx/fl.png') then
-        fln_s = sprite.load('gfx/fl.png');
+        fln_s = gr:load('gfx/fl.png');
     else
-        fln_s = sprite.blank(1, 1);
+        fln_s = gr:blank(1, 1);
     end
     if vn:file_exists('gfx/fr.png') then
-        frn_s = sprite.load('gfx/fr.png');
+        frn_s = gr:load('gfx/fr.png');
     else
-        frn_s = sprite.blank(1, 1);
+        frn_s = gr:blank(1, 1);
     end
     if LANG == "ru" then
         busy_spr = vn:label("Загрузка...", 40, "#ffffff", "black");
