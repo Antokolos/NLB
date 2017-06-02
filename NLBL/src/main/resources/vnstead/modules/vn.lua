@@ -84,7 +84,6 @@ vntimer = function(f, s, cmd, ...)
             vn._scene_effect = false
             win_reset();
             vn:textbg(vn.offscreen)
-            --- timer:stop()
             theme.gfx.bg(vn.offscreen)
         end
         RAW_TEXT = true;
@@ -1898,13 +1897,8 @@ vn = obj {
             end
             return
         end
-        --- s:tmr_rst();
         return
         -- just transpose
-    end;
-    tmr_rst = function(s)
-        timer:stop();
-        timer:set(s.tmr);
     end;
     -- effect is effect name, like 'dissolve'
     -- wf is the fancy border width, in pixels
@@ -2030,7 +2024,6 @@ vn = obj {
         return r
     end;
     stop = function(s)
-        --- timer:stop()
         local e2 = {}
         local i, v
 
@@ -2254,7 +2247,6 @@ vn = obj {
         local i, v
         local first
         local cbresult = false;
-        timer:stop();
         if s:has_any_animation_in_progress() then
             s:enter_direct();
         end
@@ -2275,22 +2267,18 @@ vn = obj {
             end
             if cbresult then
                 if type(cbresult) == 'function' then
-                    s:tmr_rst();
                     return cbresult();
                 else
                     s:start();
-                    s:tmr_rst();
                     return true;
                 end
             else
-                s:tmr_rst();
                 return false;
             end
         elseif initpass then
             s:commit(s:screen())
             s:leave_direct();
         end
-        s:tmr_rst();
         return n
     end;
     draw_huds = function(s, datas, clear, hide)
