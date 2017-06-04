@@ -134,28 +134,45 @@ end
 gr = obj {
     nam = 'gr';
     system_type = true;
+    --var { diff = 0, sprs = {} };
     screen = function(s)
         --log:dbg("gr:screen()");
         return sprite.screen();
     end;
     alpha = function(s, spr, alpha)
         local res = sprite.alpha(spr, alpha);
-        --log:dbg("gr:alpha(" .. tostring(spr) .. ", " .. tostring(alpha) .. ") = " .. tostring(res));
+        --local idx = tostring(res);
+        --local ss = ">>>gr:alpha(" .. tostring(spr) .. ", " .. tostring(alpha) .. ") = " .. tostring(res);
+        --log:dbg(ss);
+        --s.diff = s.diff + 1;
+        --s.sprs[idx] = ss;
         return res;
     end;
     blank = function(s, w, h)
         local res = sprite.blank(w, h);
-        --log:dbg("gr:blank(" .. tostring(w) .. ", " .. tostring(h) .. ") = " .. tostring(res));
+        --local idx = tostring(res);
+        --local ss = ">>>gr:blank(" .. tostring(w) .. ", " .. tostring(h) .. ") = " .. tostring(res);
+        --log:dbg(ss);
+        --s.diff = s.diff + 1;
+        --s.sprs[idx] = ss;
         return res;
     end;
     box = function(s, w, h, color, alpha)
         local res = sprite.box(w, h, color, alpha);
-        --log:dbg("gr:box(" .. tostring(w) .. ", " .. tostring(h) .. ", " .. tostring(color) .. ", " .. tostring(alpha) .. ") = " .. tostring(res));
+        --local idx = tostring(res);
+        --local ss = ">>>gr:box(" .. tostring(w) .. ", " .. tostring(h) .. ", " .. tostring(color) .. ", " .. tostring(alpha) .. ") = " .. tostring(res)
+        --log:dbg(ss);
+        --s.diff = s.diff + 1;
+        --s.sprs[idx] = ss;
         return res;
     end;
     load = function(s, file_name)
         local res = sprite.load(file_name);
-        --log:dbg("gr:load(" .. file_name .. ") = " .. tostring(res));
+        --local idx = tostring(res);
+        --local ss = ">>>gr:load(" .. file_name .. ") = " .. tostring(res);
+        --log:dbg(ss);
+        --s.diff = s.diff + 1;
+        --s.sprs[idx] = ss;
         return res;
     end;
     size = function(s, spr)
@@ -165,6 +182,14 @@ gr = obj {
     end;
     free = function(s, spr)
         --log:dbg("gr:free(" .. tostring(spr) .. ");");
+        --s.diff = s.diff - 1;
+        --log:dbg("diff = " .. tostring(s.diff));
+        --s.sprs[tostring(spr)] = nil;
+        --for k, v in pairs(s.sprs) do
+        --    if v then
+        --        log:err(v);
+        --    end
+        --end
         sprite.free(spr);
     end;
     draw = function(s, src_spr, dst_spr, x, y)
@@ -193,12 +218,20 @@ gr = obj {
     end;
     scale = function(s, spr, xs, ys, smooth)
         local res = sprite.scale(spr, xs, ys, smooth);
+        --local idx = tostring(res);
+        --local ss = "gr:scale(" .. tostring(spr) .. ", " .. tostring(xs) .. ", " .. tostring(ys) .. ", " .. tostring(smooth) .. ") = " .. tostring(res);
         --log:dbg("gr:scale(" .. tostring(spr) .. ", " .. tostring(xs) .. ", " .. tostring(ys) .. ", " .. tostring(smooth) .. ") = " .. tostring(res));
+        --s.diff = s.diff + 1;
+        --s.sprs[idx] = ss;
         return res;
     end;
     text = function(s, font, text, col, style)
         local res = sprite.text(font, text, col, style);
-        --log:dbg("gr:text(" .. text .. ") = " .. tostring(res));
+        --local idx = tostring(res);
+        --local ss = "gr:text(" .. text .. ") = " .. tostring(res);
+        --log:dbg(ss);
+        --s.diff = s.diff + 1;
+        --s.sprs[idx] = ss;
         return res;
     end;
     font = function(s, font_path, size)
@@ -577,7 +610,7 @@ vn = obj {
             vn:start();
         end
     end;
-    preload_effect = function(s, image, startFrame, maxStep, fromStop, maxPreload, callback_to_run_after, do_not_show_label, load_once)
+    preload_effect = function(s, image, startFrame, maxStep, fromStop, maxPreload, callback_to_run_after, do_not_show_label, loadOnce)
         local prefix, extension = s:split_url(image);
         if (s.load_once_sprite_keys[prefix]) then
             if callback_to_run_after then
@@ -592,8 +625,8 @@ vn = obj {
             if not maxPreload then
                 maxPreload = startFrame + 2;
             end
-            local v = { pic = image, nam = image, start = startFrame, max_step = maxStep, from_stop = fromStop };
-            s:load_effect(v, load_once);
+            local v = { pic = image, nam = image, start = startFrame, max_step = maxStep, from_stop = fromStop, load_once = loadOnce };
+            s:load_effect(v);
             for i = startFrame,maxPreload do
                 v.spr[i]:val();
             end
@@ -620,12 +653,13 @@ vn = obj {
         end
         return string.format(".%04d-%04d", mstl, msth - 1), mstIdx;
     end;
-    load_effect = function(s, v, load_once)
+    load_effect = function(s, v)
         local ss = s;
         if v.spr == nil then v.spr = {}; end;
         -- Will return nils if v is sprite
         local prefix, extension = s:split_url(v.pic);
-        if load_once then
+        if v.preserved or v.load_once then
+            log:dbg(prefix .. " should be preserved");
             s.load_once_sprite_keys[prefix] = true;
         end
         local meta, milestones, bgcolors = s:read_meta(prefix);
@@ -634,7 +668,6 @@ vn = obj {
         log:dbg("Loading effect " .. v.nam .. "; start = " .. start .. "; maxstep = " .. maxstep);
         for sprStep = start, maxstep do
             v.spr[sprStep] = {
-                was_loaded = false,
                 preloaded_effect = false,
                 alpha = 255,
                 scale = 1.0,
@@ -665,7 +698,7 @@ vn = obj {
                     end
                     if ss:file_exists(v.pic) then
                         if sprStep == ss:get_start(v) then
-                            return s:load_file(v.pic);
+                            return s:load_file(v.pic, prefix);
                         elseif sprStep > ss:get_start(v) then
                             v.spr[ss:get_start(v)]:val();
                             return v.spr[ss:get_start(v)].origin;
@@ -708,7 +741,6 @@ vn = obj {
                         end
                     end
                     if loaded then
-                        s.was_loaded = true;
                         if not ss.sprite_cache[key] then
                             ss.sprite_cache[key] = {};
                         end
@@ -821,26 +853,24 @@ vn = obj {
                     return base_spr;
                 end,
                 free = function(s)
-                    if s.was_loaded and s.origin then
-                        if s.preloaded_effect and s.cache then
-                            -- If effect was preloaded, then some additional sprite was created (via gr:scale, gr:alpha etc).
-                            -- It should be freed. If this sprite will be shown again, then origin can be restored from the sprite_cache,
-                            -- but this local cache will be recreated.
-                            gr:free(s.cache);
-                        end
-                        if ss.nocache then
-                            -- Currently this code will not be executed, because cache is always used
-                            gr:free(s.origin);
-                        end
-                        s.cache = nil;
-                        s.origin = nil;
+                    if s.preloaded_effect and s.cache then
+                        -- If effect was preloaded, then some additional sprite was created (via gr:scale, gr:alpha etc).
+                        -- It should be freed. If this sprite will be shown again, then origin can be restored from the sprite_cache,
+                        -- but this local cache will be recreated.
+                        gr:free(s.cache);
                     end
+                    if ss.nocache and s.origin then
+                        -- Currently this code will not be executed, because cache is always used
+                        gr:free(s.origin);
+                    end
+                    s.cache = nil;
+                    s.origin = nil;
                 end
             };
         end
     end;
     free_effect = function(s, v)
-        for i, vv in ipairs(v.spr) do
+        for i, vv in pairs(v.spr) do
             vv:free();
         end
         local gob = s:gobf(v);
@@ -882,9 +912,10 @@ vn = obj {
         local load_once_cache_data = {};
         for k, w in pairs(s.sprite_cache) do
             if s.load_once_sprite_keys[k] then
+                log:dbg(k .. " is loaded once or preserved");
                 load_once_cache[k] = w;
             else
-                for i, ss in ipairs(w) do
+                for i, ss in pairs(w) do
                     if not ss.loaded then
                         gr:free(ss);
                     end
