@@ -84,12 +84,14 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String COLLAPSABLE_FILE_NAME = "collapsable";
     private static final String MVDIRECTION_FILE_NAME = "mvdirection";
     private static final String EFFECT_FILE_NAME = "effect";
+    private static final String START_FRAME_FILE_NAME = "startframe";
     private static final String MAX_FRAME_FILE_NAME = "maxframe";
     private static final String PRELOAD_FRAMES_FILE_NAME = "preloadf";
     private static final String COORDSOR_FILE_NAME = "coordsor";
     private static final String CLEARUTT_FILE_NAME = "clearutt";
     private static final String ACTONKEY_FILE_NAME = "actonkey";
     private static final String CACHETEXT_FILE_NAME = "cachetxt";
+    private static final String LOOPED_FILE_NAME = "looped";
     private static final String MORPH_OVER_FILE_NAME = "morphover";
     private static final String MORPH_OUT_FILE_NAME = "morphout";
     private static final String OFFSET_FILE_NAME = "offset";
@@ -114,12 +116,14 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private boolean m_collapsable = DEFAULT_COLLAPSABLE;
     private MovementDirection m_movementDirection = DEFAULT_MOVEMENT_DIRECTION;
     private Effect m_effect = DEFAULT_EFFECT;
+    private int m_startFrame = DEFAULT_START_FRAME;
     private int m_maxFrame = DEFAULT_MAX_FRAME;
     private int m_preloadFrames = DEFAULT_PRELOAD_FRAMES;
     private CoordsOrigin m_coordsOrigin = CoordsOrigin.LeftTop;
     private boolean m_clearUnderTooltip = DEFAULT_CLEAR_UNDER_TOOLTIP;
     private boolean m_actOnKey = DEFAULT_ACT_ON_KEY;
     private boolean m_cacheText = DEFAULT_CACHE_TEXT;
+    private boolean m_looped = DEFAULT_LOOPED;
     private String m_morphOverId = DEFAULT_MORPH_OVER_ID;
     private String m_morphOutId = DEFAULT_MORPH_OUT_ID;
     private String m_offset;
@@ -177,12 +181,14 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         m_offset = source.getOffset();
         m_movementDirection = source.getMovementDirection();
         m_effect = source.getEffect();
+        m_startFrame = source.getStartFrame();
         m_maxFrame = source.getMaxFrame();
         m_preloadFrames = source.getPreloadFrames();
         m_coordsOrigin = source.getCoordsOrigin();
         m_clearUnderTooltip = source.isClearUnderTooltip();
         m_actOnKey = source.isActOnKey();
         m_cacheText = source.isCacheText();
+        m_looped = source.isLooped();
         m_morphOverId = source.getMorphOverId();
         m_morphOutId = source.getMorphOutId();
         m_takable = source.isTakable();
@@ -416,6 +422,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public int getStartFrame() {
+        return m_startFrame;
+    }
+
+    public void setStartFrame(int startFrame) {
+        m_startFrame = startFrame;
+    }
+
+    @Override
     public int getMaxFrame() {
         return m_maxFrame;
     }
@@ -467,6 +482,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
 
     public void setCacheText(boolean cacheText) {
         m_cacheText = cacheText;
+    }
+
+    @Override
+    public boolean isLooped() {
+        return m_looped;
+    }
+
+    public void setLooped(boolean looped) {
+        m_looped = looped;
     }
 
     public String getMorphOverId() {
@@ -716,6 +740,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(
                     objDir,
+                    START_FRAME_FILE_NAME,
+                    String.valueOf(m_startFrame),
+                    String.valueOf(DEFAULT_START_FRAME)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
                     MAX_FRAME_FILE_NAME,
                     String.valueOf(m_maxFrame),
                     String.valueOf(DEFAULT_MAX_FRAME)
@@ -749,6 +779,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                     CACHETEXT_FILE_NAME,
                     String.valueOf(m_cacheText),
                     String.valueOf(DEFAULT_CACHE_TEXT)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
+                    LOOPED_FILE_NAME,
+                    String.valueOf(m_looped),
+                    String.valueOf(DEFAULT_LOOPED)
             );
             fileManipulator.writeOptionalString(
                     objDir,
@@ -964,6 +1000,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             default:
                 m_effect = Effect.None;
         }
+        m_startFrame = Integer.parseInt(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        START_FRAME_FILE_NAME,
+                        String.valueOf(DEFAULT_START_FRAME)
+                )
+        );
         m_maxFrame = Integer.parseInt(
                 FileManipulator.getOptionalFileAsString(
                         objDir,
@@ -1035,6 +1078,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         CACHETEXT_FILE_NAME,
                         String.valueOf(DEFAULT_CACHE_TEXT)
+                )
+        );
+        m_looped = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        LOOPED_FILE_NAME,
+                        String.valueOf(DEFAULT_LOOPED)
                 )
         );
         m_morphOverId = (

@@ -180,6 +180,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public int getStartFrame() {
+        return DEFAULT_START_FRAME;
+    }
+
+    @Override
     public int getMaxFrame() {
         return DEFAULT_MAX_FRAME;
     }
@@ -207,6 +212,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     @Override
     public boolean isCacheText() {
         return DEFAULT_CACHE_TEXT;
+    }
+
+    @Override
+    public boolean isLooped() {
+        return DEFAULT_LOOPED;
     }
 
     public String getMorphOverId() {

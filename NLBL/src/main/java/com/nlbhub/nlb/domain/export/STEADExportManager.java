@@ -630,7 +630,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean preserved, boolean loadOnce, boolean clearUnderTooltip, boolean actOnKey, boolean cacheText, String objDefaultTag) {
+    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean preserved, boolean loadOnce, boolean clearUnderTooltip, boolean actOnKey, boolean cacheText, boolean looped, String objDefaultTag) {
         StringBuilder result = new StringBuilder();
         switch (objType) {
             case STAT:
@@ -653,6 +653,9 @@ public class STEADExportManager extends TextExportManager {
                 if (cacheText) {
                     result.append("cache_text = true,").append(LINE_SEPARATOR);
                 }
+                if (looped) {
+                    result.append("looped = true,").append(LINE_SEPARATOR);
+                }
                 break;
             case GMENU:
                 result.append(" = gmenu {").append(LINE_SEPARATOR);
@@ -667,6 +670,9 @@ public class STEADExportManager extends TextExportManager {
                 }
                 if (cacheText) {
                     result.append("cache_text = true,").append(LINE_SEPARATOR);
+                }
+                if (looped) {
+                    result.append("looped = true,").append(LINE_SEPARATOR);
                 }
                 break;
             default:
@@ -727,11 +733,11 @@ public class STEADExportManager extends TextExportManager {
         }
     }
 
-    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, boolean hasParentObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin, int maxStep) {
+    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, boolean hasParentObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin, int startFrame, int maxStep) {
         boolean hasDefinedOffset = StringHelper.notEmpty(offsetString);
         String offset = (hasDefinedOffset && !hasParentObj) ? offsetString : "0,0";
         String pos = getPos(coordsOrigin, offset);
-        String steps = (effect == Obj.Effect.None) ? "" : "    maxStep = " + maxStep + "," + LINE_SEPARATOR + "    startFrame = 0," + LINE_SEPARATOR + "    curStep = 0," + LINE_SEPARATOR;
+        String steps = (effect == Obj.Effect.None) ? "" : "    maxStep = " + maxStep + "," + LINE_SEPARATOR + "    startFrame = " + startFrame + "," + LINE_SEPARATOR + "    curStep = " + startFrame + "," + LINE_SEPARATOR;
         if (effect != Obj.Effect.None) {
             String eff = effect.name().toLowerCase();
             switch (movementDirection) {
@@ -760,11 +766,11 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjPreload(int maxFrames, int preloadFrames) {
+    protected String decorateObjPreload(int startFrame, int maxFrames, int preloadFrames) {
         if (preloadFrames > 0) {
             return "    preload = function(s, room)" + LINE_SEPARATOR +
                     "        vn.hz = vn.hz_preloaded;" + LINE_SEPARATOR +
-                    "        vn:preload_effect(s:pic(), 0, " + maxFrames + ", 0, " + preloadFrames + ", function()" + LINE_SEPARATOR +
+                    "        vn:preload_effect(s:pic(), " + startFrame + ", " + maxFrames + ", " + startFrame + ", " + preloadFrames + ", function()" + LINE_SEPARATOR +
                     "            vn:gshow(s);" + LINE_SEPARATOR +
                     "            if room then vn:geom(8, 864, 1904, 184, 'dissolve', 240, function() room.autos(room); vn.hz = vn.hz_onthefly; end); end;" + LINE_SEPARATOR +
                     "        end, false, s.load_once);" + LINE_SEPARATOR +

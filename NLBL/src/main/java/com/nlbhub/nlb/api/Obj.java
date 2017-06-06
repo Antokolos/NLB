@@ -74,6 +74,7 @@ public interface Obj extends NodeItem {
     public static final boolean DEFAULT_CLEAR_UNDER_TOOLTIP = false;
     public static final boolean DEFAULT_ACT_ON_KEY = false;
     public static final boolean DEFAULT_CACHE_TEXT = false;
+    public static final boolean DEFAULT_LOOPED = false;
     public static final String DEFAULT_MORPH_OVER_ID = Constants.EMPTY_STRING;
     public static final String DEFAULT_MORPH_OUT_ID = Constants.EMPTY_STRING;
     public static final String DEFAULT_OFFSET = Constants.EMPTY_STRING;
@@ -83,6 +84,7 @@ public interface Obj extends NodeItem {
     public static final String DEFAULT_CONTAINER_ID = Constants.EMPTY_STRING;
     public static final MovementDirection DEFAULT_MOVEMENT_DIRECTION = MovementDirection.None;
     public static final Effect DEFAULT_EFFECT = Effect.None;
+    public static final int DEFAULT_START_FRAME = 0;
     public static final int DEFAULT_MAX_FRAME = 8;
     public static final int DEFAULT_PRELOAD_FRAMES = 0;
 
@@ -134,6 +136,8 @@ public interface Obj extends NodeItem {
 
     public Effect getEffect();
 
+    public int getStartFrame();
+
     public int getMaxFrame();
 
     public int getPreloadFrames();
@@ -145,6 +149,8 @@ public interface Obj extends NodeItem {
     public boolean isActOnKey();
 
     public boolean isCacheText();
+
+    public boolean isLooped();
 
     public String getMorphOverId();
 

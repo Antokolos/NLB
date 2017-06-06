@@ -835,16 +835,16 @@ public abstract class ExportManager {
         blocks.setObjLabel(decorateObjLabel(obj.getId()));
         blocks.setObjComment(decorateObjComment(obj.getName()));
         // blocks obj default tag variable was set earlier
-        blocks.setObjStart(decorateObjStart(obj.getId(), getContainerRef(obj, exportData), objType, obj.isPreserved(), obj.isLoadOnce(), obj.isClearUnderTooltip(), obj.isActOnKey(), obj.isCacheText(), blocks.getObjDefaultTagVariable()));
+        blocks.setObjStart(decorateObjStart(obj.getId(), getContainerRef(obj, exportData), objType, obj.isPreserved(), obj.isLoadOnce(), obj.isClearUnderTooltip(), obj.isActOnKey(), obj.isLooped(), obj.isCacheText(), blocks.getObjDefaultTagVariable()));
         blocks.setObjName(decorateObjName(obj.getName(), obj.getId()));
         blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
         List<ImagePathData> imagePaths = getImagePaths(obj.getExternalHierarchy(), imageFileName, obj.isAnimatedImage(), obj.isAnimatedImage() && obj.isGraphical());
         int maxStep = (imagePaths.size() > 0 && imagePaths.get(0).getMaxFrameNumber() > 0) ? imagePaths.get(0).getMaxFrameNumber() : obj.getMaxFrame();
-        blocks.setObjPreload(decorateObjPreload(maxStep, obj.getPreloadFrames()));
+        blocks.setObjPreload(decorateObjPreload(obj.getStartFrame(), maxStep, obj.getPreloadFrames()));
         final String objImage = decorateObjImage(imagePaths, obj.isGraphical());
         boolean hasParentObj = (obj.getContainerType() == Obj.ContainerType.Obj);
-        final String objEffect = decorateObjEffect(obj.getOffset(), (hasParentObj) ? "0,0" : getRelativeCoords(obj), obj.isGraphical(), hasParentObj, obj.getMovementDirection(), obj.getEffect(), obj.getCoordsOrigin(), maxStep);
+        final String objEffect = decorateObjEffect(obj.getOffset(), (hasParentObj) ? "0,0" : getRelativeCoords(obj), obj.isGraphical(), hasParentObj, obj.getMovementDirection(), obj.getEffect(), obj.getCoordsOrigin(), obj.getStartFrame(), maxStep);
         blocks.setObjEffect(objEffect);
         Coords coords = getRelativeCoordsOrOffset(obj);
         blocks.setObjArm(obj.isGraphical() && hasParentObj ? decorateObjArm(coords.getLeft(), coords.getTop()) : "");
@@ -1536,6 +1536,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public int getStartFrame() {
+                return obj.getStartFrame();
+            }
+
+            @Override
             public int getMaxFrame() {
                 return obj.getMaxFrame();
             }
@@ -1563,6 +1568,11 @@ public abstract class ExportManager {
             @Override
             public boolean isCacheText() {
                 return obj.isCacheText();
+            }
+
+            @Override
+            public boolean isLooped() {
+                return obj.isLooped();
             }
 
             public String getMorphOverId() {
@@ -1738,7 +1748,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean preserved, boolean loadOnce, boolean clearUnderTooltip, boolean actOnKey, boolean cacheText, String objDefaultTag) {
+    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean preserved, boolean loadOnce, boolean clearUnderTooltip, boolean actOnKey, boolean cacheText, boolean looped, String objDefaultTag) {
         return EMPTY_STRING;
     }
 
@@ -1746,11 +1756,11 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, boolean hasParentObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin, int maxStep) {
+    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, boolean hasParentObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin, int startFrame, int maxStep) {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjPreload(int maxFrames, int preloadFrames) {
+    protected String decorateObjPreload(int startFrame, int maxFrames, int preloadFrames) {
         return EMPTY_STRING;
     }
 

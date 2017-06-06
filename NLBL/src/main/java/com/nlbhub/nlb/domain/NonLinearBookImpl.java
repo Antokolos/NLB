@@ -800,12 +800,14 @@ public class NonLinearBookImpl implements NonLinearBook {
         private String m_existingOffset;
         private Obj.MovementDirection m_existingMovementDirection;
         private Obj.Effect m_existingEffect;
+        private int m_existingStartFrame;
         private int m_existingMaxFrame;
         private int m_existingPreloadFrames;
         private Obj.CoordsOrigin m_existingCoordsOrigin;
         private boolean m_existingObjIsClearUnderTooltip;
         private boolean m_existingObjIsActOnKey;
         private boolean m_existingObjIsCacheText;
+        private boolean m_existingObjIsLooped;
         private boolean m_existingObjIsTakable;
         private boolean m_existingImageInScene;
         private boolean m_existingImageInInventory;
@@ -825,12 +827,14 @@ public class NonLinearBookImpl implements NonLinearBook {
         private String m_newOffset;
         private Obj.MovementDirection m_newMovementDirection;
         private Obj.Effect m_newEffect;
+        private int m_newStartFrame;
         private int m_newMaxFrame;
         private int m_newPreloadFrames;
         private Obj.CoordsOrigin m_newCoordsOrigin;
         private boolean m_newObjIsClearUnderTooltip;
         private boolean m_newObjIsActOnKey;
         private boolean m_newObjIsCacheText;
+        private boolean m_newObjIsLooped;
         private boolean m_newObjIsTakable;
         private boolean m_newImageInScene;
         private boolean m_newImageInInventory;
@@ -858,12 +862,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String offset,
                 final Obj.MovementDirection movementDirection,
                 final Obj.Effect effect,
+                final int startFrame,
                 final int maxFrame,
                 final int preloadFrames,
                 final Obj.CoordsOrigin coordsOrigin,
                 final boolean objIsClearUnderTooltip,
                 final boolean objIsActOnKey,
                 final boolean objIsCacheText,
+                final boolean objIsLooped,
                 final String objMorphOverName,
                 final String objMorphOutName,
                 final boolean objIsTakable,
@@ -893,12 +899,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                     offset,
                     movementDirection,
                     effect,
+                    startFrame,
                     maxFrame,
                     preloadFrames,
                     coordsOrigin,
                     objIsClearUnderTooltip,
                     objIsActOnKey,
                     objIsCacheText,
+                    objIsLooped,
                     objMorphOverName,
                     objMorphOutName,
                     objIsTakable,
@@ -930,12 +938,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String offset,
                 final Obj.MovementDirection movementDirection,
                 final Obj.Effect effect,
+                final int startFrame,
                 final int maxFrame,
                 final int preloadFrames,
                 final Obj.CoordsOrigin coordsOrigin,
                 final boolean objIsClearUnderTooltip,
                 final boolean objIsActOnKey,
                 final boolean objIsCacheText,
+                final boolean objIsLooped,
                 final String objMorphOverName,
                 final String objMorphOutName,
                 final boolean objIsTakable,
@@ -1019,12 +1029,14 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingOffset = obj.getOffset();
             m_existingMovementDirection = obj.getMovementDirection();
             m_existingEffect = obj.getEffect();
+            m_existingStartFrame = obj.getStartFrame();
             m_existingMaxFrame = obj.getMaxFrame();
             m_existingPreloadFrames = obj.getPreloadFrames();
             m_existingCoordsOrigin = obj.getCoordsOrigin();
             m_existingObjIsClearUnderTooltip = obj.isClearUnderTooltip();
             m_existingObjIsActOnKey = obj.isActOnKey();
             m_existingObjIsCacheText = obj.isCacheText();
+            m_existingObjIsLooped = obj.isLooped();
             m_existingObjIsTakable = obj.isTakable();
             m_existingImageInScene = obj.isImageInScene();
             m_existingImageInInventory = obj.isImageInInventory();
@@ -1044,12 +1056,14 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newOffset = offset;
             m_newMovementDirection = movementDirection;
             m_newEffect = effect;
+            m_newStartFrame = startFrame;
             m_newMaxFrame = maxFrame;
             m_newPreloadFrames = preloadFrames;
             m_newCoordsOrigin = coordsOrigin;
             m_newObjIsClearUnderTooltip = objIsClearUnderTooltip;
             m_newObjIsActOnKey = objIsActOnKey;
             m_newObjIsCacheText = objIsCacheText;
+            m_newObjIsLooped = objIsLooped;
             m_newObjIsTakable = objIsTakable;
             m_newImageInScene = imageInScene;
             m_newImageInInventory = imageInInventory;
@@ -1079,12 +1093,14 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setOffset(m_newOffset);
             m_obj.setMovementDirection(m_newMovementDirection);
             m_obj.setEffect(m_newEffect);
+            m_obj.setStartFrame(m_newStartFrame);
             m_obj.setMaxFrame(m_newMaxFrame);
             m_obj.setPreloadFrames(m_newPreloadFrames);
             m_obj.setCoordsOrigin(m_newCoordsOrigin);
             m_obj.setClearUnderTooltip(m_newObjIsClearUnderTooltip);
             m_obj.setActOnKey(m_newObjIsActOnKey);
             m_obj.setCacheText(m_newObjIsCacheText);
+            m_obj.setLooped(m_newObjIsLooped);
             m_obj.setTakable(m_newObjIsTakable);
             m_obj.setImageInScene(m_newImageInScene);
             m_obj.setImageInInventory(m_newImageInInventory);
@@ -1115,12 +1131,14 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setOffset(m_existingOffset);
             m_obj.setMovementDirection(m_existingMovementDirection);
             m_obj.setEffect(m_existingEffect);
+            m_obj.setStartFrame(m_existingStartFrame);
             m_obj.setMaxFrame(m_existingMaxFrame);
             m_obj.setPreloadFrames(m_existingPreloadFrames);
             m_obj.setCoordsOrigin(m_existingCoordsOrigin);
             m_obj.setClearUnderTooltip(m_existingObjIsClearUnderTooltip);
             m_obj.setActOnKey(m_existingObjIsActOnKey);
             m_obj.setCacheText(m_existingObjIsCacheText);
+            m_obj.setLooped(m_existingObjIsLooped);
             m_obj.setTakable(m_existingObjIsTakable);
             m_obj.setImageInScene(m_existingImageInScene);
             m_obj.setImageInInventory(m_existingImageInInventory);
@@ -1949,12 +1967,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.getOffset(),
                         obj.getMovementDirection(),
                         obj.getEffect(),
+                        obj.getStartFrame(),
                         obj.getMaxFrame(),
                         obj.getPreloadFrames(),
                         obj.getCoordsOrigin(),
                         obj.isClearUnderTooltip(),
                         obj.isActOnKey(),
                         obj.isCacheText(),
+                        obj.isLooped(),
                         (objMorphOver != null) ? objMorphOver.getName() : Constants.EMPTY_STRING,
                         (objMorphOut != null) ? objMorphOut.getName() : Constants.EMPTY_STRING,
                         obj.isTakable(),
@@ -2430,12 +2450,14 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String offset,
             final Obj.MovementDirection movementDirection,
             final Obj.Effect effect,
+            final int startFrame,
             final int maxFrame,
             final int preloadFrames,
             final Obj.CoordsOrigin coordsOrigin,
             final boolean objIsClearUnderTooltip,
             final boolean objIsActOnKey,
             final boolean objIsCacheText,
+            final boolean objIsLooped,
             final String objMorphOver,
             final String objMorphOut,
             final boolean objIsTakable,
@@ -2466,12 +2488,14 @@ public class NonLinearBookImpl implements NonLinearBook {
                         offset,
                         movementDirection,
                         effect,
+                        startFrame,
                         maxFrame,
                         preloadFrames,
                         coordsOrigin,
                         objIsClearUnderTooltip,
                         objIsActOnKey,
                         objIsCacheText,
+                        objIsLooped,
                         objMorphOver,
                         objMorphOut,
                         objIsTakable,
