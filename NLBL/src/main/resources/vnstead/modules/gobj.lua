@@ -30,6 +30,9 @@ gobj = function(v)
     if not v.load_once then
         v.load_once = false;
     end
+    if not v.looped then
+        v.looped = false;
+    end
     if not v.arm then
         v.arm = { [0] = { 0, 0 } };
     end

@@ -268,6 +268,7 @@ vn = obj {
         on = true,
         dbg = false,
         stopped = true,
+        finishing = false,
         partial_clear = true,
         speed = 500,
         fading = 8,
@@ -1319,6 +1320,7 @@ vn = obj {
             load_once = is_load_once,
             topmost = topmost,
             cache_text = cache_text,
+            looped = g.looped,
             dirty_draw = dirty_draw,
             last_rct = false
             --children = {} - actually can be set here, but I'll set it later, after possible hide() call
@@ -1912,6 +1914,7 @@ vn = obj {
             s._scene_effect = false
         end
         s.stopped = false;
+        s.finishing = false;
         s:process(true) -- draw frame to offscreen
         if s._scene_effect == 'fading' or s._scene_effect == 'fade' then
             theme.gfx.bg(s.blackscreen)
@@ -2052,6 +2055,7 @@ vn = obj {
                 v.step = s:get_init_step(v)
             end
         end
+        s.finishing = true;
         return r
     end;
     stop = function(s)
@@ -2137,6 +2141,11 @@ vn = obj {
                         v.step = s:get_max_step(v) - s:get_from_stop(v);
                     end
                     return true;
+                else
+                    if v.looped and not s.finishing then
+                        v.step = s:get_init_step(v);
+                        return true;
+                    end
                 end
             else
                 if (v.step > s:get_init_step(v)) then
@@ -2148,6 +2157,10 @@ vn = obj {
                         v.step = s:get_init_step(v);
                     end
                     return true;
+                else
+                    if v.looped and not s.finishing then
+                        v.step = s:get_max_step(v) - s:get_from_stop(v);
+                    end
                 end
             end
         end
