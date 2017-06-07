@@ -299,6 +299,7 @@ vn = obj {
         s.on = true;
     end,
     turnoff = function(s)
+        s:cleanup_scene();
         s._bg = false;
         s.on = false;
     end,
@@ -669,14 +670,9 @@ vn = obj {
         local meta, milestones, bgcolors = s:read_meta(prefix);
         local start = s:get_start(v);
         local maxstep = s:get_max_step(v);
-        local onam = prefix;
-        if not onam then
-            onam = tostring(v.pic);
-        end
         log:dbg("Loading effect " .. v.nam .. "; start = " .. start .. "; maxstep = " .. maxstep);
         for sprStep = start, maxstep do
-            v.spr[sprStep] = obj {
-                nam = onam .. "@" .. tostring(sprStep),
+            v.spr[sprStep] = {
                 preloaded_effect = false,
                 alpha = 255,
                 scale = 1.0,
@@ -1969,7 +1965,14 @@ vn = obj {
         s:commit();
     end;
     scene = function(s, bg, eff, preserve_cache)
-        local i, v
+        s:cleanup_scene(preserve_cache);
+        s._scene_effect = eff
+        -- if bg is nil, simple box sprite will be set
+        s:set_bg(bg)
+        s:clear_bg();
+        s:draw_notes();
+    end;
+    cleanup_scene = function(s, preserve_cache)
         local preserved_effects = {};
         local preserved_pending_effects = {};
         for i, v in ipairs(s._effects) do
@@ -1992,11 +1995,6 @@ vn = obj {
         if not preserve_cache then
             s:clear_cache();
         end
-        s._scene_effect = eff
-        -- if bg is nil, simple box sprite will be set
-        s:set_bg(bg)
-        s:clear_bg();
-        s:draw_notes();
     end;
     draw_notes = function(s)
         if s.dbg then
