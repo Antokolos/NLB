@@ -217,7 +217,12 @@ public class RootModulePage implements Page {
 
     @Override
     public boolean isGlobalAutowire() {
-        return false;
+        return DEFAULT_GLOBAL_AUTOWIRED;
+    }
+
+    @Override
+    public boolean isNoSave() {
+        return DEFAULT_NOSAVE;
     }
 
     @Override

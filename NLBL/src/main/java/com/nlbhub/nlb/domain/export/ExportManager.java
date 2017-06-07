@@ -461,7 +461,7 @@ public abstract class ExportManager {
         blocks.setPageNumber(decoratePageNumber(pageNumber));
         blocks.setPageComment(decoratePageComment(page.getCaption()));
         final String title = getNonEmptyTitle(nlb);
-        blocks.setPageCaption(decoratePageCaption(page.getCaption(), page.isUseCaption(), title));
+        blocks.setPageCaption(decoratePageCaption(page.getCaption(), page.isUseCaption(), title, page.isNoSave()));
         blocks.setNotes(decoratePageNotes(page.getNotes()));
         blocks.setModuleTitle(title);
         String imageFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_IMAGE_FILE_NAME: page.getImageFileName());
@@ -1266,6 +1266,11 @@ public abstract class ExportManager {
             @Override
             public boolean isGlobalAutowire() {
                 return page.isGlobalAutowire();
+            }
+
+            @Override
+            public boolean isNoSave() {
+                return page.isNoSave();
             }
 
             @Override
@@ -2767,7 +2772,7 @@ public abstract class ExportManager {
 
     protected abstract String decorateLinkModifications(final String modificationsText);
 
-    protected abstract String decoratePageCaption(String caption, boolean useCaption, String moduleTitle);
+    protected abstract String decoratePageCaption(String caption, boolean useCaption, String moduleTitle, boolean noSave);
 
     protected abstract String decoratePageNotes(String notes);
 

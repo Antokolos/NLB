@@ -267,7 +267,7 @@ public class QSPExportManager extends TextExportManager {
         return modificationsText;
     }
 
-    protected String decoratePageCaption(String caption, boolean useCaption, String moduleTitle) {
+    protected String decoratePageCaption(String caption, boolean useCaption, String moduleTitle, boolean noSave) {
         if (StringHelper.notEmpty(caption) && useCaption) {
             return (
                     "'" + caption.toUpperCase() + "'" + LINE_SEPARATOR

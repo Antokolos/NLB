@@ -488,6 +488,20 @@ listobj = {
     end;
 }
 
+game.enable_save = function()
+    if here().nosave then
+        return false
+    end
+    return true
+end
+
+game.enable_autosave = function()
+    if here().nosave then
+        return false
+    end
+    return true
+end
+
 stead.module_init(function()
     nlb:rst();
 end)

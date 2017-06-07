@@ -1621,13 +1621,16 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decoratePageCaption(String caption, boolean useCaption, String moduleTitle) {
+    protected String decoratePageCaption(String caption, boolean useCaption, String moduleTitle, boolean noSave) {
         StringBuilder result = new StringBuilder();
         String title = getNonEmptyTitle(moduleTitle);
         if (StringHelper.notEmpty(caption) && useCaption) {
             result.append("    nam = \"").append(caption).append("\",").append(LINE_SEPARATOR);
         } else {
             result.append("    nam = \"").append(title).append("\",").append(LINE_SEPARATOR);
+        }
+        if (noSave) {
+            result.append("    nosave = true,").append(LINE_SEPARATOR);
         }
         return result.toString();
     }

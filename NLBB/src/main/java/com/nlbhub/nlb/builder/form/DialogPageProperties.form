@@ -452,6 +452,12 @@
                                                   <text value="Set border color"/>
                                                 </properties>
                                               </component>
+                                              <component id="c4f9b" class="javax.swing.JCheckBox" binding="m_noSaveCheckBox">
+                                                <constraints/>
+                                                <properties>
+                                                  <text value="No Save"/>
+                                                </properties>
+                                              </component>
                                             </children>
                                           </grid>
                                         </children>

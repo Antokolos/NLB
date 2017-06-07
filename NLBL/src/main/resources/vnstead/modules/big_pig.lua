@@ -716,20 +716,6 @@ game_room = vnr {
     obj = { 'dice', 'next_turn_obj', 'increase_bet_obj' }
 };
 
-game.enable_save = function()
-        if here().nosave then
-                return false
-        end
-        return true
-end
-
-game.enable_autosave = function()
-        if here().nosave then
-                return false
-        end
-        return true
-end
-
 game.money = 150
 game.defaultbet = 50
 game.data = {

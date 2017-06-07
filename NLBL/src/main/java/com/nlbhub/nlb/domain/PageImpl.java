@@ -93,6 +93,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String AUTO_OUT_FILE_NAME = "auto_out";
     private static final String AUTOWIRE_IN_CONSTRID_FILE_NAME = "autoid";
     private static final String AUTOWIRE_OUT_CONSTRID_FILE_NAME = "autoutid";
+    private static final String NOSAVE_FILE_NAME = "nosave";
     private static final String GLOBAL_AUTOWIRE_FILE_NAME = "globauto";
 
     private static final String DEFAULT_MODULE_NAME_FORMAT = "%s's submodule";
@@ -129,6 +130,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private String m_autowireOutConstrId = DEFAULT_AUTOWIRE_OUT_CONSTR_ID;
 
     private boolean m_globalAutoWired = DEFAULT_GLOBAL_AUTOWIRED;
+    private boolean m_noSave = DEFAULT_NOSAVE;
     /**
      * Default contructor. It is needed for JAXB conversion, do not remove!
      * Do not use it for any other purpose!
@@ -173,6 +175,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         setAutowireInTexts(source.getAutowireInTexts());
         setAutowireOutTexts(source.getAutowireOutTexts());
         setGlobalAutoWired(source.isGlobalAutowire());
+        setNoSave(source.isNoSave());
         setAutoIn(source.isAutoIn());
         setAutoOut(source.isAutoOut());
         setAutowireInConstrId(source.getAutowireInConstrId());
@@ -501,6 +504,15 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     @Override
+    public boolean isNoSave() {
+        return m_noSave;
+    }
+
+    public void setNoSave(boolean noSave) {
+        m_noSave = noSave;
+    }
+
+    @Override
     public String getAutowireInText() {
         return m_autowireInText.get(getCurrentNLB().getLanguage());
     }
@@ -749,6 +761,12 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     String.valueOf(m_globalAutoWired),
                     String.valueOf(DEFAULT_GLOBAL_AUTOWIRED)
             );
+            fileManipulator.writeOptionalString(
+                    pageDir,
+                    NOSAVE_FILE_NAME,
+                    String.valueOf(m_noSave),
+                    String.valueOf(DEFAULT_NOSAVE)
+            );
             writeModOrderFile(fileManipulator, pageDir);
             writeModifications(fileManipulator, pageDir);
             writeNodeItemProperties(fileManipulator, pageDir, nonLinearBook);
@@ -944,6 +962,13 @@ public class PageImpl extends AbstractNodeItem implements Page {
                             String.valueOf(DEFAULT_GLOBAL_AUTOWIRED)
                     )
             );
+            m_noSave = "true".equals(
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            NOSAVE_FILE_NAME,
+                            String.valueOf(DEFAULT_NOSAVE)
+                    )
+            );
             if (isModuleExternal()) {
                 m_module.clear();
                 m_module.append(getCurrentNLB().findExternalModule(m_moduleName), true);
@@ -1004,6 +1029,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         result.setAutoIn(isAutoIn());
         result.setAutoOut(isAutoOut());
         result.setGlobalAutoWired(isGlobalAutowire());
+        result.setNoSave(isNoSave());
         result.setAutowireInConstrId(getAutowireInConstrId());
         result.setAutowireOutConstrId(getAutowireOutConstrId());
         result.setFill(getFill());

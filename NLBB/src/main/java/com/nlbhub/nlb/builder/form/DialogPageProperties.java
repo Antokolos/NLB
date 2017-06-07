@@ -48,15 +48,10 @@ import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.StringHelper;
 import org.jdesktop.swingx.JXImageView;
 import org.jdesktop.swingx.JXTable;
-import org.omg.CORBA.Object;
 
 import javax.swing.*;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 
@@ -132,6 +127,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JCheckBox m_externalCheckBox;
     private JTextField m_defaultTagTextField;
     private JComboBox m_themeComboBox;
+    private JCheckBox m_noSaveCheckBox;
 
     public DialogPageProperties(final MainFrame mainFrame, final NonLinearBookFacade nlbFacade, final Page page) {
         m_nlbFacade = nlbFacade;
@@ -402,6 +398,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_useCheckBox.setSelected(m_page.isUseCaption());
         m_useMPLCheckBox.setSelected(m_page.isUseMPL());
         m_globalAutowireCheckBox.setSelected(m_page.isGlobalAutowire());
+        m_noSaveCheckBox.setSelected(m_page.isNoSave());
         m_pageText.setText(page.getText());
 
         m_moduleNameTextField.setText(page.getModuleName());
@@ -492,6 +489,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 m_autowireInConstraintTextField.getText(),
                 m_autowireOutConstraintTextField.getText(),
                 m_globalAutowireCheckBox.isSelected(),
+                m_noSaveCheckBox.isSelected(),
                 ((LinksTableModelSwing) m_linksTable.getModel()).getTableModel()
         );
         m_nlbFacade.removeObserver(m_observerId);
@@ -876,6 +874,9 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_setBorderColorButton.setEnabled(false);
         m_setBorderColorButton.setText("Set border color");
         panel19.add(m_setBorderColorButton);
+        m_noSaveCheckBox = new JCheckBox();
+        m_noSaveCheckBox.setText("No Save");
+        panel19.add(m_noSaveCheckBox);
         final JPanel panel20 = new JPanel();
         panel20.setLayout(new GridBagLayout());
         panel20.setMinimumSize(new Dimension(56, 33));

@@ -612,7 +612,7 @@ public abstract class HypertextExportManager
     }
 
     @Override
-    protected String decoratePageCaption(String caption, boolean useCaption, String moduleTitle) {
+    protected String decoratePageCaption(String caption, boolean useCaption, String moduleTitle, boolean noSave) {
         if (StringHelper.notEmpty(caption) && useCaption) {
             return caption + getLineSeparator();
         } else {
