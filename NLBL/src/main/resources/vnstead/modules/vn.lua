@@ -295,9 +295,11 @@ vn = obj {
         return s.hz * 2;
     end,
     turnon = function(s)
+        s._bg = false;
         s.on = true;
     end,
     turnoff = function(s)
+        s._bg = false;
         s.on = false;
     end,
     screen = function(s)
@@ -669,7 +671,8 @@ vn = obj {
         local maxstep = s:get_max_step(v);
         log:dbg("Loading effect " .. v.nam .. "; start = " .. start .. "; maxstep = " .. maxstep);
         for sprStep = start, maxstep do
-            v.spr[sprStep] = {
+            v.spr[sprStep] = obj {
+                nam = prefix .. "@" .. tostring(sprStep),
                 preloaded_effect = false,
                 alpha = 255,
                 scale = 1.0,
