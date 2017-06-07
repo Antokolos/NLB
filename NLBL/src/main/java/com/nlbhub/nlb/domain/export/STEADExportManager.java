@@ -733,11 +733,11 @@ public class STEADExportManager extends TextExportManager {
         }
     }
 
-    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, boolean hasParentObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin, int startFrame, int maxStep) {
+    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, boolean hasParentObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin, int startFrame, int curStep, int maxStep) {
         boolean hasDefinedOffset = StringHelper.notEmpty(offsetString);
         String offset = (hasDefinedOffset && !hasParentObj) ? offsetString : "0,0";
         String pos = getPos(coordsOrigin, offset);
-        String steps = (effect == Obj.Effect.None) ? "" : "    maxStep = " + maxStep + "," + LINE_SEPARATOR + "    startFrame = " + startFrame + "," + LINE_SEPARATOR + "    curStep = " + startFrame + "," + LINE_SEPARATOR;
+        String steps = (effect == Obj.Effect.None) ? "" : "    maxStep = " + maxStep + "," + LINE_SEPARATOR + "    startFrame = " + startFrame + "," + LINE_SEPARATOR + "    curStep = " + curStep + "," + LINE_SEPARATOR;
         if (effect != Obj.Effect.None) {
             String eff = effect.name().toLowerCase();
             switch (movementDirection) {
@@ -951,8 +951,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjActEnd(boolean collapsable, int curStep) {
-        final String suffix = ((curStep > 0) ? "    curStep = " + curStep + "," + LINE_SEPARATOR : "");
+    protected String decorateObjActEnd(boolean collapsable) {
         final String prefix = (collapsable)
             ? (
                             "        local v = vn:glookup(stead.deref(s));" + LINE_SEPARATOR +
@@ -963,7 +962,7 @@ public class STEADExportManager extends TextExportManager {
                             "        end" + LINE_SEPARATOR +
                             "        vn:start();" + LINE_SEPARATOR
             ) : "";
-        return prefix + "    end," + LINE_SEPARATOR + suffix;
+        return prefix + "    end," + LINE_SEPARATOR;
     }
 
     @Override

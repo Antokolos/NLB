@@ -48,6 +48,8 @@ paginatorClick = function(x, y, a, b, c, d)
 
     if (paginator._last and here().walk_to) or not paginator._last then
         return paginatorKbd(true, 'space')
+    else
+        vn:finish();
     end
 end
 

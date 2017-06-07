@@ -333,6 +333,7 @@ vn = obj {
         s._bg = false;
         s._need_update = false;
         s._need_renew = false;
+        s.finishing = false;
         s._wf = 0;
     end;
     ini = function(s, load)
@@ -346,7 +347,7 @@ vn = obj {
             -- v.step = s:get_init_step(v); -- This causes bug with text when traversing through the auto links, text line is not shown after game load. It is better to just remove that :)
             s:load_effect(v);
         end
-        s:set_bg(s._bg);
+        s:set_bg(s._bg, true);
         s:draw_notes();
         s:add_all_missing_children();
         s:start();
@@ -1554,7 +1555,7 @@ vn = obj {
             return x + xarm, y + yarm;
         else
             if not idx then
-                idx = 0;
+                idx = s:get_init_step(v);
             end
             local vw, vh = s:size(v, idx)
             local xarm, yarm = s:abs_arm(v, idx)
@@ -1587,16 +1588,20 @@ vn = obj {
         end
     end;
 
-    set_bg = function(s, picture)
+    set_bg = function(s, picture, force)
         if not picture then
             s.bg_spr = gr:box(s.scr_w, s.scr_h, theme.get 'scr.col.bg');
             s._bg = false;
             return
         end
         if s.bg_spr then
-            local bg_spr = gr:load(picture);
-            gr:copy(bg_spr, s.bg_spr);
-            gr:free(bg_spr);
+            if force or s._bg ~= picture then
+                local bg_spr = gr:load(picture);
+                gr:copy(bg_spr, s.bg_spr);
+                gr:free(bg_spr);
+            else
+                log:dbg("Background " .. picture .. " is already set, doing nothing");
+            end
         else
             s.bg_spr = gr:load(picture)
         end
@@ -1609,12 +1614,14 @@ vn = obj {
     frame = function(s, v, idx, target, x, y, only_compute, free_immediately)
         if not v.spr or not v.spr[idx] then
             log:warn("nonexistent sprite when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
+            log:warn(debug.traceback());
             return s:empty_frame(0, 0);
         end
         local sp = v.spr[idx];
         local ospr = sp:val();
         if not ospr then -- Strange error when using resources in idf...
-        log:err("filesystem access problem when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
+            log:err("filesystem access problem when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
+            log:err(debug.traceback());
         return s:empty_frame(0, 0);
         end
         if not x then
@@ -2466,7 +2473,7 @@ vn = obj {
         local xx, yy = s:postoxy(v);
         local text, pos, clear_under_tooltip = s:gobf(v):tooltipfn();
         if text then
-            local sp = s:frame(v, 0);
+            local sp = s:frame(v, s:get_init_step(v));
             s:tooltip(v, text, pos, xx, yy, sp.w, sp.h, clear_under_tooltip, erase, hide);
         end
     end;

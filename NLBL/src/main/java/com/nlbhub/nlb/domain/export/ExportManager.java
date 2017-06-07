@@ -835,7 +835,7 @@ public abstract class ExportManager {
         blocks.setObjLabel(decorateObjLabel(obj.getId()));
         blocks.setObjComment(decorateObjComment(obj.getName()));
         // blocks obj default tag variable was set earlier
-        blocks.setObjStart(decorateObjStart(obj.getId(), getContainerRef(obj, exportData), objType, obj.isPreserved(), obj.isLoadOnce(), obj.isClearUnderTooltip(), obj.isActOnKey(), obj.isLooped(), obj.isCacheText(), blocks.getObjDefaultTagVariable()));
+        blocks.setObjStart(decorateObjStart(obj.getId(), getContainerRef(obj, exportData), objType, obj.isPreserved(), obj.isLoadOnce(), obj.isClearUnderTooltip(), obj.isActOnKey(), obj.isCacheText(), obj.isLooped(), blocks.getObjDefaultTagVariable()));
         blocks.setObjName(decorateObjName(obj.getName(), obj.getId()));
         blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
@@ -844,7 +844,8 @@ public abstract class ExportManager {
         blocks.setObjPreload(decorateObjPreload(obj.getStartFrame(), maxStep, obj.getPreloadFrames()));
         final String objImage = decorateObjImage(imagePaths, obj.isGraphical());
         boolean hasParentObj = (obj.getContainerType() == Obj.ContainerType.Obj);
-        final String objEffect = decorateObjEffect(obj.getOffset(), (hasParentObj) ? "0,0" : getRelativeCoords(obj), obj.isGraphical(), hasParentObj, obj.getMovementDirection(), obj.getEffect(), obj.getCoordsOrigin(), obj.getStartFrame(), maxStep);
+        int curStep = obj.getStartFrame() > 0 ? obj.getStartFrame() : getCurStep(obj.getEffect());
+        final String objEffect = decorateObjEffect(obj.getOffset(), (hasParentObj) ? "0,0" : getRelativeCoords(obj), obj.isGraphical(), hasParentObj, obj.getMovementDirection(), obj.getEffect(), obj.getCoordsOrigin(), obj.getStartFrame(), curStep, maxStep);
         blocks.setObjEffect(objEffect);
         Coords coords = getRelativeCoordsOrOffset(obj);
         blocks.setObjArm(obj.isGraphical() && hasParentObj ? decorateObjArm(coords.getLeft(), coords.getTop()) : "");
@@ -861,7 +862,7 @@ public abstract class ExportManager {
         blocks.setObjTak(decorateObjTak(obj.getName()));
         blocks.setObjInv(decorateObjInv(objType));
         blocks.setObjActStart(decorateObjActStart(expandVariables(StringHelper.getTextChunks(obj.getActText()))));
-        blocks.setObjActEnd(decorateObjActEnd(obj.isCollapsable(), getCurStep(obj.getEffect())));
+        blocks.setObjActEnd(decorateObjActEnd(obj.isCollapsable()));
         blocks.setObjUseStart(decorateObjUseStart());
         blocks.setObjUseEnd(decorateObjUseEnd());
         blocks.setObjEnd(decorateObjEnd());
@@ -1756,7 +1757,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, boolean hasParentObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin, int startFrame, int maxStep) {
+    protected String decorateObjEffect(String offsetString, String coordString, boolean graphicalObj, boolean hasParentObj, Obj.MovementDirection movementDirection, Obj.Effect effect, Obj.CoordsOrigin coordsOrigin, int startFrame, int curStep, int maxStep) {
         return EMPTY_STRING;
     }
 
@@ -1812,7 +1813,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjActEnd(boolean collapsable, int curStep) {
+    protected String decorateObjActEnd(boolean collapsable) {
         return EMPTY_STRING;
     }
 
