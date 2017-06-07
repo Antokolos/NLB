@@ -669,10 +669,14 @@ vn = obj {
         local meta, milestones, bgcolors = s:read_meta(prefix);
         local start = s:get_start(v);
         local maxstep = s:get_max_step(v);
+        local onam = prefix;
+        if not onam then
+            onam = tostring(v.pic);
+        end
         log:dbg("Loading effect " .. v.nam .. "; start = " .. start .. "; maxstep = " .. maxstep);
         for sprStep = start, maxstep do
             v.spr[sprStep] = obj {
-                nam = prefix .. "@" .. tostring(sprStep),
+                nam = onam .. "@" .. tostring(sprStep),
                 preloaded_effect = false,
                 alpha = 255,
                 scale = 1.0,
