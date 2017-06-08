@@ -434,8 +434,22 @@ vn = obj {
     end;
     test_click = function(s, x, y)
         for i, v in ipairs(s._effects) do
-            if not s:is_inactive_due_to_anim_state(v) and s:inside_spr(v, x, y) then
-                return true;
+            local active = not s:is_inactive_due_to_anim_state(v);
+            local gob = s:gobf(v);
+            local morphover = s:get_morph(v, true);
+            local morphout = s:get_morph(v, false);
+            local has_gob_click_handler = (gob and gob.onclick);
+            local has_morphover_click_handler = (morphover and morphover.onclick);
+            local has_morphout_click_handler = (morphout and morphout.onclick);
+            local has_gob_or_morph = has_gob_click_handler or has_morphover_click_handler or has_morphout_click_handler;
+            if active and has_gob_or_morph and s:enabled(v) and s:inside_spr(v, x, y) then
+                if has_gob_click_handler then
+                    return v, gob;
+                elseif has_morphover_click_handler then
+                    return v, morphover;
+                else -- has_morphout_click_handler, or else we won't get there at all
+                    return v, morphout;
+                end
             end
         end
         return false;
@@ -444,34 +458,27 @@ vn = obj {
         if not s.on then
             return;
         end
+        local v, g = s:test_click(x, y);
+        return s:click_sprite(v, g);
+    end;
+    click_sprite = function(s, v, g)
         local clickTargets = {};
         local clickParentNames = {};
-        for i, v in ipairs(s._effects) do
-            local active = not s:is_inactive_due_to_anim_state(v);
-            local gob = s:gobf(v);
-            local morphover = s:get_morph(v, true);
-            local has_gob_click_handler = (gob and gob.onclick);
-            local has_morph_click_handler = (morphover and morphover.onclick);
-            local has_gob_or_morph = has_gob_click_handler or has_morph_click_handler;
-            if active and has_gob_or_morph and s:enabled(v) and s:inside_spr(v, x, y) then
-                if has_gob_click_handler then
-                    clickTargets[v.nam] = gob;
-                else  -- has_morph_click_handler, or else we won't get there at all
-                clickTargets[v.nam] = morphover;
-                end
-                local hierarchy = s:get_hierarchy(v);
-                for kk, vv in pairs(hierarchy) do
-                    clickParentNames[vv] = true;
-                end
+        if v then
+            clickTargets[v.nam] = g;
+            local hierarchy = s:get_hierarchy(v);
+            for kk, vv in pairs(hierarchy) do
+                clickParentNames[vv] = true;
             end
         end
         -- The idea is to NOT call onclick handler for gobj, which have a child, for which onclick handler should be called too.
         for kkk, g in pairs(clickTargets) do
             if g.accept_child_clicks or not clickParentNames[kkk] then
                 g:onclick(s);
-                return;  -- Call onclick handler only for first suitable gobj
+                return true;  -- Call onclick handler only for first suitable gobj
             end
         end
+        return false;
     end;
     get_hierarchy = function(s, v)
         local vv = v;
