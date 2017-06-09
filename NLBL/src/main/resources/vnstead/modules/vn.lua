@@ -200,9 +200,9 @@ gr = obj {
         --log:dbg("gr:draw_ext()");
         sprite.draw(src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha);
     end;
-    copy = function(s, src_spr, dst_spr)
+    copy = function(s, src_spr, dst_spr, x, y)
         --log:dbg("gr:copy()");
-        sprite.copy(src_spr, dst_spr);
+        sprite.copy(src_spr, dst_spr, x, y);
     end;
     copy_ext = function(s, src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha)
         --log:dbg("gr:copy_ext()");
@@ -2416,6 +2416,13 @@ vn = obj {
                     end
                 end
                 if v.cache_text and not tmp_sprite then
+                    -- You can combine multiple text lines into single sprite using the following code
+                    -- I disabled this, because it is not much faster than multiple lines rendering
+                    --local combined = gr:blank(wmax, htotal);
+                    --s:combine_text_sprites(sprites, combined, 0, 0, true);
+                    --sprites = {};
+                    --stead.table.insert(sprites, {["spr"] = combined, ["w"] = wmax, ["h"] = htotal});
+
                     cached_sprites = {["sprites"] = sprites, ["htotal"] = htotal, ["wmax"] = wmax}
                     s.text_sprites_cache[cached_sprites_idx] = cached_sprites;
                 end
@@ -2437,17 +2444,19 @@ vn = obj {
                 s:clear(xpos, ycur, wmax, htotal, target);
                 return rct;
             end
-            for i, ss in ipairs(sprites) do
-                local hudSprite = s:scrap(ss.w, ss.h);
-                gr:compose_ext(target, xpos, ycur, ss.w, ss.h, hudSprite, 0, 0);
-                gr:compose(ss.spr, hudSprite, 0, 0);
-                gr:compose(hudSprite, target, xpos, ycur);
-                ycur = ycur + ss.h;
-                if not cached_sprites then
-                    gr:free(ss.spr);
-                end
-            end
+            s:combine_text_sprites(sprites, target, xpos, ycur, not cached_sprites);
             return rct;
+        end
+    end;
+    combine_text_sprites = function(s, sprites, target, x, y, freesp)
+        local xpos = x;
+        local ycur = y;
+        for i, ss in ipairs(sprites) do
+            gr:draw(ss.spr, target, xpos, ycur);
+            ycur = ycur + ss.h;
+            if freesp then
+                gr:free(ss.spr);
+            end
         end
     end;
     tooltips = function(s, x, y)
