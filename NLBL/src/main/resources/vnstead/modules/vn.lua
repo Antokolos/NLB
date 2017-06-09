@@ -48,6 +48,12 @@ vntimer = function(f, s, cmd, ...)
 
     vnticks_diff = get_ticks() - vnticks;
     renewticks_diff = get_ticks() - renewticks;
+    if vn.stopped then
+        -- NB: do not put heavy code in onover/onout
+        local x, y = stead.mouse_pos();
+        vn:over(x, y);
+        vn:out(x, y);
+    end
     if (vnticks_diff <= vn.hz) then
         if vn:preload() then
             return update_cursor_result;
@@ -56,13 +62,6 @@ vntimer = function(f, s, cmd, ...)
     vn.slowcpu = (vnticks_diff > vn:ticks_threshold());
     log:trace("vnticks_diff = " .. vnticks_diff);
     vnticks = get_ticks();
-
-    if vn.stopped then
-        -- NB: do not put heavy code in onover/onout
-        local x, y = stead.mouse_pos();
-        vn:over(x, y);
-        vn:out(x, y);
-    end
 
     if vn.pause_frames > 0 then
         vn.pause_frames = vn.pause_frames - 1;
