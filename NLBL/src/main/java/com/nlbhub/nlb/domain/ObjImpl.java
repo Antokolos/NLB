@@ -91,6 +91,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String CLEARUTT_FILE_NAME = "clearutt";
     private static final String ACTONKEY_FILE_NAME = "actonkey";
     private static final String CACHETEXT_FILE_NAME = "cachetxt";
+    private static final String NO_REDRAW_ON_ACT_FILE_NAME = "noactredraw";
     private static final String LOOPED_FILE_NAME = "looped";
     private static final String MORPH_OVER_FILE_NAME = "morphover";
     private static final String MORPH_OUT_FILE_NAME = "morphout";
@@ -124,6 +125,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private boolean m_actOnKey = DEFAULT_ACT_ON_KEY;
     private boolean m_cacheText = DEFAULT_CACHE_TEXT;
     private boolean m_looped = DEFAULT_LOOPED;
+    private boolean m_noRedrawOnAct = DEFAULT_NO_REDRAW_ON_ACT;
     private String m_morphOverId = DEFAULT_MORPH_OVER_ID;
     private String m_morphOutId = DEFAULT_MORPH_OUT_ID;
     private String m_offset;
@@ -189,6 +191,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         m_actOnKey = source.isActOnKey();
         m_cacheText = source.isCacheText();
         m_looped = source.isLooped();
+        m_noRedrawOnAct = source.isNoRedrawOnAct();
         m_morphOverId = source.getMorphOverId();
         m_morphOutId = source.getMorphOutId();
         m_takable = source.isTakable();
@@ -493,6 +496,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         m_looped = looped;
     }
 
+    @Override
+    public boolean isNoRedrawOnAct() {
+        return m_noRedrawOnAct;
+    }
+
+    public void setNoRedrawOnAct(boolean noRedrawOnAct) {
+        m_noRedrawOnAct = noRedrawOnAct;
+    }
+
     public String getMorphOverId() {
         return m_morphOverId;
     }
@@ -785,6 +797,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                     LOOPED_FILE_NAME,
                     String.valueOf(m_looped),
                     String.valueOf(DEFAULT_LOOPED)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
+                    NO_REDRAW_ON_ACT_FILE_NAME,
+                    String.valueOf(m_noRedrawOnAct),
+                    String.valueOf(DEFAULT_NO_REDRAW_ON_ACT)
             );
             fileManipulator.writeOptionalString(
                     objDir,
@@ -1085,6 +1103,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         LOOPED_FILE_NAME,
                         String.valueOf(DEFAULT_LOOPED)
+                )
+        );
+        m_noRedrawOnAct = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        NO_REDRAW_ON_ACT_FILE_NAME,
+                        String.valueOf(DEFAULT_NO_REDRAW_ON_ACT)
                 )
         );
         m_morphOverId = (

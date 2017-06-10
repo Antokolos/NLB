@@ -75,6 +75,7 @@ public interface Obj extends NodeItem {
     public static final boolean DEFAULT_ACT_ON_KEY = false;
     public static final boolean DEFAULT_CACHE_TEXT = false;
     public static final boolean DEFAULT_LOOPED = false;
+    public static final boolean DEFAULT_NO_REDRAW_ON_ACT = false;
     public static final String DEFAULT_MORPH_OVER_ID = Constants.EMPTY_STRING;
     public static final String DEFAULT_MORPH_OUT_ID = Constants.EMPTY_STRING;
     public static final String DEFAULT_OFFSET = Constants.EMPTY_STRING;
@@ -151,6 +152,8 @@ public interface Obj extends NodeItem {
     public boolean isCacheText();
 
     public boolean isLooped();
+
+    public boolean isNoRedrawOnAct();
 
     public String getMorphOverId();
 

@@ -817,6 +817,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private boolean m_existingObjIsActOnKey;
         private boolean m_existingObjIsCacheText;
         private boolean m_existingObjIsLooped;
+        private boolean m_existingObjIsNoRedrawOnAct;
         private boolean m_existingObjIsTakable;
         private boolean m_existingImageInScene;
         private boolean m_existingImageInInventory;
@@ -844,6 +845,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private boolean m_newObjIsActOnKey;
         private boolean m_newObjIsCacheText;
         private boolean m_newObjIsLooped;
+        private boolean m_newObjIsNoRedrawOnAct;
         private boolean m_newObjIsTakable;
         private boolean m_newImageInScene;
         private boolean m_newImageInInventory;
@@ -879,6 +881,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final boolean objIsActOnKey,
                 final boolean objIsCacheText,
                 final boolean objIsLooped,
+                final boolean objIsNoRedrawOnAct,
                 final String objMorphOverName,
                 final String objMorphOutName,
                 final boolean objIsTakable,
@@ -916,6 +919,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     objIsActOnKey,
                     objIsCacheText,
                     objIsLooped,
+                    objIsNoRedrawOnAct,
                     objMorphOverName,
                     objMorphOutName,
                     objIsTakable,
@@ -955,6 +959,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final boolean objIsActOnKey,
                 final boolean objIsCacheText,
                 final boolean objIsLooped,
+                final boolean objIsNoRedrawOnAct,
                 final String objMorphOverName,
                 final String objMorphOutName,
                 final boolean objIsTakable,
@@ -1046,6 +1051,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingObjIsActOnKey = obj.isActOnKey();
             m_existingObjIsCacheText = obj.isCacheText();
             m_existingObjIsLooped = obj.isLooped();
+            m_existingObjIsNoRedrawOnAct = obj.isNoRedrawOnAct();
             m_existingObjIsTakable = obj.isTakable();
             m_existingImageInScene = obj.isImageInScene();
             m_existingImageInInventory = obj.isImageInInventory();
@@ -1073,6 +1079,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newObjIsActOnKey = objIsActOnKey;
             m_newObjIsCacheText = objIsCacheText;
             m_newObjIsLooped = objIsLooped;
+            m_newObjIsNoRedrawOnAct = objIsNoRedrawOnAct;
             m_newObjIsTakable = objIsTakable;
             m_newImageInScene = imageInScene;
             m_newImageInInventory = imageInInventory;
@@ -1110,6 +1117,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setActOnKey(m_newObjIsActOnKey);
             m_obj.setCacheText(m_newObjIsCacheText);
             m_obj.setLooped(m_newObjIsLooped);
+            m_obj.setNoRedrawOnAct(m_newObjIsNoRedrawOnAct);
             m_obj.setTakable(m_newObjIsTakable);
             m_obj.setImageInScene(m_newImageInScene);
             m_obj.setImageInInventory(m_newImageInInventory);
@@ -1148,6 +1156,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setActOnKey(m_existingObjIsActOnKey);
             m_obj.setCacheText(m_existingObjIsCacheText);
             m_obj.setLooped(m_existingObjIsLooped);
+            m_obj.setNoRedrawOnAct(m_existingObjIsNoRedrawOnAct);
             m_obj.setTakable(m_existingObjIsTakable);
             m_obj.setImageInScene(m_existingImageInScene);
             m_obj.setImageInInventory(m_existingImageInInventory);
@@ -1985,6 +1994,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.isActOnKey(),
                         obj.isCacheText(),
                         obj.isLooped(),
+                        obj.isNoRedrawOnAct(),
                         (objMorphOver != null) ? objMorphOver.getName() : Constants.EMPTY_STRING,
                         (objMorphOut != null) ? objMorphOut.getName() : Constants.EMPTY_STRING,
                         obj.isTakable(),
@@ -2470,6 +2480,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final boolean objIsActOnKey,
             final boolean objIsCacheText,
             final boolean objIsLooped,
+            final boolean objIsNoRedrawOnAct,
             final String objMorphOver,
             final String objMorphOut,
             final boolean objIsTakable,
@@ -2508,6 +2519,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         objIsActOnKey,
                         objIsCacheText,
                         objIsLooped,
+                        objIsNoRedrawOnAct,
                         objMorphOver,
                         objMorphOut,
                         objIsTakable,

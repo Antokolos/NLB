@@ -880,6 +880,12 @@
                                           <text value="Looped"/>
                                         </properties>
                                       </component>
+                                      <component id="36a78" class="javax.swing.JCheckBox" binding="m_objIsNoRedrawOnAct">
+                                        <constraints/>
+                                        <properties>
+                                          <text value="Don't redraw on act"/>
+                                        </properties>
+                                      </component>
                                     </children>
                                   </grid>
                                   <grid id="a55ba" layout-manager="GridBagLayout">

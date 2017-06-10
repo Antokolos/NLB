@@ -219,6 +219,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
         return DEFAULT_LOOPED;
     }
 
+    @Override
+    public boolean isNoRedrawOnAct() {
+        return DEFAULT_NO_REDRAW_ON_ACT;
+    }
+
     public String getMorphOverId() {
         return Obj.DEFAULT_MORPH_OVER_ID;
     }

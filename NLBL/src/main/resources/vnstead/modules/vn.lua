@@ -49,13 +49,6 @@ vntimer = function(f, s, cmd, ...)
     vnticks_diff = get_ticks() - vnticks;
     renewticks_diff = get_ticks() - renewticks;
 
-    if vn.stopped then
-        -- NB: do not put heavy code in onover/onout
-        local x, y = stead.mouse_pos();
-        vn:over(x, y);
-        vn:out(x, y);
-    end
-
     if (vnticks_diff <= vn.hz) then
         if vn:preload() then
             return update_cursor_result;
@@ -64,6 +57,13 @@ vntimer = function(f, s, cmd, ...)
     vn.slowcpu = (vnticks_diff > vn:ticks_threshold());
     log:trace("vnticks_diff = " .. vnticks_diff);
     vnticks = get_ticks();
+
+    if vn.stopped then
+        -- NB: do not put heavy code in onover/onout
+        local x, y = stead.mouse_pos();
+        vn:over(x, y);
+        vn:out(x, y);
+    end
 
     if vn.pause_frames > 0 then
         vn.pause_frames = vn.pause_frames - 1;
@@ -438,18 +438,17 @@ vn = obj {
             local active = not s:is_inactive_due_to_anim_state(v);
             local gob = s:gobf(v);
             local morphover = s:get_morph(v, true);
-            local morphout = s:get_morph(v, false);
             local has_gob_click_handler = (gob and gob.onclick);
             local has_morphover_click_handler = (morphover and morphover.onclick);
-            local has_morphout_click_handler = (morphout and morphout.onclick);
-            local has_gob_or_morph = has_gob_click_handler or has_morphover_click_handler or has_morphout_click_handler;
+            local has_gob_or_morph = has_gob_click_handler or has_morphover_click_handler;
             if active and has_gob_or_morph and s:enabled(v) and s:inside_spr(v, x, y) then
-                if has_gob_click_handler then
-                    return v, gob;
-                elseif has_morphover_click_handler then
+                if has_morphover_click_handler then
+                    if not v.noactredraw then
+                        s:overf(v, false);
+                    end
                     return v, morphover;
-                else -- has_morphout_click_handler, or else we won't get there at all
-                    return v, morphout;
+                else -- has_gob_click_handler, or else we won't get there at all
+                    return v, gob;
                 end
             end
         end
@@ -476,6 +475,9 @@ vn = obj {
         for kkk, g in pairs(clickTargets) do
             if g.accept_child_clicks or not clickParentNames[kkk] then
                 g:onclick(s);
+                if not v.noactredraw then
+                    s:start();
+                end
                 return true;  -- Call onclick handler only for first suitable gobj
             end
         end
@@ -508,15 +510,17 @@ vn = obj {
         end
         return morph;
     end;
-    shapechange = function(s, v, is_over)
+    shapechange = function(s, v, is_over, start_immediately)
         local morph = s:get_morph(v, is_over);
         if not morph then
             return false;
         end
         s:hide(v);
         s:effect_int(nil, morph, is_over);
-        s:start();
-        return true;
+        if start_immediately then
+            s:start();
+        end
+        return morph;
     end;
     over = function(s, x, y, a, b, c, d)
         if not s.on then
@@ -525,16 +529,25 @@ vn = obj {
         for i, v in ipairs(s._effects) do
             local active = not s:is_inactive_due_to_anim_state(v);
             if active and s:gobf(v).onover and s:enabled(v) and not v.mouse_over and s:inside_spr(v, x, y) then
-                s:gobf(v):onover();
-                s:update_tooltip(v);
-                if not s:shapechange(v, true) then
-                    v.mouse_over = true;
-                    if s.stopped then
-                        s.stopped = false;
-                    end
-                end
+                s:overf(v, true);
             end
         end
+    end;
+    overf = function(s, v, start_immediately)
+        if v.mouse_over or not s:gobf(v).onover then
+            -- Double-check for safety, now you can call it anywhere
+            return;
+        end
+        s:gobf(v):onover();
+        s:update_tooltip(v);
+        local morph = s:shapechange(v, true, start_immediately);
+        if not morph then
+            v.mouse_over = true;
+            if s.stopped then
+                s.stopped = false;
+            end
+        end
+        return morph;
     end;
     out = function(s, x, y, a, b, c, d)
         if not s.on then
@@ -543,19 +556,25 @@ vn = obj {
         for i, v in ipairs(s._effects) do
             -- Don't doing not s:is_inactive_due_to_anim_state(v); check, because I want to always hide tooltip
             if s:gobf(v).onout and s:enabled(v) and v.mouse_over and not s:inside_spr(v, x, y) then
-                s:outf(v);
+                s:outf(v, true);
             end
         end
     end;
-    outf = function(s, v)
+    outf = function(s, v, start_immediately)
+        if not v.mouse_over or not s:gobf(v).onout then
+            -- Double-check for safety, now you can call it anywhere
+            return;
+        end
         s:gobf(v):onout();
         s:update_tooltip(v, true, true);
-        if not s:shapechange(v, false) then
+        local morph = s:shapechange(v, false, start_immediately);
+        if not morph then
             v.mouse_over = false;
             if s.stopped then
                 s.stopped = false;
             end
         end
+        return morph;
     end;
     request_full_clear = function(s)
         s.partial_clear = false;
@@ -1333,6 +1352,7 @@ vn = obj {
             topmost = topmost,
             cache_text = cache_text,
             looped = g.looped,
+            noactredraw = g.noactredraw,
             dirty_draw = dirty_draw,
             last_rct = false
             --children = {} - actually can be set here, but I'll set it later, after possible hide() call
@@ -2483,7 +2503,7 @@ vn = obj {
             s:clear_bg_under_sprite(v, true);
             -- simulate onout, if it is defined
             if gob.onout then
-                s:outf(v);
+                s:outf(v, true);
             end
             -- to redraw it when it will become enabled again
             v.hasmore = true;

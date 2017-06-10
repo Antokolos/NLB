@@ -33,6 +33,9 @@ gobj = function(v)
     if not v.looped then
         v.looped = false;
     end
+    if not v.noactredraw then
+        v.noactredraw = false;
+    end
     if not v.arm then
         v.arm = { [0] = { 0, 0 } };
     end

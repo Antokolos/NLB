@@ -134,6 +134,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JCheckBox m_objIsCacheText;
     private JCheckBox m_objIsLooped;
     private JSpinner m_spinnerStartFrame;
+    private JCheckBox m_objIsNoRedrawOnAct;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -416,6 +417,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objIsActOnKey.setSelected(obj.isActOnKey());
         m_objIsCacheText.setSelected(obj.isCacheText());
         m_objIsLooped.setSelected(obj.isLooped());
+        m_objIsNoRedrawOnAct.setSelected(obj.isNoRedrawOnAct());
         m_morphOver.setText(morphOver != null ? morphOver.getName() : "");
         m_morphOut.setText(morphOut != null ? morphOut.getName() : "");
         m_imageInScene.setSelected(obj.isImageInScene());
@@ -474,6 +476,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_objIsActOnKey.isSelected(),
                 m_objIsCacheText.isSelected(),
                 m_objIsLooped.isSelected(),
+                m_objIsNoRedrawOnAct.isSelected(),
                 m_morphOver.getText(),
                 m_morphOut.getText(),
                 m_objIsTakable.isSelected(),
@@ -1171,6 +1174,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objIsLooped = new JCheckBox();
         m_objIsLooped.setText("Looped");
         panel38.add(m_objIsLooped);
+        m_objIsNoRedrawOnAct = new JCheckBox();
+        m_objIsNoRedrawOnAct.setText("Don't redraw on act");
+        panel38.add(m_objIsNoRedrawOnAct);
         final JPanel panel39 = new JPanel();
         panel39.setLayout(new GridBagLayout());
         panel39.setMinimumSize(new Dimension(468, 33));
