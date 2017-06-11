@@ -443,9 +443,6 @@ vn = obj {
             local has_gob_or_morph = has_gob_click_handler or has_morphover_click_handler;
             if active and has_gob_or_morph and s:enabled(v) and s:inside_spr(v, x, y) then
                 if has_morphover_click_handler then
-                    if not v.noactredraw then
-                        s:overf(v, false);
-                    end
                     return v, morphover;
                 else -- has_gob_click_handler, or else we won't get there at all
                     return v, gob;
@@ -459,11 +456,16 @@ vn = obj {
             return;
         end
         local v, g = s:test_click(x, y);
-        return s:click_sprite(v, g);
+        if v then
+            return s:click_sprite(v, g);
+        end
     end;
     click_sprite = function(s, v, g)
         local clickTargets = {};
         local clickParentNames = {};
+        if not v.noactredraw then
+            s:overf(v, false);
+        end
         if v then
             clickTargets[v.nam] = g;
             local hierarchy = s:get_hierarchy(v);
@@ -474,9 +476,12 @@ vn = obj {
         -- The idea is to NOT call onclick handler for gobj, which have a child, for which onclick handler should be called too.
         for kkk, g in pairs(clickTargets) do
             if g.accept_child_clicks or not clickParentNames[kkk] then
+                s:invalidate_all();
                 g:onclick(s);
                 if not v.noactredraw then
                     s:start();
+                else
+                    s.stopped = false;
                 end
                 return true;  -- Call onclick handler only for first suitable gobj
             end
@@ -1925,6 +1930,10 @@ vn = obj {
         return v.last_rct;
     end;
     startcb = function(s, callback, effect)
+        if not s.on then
+            callback();
+            return;
+        end
         s.callback = callback;
         s:start(effect);
     end;

@@ -52,7 +52,6 @@ increase_bet_obj = menu {
                 end
             end
             vn:start();
-            vn:commit();
         end
     end
 }

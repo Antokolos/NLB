@@ -40,9 +40,14 @@ paginatorClick = function(x, y, a, b, c, d)
         return
     end
 
+    if clickInInvArea(x, y) then
+        -- Click in inventory area
+        return
+    end
+
     local v, g = vn:test_click(x, y);
-    if clickInInvArea(x, y) or v then
-        -- Click in inventory area or inside some gobj in vn
+    if v then
+        -- Click inside some gobj in vn
         vn:click_sprite(v, g);
         return
     end
