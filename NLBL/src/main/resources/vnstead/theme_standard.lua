@@ -16,7 +16,7 @@ theme.set('inv.gfx.down', 'gfx/adown.png');
 --theme.menu.gfx.button('gfx/menubtn.png', 1827, 0);
 
 theme.set('inv.mode', 'vertical');
-theme.set('scr.gfx.scalable', 1);
+--theme.set('scr.gfx.scalable', 5); -- was 1
 
 -- http://www.fonts2u.com/steinem-unicode.font
 theme.set('win.fnt.name', 'fonts/sans.ttf');

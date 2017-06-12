@@ -245,7 +245,7 @@ alt_btn_exit = gobj {
     morphout = "btn_exit",
     dsc = function(s) return _play_game_obj:txt(); end,
     ttpos = "s",
-    act = function(s) if vn.stopped then _play_game_obj:act(); end; end,
+    act = function(s) if vn.stopped then stop_sound(1); _play_game_obj:act(); end; end,
     enablefn = function(s) return enablefn2(s); end
 }
 
@@ -327,7 +327,7 @@ alt_btn_exit2 = gobj {
     eff = "right-bottom@-195,-10",
     morphout = "btn_exit2",
     dsc = function(s) return _play_game_obj:txt(); end,
-    act = function(s) if vn.stopped then _play_game_obj:act(); end; end,
+    act = function(s) if vn.stopped then stop_sound(1); _play_game_obj:act(); end; end,
     enablefn = function(s) return enablefn2(s); end
 }
 
