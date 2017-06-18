@@ -878,6 +878,9 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateObjText(String objId, String objName, boolean suppressDsc, String objText, boolean imageEnabled, boolean isGraphicalObj) {
         StringBuilder stringBuilder = new StringBuilder();
+        if (suppressDsc) {
+            stringBuilder.append("    suppress_dsc = true,").append(LINE_SEPARATOR);
+        }
         stringBuilder.append("    dscf = function(s) ");
         if (StringHelper.notEmpty(objText)) {
             stringBuilder.append("return \"");
@@ -934,6 +937,8 @@ public class STEADExportManager extends TextExportManager {
         return (
                 "    act = function(s)" + LINE_SEPARATOR +
                         "        s:acta();" + LINE_SEPARATOR +
+
+                        "        nlb:obj_dscs(s); " + LINE_SEPARATOR +
                         returnStatement +
                         "    end," + LINE_SEPARATOR +
                         "    actt = function(s)" + LINE_SEPARATOR +
@@ -1411,7 +1416,7 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decoratePDscOperation(String objVariableName) {
-        return "nlb:curloc().lasttext = nlb:curloc().lasttext..\" \".." + objVariableName + ":dscf(); p(" + objVariableName + ":dscf()); nlb:curloc().wastext = true;" + LINE_SEPARATOR;
+        return "nlb:pdscf(" + objVariableName + ");" + LINE_SEPARATOR;
     }
 
     @Override
