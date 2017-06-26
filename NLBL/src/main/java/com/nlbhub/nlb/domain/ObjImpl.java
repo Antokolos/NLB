@@ -283,6 +283,17 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         return m_commonToId;
     }
 
+    public Obj getCommonToObj(NonLinearBook nonLinearBook) {
+        if (!StringHelper.isEmpty(getCommonToId())) {
+            Variable commonTo = nonLinearBook.getVariableById(getCommonToId());
+            // TODO: Add cases with deleted pages/links/variables etc. to the unit test
+            if (!commonTo.isDeleted()) {
+                return nonLinearBook.getObjById(commonTo.getValue());
+            }
+        }
+        return null;
+    }
+
     public void setCommonToId(String commonToId) {
         m_commonToId = commonToId;
     }

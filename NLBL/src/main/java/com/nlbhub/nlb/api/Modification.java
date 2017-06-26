@@ -85,6 +85,7 @@ public interface Modification extends IdentifiableItem {
         PRN,
         DSC,
         PDSC,
+        PDSCS,
         ACT,
         ACTT,
         ACTF,

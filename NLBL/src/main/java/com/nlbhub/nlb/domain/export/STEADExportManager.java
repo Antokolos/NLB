@@ -937,8 +937,6 @@ public class STEADExportManager extends TextExportManager {
         return (
                 "    act = function(s)" + LINE_SEPARATOR +
                         "        s:acta();" + LINE_SEPARATOR +
-
-                        "        nlb:obj_dscs(s); " + LINE_SEPARATOR +
                         returnStatement +
                         "    end," + LINE_SEPARATOR +
                         "    actt = function(s)" + LINE_SEPARATOR +
@@ -977,12 +975,15 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjUseStart() {
+    protected String decorateObjUseStart(String commonObjId) {
         // Before use, execute possible act commands (without printing act text) -> s.actf(s)
+        boolean hasCmn = StringHelper.notEmpty(commonObjId);
+        String cmnUse = (hasCmn) ? "        " + decorateId(commonObjId) + ":usea(w, w);" + LINE_SEPARATOR : "";
         return (
                 "    use = function(s, w)" + LINE_SEPARATOR +
                         "        s:actf();" + LINE_SEPARATOR +
                         "        s:usea(w, w);" + LINE_SEPARATOR +
+                        cmnUse +
                         "    end," + LINE_SEPARATOR +
                         "    usea = function(s, w, ww)" + LINE_SEPARATOR +
                         "        s:usep(w, ww);" + LINE_SEPARATOR +
@@ -1417,6 +1418,17 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decoratePDscOperation(String objVariableName) {
         return "nlb:pdscf(" + objVariableName + ");" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decoratePDscsOperation(String objId, String objVar) {
+        if (objId != null) {
+            return "nlb:pdscs(" + decorateId(objId) + ");" + LINE_SEPARATOR;
+        } else if (objVar != null) {
+            return "nlb:pdscs(" + objVar + ");" + LINE_SEPARATOR;
+        } else {
+            return "nlb:pdscs(s);" + LINE_SEPARATOR;
+        }
     }
 
     @Override

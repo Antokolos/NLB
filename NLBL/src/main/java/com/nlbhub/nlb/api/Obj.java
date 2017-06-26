@@ -105,6 +105,8 @@ public interface Obj extends NodeItem {
 
     public String getCommonToId();
 
+    public Obj getCommonToObj(NonLinearBook nonLinearBook);
+
     public String getName();
 
     public String getImageFileName();

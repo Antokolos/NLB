@@ -810,18 +810,13 @@ public abstract class ExportManager {
         } else {
             blocks.setObjConstraint(EMPTY_STRING);
         }
-        if (!StringHelper.isEmpty(obj.getCommonToId())) {
-            Variable commonTo = exportData.getNlb().getVariableById(obj.getCommonToId());
-            // TODO: Add cases with deleted pages/links/variables etc. to the unit test
-            if (!commonTo.isDeleted()) {
-                blocks.setObjCommonTo(decorateObjCommonTo(commonTo.getValue()));
-                Obj commonToObj = exportData.getNlb().getObjById(commonTo.getValue());
-                List<String> decoratedContainedObjIds = getDecoratedContainedObjIds(commonToObj);
-                for (String containedObjId : decoratedContainedObjIds) {
-                    blocks.addContainedObjId(containedObjId);
-                }
-            } else {
-                blocks.setObjCommonTo(decorateObjCommonTo(EMPTY_STRING));
+
+        Obj commonToObj = obj.getCommonToObj(exportData.getNlb());
+        if (commonToObj != null) {
+            blocks.setObjCommonTo(decorateObjCommonTo(commonToObj.getId()));
+            List<String> decoratedContainedObjIds = getDecoratedContainedObjIds(commonToObj);
+            for (String containedObjId : decoratedContainedObjIds) {
+                blocks.addContainedObjId(containedObjId);
             }
         } else {
             blocks.setObjCommonTo(decorateObjCommonTo(EMPTY_STRING));
@@ -863,7 +858,7 @@ public abstract class ExportManager {
         blocks.setObjInv(decorateObjInv(objType));
         blocks.setObjActStart(decorateObjActStart(expandVariables(StringHelper.getTextChunks(obj.getActText()))));
         blocks.setObjActEnd(decorateObjActEnd(obj.isCollapsable()));
-        blocks.setObjUseStart(decorateObjUseStart());
+        blocks.setObjUseStart(decorateObjUseStart(commonToObj != null ? commonToObj.getId() : Constants.EMPTY_STRING));
         blocks.setObjUseEnd(decorateObjUseEnd());
         blocks.setObjEnd(decorateObjEnd());
         blocks.setObjObjStart(decorateObjObjStart());
@@ -1467,6 +1462,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public Obj getCommonToObj(NonLinearBook nonLinearBook) {
+                return obj.getCommonToObj(nonLinearBook);
+            }
+
+            @Override
             public String getName() {
                 return obj.getName();
             }
@@ -1827,7 +1827,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjUseStart() {
+    protected String decorateObjUseStart(String commonObjId) {
         return EMPTY_STRING;
     }
 
@@ -2511,6 +2511,11 @@ public abstract class ExportManager {
                     case PDSC:
                         stringBuilder.append(decoratePDscOperation(decorateAutoVar(expression.getValue())));
                         break;
+                    case PDSCS:
+                        final String pdscsArg = (expression != null) ? decorateAutoVar(expression.getValue()) : null;
+                        final String objIdToPdscs = (expression != null) ? exportData.getObjId(expression.getValue()) : null;
+                        stringBuilder.append(decoratePDscsOperation(objIdToPdscs, pdscsArg));
+                        break;
                     case ACT:
                         final String actingObjId = exportData.getObjId(expression.getValue());
                         stringBuilder.append(
@@ -2692,6 +2697,8 @@ public abstract class ExportManager {
     protected abstract String decorateDSCOperation(String resultVariableName, String dscObjVariable, String dscObjId);
 
     protected abstract String decoratePDscOperation(String objVariableName);
+
+    protected abstract String decoratePDscsOperation(String objId, String objVar);
 
     protected abstract String decorateActOperation(String actingObjVariable, String actingObjId);
 

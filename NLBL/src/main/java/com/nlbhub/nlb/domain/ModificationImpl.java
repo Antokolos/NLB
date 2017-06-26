@@ -66,6 +66,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
     private static final Set<Type> UNPARAMETRIZED_TYPES = new HashSet<Type>() {{
         add(Type.CNTNR);    // Can be without parameters
         add(Type.CLONE);    // Can be without parameters
+        add(Type.PDSCS);    // Can be without parameters
         add(Type.SSND);
         add(Type.WSND);
         add(Type.GETTAG);
@@ -176,7 +177,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 return true;
             default:
                 // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, IFHAVE, ADD, ADDU, ADDINV, ADDALL, ADDALLU,
-                // REMOVE, RMINV, CLEAR, CLRINV, SPUSH, WPUSH, PUSH, SINJECT, INJECT, SHUFFLE, PDSC, ACT, USE
+                // REMOVE, RMINV, CLEAR, CLRINV, SPUSH, WPUSH, PUSH, SINJECT, INJECT, SHUFFLE, PDSC, PDSCS, ACT, USE
                 // SSND, WSND, SND, ACHIEVE, GOTO
                 // It is funny, but RETURN operation currently does not actually return anything :)
                 return false;
@@ -294,6 +295,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.DSC;
         } else if (type.equals(Type.PDSC.name())) {
             m_type = Type.PDSC;
+        } else if (type.equals(Type.PDSCS.name())) {
+            m_type = Type.PDSCS;
         } else if (type.equals(Type.ACT.name())) {
             m_type = Type.ACT;
         } else if (type.equals(Type.ACTT.name())) {
@@ -474,6 +477,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "PDSC":
                 m_type = Type.PDSC;
+                break;
+            case "PDSCS":
+                m_type = Type.PDSCS;
                 break;
             case "ACT":
                 m_type = Type.ACT;

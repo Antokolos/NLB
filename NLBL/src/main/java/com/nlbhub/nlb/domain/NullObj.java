@@ -110,6 +110,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public Obj getCommonToObj(NonLinearBook nonLinearBook) {
+        return null;
+    }
+
+    @Override
     public String getName() {
         return Obj.DEFAULT_NAME;
     }

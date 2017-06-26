@@ -423,6 +423,12 @@ public abstract class HypertextExportManager
     }
 
     @Override
+    protected String decoratePDscsOperation(String objId, String objVar) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateActOperation(String actingObjVariable, String actingObjId) {
         // TODO: implement
         return EMPTY_STRING;

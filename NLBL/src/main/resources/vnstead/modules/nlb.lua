@@ -346,7 +346,7 @@ nlb = obj {
             s:curloc().lasttext = s:curloc().lasttext.." ".. ov:dscf(); p(ov:dscf()); s:curloc().wastext = true;
         end
     end;
-    obj_dscs = function(s, ob)
+    pdscs = function(s, ob)
         local objects = objs(ob);
         for i, o in ipairs(objects) do
             if o.suppress_dsc then
