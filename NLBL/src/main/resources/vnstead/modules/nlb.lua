@@ -343,13 +343,16 @@ nlb = obj {
     end;
     pdscf = function(s, ov)
         if ov and not ov:disabled() then
-            s:curloc().lasttext = s:curloc().lasttext.." ".. ov:dscf(); p(ov:dscf()); s:curloc().wastext = true;
+            local dscft = ov:dscf();
+            if not dscft then return; end;
+            s:curloc().lasttext = s:curloc().lasttext.." ".. dscft; p(dscft); s:curloc().wastext = true;
         end
     end;
     pdscs = function(s, ob)
         local objects = objs(ob);
         for i, o in ipairs(objects) do
             if o.suppress_dsc then
+                s:pdscs(o);
                 s:pdscf(o);
             end
         end

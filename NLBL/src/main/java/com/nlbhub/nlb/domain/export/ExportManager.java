@@ -814,9 +814,12 @@ public abstract class ExportManager {
         Obj commonToObj = obj.getCommonToObj(exportData.getNlb());
         if (commonToObj != null) {
             blocks.setObjCommonTo(decorateObjCommonTo(commonToObj.getId()));
-            List<String> decoratedContainedObjIds = getDecoratedContainedObjIds(commonToObj);
-            for (String containedObjId : decoratedContainedObjIds) {
-                blocks.addContainedObjId(containedObjId);
+            String containerId = obj.getContainerId();
+            if (!commonToObj.getId().equalsIgnoreCase(containerId)) {
+                List<String> decoratedContainedObjIds = getDecoratedContainedObjIds(commonToObj);
+                for (String containedObjId : decoratedContainedObjIds) {
+                    blocks.addContainedObjId(containedObjId);
+                }
             }
         } else {
             blocks.setObjCommonTo(decorateObjCommonTo(EMPTY_STRING));
@@ -854,7 +857,7 @@ public abstract class ExportManager {
         blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), expandVariables(StringHelper.getTextChunks(obj.getText())), hasImage && obj.isImageInScene(), obj.isGraphical()));
         blocks.setGraphical(obj.isGraphical());
         blocks.setTakable(obj.isTakable());
-        blocks.setObjTak(decorateObjTak(obj.getName()));
+        blocks.setObjTak(decorateObjTak(obj.getName(), commonToObj != null ? commonToObj.getId() : Constants.EMPTY_STRING));
         blocks.setObjInv(decorateObjInv(objType));
         blocks.setObjActStart(decorateObjActStart(expandVariables(StringHelper.getTextChunks(obj.getActText()))));
         blocks.setObjActEnd(decorateObjActEnd(obj.isCollapsable()));
@@ -1795,7 +1798,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjTak(final String objName) {
+    protected String decorateObjTak(final String objName, final String commonObjId) {
         return EMPTY_STRING;
     }
 

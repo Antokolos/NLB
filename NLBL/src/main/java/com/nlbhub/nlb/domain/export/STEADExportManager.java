@@ -850,7 +850,7 @@ public class STEADExportManager extends TextExportManager {
             if (StringHelper.notEmpty(dispText)) {
                 return "    disp = function(s) return \"" + dispText + "\" end," + LINE_SEPARATOR;
             } else {
-                return "    disp = function(s) end," + LINE_SEPARATOR;
+                return "    disp = function(s) return \"\" end," + LINE_SEPARATOR;
             }
 
         }
@@ -901,9 +901,12 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjTak(final String objName) {
+    protected String decorateObjTak(final String objName, final String commonObjId) {
+        boolean hasCmn = StringHelper.notEmpty(commonObjId);
+        String cmnTak = (hasCmn) ? "        " + decorateId(commonObjId) + ":tak();" + LINE_SEPARATOR : "";
         return (
                 "    tak = function(s)" + LINE_SEPARATOR +
+                        cmnTak +
                         "        return s.act(s);" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR
         );
