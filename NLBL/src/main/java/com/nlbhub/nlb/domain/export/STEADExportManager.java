@@ -850,7 +850,7 @@ public class STEADExportManager extends TextExportManager {
             if (StringHelper.notEmpty(dispText)) {
                 return "    disp = function(s) return \"" + dispText + "\" end," + LINE_SEPARATOR;
             } else {
-                return "    disp = function(s) return \"\" end," + LINE_SEPARATOR;
+                return "    disp = function(s) return false; end," + LINE_SEPARATOR;
             }
 
         }
