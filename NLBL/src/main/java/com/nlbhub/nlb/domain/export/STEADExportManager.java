@@ -984,7 +984,7 @@ public class STEADExportManager extends TextExportManager {
         String cmnUse = (hasCmn) ? "        " + decorateId(commonObjId) + ":usea(w, w);" + LINE_SEPARATOR : "";
         return (
                 "    use = function(s, w)" + LINE_SEPARATOR +
-                        "        s:actf();" + LINE_SEPARATOR +
+                        // "        s:actf();" + LINE_SEPARATOR + // TODO: Possible used somewhere
                         "        s:usea(w, w);" + LINE_SEPARATOR +
                         cmnUse +
                         "    end," + LINE_SEPARATOR +
