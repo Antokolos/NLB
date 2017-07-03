@@ -813,7 +813,6 @@ public abstract class ExportManager {
 
         Obj commonToObj = obj.getCommonToObj(exportData.getNlb());
         if (commonToObj != null) {
-            blocks.setObjCommonTo(decorateObjCommonTo(commonToObj.getId()));
             String containerId = obj.getContainerId();
             if (!commonToObj.getId().equalsIgnoreCase(containerId)) {
                 List<String> decoratedContainedObjIds = getDecoratedContainedObjIds(commonToObj);
@@ -821,8 +820,6 @@ public abstract class ExportManager {
                     blocks.addContainedObjId(containedObjId);
                 }
             }
-        } else {
-            blocks.setObjCommonTo(decorateObjCommonTo(EMPTY_STRING));
         }
         blocks.setObjModifications(
                 decorateObjModifications(
@@ -857,11 +854,12 @@ public abstract class ExportManager {
         blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), expandVariables(StringHelper.getTextChunks(obj.getText())), hasImage && obj.isImageInScene(), obj.isGraphical()));
         blocks.setGraphical(obj.isGraphical());
         blocks.setTakable(obj.isTakable());
-        blocks.setObjTak(decorateObjTak(obj.getName(), commonToObj != null ? commonToObj.getId() : Constants.EMPTY_STRING));
+        String commonObjId = commonToObj != null ? commonToObj.getId() : Constants.EMPTY_STRING;
+        blocks.setObjTak(decorateObjTak(obj.getName(), commonObjId));
         blocks.setObjInv(decorateObjInv(objType));
-        blocks.setObjActStart(decorateObjActStart(expandVariables(StringHelper.getTextChunks(obj.getActText()))));
+        blocks.setObjActStart(decorateObjActStart(expandVariables(StringHelper.getTextChunks(obj.getActText())), commonObjId));
         blocks.setObjActEnd(decorateObjActEnd(obj.isCollapsable()));
-        blocks.setObjUseStart(decorateObjUseStart(commonToObj != null ? commonToObj.getId() : Constants.EMPTY_STRING));
+        blocks.setObjUseStart(decorateObjUseStart(commonObjId));
         blocks.setObjUseEnd(decorateObjUseEnd());
         blocks.setObjEnd(decorateObjEnd());
         blocks.setObjObjStart(decorateObjObjStart());
@@ -1822,7 +1820,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjActStart(String actTextExpanded) {
+    protected String decorateObjActStart(String actTextExpanded, String commonObjId) {
         return EMPTY_STRING;
     }
 

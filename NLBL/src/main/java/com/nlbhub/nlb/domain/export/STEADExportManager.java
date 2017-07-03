@@ -312,6 +312,7 @@ public class STEADExportManager extends TextExportManager {
             }
             usepBuilder.append("        if wasnouses then nlb:curloc().lasttext = prevt; end;").append(LINE_SEPARATOR);
             usepBuilder.append("        end;").append(LINE_SEPARATOR);
+            usepBuilder.append("        return not wasnouses;").append(LINE_SEPARATOR);
             usepBuilder.append(objBlocks.getObjUseEnd());
             stringBuilder.append("        end;").append(LINE_SEPARATOR);
             stringBuilder.append("        if w.useda ~= nil then").append(LINE_SEPARATOR);
@@ -320,7 +321,6 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(objBlocks.getObjUseEnd());
             stringBuilder.append(usepBuilder);
         }
-        stringBuilder.append(objBlocks.getObjCommonTo());
         List<String> containedObjIds = objBlocks.getContainedObjIds();
         if (containedObjIds.size() != 0) {
             stringBuilder.append(objBlocks.getObjObjStart());
@@ -933,25 +933,39 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjActStart(String actTextExpanded) {
+    protected String decorateObjActStart(String actTextExpanded, String commonObjId) {
         final boolean actTextNotEmpty = StringHelper.notEmpty(actTextExpanded);
         final String returnStatement = (actTextNotEmpty) ? "" : "        return true;" + LINE_SEPARATOR;
         String actText = getActText(actTextNotEmpty);
-        return (
-                "    act = function(s)" + LINE_SEPARATOR +
-                        "        s:acta();" + LINE_SEPARATOR +
-                        returnStatement +
-                        "    end," + LINE_SEPARATOR +
-                        "    actt = function(s)" + LINE_SEPARATOR +
-                        "        return \"" + actTextExpanded + "\";" + LINE_SEPARATOR +
-                        "    end," + LINE_SEPARATOR +
-                        "    acta = function(s)" + LINE_SEPARATOR +
-                        actText +
-                        "        s:actf();" + LINE_SEPARATOR +
-                        "        s:actcmn();" + LINE_SEPARATOR +
-                        "    end," + LINE_SEPARATOR +
-                        "    actf = function(s)" + LINE_SEPARATOR
-        );
+
+        StringBuilder result = new StringBuilder();
+        boolean hasCmn = StringHelper.notEmpty(commonObjId);
+        result.append("    used = function(s, w)").append(LINE_SEPARATOR);
+        String id = hasCmn ? decorateId(commonObjId) : Constants.EMPTY_STRING;
+        if (hasCmn) {
+            result.append("        ").append("w:usea(").append(id).append(", s);").append(LINE_SEPARATOR);
+        }
+        result.append("    end,").append(LINE_SEPARATOR);
+        result.append("    act = function(s)").append(LINE_SEPARATOR);
+        result.append("        s:acta();").append(LINE_SEPARATOR);
+        result.append(returnStatement);
+        result.append("    end,").append(LINE_SEPARATOR);
+        result.append("    actt = function(s)").append(LINE_SEPARATOR);
+        result.append("        return \"").append(actTextExpanded).append("\";").append(LINE_SEPARATOR);
+        result.append("    end,").append(LINE_SEPARATOR);
+        result.append("    acta = function(s)").append(LINE_SEPARATOR);
+        result.append(actText).append("        s:actf();").append(LINE_SEPARATOR);
+        if (hasCmn) {
+            // Here we are calling actf of common object, replacing its argument by the current object
+            if (actTextNotEmpty) {
+                result.append("        ").append(id).append(".actf(s);").append(LINE_SEPARATOR);
+            } else {
+                result.append("        ").append(id).append(".acta(s);").append(LINE_SEPARATOR);
+            }
+        }
+        result.append("    end,").append(LINE_SEPARATOR);
+        result.append("    actf = function(s)").append(LINE_SEPARATOR);
+        return result.toString();
     }
 
     protected String getActText(boolean actTextNotEmpty) {
@@ -981,16 +995,17 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateObjUseStart(String commonObjId) {
         // Before use, execute possible act commands (without printing act text) -> s.actf(s)
         boolean hasCmn = StringHelper.notEmpty(commonObjId);
-        String cmnUse = (hasCmn) ? "        " + decorateId(commonObjId) + ":usea(w, w);" + LINE_SEPARATOR : "";
+        String cmnUse = (hasCmn) ? "        if was_nonempty_usetext then " + decorateId(commonObjId) + ":usef(w, w); else " + decorateId(commonObjId) + ":usea(w, w); end;" + LINE_SEPARATOR : "";
         return (
                 "    use = function(s, w)" + LINE_SEPARATOR +
                         // "        s:actf();" + LINE_SEPARATOR + // TODO: Possible used somewhere
-                        "        s:usea(w, w);" + LINE_SEPARATOR +
+                        "        local was_nonempty_usetext = s:usea(w, w);" + LINE_SEPARATOR +
                         cmnUse +
                         "    end," + LINE_SEPARATOR +
                         "    usea = function(s, w, ww)" + LINE_SEPARATOR +
-                        "        s:usep(w, ww);" + LINE_SEPARATOR +
+                        "        local was_nonempty_usetext = s:usep(w, ww);" + LINE_SEPARATOR +
                         "        s:usef(w, ww);" + LINE_SEPARATOR +
+                        "        return was_nonempty_usetext;" + LINE_SEPARATOR +
                         "    end," + LINE_SEPARATOR +
                         "    usef = function(s, w, ww)" + LINE_SEPARATOR
         );
