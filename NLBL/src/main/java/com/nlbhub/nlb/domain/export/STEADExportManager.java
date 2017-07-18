@@ -953,14 +953,20 @@ public class STEADExportManager extends TextExportManager {
         result.append("    actt = function(s)").append(LINE_SEPARATOR);
         result.append("        return \"").append(actTextExpanded).append("\";").append(LINE_SEPARATOR);
         result.append("    end,").append(LINE_SEPARATOR);
+        result.append("    actp = function(s)").append(LINE_SEPARATOR);
+        result.append(actText);
+        result.append("    end,").append(LINE_SEPARATOR);
         result.append("    acta = function(s)").append(LINE_SEPARATOR);
-        result.append(actText).append("        s:actf();").append(LINE_SEPARATOR);
+        result.append("        s:actp();").append(LINE_SEPARATOR);
+        result.append("        s:actf();").append(LINE_SEPARATOR);
         if (hasCmn) {
             // Here we are calling actf of common object, replacing its argument by the current object
+            // TODO: Try to fix this, replacing s parameter with another object is not very good idea
             if (actTextNotEmpty) {
                 result.append("        ").append(id).append(".actf(s);").append(LINE_SEPARATOR);
             } else {
-                result.append("        ").append(id).append(".acta(s);").append(LINE_SEPARATOR);
+                result.append("        ").append(id).append(":actp();").append(LINE_SEPARATOR);
+                result.append("        ").append(id).append(".actf(s);").append(LINE_SEPARATOR);
             }
         }
         result.append("    end,").append(LINE_SEPARATOR);
