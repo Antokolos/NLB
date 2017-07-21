@@ -4937,6 +4937,18 @@ public class NonLinearBookImpl implements NonLinearBook {
     @Override
     public Map<String, MediaExportParameters> getMediaExportParametersMap() {
         Map<String, MediaExportParameters> result = new HashMap<>();
+        result.putAll(getMediaExportParametersMapForModule());
+        for (Map.Entry<String, NonLinearBook> entry : getExternalModules().entrySet()) {
+            Map<String, MediaExportParameters> moduleResult = entry.getValue().getMediaExportParametersMap();
+            for (Map.Entry<String, MediaExportParameters> moduleEntry : moduleResult.entrySet()) {
+                result.put(entry.getKey() + "/" + moduleEntry.getKey(), moduleEntry.getValue());
+            }
+        }
+        return result;
+    }
+
+    public Map<String, MediaExportParameters> getMediaExportParametersMapForModule() {
+        Map<String, MediaExportParameters> result = new HashMap<>();
         List<MediaFile> imageFiles = getImageFiles();
         for (MediaFile mediaFile : imageFiles) {
             if (mediaFile.getMediaExportParameters().getPreset() != MediaExportParameters.Preset.DEFAULT) {
@@ -4955,7 +4967,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     @Override
     public Map<String, Boolean> getMediaFlagsMap() {
         Map<String, Boolean> result = new HashMap<>();
-        result.putAll(getMediaFlagsMapForModule(this));
+        result.putAll(getMediaFlagsMapForModule());
         for (Map.Entry<String, NonLinearBook> entry : getExternalModules().entrySet()) {
             Map<String, Boolean> moduleResult = entry.getValue().getMediaFlagsMap();
             for (Map.Entry<String, Boolean> moduleEntry : moduleResult.entrySet()) {
@@ -4965,7 +4977,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         return result;
     }
 
-    private Map<String, Boolean> getMediaFlagsMapForModule(NonLinearBook module) {
+    private Map<String, Boolean> getMediaFlagsMapForModule() {
         Map<String, Boolean> result = new HashMap<>();
         List<MediaFile> imageFiles = getImageFiles();
         for (MediaFile mediaFile : imageFiles) {

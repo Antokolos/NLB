@@ -2894,15 +2894,16 @@ public abstract class ExportManager {
             List<ImagePathData> result = new ArrayList<>();
             String[] fileNamesArr = imageFileNames.split(Constants.MEDIA_FILE_NAME_SEP);
             for (String fileName : fileNamesArr) {
-                MediaExportParameters mediaExportParameters = getMediaExportParameters(fileName);
+                MediaExportParameters mediaExportParameters = getMediaExportParameters(externalHierarchy, fileName);
                 result.add(getImagePath(externalHierarchy, fileName, animatedImage, removeFrameNumber, mediaExportParameters));
             }
             return result;
         }
     }
 
-    private MediaExportParameters getMediaExportParameters(String fileName) {
-        MediaExportParameters result = m_mediaExportParametersMap.get(fileName);
+    private MediaExportParameters getMediaExportParameters(String externalHierarchy, String fileName) {
+        String key = StringHelper.isEmpty(externalHierarchy) ? fileName : externalHierarchy + "/" + fileName;
+        MediaExportParameters result = m_mediaExportParametersMap.get(key);
         if (result != null) {
             return result;
         } else {
