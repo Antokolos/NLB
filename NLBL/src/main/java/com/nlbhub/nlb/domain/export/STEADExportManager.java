@@ -217,6 +217,7 @@ public class STEADExportManager extends TextExportManager {
             return "container = " + containerRef + ";";
         }
     }
+
     @Override
     protected String generateObjText(ObjBuildingBlocks objBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -903,11 +904,15 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateObjTak(final String objName, final String commonObjId) {
         boolean hasCmn = StringHelper.notEmpty(commonObjId);
-        String cmnTak = (hasCmn) ? "        " + decorateId(commonObjId) + ":tak();" + LINE_SEPARATOR : "";
+        String returnExpression = (
+                (hasCmn)
+                        ? "        nlb:addf(nil, " + decorateId(commonObjId) + ", false);" + LINE_SEPARATOR + "        return false;" + LINE_SEPARATOR  // Adding commonobj to inventory, analogous to ADDINV, and doing nothing for this object
+                        : "        return true;"
+        );
         return (
                 "    tak = function(s)" + LINE_SEPARATOR +
-                        cmnTak +
-                        "        return s.act(s);" + LINE_SEPARATOR +
+                        "        s.act(s);" + LINE_SEPARATOR +
+                        returnExpression +
                         "    end," + LINE_SEPARATOR
         );
     }
@@ -985,15 +990,15 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateObjActEnd(boolean collapsable) {
         final String prefix = (collapsable)
-            ? (
-                            "        local v = vn:glookup(stead.deref(s));" + LINE_SEPARATOR +
-                            "        if s.is_paused then" + LINE_SEPARATOR +
-                            "            vn:vpause(v, false);" + LINE_SEPARATOR +
-                            "        else" + LINE_SEPARATOR +
-                            "            vn:set_step(v, nil, not v.forward);" + LINE_SEPARATOR +
-                            "        end" + LINE_SEPARATOR +
-                            "        vn:start();" + LINE_SEPARATOR
-            ) : "";
+                ? (
+                "        local v = vn:glookup(stead.deref(s));" + LINE_SEPARATOR +
+                        "        if s.is_paused then" + LINE_SEPARATOR +
+                        "            vn:vpause(v, false);" + LINE_SEPARATOR +
+                        "        else" + LINE_SEPARATOR +
+                        "            vn:set_step(v, nil, not v.forward);" + LINE_SEPARATOR +
+                        "        end" + LINE_SEPARATOR +
+                        "        vn:start();" + LINE_SEPARATOR
+        ) : "";
         return prefix + "    end," + LINE_SEPARATOR;
     }
 
@@ -1279,7 +1284,7 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName, boolean unique) {
         return (
                 createListObj(destinationListVariableName) +
-                createListObj(sourceListVariableName) +
+                        createListObj(sourceListVariableName) +
                         "        nlb:addAll(s, " + ((destinationId != null) ? decorateId(destinationId) : "nil") +
                         ", " + ((destinationListVariableName != null) ? "(" + destinationListVariableName + " ~= nil) and " + destinationListVariableName + ".listnam or \"\"" : "nil") +
                         ", " + "(" + sourceListVariableName + " ~= nil) and " + sourceListVariableName + ".listnam or \"\"" +
@@ -1333,7 +1338,7 @@ public class STEADExportManager extends TextExportManager {
     protected String decoratePushOperation(String listVariableName, String objectId, String objectVar) {
         return (
                 createListObj(listVariableName) +
-                "        nlb:push(" +
+                        "        nlb:push(" +
                         listVariableName + ".listnam, " + ((objectId != null) ? decorateId(objectId) : objectVar) +
                         ");" + LINE_SEPARATOR
         );
