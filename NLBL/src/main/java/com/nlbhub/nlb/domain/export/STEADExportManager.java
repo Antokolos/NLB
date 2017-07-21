@@ -904,15 +904,20 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateObjTak(final String objName, final String commonObjId) {
         boolean hasCmn = StringHelper.notEmpty(commonObjId);
-        String returnExpression = (
-                (hasCmn)
-                        ? "        nlb:addf(nil, " + decorateId(commonObjId) + ", false);" + LINE_SEPARATOR + "        return false;" + LINE_SEPARATOR  // Adding commonobj to inventory, analogous to ADDINV, and doing nothing for this object
-                        : "        return true;"
-        );
+        StringBuilder returnExpression = new StringBuilder();
+        if (hasCmn) {
+            returnExpression.append("        local hasCmnTak = (").append(decorateId(commonObjId)).append(".tak ~= nil").append(");").append(LINE_SEPARATOR);
+            returnExpression.append("        if hasCmnTak then").append(LINE_SEPARATOR);
+            returnExpression.append("            nlb:addf(nil, ").append(decorateId(commonObjId)).append(", false);").append(LINE_SEPARATOR);  // Adding commonobj to inventory, analogous to ADDINV, and doing nothing for this object
+            returnExpression.append("        end").append(LINE_SEPARATOR);
+            returnExpression.append("        return not hasCmnTak;").append(LINE_SEPARATOR);
+        } else {
+            returnExpression.append("        return true;").append(LINE_SEPARATOR);
+        }
         return (
                 "    tak = function(s)" + LINE_SEPARATOR +
                         "        s.act(s);" + LINE_SEPARATOR +
-                        returnExpression +
+                        returnExpression.toString() +
                         "    end," + LINE_SEPARATOR
         );
     }
