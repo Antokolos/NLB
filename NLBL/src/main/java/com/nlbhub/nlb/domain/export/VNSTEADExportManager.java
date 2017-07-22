@@ -147,6 +147,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         stringBuilder.append("        local bg_img = s.bgimg(s);").append(getLineSeparator());
         final boolean imageBackground = pageBuildingBlocks.isImageBackground();
         // vn:scene should be called in all cases
+        stringBuilder.append("        nlb:revive();").append(getLineSeparator());
         stringBuilder.append("        vn:scene(bg_img);").append(getLineSeparator());
         stringBuilder.append("        local geomFuncNeedToCall = true;").append(getLineSeparator());
         if (pageBuildingBlocks.isHasGraphicalObjects()) {
