@@ -1902,7 +1902,7 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decoratePageTextEnd(String labelText, int pageNumber, Theme theme, boolean hasChoicesOrLeaf) {
         if (isVN(theme)) {
-            return m_vnsteadExportManager.decoratePageTextEnd(labelText, pageNumber, theme, true);
+            return m_vnsteadExportManager.decoratePageTextEnd(labelText, pageNumber, theme, hasChoicesOrLeaf);
         }
         return "    end," + LINE_SEPARATOR;
     }
