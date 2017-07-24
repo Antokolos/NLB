@@ -96,6 +96,7 @@ public class STEADExportManager extends TextExportManager {
 
         stringBuilder.append("require \"prefs\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"xact\"").append(LINE_SEPARATOR);
+        stringBuilder.append("require \"nouse\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"hideinv\"").append(LINE_SEPARATOR);
         stringBuilder.append("--require \"para\"").append(LINE_SEPARATOR);
         stringBuilder.append("require \"dash\"").append(LINE_SEPARATOR);
@@ -118,10 +119,10 @@ public class STEADExportManager extends TextExportManager {
 
         stringBuilder.append("--game.act = function() nlb:curloc().lasttext = 'Nothing happens.'; p(nlb:curloc().lasttext); nlb:curloc().wastext = true; end;").append(LINE_SEPARATOR);
         stringBuilder.append("--game.inv = function() nlb:curloc().lasttext = 'Hm... This is strange thing...'; p(nlb:curloc().lasttext); nlb:curloc().wastext = true; end;").append(LINE_SEPARATOR);
-        stringBuilder.append("--game.use = function() nlb:curloc().lasttext = 'Does not work...'; p(nlb:curloc().lasttext); nlb:curloc().wastext = true; end;").append(LINE_SEPARATOR);
+        stringBuilder.append("--game.nouse = function() nlb:curloc().lasttext = 'Does not work...'; p(nlb:curloc().lasttext); nlb:curloc().wastext = true; end;").append(LINE_SEPARATOR);
         stringBuilder.append("game.act = function() return true; end;").append(LINE_SEPARATOR);
         stringBuilder.append("game.inv = function() return true; end;").append(LINE_SEPARATOR);
-        stringBuilder.append("game.use = function() return true; end;").append(LINE_SEPARATOR);
+        stringBuilder.append("game.nouse = function() return true; end;").append(LINE_SEPARATOR);
         stringBuilder.append("game.forcedsc = true;").append(LINE_SEPARATOR);
 
         stringBuilder.append("f1 = font('fonts/STEINEMU.ttf', 32);").append(LINE_SEPARATOR);
@@ -322,6 +323,7 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(objBlocks.getObjUseEnd());
             stringBuilder.append(usepBuilder);
         }
+        stringBuilder.append(objBlocks.getObjNouse());
         List<String> containedObjIds = objBlocks.getContainedObjIds();
         if (containedObjIds.size() != 0) {
             stringBuilder.append(objBlocks.getObjObjStart());
@@ -981,6 +983,20 @@ public class STEADExportManager extends TextExportManager {
         }
         result.append("    end,").append(LINE_SEPARATOR);
         result.append("    actf = function(s)").append(LINE_SEPARATOR);
+        return result.toString();
+    }
+
+    @Override
+    protected String decorateObjNouse(String nouseTextExpanded) {
+        final boolean nouseTextEmpty = StringHelper.isEmpty(nouseTextExpanded);
+        if (nouseTextEmpty) {
+            return Constants.EMPTY_STRING;
+        }
+        StringBuilder result = new StringBuilder();
+        result.append("    nouse = function(s)").append(LINE_SEPARATOR);
+        result.append("        nlb:curloc().lasttext = \"").append(nouseTextExpanded).append("\"; nlb:curloc().wastext = true;").append(LINE_SEPARATOR);
+        result.append("        return nlb:curloc().lasttext;").append(LINE_SEPARATOR);
+        result.append("    end,").append(LINE_SEPARATOR);
         return result.toString();
     }
 

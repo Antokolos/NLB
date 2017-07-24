@@ -68,6 +68,7 @@ import java.util.Map;
 public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String TEXT_SUBDIR_NAME = "text";
     private static final String ACT_TEXT_SUBDIR_NAME = "acttext";
+    private static final String NOUSE_TEXT_SUBDIR_NAME = "nousetxt";
     private static final String VARID_FILE_NAME = "varid";
     private static final String CONSTRID_FILE_NAME = "constrid";
     private static final String COMMONTOID_FILE_NAME = "commonto";
@@ -111,6 +112,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private MultiLangString m_disp = DEFAULT_DISP;
     private MultiLangString m_text = DEFAULT_TEXT;
     private MultiLangString m_actText = DEFAULT_ACT_TEXT;
+    private MultiLangString m_nouseText = DEFAULT_NOUSE_TEXT;
     private boolean m_graphical = DEFAULT_GRAPHICAL;
     private boolean m_preserved = DEFAULT_PRESERVED;
     private boolean m_loadOnce = DEFAULT_LOAD_ONCE;
@@ -150,6 +152,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         } else if (
                 textMatches(m_text, contract)
                         || textMatches(m_actText, contract)
+                        || textMatches(m_nouseText, contract)
                         || textMatches(m_name, contract)
                         || textMatches(m_disp, contract)
                         || textMatches(m_imageFileName, contract)
@@ -176,6 +179,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         setDisps(source.getDisps());
         setTexts(source.getTexts());
         setActTexts(source.getActTexts());
+        setNouseTexts(source.getNouseTexts());
         m_graphical = source.isGraphical();
         m_preserved = source.isPreserved();
         m_loadOnce = source.isLoadOnce();
@@ -229,6 +233,16 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         return m_actText.get(getCurrentNLB().getLanguage());
     }
 
+    public void setNouseText(String nouseText) {
+        m_nouseText.put(getCurrentNLB().getLanguage(), nouseText);
+    }
+
+    @Override
+    @XmlElement(name = "nousetxt")
+    public String getNouseText() {
+        return m_nouseText.get(getCurrentNLB().getLanguage());
+    }
+
     @Override
     public MultiLangString getTexts() {
         return MultiLangString.createCopy(m_text);
@@ -240,6 +254,19 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
 
     public MultiLangString getActTexts() {
         return MultiLangString.createCopy(m_actText);
+    }
+
+    public void setActTexts(MultiLangString actText) {
+        m_actText = actText;
+    }
+
+    @Override
+    public MultiLangString getNouseTexts() {
+        return MultiLangString.createCopy(m_nouseText);
+    }
+
+    public void setNouseTexts(MultiLangString nouseText) {
+        m_nouseText = nouseText;
     }
 
     @Override
@@ -259,10 +286,6 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             return containerPage.getTheme();
         }
         return Theme.DEFAULT;
-    }
-
-    public void setActTexts(MultiLangString actText) {
-        m_actText = actText;
     }
 
     @Override
@@ -719,6 +742,11 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                     m_actText,
                     DEFAULT_ACT_TEXT
             );
+            fileManipulator.writeOptionalMultiLangString(
+                    new File(objDir, NOUSE_TEXT_SUBDIR_NAME),
+                    m_nouseText,
+                    DEFAULT_NOUSE_TEXT
+            );
             fileManipulator.writeOptionalString(
                     objDir,
                     GRAPHICAL_FILE_NAME,
@@ -939,6 +967,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                 FileManipulator.readOptionalMultiLangString(
                         new File(objDir, ACT_TEXT_SUBDIR_NAME),
                         DEFAULT_ACT_TEXT
+                )
+        );
+        m_nouseText = (
+                FileManipulator.readOptionalMultiLangString(
+                        new File(objDir, NOUSE_TEXT_SUBDIR_NAME),
+                        DEFAULT_NOUSE_TEXT
                 )
         );
         m_graphical = "true".equals(

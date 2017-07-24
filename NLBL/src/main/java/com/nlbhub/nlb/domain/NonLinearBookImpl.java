@@ -802,6 +802,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private MultiLangString m_existingObjDisp;
         private MultiLangString m_existingObjText;
         private MultiLangString m_existingObjActText;
+        private MultiLangString m_existingObjNouseText;
         private boolean m_existingObjIsGraphical;
         private boolean m_existingObjIsPreserved;
         private boolean m_existingObjIsLoadOnce;
@@ -830,6 +831,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private MultiLangString m_newObjDisp;
         private MultiLangString m_newObjText;
         private MultiLangString m_newObjActText;
+        private MultiLangString m_newObjNouseText;
         private boolean m_newObjIsGraphical;
         private boolean m_newObjIsPreserved;
         private boolean m_newObjIsLoadOnce;
@@ -866,6 +868,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString objDisp,
                 final MultiLangString objText,
                 final MultiLangString objActText,
+                final MultiLangString objNouseText,
                 final boolean objIsGraphical,
                 final boolean objIsPreserved,
                 final boolean objIsLoadOnce,
@@ -904,6 +907,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     objDisp,
                     objText,
                     objActText,
+                    objNouseText,
                     objIsGraphical,
                     objIsPreserved,
                     objIsLoadOnce,
@@ -944,6 +948,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString objDisp,
                 final MultiLangString objText,
                 final MultiLangString objActText,
+                final MultiLangString objNouseText,
                 final boolean objIsGraphical,
                 final boolean objIsPreserved,
                 final boolean objIsLoadOnce,
@@ -1036,6 +1041,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingObjDisp = obj.getDisps();
             m_existingObjText = obj.getTexts();
             m_existingObjActText = obj.getActTexts();
+            m_existingObjNouseText = obj.getNouseTexts();
             m_existingObjIsGraphical = obj.isGraphical();
             m_existingObjIsPreserved = obj.isPreserved();
             m_existingObjIsLoadOnce = obj.isLoadOnce();
@@ -1064,6 +1070,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newObjDisp = objDisp;
             m_newObjText = objText;
             m_newObjActText = objActText;
+            m_newObjNouseText = objNouseText;
             m_newObjIsGraphical = objIsGraphical;
             m_newObjIsPreserved = objIsPreserved;
             m_newObjIsLoadOnce = objIsLoadOnce;
@@ -1102,6 +1109,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setDisps(m_newObjDisp);
             m_obj.setTexts(m_newObjText);
             m_obj.setActTexts(m_newObjActText);
+            m_obj.setNouseTexts(m_newObjNouseText);
             m_obj.setGraphical(m_newObjIsGraphical);
             m_obj.setPreserved(m_newObjIsPreserved);
             m_obj.setLoadOnce(m_newObjIsLoadOnce);
@@ -1141,6 +1149,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setDisps(m_existingObjDisp);
             m_obj.setTexts(m_existingObjText);
             m_obj.setActTexts(m_existingObjActText);
+            m_obj.setNouseTexts(m_existingObjNouseText);
             m_obj.setGraphical(m_existingObjIsGraphical);
             m_obj.setPreserved(m_existingObjIsPreserved);
             m_obj.setLoadOnce(m_existingObjIsLoadOnce);
@@ -1979,6 +1988,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.getDisps(),
                         obj.getTexts(),
                         obj.getActTexts(),
+                        obj.getNouseTexts(),
                         obj.isGraphical(),
                         obj.isPreserved(),
                         obj.isLoadOnce(),
@@ -2465,6 +2475,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final MultiLangString objDisp,
             final MultiLangString objText,
             final MultiLangString objActText,
+            final MultiLangString objNouseText,
             final boolean objIsGraphical,
             final boolean objIsPreserved,
             final boolean objIsLoadOnce,
@@ -2504,6 +2515,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         objDisp,
                         objText,
                         objActText,
+                        objNouseText,
                         objIsGraphical,
                         objIsPreserved,
                         objIsLoadOnce,
@@ -4657,6 +4669,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         for (Map.Entry<String, ObjImpl> objEntry : m_objs.entrySet()) {
             result += objEntry.getValue().getText().length();
             result += objEntry.getValue().getActText().length();
+            result += objEntry.getValue().getNouseText().length();
             for (LinkImpl link : objEntry.getValue().getLinkImpls()) {
                 result += link.getText().length();
                 result += link.getAltText().length();

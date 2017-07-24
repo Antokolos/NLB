@@ -80,6 +80,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public String getNouseText() {
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
     public MultiLangString getTexts() {
         return Obj.DEFAULT_TEXT;
     }
@@ -87,6 +92,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     @Override
     public MultiLangString getActTexts() {
         return Obj.DEFAULT_ACT_TEXT;
+    }
+
+    @Override
+    public MultiLangString getNouseTexts() {
+        return Obj.DEFAULT_NOUSE_TEXT;
     }
 
     @Override

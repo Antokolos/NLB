@@ -62,6 +62,7 @@ public interface Obj extends NodeItem {
     public static final boolean DEFAULT_SUPPRESS_DSC = false;
     public static final MultiLangString DEFAULT_TEXT = MultiLangString.createEmptyText();
     public static final MultiLangString DEFAULT_ACT_TEXT = MultiLangString.createEmptyText();
+    public static final MultiLangString DEFAULT_NOUSE_TEXT = MultiLangString.createEmptyText();
     public static final String DEFAULT_VARID = Constants.EMPTY_STRING;
     public static final String DEFAULT_CONSTRID = Constants.EMPTY_STRING;
     public static final String DEFAULT_COMMON_TO_ID = Constants.EMPTY_STRING;
@@ -93,9 +94,13 @@ public interface Obj extends NodeItem {
 
     public String getActText();
 
+    public String getNouseText();
+
     public MultiLangString getTexts();
 
     public MultiLangString getActTexts();
+
+    public MultiLangString getNouseTexts();
 
     public Theme getTheme();
 

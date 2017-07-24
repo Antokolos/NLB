@@ -858,6 +858,7 @@ public abstract class ExportManager {
         blocks.setObjTak(decorateObjTak(obj.getName(), commonObjId));
         blocks.setObjInv(decorateObjInv(objType));
         blocks.setObjActStart(decorateObjActStart(expandVariables(StringHelper.getTextChunks(obj.getActText())), commonObjId));
+        blocks.setObjNouse(decorateObjNouse(expandVariables(StringHelper.getTextChunks(obj.getNouseText()))));
         blocks.setObjActEnd(decorateObjActEnd(obj.isCollapsable()));
         blocks.setObjUseStart(decorateObjUseStart(commonObjId));
         blocks.setObjUseEnd(decorateObjUseEnd());
@@ -917,6 +918,7 @@ public abstract class ExportManager {
                         !obj.getDisps().isEmpty()
                                 && obj.getTexts().isEmpty()
                                 && obj.getActTexts().isEmpty()
+                                && obj.getNouseTexts().isEmpty()
                                 && obj.isTakable()
                                 && obj.hasNoModifications()
                                 && StringHelper.isEmpty(obj.getCommonToId())
@@ -1433,6 +1435,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public String getNouseText() {
+                return escapeText(obj.getNouseText());
+            }
+
+            @Override
             public MultiLangString getTexts() {
                 return escapeMultiLang(obj.getTexts());
             }
@@ -1440,6 +1447,11 @@ public abstract class ExportManager {
             @Override
             public MultiLangString getActTexts() {
                 return escapeMultiLang(obj.getActTexts());
+            }
+
+            @Override
+            public MultiLangString getNouseTexts() {
+                return escapeMultiLang(obj.getNouseTexts());
             }
 
             @Override
@@ -1821,6 +1833,10 @@ public abstract class ExportManager {
     }
 
     protected String decorateObjActStart(String actTextExpanded, String commonObjId) {
+        return EMPTY_STRING;
+    }
+
+    protected String decorateObjNouse(String nouseTextExpanded) {
         return EMPTY_STRING;
     }
 
