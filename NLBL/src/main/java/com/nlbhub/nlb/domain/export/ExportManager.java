@@ -910,7 +910,7 @@ public abstract class ExportManager {
     }
 
     private ObjType getObjType(final Obj obj, final ExportData exportData) {
-        if ((obj.getLinks().size() == 0) && !exportData.hasInwardLinks(obj.getId())) {
+        if (obj.isTakable() && (obj.getLinks().size() == 0) && !exportData.hasInwardLinks(obj.getId())) {
             if (obj.isGraphical()) {
                 return ObjType.GMENU;
             } else {
