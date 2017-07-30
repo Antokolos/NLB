@@ -170,6 +170,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public boolean isShowOnCursor() {
+        return Obj.DEFAULT_SHOW_ON_CURSOR;
+    }
+
+    @Override
     public boolean isPreserved() {
         return Obj.DEFAULT_PRESERVED;
     }

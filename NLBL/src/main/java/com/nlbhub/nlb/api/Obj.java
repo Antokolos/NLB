@@ -69,6 +69,7 @@ public interface Obj extends NodeItem {
     public static final String DEFAULT_NAME = Constants.EMPTY_STRING;
     public static final MultiLangString DEFAULT_DISP = MultiLangString.createEmptyText();
     public static final boolean DEFAULT_GRAPHICAL = false;
+    public static final boolean DEFAULT_SHOW_ON_CURSOR = false;
     public static final boolean DEFAULT_PRESERVED = false;
     public static final boolean DEFAULT_LOAD_ONCE = false;
     public static final boolean DEFAULT_COLLAPSABLE = false;
@@ -133,6 +134,8 @@ public interface Obj extends NodeItem {
     public MultiLangString getDisps();
 
     public boolean isGraphical();
+
+    public boolean isShowOnCursor();
 
     public boolean isPreserved();
 

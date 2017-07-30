@@ -633,7 +633,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean preserved, boolean loadOnce, boolean clearUnderTooltip, boolean actOnKey, boolean cacheText, boolean looped, boolean noRedrawOnAct, String objDefaultTag) {
+    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean showOnCursor, boolean preserved, boolean loadOnce, boolean clearUnderTooltip, boolean actOnKey, boolean cacheText, boolean looped, boolean noRedrawOnAct, String objDefaultTag) {
         StringBuilder result = new StringBuilder();
         switch (objType) {
             case STAT:
@@ -646,6 +646,9 @@ public class STEADExportManager extends TextExportManager {
                 result.append(" = gobj {").append(LINE_SEPARATOR);
                 if (clearUnderTooltip) {
                     result.append("clear_under_tooltip = true,").append(LINE_SEPARATOR);
+                }
+                if (showOnCursor) {
+                    result.append("showoncur = true,").append(LINE_SEPARATOR);
                 }
                 if (preserved) {
                     result.append("preserved = true,").append(LINE_SEPARATOR);
@@ -667,6 +670,9 @@ public class STEADExportManager extends TextExportManager {
                 result.append(" = gmenu {").append(LINE_SEPARATOR);
                 if (clearUnderTooltip) {
                     result.append("clear_under_tooltip = true,").append(LINE_SEPARATOR);
+                }
+                if (showOnCursor) {
+                    result.append("showoncur = true,").append(LINE_SEPARATOR);
                 }
                 if (preserved) {
                     result.append("preserved = true,").append(LINE_SEPARATOR);

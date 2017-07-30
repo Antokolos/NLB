@@ -137,6 +137,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JSpinner m_spinnerStartFrame;
     private JCheckBox m_objIsNoRedrawOnAct;
     private JTextArea m_objNouseTextTextArea;
+    private JCheckBox m_objIsShowOnCursor;
 
     public DialogObjProperties(
             final MainFrame mainFrame,
@@ -337,6 +338,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_suppressDsc.setSelected(obj.isSuppressDsc());
         m_objIsTakable.setSelected(obj.isTakable());
         m_objIsGraphical.setSelected(obj.isGraphical());
+        m_objIsShowOnCursor.setSelected(obj.isShowOnCursor());
         m_objIsPreserved.setSelected(obj.isPreserved());
         m_objLoadOnce.setSelected(obj.isLoadOnce());
         m_objIsCollapsable.setSelected(obj.isCollapsable());
@@ -469,6 +471,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_objActTexts,
                 m_objNouseTexts,
                 m_objIsGraphical.isSelected(),
+                m_objIsShowOnCursor.isSelected(),
                 m_objIsPreserved.isSelected(),
                 m_objLoadOnce.isSelected(),
                 m_objIsCollapsable.isSelected(),
@@ -1196,6 +1199,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objIsGraphical = new JCheckBox();
         m_objIsGraphical.setText("Graphical");
         panel39.add(m_objIsGraphical);
+        m_objIsShowOnCursor = new JCheckBox();
+        m_objIsShowOnCursor.setText("Show on cursor");
+        panel39.add(m_objIsShowOnCursor);
         m_objIsPreserved = new JCheckBox();
         m_objIsPreserved.setText("Preserved");
         panel39.add(m_objIsPreserved);

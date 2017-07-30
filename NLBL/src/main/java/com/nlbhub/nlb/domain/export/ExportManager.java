@@ -830,7 +830,7 @@ public abstract class ExportManager {
         blocks.setObjLabel(decorateObjLabel(obj.getId()));
         blocks.setObjComment(decorateObjComment(obj.getName()));
         // blocks obj default tag variable was set earlier
-        blocks.setObjStart(decorateObjStart(obj.getId(), getContainerRef(obj, exportData), objType, obj.isPreserved(), obj.isLoadOnce(), obj.isClearUnderTooltip(), obj.isActOnKey(), obj.isCacheText(), obj.isLooped(), obj.isNoRedrawOnAct(), blocks.getObjDefaultTagVariable()));
+        blocks.setObjStart(decorateObjStart(obj.getId(), getContainerRef(obj, exportData), objType, obj.isShowOnCursor(), obj.isPreserved(), obj.isLoadOnce(), obj.isClearUnderTooltip(), obj.isActOnKey(), obj.isCacheText(), obj.isLooped(), obj.isNoRedrawOnAct(), blocks.getObjDefaultTagVariable()));
         blocks.setObjName(decorateObjName(obj.getName(), obj.getId()));
         blocks.setObjAlias(StringHelper.notEmpty(obj.getName()) ? decorateAutoVar(obj.getName()) : Constants.EMPTY_STRING);
         String imageFileName = (nlb.isSuppressMedia()) ? Obj.DEFAULT_IMAGE_FILE_NAME : obj.getImageFileName();
@@ -1525,6 +1525,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public boolean isShowOnCursor() {
+                return obj.isShowOnCursor();
+            }
+
+            @Override
             public boolean isPreserved() {
                 return obj.isPreserved();
             }
@@ -1772,7 +1777,7 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean preserved, boolean loadOnce, boolean clearUnderTooltip, boolean actOnKey, boolean cacheText, boolean looped, boolean noRedrawOnAct, String objDefaultTag) {
+    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean showOnCursor, boolean preserved, boolean loadOnce, boolean clearUnderTooltip, boolean actOnKey, boolean cacheText, boolean looped, boolean noRedrawOnAct, String objDefaultTag) {
         return EMPTY_STRING;
     }
 

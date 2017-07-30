@@ -884,6 +884,12 @@
                                           <text value="Graphical"/>
                                         </properties>
                                       </component>
+                                      <component id="5172c" class="javax.swing.JCheckBox" binding="m_objIsShowOnCursor">
+                                        <constraints/>
+                                        <properties>
+                                          <text value="Show on cursor"/>
+                                        </properties>
+                                      </component>
                                       <component id="865f0" class="javax.swing.JCheckBox" binding="m_objIsPreserved">
                                         <constraints/>
                                         <properties>

@@ -36,6 +36,9 @@ gobj = function(v)
     if not v.noactredraw then
         v.noactredraw = false;
     end
+    if not v.showoncur then
+        v.showoncur = false;
+    end
     if not v.arm then
         v.arm = { [0] = { 0, 0 } };
     end

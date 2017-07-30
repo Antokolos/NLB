@@ -80,6 +80,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String ANIMATED_FILE_NAME = "animated";
     private static final String DISP_SUBDIR_NAME = "disp";
     private static final String GRAPHICAL_FILE_NAME = "graphical";
+    private static final String SHOW_ON_CURSOR_FILE_NAME = "showoncur";
     private static final String PRESERVED_FILE_NAME = "preserved";
     private static final String LOADONCE_FILE_NAME = "loadonce";
     private static final String COLLAPSABLE_FILE_NAME = "collapsable";
@@ -114,6 +115,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private MultiLangString m_actText = DEFAULT_ACT_TEXT;
     private MultiLangString m_nouseText = DEFAULT_NOUSE_TEXT;
     private boolean m_graphical = DEFAULT_GRAPHICAL;
+    private boolean m_showOnCursor = DEFAULT_SHOW_ON_CURSOR;
     private boolean m_preserved = DEFAULT_PRESERVED;
     private boolean m_loadOnce = DEFAULT_LOAD_ONCE;
     private boolean m_collapsable = DEFAULT_COLLAPSABLE;
@@ -181,6 +183,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         setActTexts(source.getActTexts());
         setNouseTexts(source.getNouseTexts());
         m_graphical = source.isGraphical();
+        m_showOnCursor = source.isShowOnCursor();
         m_preserved = source.isPreserved();
         m_loadOnce = source.isLoadOnce();
         m_collapsable = source.isCollapsable();
@@ -395,13 +398,22 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         return MultiLangString.createCopy(m_disp);
     }
 
+    @Override
+    public boolean isGraphical() {
+        return m_graphical;
+    }
+
     public void setGraphical(boolean graphical) {
         m_graphical = graphical;
     }
 
     @Override
-    public boolean isGraphical() {
-        return m_graphical;
+    public boolean isShowOnCursor() {
+        return m_showOnCursor;
+    }
+
+    public void setShowOnCursor(boolean showOnCursor) {
+        m_showOnCursor = showOnCursor;
     }
 
     @Override
@@ -755,6 +767,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(
                     objDir,
+                    SHOW_ON_CURSOR_FILE_NAME,
+                    String.valueOf(m_showOnCursor),
+                    String.valueOf(DEFAULT_SHOW_ON_CURSOR)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
                     PRESERVED_FILE_NAME,
                     String.valueOf(m_preserved),
                     String.valueOf(DEFAULT_PRESERVED)
@@ -980,6 +998,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         GRAPHICAL_FILE_NAME,
                         String.valueOf(DEFAULT_GRAPHICAL)
+                )
+        );
+        m_showOnCursor = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        SHOW_ON_CURSOR_FILE_NAME,
+                        String.valueOf(DEFAULT_SHOW_ON_CURSOR)
                 )
         );
         m_preserved = "true".equals(

@@ -804,6 +804,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private MultiLangString m_existingObjActText;
         private MultiLangString m_existingObjNouseText;
         private boolean m_existingObjIsGraphical;
+        private boolean m_existingObjIsShowOnCursor;
         private boolean m_existingObjIsPreserved;
         private boolean m_existingObjIsLoadOnce;
         private boolean m_existingObjIsCollapsable;
@@ -833,6 +834,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private MultiLangString m_newObjActText;
         private MultiLangString m_newObjNouseText;
         private boolean m_newObjIsGraphical;
+        private boolean m_newObjIsShowOnCursor;
         private boolean m_newObjIsPreserved;
         private boolean m_newObjIsLoadOnce;
         private boolean m_newObjIsCollapsable;
@@ -870,6 +872,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString objActText,
                 final MultiLangString objNouseText,
                 final boolean objIsGraphical,
+                final boolean objIsShowOnCursor,
                 final boolean objIsPreserved,
                 final boolean objIsLoadOnce,
                 final boolean objIsCollapsable,
@@ -909,6 +912,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     objActText,
                     objNouseText,
                     objIsGraphical,
+                    objIsShowOnCursor,
                     objIsPreserved,
                     objIsLoadOnce,
                     objIsCollapsable,
@@ -950,6 +954,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString objActText,
                 final MultiLangString objNouseText,
                 final boolean objIsGraphical,
+                final boolean objIsShowOnCursor,
                 final boolean objIsPreserved,
                 final boolean objIsLoadOnce,
                 final boolean objIsCollapsable,
@@ -1043,6 +1048,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingObjActText = obj.getActTexts();
             m_existingObjNouseText = obj.getNouseTexts();
             m_existingObjIsGraphical = obj.isGraphical();
+            m_existingObjIsShowOnCursor = obj.isShowOnCursor();
             m_existingObjIsPreserved = obj.isPreserved();
             m_existingObjIsLoadOnce = obj.isLoadOnce();
             m_existingObjIsCollapsable = obj.isCollapsable();
@@ -1072,6 +1078,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newObjActText = objActText;
             m_newObjNouseText = objNouseText;
             m_newObjIsGraphical = objIsGraphical;
+            m_newObjIsShowOnCursor = objIsShowOnCursor;
             m_newObjIsPreserved = objIsPreserved;
             m_newObjIsLoadOnce = objIsLoadOnce;
             m_newObjIsCollapsable = objIsCollapsable;
@@ -1111,6 +1118,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setActTexts(m_newObjActText);
             m_obj.setNouseTexts(m_newObjNouseText);
             m_obj.setGraphical(m_newObjIsGraphical);
+            m_obj.setShowOnCursor(m_newObjIsShowOnCursor);
             m_obj.setPreserved(m_newObjIsPreserved);
             m_obj.setLoadOnce(m_newObjIsLoadOnce);
             m_obj.setCollapsable(m_newObjIsCollapsable);
@@ -1151,6 +1159,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setActTexts(m_existingObjActText);
             m_obj.setNouseTexts(m_existingObjNouseText);
             m_obj.setGraphical(m_existingObjIsGraphical);
+            m_obj.setShowOnCursor(m_existingObjIsShowOnCursor);
             m_obj.setPreserved(m_existingObjIsPreserved);
             m_obj.setLoadOnce(m_existingObjIsLoadOnce);
             m_obj.setCollapsable(m_existingObjIsCollapsable);
@@ -1990,6 +1999,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.getActTexts(),
                         obj.getNouseTexts(),
                         obj.isGraphical(),
+                        obj.isShowOnCursor(),
                         obj.isPreserved(),
                         obj.isLoadOnce(),
                         obj.isCollapsable(),
@@ -2477,6 +2487,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final MultiLangString objActText,
             final MultiLangString objNouseText,
             final boolean objIsGraphical,
+            final boolean objIsShowOnCursor,
             final boolean objIsPreserved,
             final boolean objIsLoadOnce,
             final boolean objIsCollapsable,
@@ -2517,6 +2528,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         objActText,
                         objNouseText,
                         objIsGraphical,
+                        objIsShowOnCursor,
                         objIsPreserved,
                         objIsLoadOnce,
                         objIsCollapsable,

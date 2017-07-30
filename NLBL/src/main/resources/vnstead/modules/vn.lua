@@ -61,6 +61,7 @@ vntimer = function(f, s, cmd, ...)
     if vn.stopped then
         -- NB: do not put heavy code in onover/onout
         local x, y = stead.mouse_pos();
+        vn:enable_by_cursor(x, y);
         vn:over(x, y);
         vn:out(x, y);
     end
@@ -1264,6 +1265,10 @@ vn = obj {
 
     invalidate = function(s, gobj)
         local v = s:glookup_full(stead.deref(gobj));
+        s:invalidatev(v);
+    end;
+
+    invalidatev = function(s, v)
         if v then
             s:set_hasmore_all(v, true);
             s.stopped = false;
@@ -1358,6 +1363,7 @@ vn = obj {
             cache_text = cache_text,
             looped = g.looped,
             noactredraw = g.noactredraw,
+            showoncur = g.showoncur,
             dirty_draw = dirty_draw,
             last_rct = false
             --children = {} - actually can be set here, but I'll set it later, after possible hide() call
@@ -1447,6 +1453,10 @@ vn = obj {
 
         s:add_missing_children(v);
 
+        if g.showoncur then
+            -- Should be disabled by default, enabled only when cursor is over it
+            disable(g);
+        end
         return v
     end;
 
@@ -2519,6 +2529,22 @@ vn = obj {
             v.was_disabled = true;
         end
         return result;
+    end;
+    enable_by_cursor = function(s, x, y)
+        for i, v in ipairs(s._effects) do
+            if v.showoncur then
+                local gob = s:gobf(v);
+                local inside = s:inside_spr(v, x, y);
+                local vdis = disabled(gob);
+                if inside and vdis then
+                    enable(gob);
+                    s:invalidatev(v);
+                elseif not inside and not vdis then
+                    disable(gob);
+                    s:invalidatev(v);
+                end
+            end
+        end
     end;
     update_tooltip = function(s, v, erase, hide)
         local xx, yy = s:postoxy(v);
