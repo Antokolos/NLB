@@ -328,6 +328,7 @@ public class URQExportManager extends TextExportManager {
                 case TEXT:
                     result.append("pln ").append(textChunk.getText());
                     break;
+                case ACTION_TEXT:
                 case VARIABLE:
                     result.append("$").append(textChunk.getText()).append("$");
                     break;

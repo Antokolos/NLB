@@ -276,6 +276,14 @@ nlb = obj {
             return s._curloc;
         end;
     end;
+    lasttext = function(s)
+        local lt = s:curloc().lasttext;
+        if lt then
+            return lt;
+        else
+            return '';
+        end
+    end;
     nlbwalk = function(s, src, tgt)
         vn:request_full_clear();
         if not src then
@@ -345,7 +353,7 @@ nlb = obj {
         if ov and not ov:disabled() then
             local dscft = ov:dscf();
             if not dscft then return; end;
-            s:curloc().lasttext = s:curloc().lasttext.." ".. dscft; p(dscft); s:curloc().wastext = true;
+            s:curloc().lasttext = s:lasttext().." ".. dscft; p(dscft); s:curloc().wastext = true;
         end
     end;
     pdscs = function(s, ob)

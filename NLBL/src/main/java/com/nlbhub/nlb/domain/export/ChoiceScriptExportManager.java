@@ -404,6 +404,9 @@ public class ChoiceScriptExportManager extends TextExportManager {
                     newlines = 0;
                     pageText.append(getAppropriateText(textChunk));
                     break;
+                case ACTION_TEXT:
+                    // TODO: support
+                    break;
                 case NEWLINE:
                     newlines++;
                     break;

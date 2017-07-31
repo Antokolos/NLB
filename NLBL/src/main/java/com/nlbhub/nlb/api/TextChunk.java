@@ -45,13 +45,14 @@ package com.nlbhub.nlb.api;
  * @version 1.0
  */
 public class TextChunk {
+    public static final String ACTION_TEXT_DEF = "^";
     /**
      * The ChunkType class represents possible type of the text block (plain text or variable name)
      *
      * @author Anton P. Kolosov
      */
     public enum ChunkType {
-        TEXT, VARIABLE, NEWLINE
+        TEXT, VARIABLE, ACTION_TEXT, NEWLINE
     }
     private String m_text;
     private ChunkType m_type;

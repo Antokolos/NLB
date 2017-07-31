@@ -304,10 +304,10 @@ public class STEADExportManager extends TextExportManager {
                 String useSuccessText = useBuildingBlocks.getUseSuccessText();
                 String useFailureText = useBuildingBlocks.getUseFailureText();
                 if (StringHelper.notEmpty(useSuccessText)) {
-                    usepBuilder.append("local t = \"").append(useSuccessText).append(" \"; nlb:curloc().lasttext = nlb:curloc().lasttext..t; p(t); nlb:curloc().wastext = true; wasnouses = false;").append(LINE_SEPARATOR);
+                    usepBuilder.append("local t = \"").append(useSuccessText).append(" \"; nlb:curloc().lasttext = nlb:lasttext()..t; p(t); nlb:curloc().wastext = true; wasnouses = false;").append(LINE_SEPARATOR);
                     if (StringHelper.notEmpty(useFailureText)) {
                         usepBuilder.append(padding).append("    else").append(LINE_SEPARATOR);
-                        usepBuilder.append("local t = \"").append(useFailureText).append(" \"; nlb:curloc().lasttext = nlb:curloc().lasttext..t; p(t); nlb:curloc().wastext = true; wasnouses = false;").append(LINE_SEPARATOR);
+                        usepBuilder.append("local t = \"").append(useFailureText).append(" \"; nlb:curloc().lasttext = nlb:lasttext()..t; p(t); nlb:curloc().wastext = true; wasnouses = false;").append(LINE_SEPARATOR);
                     }
                 }
                 usepBuilder.append(usesEndBuilder);
@@ -1463,7 +1463,7 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decoratePRNOperation(String variableName) {
-        return "nlb:curloc().lasttext = nlb:curloc().lasttext.." + variableName + "; p(" + variableName + "); nlb:curloc().wastext = true;" + LINE_SEPARATOR;
+        return "nlb:curloc().lasttext = nlb:lasttext().." + variableName + "; p(" + variableName + "); nlb:curloc().wastext = true;" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1861,6 +1861,9 @@ public class STEADExportManager extends TextExportManager {
             switch (textChunk.getType()) {
                 case TEXT:
                     result.append(textChunk.getText());
+                    break;
+                case ACTION_TEXT:
+                    result.append("\"..nlb:lasttext()..\"");
                     break;
                 case VARIABLE:
                     result.append("\"..");

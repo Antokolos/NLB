@@ -2423,7 +2423,7 @@ vn = obj {
             if not cached_sprites then
                 local tmp_sprite = clear or only_compute;
                 for k, vv in pairs(texts) do
-                    if vv.text then
+                    if vv.text and vv.text ~= '' then
                         local color = vv.color;
                         if not color then
                             color = s.hud_color;

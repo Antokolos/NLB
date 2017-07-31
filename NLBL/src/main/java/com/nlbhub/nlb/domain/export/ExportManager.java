@@ -2881,6 +2881,7 @@ public abstract class ExportManager {
                 case TEXT:
                     result.append(textChunk.getText());
                     break;
+                case ACTION_TEXT:
                 case VARIABLE:
                     result.append("$").append(textChunk.getText()).append("$");
                     break;

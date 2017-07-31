@@ -450,6 +450,9 @@ public class VNSTEADExportManager extends STEADExportManager {
                 case TEXT:
                     result.append(preprocessText(textChunk.getText()));
                     break;
+                case ACTION_TEXT:
+                    result.append("\"..nlb:lasttext()..\"");
+                    break;
                 case VARIABLE:
                     result.append("\"..");
                     result.append("tostring(").append(getGlobalVarPrefix()).append(textChunk.getText()).append(")");

@@ -80,6 +80,9 @@ public class StringHelper {
                 case TEXT:
                     result.append(textChunk.getText());
                     break;
+                case ACTION_TEXT:
+                    // TODO: support
+                    break;
                 case VARIABLE:
                     Object mappedItem = visitedVars.get(textChunk.getText());
                     if (mappedItem != null) {
@@ -129,7 +132,7 @@ public class StringHelper {
                 result.add(textChunk);
                 TextChunk variableChunk = new TextChunk();
                 variableChunk.setText(variable);
-                variableChunk.setType(TextChunk.ChunkType.VARIABLE);
+                variableChunk.setType(TextChunk.ACTION_TEXT_DEF.equals(variable) ? TextChunk.ChunkType.ACTION_TEXT : TextChunk.ChunkType.VARIABLE);
                 result.add(variableChunk);
                 start = variableMatcher.end();
             }
