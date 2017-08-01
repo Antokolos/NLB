@@ -382,9 +382,9 @@ vn = obj {
         --local morph_out = s:get_morph(v, false);
         --local info_over = s:get_base_info(morph_over);
         --local info_out = s:get_base_info(morph_out);
-        if v.nam == vv.nam then --or info_over.nam == vv.nam or info_out.nam == vv.nam then
-        -- there is no collision if it is the same object
-        return false;
+        if not vv or v.nam == vv.nam then --or info_over.nam == vv.nam or info_out.nam == vv.nam then
+            -- there is no collision if it is the same object
+            return false;
         end
         return true;
     end;
