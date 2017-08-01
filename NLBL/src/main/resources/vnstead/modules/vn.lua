@@ -1275,6 +1275,19 @@ vn = obj {
         end
     end;
 
+    invalidatebyv = function(s, v)
+        for i, vv in ipairs(s._effects) do
+            if s:collision(vv, s:get_spr_rct(v)) then
+                s:invalidatev(vv);
+            end
+        end
+        for i, vv in ipairs(s._pending_effects) do
+            if s:collision(vv, s:get_spr_rct(v)) then
+                s:invalidatev(vv);
+            end
+        end
+    end;
+
     invalidate_all = function(s)
         for i, v in ipairs(s._effects) do
             v.hasmore = true;
@@ -1282,7 +1295,6 @@ vn = obj {
         for i, v in ipairs(s._pending_effects) do
             v.hasmore = true;
         end
-
     end;
 
     get_base_info = function(s, g)
@@ -2539,9 +2551,11 @@ vn = obj {
                 if inside and vdis then
                     enable(gob);
                     s:invalidatev(v);
+                    s:invalidatebyv(v);
                 elseif not inside and not vdis then
                     disable(gob);
                     s:invalidatev(v);
+                    s:invalidatebyv(v);
                 end
             end
         end
