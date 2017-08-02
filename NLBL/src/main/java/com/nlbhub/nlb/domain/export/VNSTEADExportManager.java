@@ -85,57 +85,10 @@ public class VNSTEADExportManager extends STEADExportManager {
     }
 
     @Override
-    protected String generatePreambleText(NLBBuildingBlocks nlbBuildingBlocks) {
+    protected String getSpecificInit() {
         StringBuilder stringBuilder = new StringBuilder();
-        String lineSep = getLineSeparator();
-        stringBuilder.append(getGameFileHeader(nlbBuildingBlocks));
-
-        stringBuilder.append("--package.cpath = \"./?.so\"").append(lineSep);
-        stringBuilder.append("require \"luapassing\"").append(lineSep).append(lineSep);
-
-        stringBuilder.append("require \"prefs\"").append(lineSep);
-        stringBuilder.append("require \"xact\"").append(lineSep);
-        stringBuilder.append("require \"hideinv\"").append(lineSep);
-        stringBuilder.append("--require \"para\"").append(lineSep);
-        stringBuilder.append("require \"dash\"").append(lineSep);
-        stringBuilder.append("require \"quotes\" ").append(lineSep);
-        stringBuilder.append("require \"theme\" ").append(lineSep);
-        stringBuilder.append("require \"timer\" ").append(lineSep);
-        stringBuilder.append("require 'modules/nlb'").append(lineSep);
-        stringBuilder.append("require 'modules/fonts'").append(lineSep);
-        stringBuilder.append("require 'modules/paginator'").append(lineSep);
-        stringBuilder.append("require 'modules/vn'").append(lineSep);
-        stringBuilder.append("require 'modules/big_pig'").append(lineSep);
-        stringBuilder.append("require 'modules/gobj'").append(lineSep);
-
-        stringBuilder.append("game.codepage=\"UTF-8\";").append(lineSep);
-        stringBuilder.append("game.forcedsc=true;").append(lineSep);
-        stringBuilder.append("stead.scene_delim = '^';").append(lineSep);
-        stringBuilder.append(lineSep);
-
-        stringBuilder.append("f1 = font('fonts/STEINEMU.ttf', 32);").append(lineSep);
-        stringBuilder.append("fend = font('fonts/STEINEMU.ttf', 96);").append(lineSep);
-        stringBuilder.append("function pname(n, c)").append(lineSep);
-        stringBuilder.append("    return function()").append(lineSep);
-        stringBuilder.append("        pn(img 'blank:8x1',f1:txt(n, c, 1))").append(lineSep);
-        stringBuilder.append("    end").append(lineSep);
-        stringBuilder.append("end").append(lineSep);
-
-        stringBuilder.append("paginator.delim = '\\n[ \\t]*\\n'").append(lineSep);
-
-        stringBuilder.append("function exec(s)").append(lineSep);
-        stringBuilder.append("    p('$'..s:gsub(\"\\n\", \"^\")..'$^^')").append(lineSep);
-        stringBuilder.append("end").append(lineSep);
-
-        stringBuilder.append("function init()").append(lineSep);
-        stringBuilder.append("    statsAPI.init();").append(lineSep);
-        stringBuilder.append("    vn:turnoff();").append(lineSep);  // Needed for dofile("theme_vn.lua"), because otherwise it will not switch the theme
-        stringBuilder.append("    dofile(\"theme_vn.lua\");").append(lineSep);  // Reset theme to VN (default is non-VN)
-        stringBuilder.append("    vn:scene(nil);").append(lineSep);
-        stringBuilder.append("    vn.fading = 8").append(lineSep);
-        stringBuilder.append(generateVarsInitBlock(nlbBuildingBlocks));
-        stringBuilder.append("end").append(lineSep);
-        stringBuilder.append(generateSysObjectsBlock(nlbBuildingBlocks));
+        stringBuilder.append("    vn:turnoff();").append(getLineSeparator());  // Needed for dofile("theme_vn.lua"), because otherwise it will not switch the theme
+        stringBuilder.append("    dofile(\"theme_vn.lua\");").append(getLineSeparator());  // Reset theme to VN (default is non-VN)
         return stringBuilder.toString();
     }
 

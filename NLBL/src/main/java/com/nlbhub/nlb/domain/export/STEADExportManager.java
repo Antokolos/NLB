@@ -117,13 +117,22 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("stead.scene_delim = '^';").append(LINE_SEPARATOR);
         stringBuilder.append(LINE_SEPARATOR);
 
-        stringBuilder.append("--game.act = function() nlb:curloc().lasttext = 'Nothing happens.'; p(nlb:curloc().lasttext); nlb:curloc().wastext = true; end;").append(LINE_SEPARATOR);
-        stringBuilder.append("--game.inv = function() nlb:curloc().lasttext = 'Hm... This is strange thing...'; p(nlb:curloc().lasttext); nlb:curloc().wastext = true; end;").append(LINE_SEPARATOR);
-        stringBuilder.append("--game.nouse = function() nlb:curloc().lasttext = 'Does not work...'; p(nlb:curloc().lasttext); nlb:curloc().wastext = true; end;").append(LINE_SEPARATOR);
-        stringBuilder.append("game.act = function() return true; end;").append(LINE_SEPARATOR);
-        stringBuilder.append("game.inv = function() return true; end;").append(LINE_SEPARATOR);
-        stringBuilder.append("game.nouse = function() return true; end;").append(LINE_SEPARATOR);
-        stringBuilder.append("game.forcedsc = true;").append(LINE_SEPARATOR);
+        if (StringHelper.isEmpty(nlbBuildingBlocks.getGameActText())) {
+            stringBuilder.append("game.act = function() return true; end;").append(LINE_SEPARATOR);
+        } else {
+            stringBuilder.append("game.act = function() nlb:curloc().lasttext = '").append(nlbBuildingBlocks.getGameActText()).append("'; p(nlb:curloc().lasttext); nlb:curloc().wastext = true; end;").append(LINE_SEPARATOR);
+        }
+        if (StringHelper.isEmpty(nlbBuildingBlocks.getGameInvText())) {
+            stringBuilder.append("game.inv = function() return true; end;").append(LINE_SEPARATOR);
+        } else {
+            stringBuilder.append("game.inv = function() nlb:curloc().lasttext = '").append(nlbBuildingBlocks.getGameInvText()).append("'; p(nlb:curloc().lasttext); nlb:curloc().wastext = true; end;").append(LINE_SEPARATOR);
+        }
+        if (StringHelper.isEmpty(nlbBuildingBlocks.getGameNouseText())) {
+            stringBuilder.append("game.nouse = function() return true; end;").append(LINE_SEPARATOR);
+        } else {
+            stringBuilder.append("game.nouse = function() nlb:curloc().lasttext = '").append(nlbBuildingBlocks.getGameNouseText()).append("'; p(nlb:curloc().lasttext); nlb:curloc().wastext = true; end;").append(LINE_SEPARATOR);
+        }
+        stringBuilder.append("game.forcedsc = ").append(String.valueOf(nlbBuildingBlocks.isGameForcedsc())).append(";").append(LINE_SEPARATOR);
 
         stringBuilder.append("f1 = font('fonts/STEINEMU.ttf', 32);").append(LINE_SEPARATOR);
         stringBuilder.append("fend = font('fonts/STEINEMU.ttf', 128);").append(LINE_SEPARATOR);
@@ -141,6 +150,7 @@ public class STEADExportManager extends TextExportManager {
 
         stringBuilder.append("function init()").append(LINE_SEPARATOR);
         stringBuilder.append("    statsAPI.init();").append(LINE_SEPARATOR);
+        stringBuilder.append(getSpecificInit());
         stringBuilder.append("    vn:scene(nil);").append(LINE_SEPARATOR);
         stringBuilder.append("    vn.fading = 8").append(LINE_SEPARATOR);
         stringBuilder.append("    nlbticks = stead.ticks();").append(LINE_SEPARATOR);
@@ -148,6 +158,10 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("end").append(LINE_SEPARATOR);
         stringBuilder.append(generateSysObjectsBlock(nlbBuildingBlocks));
         return stringBuilder.toString();
+    }
+
+    protected String getSpecificInit() {
+        return Constants.EMPTY_STRING;
     }
 
     protected String generateSysObjectsBlock(NLBBuildingBlocks nlbBuildingBlocks) {

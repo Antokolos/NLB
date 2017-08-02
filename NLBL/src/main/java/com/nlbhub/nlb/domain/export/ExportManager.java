@@ -403,7 +403,19 @@ public abstract class ExportManager {
             final ExportData exportData
     ) throws NLBConsistencyException, NLBExportException {
         final NonLinearBook nlb = exportData.getNlb();
-        NLBBuildingBlocks blocks = new NLBBuildingBlocks(nlb.getTitle(), nlb.getAuthor(), nlb.getVersion(), nlb.getLanguage(), nlb.getAllAchievementNames(false), nlb.getPerfectGameAchievementName());
+        final PropertiesBean propertiesBean = PropertyManager.getProperties();
+        NLBBuildingBlocks blocks = new NLBBuildingBlocks(
+                nlb.getTitle(),
+                nlb.getAuthor(),
+                nlb.getVersion(),
+                nlb.getLanguage(),
+                nlb.getAllAchievementNames(false),
+                nlb.getPerfectGameAchievementName(),
+                propertiesBean.getGameActText(),
+                propertiesBean.getGameInvText(),
+                propertiesBean.getGameNouseText(),
+                propertiesBean.isGameForcedsc()
+        );
         //stringBuilder.append("#mode quote").append(LINE_SEPARATOR);
         for (final Obj obj : exportData.getObjList()) {
             blocks.addObjBuildingBlocks(createObjBuildingBlocks(createPreprocessedObj(obj), exportData));

@@ -48,6 +48,10 @@ public class PropertiesBean {
     private boolean m_findUnusualQuotes;
     private boolean m_setLookAndFeel;
     private String m_lookAndFeel;
+    private String m_gameActText;
+    private String m_gameInvText;
+    private String m_gameNouseText;
+    private boolean m_gameForcedsc;
 
     public boolean isConvertPNG2JPG() {
         return m_convertPNG2JPG;
@@ -87,5 +91,37 @@ public class PropertiesBean {
 
     public void setLookAndFeel(String lookAndFeel) {
         m_lookAndFeel = lookAndFeel;
+    }
+
+    public String getGameActText() {
+        return m_gameActText;
+    }
+
+    public void setGameActText(String gameActText) {
+        m_gameActText = gameActText;
+    }
+
+    public String getGameInvText() {
+        return m_gameInvText;
+    }
+
+    public void setGameInvText(String gameInvText) {
+        m_gameInvText = gameInvText;
+    }
+
+    public String getGameNouseText() {
+        return m_gameNouseText;
+    }
+
+    public void setGameNouseText(String gameNouseText) {
+        m_gameNouseText = gameNouseText;
+    }
+
+    public boolean isGameForcedsc() {
+        return m_gameForcedsc;
+    }
+
+    public void setGameForcedsc(boolean gameForcedsc) {
+        m_gameForcedsc = gameForcedsc;
     }
 }

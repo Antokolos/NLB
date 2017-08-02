@@ -79,6 +79,10 @@ public class PropertyManager {
             // load a properties file
             prop.load(input);
 
+            String gameActText = getTrimmedProperty(prop, "nlb.export.parameters.game.act.text");
+            String gameInvText = getTrimmedProperty(prop, "nlb.export.parameters.game.inv.text");
+            String gameNouseText = getTrimmedProperty(prop, "nlb.export.parameters.game.nouse.text");
+            String gameForcedsc = getTrimmedProperty(prop, "nlb.export.parameters.game.forcedsc");
             String setLookAndFeel = getTrimmedProperty(prop, "nlb.general.parameters.default.set-look-and-feel");
             String lookAndFeel = getTrimmedProperty(prop, "nlb.general.parameters.default.look-and-feel");
             String findUnusualQuotes = getTrimmedProperty(prop, "nlb.general.parameters.default.find-unusual-quotes");
@@ -89,6 +93,10 @@ public class PropertyManager {
             result.setFindUnusualQuotes("true".equalsIgnoreCase(findUnusualQuotes));
             result.setConvertPNG2JPG("true".equalsIgnoreCase(convertpng2jpg));
             result.setQuality(Integer.parseInt(quality));
+            result.setGameActText(gameActText);
+            result.setGameInvText(gameInvText);
+            result.setGameNouseText(gameNouseText);
+            result.setGameForcedsc("true".equalsIgnoreCase(gameForcedsc));
             return result;
         } finally {
             if (input != null) {
