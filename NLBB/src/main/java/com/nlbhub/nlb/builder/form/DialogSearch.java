@@ -130,7 +130,7 @@ public class DialogSearch extends JDialog {
                         m_variablesCheckBox.isSelected(),
                         m_ignoreCaseCheckBox.isSelected(),
                         m_wholeWordsCheckBox.isSelected(),
-                        PropertyManager.getProperties().isFindUnusualQuotes()
+                        PropertyManager.getSettings().getDefaultConfig().getGeneral().isFindUnusualQuotes()
                 ),
                 m_modulePageId
         );

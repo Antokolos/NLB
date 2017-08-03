@@ -4397,7 +4397,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                                                 contract.isSearchInVars(),
                                                 contract.isIgnoreCase(),
                                                 contract.isWholeWords(),
-                                                PropertyManager.getProperties().isFindUnusualQuotes()
+                                                PropertyManager.getSettings().getDefaultConfig().getGeneral().isFindUnusualQuotes()
                                         ),
                                         page.getId()
                                 )

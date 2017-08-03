@@ -1,0 +1,28 @@
+<nlb>
+    <configs>
+        <config name = "default" default = "true">
+            <general>
+                <set-look-and-feel>true</set-look-and-feel>
+                <look-and-feel>Nimbus</look-and-feel>
+                <find-unusual-quotes>false</find-unusual-quotes>
+            </general>
+            <export>
+                <convertpng2jpg>true</convertpng2jpg>
+                <quality>80</quality>
+                <game-forcedsc>false</game-forcedsc>
+                <texts>
+                    <text lang="en">
+                        <game-act>Nothing happens.</game-act>
+                        <game-inv>Hm... This is strange thing...</game-inv>
+                        <game-nouse>Does not work...</game-nouse>
+                    </text>
+                    <text lang="ru">
+                        <game-act>Ничего не происходит.</game-act>
+                        <game-inv>Хм... Странная штука...</game-inv>
+                        <game-nouse>Не сработает...</game-nouse>
+                    </text>
+                </texts>
+            </export>
+        </config>
+    </configs>
+</nlb>

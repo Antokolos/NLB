@@ -1,8 +1,8 @@
 /**
- * @(#)PropertiesBean.java
+ * @(#)Settings.java
  *
  * This file is part of the Non-Linear Book project.
- * Copyright (c) 2012-2016 Anton P. Kolosov
+ * Copyright (c) 2012-2017 Anton P. Kolosov
  * Authors: Anton P. Kolosov, et al.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -34,65 +34,44 @@
  * For more information, please contact Anton P. Kolosov at this
  * address: antokolos@gmail.com
  *
- * Copyright (c) 2016 Anton P. Kolosov All rights reserved.
+ * Copyright (c) 2017 Anton P. Kolosov All rights reserved.
  */
-package com.nlbhub.nlb.api;
+package com.nlbhub.nlb.api.config;
 
-import com.nlbhub.nlb.api.config.*;
-import com.nlbhub.nlb.exception.NLBJAXBException;
-import com.nlbhub.nlb.util.JaxbMarshaller;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import javax.xml.bind.annotation.*;
+import java.util.List;
 
 /**
  * @author Anton P. Kolosov
  * @version 1.0
  */
-public class PropertyManager {
-    private static final JaxbMarshaller CONFIGS_MARSHALLER = (
-            new JaxbMarshaller(
-                    Settings.class,
-                    Config.class,
-                    General.class,
-                    Export.class,
-                    Text.class
-            )
-    );
-    private static Settings m_settings;
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "nlb")
+public class Settings {
+    @XmlElementWrapper(name = "configs")
+    @XmlElement(name = "config")
+    private List<Config> m_configs;
 
-    public static void init() throws IOException, NLBJAXBException {
-        m_settings = readSettings();
+    public Settings() {
     }
 
-    public static Settings getSettings() {
-        return m_settings;
+    public List<Config> getConfigs() {
+        return m_configs;
     }
 
-    private static Settings readSettings() throws IOException, NLBJAXBException {
-        Settings settings;
-        InputStream input = null;
+    public void setConfigs(List<Config> configs) {
+        m_configs = configs;
+    }
 
-        try {
-            File configDir = new File("cfg");
-            if (!configDir.exists()) {
-                throw new IOException("Config dir 'cfg' does not exist!");
-            }
-            File configFile = new File(configDir, "config.xml");
-            if (!configFile.exists()) {
-                throw new IOException("Config file 'cfg/config.xml' does not exist!");
-            }
-
-            input = new FileInputStream(configFile);
-            settings = (Settings) CONFIGS_MARSHALLER.unmarshal(input);
-            return settings;
-        } finally {
-            if (input != null) {
-                input.close();
+    public Config getDefaultConfig() {
+        if (m_configs == null) {
+            return null;
+        }
+        for (Config config : m_configs) {
+            if (config.isDefault()) {
+                return config;
             }
         }
+        return null;
     }
 }

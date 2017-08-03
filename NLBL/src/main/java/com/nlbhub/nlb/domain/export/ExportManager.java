@@ -39,6 +39,8 @@
 package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.*;
+import com.nlbhub.nlb.api.config.Export;
+import com.nlbhub.nlb.api.config.Text;
 import com.nlbhub.nlb.domain.MediaExportParameters;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.SearchResult;
@@ -403,7 +405,8 @@ public abstract class ExportManager {
             final ExportData exportData
     ) throws NLBConsistencyException, NLBExportException {
         final NonLinearBook nlb = exportData.getNlb();
-        final PropertiesBean propertiesBean = PropertyManager.getProperties();
+        Export export = PropertyManager.getSettings().getDefaultConfig().getExport();
+        final Text text = export.getTextByLang(nlb.getLanguage());
         NLBBuildingBlocks blocks = new NLBBuildingBlocks(
                 nlb.getTitle(),
                 nlb.getAuthor(),
@@ -411,10 +414,10 @@ public abstract class ExportManager {
                 nlb.getLanguage(),
                 nlb.getAllAchievementNames(false),
                 nlb.getPerfectGameAchievementName(),
-                propertiesBean.getGameActText(),
-                propertiesBean.getGameInvText(),
-                propertiesBean.getGameNouseText(),
-                propertiesBean.isGameForcedsc()
+                text.getGameAct(),
+                text.getGameInv(),
+                text.getGameNouse(),
+                export.isGameForceDsc()
         );
         //stringBuilder.append("#mode quote").append(LINE_SEPARATOR);
         for (final Obj obj : exportData.getObjList()) {

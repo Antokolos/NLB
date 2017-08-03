@@ -1,8 +1,8 @@
 /**
- * @(#)PropertiesBean.java
+ * @(#)Export.java
  *
  * This file is part of the Non-Linear Book project.
- * Copyright (c) 2012-2016 Anton P. Kolosov
+ * Copyright (c) 2012-2017 Anton P. Kolosov
  * Authors: Anton P. Kolosov, et al.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -34,31 +34,36 @@
  * For more information, please contact Anton P. Kolosov at this
  * address: antokolos@gmail.com
  *
- * Copyright (c) 2016 Anton P. Kolosov All rights reserved.
+ * Copyright (c) 2017 Anton P. Kolosov All rights reserved.
  */
-package com.nlbhub.nlb.api;
+package com.nlbhub.nlb.api.config;
+
+import javax.xml.bind.annotation.*;
+import java.util.List;
 
 /**
  * @author Anton P. Kolosov
  * @version 1.0
  */
-public class PropertiesBean {
-    private boolean m_convertPNG2JPG;
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "export")
+public class Export {
+    @XmlElement(name = "convertpng2jpg")
+    private boolean m_convertpng2jpg;
+    @XmlElement(name = "quality")
     private int m_quality;
-    private boolean m_findUnusualQuotes;
-    private boolean m_setLookAndFeel;
-    private String m_lookAndFeel;
-    private String m_gameActText;
-    private String m_gameInvText;
-    private String m_gameNouseText;
-    private boolean m_gameForcedsc;
+    @XmlElement(name = "game-forcedsc")
+    private boolean m_gameForceDsc;
+    @XmlElementWrapper(name = "texts")
+    @XmlElement(name = "text")
+    private List<Text> m_texts;
 
-    public boolean isConvertPNG2JPG() {
-        return m_convertPNG2JPG;
+    public boolean isConvertpng2jpg() {
+        return m_convertpng2jpg;
     }
 
-    public void setConvertPNG2JPG(boolean convertPNG2JPG) {
-        m_convertPNG2JPG = convertPNG2JPG;
+    public void setConvertpng2jpg(boolean convertpng2jpg) {
+        m_convertpng2jpg = convertpng2jpg;
     }
 
     public int getQuality() {
@@ -69,59 +74,31 @@ public class PropertiesBean {
         m_quality = quality;
     }
 
-    public boolean isFindUnusualQuotes() {
-        return m_findUnusualQuotes;
+    public boolean isGameForceDsc() {
+        return m_gameForceDsc;
     }
 
-    public void setFindUnusualQuotes(boolean findUnusualQuotes) {
-        m_findUnusualQuotes = findUnusualQuotes;
+    public void setGameForceDsc(boolean gameForceDsc) {
+        m_gameForceDsc = gameForceDsc;
     }
 
-    public boolean isSetLookAndFeel() {
-        return m_setLookAndFeel;
+    public List<Text> getTexts() {
+        return m_texts;
     }
 
-    public void setSetLookAndFeel(boolean setLookAndFeel) {
-        m_setLookAndFeel = setLookAndFeel;
+    public void setTexts(List<Text> texts) {
+        m_texts = texts;
     }
 
-    public String getLookAndFeel() {
-        return m_lookAndFeel;
-    }
-
-    public void setLookAndFeel(String lookAndFeel) {
-        m_lookAndFeel = lookAndFeel;
-    }
-
-    public String getGameActText() {
-        return m_gameActText;
-    }
-
-    public void setGameActText(String gameActText) {
-        m_gameActText = gameActText;
-    }
-
-    public String getGameInvText() {
-        return m_gameInvText;
-    }
-
-    public void setGameInvText(String gameInvText) {
-        m_gameInvText = gameInvText;
-    }
-
-    public String getGameNouseText() {
-        return m_gameNouseText;
-    }
-
-    public void setGameNouseText(String gameNouseText) {
-        m_gameNouseText = gameNouseText;
-    }
-
-    public boolean isGameForcedsc() {
-        return m_gameForcedsc;
-    }
-
-    public void setGameForcedsc(boolean gameForcedsc) {
-        m_gameForcedsc = gameForcedsc;
+    public Text getTextByLang(String lang) {
+        if (m_texts == null) {
+            return null;
+        }
+        for (Text text : m_texts) {
+            if (lang.equalsIgnoreCase(text.getLang())) {
+                return text;
+            }
+        }
+        return null;
     }
 }

@@ -54,8 +54,8 @@ public class MediaExportParameters {
     private static final MediaExportParameters DEFAULT = (
             new MediaExportParameters(
                     Preset.DEFAULT,
-                    PropertyManager.getProperties().isConvertPNG2JPG(),
-                    PropertyManager.getProperties().getQuality()
+                    PropertyManager.getSettings().getDefaultConfig().getExport().isConvertpng2jpg(),
+                    PropertyManager.getSettings().getDefaultConfig().getExport().getQuality()
             )
     );
     private Preset m_preset = Preset.CUSTOM;

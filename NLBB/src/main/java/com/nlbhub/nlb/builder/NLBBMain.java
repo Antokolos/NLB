@@ -38,10 +38,11 @@
  */
 package com.nlbhub.nlb.builder;
 
-import com.nlbhub.nlb.api.PropertiesBean;
+import com.nlbhub.nlb.api.config.Settings;
 import com.nlbhub.nlb.api.PropertyManager;
 import com.nlbhub.nlb.builder.form.MainFrame;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
+import com.nlbhub.nlb.exception.NLBJAXBException;
 import com.nlbhub.nlb.vcs.Author;
 import com.nlbhub.nlb.vcs.DummyVCSAdapter;
 import com.nlbhub.nlb.vcs.GitAdapterWithPathDecoration;
@@ -125,11 +126,11 @@ public class NLBBMain implements Runnable {
         //frame.setJMenuBar(menuBar);
         mf.serrext();
 
-        PropertiesBean properties = PropertyManager.getProperties();
-        if (properties.isSetLookAndFeel()) {
+        Settings settings = PropertyManager.getSettings();
+        if (settings.getDefaultConfig().getGeneral().isSetLookAndFeel()) {
             try {
                 for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                    if (properties.getLookAndFeel().equals(info.getName())) {
+                    if (settings.getDefaultConfig().getGeneral().getLookAndFeel().equals(info.getName())) {
                         UIManager.setLookAndFeel(info.getClassName());
                         break;
                     }
@@ -198,6 +199,8 @@ public class NLBBMain implements Runnable {
         } catch (FontFormatException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NLBJAXBException e) {
             e.printStackTrace();
         }
     }

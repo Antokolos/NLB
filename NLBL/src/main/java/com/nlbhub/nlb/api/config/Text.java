@@ -1,8 +1,8 @@
 /**
- * @(#)PropertiesBean.java
+ * @(#)Text.java
  *
  * This file is part of the Non-Linear Book project.
- * Copyright (c) 2012-2016 Anton P. Kolosov
+ * Copyright (c) 2012-2017 Anton P. Kolosov
  * Authors: Anton P. Kolosov, et al.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -34,65 +34,57 @@
  * For more information, please contact Anton P. Kolosov at this
  * address: antokolos@gmail.com
  *
- * Copyright (c) 2016 Anton P. Kolosov All rights reserved.
+ * Copyright (c) 2017 Anton P. Kolosov All rights reserved.
  */
-package com.nlbhub.nlb.api;
+package com.nlbhub.nlb.api.config;
 
-import com.nlbhub.nlb.api.config.*;
-import com.nlbhub.nlb.exception.NLBJAXBException;
-import com.nlbhub.nlb.util.JaxbMarshaller;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import javax.xml.bind.annotation.*;
 
 /**
  * @author Anton P. Kolosov
  * @version 1.0
  */
-public class PropertyManager {
-    private static final JaxbMarshaller CONFIGS_MARSHALLER = (
-            new JaxbMarshaller(
-                    Settings.class,
-                    Config.class,
-                    General.class,
-                    Export.class,
-                    Text.class
-            )
-    );
-    private static Settings m_settings;
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "text")
+public class Text {
+    @XmlAttribute(name = "lang")
+    private String m_lang;
+    @XmlElement(name = "game-act")
+    private String m_gameAct;
+    @XmlElement(name = "game-inv")
+    private String m_gameInv;
+    @XmlElement(name = "game-nouse")
+    private String m_gameNouse;
 
-    public static void init() throws IOException, NLBJAXBException {
-        m_settings = readSettings();
+    public String getLang() {
+        return m_lang;
     }
 
-    public static Settings getSettings() {
-        return m_settings;
+    public void setLang(String lang) {
+        m_lang = lang;
     }
 
-    private static Settings readSettings() throws IOException, NLBJAXBException {
-        Settings settings;
-        InputStream input = null;
+    public String getGameAct() {
+        return m_gameAct;
+    }
 
-        try {
-            File configDir = new File("cfg");
-            if (!configDir.exists()) {
-                throw new IOException("Config dir 'cfg' does not exist!");
-            }
-            File configFile = new File(configDir, "config.xml");
-            if (!configFile.exists()) {
-                throw new IOException("Config file 'cfg/config.xml' does not exist!");
-            }
+    public void setGameAct(String gameAct) {
+        m_gameAct = gameAct;
+    }
 
-            input = new FileInputStream(configFile);
-            settings = (Settings) CONFIGS_MARSHALLER.unmarshal(input);
-            return settings;
-        } finally {
-            if (input != null) {
-                input.close();
-            }
-        }
+    public String getGameInv() {
+        return m_gameInv;
+    }
+
+    public void setGameInv(String gameInv) {
+        m_gameInv = gameInv;
+    }
+
+    public String getGameNouse() {
+        return m_gameNouse;
+    }
+
+    public void setGameNouse(String gameNouse) {
+        m_gameNouse = gameNouse;
     }
 }

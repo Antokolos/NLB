@@ -46,14 +46,16 @@ import org.w3c.dom.Document;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * The JaxbMarshaller class creates javax.xml.bind.Marshaller instance for the specified list of
- * classes.
+ * The JaxbMarshaller class creates javax.xml.bind.Marshaller and javax.xml.bind.Unmarshaller instances for the
+ * specified list of classes.
  *
  * @author Anton P. Kolosov
  * @version 1.0 6/13/12
@@ -69,6 +71,10 @@ public class JaxbMarshaller {
      * javax.xml.bind.Marshaller instance.
      */
     private Marshaller m_jaxbMarshaller;
+    /**
+     * javax.xml.bind.Unmarshaller instance.
+     */
+    private Unmarshaller m_jaxbUnmarshaller;
 
     /**
      * Constructor.
@@ -87,6 +93,7 @@ public class JaxbMarshaller {
                     )
             );
             m_jaxbMarshaller = jaxbContext.createMarshaller();
+            m_jaxbUnmarshaller = jaxbContext.createUnmarshaller();
             // output pretty printed
             m_jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         } catch (JAXBException e) {
@@ -122,6 +129,21 @@ public class JaxbMarshaller {
             m_jaxbMarshaller.marshal(objectToMarshal, outputStream);
         } catch (JAXBException e) {
             throw new NLBJAXBException("Exception when marshalling", e);
+        }
+    }
+
+    /**
+     * Unmarshals the object from input stream.
+     *
+     * @param inputStream input stream with object content
+     * @return unmarshalled instance
+     * @throws NLBJAXBException
+     */
+    public Object unmarshal(final InputStream inputStream) throws NLBJAXBException {
+        try {
+            return m_jaxbUnmarshaller.unmarshal(inputStream);
+        } catch (JAXBException e) {
+            throw new NLBJAXBException("Exception when unmarshalling", e);
         }
     }
 
