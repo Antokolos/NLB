@@ -886,7 +886,7 @@ public class STEADExportManager extends TextExportManager {
         while (matcher.find()) {
             result.append(text.substring(start, matcher.start())).append("{");
             if (useReference) {
-                result.append(StringHelper.isEmpty(objName) ? objId : objName).append("|");
+                result.append(StringHelper.isEmpty(objName) ? decorateId(objId) : objName).append("|");
             }
             if (withImage && !isGraphicalObj) {
                 result.append("\"..s.imgv(s)..\"");
