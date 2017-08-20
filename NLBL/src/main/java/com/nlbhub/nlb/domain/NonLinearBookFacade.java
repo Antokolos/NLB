@@ -225,6 +225,9 @@ public class NonLinearBookFacade implements NLBObservable {
             exportBundledVNSTEADFile(fontsDir, true, "Medieval_English.ttf");
             exportBundledVNSTEADFile(fontsDir, true, "STEINEMU.ttf");
             exportBundledVNSTEADFile(fontsDir, true, "sans.ttf");
+            exportBundledVNSTEADFile(fontsDir, true, "sans-b.ttf");
+            exportBundledVNSTEADFile(fontsDir, true, "sans-i.ttf");
+            exportBundledVNSTEADFile(fontsDir, true, "sans-bi.ttf");
         }
         File modulesDir = new File(exportDir, "modules");
         if (modulesDir.mkdir()) {

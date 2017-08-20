@@ -19,8 +19,8 @@ theme.set('inv.mode', 'vertical');
 --theme.set('scr.gfx.scalable', 5); -- was 1
 
 -- http://www.fonts2u.com/steinem-unicode.font
-theme.set('win.fnt.name', 'fonts/sans.ttf');
-theme.set('inv.fnt.name', 'fonts/sans.ttf');
+theme.set('win.fnt.name', 'fonts/{sans,sans-b,sans-i,sans-bi}.ttf');
+theme.set('inv.fnt.name', 'fonts/{sans,sans-b,sans-i,sans-bi}.ttf');
 theme.set('menu.fnt.name', 'fonts/STEINEMU.ttf');
 theme.set('win.fnt.size', 24);
 theme.set('inv.fnt.size', 24);
