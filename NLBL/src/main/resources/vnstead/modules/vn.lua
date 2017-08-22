@@ -49,11 +49,11 @@ vntimer = function(f, s, cmd, ...)
     vnticks_diff = get_ticks() - vnticks;
     renewticks_diff = get_ticks() - renewticks;
 
-    if (vnticks_diff <= vn.hz) then
-        if vn:preload() then
-            return update_cursor_result;
-        end
-    end
+    --if (vnticks_diff <= vn.hz) then
+    --    if vn:preload() then
+    --        return update_cursor_result;
+    --    end
+    --end
     vn.slowcpu = (vnticks_diff > vn:ticks_threshold());
     log:trace("vnticks_diff = " .. vnticks_diff);
     vnticks = get_ticks();
@@ -261,10 +261,10 @@ vn = obj {
     _need_renew = false;
     _wf = 0;
     cache_effects = true;
-    tmr = 5;
-    hz_onthefly = 18;
+    tmr = 20;
+    hz_onthefly = 20;
     hz_preloaded = 40;
-    hz = 18;
+    hz = 20;
     slowcpu = false;
     var {
         on = true,
@@ -2432,10 +2432,12 @@ vn = obj {
             local sprites = {};
             local htotal = 0;
             local wmax = 0;
+            local empty_text = true;
             if not cached_sprites then
                 local tmp_sprite = clear or only_compute;
                 for k, vv in pairs(texts) do
                     if vv.text and vv.text ~= '' then
+                        empty_text = false;
                         local color = vv.color;
                         if not color then
                             color = s.hud_color;
@@ -2480,10 +2482,14 @@ vn = obj {
                 end
             else
                 sprites = cached_sprites.sprites;
+                empty_text = not sprites or next(sprites) == nil;
                 htotal = cached_sprites.htotal;
                 wmax = cached_sprites.wmax;
             end
             local ycur = ypos - htotal / 2.0;
+            if empty_text then
+                return {["v"] = v, ["x"] = xpos, ["y"] = ycur, ["w"] = 0, ["h"] = 0};
+            end
             local rct = {["v"] = v, ["x"] = xpos, ["y"] = ycur, ["w"] = wmax, ["h"] = htotal};
             if only_compute then
                 return rct;
