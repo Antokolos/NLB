@@ -67,6 +67,7 @@ public interface NonLinearBook {
     public static final String SOUND_DIR_NAME = "sound";
     public static final String IMAGES_DIR_NAME = "images";
     public static final String DEFAULT_STARTPOINT = Constants.EMPTY_STRING;
+    public static final Theme DEFAULT_THEME = Theme.DEFAULT;
     public static final String DEFAULT_LANGUAGE = Constants.RU;
     public static final String DEFAULT_LICENSE = Constants.EMPTY_STRING;
     public static final boolean DEFAULT_FULL_AUTOWIRE = false;
@@ -297,6 +298,8 @@ public interface NonLinearBook {
     public String getLanguage();
 
     public String getLicense();
+
+    public Theme getTheme();
 
     public boolean isFullAutowire();
 

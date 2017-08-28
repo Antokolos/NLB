@@ -40,6 +40,7 @@ package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.NonLinearBook;
+import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 
 import javax.swing.*;
@@ -62,6 +63,7 @@ public class DialogBookProperties extends JDialog {
     private JCheckBox m_suppressSoundCheckBox;
     private JTextField m_titleTextField;
     private JTextField m_perfectGameAchievementTextField;
+    private JComboBox m_themeComboBox;
 
     public DialogBookProperties(final NonLinearBookFacade nlbFacade) {
         m_nlbFacade = nlbFacade;
@@ -117,6 +119,13 @@ public class DialogBookProperties extends JDialog {
         m_languageComboBox.setSelectedIndex(
                 nonLinearBook.getLanguage().equals(Constants.RU) ? 0 : 1
         );
+        DefaultComboBoxModel<Theme> themeComboboxModel = new DefaultComboBoxModel<>();
+        Theme[] possibleValues = nonLinearBook.getTheme().getDeclaringClass().getEnumConstants();
+        for (Theme theme : possibleValues) {
+            themeComboboxModel.addElement(theme);
+        }
+        m_themeComboBox.setModel(themeComboboxModel);
+        m_themeComboBox.setSelectedItem(nonLinearBook.getTheme());
     }
 
     public void showDialog() {
@@ -134,6 +143,7 @@ public class DialogBookProperties extends JDialog {
     private void onOK() {
         m_nlbFacade.updateBookProperties(
                 m_licenseTextArea.getText(),
+                (Theme) m_themeComboBox.getSelectedItem(),
                 m_languageComboboxModel.getElementAt(m_languageComboBox.getSelectedIndex()),
                 m_titleTextField.getText(),
                 m_authorTextField.getText(),
@@ -253,7 +263,7 @@ public class DialogBookProperties extends JDialog {
         final JPanel spacer1 = new JPanel();
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 10;
+        gbc.gridy = 11;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.VERTICAL;
         panel10.add(spacer1, gbc);
@@ -289,7 +299,7 @@ public class DialogBookProperties extends JDialog {
         panel13.setLayout(new GridBagLayout());
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
@@ -310,14 +320,14 @@ public class DialogBookProperties extends JDialog {
         label3.setText("Author");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.anchor = GridBagConstraints.EAST;
         panel10.add(label3, gbc);
         final JPanel panel14 = new JPanel();
         panel14.setLayout(new GridBagLayout());
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
@@ -338,14 +348,14 @@ public class DialogBookProperties extends JDialog {
         label4.setText("Version");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.anchor = GridBagConstraints.EAST;
         panel10.add(label4, gbc);
         final JPanel panel15 = new JPanel();
         panel15.setLayout(new GridBagLayout());
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 7;
+        gbc.gridy = 8;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
@@ -368,7 +378,7 @@ public class DialogBookProperties extends JDialog {
         panel16.setLayout(new GridBagLayout());
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 6;
+        gbc.gridy = 7;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
@@ -388,7 +398,7 @@ public class DialogBookProperties extends JDialog {
         panel17.setLayout(new GridBagLayout());
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 8;
+        gbc.gridy = 9;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
@@ -411,7 +421,7 @@ public class DialogBookProperties extends JDialog {
         panel18.setLayout(new GridBagLayout());
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 9;
+        gbc.gridy = 10;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
@@ -434,7 +444,7 @@ public class DialogBookProperties extends JDialog {
         panel19.setLayout(new GridBagLayout());
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
@@ -455,14 +465,14 @@ public class DialogBookProperties extends JDialog {
         label5.setText("Title");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         gbc.anchor = GridBagConstraints.EAST;
         panel10.add(label5, gbc);
         final JPanel panel20 = new JPanel();
         panel20.setLayout(new GridBagLayout());
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
-        gbc.gridy = 5;
+        gbc.gridy = 6;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 0);
@@ -483,18 +493,50 @@ public class DialogBookProperties extends JDialog {
         label6.setText("Perfect game achievement");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 5;
+        gbc.gridy = 6;
         gbc.anchor = GridBagConstraints.EAST;
         panel10.add(label6, gbc);
         final JPanel panel21 = new JPanel();
-        panel21.setLayout(new BorderLayout(0, 0));
-        panel1.add(panel21, BorderLayout.CENTER);
+        panel21.setLayout(new GridBagLayout());
+        panel21.setMinimumSize(new Dimension(468, 33));
+        panel21.setPreferredSize(new Dimension(468, 33));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(5, 5, 5, 0);
+        panel10.add(panel21, gbc);
+        final JScrollPane scrollPane11 = new JScrollPane();
+        scrollPane11.setHorizontalScrollBarPolicy(31);
+        scrollPane11.setVerticalScrollBarPolicy(21);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel21.add(scrollPane11, gbc);
+        m_themeComboBox = new JComboBox();
+        scrollPane11.setViewportView(m_themeComboBox);
+        final JLabel label7 = new JLabel();
+        label7.setText("Theme");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel10.add(label7, gbc);
+        final JPanel panel22 = new JPanel();
+        panel22.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel22, BorderLayout.CENTER);
         label1.setLabelFor(m_licenseTextArea);
         label2.setLabelFor(m_languageComboBox);
         label3.setLabelFor(m_authorTextField);
         label4.setLabelFor(m_versionTextField);
         label5.setLabelFor(m_titleTextField);
         label6.setLabelFor(m_perfectGameAchievementTextField);
+        label7.setLabelFor(m_themeComboBox);
     }
 
     /**

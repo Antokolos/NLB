@@ -301,6 +301,7 @@ public class NonLinearBookFacade implements NLBObservable {
 
     public void updateBookProperties(
             final String license,
+            final Theme theme,
             final String language,
             final String title,
             final String author,
@@ -312,7 +313,7 @@ public class NonLinearBookFacade implements NLBObservable {
             final boolean propagateToSubmodules
     ) {
         NonLinearBookImpl.UpdateBookPropertiesCommand command = (
-                m_nlb.createUpdateBookPropertiesCommand(license, language, title, author, version, perfectGameAchievementName, fullAutowire, suppressMedia, suppressSound, propagateToSubmodules)
+                m_nlb.createUpdateBookPropertiesCommand(license, theme, language, title, author, version, perfectGameAchievementName, fullAutowire, suppressMedia, suppressSound, propagateToSubmodules)
         );
         m_undoManager.executeAndStore(command);
         notifyObservers();

@@ -96,6 +96,11 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
+    public Theme getTheme() {
+        return Theme.DEFAULT;
+    }
+
+    @Override
     public boolean isFullAutowire() {
         return DEFAULT_FULL_AUTOWIRE;
     }

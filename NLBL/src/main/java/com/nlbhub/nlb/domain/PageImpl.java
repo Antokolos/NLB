@@ -285,6 +285,10 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     @Override
     public Theme getTheme() {
+        Theme bookTheme = getCurrentNLB().getTheme();
+        if (m_theme == Theme.DEFAULT) {
+            return bookTheme;
+        }
         return m_theme;
     }
 
