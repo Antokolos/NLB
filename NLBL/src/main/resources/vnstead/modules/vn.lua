@@ -4,6 +4,7 @@ require 'theme'
 require 'sprites'
 require 'modules/gobj'
 require 'modules/log'
+require 'modules/nlb'
 
 local win_reset = function()
     if not vn._win_get then
@@ -2003,6 +2004,20 @@ vn = obj {
         return
         -- just transpose
     end;
+    get_win_coords = function(s)
+        local scr_width, scr_height = theme.get('scr.w'), theme.get('scr.h');
+        local win_height = (scr_height * 10) / 54;
+        return s.textpad, scr_height - 2 * s.textpad - win_height, scr_width - 2 * s.textpad, win_height - 2 * s.textpad;
+    end;
+    auto_geom = function(s, effect, callback)
+        local x, y, w, h = s:get_win_coords();
+        local wf, hf = 0, 0;
+        local tr = nlb:theme_root();
+        if s:file_exists(tr .. 'gfx/fl.png') then
+            wf, hf = sprite.size(fln_s);
+        end
+        return s:geom(x, y, w, h, effect, wf, callback);
+    end;
     -- effect is effect name, like 'dissolve'
     -- wf is the fancy border width, in pixels
     -- fln and frn are paths to the borders' images
@@ -2708,15 +2723,16 @@ stead.module_init(function()
     renewticks = vnticks;
     vnticks_diff = vn:ticks_threshold();
     renewticks_diff = vn:renew_threshold();
-    hudFont = gr:font('fonts/Medieval_English.ttf', 29);
+    local tr = nlb:theme_root();
+    hudFont = gr:font(tr .. 'fonts/Medieval_English.ttf', 29);
     empty_s = gr:load('gfx/empty.png');
-    if vn:file_exists('gfx/fl.png') then
-        fln_s = gr:load('gfx/fl.png');
+    if vn:file_exists(tr .. 'gfx/fl.png') then
+        fln_s = gr:load(tr .. 'gfx/fl.png');
     else
         fln_s = gr:blank(1, 1);
     end
-    if vn:file_exists('gfx/fr.png') then
-        frn_s = gr:load('gfx/fr.png');
+    if vn:file_exists(tr .. 'gfx/fr.png') then
+        frn_s = gr:load(tr .. 'gfx/fr.png');
     else
         frn_s = gr:blank(1, 1);
     end

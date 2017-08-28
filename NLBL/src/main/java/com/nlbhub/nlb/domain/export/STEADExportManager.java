@@ -134,8 +134,8 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("game.forcedsc = ").append(String.valueOf(nlbBuildingBlocks.isGameForcedsc())).append(";").append(LINE_SEPARATOR);
 
-        stringBuilder.append("f1 = font('fonts/STEINEMU.ttf', 32);").append(LINE_SEPARATOR);
-        stringBuilder.append("fend = font('fonts/STEINEMU.ttf', 96);").append(LINE_SEPARATOR);
+        stringBuilder.append("f1 = font(nlb:theme_root() .. 'fonts/STEINEMU.ttf', 32);").append(LINE_SEPARATOR);
+        stringBuilder.append("fend = font(nlb:theme_root() .. 'fonts/STEINEMU.ttf', 96);").append(LINE_SEPARATOR);
         stringBuilder.append("function pname(n, c)").append(LINE_SEPARATOR);
         stringBuilder.append("    return function()").append(LINE_SEPARATOR);
         stringBuilder.append("        pn(img 'blank:8x1',f1:txt(n, c, 1))").append(LINE_SEPARATOR);
@@ -433,9 +433,9 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append("        ").append(pageBlocks.getPageTimerVariableInit()).append(LINE_SEPARATOR);
         }
         if (pageBlocks.getTheme() == Theme.STANDARD) {
-            stringBuilder.append("        dofile('theme_standard.lua');").append(LINE_SEPARATOR);
+            stringBuilder.append("        nlb:theme_switch('theme_standard.lua');").append(LINE_SEPARATOR);
         } else if (pageBlocks.getTheme() == Theme.VN) {
-            stringBuilder.append("        dofile('theme_vn.lua');").append(LINE_SEPARATOR);
+            stringBuilder.append("        nlb:theme_switch('theme_vn.lua');").append(LINE_SEPARATOR);
         } else {
             stringBuilder.append(getDefaultThemeSwitchExpression());
         }
@@ -527,7 +527,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     protected String getDefaultThemeSwitchExpression() {
-        return "        dofile('theme_standard.lua');" + LINE_SEPARATOR;
+        return "        nlb:theme_switch('theme_standard.lua');" + LINE_SEPARATOR;
     }
 
     protected String generateOrdinaryLinkTextInsideRoom(PageBuildingBlocks pageBuildingBlocks) {

@@ -9,9 +9,9 @@ dice = menu {
     end,
     disp = function(s)
         if s.diceOnScreen then
-            return img('gfx/dice.png') .. ' ' .. s:hideTxt();
+            return img('dice/gfx/dice.png') .. ' ' .. s:hideTxt();
         else
-            return img('gfx/dice.png') .. ' ' .. s:rollTxt();
+            return img('dice/gfx/dice.png') .. ' ' .. s:rollTxt();
         end
     end,
     var {
@@ -68,8 +68,8 @@ dice = menu {
     end,
     inv = function(s)
         if s.rewardOnScreen then
-            vn:hide('gfx/round_finished.png');
-            vn:hide('gfx/reward.png');
+            vn:hide('dice/gfx/round_finished.png');
+            vn:hide('dice/gfx/reward.png');
             stop_sound();
             s.rewardOnScreen = false;
         end
@@ -130,14 +130,14 @@ dice = menu {
         local hpos = -576 + 356 * idx;
         local vpos = -506 + 356 * idx;
         if (s.pos == 1) then
-            return { die = 'gfx/e.' .. idx .. '.die', show = 'moveinright-right-middle@0,' .. hpos, hide = 'hide', hidefast = 'hide' };
+            return { die = 'dice/gfx/e.' .. idx .. '.die', show = 'moveinright-right-middle@0,' .. hpos, hide = 'hide', hidefast = 'hide' };
         elseif (s.pos == 2) then
-            return { die = 'gfx/s.' .. idx .. '.die', show = 'moveinbottom-bottom-middle@' .. vpos .. ',0', hide = 'hide', hidefast = 'hide' };
+            return { die = 'dice/gfx/s.' .. idx .. '.die', show = 'moveinbottom-bottom-middle@' .. vpos .. ',0', hide = 'hide', hidefast = 'hide' };
         elseif (s.pos == 3) then
-            return { die = 'gfx/w.' .. idx .. '.die', show = 'moveinleft-left-middle@0,' .. hpos, hide = 'hide', hidefast = 'hide' };
+            return { die = 'dice/gfx/w.' .. idx .. '.die', show = 'moveinleft-left-middle@0,' .. hpos, hide = 'hide', hidefast = 'hide' };
             --elseif (s.pos == 4) then
         else
-            return { die = 'gfx/n.' .. idx .. '.die', show = 'moveintop-top-middle@' .. vpos .. ',0', hide = 'hide', hidefast = 'hide' };
+            return { die = 'dice/gfx/n.' .. idx .. '.die', show = 'moveintop-top-middle@' .. vpos .. ',0', hide = 'hide', hidefast = 'hide' };
         end
     end,
     hide = function(s, fast)
@@ -240,9 +240,9 @@ dice = menu {
     end,
     get_roll_sound = function(s)
         if s.surftype == 'stone' then
-            return 'sfx/kosti.ogg';
+            return 'dice/sfx/kosti.ogg';
         else
-            return 'sfx/dice_roll.ogg';
+            return 'dice/sfx/dice_roll.ogg';
         end
     end
 }

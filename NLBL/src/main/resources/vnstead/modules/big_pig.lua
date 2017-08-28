@@ -105,7 +105,7 @@ you_win = gobj {
 reward = gobj {
     nam = "reward",
     system_type = true,
-    pic = "gfx/reward.png",
+    pic = "dice/gfx/reward.png",
     eff = "overlap-middle-middle@0,0",
     dirty_draw = true,
     maxStep = 270,
@@ -118,7 +118,7 @@ reward = gobj {
 round_finished = gobj {
     nam = "round_finished",
     system_type = true,
-    pic = "gfx/round_finished.png",
+    pic = "dice/gfx/round_finished.png",
     eff = "middle-middle@0,-18"
 }
 
@@ -168,9 +168,9 @@ plate = gobj {
 btn_dice = gobj {
     nam = "btn_dice",
     system_type = true,
-    pic = "gfx/btn_dice.png",
+    pic = "dice/gfx/btn_dice.png",
     eff = "right-top@-40,500",
-    onover = function(s) set_sound('sfx/shake.ogg', 1, 0); return true; end,
+    onover = function(s) set_sound('dice/sfx/shake.ogg', 1, 0); return true; end,
     morphover = "alt_btn_dice",
     enablefn = function(s) return enablefn(s); end
 }
@@ -178,7 +178,7 @@ btn_dice = gobj {
 alt_btn_dice = gobj {
     nam = "alt_btn_dice",
     system_type = true,
-    pic = "gfx/alt_btn_dice.png",
+    pic = "dice/gfx/alt_btn_dice.png",
     eff = "right-top@-40,500",
     morphout = "btn_dice",
     dsc = function(s) return dice:rollTxt(); end,
@@ -191,7 +191,7 @@ alt_btn_dice = gobj {
 btn_next = gobj {
     nam = "btn_next",
     system_type = true,
-    pic = "gfx/btn_next.png",
+    pic = "dice/gfx/btn_next.png",
     eff = "right-top@-40,625",
     morphover = "alt_btn_next",
     enablefn = function(s) return enablefn(s); end
@@ -200,7 +200,7 @@ btn_next = gobj {
 alt_btn_next = gobj {
     nam = "alt_btn_next",
     system_type = true,
-    pic = "gfx/alt_btn_next.png",
+    pic = "dice/gfx/alt_btn_next.png",
     eff = "right-top@-40,625",
     morphout = "btn_next",
     dsc = function(s) return next_turn_obj:disp(); end,
@@ -211,7 +211,7 @@ alt_btn_next = gobj {
 btn_inc = gobj {
     nam = "btn_inc",
     system_type = true,
-    pic = "gfx/btn_inc.png",
+    pic = "dice/gfx/btn_inc.png",
     eff = "right-top@-40,750",
     morphover = "alt_btn_inc",
     enablefn = function(s) return enablefn(s); end
@@ -220,7 +220,7 @@ btn_inc = gobj {
 alt_btn_inc = gobj {
     nam = "alt_btn_inc",
     system_type = true,
-    pic = "gfx/alt_btn_inc.png",
+    pic = "dice/gfx/alt_btn_inc.png",
     eff = "right-top@-40,750",
     morphout = "btn_inc",
     dsc = function(s) return increase_bet_obj:txt(); end,
@@ -231,7 +231,7 @@ alt_btn_inc = gobj {
 btn_exit = gobj {
     nam = "btn_exit",
     system_type = true,
-    pic = "gfx/btn_exit.png",
+    pic = "dice/gfx/btn_exit.png",
     eff = "right-top@-40,875",
     morphover = "alt_btn_exit",
     enablefn = function(s) return enablefn2(s); end
@@ -240,7 +240,7 @@ btn_exit = gobj {
 alt_btn_exit = gobj {
     nam = "alt_btn_exit",
     system_type = true,
-    pic = "gfx/alt_btn_exit.png",
+    pic = "dice/gfx/alt_btn_exit.png",
     eff = "right-top@-40,875",
     morphout = "btn_exit",
     dsc = function(s) return _play_game_obj:txt(); end,
@@ -252,9 +252,9 @@ alt_btn_exit = gobj {
 btn_dice2 = gobj {
     nam = "btn_dice2",
     system_type = true,
-    pic = "gfx/btn_dice2.png",
+    pic = "dice/gfx/btn_dice2.png",
     eff = "right-bottom@-195,-440",
-    onover = function(s) set_sound('sfx/shake.ogg', 1, 0); return true; end,
+    onover = function(s) set_sound('dice/sfx/shake.ogg', 1, 0); return true; end,
     morphover = "alt_btn_dice2",
     enablefn = function(s) return enablefn(s); end
 }
@@ -262,7 +262,7 @@ btn_dice2 = gobj {
 alt_btn_dice2 = gobj {
     nam = "alt_btn_dice2",
     system_type = true,
-    pic = "gfx/alt_btn_dice2.png",
+    pic = "dice/gfx/alt_btn_dice2.png",
     eff = "right-bottom@-195,-440",
     morphout = "btn_dice2",
     dsc = function(s) return dice:rollTxt(); end,
@@ -274,7 +274,7 @@ alt_btn_dice2 = gobj {
 btn_next2 = gobj {
     nam = "btn_next2",
     system_type = true,
-    pic = "gfx/btn_next2.png",
+    pic = "dice/gfx/btn_next2.png",
     eff = "right-bottom@-195,-280",
     morphover = "alt_btn_next2",
     enablefn = function(s) return enablefn(s); end
@@ -283,7 +283,7 @@ btn_next2 = gobj {
 alt_btn_next2 = gobj {
     nam = "alt_btn_next2",
     system_type = true,
-    pic = "gfx/alt_btn_next2.png",
+    pic = "dice/gfx/alt_btn_next2.png",
     eff = "right-bottom@-195,-280",
     morphout = "btn_next2",
     dsc = function(s) return next_turn_obj:disp(); end,
@@ -294,7 +294,7 @@ alt_btn_next2 = gobj {
 btn_inc2 = gobj {
     nam = "btn_inc2",
     system_type = true,
-    pic = "gfx/btn_inc2.png",
+    pic = "dice/gfx/btn_inc2.png",
     eff = "right-bottom@-195,-180",
     morphover = "alt_btn_inc2",
     enablefn = function(s) return enablefn(s); end
@@ -303,7 +303,7 @@ btn_inc2 = gobj {
 alt_btn_inc2 = gobj {
     nam = "alt_btn_inc2",
     system_type = true,
-    pic = "gfx/alt_btn_inc2.png",
+    pic = "dice/gfx/alt_btn_inc2.png",
     eff = "right-bottom@-195,-180",
     morphout = "btn_inc2",
     dsc = function(s) return increase_bet_obj:txt(); end,
@@ -314,7 +314,7 @@ alt_btn_inc2 = gobj {
 btn_exit2 = gobj {
     nam = "btn_exit2",
     system_type = true,
-    pic = "gfx/btn_exit2.png",
+    pic = "dice/gfx/btn_exit2.png",
     eff = "right-bottom@-195,-10",
     morphover = "alt_btn_exit2",
     enablefn = function(s) return enablefn2(s); end
@@ -323,7 +323,7 @@ btn_exit2 = gobj {
 alt_btn_exit2 = gobj {
     nam = "alt_btn_exit2",
     system_type = true,
-    pic = "gfx/alt_btn_exit2.png",
+    pic = "dice/gfx/alt_btn_exit2.png",
     eff = "right-bottom@-195,-10",
     morphout = "btn_exit2",
     dsc = function(s) return _play_game_obj:txt(); end,
@@ -481,7 +481,7 @@ rollStat = stat {
                     s:init();
                     vn:gshow(round_finished);
                     vn:gshow(reward);
-                    set_sound('sfx/money.ogg', nil, 1);
+                    set_sound('dice/sfx/money.ogg', nil, 1);
                     if s.data and not s:is_defined(rollStat.data.mainplr) then
                         return function()
                             vn:gshow(you_lose);
@@ -665,7 +665,7 @@ game_room = vnr {
         rollStat:init();
         s:bgimg(game.table.bg);
 
-        vn:preload_effect('gfx/reward.png', 0, 270, 0, 270);
+        vn:preload_effect('dice/gfx/reward.png', 0, 270, 0, 270);
 
         vn:gshow(v_c7c2ac92_ac1b_4557_8265_8adddb054136);
         vn:gshow(_dices_help);
@@ -673,7 +673,7 @@ game_room = vnr {
         local paper_eff = vn:gshow(paper);
 
         if (game.table.plate) then
-            --set_music('sfx/abu_ali.ogg');
+            --set_music('dice/sfx/abu_ali.ogg');
             objs(paper):add(txt1);
             --vn:add_child(paper_eff, txt1); -- will be done automatically via vn:add_all_missing_children()
             vn:gshow(plate);
@@ -682,7 +682,7 @@ game_room = vnr {
             vn:gshow(btn_inc2);
             vn:gshow(btn_exit2);
         else
-            --set_music('sfx/tavernm.ogg');
+            --set_music('dice/sfx/tavernm.ogg');
             objs(paper):add(txt2);
             --vn:add_child(paper_eff, txt2); -- will be done automatically via vn:add_all_missing_children()
             vn:gshow(btn_dice);
@@ -726,7 +726,7 @@ game.data = {
     ["bet"] = 50,
     ["threshold"] = 100
 };
-game.table = { ["bg"] = 'gfx/table2.png', ["paper"] = 'gfx/paper2.png' };
+game.table = { ["bg"] = 'dice/gfx/table2.png', ["paper"] = 'dice/gfx/paper2.png' };
 
 _play_bp_two_ais = menu {
     nam = "play_bp_two_ais",
@@ -745,8 +745,8 @@ _play_bp_two_ais = menu {
             ["bet"] = 50,
             ["threshold"] = 100
         };
-        game.table.bg = 'gfx/table2.png';
-        game.table.paper = 'gfx/paper2.png';
+        game.table.bg = 'dice/gfx/table2.png';
+        game.table.paper = 'dice/gfx/paper2.png';
         game.table.plate = false;
         game.table.surftype = false;
 
@@ -772,9 +772,9 @@ _play_bp_one_ai = menu {
             ["bet"] = 50,
             ["threshold"] = 100
         };
-        game.table.bg = 'gfx/table1.png';
-        game.table.paper = 'gfx/paper1.png';
-        game.table.plate = 'gfx/plate.png';
+        game.table.bg = 'dice/gfx/table1.png';
+        game.table.paper = 'dice/gfx/paper1.png';
+        game.table.plate = 'dice/gfx/plate.png';
         game.table.surftype = 'stone';
 
         _play_game_obj:inv(); 
@@ -799,9 +799,9 @@ _play_bp_one_hotseat = menu {
             ["bet"] = 50,
             ["threshold"] = 100
         };
-        game.table.bg = 'gfx/table1.png';
-        game.table.paper = 'gfx/paper1.png';
-        game.table.plate = 'gfx/plate.png';
+        game.table.bg = 'dice/gfx/table1.png';
+        game.table.paper = 'dice/gfx/paper1.png';
+        game.table.plate = 'dice/gfx/plate.png';
         game.table.surftype = false;
 
         _play_game_obj:inv(); 
@@ -827,8 +827,8 @@ _play_bp_two_hotseats = menu {
             ["bet"] = 50,
             ["threshold"] = 100
         };
-        game.table.bg = 'gfx/table2.png';
-        game.table.paper = 'gfx/paper2.png';
+        game.table.bg = 'dice/gfx/table2.png';
+        game.table.paper = 'dice/gfx/paper2.png';
         game.table.plate = false;
         game.table.surftype = false;
 
@@ -840,7 +840,8 @@ _play_bp_two_hotseats = menu {
 stead.module_init(function()
     rollStat:init();
     dicegames['setrolls'] = function() return rollStat:setrolls(); end;
-    local labelFont = sprite.font('fonts/STEINEMU.ttf', 48);
+    local tr = nlb:theme_root();
+    local labelFont = sprite.font(tr .. 'fonts/STEINEMU.ttf', 48);
     if _export_lang == 'ru' then
         you_win_label = vn:label("Вы победили!", 40, "#ffffff", "black", 127, labelFont);
         you_lose_label = vn:label("Вы проиграли...", 40, "#ffffff", "black", 127, labelFont);

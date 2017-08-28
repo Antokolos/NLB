@@ -1,4 +1,5 @@
 require 'prefs'
+require 'sprites'
 
 nlb = obj {
     nam = 'nlb';
@@ -365,6 +366,14 @@ nlb = obj {
             end
         end
     end;
+    theme_switch = function(s, theme_file)
+        local theme_root = s:theme_root();
+        dofile(theme_root .. theme_file);
+    end;
+    theme_root = function(s)
+        local theme_name = theme.name();
+        return 'themes' .. theme_name:gsub('[\\.]', '/') .. '/';
+    end;
 };
 
 _try_again = menu {
@@ -390,10 +399,17 @@ _syscall_showmenubtn  = menu {
     nam = "syscall_showmenubtn",
     system_type = true,
     act = function(s)
+        local tr = nlb:theme_root();
         if _export_lang == 'ru' then
-            theme.menu.gfx.button('gfx/menubtn_ru.png', 1827, 0);
+            local btn = sprite.load(tr .. 'gfx/menubtn_ru.png');
+            local w, h = sprite.size(btn);
+            sprite.free(btn);
+            theme.menu.gfx.button(tr .. 'gfx/menubtn_ru.png', theme.get('scr.w') - w, 0);
         else
-            theme.menu.gfx.button('gfx/menubtn.png', 1827, 0);
+            local btn = sprite.load(tr .. 'gfx/menubtn.png');
+            local w, h = sprite.size(btn);
+            sprite.free(btn);
+            theme.menu.gfx.button(tr .. 'gfx/menubtn.png', theme.get('scr.w') - w, 0);
         end
     end,
     actf = function(s) return s:act(); end

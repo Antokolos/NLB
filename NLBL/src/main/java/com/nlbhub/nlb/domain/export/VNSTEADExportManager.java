@@ -88,7 +88,7 @@ public class VNSTEADExportManager extends STEADExportManager {
     protected String getSpecificInit() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("    vn:turnoff();").append(getLineSeparator());  // Needed for dofile("theme_vn.lua"), because otherwise it will not switch the theme
-        stringBuilder.append("    dofile(\"theme_vn.lua\");").append(getLineSeparator());  // Reset theme to VN (default is non-VN)
+        stringBuilder.append("    nlb:theme_switch(\"theme_vn.lua\");").append(getLineSeparator());  // Reset theme to VN (default is non-VN)
         return stringBuilder.toString();
     }
 
@@ -114,7 +114,7 @@ public class VNSTEADExportManager extends STEADExportManager {
             }
         }
         stringBuilder.append("        if geomFuncNeedToCall then").append(getLineSeparator());
-        stringBuilder.append("            vn:geom(8, 864, 1904, 184, 'dissolve', 240, function() s.autos(s); end);").append(getLineSeparator());
+        stringBuilder.append("            vn:auto_geom('dissolve', function() s.autos(s); end);").append(getLineSeparator());
         stringBuilder.append("        end;").append(getLineSeparator());
         stringBuilder.append("    end,").append(getLineSeparator());
         return stringBuilder.toString();
@@ -122,7 +122,7 @@ public class VNSTEADExportManager extends STEADExportManager {
 
     @Override
     protected String getDefaultThemeSwitchExpression() {
-        return "        dofile('theme_vn.lua');" + getLineSeparator();
+        return "        nlb:theme_switch('theme_vn.lua');" + getLineSeparator();
     }
 
 

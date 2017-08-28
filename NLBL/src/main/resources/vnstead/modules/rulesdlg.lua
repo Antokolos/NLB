@@ -27,7 +27,7 @@ v_53b088b4_4b84_4939_89a7_191607467229 = gmenu {
     end,
     pic = function(s)
         if (true) then
-            return 'gfx/dlgbuttonok_out.png';
+            return 'dice/gfx/dlgbuttonok_out.png';
 
         end
     end,
@@ -80,7 +80,7 @@ v_c7c2ac92_ac1b_4557_8265_8adddb054136 = gmenu {
     end,
     pic = function(s)
         if (true) then
-            return 'gfx/dialog_bg.png';
+            return 'dice/gfx/dialog_bg.png';
 
         end
     end,
@@ -100,7 +100,7 @@ _dialogObj = v_c7c2ac92_ac1b_4557_8265_8adddb054136
 _dices_help = gobj {
     nam = "dices_help",
     system_type = true,
-    pic = "gfx/dices_help.png",
+    pic = "dice/gfx/dices_help.png",
     eff = "left-top@40,875",
     morphover = "_alt_dices_help"
 }
@@ -108,7 +108,7 @@ _dices_help = gobj {
 _alt_dices_help = gobj {
     nam = "alt_dices_help",
     system_type = true,
-    pic = "gfx/dices_help_alt.png",
+    pic = "dice/gfx/dices_help_alt.png",
     eff = "left-top@40,875",
     morphout = "_dices_help",
     dsc = function(s) return "Help"; end,
@@ -190,7 +190,7 @@ v_c757b8a3_210e_4966_8fb5_a853c8f0512c = gmenu {
     end,
     pic = function(s)
         if (true) then
-            return 'gfx/dlg_text_bg.png';
+            return 'dice/gfx/dlg_text_bg.png';
 
         end
     end,

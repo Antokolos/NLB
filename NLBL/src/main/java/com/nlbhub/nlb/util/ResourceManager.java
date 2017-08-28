@@ -38,30 +38,90 @@
  */
 package com.nlbhub.nlb.util;
 
-import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.exception.NLBIOException;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * The StringHelper class
+ * The ResourceManager class
  *
  * @author Anton P. Kolosov
  */
 public class ResourceManager {
 
-    public static void exportBundledVNSTEADFile(File targetDir, boolean fromSubdir, String fname) throws NLBIOException {
-        exportBundledFile("vnstead", targetDir, fromSubdir, fname);
+    private static final String VNSTEAD = "vnstead";
+
+    public static void exportBundledFiles(File targetDir) throws NLBIOException {
+        try {
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            Map<String, List<File>> resourceFolderFiles = getResourceFolderFiles(loader);
+            for (Map.Entry<String, List<File>> resourceFileEntry : resourceFolderFiles.entrySet()) {
+                exportBundledFiles(loader, resourceFileEntry, targetDir);
+            }
+        } catch (URISyntaxException e) {
+            throw new NLBIOException("Error exporting bundled file", e);
+        }
     }
 
-    private static void exportBundledFile(String resourceRoot, File targetDir, boolean fromSubdir, String fname) throws NLBIOException {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        File file = new File(targetDir, fname);
+    private static Map<String, List<File>> getResourceFolderFiles(ClassLoader loader) throws URISyntaxException {
+        URL url = loader.getResource(VNSTEAD);
+        return getAllChildren(new File(url.toURI()), "");
+    }
+
+    private static Map<String, List<File>> getAllChildren(File parent, String parentPath) {
+        Map<String, List<File>> result = new HashMap<>();
+        File[] files = parent.listFiles();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                String key = StringHelper.notEmpty(parentPath) ? parentPath + "/" + file.getName() : file.getName();
+                result.putAll(getAllChildren(file, key));
+            } else {
+                List<File> filesList = result.get(parentPath);
+                if (filesList == null) {
+                    filesList = new ArrayList<>();
+                    result.put(parentPath, filesList);
+                }
+                filesList.add(file);
+            }
+        }
+        return result;
+    }
+
+    private static void exportBundledFiles(
+            ClassLoader loader,
+            Map.Entry<String, List<File>> resourceFileEntry,
+            File targetDir
+    ) throws NLBIOException {
+        String key = resourceFileEntry.getKey();
+        boolean hasParentFolder = StringHelper.notEmpty(key);
+        File resourceFileParent = hasParentFolder ? new File(targetDir, key) : targetDir;
+        if (hasParentFolder) {
+            resourceFileParent.mkdirs();
+        }
+        for (File resourceFile : resourceFileEntry.getValue()) {
+            String fileName = resourceFile.getName();
+            String resourceFilePath = hasParentFolder ? key + "/" + fileName : fileName;
+            exportBundledFile(loader, VNSTEAD + "/" + resourceFilePath, resourceFileParent, resourceFile);
+        }
+    }
+
+    private static void exportBundledFile(
+            ClassLoader loader,
+            String resourceFilePath,
+            File resourceFileParent,
+            File resourceFile
+    ) throws NLBIOException {
+        File file = new File(resourceFileParent, resourceFile.getName());
         try {
-            String resname = resourceRoot + "/" + ((fromSubdir) ? targetDir.getName() + "/" : Constants.EMPTY_STRING) + fname;
-            try (InputStream is = classLoader.getResourceAsStream(resname)) {
+            try (InputStream is = loader.getResourceAsStream(resourceFilePath)) {
                 FileManipulator.writeFile(file, is);
             }
         } catch (IOException e) {
