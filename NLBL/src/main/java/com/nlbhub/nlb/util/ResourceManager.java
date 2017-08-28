@@ -41,10 +41,9 @@ package com.nlbhub.nlb.util;
 import com.nlbhub.nlb.exception.NLBIOException;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,20 +59,19 @@ public class ResourceManager {
     private static final String VNSTEAD = "vnstead";
 
     public static void exportBundledFiles(File targetDir) throws NLBIOException {
-        try {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            Map<String, List<File>> resourceFolderFiles = getResourceFolderFiles(loader);
-            for (Map.Entry<String, List<File>> resourceFileEntry : resourceFolderFiles.entrySet()) {
-                exportBundledFiles(loader, resourceFileEntry, targetDir);
-            }
-        } catch (URISyntaxException e) {
-            throw new NLBIOException("Error exporting bundled file", e);
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        Map<String, List<File>> resourceFolderFiles = getResourceFolderFiles(loader);
+        for (Map.Entry<String, List<File>> resourceFileEntry : resourceFolderFiles.entrySet()) {
+            exportBundledFiles(resourceFileEntry, targetDir);
         }
     }
 
-    private static Map<String, List<File>> getResourceFolderFiles(ClassLoader loader) throws URISyntaxException {
-        URL url = loader.getResource(VNSTEAD);
-        return getAllChildren(new File(url.toURI()), "");
+    private static Map<String, List<File>> getResourceFolderFiles(ClassLoader loader) throws NLBIOException {
+        File resDir = new File("res");
+        if (!resDir.exists()) {
+            throw new NLBIOException("Resources dir 'res' does not exist!");
+        }
+        return getAllChildren(new File(resDir, VNSTEAD), "");
     }
 
     private static Map<String, List<File>> getAllChildren(File parent, String parentPath) {
@@ -96,7 +94,6 @@ public class ResourceManager {
     }
 
     private static void exportBundledFiles(
-            ClassLoader loader,
             Map.Entry<String, List<File>> resourceFileEntry,
             File targetDir
     ) throws NLBIOException {
@@ -107,21 +104,17 @@ public class ResourceManager {
             resourceFileParent.mkdirs();
         }
         for (File resourceFile : resourceFileEntry.getValue()) {
-            String fileName = resourceFile.getName();
-            String resourceFilePath = hasParentFolder ? key + "/" + fileName : fileName;
-            exportBundledFile(loader, VNSTEAD + "/" + resourceFilePath, resourceFileParent, resourceFile);
+            exportBundledFile(resourceFileParent, resourceFile);
         }
     }
 
     private static void exportBundledFile(
-            ClassLoader loader,
-            String resourceFilePath,
             File resourceFileParent,
             File resourceFile
     ) throws NLBIOException {
         File file = new File(resourceFileParent, resourceFile.getName());
         try {
-            try (InputStream is = loader.getResourceAsStream(resourceFilePath)) {
+            try (InputStream is = new FileInputStream(resourceFile)) {
                 FileManipulator.writeFile(file, is);
             }
         } catch (IOException e) {
