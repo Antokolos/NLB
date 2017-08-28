@@ -381,6 +381,7 @@ _try_again = menu {
     system_type = true,
     dsc = function(s) return img 'blank:132x23'.."{Try again}^" end,
     act = function(s)
+        p(img 'blank:120x23' .. "Restarting...");
         stead.restart();
     end,
     actf = function(s) return s:act(); end
