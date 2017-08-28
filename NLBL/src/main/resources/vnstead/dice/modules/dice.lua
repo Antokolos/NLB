@@ -1,5 +1,5 @@
 require "modules/vn"
-require "modules/dicegames"
+require "dice/modules/dicegames"
 
 dice = menu {
     nam = "dice",

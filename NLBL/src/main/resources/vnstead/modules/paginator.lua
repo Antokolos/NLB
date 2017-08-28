@@ -2,7 +2,6 @@
 require "kbd"
 require "click"
 require "theme"
-require "modules/dice"
 require "modules/vn"
 require 'modules/log'
 
@@ -76,11 +75,9 @@ paginatorKbd = function(down, key)
         if vn:finish() then
             return
         end
-        dice:hide(true);
-        -- Use code below if you want smooth rollout animation and text change on next step
-        --if dice:hide() then
-        --	return
-        --end
+        if paginator.onproceed then
+            paginator.onproceed();
+        end
         if paginator._last then
             if here().walk_to then
                 vn:request_full_clear();
@@ -138,14 +135,17 @@ paginator = obj {
     w = 0;
     h = 0;
     _page = 1;
-    var { process = false; on = true; },
+    var { process = false; on = true; onproceed = false; },
     delim = '\n\n';
     turnon = function(s)
         s.on = true;
     end,
     turnoff = function(s)
         s.on = false;
-    end
+    end,
+    set_onproceed = function(s, callback)
+        s.onproceed = callback;
+    end;
 }
 
 paginatorIfaceCmd = function(f, s, cmd, ...)

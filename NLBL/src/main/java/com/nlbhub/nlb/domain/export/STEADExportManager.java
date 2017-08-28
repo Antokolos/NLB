@@ -111,8 +111,8 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("require 'modules/fonts'").append(LINE_SEPARATOR);
         stringBuilder.append("require 'modules/paginator'").append(LINE_SEPARATOR);
         stringBuilder.append("require 'modules/vn'").append(LINE_SEPARATOR);
-        stringBuilder.append("require 'modules/big_pig'").append(LINE_SEPARATOR);
         stringBuilder.append("require 'modules/gobj'").append(LINE_SEPARATOR);
+        stringBuilder.append("require 'dice/modules/big_pig'").append(LINE_SEPARATOR);
         stringBuilder.append("game.codepage=\"UTF-8\";").append(LINE_SEPARATOR);
         stringBuilder.append("stead.scene_delim = '^';").append(LINE_SEPARATOR);
         stringBuilder.append(LINE_SEPARATOR);
@@ -150,6 +150,15 @@ public class STEADExportManager extends TextExportManager {
 
         stringBuilder.append("function init()").append(LINE_SEPARATOR);
         stringBuilder.append("    statsAPI.init();").append(LINE_SEPARATOR);
+        stringBuilder.append("    if dice then").append(LINE_SEPARATOR);
+        stringBuilder.append("        paginator:set_onproceed(function()").append(LINE_SEPARATOR);
+        stringBuilder.append("            dice:hide(true);").append(LINE_SEPARATOR);
+        stringBuilder.append("            -- Use code below if you want smooth rollout animation and text change on next step").append(LINE_SEPARATOR);
+        stringBuilder.append("            --if dice:hide() then").append(LINE_SEPARATOR);
+        stringBuilder.append("            --    return").append(LINE_SEPARATOR);
+        stringBuilder.append("            --end").append(LINE_SEPARATOR);
+        stringBuilder.append("        end);").append(LINE_SEPARATOR);
+        stringBuilder.append("    end").append(LINE_SEPARATOR);
         stringBuilder.append(getSpecificInit());
         stringBuilder.append("    vn:scene(nil);").append(LINE_SEPARATOR);
         stringBuilder.append("    vn.fading = 8").append(LINE_SEPARATOR);

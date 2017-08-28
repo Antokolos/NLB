@@ -1,9 +1,9 @@
 require "modules/vn"
-require "modules/dice"
-require "modules/dicegames"
 require "modules/gobj"
 require "modules/nlb"
-require "modules/rulesdlg"
+require "dice/modules/dice"
+require "dice/modules/dicegames"
+require "dice/modules/rulesdlg"
 
 next_turn_obj = menu {
     nam = "next_turn_obj",
