@@ -379,9 +379,9 @@ nlb = obj {
 _try_again = menu {
     nam = "try_again",
     system_type = true,
-    dsc = function(s) return img 'blank:132x23'.."{Try again}^" end,
+    dsc = function(s) return txtc("{Try again}^"); end,
     act = function(s)
-        p(img 'blank:120x23' .. "Restarting...");
+        p(txtc("Restarting..."));
         stead.restart();
     end,
     actf = function(s) return s:act(); end

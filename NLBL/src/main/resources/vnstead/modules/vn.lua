@@ -10,12 +10,7 @@ local win_reset = function()
     if not vn._win_get then
         return
     end
-    theme.set('win.x', tonumber(vn.win_x));
-    theme.set('win.y', tonumber(vn.win_y));
-    theme.set('win.w', tonumber(vn.win_w));
-    theme.set('win.h', tonumber(vn.win_h));
-    theme.set('up.x', tonumber(vn.up_x));
-    theme.set('down.x', tonumber(vn.down_x));
+    vn:win_set();
     vn._win_get = false
 end
 local win_get = function()
@@ -356,6 +351,7 @@ vn = obj {
         s:set_bg(s._bg, true);
         s:draw_notes();
         s:add_all_missing_children();
+        s:win_set();
         s:start();
     end;
     init = function(s)
@@ -2009,6 +2005,22 @@ vn = obj {
         local win_height = (scr_height * 10) / 54;
         return s.textpad, scr_height - 2 * s.textpad - win_height, scr_width - 2 * s.textpad, win_height - 2 * s.textpad;
     end;
+    get_end_coords = function(s)
+        local scr_width, scr_height = theme.get('scr.w'), theme.get('scr.h');
+        local end_font = sprite.font(nlb:theme_root() .. 'fonts/STEINEMU.ttf', 96);
+        local the_w, the_h = sprite.text_size(end_font, 'The');
+        local end_w, end_h = sprite.text_size(end_font, 'End');
+        sprite.free_font(end_font);
+        local win_width = the_w + 64 + end_w;
+        local win_height = 200;
+        local real_height = win_height - 2 * s.textpad;
+        return (scr_width - win_width) / 2, (scr_height - real_height) / 2, win_width, real_height;
+    end;
+    get_choices_coords = function(s)
+        local scr_width, scr_height = theme.get('scr.w'), theme.get('scr.h');
+        local win_height = scr_height / 2;
+        return 2 * scr_width / 10, (scr_height - win_height) / 2, 6 * scr_width / 10, win_height;
+    end;
     auto_geom = function(s, effect, callback)
         local x, y, w, h = s:get_win_coords();
         local wf, hf = 0, 0;
@@ -2017,6 +2029,19 @@ vn = obj {
             wf, hf = sprite.size(fln_s);
         end
         return s:geom(x, y, w, h, effect, wf, callback);
+    end;
+    auto_geom_end = function(s, effect, callback)
+        local x, y, w, h = s:get_end_coords();
+        local wf, hf = 0, 0;
+        local tr = nlb:theme_root();
+        if s:file_exists(tr .. 'gfx/fl.png') then
+            wf, hf = sprite.size(fln_s);
+        end
+        return s:geom(x - wf, y, w + 2 * wf, h, effect, wf, callback);
+    end;
+    auto_geom_choices = function(s, effect, callback)
+        local x, y, w, h = s:get_choices_coords();
+        return s:geom(x, y, w, h, effect, nil, callback);
     end;
     -- effect is effect name, like 'dissolve'
     -- wf is the fancy border width, in pixels
@@ -2713,6 +2738,16 @@ vn = obj {
             s.scraps_cache[sb_index] = gr:blank(w, h);
         end
         return s.scraps_cache[sb_index];
+    end;
+    win_set = function(s)
+        if s.win_w and s.win_h and tonumber(s.win_w) > 0 and tonumber(s.win_h) > 0 then
+            theme.set('win.x', tonumber(s.win_x));
+            theme.set('win.y', tonumber(s.win_y));
+            theme.set('win.w', tonumber(s.win_w));
+            theme.set('win.h', tonumber(s.win_h));
+            theme.set('up.x', tonumber(s.up_x));
+            theme.set('down.x', tonumber(s.down_x));
+        end
     end;
 }
 

@@ -205,7 +205,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         result.append("    textbg = true,").append(lineSep);
         result.append("    ignore_preserved_gobjs = true,").append(lineSep);
         if (theEnd) {
-            result.append("    dsc = img 'blank:23x23'..'^'..fend:txt('The')..img 'blank:64x64'..fend:txt('End'),").append(lineSep);
+            result.append("    dsc = img 'blank:24x24'..'^'..fend:txt('The')..img 'blank:64x64'..fend:txt('End'),").append(lineSep);
         }
         result.append("    var { paginator_state = false; },").append(lineSep);
         result.append("    enter = function(s) ").append(lineSep);
@@ -244,9 +244,9 @@ public class VNSTEADExportManager extends STEADExportManager {
             }
             if (theEnd) {
                 result.append("        put(_try_again);").append(lineSep);
-                result.append("        vn:geom(530, 400, 860, 184, 'dissolve', 240);").append(lineSep);
+                result.append("        vn:auto_geom_end('dissolve');").append(lineSep);
             } else {
-                result.append("        vn:geom(320, 320, 1280, 480, 'dissolve');").append(lineSep);
+                result.append("        vn:auto_geom_choices('dissolve');").append(lineSep);
             }
         }
         result.append("    end,").append(lineSep);
