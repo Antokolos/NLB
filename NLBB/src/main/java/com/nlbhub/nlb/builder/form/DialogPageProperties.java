@@ -217,8 +217,11 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 );
                 dialog.showDialog();
                 if (!dialog.isCanceled()) {
-                    m_soundFileName = dialog.getSelectedFileName();
-                    m_soundFileNameLabel.setText(m_soundFileName);
+                    String selectedFileName = dialog.getSelectedFileName();
+                    if (selectedFileName != null) {
+                        m_soundFileName = selectedFileName;
+                        m_soundFileNameLabel.setText(m_soundFileName);
+                    }
                 }
             }
         });
@@ -236,9 +239,12 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 );
                 dialog.showDialog();
                 if (!dialog.isCanceled()) {
-                    m_imageFileName = dialog.getSelectedFileName();
-                    m_imageFileNameLabel.setText(m_imageFileName);
-                    setPageImage(m_imageFileName);
+                    String selectedFileName = dialog.getSelectedFileName();
+                    if (selectedFileName != null) {
+                        m_imageFileName = selectedFileName;
+                        m_imageFileNameLabel.setText(m_imageFileName);
+                        setPageImage(m_imageFileName);
+                    }
                 }
             }
         });
