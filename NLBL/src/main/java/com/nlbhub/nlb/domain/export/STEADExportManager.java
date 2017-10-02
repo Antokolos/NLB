@@ -91,29 +91,29 @@ public class STEADExportManager extends TextExportManager {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(getGameFileHeader(nlbBuildingBlocks));
 
-        stringBuilder.append("--package.cpath = \"./?.so\"").append(LINE_SEPARATOR);
-        stringBuilder.append("require \"luapassing\"").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
+        stringBuilder.append("--package.cpath = './?.so'").append(LINE_SEPARATOR);
+        stringBuilder.append("require 'luapassing'").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
 
-        stringBuilder.append("require \"prefs\"").append(LINE_SEPARATOR);
-        stringBuilder.append("require \"xact\"").append(LINE_SEPARATOR);
-        stringBuilder.append("require \"nouse\"").append(LINE_SEPARATOR);
-        stringBuilder.append("require \"hideinv\"").append(LINE_SEPARATOR);
-        stringBuilder.append("--require \"para\"").append(LINE_SEPARATOR);
-        stringBuilder.append("require \"dash\"").append(LINE_SEPARATOR);
+        stringBuilder.append("require 'prefs'").append(LINE_SEPARATOR);
+        stringBuilder.append("require 'xact'").append(LINE_SEPARATOR);
+        stringBuilder.append("require 'nouse'").append(LINE_SEPARATOR);
+        stringBuilder.append("require 'hideinv'").append(LINE_SEPARATOR);
+        stringBuilder.append("--require 'para'").append(LINE_SEPARATOR);
+        stringBuilder.append("require 'dash'").append(LINE_SEPARATOR);
         String lang = nlbBuildingBlocks.getLang();
         if (Constants.RU.equalsIgnoreCase(lang)) {
             // quotes module should be used only for russian language
-            stringBuilder.append("require \"quotes\" ").append(LINE_SEPARATOR);
+            stringBuilder.append("require 'quotes'").append(LINE_SEPARATOR);
         }
-        stringBuilder.append("require \"theme\" ").append(LINE_SEPARATOR);
-        stringBuilder.append("require \"timer\" ").append(LINE_SEPARATOR);
+        stringBuilder.append("require 'theme'").append(LINE_SEPARATOR);
+        stringBuilder.append("require 'timer'").append(LINE_SEPARATOR);
         stringBuilder.append("require 'modules/nlb'").append(LINE_SEPARATOR);
         stringBuilder.append("require 'modules/fonts'").append(LINE_SEPARATOR);
         stringBuilder.append("require 'modules/paginator'").append(LINE_SEPARATOR);
         stringBuilder.append("require 'modules/vn'").append(LINE_SEPARATOR);
         stringBuilder.append("require 'modules/gobj'").append(LINE_SEPARATOR);
         stringBuilder.append("require 'dice/modules/big_pig'").append(LINE_SEPARATOR);
-        stringBuilder.append("game.codepage=\"UTF-8\";").append(LINE_SEPARATOR);
+        stringBuilder.append("game.codepage='UTF-8';").append(LINE_SEPARATOR);
         stringBuilder.append("stead.scene_delim = '^';").append(LINE_SEPARATOR);
         stringBuilder.append(LINE_SEPARATOR);
 
@@ -145,7 +145,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("paginator.delim = '\\n[ \\t]*\\n'").append(LINE_SEPARATOR);
 
         stringBuilder.append("function exec(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("    p('$'..s:gsub(\"\\n\", \"^\")..'$^^')").append(LINE_SEPARATOR);
+        stringBuilder.append("    p('$'..s:gsub('\\n', '^')..'$^^')").append(LINE_SEPARATOR);
         stringBuilder.append("end").append(LINE_SEPARATOR);
 
         stringBuilder.append("function init()").append(LINE_SEPARATOR);
@@ -177,11 +177,11 @@ public class STEADExportManager extends TextExportManager {
         String version = StringHelper.notEmpty(nlbBuildingBlocks.getVersion()) ? nlbBuildingBlocks.getVersion() : "0.1";
         StringBuilder result = new StringBuilder();
         result.append(LINE_SEPARATOR).append("_version_obj = gobj {").append(LINE_SEPARATOR)
-                .append("    nam = \"version_obj\",").append(LINE_SEPARATOR)
+                .append("    nam = 'version_obj',").append(LINE_SEPARATOR)
                 .append("    system_type = true,").append(LINE_SEPARATOR)
-                .append("    pic = \"gfx/version.png\",").append(LINE_SEPARATOR)
-                .append("    txtfn = function(s) return { [1] = {[\"text\"] = '").append(version).append("', [\"color\"] = 'white' } }; end,").append(LINE_SEPARATOR)
-                .append("    eff = \"left-top@0,0\",").append(LINE_SEPARATOR)
+                .append("    pic = 'gfx/version.png',").append(LINE_SEPARATOR)
+                .append("    txtfn = function(s) return { [1] = {['text'] = '").append(version).append("', ['color'] = 'white' } }; end,").append(LINE_SEPARATOR)
+                .append("    eff = 'left-top@0,0',").append(LINE_SEPARATOR)
                 .append("    iarm = {[0] = {0, 16}}").append(LINE_SEPARATOR)
                 .append(LINE_SEPARATOR).append("}")
                 .append(LINE_SEPARATOR);
@@ -196,7 +196,7 @@ public class STEADExportManager extends TextExportManager {
         result.append("--$Name:").append(title).append("$").append(LINE_SEPARATOR);
         result.append("--$Version:").append(version).append("$").append(LINE_SEPARATOR);
         result.append("--$Author:").append(author).append("$").append(LINE_SEPARATOR);
-        result.append("instead_version \"2.3.0\"").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
+        result.append("instead_version '2.3.0'").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
         return result.toString();
     }
 
@@ -733,7 +733,7 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateObjName(String name, String id) {
-        return "    nam = \"" + (StringHelper.notEmpty(name) ? name : decorateId(id)) + "\"," + LINE_SEPARATOR;
+        return "    nam = '" + (StringHelper.notEmpty(name) ? name : decorateId(id)) + "'," + LINE_SEPARATOR;
     }
 
     @Override
@@ -796,7 +796,7 @@ public class STEADExportManager extends TextExportManager {
             }
         }
         if (graphicalObj) {
-            return "    eff = \"" + pos + "\"," + LINE_SEPARATOR + steps +
+            return "    eff = '" + pos + "'," + LINE_SEPARATOR + steps +
                     (hasDefinedOffset ? "" : "    arm = { [0] = { " + coordString + " } }," + LINE_SEPARATOR);
         } else {
             return EMPTY_STRING;
@@ -1729,7 +1729,7 @@ public class STEADExportManager extends TextExportManager {
         if (StringHelper.notEmpty(caption) && useCaption) {
             result.append("    nam = \"").append(caption).append("\",").append(LINE_SEPARATOR);
         } else {
-            result.append("    nam = \"").append(title).append("\",").append(LINE_SEPARATOR);
+            result.append("    nam = '").append(title).append("',").append(LINE_SEPARATOR);
         }
         if (noSave) {
             result.append("    nosave = true,").append(LINE_SEPARATOR);
@@ -1739,7 +1739,7 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageNotes(String notes) {
-        return "    notes = \"" + notes + "\"," + LINE_SEPARATOR;
+        return "    notes = '" + notes + "'," + LINE_SEPARATOR;
     }
 
     @Override
@@ -1968,7 +1968,7 @@ public class STEADExportManager extends TextExportManager {
         String roomName = decoratePageName(labelText, pageNumber);
         if (pageNumber == 1) {
             roomBeginning.append("main, ").append(roomName);
-            roomBeginning.append(" = room { nam = \"main\", enter = function(s) nlb:nlbwalk(s, ").append(roomName).append("); end }, ");
+            roomBeginning.append(" = room { nam = 'main', enter = function(s) nlb:nlbwalk(s, ").append(roomName).append("); end }, ");
         } else {
             roomBeginning.append(roomName).append(" = ");
         }

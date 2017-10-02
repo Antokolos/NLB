@@ -1013,6 +1013,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         resultCoords.setTop(sourceCoords.getTop());
         resultCoords.setWidth(sourceCoords.getWidth());
         resultCoords.setHeight(sourceCoords.getHeight());
+        result.setImageFileName(getImageFileName());
         result.setDeleted(isDeleted());
         result.setReturnPageId(getReturnPageId());
         result.setTheme(getTheme());
