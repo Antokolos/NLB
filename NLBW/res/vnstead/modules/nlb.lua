@@ -206,6 +206,7 @@ nlb = obj {
         end;
     end;
     ways_chk = function(s, r)
+        if not r.wcns then return; end;
         for k, v in pairs(r.wcns) do
             if v() then
                 enable(k);
@@ -215,6 +216,7 @@ nlb = obj {
         end
     end;
     alts_txt = function(s, r)
+        if not r.wcns then return ""; end;
         local result = "";
         for k, v in pairs(r.wcns) do
             if not v() then
