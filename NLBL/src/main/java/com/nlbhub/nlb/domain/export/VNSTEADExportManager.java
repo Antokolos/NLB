@@ -84,14 +84,6 @@ public class VNSTEADExportManager extends STEADExportManager {
         return m_technicalInstance || (theme != Theme.STANDARD);
     }
 
-    @Override
-    protected String getSpecificInit() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("    vn:turnoff();").append(getLineSeparator());  // Needed for dofile("theme_vn.lua"), because otherwise it will not switch the theme
-        stringBuilder.append("    nlb:theme_switch(\"theme_vn.lua\");").append(getLineSeparator());  // Reset theme to VN (default is non-VN)
-        return stringBuilder.toString();
-    }
-
     protected String getGraphicalObjectAppendingExpression(PageBuildingBlocks pageBuildingBlocks) {
         if (!isVN(pageBuildingBlocks.getTheme())) {
             return super.getGraphicalObjectAppendingExpression(pageBuildingBlocks);

@@ -159,7 +159,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            --end").append(LINE_SEPARATOR);
         stringBuilder.append("        end);").append(LINE_SEPARATOR);
         stringBuilder.append("    end").append(LINE_SEPARATOR);
-        stringBuilder.append(getSpecificInit());
+        stringBuilder.append(getThemeInit());
         stringBuilder.append("    vn:scene(nil);").append(LINE_SEPARATOR);
         stringBuilder.append("    vn.fading = 8").append(LINE_SEPARATOR);
         stringBuilder.append("    nlbticks = stead.ticks();").append(LINE_SEPARATOR);
@@ -169,8 +169,16 @@ public class STEADExportManager extends TextExportManager {
         return stringBuilder.toString();
     }
 
-    protected String getSpecificInit() {
-        return Constants.EMPTY_STRING;
+    protected String getThemeInit() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("    if vn:in_vnr() then").append(getLineSeparator());
+        stringBuilder.append("        vn:turnoff();").append(getLineSeparator());  // Needed for dofile("theme_vn.lua"), because otherwise it will not switch the theme
+        stringBuilder.append("        nlb:theme_switch(\"theme_vn.lua\");").append(getLineSeparator());  // Reset theme to VN (default is non-VN)
+        stringBuilder.append("    else").append(getLineSeparator());
+        stringBuilder.append("        vn:turnon();").append(getLineSeparator());  // Needed for dofile("theme_standard.lua"), because otherwise it will not switch the theme
+        stringBuilder.append("        nlb:theme_switch(\"theme_standard.lua\");").append(getLineSeparator());  // Reset theme to non-VN
+        stringBuilder.append("    end").append(getLineSeparator());
+        return stringBuilder.toString();
     }
 
     protected String generateSysObjectsBlock(NLBBuildingBlocks nlbBuildingBlocks) {
