@@ -211,9 +211,16 @@ nlb = obj {
                 enable(k);
             else
                 disable(k);
+            end
+        end
+    end;
+    alts_txt = function(s, r)
+        for k, v in pairs(r.wcns) do
+            if not v() then
                 local t = r.alts[k];
                 if t then
-                    s:curloc().lasttext = s:lasttext().." ".. t; p(t); s:curloc().wastext = true;
+                    p("^");
+                    p(t);
                 end
             end
         end

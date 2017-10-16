@@ -2025,6 +2025,7 @@ public class STEADExportManager extends TextExportManager {
             pageText.append(expandVariables(pageTextChunks, theme));
             pageText.append("\");").append(LINE_SEPARATOR);
         }
+        pageText.append("nlb:alts_txt(s);").append(LINE_SEPARATOR);
         pageText.append("    end,").append(LINE_SEPARATOR);
         /*
         // Legacy version
