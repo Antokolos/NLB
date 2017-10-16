@@ -215,15 +215,16 @@ nlb = obj {
         end
     end;
     alts_txt = function(s, r)
+        local result = "";
         for k, v in pairs(r.wcns) do
             if not v() then
                 local t = r.alts[k];
                 if t then
-                    p("^");
-                    p(t);
+                    result = result.."^"..t();
                 end
             end
         end
+        return result;
     end;
     shallowcopy = function(s, orig)
         if not orig then

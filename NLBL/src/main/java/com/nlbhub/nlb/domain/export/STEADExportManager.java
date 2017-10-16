@@ -565,7 +565,7 @@ public class STEADExportManager extends TextExportManager {
                     wcnsBuilder.append("[").append(linkBlocks.getLinkLabel()).append("] = function() return ").append(linkBlocks.getLinkConstraint()).append("; end, ");
                     String altText = linkBlocks.getLinkAltText();
                     if (StringHelper.notEmpty(altText)) {
-                        altsBuilder.append("[").append(linkBlocks.getLinkLabel()).append("] = \"").append(linkBlocks.getLinkConstraint()).append("\", ");
+                        altsBuilder.append("[").append(linkBlocks.getLinkLabel()).append("] = function() return \"").append(altText).append("\"; end, ");
                     }
                 }
             }
@@ -1675,7 +1675,7 @@ public class STEADExportManager extends TextExportManager {
         if (StringHelper.isEmpty(text)) {
             return Constants.EMPTY_STRING;
         } else {
-            return text + "^";
+            return text;
         }
     }
 
@@ -2025,7 +2025,7 @@ public class STEADExportManager extends TextExportManager {
             pageText.append(expandVariables(pageTextChunks, theme));
             pageText.append("\");").append(LINE_SEPARATOR);
         }
-        pageText.append("nlb:alts_txt(s);").append(LINE_SEPARATOR);
+        pageText.append("p(nlb:alts_txt(s));").append(LINE_SEPARATOR);
         pageText.append("    end,").append(LINE_SEPARATOR);
         /*
         // Legacy version
