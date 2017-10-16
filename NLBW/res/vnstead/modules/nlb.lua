@@ -205,6 +205,19 @@ nlb = obj {
             end;
         end;
     end;
+    ways_chk = function(s, r)
+        for k, v in pairs(r.wcns) do
+            if v() then
+                enable(k);
+            else
+                disable(k);
+                local t = r.alts[k];
+                if t then
+                    s:curloc().lasttext = s:lasttext().." ".. t; p(t); s:curloc().wastext = true;
+                end
+            end
+        end
+    end;
     shallowcopy = function(s, orig)
         if not orig then
             return nil;

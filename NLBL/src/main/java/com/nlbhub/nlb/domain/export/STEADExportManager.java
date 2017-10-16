@@ -406,6 +406,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageTextStart());
         autosBuilder.append("    autos = function(s)").append(LINE_SEPARATOR);
         autosBuilder.append("        nlb:revive();").append(LINE_SEPARATOR);
+        autosBuilder.append("        nlb:ways_chk(s);").append(LINE_SEPARATOR);
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             if (linkBlocks.isAuto()) {
@@ -543,6 +544,8 @@ public class STEADExportManager extends TextExportManager {
         if (isVN(pageBuildingBlocks.getTheme())) {
             return m_vnsteadExportManager.generateOrdinaryLinkTextInsideRoom(pageBuildingBlocks);
         }
+        /*
+        // Legacy version
         StringBuilder linksBuilder = new StringBuilder();
         for (final LinkBuildingBlocks linkBlocks : pageBuildingBlocks.getLinksBuildingBlocks()) {
             if (!linkBlocks.isAuto()) {
@@ -550,6 +553,27 @@ public class STEADExportManager extends TextExportManager {
             }
         }
         return linksBuilder.toString();
+        */
+        StringBuilder wayBuilder = new StringBuilder("    way = {");
+        StringBuilder wcnsBuilder = new StringBuilder("    wcns = {");
+        StringBuilder altsBuilder = new StringBuilder("    alts = {");
+        for (final LinkBuildingBlocks linkBlocks : pageBuildingBlocks.getLinksBuildingBlocks()) {
+            if (!linkBlocks.isAuto()) {
+                wayBuilder.append(linkBlocks.getLinkLabel()).append(", ");
+                final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
+                if (constrained) {
+                    wcnsBuilder.append("[").append(linkBlocks.getLinkLabel()).append("] = function() return ").append(linkBlocks.getLinkConstraint()).append("; end, ");
+                    String altText = linkBlocks.getLinkAltText();
+                    if (StringHelper.notEmpty(altText)) {
+                        altsBuilder.append("[").append(linkBlocks.getLinkLabel()).append("] = \"").append(linkBlocks.getLinkConstraint()).append("\", ");
+                    }
+                }
+            }
+        }
+        wayBuilder.append("},").append(LINE_SEPARATOR);
+        wcnsBuilder.append("},").append(LINE_SEPARATOR);
+        altsBuilder.append("},").append(LINE_SEPARATOR);
+        return wayBuilder.toString() + wcnsBuilder.toString() + altsBuilder.toString();
     }
 
     @Override
@@ -557,7 +581,29 @@ public class STEADExportManager extends TextExportManager {
         if (isVN(pageBlocks.getTheme())) {
             return m_vnsteadExportManager.generatePostPageText(pageBlocks);
         }
+        /*
+        // Legacy version
         return Constants.EMPTY_STRING;
+        */
+        List<LinkBuildingBlocks> linksBuildingBlocks = pageBlocks.getLinksBuildingBlocks();
+        if (!hasChoicesOrLeaf(pageBlocks)) {
+            return Constants.EMPTY_STRING;
+        }
+        StringBuilder linksBuilder = new StringBuilder();
+        for (final LinkBuildingBlocks linkBlocks : linksBuildingBlocks) {
+            if (!linkBlocks.isAuto()) {
+                if (ENABLE_COMMENTS) {
+                    linksBuilder.append(linkBlocks.getLinkComment());
+                }
+                linksBuilder.append(linkBlocks.getLinkStart());
+                linksBuilder.append(linkBlocks.getLinkModifications());
+                linksBuilder.append(linkBlocks.getLinkVariable());
+                linksBuilder.append(linkBlocks.getLinkVisitStateVariable());
+                linksBuilder.append(linkBlocks.getLinkGoTo());
+                linksBuilder.append(linkBlocks.getLinkEnd()).append(LINE_SEPARATOR);
+            }
+        }
+        return linksBuilder.toString();
     }
 
     protected String generateObjsCollection(PageBuildingBlocks pageBlocks, List<LinkBuildingBlocks> linksBlocks) {
@@ -565,6 +611,8 @@ public class STEADExportManager extends TextExportManager {
             return m_vnsteadExportManager.generateObjsCollection(pageBlocks, linksBlocks);
         }
         StringBuilder result = new StringBuilder();
+        /*
+        // Legacy version
         StringBuilder linksBuilder = new StringBuilder();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             if (!linkBlocks.isAuto()) {
@@ -595,6 +643,15 @@ public class STEADExportManager extends TextExportManager {
             }
             result.append("    },").append(LINE_SEPARATOR);
         }
+        */
+        final boolean containedObjIdsIsEmpty = pageBlocks.getContainedObjIds().isEmpty();
+        if (!containedObjIdsIsEmpty) {
+            result.append("    obj = { ").append(LINE_SEPARATOR);
+            for (String containedObjId : pageBlocks.getContainedObjIds()) {
+                result.append(containedObjId);
+            }
+            result.append("    },").append(LINE_SEPARATOR);
+        }
         return result.toString();
     }
 
@@ -602,6 +659,8 @@ public class STEADExportManager extends TextExportManager {
         if (isVN(linkBlocks.getTheme())) {
             return m_vnsteadExportManager.generateOrdinaryLinkCode(linkBlocks);
         }
+        /*
+        // Legacy version
         final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
         StringBuilder result = new StringBuilder();
         result.append("        p(");
@@ -615,6 +674,8 @@ public class STEADExportManager extends TextExportManager {
         }
         result.append(");").append(LINE_SEPARATOR);
         return result.toString();
+        */
+        return Constants.EMPTY_STRING;
     }
 
     protected String generateAutoLinkCode(LinkBuildingBlocks linkBlocks) {
@@ -1623,12 +1684,20 @@ public class STEADExportManager extends TextExportManager {
         if (isVN(theme)) {
             return m_vnsteadExportManager.decorateLinkLabel(linkId, linkText, theme);
         }
+        /*
+        // Legacy version
         return "{" + decorateId(linkId) + "|" + linkText + "}^";
+        */
+        return "'" + decorateId(linkId) + "'";
     }
 
     @Override
     protected String decorateLinkComment(String comment) {
+        /*
+        // Legacy version
         return "                --" + comment + LINE_SEPARATOR;
+        */
+        return "--" + comment + LINE_SEPARATOR;
     }
 
     @Override
@@ -1636,10 +1705,22 @@ public class STEADExportManager extends TextExportManager {
         if (isVN(theme)) {
             return m_vnsteadExportManager.decorateLinkStart(linkId, linkText, isAuto, isTrivial, pageNumber, theme);
         }
+        /*
+        // Legacy version
         return (
                 "        xact(" + LINE_SEPARATOR
                         + "            '" + decorateId(linkId) + "'," + LINE_SEPARATOR
                         + "            function(s) " + LINE_SEPARATOR
+        );
+        */
+        String id = decorateId(linkId);
+        return (
+                id + " = room {" + LINE_SEPARATOR
+                        + "    nam = '" + id + "'," + LINE_SEPARATOR
+                        + "    disp = function(s)" + LINE_SEPARATOR
+                        + "p(\"" + linkText + "\");" + LINE_SEPARATOR
+                        + "    end," + LINE_SEPARATOR
+                        + "    enter = function(s, f)" + LINE_SEPARATOR
         );
     }
 
@@ -1662,10 +1743,18 @@ public class STEADExportManager extends TextExportManager {
         if (isVN(theme)) {
             return m_vnsteadExportManager.decorateLinkEnd(theme);
         }
+        /*
+        // Legacy version
         return (
                 LINE_SEPARATOR
                         + "            end" + LINE_SEPARATOR
                         + "        )," + LINE_SEPARATOR
+        );
+        */
+        return (
+                LINE_SEPARATOR
+                        + "    end" + LINE_SEPARATOR
+                        + "}" + LINE_SEPARATOR
         );
     }
 
@@ -1937,8 +2026,11 @@ public class STEADExportManager extends TextExportManager {
             pageText.append("\");").append(LINE_SEPARATOR);
         }
         pageText.append("    end,").append(LINE_SEPARATOR);
+        /*
+        // Legacy version
         pageText.append("    xdsc = function(s)").append(LINE_SEPARATOR);
         pageText.append("        p \"^\";").append(LINE_SEPARATOR);
+        */
         return pageText.toString();
     }
 
@@ -1952,7 +2044,11 @@ public class STEADExportManager extends TextExportManager {
         if (isVN(theme)) {
             return m_vnsteadExportManager.decoratePageTextEnd(labelText, pageNumber, theme, hasChoicesOrLeaf);
         }
+        /*
+        // Legacy version
         return "    end," + LINE_SEPARATOR;
+        */
+        return Constants.EMPTY_STRING;
     }
 
     @Override
