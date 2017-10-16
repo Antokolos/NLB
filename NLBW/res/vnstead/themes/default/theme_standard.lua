@@ -2,12 +2,14 @@ if vn.on then
 local tr = nlb:theme_root();
 theme.set('scr.w', 1920);
 theme.set('scr.h', 1080);
-theme.win.geom(200, 45, 1220, 1025);
-theme.inv.geom(1520, 45, 400, 1025);
-theme.win.color('white', '#00FF00', 'gold')
+theme.win.geom(68, 670, 1704, 301);
+theme.inv.geom(68, 982, 1704, 90);
+
+theme.win.color('black', 'brown', 'orange')
+theme.inv.color('black', 'brown', 'orange')
 
 --theme.set('scr.col.bg', '#011322');
---theme.set('scr.gfx.bg', 'box:1920x1080,#011322');
+theme.set('scr.gfx.bg', tr .. 'gfx/bg.jpg');
 
 theme.set('win.gfx.up', tr .. 'gfx/aup.png');
 theme.set('win.gfx.down', tr .. 'gfx/adown.png');
@@ -16,7 +18,7 @@ theme.set('inv.gfx.down', tr .. 'gfx/adown.png');
 
 --theme.menu.gfx.button('gfx/menubtn.png', 1827, 0);
 
-theme.set('inv.mode', 'vertical');
+--theme.set('inv.mode', 'horizontal-center');
 --theme.set('scr.gfx.scalable', 5); -- was 1
 
 -- http://www.fonts2u.com/steinem-unicode.font
