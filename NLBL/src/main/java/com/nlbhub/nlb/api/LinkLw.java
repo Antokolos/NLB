@@ -66,6 +66,7 @@ public class LinkLw implements Link {
 
     private Type m_type;
     private String m_target;
+    private String m_mplLinkId;
     private IdentifiableItem m_parent;
     private MultiLangString m_text;
     private MultiLangString m_altText;
@@ -89,7 +90,7 @@ public class LinkLw implements Link {
      * @param once
      * @param positiveConstraint
      * @param shouldObeyToModuleConstraint
-     * @param mplLink should be true if link is MPL, false otherwise
+     * @param mplLinkId should be equal to the corresponding link id if link is MPL, empty otherwise
      * @param modifications modifications to be added or null. Will be completely ignored for autowired links.
      */
     public LinkLw(
@@ -104,7 +105,7 @@ public class LinkLw implements Link {
             boolean once,
             boolean positiveConstraint,
             boolean shouldObeyToModuleConstraint,
-            boolean mplLink,
+            String mplLinkId,
             List<Modification> modifications
     ) {
         m_type = type;
@@ -118,13 +119,16 @@ public class LinkLw implements Link {
         m_once = once;
         m_positiveConstraint = positiveConstraint;
         m_shouldObeyToModuleConstraint = shouldObeyToModuleConstraint;
+        boolean mplLink = StringHelper.notEmpty(mplLinkId);
         if (mplLink) {
+            m_mplLinkId = mplLinkId;
             if (modifications != null) {
                 for (Modification modification : modifications) {
                     m_modifications.add(modification);
                 }
             }
         } else {
+            m_mplLinkId = Constants.EMPTY_STRING;
             if (m_type == Type.AutowiredOut || (m_type == Type.AutowiredIn && !parent.isAutowire())) {
                 ModificationImpl modification = new ModificationImpl();
                 modification.setType(Modification.Type.ASSIGN.name());
@@ -254,7 +258,7 @@ public class LinkLw implements Link {
 
     @Override
     public String getId() {
-        return m_parent.getId() + "_" + m_target + "_" + m_type.name();
+        return m_parent.getId() + "_" + m_target + "_" + m_mplLinkId + "_" + m_type.name();
     }
 
     @Override

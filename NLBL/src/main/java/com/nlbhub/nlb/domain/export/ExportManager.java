@@ -573,7 +573,7 @@ public abstract class ExportManager {
                             false,
                             true,
                             false,
-                            false,
+                            Constants.EMPTY_STRING,
                             null
                     )
             );
@@ -596,7 +596,7 @@ public abstract class ExportManager {
                                     link.isOnce(),
                                     link.isPositiveConstraint(),
                                     false,
-                                    true,
+                                    link.getId(),
                                     link.getModifications()
                             )
                     );
@@ -624,7 +624,7 @@ public abstract class ExportManager {
                                 false,
                                 StringHelper.isEmpty(exportData.getModulePage().getModuleConstrId()),
                                 !page.isLeaf(),
-                                false,
+                                Constants.EMPTY_STRING,
                                 null)
                 );
                 LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(page, createPreprocessedLink(link), exportData);
@@ -649,7 +649,7 @@ public abstract class ExportManager {
                                     false,
                                     true,
                                     false,
-                                    false,
+                                    Constants.EMPTY_STRING,
                                     null)
                     );
                     LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(page, createPreprocessedLink(link), exportData);
@@ -678,7 +678,7 @@ public abstract class ExportManager {
                                     false,
                                     true,
                                     false,
-                                    false,
+                                    Constants.EMPTY_STRING,
                                     null)
                     );
                     LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(page, createPreprocessedLink(link), exportData);

@@ -1726,7 +1726,7 @@ public class STEADExportManager extends TextExportManager {
                 id + " = room {" + LINE_SEPARATOR
                         + "    nam = '" + id + "'," + LINE_SEPARATOR
                         + "    disp = function(s)" + LINE_SEPARATOR
-                        + "p(\"" + linkText + "\");" + LINE_SEPARATOR
+                        + "        return \"" + linkText + "\";" + LINE_SEPARATOR
                         + "    end," + LINE_SEPARATOR
                         + "    enter = function(s, f)" + LINE_SEPARATOR
         );
@@ -1743,7 +1743,7 @@ public class STEADExportManager extends TextExportManager {
         if (isVN(theme)) {
             return m_vnsteadExportManager.decorateLinkGoTo(linkId, linkText, linkTarget, targetPageNumber, theme);
         }
-        return "                nlb:nlbwalk(s, " + decoratePageName(linkTarget, targetPageNumber) + "); ";
+        return "        nlb:nlbwalk(s, " + decoratePageName(linkTarget, targetPageNumber) + "); ";
     }
 
     @Override

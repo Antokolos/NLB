@@ -3186,7 +3186,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                             false,
                             true,
                             false,
-                            false,
+                            Constants.EMPTY_STRING,
                             null
                     )
             );
@@ -3210,7 +3210,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                                     link.isOnce(),
                                     link.isPositiveConstraint(),
                                     false,
-                                    true,
+                                    link.getId(),
                                     link.getModifications()
                             )
                     );
@@ -3239,7 +3239,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                                 false,
                                 StringHelper.isEmpty(m_parentPage.getModuleConstrId()),
                                 !source.isLeaf(),
-                                false,
+                                Constants.EMPTY_STRING,
                                 null
                         )
                 );
