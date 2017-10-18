@@ -562,25 +562,25 @@ public class STEADExportManager extends TextExportManager {
         }
         return linksBuilder.toString();
         */
-        StringBuilder wayBuilder = new StringBuilder("    way = {");
-        StringBuilder wcnsBuilder = new StringBuilder("    wcns = {");
-        StringBuilder altsBuilder = new StringBuilder("    alts = {");
+        StringBuilder wayBuilder = new StringBuilder("    way = {" + LINE_SEPARATOR);
+        StringBuilder wcnsBuilder = new StringBuilder("    wcns = {" + LINE_SEPARATOR);
+        StringBuilder altsBuilder = new StringBuilder("    alts = {" + LINE_SEPARATOR);
         for (final LinkBuildingBlocks linkBlocks : pageBuildingBlocks.getLinksBuildingBlocks()) {
             if (!linkBlocks.isAuto()) {
-                wayBuilder.append(linkBlocks.getLinkLabel()).append(", ");
+                wayBuilder.append("        ").append(linkBlocks.getLinkLabel()).append(",").append(LINE_SEPARATOR);
                 final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
                 if (constrained) {
-                    wcnsBuilder.append("[").append(linkBlocks.getLinkLabel()).append("] = function() return ").append(linkBlocks.getLinkConstraint()).append("; end, ");
+                    wcnsBuilder.append("        ").append("[").append(linkBlocks.getLinkLabel()).append("] = function() return ").append(linkBlocks.getLinkConstraint()).append("; end,").append(LINE_SEPARATOR);
                     String altText = linkBlocks.getLinkAltText();
                     if (StringHelper.notEmpty(altText)) {
-                        altsBuilder.append("[").append(linkBlocks.getLinkLabel()).append("] = function() return \"").append(altText).append("\"; end, ");
+                        altsBuilder.append("        ").append("[").append(linkBlocks.getLinkLabel()).append("] = function() return \"").append(altText).append("\"; end,").append(LINE_SEPARATOR);
                     }
                 }
             }
         }
-        wayBuilder.append("},").append(LINE_SEPARATOR);
-        wcnsBuilder.append("},").append(LINE_SEPARATOR);
-        altsBuilder.append("},").append(LINE_SEPARATOR);
+        wayBuilder.append("    },").append(LINE_SEPARATOR);
+        wcnsBuilder.append("    },").append(LINE_SEPARATOR);
+        altsBuilder.append("    },").append(LINE_SEPARATOR);
         return wayBuilder.toString() + wcnsBuilder.toString() + altsBuilder.toString();
     }
 
