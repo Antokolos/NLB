@@ -297,6 +297,9 @@ vn = obj {
         s.on = true;
     end,
     turnoff = function(s)
+        local tr = nlb:theme_root();
+        s:set_bg(tr .. 'gfx/bg.jpg');
+        s:clear_bg();
         s:cleanup_scene();
         s._bg = false;
         s.on = false;

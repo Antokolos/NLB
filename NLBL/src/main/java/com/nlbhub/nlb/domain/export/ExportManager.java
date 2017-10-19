@@ -1910,7 +1910,7 @@ public abstract class ExportManager {
 
     private boolean isInlineLink(Link link) {
         String text = link.getText();
-        return StringHelper.notEmpty(text) && (text.startsWith("-") || text.startsWith("\"") || text.startsWith("'"));
+        return StringHelper.notEmpty(text) && (text.startsWith("-") || text.startsWith("\"") || text.startsWith("'") || determineTrivialStatus(link));
     }
 
     private LinkBuildingBlocks createLinkBuildingBlocks(

@@ -2,6 +2,7 @@ if vn.on then
 local tr = nlb:theme_root();
 theme.win.geom(68, 670, 1704, 301);
 theme.inv.geom(68, 982, 1704, 90);
+theme.win.color('black', 'brown', 'orange');
 
 theme.set('scr.gfx.bg', tr .. 'gfx/bg.jpg');
 

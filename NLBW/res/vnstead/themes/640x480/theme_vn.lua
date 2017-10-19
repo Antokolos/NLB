@@ -2,6 +2,7 @@ if not vn.on then
 local tr = nlb:theme_root();
 theme.win.geom(0, 380, 640, 100);
 theme.inv.geom(0, 450, 640, 30);
+theme.win.color('white', '#00FF00', 'gold');
 
 theme.set('inv.mode', 'horizontal-left');
 
