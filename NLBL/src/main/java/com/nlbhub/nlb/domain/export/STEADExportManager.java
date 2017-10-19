@@ -563,25 +563,35 @@ public class STEADExportManager extends TextExportManager {
         return linksBuilder.toString();
         */
         StringBuilder wayBuilder = new StringBuilder("    way = {" + LINE_SEPARATOR);
+        StringBuilder xdscBuilder = new StringBuilder("    xdsc = function(s)" + LINE_SEPARATOR);
+        if (!pageBuildingBlocks.getContainedObjIds().isEmpty()) {
+            xdscBuilder.append("        p \"^\";").append(LINE_SEPARATOR);
+        }
+        xdscBuilder.append("        p(nlb:alts_txt(s));").append(LINE_SEPARATOR);
         StringBuilder wcnsBuilder = new StringBuilder("    wcns = {" + LINE_SEPARATOR);
         StringBuilder altsBuilder = new StringBuilder("    alts = {" + LINE_SEPARATOR);
         for (final LinkBuildingBlocks linkBlocks : pageBuildingBlocks.getLinksBuildingBlocks()) {
             if (!linkBlocks.isAuto()) {
-                wayBuilder.append("        ").append(linkBlocks.getLinkLabel()).append(",").append(LINE_SEPARATOR);
+                if (linkBlocks.isInline()) {
+                    xdscBuilder.append(generateOrdinaryLinkCode(linkBlocks));
+                } else {
+                    wayBuilder.append("        '").append(linkBlocks.getLinkLabel()).append("',").append(LINE_SEPARATOR);
+                }
                 final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
                 if (constrained) {
-                    wcnsBuilder.append("        ").append("[").append(linkBlocks.getLinkLabel()).append("] = function() return ").append(linkBlocks.getLinkConstraint()).append("; end,").append(LINE_SEPARATOR);
+                    wcnsBuilder.append("        ").append("['").append(linkBlocks.getLinkLabel()).append("'] = function() return ").append(linkBlocks.getLinkConstraint()).append("; end,").append(LINE_SEPARATOR);
                     String altText = linkBlocks.getLinkAltText();
                     if (StringHelper.notEmpty(altText)) {
-                        altsBuilder.append("        ").append("[").append(linkBlocks.getLinkLabel()).append("] = function() return \"").append(altText).append("\"; end,").append(LINE_SEPARATOR);
+                        altsBuilder.append("        ").append("['").append(linkBlocks.getLinkLabel()).append("'] = function() return \"").append(altText).append("\"; end,").append(LINE_SEPARATOR);
                     }
                 }
             }
         }
         wayBuilder.append("    },").append(LINE_SEPARATOR);
+        xdscBuilder.append("    end,").append(LINE_SEPARATOR);
         wcnsBuilder.append("    },").append(LINE_SEPARATOR);
         altsBuilder.append("    },").append(LINE_SEPARATOR);
-        return wayBuilder.toString() + wcnsBuilder.toString() + altsBuilder.toString();
+        return wayBuilder.toString() + xdscBuilder.toString() + wcnsBuilder.toString() + altsBuilder.toString();
     }
 
     @Override
@@ -653,13 +663,14 @@ public class STEADExportManager extends TextExportManager {
         }
         */
         final boolean containedObjIdsIsEmpty = pageBlocks.getContainedObjIds().isEmpty();
+        result.append("    obj = { ").append(LINE_SEPARATOR);
         if (!containedObjIdsIsEmpty) {
-            result.append("    obj = { ").append(LINE_SEPARATOR);
             for (String containedObjId : pageBlocks.getContainedObjIds()) {
                 result.append(containedObjId);
             }
-            result.append("    },").append(LINE_SEPARATOR);
         }
+        result.append("        xdsc()").append(LINE_SEPARATOR);
+        result.append("    },").append(LINE_SEPARATOR);
         return result.toString();
     }
 
@@ -667,23 +678,30 @@ public class STEADExportManager extends TextExportManager {
         if (isVN(linkBlocks.getTheme())) {
             return m_vnsteadExportManager.generateOrdinaryLinkCode(linkBlocks);
         }
-        /*
-        // Legacy version
         final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
         StringBuilder result = new StringBuilder();
         result.append("        p(");
         if (constrained) {
-            result.append("((").append(linkBlocks.getLinkConstraint()).append(") and ");
+            //result.append("((").append(linkBlocks.getLinkConstraint()).append(") and ");
+            result
+                    .append("(not s.wcns['")
+                    .append(linkBlocks.getLinkLabel())
+                    .append("'] or s.wcns['")
+                    .append(linkBlocks.getLinkLabel())
+                    .append("']()) and ");
         }
-        result.append("\"").append(linkBlocks.getLinkLabel()).append("\"");
+        result
+                .append("\"{")
+                .append(linkBlocks.getLinkLabel())
+                .append("_XLnk|")
+                .append(linkBlocks.getLinkText())
+                .append("}^\"");
         if (constrained) {
-            result.append(" or ");
-            result.append("\"").append(linkBlocks.getLinkAltText()).append("\")");
+            result.append(" or \"\"");
+            //result.append("\"").append(linkBlocks.getLinkAltText()).append("\")");
         }
         result.append(");").append(LINE_SEPARATOR);
         return result.toString();
-        */
-        return Constants.EMPTY_STRING;
     }
 
     protected String generateAutoLinkCode(LinkBuildingBlocks linkBlocks) {
@@ -1679,15 +1697,6 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateLinkAltText(String text) {
-        if (StringHelper.isEmpty(text)) {
-            return Constants.EMPTY_STRING;
-        } else {
-            return text;
-        }
-    }
-
-    @Override
     protected String decorateLinkLabel(String linkId, String linkText, Theme theme) {
         if (isVN(theme)) {
             return m_vnsteadExportManager.decorateLinkLabel(linkId, linkText, theme);
@@ -1696,7 +1705,7 @@ public class STEADExportManager extends TextExportManager {
         // Legacy version
         return "{" + decorateId(linkId) + "|" + linkText + "}^";
         */
-        return "'" + decorateId(linkId) + "'";
+        return decorateId(linkId);
     }
 
     @Override
@@ -1723,7 +1732,11 @@ public class STEADExportManager extends TextExportManager {
         */
         String id = decorateId(linkId);
         return (
-                id + " = room {" + LINE_SEPARATOR
+                id + "_XLnk = xact(" + LINE_SEPARATOR
+                        + "'" + id + "_XLnk'," + LINE_SEPARATOR
+                        + "function() walk('" + id + "'); end" + LINE_SEPARATOR
+                        + ");" + LINE_SEPARATOR + LINE_SEPARATOR
+                        + id + " = room {" + LINE_SEPARATOR
                         + "    nam = '" + id + "'," + LINE_SEPARATOR
                         + "    disp = function(s)" + LINE_SEPARATOR
                         + "        return \"" + linkText + "\";" + LINE_SEPARATOR
@@ -2027,14 +2040,15 @@ public class STEADExportManager extends TextExportManager {
             return m_vnsteadExportManager.decoratePageTextStart(labelText, pageNumber, pageTextChunks, theme);
         }
         StringBuilder pageText = new StringBuilder();
-        pageText.append("    dsc = function(s)").append(LINE_SEPARATOR);
         if (pageTextChunks.size() > 0) {
-            pageText.append("p(\"");
+            pageText.append("    dsc = function(s)").append(LINE_SEPARATOR);
+            pageText.append("        p(\"");
             pageText.append(expandVariables(pageTextChunks, theme));
             pageText.append("\");").append(LINE_SEPARATOR);
+            pageText.append("    end,").append(LINE_SEPARATOR);
+        } else {
+            pageText.append("    dsc = true,").append(LINE_SEPARATOR);
         }
-        pageText.append("p(nlb:alts_txt(s));").append(LINE_SEPARATOR);
-        pageText.append("    end,").append(LINE_SEPARATOR);
         /*
         // Legacy version
         pageText.append("    xdsc = function(s)").append(LINE_SEPARATOR);

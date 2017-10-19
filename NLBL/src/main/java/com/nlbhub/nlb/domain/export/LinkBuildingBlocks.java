@@ -48,6 +48,7 @@ import com.nlbhub.nlb.api.Theme;
  */
 public class LinkBuildingBlocks {
     private String m_linkLabel;
+    private String m_linkText;
     private String m_linkAltText;
     private String m_linkComment;
     private String m_linkStart;
@@ -61,6 +62,7 @@ public class LinkBuildingBlocks {
     private boolean m_auto;
     /** Link is considered trivial if it has default text and has no constraints. */
     private boolean m_isTrivial;
+    private boolean m_inline;
     private Theme m_theme = Theme.DEFAULT;
 
     public LinkBuildingBlocks() {
@@ -74,12 +76,28 @@ public class LinkBuildingBlocks {
         m_isTrivial = trivial;
     }
 
+    public boolean isInline() {
+        return m_inline;
+    }
+
+    public void setInline(boolean inline) {
+        m_inline = inline;
+    }
+
     public String getLinkLabel() {
         return m_linkLabel;
     }
 
     public void setLinkLabel(String linkLabel) {
         m_linkLabel = linkLabel;
+    }
+
+    public String getLinkText() {
+        return m_linkText;
+    }
+
+    public void setLinkText(String linkText) {
+        m_linkText = linkText;
     }
 
     public String getLinkAltText() {

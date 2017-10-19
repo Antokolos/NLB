@@ -1908,6 +1908,11 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
+    private boolean isInlineLink(Link link) {
+        String text = link.getText();
+        return StringHelper.notEmpty(text) && (text.startsWith("-") || text.startsWith("\"") || text.startsWith("'"));
+    }
+
     private LinkBuildingBlocks createLinkBuildingBlocks(
             final Page page,
             final Link link,
@@ -1917,7 +1922,9 @@ public abstract class ExportManager {
         blocks.setTheme(page.getTheme());
         final boolean trivial = determineTrivialStatus(link);
         blocks.setAuto(link.isAuto());
+        blocks.setInline(isInlineLink(link));
         String expandedLinkText = expandVariablesForLinks(StringHelper.getTextChunks(link.getText()), page.getTheme());
+        blocks.setLinkText(expandedLinkText);
         blocks.setLinkAltText(decorateLinkAltText(expandVariablesForLinks(StringHelper.getTextChunks(link.getAltText()), page.getTheme())));
         blocks.setTrivial(trivial);
         blocks.setLinkLabel(decorateLinkLabel(link.getId(), expandedLinkText, page.getTheme()));
@@ -2784,8 +2791,20 @@ public abstract class ExportManager {
 
     protected abstract String decorateNumberVar(String constraintVar);
 
+    protected String decorateLinkText(String text) {
+        if (StringHelper.isEmpty(text)) {
+            return Constants.EMPTY_STRING;
+        } else {
+            return text;
+        }
+    }
+
     protected String decorateLinkAltText(String text) {
-        return text;
+        if (StringHelper.isEmpty(text)) {
+            return Constants.EMPTY_STRING;
+        } else {
+            return text;
+        }
     }
 
     protected abstract String decorateLinkLabel(String linkId, String linkText, Theme theme);
