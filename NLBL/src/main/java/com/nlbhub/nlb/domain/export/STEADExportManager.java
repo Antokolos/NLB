@@ -159,9 +159,9 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            --end").append(LINE_SEPARATOR);
         stringBuilder.append("        end);").append(LINE_SEPARATOR);
         stringBuilder.append("    end").append(LINE_SEPARATOR);
-        stringBuilder.append(getThemeInit());
+        //stringBuilder.append(getThemeInit());  // TODO: moved to vn.lua, remove later if everything is OK
         stringBuilder.append("    vn:scene(nil);").append(LINE_SEPARATOR);
-        stringBuilder.append("    vn.fading = 8").append(LINE_SEPARATOR);
+        //stringBuilder.append("    vn.fading = 8").append(LINE_SEPARATOR); // TODO: moved to vn.lua, remove later if everything is OK
         stringBuilder.append("    nlbticks = stead.ticks();").append(LINE_SEPARATOR);
         stringBuilder.append(generateVarsInitBlock(nlbBuildingBlocks));
         stringBuilder.append("end").append(LINE_SEPARATOR);
@@ -169,6 +169,7 @@ public class STEADExportManager extends TextExportManager {
         return stringBuilder.toString();
     }
 
+    // TODO: moved to vn.lua, remove later if everything is OK
     protected String getThemeInit() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("    if vn:in_vnr() then").append(getLineSeparator());

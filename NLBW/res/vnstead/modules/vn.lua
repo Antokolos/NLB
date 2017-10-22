@@ -119,6 +119,7 @@ vnfading = function(f, s, cmd, ...)
     if b then
         return vn.fading
     end
+    if vn.stopped then return end
     return 2
 end
 
@@ -293,15 +294,12 @@ vn = obj {
         return s.hz * 2;
     end,
     turnon = function(s)
-        s._bg = false;
+        -- s._bg = false; -- possible bugfix???
         s.on = true;
     end,
     turnoff = function(s)
-        local tr = nlb:theme_root();
-        s:set_bg(tr .. 'gfx/bg.jpg');
-        s:clear_bg();
         s:cleanup_scene();
-        s._bg = false;
+        -- s._bg = false; -- possible bugfix???
         s.on = false;
     end,
     screen = function(s)
@@ -341,10 +339,18 @@ vn = obj {
         s._wf = 0;
     end;
     ini = function(s, load)
-        s:request_full_clear();
-        if not load or not s.on then
-            return
+        s.fading = 8;
+        if s:in_vnr() then
+            s.on = false;  -- Needed, because otherwise it will not switch the theme
+            nlb:theme_switch("theme_vn.lua");
+        else
+            s.on = true;   -- Needed, because otherwise it will not switch the theme
+            nlb:theme_switch("theme_standard.lua");
         end
+        s:request_full_clear();
+        --if not load or not s.on then -- causes bugs???
+        --    return
+        --end
         local i, v;
         for i, v in ipairs(s._effects) do
             v.hasmore = true;
