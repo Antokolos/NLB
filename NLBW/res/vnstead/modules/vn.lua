@@ -348,9 +348,9 @@ vn = obj {
             nlb:theme_switch("theme_standard.lua");
         end
         s:request_full_clear();
-        --if not load or not s.on then -- causes bugs???
-        --    return
-        --end
+        if not load or not s.on then
+            return
+        end
         local i, v;
         for i, v in ipairs(s._effects) do
             v.hasmore = true;
