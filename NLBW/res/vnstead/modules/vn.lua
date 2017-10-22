@@ -340,7 +340,7 @@ vn = obj {
     end;
     ini = function(s, load)
         s.fading = 8;
-        if s:in_vnr() then
+        if s:in_vnr() or s:in_choices() then
             s.on = false;  -- Needed, because otherwise it will not switch the theme
             nlb:theme_switch("theme_vn.lua");
         else
@@ -2115,6 +2115,9 @@ vn = obj {
     in_vnr = function(s)
         return here()._is_vnr;
     end;
+    in_choices = function(s)
+        return here()._is_vn_choices;
+    end;
     force_textbg = function(s)
         return here().textbg;
     end;
@@ -2791,5 +2794,11 @@ end)
 function vnr(v)
     if not v.nam then v.nam = 'vn'; v.disp = false; end
     v._is_vnr = true;
+    return room(v)
+end
+
+function vn_choices(v)
+    if not v.nam then v.nam = 'vn_choices'; v.disp = false; end
+    v._is_vn_choices = true;
     return room(v)
 end

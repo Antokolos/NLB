@@ -191,7 +191,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         StringBuilder linksBuilder = new StringBuilder();
         String lineSep = getLineSeparator();
         String roomName = pageBlocks.getPageName();
-        result.append(roomName).append("_choices").append(" = room {").append(lineSep);
+        result.append(roomName).append("_choices").append(" = vn_choices {").append(lineSep);
         result.append("    nam = \"").append(getNonEmptyTitle(pageBlocks.getModuleTitle())).append("\",").append(lineSep);
         result.append("    disp = true,").append(lineSep);
         result.append("    textbg = true,").append(lineSep);
