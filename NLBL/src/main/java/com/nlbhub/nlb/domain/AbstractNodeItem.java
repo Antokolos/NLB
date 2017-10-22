@@ -699,15 +699,16 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
         StringBuilder builder = new StringBuilder();
         NonLinearBook currentNLB = getCurrentNLB();
         List<String> hierarchy = new ArrayList<>();
-        boolean proceed;
+        Page parentPage;
         do {
-            Page parentPage = currentNLB.getParentPage();
-            proceed = (parentPage != null && parentPage.isModuleExternal());
-            if (proceed) {
-                hierarchy.add(parentPage.getModuleName());
+            parentPage = currentNLB.getParentPage();
+            if (parentPage != null) {
+                if (parentPage.isModuleExternal()) {
+                    hierarchy.add(parentPage.getModuleName());
+                }
                 currentNLB = parentPage.getCurrentNLB();
             }
-        } while (proceed);
+        } while (parentPage != null);
         for (int i = hierarchy.size() - 1; i >= 0; i--) {
             builder.append(hierarchy.get(i));
             if (i > 0) {
