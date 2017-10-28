@@ -134,13 +134,15 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("game.forcedsc = ").append(String.valueOf(nlbBuildingBlocks.isGameForcedsc())).append(";").append(LINE_SEPARATOR);
 
+        /*
         stringBuilder.append("f1 = font(nlb:theme_root() .. 'fonts/STEINEMU.ttf', 32);").append(LINE_SEPARATOR);
-        stringBuilder.append("fend = font(nlb:theme_root() .. 'fonts/STEINEMU.ttf', 96);").append(LINE_SEPARATOR);
+        stringBuilder.append("").append(LINE_SEPARATOR);
         stringBuilder.append("function pname(n, c)").append(LINE_SEPARATOR);
         stringBuilder.append("    return function()").append(LINE_SEPARATOR);
         stringBuilder.append("        pn(img 'blank:8x1',f1:txt(n, c, 1))").append(LINE_SEPARATOR);
         stringBuilder.append("    end").append(LINE_SEPARATOR);
         stringBuilder.append("end").append(LINE_SEPARATOR);
+        */
 
         stringBuilder.append("paginator.delim = '\\n[ \\t]*\\n'").append(LINE_SEPARATOR);
 

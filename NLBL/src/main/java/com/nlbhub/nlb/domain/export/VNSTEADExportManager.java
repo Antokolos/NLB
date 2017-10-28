@@ -197,7 +197,7 @@ public class VNSTEADExportManager extends STEADExportManager {
         result.append("    textbg = true,").append(lineSep);
         result.append("    ignore_preserved_gobjs = true,").append(lineSep);
         if (theEnd) {
-            result.append("    dsc = img 'blank:24x24'..'^'..fend:txt('The')..img 'blank:64x64'..fend:txt('End'),").append(lineSep);
+            result.append("    dsc = function(s) return vn:the_end(); end,").append(lineSep);
         }
         result.append("    var { paginator_state = false; },").append(lineSep);
         result.append("    enter = function(s) ").append(lineSep);

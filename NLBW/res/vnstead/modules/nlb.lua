@@ -443,7 +443,7 @@ _syscall_starten = menu {
     nam = "syscall_starten",
     system_type = true,
     act = function(s)
-        vn:show(busy_spr, 'middle');
+        vn:show(vn.busy_spr, 'middle');
         vn:startcb(function() gamefile('module_en.lua', true); end);
     end,
     actf = function(s) return s:act(); end
@@ -453,7 +453,7 @@ _syscall_startru = menu {
     nam = "syscall_startru",
     system_type = true,
     act = function(s)
-        vn:show(busy_spr, 'middle');
+        vn:show(vn.busy_spr, 'middle');
         vn:startcb(function() gamefile('module_ru.lua', true); end);
     end,
     actf = function(s) return s:act(); end

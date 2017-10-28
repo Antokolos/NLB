@@ -2,6 +2,7 @@
 require 'timer'
 require 'theme'
 require 'sprites'
+require 'modules/fonts'
 require 'modules/gobj'
 require 'modules/log'
 require 'modules/nlb'
@@ -42,17 +43,17 @@ vntimer = function(f, s, cmd, ...)
     end
     local update_cursor_result = vn:update_cursor();
 
-    vnticks_diff = get_ticks() - vnticks;
-    renewticks_diff = get_ticks() - renewticks;
+    vn.vnticks_diff = get_ticks() - vn.vnticks;
+    vn.renewticks_diff = get_ticks() - vn.renewticks;
 
-    --if (vnticks_diff <= vn.hz) then
+    --if (vn.vnticks_diff <= vn.hz) then
     --    if vn:preload() then
     --        return update_cursor_result;
     --    end
     --end
-    vn.slowcpu = (vnticks_diff > vn:ticks_threshold());
-    log:trace("vnticks_diff = " .. vnticks_diff);
-    vnticks = get_ticks();
+    vn.slowcpu = (vn.vnticks_diff > vn:ticks_threshold());
+    log:trace("vnticks_diff = " .. vn.vnticks_diff);
+    vn.vnticks = get_ticks();
 
     if vn.stopped then
         -- NB: do not put heavy code in onover/onout
@@ -93,9 +94,9 @@ vntimer = function(f, s, cmd, ...)
             return game._lastdisp or "";
         end
     end
-    if vn._need_renew and (renewticks_diff > vn:renew_threshold()) then
+    if vn._need_renew and (vn.renewticks_diff > vn:renew_threshold()) then
         vn._need_renew = false;
-        renewticks = get_ticks();
+        vn.renewticks = get_ticks();
         vn:renew();
     end
     if vn._need_update then
@@ -263,6 +264,16 @@ vn = obj {
     hz_preloaded = 40;
     hz = 20;
     slowcpu = false;
+    fend = false;
+    vnticks = 0;
+    renewticks = 0;
+    vnticks_diff = 0;
+    renewticks_diff = 0;
+    hudFont = false;
+    empty_s = false;
+    fln_s = false;
+    frn_s = false;
+    busy_spr = false;
     var {
         on = true,
         dbg = false,
@@ -347,6 +358,29 @@ vn = obj {
             s.on = true;   -- Needed, because otherwise it will not switch the theme
             nlb:theme_switch("theme_standard.lua");
             if load then return end;
+        end
+        s.fend = font(nlb:theme_root() .. 'fonts/STEINEMU.ttf', 96);
+        s.vnticks = stead.ticks();
+        s.renewticks = s.vnticks;
+        s.vnticks_diff = s:ticks_threshold();
+        s.renewticks_diff = s:renew_threshold();
+        local tr = nlb:theme_root();
+        s.hudFont = gr:font(tr .. 'fonts/Medieval_English.ttf', 29);
+        s.empty_s = gr:load('gfx/empty.png');
+        if s:file_exists(tr .. 'gfx/fl.png') then
+            s.fln_s = gr:load(tr .. 'gfx/fl.png');
+        else
+            s.fln_s = gr:blank(1, 1);
+        end
+        if s:file_exists(tr .. 'gfx/fr.png') then
+            s.frn_s = gr:load(tr .. 'gfx/fr.png');
+        else
+            s.frn_s = gr:blank(1, 1);
+        end
+        if LANG == "ru" then
+            s.busy_spr = vn:label("Загрузка...", 40, "#ffffff", "black");
+        else
+            s.busy_spr = vn:label("Loading...", 40, "#ffffff", "black");
         end
         s:request_full_clear();
         --if not load or not s.on then -- causes bugs???
@@ -630,13 +664,13 @@ vn = obj {
     busy = function(s, busy, job, callback_to_run_after, do_not_show_label)
         if busy then
             if not do_not_show_label then
-                vn:show(busy_spr, 'middle');
+                s:show(s.busy_spr, 'middle');
             end
             if job then
                 local cb = function()
                     job();
                     if not do_not_show_label then
-                        vn:hide(busy_spr);
+                        vn:hide(vn.busy_spr);
                     end
                     if callback_to_run_after then
                         return callback_to_run_after;
@@ -644,15 +678,15 @@ vn = obj {
                         return true;
                     end
                 end
-                vn:startcb(cb);
+                s:startcb(cb);
             else
-                vn:start();
+                s:start();
             end
         else
             if not do_not_show_label then
-                vn:hide(busy_spr);
+                s:hide(s.busy_spr);
             end
-            vn:start();
+            s:start();
         end
     end;
     preload_effect = function(s, image, startFrame, maxStep, fromStop, maxPreload, callback_to_run_after, do_not_show_label, loadOnce)
@@ -938,14 +972,14 @@ vn = obj {
                         log:err("Error preloading sprite " .. v.pic .. "@" .. i);
                     end
                     log:dbg("preloaded " .. v.nam .. "@" .. i);
-                    if (get_ticks() - vnticks > vn.hz) then
+                    if (get_ticks() - s.vnticks > s.hz) then
                         return false;
                     end
                 end
             else
                 s.sprite_cache_data[k] = nil;
             end
-            if (get_ticks() - vnticks > vn.hz) then
+            if (get_ticks() - s.vnticks > s.hz) then
                 return false;
             end
         end
@@ -2013,7 +2047,7 @@ vn = obj {
     get_win_coords = function(s)
         local scr_width, scr_height = theme.get('scr.w'), theme.get('scr.h');
         local win_height = (scr_height * 10) / 54;
-        return s.textpad, scr_height - 2 * s.textpad - win_height, scr_width - 2 * s.textpad, win_height - 2 * s.textpad;
+        return math.floor(s.textpad), math.floor(scr_height - 2 * s.textpad - win_height), math.floor(scr_width - 2 * s.textpad), math.floor(win_height - 2 * s.textpad);
     end;
     get_end_coords = function(s)
         local scr_width, scr_height = theme.get('scr.w'), theme.get('scr.h');
@@ -2024,19 +2058,19 @@ vn = obj {
         local win_width = the_w + 64 + end_w;
         local win_height = 200;
         local real_height = win_height - 2 * s.textpad;
-        return (scr_width - win_width) / 2, (scr_height - real_height) / 2, win_width, real_height;
+        return math.floor((scr_width - win_width) / 2), math.floor((scr_height - real_height) / 2), math.floor(win_width), math.floor(real_height);
     end;
     get_choices_coords = function(s)
         local scr_width, scr_height = theme.get('scr.w'), theme.get('scr.h');
         local win_height = scr_height / 2;
-        return 2 * scr_width / 10, (scr_height - win_height) / 2, 6 * scr_width / 10, win_height;
+        return math.floor(2 * scr_width / 10), math.floor((scr_height - win_height) / 2), math.floor(6 * scr_width / 10), math.floor(win_height);
     end;
     auto_geom = function(s, effect, callback)
         local x, y, w, h = s:get_win_coords();
         local wf, hf = 0, 0;
         local tr = nlb:theme_root();
         if s:file_exists(tr .. 'gfx/fl.png') then
-            wf, hf = sprite.size(fln_s);
+            wf, hf = sprite.size(s.fln_s);
         end
         return s:geom(x, y, w, h, effect, wf, callback);
     end;
@@ -2045,7 +2079,7 @@ vn = obj {
         local wf, hf = 0, 0;
         local tr = nlb:theme_root();
         if s:file_exists(tr .. 'gfx/fl.png') then
-            wf, hf = sprite.size(fln_s);
+            wf, hf = sprite.size(s.fln_s);
         end
         return s:geom(x - wf, y, w + 2 * wf, h, effect, wf, callback);
     end;
@@ -2136,8 +2170,8 @@ vn = obj {
         gr:copy_ext(s.bg_spr, invx, invy, invw, invh, to, invx, invy);
         if (wf > 0) then
             -- You can use this instead of fln and frn gr:box(wf, h + pad * 2, 'black', s.bgalpha);
-            gr:draw(fln_s, to, x - pad - wf, y - pad);
-            gr:draw(frn_s, to, x + w + pad, y - pad);
+            gr:draw(s.fln_s, to, x - pad - wf, y - pad);
+            gr:draw(s.frn_s, to, x + w + pad, y - pad);
         end
         local sb, si = s:undertext(w, h, invw, invh);
         gr:draw(sb, to, x - pad, y - pad)
@@ -2495,7 +2529,7 @@ vn = obj {
                         if not color then
                             color = s.hud_color;
                         end
-                        local textSpriteInit = gr:text(hudFont, vv.text, color);
+                        local textSpriteInit = gr:text(s.hudFont, vv.text, color);
                         local textSpriteScaled;
                         if scale ~= 1.0 then
                             textSpriteScaled = gr:scale(textSpriteInit, scale, scale, false);
@@ -2688,7 +2722,7 @@ vn = obj {
             extent = s.default_label_extent;
         end
         if not font then
-            font = hudFont;
+            font = s.hudFont;
         end
         local texts = {};
         local src = {};
@@ -2731,7 +2765,7 @@ vn = obj {
         end
     end;
     empty_frame = function(s, w, h)
-        return {["spr"] = empty_s, ["w"] = w, ["h"] = h, ["tmp"] = false, ["preloaded_effect"] = false, ["alpha"] = 0, ["scale"] = 0.0};
+        return {["spr"] = s.empty_s, ["w"] = w, ["h"] = h, ["tmp"] = false, ["preloaded_effect"] = false, ["alpha"] = 0, ["scale"] = 0.0};
     end;
     undertext = function(s, w, h, invw, invh)
         local pad = s.textpad;
@@ -2752,6 +2786,7 @@ vn = obj {
         end
         return s.scraps_cache[sb_index];
     end;
+    the_end = function(s) return img 'blank:24x24'..'^'..s.fend:txt('The')..img 'blank:64x64'..s.fend:txt('End'); end,
     win_set = function(s)
         if s.win_w and s.win_h and tonumber(s.win_w) > 0 and tonumber(s.win_h) > 0 then
             theme.set('win.x', tonumber(s.win_x));
@@ -2767,28 +2802,6 @@ vn = obj {
 stead.module_init(function()
     vn:rst();
     vn:init()
-    vnticks = stead.ticks();
-    renewticks = vnticks;
-    vnticks_diff = vn:ticks_threshold();
-    renewticks_diff = vn:renew_threshold();
-    local tr = nlb:theme_root();
-    hudFont = gr:font(tr .. 'fonts/Medieval_English.ttf', 29);
-    empty_s = gr:load('gfx/empty.png');
-    if vn:file_exists(tr .. 'gfx/fl.png') then
-        fln_s = gr:load(tr .. 'gfx/fl.png');
-    else
-        fln_s = gr:blank(1, 1);
-    end
-    if vn:file_exists(tr .. 'gfx/fr.png') then
-        frn_s = gr:load(tr .. 'gfx/fr.png');
-    else
-        frn_s = gr:blank(1, 1);
-    end
-    if LANG == "ru" then
-        busy_spr = vn:label("Загрузка...", 40, "#ffffff", "black");
-    else
-        busy_spr = vn:label("Loading...", 40, "#ffffff", "black");
-    end
 end)
 
 function vnr(v)
