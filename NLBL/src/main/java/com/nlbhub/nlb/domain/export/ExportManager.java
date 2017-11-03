@@ -2279,7 +2279,9 @@ public abstract class ExportManager {
                         stringBuilder.append(decorateEnd());
                         break;
                     case RETURN:
-                        String valueToReturn = StringHelper.notEmpty(expression.getValue()) ? translateExpressionBody(expression.getValue()).getExpressionPart() : "";
+                        String valueToReturn = expression != null && StringHelper.notEmpty(expression.getValue())
+                                ? translateExpressionBody(expression.getValue()).getExpressionPart()
+                                : "";
                         stringBuilder.append(decorateReturn(valueToReturn));
                         break;
                     case HAVE:
