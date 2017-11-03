@@ -87,6 +87,8 @@ public class TaggedTextExportManager extends HypertextExportManager<TXTParagraph
     protected String decorateLinkGoTo(
             String linkId,
             String linkText,
+            String linkSource,
+            int sourcePageNumber,
             String linkTarget,
             int targetPageNumber,
             Theme theme) {

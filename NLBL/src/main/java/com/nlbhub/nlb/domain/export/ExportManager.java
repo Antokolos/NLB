@@ -1988,6 +1988,8 @@ public abstract class ExportManager {
                 decorateLinkGoTo(
                         link.getId(),
                         expandedLinkText,
+                        page.getId(),
+                        checkedGetPageNumber(page.getId()),
                         link.getTarget(),
                         targetPageNumber,
                         page.getTheme()
@@ -2277,7 +2279,8 @@ public abstract class ExportManager {
                         stringBuilder.append(decorateEnd());
                         break;
                     case RETURN:
-                        stringBuilder.append(decorateReturn());
+                        String valueToReturn = StringHelper.notEmpty(expression.getValue()) ? translateExpressionBody(expression.getValue()).getExpressionPart() : "";
+                        stringBuilder.append(decorateReturn(valueToReturn));
                         break;
                     case HAVE:
                         assert variable != null;
@@ -2678,7 +2681,7 @@ public abstract class ExportManager {
 
     protected abstract String decorateEnd();
 
-    protected abstract String decorateReturn();
+    protected abstract String decorateReturn(String returnValue);
 
     protected abstract String decorateHaveOperation(String variableName, String objId, String objVar);
 
@@ -2816,9 +2819,12 @@ public abstract class ExportManager {
     protected abstract String decorateLinkGoTo(
             String linkId,
             String linkText,
+            String linkSource,
+            int sourcePageNumber,
             String linkTarget,
             int targetPageNumber,
-            Theme theme);
+            Theme theme
+    );
 
     protected String decorateLinkEnd(Theme theme) {
         return Constants.EMPTY_STRING;

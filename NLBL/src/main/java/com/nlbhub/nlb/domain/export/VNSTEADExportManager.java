@@ -283,15 +283,23 @@ public class VNSTEADExportManager extends STEADExportManager {
     protected String decorateLinkGoTo(
             String linkId,
             String linkText,
+            String linkSource,
+            int sourcePageNumber,
             String linkTarget,
             int targetPageNumber,
             Theme theme
     ) {
         if (!isVN(theme)) {
-            return super.decorateLinkGoTo(linkId, linkText, linkTarget, targetPageNumber, theme);
+            return super.decorateLinkGoTo(linkId, linkText, linkSource, sourcePageNumber, linkTarget, targetPageNumber, theme);
         }
         return (
-                "        nlb:nlbwalk(s, "
+                "        nlb:nlbwalk("
+                        + (
+                        getGoToPageNumbers()
+                                ? decorateId(String.valueOf(sourcePageNumber))
+                                : decorateId(linkSource)
+                )
+                        + ", "
                         + (
                         getGoToPageNumbers()
                                 ? decorateId(String.valueOf(targetPageNumber))

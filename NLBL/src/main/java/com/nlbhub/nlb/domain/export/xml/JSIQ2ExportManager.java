@@ -411,7 +411,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decorateReturn() {
+    protected String decorateReturn(String returnValue) {
         // TODO: implement
         return EMPTY_STRING;
     }
@@ -724,7 +724,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decorateLinkGoTo(String linkId, String linkText, String linkTarget, int targetPageNumber, Theme theme) {
+    protected String decorateLinkGoTo(String linkId, String linkText, String linkSource, int sourcePageNumber, String linkTarget, int targetPageNumber, Theme theme) {
         return Integer.toString(targetPageNumber - 1);
     }
 

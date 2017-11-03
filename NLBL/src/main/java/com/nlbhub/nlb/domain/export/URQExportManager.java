@@ -121,6 +121,8 @@ public class URQExportManager extends TextExportManager {
     protected String decorateLinkGoTo(
             String linkId,
             String linkText,
+            String linkSource,
+            int sourcePageNumber,
             String linkTarget,
             int targetPageNumber,
             Theme theme) {
@@ -430,7 +432,7 @@ public class URQExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateReturn() {
+    protected String decorateReturn(String returnValue) {
         // TODO: implement
         return EMPTY_STRING;
     }

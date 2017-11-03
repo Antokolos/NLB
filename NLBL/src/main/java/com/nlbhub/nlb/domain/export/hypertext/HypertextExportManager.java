@@ -228,7 +228,7 @@ public abstract class HypertextExportManager
     }
 
     @Override
-    protected String decorateReturn() {
+    protected String decorateReturn(String returnValue) {
         // TODO: implement
         return EMPTY_STRING;
     }
@@ -541,6 +541,8 @@ public abstract class HypertextExportManager
     protected String decorateLinkGoTo(
             String linkId,
             String linkText,
+            String linkSource,
+            int sourcePageNumber,
             String linkTarget,
             int targetPageNumber,
             Theme theme) {

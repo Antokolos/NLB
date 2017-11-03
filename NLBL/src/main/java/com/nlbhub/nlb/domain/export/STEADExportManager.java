@@ -444,7 +444,6 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
-        stringBuilder.append("        lifeon(s);").append(LINE_SEPARATOR);
         if (hasFastAnim) {
             stringBuilder.append("        nlbticks = stead.ticks();").append(LINE_SEPARATOR);
         }
@@ -490,7 +489,6 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("        s.wastext = false;").append(LINE_SEPARATOR);
         stringBuilder.append("        s.lasttext = nil;").append(LINE_SEPARATOR);
-        stringBuilder.append("        lifeoff(s);").append(LINE_SEPARATOR);
         stringBuilder.append(generateDirectModeStopText(pageBlocks));
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    life = function(s)").append(LINE_SEPARATOR);
@@ -1331,8 +1329,11 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateReturn() {
-        return "return;" + LINE_SEPARATOR;
+    protected String decorateReturn(String returnValue) {
+        // "if true" because of possible error if return is used without enclosing if ('end' expected (to close 'function' at line XXX))
+        // TODO: possibly we can use left hand side of return to hold the constraint instead of just 'true'
+        String valueToReturn = StringHelper.isEmpty(returnValue) ? Constants.EMPTY_STRING : returnValue;
+        return "if true then return " + valueToReturn + "; end;" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1752,14 +1753,16 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateLinkGoTo(
             String linkId,
             String linkText,
+            String linkSource,
+            int sourcePageNumber,
             String linkTarget,
             int targetPageNumber,
             Theme theme
     ) {
         if (isVN(theme)) {
-            return m_vnsteadExportManager.decorateLinkGoTo(linkId, linkText, linkTarget, targetPageNumber, theme);
+            return m_vnsteadExportManager.decorateLinkGoTo(linkId, linkText, linkSource, sourcePageNumber, linkTarget, targetPageNumber, theme);
         }
-        return "        nlb:nlbwalk(s, " + decoratePageName(linkTarget, targetPageNumber) + "); ";
+        return "        nlb:nlbwalk(" + decoratePageName(linkSource, sourcePageNumber) + ", " + decoratePageName(linkTarget, targetPageNumber) + "); ";
     }
 
     @Override

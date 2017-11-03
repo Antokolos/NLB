@@ -314,6 +314,8 @@ nlb = obj {
             src = s:curloc();
         end
         if (src ~= tgt) then
+            lifeoff(src);
+            lifeon(tgt);
             s._curloc = tgt;
             walk(tgt);
             if s._curloc.wastext then tgt.wastext = true; end;
