@@ -391,9 +391,12 @@ nlb = obj {
             end
         end
     end;
-    theme_switch = function(s, theme_file)
+    theme_switch = function(s, theme_file, do_not_cleanup)
         local theme_root = s:theme_root();
         dofile(theme_root .. theme_file);
+        if not do_not_cleanup then
+            vn:cleanup_scene();
+        end
     end;
     theme_root = function(s)
         local theme_name = theme.name();

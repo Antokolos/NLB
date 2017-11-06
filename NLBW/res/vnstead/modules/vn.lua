@@ -4,6 +4,8 @@ require 'theme'
 require 'sprites'
 require 'modules/fonts'
 require 'modules/gobj'
+require 'modules/gr'
+require 'modules/vnspr'
 require 'modules/log'
 require 'modules/nlb'
 
@@ -131,116 +133,6 @@ image = function(name, pic)
     return { nam = name, pic = pic };
 end
 
-gr = obj {
-    nam = 'gr';
-    system_type = true;
-    --var { diff = 0, sprs = {} };
-    screen = function(s)
-        --log:dbg("gr:screen()");
-        return sprite.screen();
-    end;
-    alpha = function(s, spr, alpha)
-        local res = sprite.alpha(spr, alpha);
-        --local idx = tostring(res);
-        --local ss = ">>>gr:alpha(" .. tostring(spr) .. ", " .. tostring(alpha) .. ") = " .. tostring(res);
-        --log:dbg(ss);
-        --s.diff = s.diff + 1;
-        --s.sprs[idx] = ss;
-        return res;
-    end;
-    blank = function(s, w, h)
-        local res = sprite.blank(w, h);
-        --local idx = tostring(res);
-        --local ss = ">>>gr:blank(" .. tostring(w) .. ", " .. tostring(h) .. ") = " .. tostring(res);
-        --log:dbg(ss);
-        --s.diff = s.diff + 1;
-        --s.sprs[idx] = ss;
-        return res;
-    end;
-    box = function(s, w, h, color, alpha)
-        local res = sprite.box(w, h, color, alpha);
-        --local idx = tostring(res);
-        --local ss = ">>>gr:box(" .. tostring(w) .. ", " .. tostring(h) .. ", " .. tostring(color) .. ", " .. tostring(alpha) .. ") = " .. tostring(res)
-        --log:dbg(ss);
-        --s.diff = s.diff + 1;
-        --s.sprs[idx] = ss;
-        return res;
-    end;
-    load = function(s, file_name)
-        local res = sprite.load(file_name);
-        --local idx = tostring(res);
-        --local ss = ">>>gr:load(" .. file_name .. ") = " .. tostring(res);
-        --log:dbg(ss);
-        --s.diff = s.diff + 1;
-        --s.sprs[idx] = ss;
-        return res;
-    end;
-    size = function(s, spr)
-        local w, h = sprite.size(spr);
-        --log:dbg("gr:size(" .. tostring(spr) .. ") = " .. tostring(w) .. ", " .. tostring(h));
-        return w, h;
-    end;
-    free = function(s, spr)
-        --log:dbg("gr:free(" .. tostring(spr) .. ");");
-        --s.diff = s.diff - 1;
-        --log:dbg("diff = " .. tostring(s.diff));
-        --s.sprs[tostring(spr)] = nil;
-        --for k, v in pairs(s.sprs) do
-        --    if v then
-        --        log:err(v);
-        --    end
-        --end
-        sprite.free(spr);
-    end;
-    draw = function(s, src_spr, dst_spr, x, y)
-        --log:dbg("gr:draw()");
-        sprite.draw(src_spr, dst_spr, x, y);
-    end;
-    draw_ext = function(s, src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha)
-        --log:dbg("gr:draw_ext()");
-        sprite.draw(src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha);
-    end;
-    copy = function(s, src_spr, dst_spr, x, y)
-        --log:dbg("gr:copy()");
-        sprite.copy(src_spr, dst_spr, x, y);
-    end;
-    copy_ext = function(s, src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha)
-        --log:dbg("gr:copy_ext()");
-        sprite.copy(src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha);
-    end;
-    compose = function(s, src_spr, dst_spr, x, y)
-        --log:dbg("gr:compose()");
-        sprite.compose(src_spr, dst_spr, x, y);
-    end;
-    compose_ext = function(s, src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha)
-        --log:dbg("gr:compose_ext()");
-        sprite.compose(src_spr, fx, fy, fw, fh, dst_spr, x, y, alpha);
-    end;
-    scale = function(s, spr, xs, ys, smooth)
-        local res = sprite.scale(spr, xs, ys, smooth);
-        --local idx = tostring(res);
-        --local ss = "gr:scale(" .. tostring(spr) .. ", " .. tostring(xs) .. ", " .. tostring(ys) .. ", " .. tostring(smooth) .. ") = " .. tostring(res);
-        --log:dbg("gr:scale(" .. tostring(spr) .. ", " .. tostring(xs) .. ", " .. tostring(ys) .. ", " .. tostring(smooth) .. ") = " .. tostring(res));
-        --s.diff = s.diff + 1;
-        --s.sprs[idx] = ss;
-        return res;
-    end;
-    text = function(s, font, text, col, style)
-        local res = sprite.text(font, text, col, style);
-        --local idx = tostring(res);
-        --local ss = "gr:text(" .. text .. ") = " .. tostring(res);
-        --log:dbg(ss);
-        --s.diff = s.diff + 1;
-        --s.sprs[idx] = ss;
-        return res;
-    end;
-    font = function(s, font_path, size)
-        local res = sprite.font(font_path, size);
-        --log:dbg("gr:font(" .. font_path .. ", " .. tostring(size) .. ") = " .. tostring(res));
-        return res;
-    end;
-}
-
 vn = obj {
     nam = 'vn';
     system_type = true;
@@ -309,7 +201,6 @@ vn = obj {
         s.on = true;
     end,
     turnoff = function(s)
-        s:cleanup_scene();
         -- s._bg = false; -- possible bugfix???
         s.on = false;
     end,
@@ -361,10 +252,11 @@ vn = obj {
         s.fading = 8;
         if s:in_vnr() or s:in_choices() then
             s.on = false;  -- Needed, because otherwise it will not switch the theme
-            nlb:theme_switch("theme_vn.lua");
+            nlb:theme_switch("theme_vn.lua", true);
         else
             s.on = true;   -- Needed, because otherwise it will not switch the theme
-            nlb:theme_switch("theme_standard.lua");
+            nlb:theme_switch("theme_standard.lua", true);
+            s:standard_renew();
             if load then return end;
         end
         s.fend = font(nlb:theme_root() .. 'fonts/STEINEMU.ttf', 96);
@@ -640,33 +532,9 @@ vn = obj {
     need_renew = function(s)
         s._need_renew = true;
     end;
-    is_sprite = function(s, obj)
-        return obj.pic:match("^spr:");
-    end;
-    is_virtual_empty = function(s, obj)
-        return obj.pic:match("^virtual") and obj.pic:match("empty$");
-    end;
     file_exists = function(s, name)
         local f = io.open(name, "r")
         if f ~= nil then io.close(f) return true else return false end
-    end;
-    read_meta = function(s, name)
-        if not name then
-            return {};
-        end
-        local n = name .. ".meta";
-        local f = io.open(n, "r");
-        local content = nil;
-        if f then
-            content = f:read("*all");
-            f:close();
-        end
-        if content then
-            local meta = loadstring(content);
-            return meta();
-        else
-            return {};
-        end
     end;
     split_url = function(s, url)
         -- Splits the url into main part and extension part
@@ -752,219 +620,32 @@ vn = obj {
             log:dbg(prefix .. " should be preserved");
             s.load_once_sprite_keys[prefix] = true;
         end
-        local meta, milestones, bgcolors = s:read_meta(prefix);
         local start = s:get_start(v);
         local maxstep = s:get_max_step(v);
         log:dbg("Loading effect " .. v.nam .. "; start = " .. start .. "; maxstep = " .. maxstep);
         for sprStep = start, maxstep do
-            v.spr[sprStep] = {
+            v.spr[sprStep] = vnspr {
+                nam = v.nam .. tostring(sprStep),
                 preloaded_effect = false,
                 alpha = 255,
                 scale = 1.0,
                 origin = false,
                 cache = false,
-                val = function(s)
-                    if not s.cache then
-                        s.origin = s:get_origin();
-                        s.cache = s:prepare_effect(sprStep, s.origin);
-                    end
-                    return s.cache;
-                end,
-                get_origin = function(s)
-                    if not s.origin then
-                        s.origin = s:load();
-                    end
-                    return s.origin;
-                end,
-                visible = function(s)
-                    return s.alpha > 0 and s.scale > 0.0;
-                end,
-                invisible = function(s)
-                    return not s:visible();
-                end,
-                load = function(s)
-                    if ss:is_sprite(v) then
-                        return v.pic;
-                    end
-                    if ss:is_virtual_empty(v) then
-                        return ss.empty_s;
-                    end
-                    if ss:file_exists(v.pic) then
-                        if sprStep == ss:get_start(v) then
-                            return s:load_file(v.pic, prefix);
-                        elseif sprStep > ss:get_start(v) then
-                            v.spr[ss:get_start(v)]:val();
-                            return v.spr[ss:get_start(v)].origin;
-                        end
-                    else
-                        return s:load_frame();
-                    end
-                    return nil;
-                end,
-                load_file = function(s, sprfile, key, idx, united, milestoneIdx)
-                    if not key then
-                        key = sprfile;
-                    end
-                    if not idx then
-                        idx = ss:get_start(v);
-                    end
-                    local startIdx = 0;
-                    if milestones then
-                        startIdx = milestones[milestoneIdx];
-                    end
-                    if (ss.sprite_cache[key] and ss.sprite_cache[key][idx]) then
-                        return ss.sprite_cache[key][idx];
-                    end
-                    local loaded;
-                    if united and ss.sprite_cache[key] and ss.sprite_cache[key][-milestoneIdx] then
-                        loaded = ss.sprite_cache[key][-milestoneIdx];
-                    else
-                        local tmp = gr:load(sprfile);
-                        if bgcolors then
-                            if bgcolors[milestoneIdx] then
-                                local ws, hs = gr:size(tmp);
-                                loaded = gr:box(ws, hs, bgcolors[milestoneIdx]);
-                                gr:draw(tmp, loaded, 0, 0);
-                                gr:free(tmp);
-                            else
-                                loaded = tmp;
-                            end
-                        else
-                            loaded = tmp;
-                        end
-                    end
-                    if loaded then
-                        if not ss.sprite_cache[key] then
-                            ss.sprite_cache[key] = {};
-                        end
-                        if united then
-                            if not ss.sprite_cache[key][-milestoneIdx] then
-                                ss.sprite_cache[key][-milestoneIdx] = loaded;
-                            end
-                            local ystart = 0;
-                            local w, h;
-                            if meta then
-                                local cursize;
-                                for i = startIdx,idx do
-                                    cursize = meta[i + 1];
-                                    if not cursize then
-                                        cursize = meta[1];
-                                    end
-                                    if h then
-                                        ystart = ystart + h;
-                                    end
-                                    if cursize then
-                                        sw, sh = cursize:match("^(.*)x(.*)$");
-                                        w, h = tonumber(sw), tonumber(sh);
-                                    else
-                                        error("Metafile for " .. prefix .. " is not valid");
-                                    end
-                                end
-                            end
-                            if not w or not h then
-                                w, h = gr:size(loaded);
-                                ystart = w * idx;
-                                h = w;
-                            end
-                            ss.sprite_cache[key][idx] = {["loaded"] = loaded, ["x"] = 0, ["y"] = ystart, ["w"] = w, ["h"] = h};
-                        else
-                            ss.sprite_cache[key][idx] = loaded;
-                        end
-                    else
-                        error("Can not load sprite: " .. tostring(sprfile));
-                    end
-                    if idx > ss:get_start(v) then
-                        if not ss.sprite_cache_data[key] then
-                            local scd = {};
-                            scd[0] = v;
-                            scd[1] = idx;
-                            ss.sprite_cache_data[key] = scd;
-                        end
-                        ss.sprite_cache_data[key][1] = idx;
-                    end
-                    return ss.sprite_cache[key][idx];
-                end,
-                load_frame = function(s)
-                    local sprfile = prefix .. '.' .. string.format("%04d", sprStep) .. extension;
-                    if ss:file_exists(sprfile) then
-                        return s:load_file(sprfile, prefix, sprStep);
-                    end
-                    local interval, milestoneIdx = ss:find_interval(milestones, sprStep, ss:get_max_step(v));
-                    local united_sprfile = prefix .. interval .. extension;
-                    if ss:file_exists(united_sprfile) then
-                        return s:load_file(united_sprfile, prefix, sprStep, true, milestoneIdx);
-                    elseif sprStep == start then
-                        error("Can not load key sprite (" .. sprfile .. " or " .. united_sprfile .. ")");
-                    elseif sprStep > ss:get_start(v) then
-                        return v.spr[sprStep - 1]:val();
-                    end
-                end,
-                prepare_params = function(s, spr_step)
-                    local eff = ss:get_eff(v);
-                    if not eff then
-                        return;
-                    end
-                    local mxs, zstep = ss:steps(v, spr_step);
-                    log:dbg("Preparing parameters for " .. v.nam .. "; spr_step = " .. spr_step .. "; eff = " .. eff);
-                    if eff == 'fadein' then
-                        s.alpha = math.floor(255 * zstep / mxs);
-                    elseif eff == 'fadeout' then
-                        s.alpha = math.floor(255 * (1 - zstep / mxs));
-                    elseif eff == 'zoomin' or eff == 'zoomout' then
-                        s.scale = zstep / mxs;
-                        if eff == 'zoomout' then
-                            s.scale = 1.0 - s.scale;
-                        end
-                    end
-                end,
-                prepare_effect = function(s, spr_step, base_spr)
-                    s:prepare_params(spr_step);
-                    if not ss.cache_effects then
-                        log:dbg("Do not preparing effects, because vn.cache_effects = " .. tostring(ss.cache_effects));
-                        return base_spr;
-                    end
-                    if base_spr.loaded then
-                        log:dbg("Do not preparing effects, because base_spr is composite image");
-                        return base_spr;
-                    end
-                    local eff = ss:get_eff(v);
-                    if eff == 'fadein' then
-                        s.preloaded_effect = true;
-                        return gr:alpha(base_spr, s.alpha);
-                    elseif eff == 'fadeout' then
-                        s.preloaded_effect = true;
-                        return gr:alpha(base_spr, s.alpha);
-                    elseif eff == 'zoomin' or eff == 'zoomout' then
-                        s.preloaded_effect = true;
-                        if s.scale > 0.0 then
-                            return gr:scale(base_spr, s.scale, s.scale, false);
-                        else
-                            return gr:blank(1, 1);
-                        end
-                    end
-                    log:dbg("Falling back to base_spr");
-                    return base_spr;
-                end,
-                free = function(s)
-                    if s.preloaded_effect and s.cache then
-                        -- If effect was preloaded, then some additional sprite was created (via gr:scale, gr:alpha etc).
-                        -- It should be freed. If this sprite will be shown again, then origin can be restored from the sprite_cache,
-                        -- but this local cache will be recreated.
-                        gr:free(s.cache);
-                    end
-                    if ss.nocache and s.origin then
-                        -- Currently this code will not be executed, because cache is always used
-                        gr:free(s.origin);
-                    end
-                    s.cache = nil;
-                    s.origin = nil;
-                end
+                sprStep = sprStep,
+                v = v,
+                prefix = prefix,
+                extension = extension
             };
         end
     end;
     free_effect = function(s, v)
         for i, vv in pairs(v.spr) do
-            vv:free();
+            if vv.free then
+                vv:free();
+            else
+                -- TODO: when restoring from save, inner methods not restored in v.spr objects, therefore we get an error when trying to free sprite during cleanup in ini
+                log:err("TODO: fix broken free method when restoring from save");
+            end
         end
         local gob = s:gobf(v);
         if gob and gob.is_dynamic then
@@ -1727,7 +1408,7 @@ vn = obj {
     frame = function(s, v, idx, target, x, y, only_compute, free_immediately)
         if not v.spr or not v.spr[idx] then
             log:warn("nonexistent sprite when trying to get frame " .. tostring(idx) .. " of " .. v.nam);
-            log:warn(debug.traceback());
+            if debug then log:warn(debug.traceback()); end;
             return s:empty_frame(0, 0);
         end
         local sp = v.spr[idx];
