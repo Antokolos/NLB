@@ -6,6 +6,9 @@ function splitIntoLines(str)
 end
 
 gobj = function(v)
+    if not v.pic then
+        v.pic = 'virtual/' .. v.nam .. '.empty';
+    end
     if not v.startFrame then
         v.startFrame = 0;
     end

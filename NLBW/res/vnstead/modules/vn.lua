@@ -643,6 +643,9 @@ vn = obj {
     is_sprite = function(s, obj)
         return obj.pic:match("^spr:");
     end;
+    is_virtual_empty = function(s, obj)
+        return obj.pic:match("^virtual") and obj.pic:match("empty$");
+    end;
     file_exists = function(s, name)
         local f = io.open(name, "r")
         if f ~= nil then io.close(f) return true else return false end
@@ -782,6 +785,9 @@ vn = obj {
                 load = function(s)
                     if ss:is_sprite(v) then
                         return v.pic;
+                    end
+                    if ss:is_virtual_empty(v) then
+                        return ss.empty_s;
                     end
                     if ss:file_exists(v.pic) then
                         if sprStep == ss:get_start(v) then
