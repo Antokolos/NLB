@@ -424,6 +424,9 @@ public class STEADExportManager extends TextExportManager {
                 autosBuilder.append(generateAutoLinkCode(linkBlocks));
             }
         }
+        if (!isVN(pageBlocks.getTheme())) {
+            autosBuilder.append("        vn:standard_renew();").append(LINE_SEPARATOR);
+        }
         autosBuilder.append("        return true;").append(LINE_SEPARATOR);
         autosBuilder.append("    end,").append(LINE_SEPARATOR);
 
@@ -537,6 +540,7 @@ public class STEADExportManager extends TextExportManager {
                 stringBuilder.append("            vn:gshow(" + graphicalObjId + ");").append(LINE_SEPARATOR);
                 stringBuilder.append("        end").append(LINE_SEPARATOR);
             }
+            stringBuilder.append("        vn:standard_renew();").append(LINE_SEPARATOR);
             // Do not calling vn:startcb(function() s.autos(s); end), because it is NOT VN
         } else if (imageBackground) {
             stringBuilder.append("        theme.gfx.bg(bg_img);").append(getLineSeparator());

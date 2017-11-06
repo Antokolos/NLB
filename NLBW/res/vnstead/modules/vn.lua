@@ -38,9 +38,9 @@ game.fading = stead.hook(game.fading, function(f, s, cmd, ...)
 end)
 
 vntimer = function(f, s, cmd, ...)
-    if not vn.on then
-        return f(s, cmd, ...)
-    end
+--    if not vn.on then
+--        return f(s, cmd, ...)
+--    end
     local update_cursor_result = vn:update_cursor();
 
     vn.vnticks_diff = get_ticks() - vn.vnticks;
@@ -111,9 +111,9 @@ end
 --end
 
 vnfading = function(f, s, cmd, ...)
-    if not vn.on then
-        return f(s, cmd, ...)
-    end
+--    if not vn.on then
+--        return f(s, cmd, ...)
+--    end
     local b = vn.bg_changing
     if vn.skip_mode then return end
     --if game.old_fading(s) or b then
@@ -320,6 +320,14 @@ vn = obj {
             return s.offscreen
         end
     end;
+    standard_renew = function(s)
+        local tr = nlb:theme_root();
+        theme.set('scr.gfx.bg', tr .. 'gfx/bg.jpg');
+        s:set_bg(tr .. 'gfx/bg.jpg');
+        s:clear_bg();
+        s:invalidate_all();
+        s:startcb(function() s:commit(); end);
+    end;
     renew = function(s)
         if s:add_all_missing_children() then
             s:invalidate_all();
@@ -494,9 +502,9 @@ vn = obj {
         return false;
     end;
     click = function(s, x, y, a, b, c, d)
-        if not s.on then
-            return;
-        end
+--        if not s.on then
+--            return;
+--        end
         local v, g = s:test_click(x, y);
         if v then
             return s:click_sprite(v, g);
@@ -570,9 +578,9 @@ vn = obj {
         return morph;
     end;
     over = function(s, x, y, a, b, c, d)
-        if not s.on then
-            return;
-        end
+--        if not s.on then
+--            return;
+--        end
         for i, v in ipairs(s._effects) do
             local active = not s:is_inactive_due_to_anim_state(v);
             if active and s:gobf(v).onover and s:enabled(v) and not v.mouse_over and s:inside_spr(v, x, y) then
@@ -597,9 +605,9 @@ vn = obj {
         return morph;
     end;
     out = function(s, x, y, a, b, c, d)
-        if not s.on then
-            return;
-        end
+--        if not s.on then
+--            return;
+--        end
         for i, v in ipairs(s._effects) do
             -- Don't doing not s:is_inactive_due_to_anim_state(v); check, because I want to always hide tooltip
             if s:gobf(v).onout and s:enabled(v) and v.mouse_over and not s:inside_spr(v, x, y) then
@@ -1993,10 +2001,10 @@ vn = obj {
         return v.last_rct;
     end;
     startcb = function(s, callback, effect)
-        if not s.on then
-            callback();
-            return;
-        end
+--        if not s.on then
+--            callback();
+--            return;
+--        end
         s.callback = callback;
         s:start(effect);
     end;
@@ -2605,9 +2613,9 @@ vn = obj {
         end
     end;
     tooltips = function(s, x, y)
-        if not s.on then
-            return;
-        end
+--        if not s.on then
+--            return;
+--        end
         for i, v in ipairs(s._effects) do
             if s:enabled(v) and s:gobf(v).tooltipfn and s:inside_spr(v, x, y) then
                 s:update_tooltip(v);
