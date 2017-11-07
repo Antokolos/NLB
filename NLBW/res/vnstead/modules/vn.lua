@@ -256,8 +256,6 @@ vn = obj {
         else
             s.on = true;   -- Needed, because otherwise it will not switch the theme
             nlb:theme_switch("theme_standard.lua", true);
-            s:standard_renew();
-            if load then return end;
         end
         s.fend = font(nlb:theme_root() .. 'fonts/STEINEMU.ttf', 96);
         s.vnticks = stead.ticks();
@@ -640,12 +638,7 @@ vn = obj {
     end;
     free_effect = function(s, v)
         for i, vv in pairs(v.spr) do
-            if vv.free then
-                vv:free();
-            else
-                -- TODO: when restoring from save, inner methods not restored in v.spr objects, therefore we get an error when trying to free sprite during cleanup in ini
-                log:err("TODO: fix broken free method when restoring from save");
-            end
+            vv:free();
         end
         local gob = s:gobf(v);
         if gob and gob.is_dynamic then
