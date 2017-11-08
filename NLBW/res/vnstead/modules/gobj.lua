@@ -159,9 +159,9 @@ gobj = function(v)
         v.dirty_draw = false;
     end
     if v.is_menu then
-        return menu(v);
+        return nlbmenu(v);
     else
-        return obj(v);
+        return nlbobj(v);
     end
 end
 

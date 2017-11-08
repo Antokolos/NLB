@@ -424,6 +424,48 @@ _syscall_hidemenubtn  = menu {
     actf = function(s) return s:act(); end
 }
 
+nlbcmn = function(v)
+    v.cont_alive = function(s)
+        if not s.container then
+            return true;
+        end
+        local cont = s.container();
+        return not cont or not cont.alive or cont:alive();
+    end;
+    if not v.alive then
+        v.alive = function(s)
+            return s:cont_alive();
+        end;
+    end;
+    v.life = function(s)
+        local alive = s:alive() and s:cont_alive();
+        if not alive then
+            nlb._filter[stead.deref(s)] = true;
+            s:disable();
+        end;
+    end;
+    v.revive = function(s)
+        local alive = s:alive() and s:cont_alive();
+        if alive then
+            nlb._filter[stead.deref(s)] = false;
+            s:enable();
+        end;
+    end;
+    return v;
+end;
+
+nlbobj = function(v)
+    return obj(nlbcmn(v));
+end;
+
+nlbstat = function(v)
+    return stat(nlbcmn(v));
+end;
+
+nlbmenu = function(v)
+    return menu(nlbcmn(v));
+end;
+
 _syscall_showmenubtn  = menu {
     nam = "syscall_showmenubtn",
     system_type = true,

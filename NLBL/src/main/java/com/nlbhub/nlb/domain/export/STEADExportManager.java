@@ -752,10 +752,10 @@ public class STEADExportManager extends TextExportManager {
         StringBuilder result = new StringBuilder();
         switch (objType) {
             case STAT:
-                result.append(" = stat {").append(LINE_SEPARATOR);
+                result.append(" = nlbstat {").append(LINE_SEPARATOR);
                 break;
             case MENU:
-                result.append(" = menu {").append(LINE_SEPARATOR);
+                result.append(" = nlbmenu {").append(LINE_SEPARATOR);
                 break;
             case GOBJ:
                 result.append(" = gobj {").append(LINE_SEPARATOR);
@@ -806,7 +806,7 @@ public class STEADExportManager extends TextExportManager {
                 }
                 break;
             default:
-                result.append(" = obj {").append(LINE_SEPARATOR);
+                result.append(" = nlbobj {").append(LINE_SEPARATOR);
         }
         result.append("    var { tag = '").append(objDefaultTag).append("'; ").append(getContainerExpression(containerRef));
         result.append(" },").append(LINE_SEPARATOR);
@@ -1203,19 +1203,7 @@ public class STEADExportManager extends TextExportManager {
         StringBuilder result = new StringBuilder();
         if (StringHelper.notEmpty(constraintValue)) {
             result.append("    alive = function(s)").append(LINE_SEPARATOR);
-            result.append("        return ").append(constraintValue).append(";").append(LINE_SEPARATOR);
-            result.append("    end,").append(LINE_SEPARATOR);
-            result.append("    life = function(s)").append(LINE_SEPARATOR);
-            result.append("        if not s:alive() then").append(LINE_SEPARATOR);
-            result.append("            nlb._filter[").append("stead.deref(s)").append("] = true;").append(LINE_SEPARATOR);
-            result.append("            s:disable();").append(LINE_SEPARATOR);
-            result.append("        end;").append(LINE_SEPARATOR);
-            result.append("    end,").append(LINE_SEPARATOR);
-            result.append("    revive = function(s)").append(LINE_SEPARATOR);
-            result.append("        if ").append(constraintValue).append(" then").append(LINE_SEPARATOR);
-            result.append("            nlb._filter[").append("stead.deref(s)").append("] = false;").append(LINE_SEPARATOR);
-            result.append("            s:enable();").append(LINE_SEPARATOR);
-            result.append("        end;").append(LINE_SEPARATOR);
+            result.append("        return ").append(constraintValue).append(" and s:cont_alive();").append(LINE_SEPARATOR);
             result.append("    end,").append(LINE_SEPARATOR);
         }
         return result.toString();
