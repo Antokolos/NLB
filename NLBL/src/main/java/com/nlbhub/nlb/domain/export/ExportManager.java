@@ -3014,10 +3014,11 @@ public abstract class ExportManager {
                 result.setFileName(matcher.group(1) + matcher.group(2));
                 result.setMaxFrameNumber(0);
             }
-            if (mediaExportParameters.isConvertPNG2JPG()) {
+            String matchedExtension = matcher.group(3);
+            if (mediaExportParameters.isConvertPNG2JPG() && ".png".equalsIgnoreCase(matchedExtension)) {
                 result.setFileExtension(".jpg");
             } else {
-                result.setFileExtension(matcher.group(3));
+                result.setFileExtension(matchedExtension);
             }
             // Please note that here we use initial file name, not redirected.
             // Thus we can use constraint for this initial file name.
