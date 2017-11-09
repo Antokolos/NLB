@@ -9,28 +9,6 @@ require 'modules/vnspr'
 require 'modules/log'
 require 'modules/nlb'
 
-local win_reset = function()
-    if not vn._win_get then
-        return
-    end
-    vn:win_set();
-    vn._win_get = false
-end
-local win_get = function()
-    local s = vn
-    if s._win_get then
-        return
-    end
-    s.win_x, s.win_y, s.win_w, s.win_h, s.up_x, s.down_x =
-    theme.get 'win.x',
-    theme.get 'win.y',
-    theme.get 'win.w',
-    theme.get 'win.h',
-    theme.get 'up.x',
-    theme.get 'down.x';
-    s._win_get = true
-end
-
 game.timer = stead.hook(game.timer, function(f, s, cmd, ...)
     return vntimer(f, s, cmd, ...);
 end)
@@ -83,7 +61,6 @@ vntimer = function(f, s, cmd, ...)
         elseif vn.bg_changing == 2 then
             vn.bg_changing = false
             vn._scene_effect = false
-            win_reset();
             vn:textbg(vn.offscreen)
             theme.gfx.bg(vn.offscreen)
         end
@@ -293,7 +270,6 @@ vn = obj {
         s:set_bg(s._bg, true);
         s:draw_notes();
         s:add_all_missing_children();
-        s:win_set();
         s:start();
     end;
     init = function(s)
@@ -1703,11 +1679,6 @@ vn = obj {
         if effect then
             s._scene_effect = effect
         end
-        win_get();
-        -- s.scr_w + s.textpad + s._wf, s.scr_h + s.textpad -- because otherwise screen is corrupted for some reason
-        theme.win.geom(s.scr_w + s.textpad + s._wf, s.scr_h + s.textpad, 0, 0)
-        theme.set("win.up.x", -s.scr_w);
-        theme.set("win.down.x", -s.scr_w);
         if s.skip_mode then
             s._scene_effect = false
         end
@@ -1722,7 +1693,6 @@ vn = obj {
             theme.gfx.bg(s.offscreen)
         else
             vn.bg_changing = false
-            win_reset()
             if not s.direct_lock then
                 s:textbg(s.offscreen)
                 theme.gfx.bg(s.offscreen)
@@ -2474,17 +2444,7 @@ vn = obj {
         end
         return s.scraps_cache[sb_index];
     end;
-    the_end = function(s) return img 'blank:24x24'..'^'..s.fend:txt('The')..img 'blank:64x64'..s.fend:txt('End'); end,
-    win_set = function(s)
-        if s.win_w and s.win_h and tonumber(s.win_w) > 0 and tonumber(s.win_h) > 0 then
-            theme.set('win.x', tonumber(s.win_x));
-            theme.set('win.y', tonumber(s.win_y));
-            theme.set('win.w', tonumber(s.win_w));
-            theme.set('win.h', tonumber(s.win_h));
-            theme.set('up.x', tonumber(s.up_x));
-            theme.set('down.x', tonumber(s.down_x));
-        end
-    end;
+    the_end = function(s) return img 'blank:24x24'..'^'..s.fend:txt('The')..img 'blank:64x64'..s.fend:txt('End'); end;
 }
 
 stead.module_init(function()
