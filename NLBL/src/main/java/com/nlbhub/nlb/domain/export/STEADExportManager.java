@@ -424,9 +424,6 @@ public class STEADExportManager extends TextExportManager {
                 autosBuilder.append(generateAutoLinkCode(linkBlocks));
             }
         }
-        if (!isVN(pageBlocks.getTheme())) {
-            autosBuilder.append("        vn:standard_renew();").append(LINE_SEPARATOR);
-        }
         autosBuilder.append("        return true;").append(LINE_SEPARATOR);
         autosBuilder.append("    end,").append(LINE_SEPARATOR);
 
@@ -446,6 +443,15 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("            add_sound(sndfile);").append(LINE_SEPARATOR);
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
+        stringBuilder.append("    theme_file = function(s)").append(LINE_SEPARATOR);
+        if (pageBlocks.getTheme() == Theme.STANDARD) {
+            stringBuilder.append("        return 'theme_standard.lua';").append(LINE_SEPARATOR);
+        } else if (pageBlocks.getTheme() == Theme.VN) {
+            stringBuilder.append("        return 'theme_vn.lua';").append(LINE_SEPARATOR);
+        } else {
+            stringBuilder.append(getDefaultThemeSwitchExpression());
+        }
+        stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
         if (hasFastAnim) {
             stringBuilder.append("        nlbticks = stead.ticks();").append(LINE_SEPARATOR);
@@ -454,13 +460,6 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("        s.wastext = false;").append(LINE_SEPARATOR);
         if (timerSet) {
             stringBuilder.append("        ").append(pageBlocks.getPageTimerVariableInit()).append(LINE_SEPARATOR);
-        }
-        if (pageBlocks.getTheme() == Theme.STANDARD) {
-            stringBuilder.append("        nlb:theme_switch('theme_standard.lua');").append(LINE_SEPARATOR);
-        } else if (pageBlocks.getTheme() == Theme.VN) {
-            stringBuilder.append("        nlb:theme_switch('theme_vn.lua');").append(LINE_SEPARATOR);
-        } else {
-            stringBuilder.append(getDefaultThemeSwitchExpression());
         }
         stringBuilder.append("        if not (f.autowired) then").append(LINE_SEPARATOR);
         if (varsOrModsPresent) {
@@ -477,11 +476,6 @@ public class STEADExportManager extends TextExportManager {
             // stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR); -- will be called when timer triggers
             // Timer will be triggered first time immediately after timer:set()
             stringBuilder.append("        timer:set(").append(timerRate).append(");").append(LINE_SEPARATOR);
-        } else {
-            if (!isVN(pageBlocks.getTheme())) {
-                // if theme is VN, then autos() will be called as a callback in geom() call
-                stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR);
-            }
         }
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append(getGraphicalObjectAppendingExpression(pageBlocks));
@@ -524,33 +518,32 @@ public class STEADExportManager extends TextExportManager {
     }
 
     protected String getGraphicalObjectAppendingExpression(PageBuildingBlocks pageBuildingBlocks) {
-        if (isVN(pageBuildingBlocks.getTheme())) {
-            return m_vnsteadExportManager.getGraphicalObjectAppendingExpression(pageBuildingBlocks);
-        }
-        StringBuilder stringBuilder = new StringBuilder("    add_gobj = function(s)").append(LINE_SEPARATOR);
+        StringBuilder stringBuilder = new StringBuilder("    add_gobj = function(s)").append(getLineSeparator());
         stringBuilder.append("        local bg_img = s.bgimg(s);").append(getLineSeparator());
-        final boolean imageBackground = pageBuildingBlocks.isImageBackground();
+        //final boolean imageBackground = pageBuildingBlocks.isImageBackground();
+        // vn:scene should be called in all cases
+        stringBuilder.append("        nlb:revive();").append(getLineSeparator());
+        stringBuilder.append("        vn:scene(bg_img);").append(getLineSeparator());
+        stringBuilder.append("        local geomFuncNeedToCall = true;").append(getLineSeparator());
         if (pageBuildingBlocks.isHasGraphicalObjects()) {
-            //stringBuilder.append("        vn:turnon();").append(LINE_SEPARATOR);
-            stringBuilder.append("        vn:scene(bg_img);").append(getLineSeparator());
             for (String graphicalObjId : pageBuildingBlocks.getContainedGraphicalObjIds()) {
-                stringBuilder.append("        if " + graphicalObjId + ".preload then").append(LINE_SEPARATOR);
-                stringBuilder.append("            " + graphicalObjId + ":preload();").append(LINE_SEPARATOR);
-                stringBuilder.append("        else").append(LINE_SEPARATOR);
-                stringBuilder.append("            vn:gshow(" + graphicalObjId + ");").append(LINE_SEPARATOR);
-                stringBuilder.append("        end").append(LINE_SEPARATOR);
+                stringBuilder.append("        if " + graphicalObjId + ".preload then").append(getLineSeparator());
+                stringBuilder.append("            geomFuncNeedToCall = false;").append(getLineSeparator());
+                stringBuilder.append("            " + graphicalObjId + ":preload(s);").append(getLineSeparator());
+                stringBuilder.append("        else").append(getLineSeparator());
+                stringBuilder.append("            vn:gshow(" + graphicalObjId + ");").append(getLineSeparator());
+                stringBuilder.append("        end").append(getLineSeparator());
             }
-            stringBuilder.append("        vn:standard_renew();").append(LINE_SEPARATOR);
-            // Do not calling vn:startcb(function() s.autos(s); end), because it is NOT VN
-        } else if (imageBackground) {
-            stringBuilder.append("        theme.gfx.bg(bg_img);").append(getLineSeparator());
         }
-        stringBuilder.append("    end,").append(LINE_SEPARATOR);
+        stringBuilder.append("        if geomFuncNeedToCall then").append(getLineSeparator());
+        stringBuilder.append("            if s:autos() then vn:auto_geom('dissolve', function() s.autos(s); end); end;").append(getLineSeparator());
+        stringBuilder.append("        end;").append(getLineSeparator());
+        stringBuilder.append("    end,").append(getLineSeparator());
         return stringBuilder.toString();
     }
 
     protected String getDefaultThemeSwitchExpression() {
-        return "        nlb:theme_switch('theme_standard.lua');" + LINE_SEPARATOR;
+        return "        return 'theme_standard.lua';" + LINE_SEPARATOR;
     }
 
     protected String generateOrdinaryLinkTextInsideRoom(PageBuildingBlocks pageBuildingBlocks) {
@@ -1881,7 +1874,8 @@ public class STEADExportManager extends TextExportManager {
             }
             notFirst = true;
         }
-        bgimgBuilder.append(bgimgIfTermination).append("    end,").append(LINE_SEPARATOR);
+        // Always returning nlb:std_bg() as bgimg by default
+        bgimgBuilder.append(bgimgIfTermination).append("return nlb:std_bg();").append(LINE_SEPARATOR).append("    end,").append(LINE_SEPARATOR);
         picBuilder.append(picIfTermination).append("    end,").append(LINE_SEPARATOR);
         return bgimgBuilder.toString() + picBuilder.toString();
     }

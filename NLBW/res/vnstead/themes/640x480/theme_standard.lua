@@ -1,4 +1,3 @@
-if vn.on then
 local tr = nlb:theme_root();
 theme.win.geom(20, 20, 450, 440);
 theme.inv.geom(500, 20, 120, 440);
@@ -13,4 +12,3 @@ theme.set('win.fnt.size', 12);
 
 paginator:turnoff();
 vn:turnoff();
-end

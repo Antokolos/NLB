@@ -153,12 +153,6 @@ vn = obj {
         fading = 8,
         bgalpha = 127,
         stp = 1,
-        win_x = 0,
-        win_y = 0,
-        win_w = 0,
-        win_h = 0,
-        up_x = 0,
-        down_x = 0,
         callback = false,
         extent = 5,
         default_label_extent = 4,
@@ -187,14 +181,6 @@ vn = obj {
         else
             return s.offscreen
         end
-    end;
-    standard_renew = function(s)
-        local tr = nlb:theme_root();
-        theme.set('scr.gfx.bg', tr .. 'gfx/bg.jpg');
-        s:set_bg(tr .. 'gfx/bg.jpg');
-        s:clear_bg();
-        s:invalidate_all();
-        s:startcb(function() s:commit(); end);
     end;
     renew = function(s)
         if s:add_all_missing_children() then
@@ -228,10 +214,8 @@ vn = obj {
     ini = function(s, load)
         s.fading = 8;
         if s:in_vnr() or s:in_choices() then
-            s.on = false;  -- Needed, because otherwise it will not switch the theme
             nlb:theme_switch("theme_vn.lua", true);
         else
-            s.on = true;   -- Needed, because otherwise it will not switch the theme
             nlb:theme_switch("theme_standard.lua", true);
         end
         s.fend = font(nlb:theme_root() .. 'fonts/STEINEMU.ttf', 96);
@@ -270,6 +254,9 @@ vn = obj {
         s:set_bg(s._bg, true);
         s:draw_notes();
         s:add_all_missing_children();
+        if s.direct_lock then
+            s:lock_direct();
+        end
         s:start();
     end;
     init = function(s)
@@ -1703,9 +1690,10 @@ vn = obj {
         -- just transpose
     end;
     get_win_coords = function(s)
-        local scr_width, scr_height = theme.get('scr.w'), theme.get('scr.h');
-        local win_height = (scr_height * 10) / 54;
-        return math.floor(s.textpad), math.floor(scr_height - 2 * s.textpad - win_height), math.floor(scr_width - 2 * s.textpad), math.floor(win_height - 2 * s.textpad);
+        --local scr_width, scr_height = theme.get('scr.w'), theme.get('scr.h');
+        --local win_height = (scr_height * 10) / 54;
+        --return math.floor(s.textpad), math.floor(scr_height - 2 * s.textpad - win_height), math.floor(scr_width - 2 * s.textpad), math.floor(win_height - 2 * s.textpad);
+        return theme.get('win.x'), theme.get('win.y'), theme.get('win.w'), theme.get('win.h');
     end;
     get_end_coords = function(s)
         local scr_width, scr_height = theme.get('scr.w'), theme.get('scr.h');
@@ -1755,8 +1743,7 @@ vn = obj {
         else
             s._wf = 0;
         end
-        s.win_x, s.win_y, s.win_w, s.win_h = x + s._wf, y, w - 2 * s._wf, h;
-        theme.win.geom(s.win_x, s.win_y, s.win_w, s.win_h);
+        theme.win.geom(x, y, w, h);
         s:request_full_clear();
         if callback then
             s:startcb(callback, effect);

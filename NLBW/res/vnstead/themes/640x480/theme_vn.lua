@@ -1,6 +1,5 @@
-if not vn.on then
 local tr = nlb:theme_root();
-theme.win.geom(0, 380, 640, 100);
+theme.win.geom(0, 328, 640, 114);
 theme.inv.geom(0, 450, 640, 30);
 theme.win.color('white', '#00FF00', 'gold');
 
@@ -13,4 +12,3 @@ theme.set('win.fnt.size', 16);
 
 vn:turnon();
 paginator:turnon();
-end

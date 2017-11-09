@@ -317,6 +317,7 @@ nlb = obj {
             lifeoff(src);
             lifeon(tgt);
             s._curloc = tgt;
+            s:theme_switch(tgt:theme_file());
             walk(tgt);
             if s._curloc.wastext then tgt.wastext = true; end;
         else
@@ -392,6 +393,7 @@ nlb = obj {
         end
     end;
     theme_switch = function(s, theme_file, do_not_cleanup)
+        if not theme_file then return; end;
         local theme_root = s:theme_root();
         dofile(theme_root .. theme_file);
         if not do_not_cleanup then
@@ -401,6 +403,10 @@ nlb = obj {
     theme_root = function(s)
         local theme_name = theme.name();
         return 'themes' .. theme_name:gsub('[\\.]', '/') .. '/';
+    end;
+    std_bg = function(s)
+        local tr = s:theme_root();
+        return tr .. 'gfx/bg.jpg';
     end;
 };
 

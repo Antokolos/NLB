@@ -84,39 +84,10 @@ public class VNSTEADExportManager extends STEADExportManager {
         return m_technicalInstance || (theme != Theme.STANDARD);
     }
 
-    protected String getGraphicalObjectAppendingExpression(PageBuildingBlocks pageBuildingBlocks) {
-        if (!isVN(pageBuildingBlocks.getTheme())) {
-            return super.getGraphicalObjectAppendingExpression(pageBuildingBlocks);
-        }
-        StringBuilder stringBuilder = new StringBuilder("    add_gobj = function(s)").append(getLineSeparator());
-        stringBuilder.append("        local bg_img = s.bgimg(s);").append(getLineSeparator());
-        final boolean imageBackground = pageBuildingBlocks.isImageBackground();
-        // vn:scene should be called in all cases
-        stringBuilder.append("        nlb:revive();").append(getLineSeparator());
-        stringBuilder.append("        vn:scene(bg_img);").append(getLineSeparator());
-        stringBuilder.append("        local geomFuncNeedToCall = true;").append(getLineSeparator());
-        if (pageBuildingBlocks.isHasGraphicalObjects()) {
-            for (String graphicalObjId : pageBuildingBlocks.getContainedGraphicalObjIds()) {
-                stringBuilder.append("        if " + graphicalObjId + ".preload then").append(getLineSeparator());
-                stringBuilder.append("            geomFuncNeedToCall = false;").append(getLineSeparator());
-                stringBuilder.append("            " + graphicalObjId + ":preload(s);").append(getLineSeparator());
-                stringBuilder.append("        else").append(getLineSeparator());
-                stringBuilder.append("            vn:gshow(" + graphicalObjId + ");").append(getLineSeparator());
-                stringBuilder.append("        end").append(getLineSeparator());
-            }
-        }
-        stringBuilder.append("        if geomFuncNeedToCall then").append(getLineSeparator());
-        stringBuilder.append("            vn:auto_geom('dissolve', function() s.autos(s); end);").append(getLineSeparator());
-        stringBuilder.append("        end;").append(getLineSeparator());
-        stringBuilder.append("    end,").append(getLineSeparator());
-        return stringBuilder.toString();
-    }
-
     @Override
     protected String getDefaultThemeSwitchExpression() {
-        return "        nlb:theme_switch('theme_vn.lua');" + getLineSeparator();
+        return "        return 'theme_vn.lua';" + getLineSeparator();
     }
-
 
     @Override
     protected String decoratePageTextStart(String labelText, int pageNumber, List<TextChunk> pageTextChunks, Theme theme) {
