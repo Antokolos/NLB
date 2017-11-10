@@ -273,7 +273,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     }
 
     @Override
-    public Theme getTheme() {
+    public Theme getEffectiveTheme() {
         NonLinearBook currentNLB = getCurrentNLB();
         String containerId = getContainerId();
         if (containerId == null) {
@@ -283,10 +283,10 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         if (containerPage == null) {
             Obj containerObj = currentNLB.getObjById(containerId);
             if (containerObj != null) {
-                return containerObj.getTheme();
+                return containerObj.getEffectiveTheme();
             }
         } else {
-            return containerPage.getTheme();
+            return containerPage.getEffectiveTheme();
         }
         return Theme.DEFAULT;
     }

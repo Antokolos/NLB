@@ -317,7 +317,6 @@ nlb = obj {
             lifeoff(src);
             lifeon(tgt);
             s._curloc = tgt;
-            s:theme_switch(tgt:theme_file());
             walk(tgt);
             if s._curloc.wastext then tgt.wastext = true; end;
         else

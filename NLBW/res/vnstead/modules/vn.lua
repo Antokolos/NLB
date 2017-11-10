@@ -182,6 +182,11 @@ vn = obj {
             return s.offscreen
         end
     end;
+    standard_renew = function(s)
+        s:clear_bg();
+        s:invalidate_all();
+        s:startcb(function() s:commit(); end);
+    end;
     renew = function(s)
         if s:add_all_missing_children() then
             s:invalidate_all();

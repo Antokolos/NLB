@@ -2195,7 +2195,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             for (String pageId : pageIds) {
                 PageImpl existingPage = getPageImplById(pageId);
                 if (existingPage != null && !existingPage.isDeleted()) {
-                    PageImpl page = new PageImpl(existingPage, m_newClipboardData);
+                    PageImpl page = new PageImpl(existingPage, m_newClipboardData, false);
                     m_newClipboardData.addPage(page);
                     copyModificationVariables(page, m_newClipboardData);
                     // also we should move all related variables to the new NLB
@@ -2649,15 +2649,15 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     /**
      * Appends items to this book which are contained in operand (with overwrite if needed)
-     *
      * @param operand
      * @param overwriteProperties
+     * @param overwriteTheme
      */
-    public void append(final NonLinearBook operand, boolean overwriteProperties) {
+    public void append(final NonLinearBook operand, boolean overwriteProperties, boolean overwriteTheme) {
         if (operand != null) {
             for (Map.Entry<String, Page> entry : operand.getPages().entrySet()) {
                 Page operandPage = entry.getValue();
-                PageImpl newPage = new PageImpl(operandPage, this);
+                PageImpl newPage = new PageImpl(operandPage, this, overwriteTheme);
                 m_pages.put(entry.getKey(), newPage);
                 if (operand.isAutowired(entry.getKey())) {
                     addAutowiredPageId(entry.getKey());
@@ -2685,16 +2685,18 @@ public class NonLinearBookImpl implements NonLinearBook {
             }
 
             if (overwriteProperties) {
-                overwriteBookProperties(operand);
+                overwriteBookProperties(operand, overwriteTheme);
             }
         }
     }
 
-    private void overwriteBookProperties(final NonLinearBook operand) {
+    private void overwriteBookProperties(final NonLinearBook operand, boolean overwriteTheme) {
         m_startPoint = operand.getStartPoint();
         m_language = operand.getLanguage();
         m_license = operand.getLicense();
-        // m_theme = operand.getTheme(); don't touching it...
+        if (overwriteTheme) {
+            m_theme = operand.getTheme();
+        }
         m_fullAutowire = operand.isFullAutowire();
         m_suppressMedia = operand.isSuppressMedia();
         m_suppressSound = operand.isSuppressSound();

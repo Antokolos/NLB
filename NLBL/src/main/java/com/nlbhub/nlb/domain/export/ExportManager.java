@@ -467,12 +467,13 @@ public abstract class ExportManager {
         PageBuildingBlocks blocks = new PageBuildingBlocks();
         boolean hasPageText = StringHelper.notEmpty(page.getText());
         blocks.setHasPageText(hasPageText);
-        blocks.setTheme(page.getTheme());
+        Theme theme = page.getEffectiveTheme();
+        blocks.setTheme(theme);
         final Integer pageNumber = checkedGetPageNumber(page.getId());
         blocks.setAutowired(page.isAutowire());
         final String pageName = decoratePageName(page.getId(), pageNumber);
         blocks.setPageName(pageName);
-        blocks.setPageLabel(decoratePageLabel(page.getId(), pageNumber, page.getTheme()));
+        blocks.setPageLabel(decoratePageLabel(page.getId(), pageNumber, theme));
         blocks.setPageNumber(decoratePageNumber(pageNumber));
         blocks.setPageComment(decoratePageComment(page.getCaption()));
         final String title = getNonEmptyTitle(nlb);
@@ -483,12 +484,12 @@ public abstract class ExportManager {
         boolean isAnimatedImage = page.isImageAnimated();
         blocks.setHasAnimatedPageImage(isAnimatedImage);
         blocks.setImageBackground(page.isImageBackground());
-        blocks.setPageImage(decoratePageImage(getImagePaths(page.getExternalHierarchy(), imageFileName, isAnimatedImage, false), page.isImageBackground(), page.getTheme()));
+        blocks.setPageImage(decoratePageImage(getImagePaths(page.getExternalHierarchy(), imageFileName, isAnimatedImage, false), page.isImageBackground(), theme));
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
-        blocks.setPageSound(decoratePageSound(pageName, getSoundPaths(page.getExternalHierarchy(), soundFileName), page.isSoundSFX(), page.getTheme()));
-        blocks.setPageTextStart(decoratePageTextStart(page.getId(), pageNumber, StringHelper.getTextChunks(page.getText()), page.getTheme()));
+        blocks.setPageSound(decoratePageSound(pageName, getSoundPaths(page.getExternalHierarchy(), soundFileName), page.isSoundSFX(), theme));
+        blocks.setPageTextStart(decoratePageTextStart(page.getId(), pageNumber, StringHelper.getTextChunks(page.getText()), theme));
         boolean hasChoicesOrLeaf = hasChoicesOrLeaf(page);
-        blocks.setPageTextEnd(decoratePageTextEnd(page.getId(), pageNumber, page.getTheme(), hasChoicesOrLeaf));
+        blocks.setPageTextEnd(decoratePageTextEnd(page.getId(), pageNumber, theme, hasChoicesOrLeaf));
         if (!StringHelper.isEmpty(page.getVarId())) {
             Variable variable = nlb.getVariableById(page.getVarId());
             // TODO: Add cases with deleted pages/links/variables etc. to the unit test
@@ -1158,6 +1159,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public Theme getEffectiveTheme() {
+                return page.getEffectiveTheme();
+            }
+
+            @Override
             public String getVarId() {
                 return page.getVarId();
             }
@@ -1470,8 +1476,8 @@ public abstract class ExportManager {
             }
 
             @Override
-            public Theme getTheme() {
-                return obj.getTheme();
+            public Theme getEffectiveTheme() {
+                return obj.getEffectiveTheme();
             }
 
             @Override
@@ -1919,15 +1925,16 @@ public abstract class ExportManager {
             final ExportData exportData
     ) throws NLBConsistencyException {
         LinkBuildingBlocks blocks = new LinkBuildingBlocks();
-        blocks.setTheme(page.getTheme());
+        Theme theme = page.getEffectiveTheme();
+        blocks.setTheme(theme);
         final boolean trivial = determineTrivialStatus(link);
         blocks.setAuto(link.isAuto());
         blocks.setInline(isInlineLink(link));
-        String expandedLinkText = expandVariablesForLinks(StringHelper.getTextChunks(link.getText()), page.getTheme());
+        String expandedLinkText = expandVariablesForLinks(StringHelper.getTextChunks(link.getText()), theme);
         blocks.setLinkText(expandedLinkText);
-        blocks.setLinkAltText(decorateLinkAltText(expandVariablesForLinks(StringHelper.getTextChunks(link.getAltText()), page.getTheme())));
+        blocks.setLinkAltText(decorateLinkAltText(expandVariablesForLinks(StringHelper.getTextChunks(link.getAltText()), theme)));
         blocks.setTrivial(trivial);
-        blocks.setLinkLabel(decorateLinkLabel(link.getId(), expandedLinkText, page.getTheme()));
+        blocks.setLinkLabel(decorateLinkLabel(link.getId(), expandedLinkText, theme));
         blocks.setLinkComment(decorateLinkComment(link.getText()));
         // TODO: exportData.getIdToPageNumberMap().get(link.getTarget()) can produce NPE for return links
         blocks.setLinkStart(
@@ -1937,7 +1944,7 @@ public abstract class ExportManager {
                         link.isAuto(),
                         trivial,
                         checkedGetPageNumber(link.getTarget()),
-                        page.getTheme()
+                        theme
                 )
         );
         Variable variable = exportData.getNlb().getVariableById(link.getVarId());
@@ -1992,11 +1999,11 @@ public abstract class ExportManager {
                         checkedGetPageNumber(page.getId()),
                         link.getTarget(),
                         targetPageNumber,
-                        page.getTheme()
+                        theme
                 )
         );
         blocks.setLinkEnd(
-                decorateLinkEnd(page.getTheme())
+                decorateLinkEnd(theme)
         );
         return blocks;
     }
@@ -2012,8 +2019,8 @@ public abstract class ExportManager {
     ) throws NLBConsistencyException {
         UseBuildingBlocks blocks = new UseBuildingBlocks();
         blocks.setUseTarget(decorateUseTarget(link.getTarget()));
-        blocks.setUseSuccessText(expandVariablesForLinks(StringHelper.getTextChunks(link.getText()), obj.getTheme()));
-        blocks.setUseFailureText(expandVariablesForLinks(StringHelper.getTextChunks(link.getAltText()), obj.getTheme()));
+        blocks.setUseSuccessText(expandVariablesForLinks(StringHelper.getTextChunks(link.getText()), obj.getEffectiveTheme()));
+        blocks.setUseFailureText(expandVariablesForLinks(StringHelper.getTextChunks(link.getAltText()), obj.getEffectiveTheme()));
         Variable variable = exportData.getNlb().getVariableById(link.getVarId());
         if (variable != null && !variable.isDeleted()) {
             blocks.setUseVariable(decorateUseVariable(variable.getName()));

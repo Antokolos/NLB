@@ -424,6 +424,9 @@ public class STEADExportManager extends TextExportManager {
                 autosBuilder.append(generateAutoLinkCode(linkBlocks));
             }
         }
+        if (!isVN(pageBlocks.getTheme())) {
+            autosBuilder.append("        vn:standard_renew();").append(LINE_SEPARATOR);
+        }
         autosBuilder.append("        return true;").append(LINE_SEPARATOR);
         autosBuilder.append("    end,").append(LINE_SEPARATOR);
 
@@ -453,6 +456,7 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
+        stringBuilder.append("        nlb:theme_switch(s:theme_file());").append(LINE_SEPARATOR);
         if (hasFastAnim) {
             stringBuilder.append("        nlbticks = stead.ticks();").append(LINE_SEPARATOR);
         }

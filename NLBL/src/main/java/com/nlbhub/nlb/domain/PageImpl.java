@@ -147,7 +147,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     /**
      * NB: Please take into account that it will create full copy, including ids and such
      */
-    public PageImpl(Page source, NonLinearBook currentNLB) {
+    public PageImpl(Page source, NonLinearBook currentNLB, boolean overwriteTheme) {
         super(source, currentNLB);
         m_imageFileName = source.getImageFileName();
         m_imageBackground = source.isImageBackground();
@@ -171,7 +171,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         setReturnPageId(source.getReturnPageId());
         setModuleConstrId(source.getModuleConstrId());
         m_module = new NonLinearBookImpl(currentNLB, this);
-        m_module.append(source.getModule(), true);
+        m_module.append(source.getModule(), true, overwriteTheme);
         setAutowireInTexts(source.getAutowireInTexts());
         setAutowireOutTexts(source.getAutowireOutTexts());
         setGlobalAutoWired(source.isGlobalAutowire());
@@ -285,6 +285,11 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     @Override
     public Theme getTheme() {
+        return m_theme;
+    }
+
+    @Override
+    public Theme getEffectiveTheme() {
         Theme bookTheme = getCurrentNLB().getTheme();
         if (m_theme == Theme.DEFAULT) {
             return bookTheme;
@@ -975,7 +980,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
             );
             if (isModuleExternal()) {
                 m_module.clear();
-                m_module.append(getCurrentNLB().findExternalModule(m_moduleName), true);
+                m_module.append(getCurrentNLB().findExternalModule(m_moduleName), true, true);
             } else {
                 final File moduleDir = new File(pageDir, MODULE_SUBDIR_NAME);
                 m_module.loadAndSetParent(moduleDir.getCanonicalPath(), getCurrentNLB(), this);

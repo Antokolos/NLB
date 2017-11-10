@@ -100,7 +100,7 @@ public class NullObj extends AbstractNodeItem implements Obj {
     }
 
     @Override
-    public Theme getTheme() {
+    public Theme getEffectiveTheme() {
         return Theme.DEFAULT;
     }
 

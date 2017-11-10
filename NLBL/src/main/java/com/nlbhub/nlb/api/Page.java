@@ -97,6 +97,8 @@ public interface Page extends NodeItem {
 
     public Theme getTheme();
 
+    public Theme getEffectiveTheme();
+
     public String getVarId();
 
     public String getTimerVarId();

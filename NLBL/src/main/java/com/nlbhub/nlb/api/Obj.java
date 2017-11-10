@@ -103,7 +103,7 @@ public interface Obj extends NodeItem {
 
     public MultiLangString getNouseTexts();
 
-    public Theme getTheme();
+    public Theme getEffectiveTheme();
 
     public String getVarId();
 
