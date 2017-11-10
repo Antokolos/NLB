@@ -1,5 +1,5 @@
 local tr = nlb:theme_root();
-theme.win.geom(0, 328, 640, 114);
+theme.win.geom(40, 328, 560, 114);
 theme.inv.geom(0, 450, 640, 30);
 theme.win.color('white', '#00FF00', 'gold');
 

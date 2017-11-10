@@ -213,8 +213,13 @@ vn = obj {
     end;
     ini = function(s, load)
         s.fading = 8;
-        if s:in_vnr() or s:in_choices() then
+        if s:in_vnr() then
             nlb:theme_switch("theme_vn.lua", true);
+        elseif s:in_choices() then
+            nlb:theme_switch("theme_vn.lua", true);  -- or maybe create theme_vn_choices.lua?
+            s._wf = 0;
+            local x, y, w, h = s:get_choices_coords();
+            theme.win.geom(x, y, w, h);
         else
             nlb:theme_switch("theme_standard.lua", true);
         end
