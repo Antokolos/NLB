@@ -2,6 +2,7 @@
 // See http://www.wellho.net/mouth/1844_Calling-functions-in-C-from-your-Lua-script-a-first-HowTo.html
 #ifdef _WINDOWS
 #include "stdafx.h"
+#include "Shellapi.h"
 #else
 #include "luapassing.h"
 #include "adapter.h"
@@ -53,16 +54,16 @@ static int init(lua_State *L) {
 }
 
 static void checkInit() {
-	if (!checkInitFunc()) {
-		initFunc();
-		log("Warning: init while processing.\n");
-	}
+    if (!checkInitFunc()) {
+        initFunc();
+        log("Warning: init while processing.\n");
+    }
 }
-  
+
 static int setAchievement(lua_State *L) {
     const char* achievementName = lua_tostring(L, 1);
     bool storeImmediately = lua_toboolean(L, 2);
-	checkInit();
+    checkInit();
     log("Setting achievement '%s'...\n", achievementName);
     setAchievementFunc(achievementName);
     if (storeImmediately) {
@@ -72,12 +73,12 @@ static int setAchievement(lua_State *L) {
     lua_pushnumber(L, 0.0);
     return 1;
 }
-  
+
 static int store(lua_State *L) {
-	checkInit();
+    checkInit();
     log("Storing...\n");
     storeFunc();
-	log("Done.\n");
+    log("Done.\n");
     lua_pushnumber(L, 0.0);
     return 1;
 }
@@ -85,8 +86,8 @@ static int store(lua_State *L) {
 static int clearAchievement(lua_State *L) {
     const char* achievementName = lua_tostring(L, 1);
     bool storeImmediately = lua_toboolean(L, 2);
-	checkInit();
-	log("Clearing achievement '%s'...\n", achievementName);
+    checkInit();
+    log("Clearing achievement '%s'...\n", achievementName);
     clearAchievementFunc(achievementName);
     if (storeImmediately) {
         storeFunc();
@@ -98,7 +99,7 @@ static int clearAchievement(lua_State *L) {
 
 static int resetAll(lua_State *L) {
     log("Resetting all achievements...\n");
-	checkInit();
+    checkInit();
     resetAllFunc();
     log("Done.\n");
     lua_pushnumber(L, 0.0);
@@ -106,6 +107,15 @@ static int resetAll(lua_State *L) {
 }
 
 #ifdef _WINDOWS
+static int openURL(lua_State *L) {
+    const char* url = lua_tostring(L, 1);
+    log("Opening URL '%s'...\n", url);
+    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    ShellExecute(NULL, "open", url, NULL, NULL, SW_SHOWNORMAL);
+    lua_pushnumber(L, 0.0);
+    return 1;
+}
+
 extern "C" __declspec(dllexport) int luaopen_luapassing(lua_State *L) {
     HMODULE lib = GetModuleHandle(L"lua5.1.dll");
     if (!lib) {
@@ -114,8 +124,28 @@ extern "C" __declspec(dllexport) int luaopen_luapassing(lua_State *L) {
     }
     initLuaFunctionPointers(lib);
 #elif defined(_LINUX)
+static int openURL(lua_State *L) {
+    const char* url = lua_tostring(L, 1);
+    char buffer[256];
+    log("Opening URL '%s'...\n", url);
+    sprintf(buffer, "xdg-open %s", (char*) url);
+    system(buffer);
+    lua_pushnumber(L, 0.0);
+    return 1;
+}
+
 extern "C" int luaopen_luapassing ( lua_State *L) {
 #elif defined(_MACOSX)
+static int openURL(lua_State *L) {
+    const char* url = lua_tostring(L, 1);
+    char buffer[256];
+    log("Opening URL '%s'...\n", url);
+    sprintf(buffer, "open %s", (char*) url);
+    system(buffer);
+    lua_pushnumber(L, 0.0);
+    return 1;
+}
+
 extern "C" int luaopen_luapassing ( lua_State *L) {
     /*
      * Can pass full path of the Lua framework as the first parameter, but passing NULL is more simple.
@@ -130,6 +160,7 @@ extern "C" int luaopen_luapassing ( lua_State *L) {
         {"clearAchievement", clearAchievement},
         {"store", store},
         {"resetAll", resetAll},
+        {"openURL", openURL},
         {NULL,NULL}
     };
     luaL_register(L, "statsAPI", Map);
