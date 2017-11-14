@@ -1,5 +1,7 @@
 #include "adapter.h"
-#ifndef _WINDOWS
+#ifdef _WINDOWS
+#include "stdafx.h"
+#else
 #include <stdio.h>
 #endif
 #include <stdarg.h>

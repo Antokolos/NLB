@@ -2,7 +2,8 @@
 // See http://www.wellho.net/mouth/1844_Calling-functions-in-C-from-your-Lua-script-a-first-HowTo.html
 #ifdef _WINDOWS
 #include "stdafx.h"
-#include "Shellapi.h"
+#include <Shellapi.h>
+#include <Objbase.h>
 #else
 #include "luapassing.h"
 #include "adapter.h"
@@ -47,6 +48,7 @@ static int init(lua_State *L) {
         lua_pushnumber(L, 0.0);
     } else {
         initFunc();
+		CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
         log("API initialized.\n");
         lua_pushnumber(L, 1.0);
     }
@@ -110,8 +112,7 @@ static int resetAll(lua_State *L) {
 static int openURL(lua_State *L) {
     const char* url = lua_tostring(L, 1);
     log("Opening URL '%s'...\n", url);
-    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-    ShellExecute(NULL, "open", url, NULL, NULL, SW_SHOWNORMAL);
+    ShellExecuteA(NULL, "open", url, NULL, NULL, SW_SHOWNORMAL);
     lua_pushnumber(L, 0.0);
     return 1;
 }
