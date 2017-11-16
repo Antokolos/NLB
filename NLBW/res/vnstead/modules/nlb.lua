@@ -407,6 +407,29 @@ nlb = obj {
         local tr = s:theme_root();
         return tr .. 'gfx/bg.jpg';
     end;
+    file_exists = function(s, name)
+        if s:file_open(name) then
+            io.close(f);
+            return true;
+        else
+            return false;
+        end
+    end;
+    file_open = function(s, name, mode)
+        if not mode then
+            mode = "r";
+        end
+        local f = io.open(name, mode);
+        if f ~= nil then
+            return f;
+        else
+            f = io.open(instead_gamepath() .. name, "r")
+            if f ~= nil then
+                return f;
+            end
+        end
+        return nil;
+    end;
 };
 
 _try_again = menu {

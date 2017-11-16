@@ -236,12 +236,12 @@ vn = obj {
         local tr = nlb:theme_root();
         s.hudFont = gr:font(tr .. 'fonts/Medieval_English.ttf', 29);
         s.empty_s = gr:load('gfx/empty.png');
-        if s:file_exists(tr .. 'gfx/fl.png') then
+        if nlb:file_exists(tr .. 'gfx/fl.png') then
             s.fln_s = gr:load(tr .. 'gfx/fl.png');
         else
             s.fln_s = gr:blank(1, 1);
         end
-        if s:file_exists(tr .. 'gfx/fr.png') then
+        if nlb:file_exists(tr .. 'gfx/fr.png') then
             s.frn_s = gr:load(tr .. 'gfx/fr.png');
         else
             s.frn_s = gr:blank(1, 1);
@@ -502,10 +502,6 @@ vn = obj {
     end;
     need_renew = function(s)
         s._need_renew = true;
-    end;
-    file_exists = function(s, name)
-        local f = io.open(name, "r")
-        if f ~= nil then io.close(f) return true else return false end
     end;
     split_url = function(s, url)
         -- Splits the url into main part and extension part
@@ -1725,7 +1721,7 @@ vn = obj {
         local x, y, w, h = s:get_win_coords();
         local wf, hf = 0, 0;
         local tr = nlb:theme_root();
-        if s:file_exists(tr .. 'gfx/fl.png') then
+        if nlb:file_exists(tr .. 'gfx/fl.png') then
             wf, hf = sprite.size(s.fln_s);
         end
         return s:geom(x, y, w, h, effect, wf, callback);
@@ -1734,7 +1730,7 @@ vn = obj {
         local x, y, w, h = s:get_end_coords();
         local wf, hf = 0, 0;
         local tr = nlb:theme_root();
-        if s:file_exists(tr .. 'gfx/fl.png') then
+        if nlb:file_exists(tr .. 'gfx/fl.png') then
             wf, hf = sprite.size(s.fln_s);
         end
         return s:geom(x - wf, y, w + 2 * wf, h, effect, wf, callback);

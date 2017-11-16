@@ -11,14 +11,14 @@ vnspr = function(w)
             return {};
         end
         local n = name .. ".meta";
-        local f = io.open(n, "r");
+        local f = nlb.file_open(n);
         local content = nil;
         if f then
             content = f:read("*all");
             f:close();
         end
         if content then
-            local meta = loadstring(content);
+            local meta = stead.eval(content);
             return meta();
         else
             return {};
