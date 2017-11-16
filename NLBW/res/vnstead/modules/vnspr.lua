@@ -1,5 +1,6 @@
 require 'modules/log'
 require 'modules/gr'
+require 'modules/nlb'
 
 vnspr = function(w)
     local sprStep = w.sprStep;
@@ -11,7 +12,7 @@ vnspr = function(w)
             return {};
         end
         local n = name .. ".meta";
-        local f = nlb.file_open(n);
+        local f = nlb:file_open(n);
         local content = nil;
         if f then
             content = f:read("*all");
@@ -58,7 +59,7 @@ vnspr = function(w)
         if is_virtual_empty(v) then
             return vn.empty_s;
         end
-        if vn:file_exists(v.pic) then
+        if nlb:file_exists(v.pic) then
             if sprStep == vn:get_start(v) then
                 return s:load_file(v.pic, prefix);
             elseif sprStep > vn:get_start(v) then
@@ -155,12 +156,12 @@ vnspr = function(w)
     end
     w.load_frame = function(s)
         local sprfile = prefix .. '.' .. string.format("%04d", sprStep) .. extension;
-        if vn:file_exists(sprfile) then
+        if nlb:file_exists(sprfile) then
             return s:load_file(sprfile, prefix, sprStep);
         end
         local interval, milestoneIdx = vn:find_interval(milestones, sprStep, vn:get_max_step(v));
         local united_sprfile = prefix .. interval .. extension;
-        if vn:file_exists(united_sprfile) then
+        if nlb:file_exists(united_sprfile) then
             return s:load_file(united_sprfile, prefix, sprStep, true, milestoneIdx);
         elseif sprStep == start then
             error("Can not load key sprite (" .. sprfile .. " or " .. united_sprfile .. ")");

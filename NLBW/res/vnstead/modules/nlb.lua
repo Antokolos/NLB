@@ -408,7 +408,8 @@ nlb = obj {
         return tr .. 'gfx/bg.jpg';
     end;
     file_exists = function(s, name)
-        if s:file_open(name) then
+        local f = s:file_open(name);
+        if f then
             io.close(f);
             return true;
         else
@@ -416,14 +417,15 @@ nlb = obj {
         end
     end;
     file_open = function(s, name, mode)
+        if not name then return nil; end;
         if not mode then
-            mode = "r";
+            mode = 'r';
         end
         local f = io.open(name, mode);
         if f ~= nil then
             return f;
         else
-            f = io.open(instead_gamepath() .. name, "r")
+            f = io.open(instead_gamepath() .. name, mode);
             if f ~= nil then
                 return f;
             end
