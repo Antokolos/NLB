@@ -421,16 +421,7 @@ nlb = obj {
         if not mode then
             mode = 'r';
         end
-        local f = io.open(name, mode);
-        if f ~= nil then
-            return f;
-        else
-            f = io.open(instead_gamepath() .. name, mode);
-            if f ~= nil then
-                return f;
-            end
-        end
-        return nil;
+        return io.open(name, mode) or io.open(instead_gamepath() .. "/" .. name, mode);
     end;
 };
 
