@@ -428,13 +428,21 @@ nlb = obj {
 _try_again = menu {
     nam = "try_again",
     system_type = true,
-    dsc = function(s) return txtc("{Try again}^"); end,
+    dsc = function(s)
+        local tr = nlb:theme_root();
+        if _export_lang == 'ru' then
+            return img(tr .. 'gfx/theendru.png') .. txtc("^{Попробовать ещё раз}^");
+        else
+            return img(tr .. 'gfx/theenden.png') .. txtc("^{Try again}^");
+        end
+    end,
     act = function(s)
         p(txtc("Restarting..."));
         stead.restart();
     end,
     actf = function(s) return s:act(); end
 }
+
 
 _syscall_hidemenubtn  = menu {
     nam = "syscall_hidemenubtn",

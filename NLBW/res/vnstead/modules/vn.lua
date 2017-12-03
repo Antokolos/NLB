@@ -133,7 +133,6 @@ vn = obj {
     hz_preloaded = 40;
     hz = 20;
     slowcpu = false;
-    fend = false;
     vnticks = 0;
     renewticks = 0;
     vnticks_diff = 0;
@@ -222,13 +221,23 @@ vn = obj {
             nlb:theme_switch("theme_vn.lua", true);
         elseif s:in_choices() then
             nlb:theme_switch("theme_vn.lua", true);  -- or maybe create theme_vn_choices.lua?
-            s._wf = 0;
-            local x, y, w, h = s:get_choices_coords();
+            local is_end = true;
+            for i, v in ipairs(objs(nlb:curloc())) do
+                if (stead.nameof(v) ~= stead.nameof(_try_again)) then
+                    is_end = false;
+                end
+            end
+            local x, y, w, h;
+            if is_end then
+                x, y, w, h = s:get_end_coords();
+            else
+                s._wf = 0;
+                x, y, w, h = s:get_choices_coords();
+            end
             theme.win.geom(x, y, w, h);
         else
             nlb:theme_switch("theme_standard.lua", true);
         end
-        s.fend = font(nlb:theme_root() .. 'fonts/STEINEMU.ttf', 96);
         s.vnticks = stead.ticks();
         s.renewticks = s.vnticks;
         s.vnticks_diff = s:ticks_threshold();
@@ -1702,13 +1711,22 @@ vn = obj {
         return theme.get('win.x'), theme.get('win.y'), theme.get('win.w'), theme.get('win.h');
     end;
     get_end_coords = function(s)
+        local tr = nlb:theme_root();
         local scr_width, scr_height = theme.get('scr.w'), theme.get('scr.h');
-        local end_font = sprite.font(nlb:theme_root() .. 'fonts/STEINEMU.ttf', 96);
-        local the_w, the_h = sprite.text_size(end_font, 'The');
-        local end_w, end_h = sprite.text_size(end_font, 'End');
-        sprite.free_font(end_font);
-        local win_width = the_w + 64 + end_w;
-        local win_height = 200;
+        local sp_end;
+        if _export_lang == 'ru' then
+            sp_end = sprite.load(tr .. 'gfx/theendru.png');
+        else
+            sp_end = sprite.load(tr .. 'gfx/theenden.png');
+        end
+        local spw, sph = sprite.size(sp_end);
+        sprite.free(sp_end);
+        local wf, hf = 0, 200;
+        if nlb:file_exists(tr .. 'gfx/fl.png') then
+            wf, hf = sprite.size(s.fln_s);
+        end
+        local win_width = spw;
+        local win_height = hf;
         local real_height = win_height - 2 * s.textpad;
         return math.floor((scr_width - win_width) / 2), math.floor((scr_height - real_height) / 2), math.floor(win_width), math.floor(real_height);
     end;
@@ -1733,7 +1751,7 @@ vn = obj {
         if nlb:file_exists(tr .. 'gfx/fl.png') then
             wf, hf = sprite.size(s.fln_s);
         end
-        return s:geom(x - wf, y, w + 2 * wf, h, effect, wf, callback);
+        return s:geom(x, y, w, h, effect, wf, callback);
     end;
     auto_geom_choices = function(s, effect, callback)
         local x, y, w, h = s:get_choices_coords();
@@ -2437,7 +2455,6 @@ vn = obj {
         end
         return s.scraps_cache[sb_index];
     end;
-    the_end = function(s) return img 'blank:24x24'..'^'..s.fend:txt('The')..img 'blank:64x64'..s.fend:txt('End'); end;
 }
 
 stead.module_init(function()
