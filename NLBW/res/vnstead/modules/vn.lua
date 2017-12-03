@@ -222,7 +222,7 @@ vn = obj {
         elseif s:in_choices() then
             nlb:theme_switch("theme_vn.lua", true);  -- or maybe create theme_vn_choices.lua?
             local is_end = true;
-            for i, v in ipairs(objs(nlb:curloc())) do
+            for i, v in ipairs(objs()) do
                 if (stead.nameof(v) ~= stead.nameof(_try_again)) then
                     is_end = false;
                 end
