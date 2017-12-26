@@ -42,6 +42,9 @@ gobj = function(v)
     if not v.showoncur then
         v.showoncur = false;
     end
+    if not v.collapsable then
+        v.collapsable = false;
+    end
     if not v.arm then
         v.arm = { [0] = { 0, 0 } };
     end

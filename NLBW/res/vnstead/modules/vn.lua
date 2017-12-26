@@ -26,19 +26,18 @@ vntimer = function(f, s, cmd, ...)
     vn.vnticks_diff = get_ticks() - vn.vnticks;
     vn.renewticks_diff = get_ticks() - vn.renewticks;
 
-    --if (vn.vnticks_diff <= vn.hz) then
+    if (vn.vnticks_diff <= vn.hz) then
     --    if vn:preload() then
-    --        return update_cursor_result;
+            return update_cursor_result;
     --    end
-    --end
+    end
     vn.slowcpu = (vn.vnticks_diff > vn:ticks_threshold());
     log:trace("vnticks_diff = " .. vn.vnticks_diff);
     vn.vnticks = get_ticks();
-
+    local x, y = stead.mouse_pos();
+    vn:enable_by_cursor(x, y);
     if vn.stopped then
         -- NB: do not put heavy code in onover/onout
-        local x, y = stead.mouse_pos();
-        vn:enable_by_cursor(x, y);
         vn:over(x, y);
         vn:out(x, y);
     end
@@ -1083,6 +1082,7 @@ vn = obj {
             looped = g.looped,
             noactredraw = g.noactredraw,
             showoncur = g.showoncur,
+            collapsable = g.collapsable,
             dirty_draw = dirty_draw,
             last_rct = false
             --children = {} - actually can be set here, but I'll set it later, after possible hide() call
@@ -2305,22 +2305,43 @@ vn = obj {
         return result;
     end;
     enable_by_cursor = function(s, x, y)
+        local callbacks = {};
+        local existing_callback = s.callback;
         for i, v in ipairs(s._effects) do
             if v.showoncur then
                 local gob = s:gobf(v);
                 local inside = s:inside_spr(v, x, y);
                 local vdis = disabled(gob);
                 if inside and vdis then
-                    enable(gob);
-                    s:invalidatev(v);
-                    s:invalidatebyv(v);
+                    s:set_step(v, s:get_init_step(v), true);
+                    stead.table.insert(callbacks, function()
+                        enable(gob);
+                        return v;
+                    end);
                 elseif not inside and not vdis then
-                    disable(gob);
-                    s:invalidatev(v);
-                    s:invalidatebyv(v);
+                    if v.collapsable then
+                        s:set_step(v, s:get_step(v), false);
+                        stead.table.insert(callbacks, function()
+                            disable(gob);
+                            return v;
+                        end);
+                    else
+                        disable(gob);
+                    end
                 end
             end
         end
+        s:startcb(function()
+            if existing_callback then
+                existing_callback();
+            end
+            for i, cb in ipairs(callbacks) do
+                local v = cb();
+                s:invalidatev(v);
+                s:invalidatebyv(v);
+            end
+            return true;
+        end);
     end;
     update_tooltip = function(s, v, erase, hide)
         local xx, yy = s:postoxy(v);

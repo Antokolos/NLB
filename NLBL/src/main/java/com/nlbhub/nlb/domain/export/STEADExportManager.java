@@ -745,7 +745,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean showOnCursor, boolean preserved, boolean loadOnce, boolean clearUnderTooltip, boolean actOnKey, boolean cacheText, boolean looped, boolean noRedrawOnAct, String objDefaultTag) {
+    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean showOnCursor, boolean preserved, boolean loadOnce, boolean clearUnderTooltip, boolean actOnKey, boolean cacheText, boolean looped, boolean noRedrawOnAct, boolean collapsable, String objDefaultTag) {
         StringBuilder result = new StringBuilder();
         switch (objType) {
             case STAT:
@@ -777,6 +777,9 @@ public class STEADExportManager extends TextExportManager {
                 if (noRedrawOnAct) {
                     result.append("noactredraw = true,").append(LINE_SEPARATOR);
                 }
+                if (collapsable) {
+                    result.append("collapsable = true,").append(LINE_SEPARATOR);
+                }
                 break;
             case GMENU:
                 result.append(" = gmenu {").append(LINE_SEPARATOR);
@@ -800,6 +803,9 @@ public class STEADExportManager extends TextExportManager {
                 }
                 if (noRedrawOnAct) {
                     result.append("noactredraw = true,").append(LINE_SEPARATOR);
+                }
+                if (collapsable) {
+                    result.append("collapsable = true,").append(LINE_SEPARATOR);
                 }
                 break;
             default:
@@ -1127,8 +1133,8 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjActEnd(boolean collapsable) {
-        final String prefix = (collapsable)
+    protected String decorateObjActEnd(boolean collapseOnAct) {
+        final String prefix = (collapseOnAct)
                 ? (
                 "        local v = vn:glookup(stead.deref(s));" + LINE_SEPARATOR +
                         "        if s.is_paused then" + LINE_SEPARATOR +
