@@ -57,12 +57,11 @@ gobj = function(v)
                 return {};
             end
             local txt = s:disp();
-            local clr = 'black';
             local result = {};
             if txt then
                 local txts = splitIntoLines(txt);
                 for i, t in ipairs(txts) do
-                    stead.table.insert(result, { ["text"] = t, ["color"] = clr });
+                    stead.table.insert(result, { ["text"] = t, ["color"] = nil });
                 end
             end
             return result;

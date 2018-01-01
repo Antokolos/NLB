@@ -137,6 +137,7 @@ vn = obj {
     vnticks_diff = 0;
     renewticks_diff = 0;
     hudFont = false;
+    hudFont_H1 = false;
     empty_s = false;
     fln_s = false;
     frn_s = false;
@@ -155,7 +156,11 @@ vn = obj {
         extent = 5,
         default_label_extent = 4,
         default_tooltip_offset = 5,
-        hud_color = '#000000',
+        hud_color = 'black',
+        hud_bgcolor = 'white',
+        hud_bgalpha = 127,
+        hud_line_spacing = 0,
+        hud_indent_spacing = 25,
         pause_frames = 0,
         pause_callback = false,
         direct_lock = false,
@@ -242,7 +247,8 @@ vn = obj {
         s.vnticks_diff = s:ticks_threshold();
         s.renewticks_diff = s:renew_threshold();
         local tr = nlb:theme_root();
-        s.hudFont = gr:font(tr .. 'fonts/Medieval_English.ttf', 29);
+        s.hudFont = gr:font(tr .. 'fonts/STEINEMU.ttf', 29);  -- Medieval_English.ttf
+        s.hudFont_H1 = gr:font(tr .. 'fonts/STEINEMU.ttf', 45);  -- Medieval_English.ttf
         s.empty_s = gr:load('gfx/empty.png');
         if nlb:file_exists(tr .. 'gfx/fl.png') then
             s.fln_s = gr:load(tr .. 'gfx/fl.png');
@@ -1970,7 +1976,7 @@ vn = obj {
                     return true;
                 else
                     if v.looped and not s.finishing then
-                        v.step = s:get_init_step(v);
+                        s:set_step(v, s:get_init_step(v));
                         return true;
                     end
                 end
@@ -1986,7 +1992,7 @@ vn = obj {
                     return true;
                 else
                     if v.looped and not s.finishing then
-                        v.step = s:get_max_step(v) - s:get_from_stop(v);
+                        s:set_step(v, s:get_max_step(v) - s:get_from_stop(v));
                     end
                 end
             end
@@ -2181,7 +2187,11 @@ vn = obj {
                 ypos = y;
             end
             xpos = xpos + data.w * scale;
-            ypos = ypos + data.h * scale / 2.0;
+            if s:get_pos(v):find '%-middle' then
+                ypos = ypos + data.h * scale / 2.0;
+            elseif s:get_pos(v):find '%-bottom' then
+                ypos = ypos + data.h * scale;
+            end
             xpos = xpos + s.default_label_extent + s.default_tooltip_offset;
             local cached_sprites_idx = v.nam .. '@' .. tostring(scale) .. '_' .. tostring(alpha);
             local cached_sprites = s.text_sprites_cache[cached_sprites_idx];
@@ -2198,7 +2208,10 @@ vn = obj {
                         if not color then
                             color = s.hud_color;
                         end
-                        local textSpriteInit = gr:text(s.hudFont, vv.text, color);
+                        local text = vv.text:match("^== (.*) ==$");
+                        local font = text and s.hudFont_H1 or s.hudFont;
+                        text = text or vv.text;
+                        local textSpriteInit = gr:text(font, text, color);
                         local textSpriteScaled;
                         if scale ~= 1.0 then
                             textSpriteScaled = gr:scale(textSpriteInit, scale, scale, false);
@@ -2216,13 +2229,17 @@ vn = obj {
                         local w, h = gr:size(textSprite);
                         if tmp_sprite then
                             gr:free(textSprite);
+                            textSprite = nil;
                         end
                         w = w + s.extent;
                         if w > wmax then
                             wmax = w;
                         end
-                        htotal = htotal + h;
+                        htotal = htotal + h + s.hud_line_spacing;
                         stead.table.insert(sprites, {["spr"] = textSprite, ["w"] = w, ["h"] = h});
+                    else
+                        htotal = htotal + s.hud_indent_spacing;
+                        stead.table.insert(sprites, {["spr"] = nil, ["w"] = 0, ["h"] = s.hud_indent_spacing});
                     end
                 end
                 if v.cache_text and not tmp_sprite then
@@ -2242,7 +2259,13 @@ vn = obj {
                 htotal = cached_sprites.htotal;
                 wmax = cached_sprites.wmax;
             end
-            local ycur = ypos - htotal / 2.0;
+            htotal = htotal - s.hud_line_spacing; -- spacing for the last line should not be taken into account
+            local ycur = ypos;
+            if s:get_pos(v):find '%-middle' then
+                ycur = ycur - htotal / 2.0;
+            elseif s:get_pos(v):find '%-bottom' then
+                ycur = ycur - htotal;
+            end
             if empty_text then
                 return {["v"] = v, ["x"] = xpos, ["y"] = ycur, ["w"] = 0, ["h"] = 0};
             end
@@ -2254,21 +2277,23 @@ vn = obj {
                 log:trace(v.nam .. " hud is dirty");
                 s._dirty_rects[v.nam .. '_hud'] = rct;
             end
-            if clear then
-                s:clear(xpos, ycur, wmax, htotal, target);
-                return rct;
-            end
-            s:combine_text_sprites(sprites, target, xpos, ycur, not cached_sprites);
+            s:combine_text_sprites(sprites, target, xpos, ycur, not cached_sprites, clear);
             return rct;
         end
     end;
-    combine_text_sprites = function(s, sprites, target, x, y, freesp)
+    combine_text_sprites = function(s, sprites, target, x, y, freesp, clear)
         local xpos = x;
         local ycur = y;
         for i, ss in ipairs(sprites) do
-            gr:draw(ss.spr, target, xpos, ycur);
-            ycur = ycur + ss.h;
-            if freesp then
+            if (ss.spr or clear) and ycur + ss.h > 0 and ycur < tonumber(s.scr_h) then
+                if clear then
+                    s:clear(xpos, ycur, ss.w, ss.h + s.hud_line_spacing, target);
+                else
+                    gr:draw(ss.spr, target, xpos, ycur);
+                end
+            end
+            ycur = ycur + ss.h + s.hud_line_spacing;
+            if freesp and ss.spr then
                 gr:free(ss.spr);
             end
         end
@@ -2400,13 +2425,13 @@ vn = obj {
     -- Sprite with label text. You should call gr:free(), when you no longer need this.
     label = function(s, text, extent, color, bgcolor, bgalpha, font)
         if not color then
-            color = '#000000';
+            color = s.hud_color;
         end
         if not bgcolor then
-            bgcolor = 'white';
+            bgcolor = s.hud_bgcolor;
         end
         if not bgalpha then
-            bgalpha = 127;
+            bgalpha = s.hud_bgalpha;
         end
         if not extent then
             extent = s.default_label_extent;
@@ -2442,11 +2467,25 @@ vn = obj {
         end
         return label, w, h;
     end;
+    set_hud_theme = function(s, theme_name)
+        if theme_name == 'dark' then
+            s.hud_color = 'white';
+            s.hud_bgcolor = 'black';
+        else
+            s.hud_color = 'black';
+            s.hud_bgcolor = 'white';
+        end
+        s.hud_bgalpha = 127;
+    end,
+    set_hud_spacing = function(s, line_spacing, indent_spacing)
+        s.hud_line_spacing = line_spacing or 0;
+        s.hud_indent_spacing = indent_spacing or 25;
+    end,
     txt_line_fn = function(s, text, color)
         local txt = text;
         local clr = color;
         if not clr then
-            clr = 'black';
+            clr = s.hud_color;
         end
         return function()
             local result = {};

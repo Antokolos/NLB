@@ -495,6 +495,36 @@ nlbmenu = function(v)
     return menu(nlbcmn(v));
 end;
 
+_syscall_hud_dark = menu {
+    nam = "syscall_hud_dark",
+    system_type = true,
+    act = function(s)
+        vn:set_hud_theme('dark');
+        vn:set_hud_spacing();
+    end,
+    actf = function(s) return s:act(); end
+}
+
+_syscall_hud_dark_sparse = menu {
+    nam = "syscall_hud_dark_sparse",
+    system_type = true,
+    act = function(s)
+        vn:set_hud_theme('dark');
+        vn:set_hud_spacing(25);
+    end,
+    actf = function(s) return s:act(); end
+}
+
+_syscall_hud_default = menu {
+    nam = "syscall_hud_default",
+    system_type = true,
+    act = function(s)
+        vn:set_hud_theme();
+        vn:set_hud_spacing();
+    end,
+    actf = function(s) return s:act(); end
+}
+
 _syscall_showmenubtn  = menu {
     nam = "syscall_showmenubtn",
     system_type = true,

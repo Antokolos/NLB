@@ -48,6 +48,9 @@ paginatorClick = function(x, y, a, b, c, d)
     if v then
         -- Click inside some gobj in vn
         vn:click_sprite(v, g);
+        if here().autos then
+            here():autos();
+        end
         return
     end
 
@@ -68,6 +71,9 @@ paginatorKbd = function(down, key)
     end
 
     if vn:actonkey(down, key) then
+        if here().autos then
+            here():autos();
+        end
         return
     end
 
