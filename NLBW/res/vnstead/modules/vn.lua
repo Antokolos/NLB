@@ -362,18 +362,36 @@ vn = obj {
     end;
     test_click = function(s, x, y)
         for i, v in ipairs(s._effects) do
-            local active = not s:is_inactive_due_to_anim_state(v);
-            local gob = s:gobf(v);
-            local morphover = s:get_morph(v, true);
-            local has_gob_click_handler = (gob and gob.onclick);
-            local has_morphover_click_handler = (morphover and morphover.onclick);
-            local has_gob_or_morph = has_gob_click_handler or has_morphover_click_handler;
-            if active and has_gob_or_morph and s:enabled(v) and s:inside_spr(v, x, y) then
-                if has_morphover_click_handler then
-                    return v, morphover;
-                else -- has_gob_click_handler, or else we won't get there at all
-                    return v, gob;
-                end
+            local vv, gob = s:test_clickc(v, x, y);
+            if vv then
+                return vv, gob;
+            end
+        end
+        return false;
+    end;
+    test_clickc = function(s, v, x, y)
+        -- here we are trying to traverse down through the hierarchy in order to determine, whether we clicked some child or not
+        -- the point of this method is to try to click the child which is closest to the leaf child in the hierarchy
+        for ii, vv in ipairs(v.children) do
+            local vvv, gob = s:test_clickc(s:childf(vv), x, y);
+            if vvv then
+                return vvv, gob;
+            end
+        end
+        return s:test_clickv(v, x, y);
+    end;
+    test_clickv = function(s, v, x, y)
+        local active = not s:is_inactive_due_to_anim_state(v);
+        local gob = s:gobf(v);
+        local morphover = s:get_morph(v, true);
+        local has_gob_click_handler = (gob and gob.onclick);
+        local has_morphover_click_handler = (morphover and morphover.onclick);
+        local has_gob_or_morph = has_gob_click_handler or has_morphover_click_handler;
+        if active and has_gob_or_morph and s:enabled(v) and s:inside_spr(v, x, y) then
+            if has_morphover_click_handler then
+                return v, morphover;
+            else -- has_gob_click_handler, or else we won't get there at all
+                return v, gob;
             end
         end
         return false;
@@ -2371,7 +2389,7 @@ vn = obj {
             s:process(true);
             return false;
         end
-        s.startcb(function()
+        s:startcb(function()
             if existing_callback then
                 existing_callback();
             end
