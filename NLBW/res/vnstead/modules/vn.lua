@@ -2187,11 +2187,7 @@ vn = obj {
                 ypos = y;
             end
             xpos = xpos + data.w * scale;
-            if s:get_pos(v):find '%-middle' then
-                ypos = ypos + data.h * scale / 2.0;
-            elseif s:get_pos(v):find '%-bottom' then
-                ypos = ypos + data.h * scale;
-            end
+            ypos = ypos + data.h * scale * s:get_pos_coef(v);
             xpos = xpos + s.default_label_extent + s.default_tooltip_offset;
             local cached_sprites_idx = v.nam .. '@' .. tostring(scale) .. '_' .. tostring(alpha);
             local cached_sprites = s.text_sprites_cache[cached_sprites_idx];
@@ -2260,12 +2256,7 @@ vn = obj {
                 wmax = cached_sprites.wmax;
             end
             htotal = htotal - s.hud_line_spacing; -- spacing for the last line should not be taken into account
-            local ycur = ypos;
-            if s:get_pos(v):find '%-middle' then
-                ycur = ycur - htotal / 2.0;
-            elseif s:get_pos(v):find '%-bottom' then
-                ycur = ycur - htotal;
-            end
+            local ycur = ypos - htotal * s:get_pos_coef(v);
             if empty_text then
                 return {["v"] = v, ["x"] = xpos, ["y"] = ycur, ["w"] = 0, ["h"] = 0};
             end
@@ -2279,6 +2270,23 @@ vn = obj {
             end
             s:combine_text_sprites(sprites, target, xpos, ycur, not cached_sprites, clear);
             return rct;
+        end
+    end;
+    -- This method returns the position of the text based on the coords origin on the sprite (see eff property).
+    -- If the sprite has a parent, then the text should be positioned at the center, regardless of the coords origin.
+    get_pos_coef = function(s, v)
+        local parent = s:parentf(v);
+        if parent then
+            return 0.5;
+        end
+        if s:get_pos(v):find 'top' then
+            -- should go first to prevent incorrect detection of top-middle
+            return 0;
+        elseif s:get_pos(v):find 'bottom' then
+            -- should go second to prevent incorrect detection of bottom-middle
+            return 1;
+        elseif s:get_pos(v):find 'middle' then
+            return 0.5;
         end
     end;
     combine_text_sprites = function(s, sprites, target, x, y, freesp, clear)
@@ -2332,6 +2340,7 @@ vn = obj {
     enable_by_cursor = function(s, x, y)
         local callbacks = {};
         local existing_callback = s.callback;
+        local has_changes = false;
         for i, v in ipairs(s._effects) do
             if v.showoncur then
                 local gob = s:gobf(v);
@@ -2339,11 +2348,13 @@ vn = obj {
                 local vdis = disabled(gob);
                 if inside and vdis then
                     s:set_step(v, s:get_init_step(v), true);
+                    has_changes = true;
                     stead.table.insert(callbacks, function()
                         enable(gob);
                         return v;
                     end);
                 elseif not inside and not vdis then
+                    has_changes = true;
                     if v.collapsable then
                         s:set_step(v, s:get_step(v), false);
                         stead.table.insert(callbacks, function()
@@ -2356,7 +2367,11 @@ vn = obj {
                 end
             end
         end
-        s:startcb(function()
+        if not has_changes then
+            s:process(true);
+            return false;
+        end
+        s.startcb(function()
             if existing_callback then
                 existing_callback();
             end
@@ -2367,6 +2382,7 @@ vn = obj {
             end
             return true;
         end);
+        return true;
     end;
     update_tooltip = function(s, v, erase, hide)
         local xx, yy = s:postoxy(v);
