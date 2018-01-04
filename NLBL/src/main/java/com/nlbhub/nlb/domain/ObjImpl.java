@@ -89,6 +89,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String START_FRAME_FILE_NAME = "startframe";
     private static final String MAX_FRAME_FILE_NAME = "maxframe";
     private static final String PRELOAD_FRAMES_FILE_NAME = "preloadf";
+    private static final String PAUSE_FRAMES_FILE_NAME = "pausef";
     private static final String COORDSOR_FILE_NAME = "coordsor";
     private static final String CLEARUTT_FILE_NAME = "clearutt";
     private static final String ACTONKEY_FILE_NAME = "actonkey";
@@ -124,6 +125,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private int m_startFrame = DEFAULT_START_FRAME;
     private int m_maxFrame = DEFAULT_MAX_FRAME;
     private int m_preloadFrames = DEFAULT_PRELOAD_FRAMES;
+    private int m_pauseFrames = DEFAULT_PAUSE_FRAMES;
     private CoordsOrigin m_coordsOrigin = CoordsOrigin.LeftTop;
     private boolean m_clearUnderTooltip = DEFAULT_CLEAR_UNDER_TOOLTIP;
     private boolean m_actOnKey = DEFAULT_ACT_ON_KEY;
@@ -193,6 +195,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         m_startFrame = source.getStartFrame();
         m_maxFrame = source.getMaxFrame();
         m_preloadFrames = source.getPreloadFrames();
+        m_pauseFrames = source.getPauseFrames();
         m_coordsOrigin = source.getCoordsOrigin();
         m_clearUnderTooltip = source.isClearUnderTooltip();
         m_actOnKey = source.isActOnKey();
@@ -495,6 +498,15 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
 
     public void setPreloadFrames(int preloadFrames) {
         m_preloadFrames = preloadFrames;
+    }
+
+    @Override
+    public int getPauseFrames() {
+        return m_pauseFrames;
+    }
+
+    public void setPauseFrames(int pauseFrames) {
+        m_pauseFrames = pauseFrames;
     }
 
     @Override
@@ -827,6 +839,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
             );
             fileManipulator.writeOptionalString(
                     objDir,
+                    PAUSE_FRAMES_FILE_NAME,
+                    String.valueOf(m_pauseFrames),
+                    String.valueOf(DEFAULT_PAUSE_FRAMES)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
                     COORDSOR_FILE_NAME,
                     m_coordsOrigin.name(),
                     CoordsOrigin.LeftTop.name()
@@ -1107,6 +1125,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         PRELOAD_FRAMES_FILE_NAME,
                         String.valueOf(DEFAULT_PRELOAD_FRAMES)
+                )
+        );
+        m_pauseFrames = Integer.parseInt(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        PAUSE_FRAMES_FILE_NAME,
+                        String.valueOf(DEFAULT_PAUSE_FRAMES)
                 )
         );
         String coordsOrigin = (

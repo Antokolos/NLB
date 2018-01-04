@@ -745,7 +745,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean showOnCursor, boolean preserved, boolean loadOnce, boolean clearUnderTooltip, boolean actOnKey, boolean cacheText, boolean looped, boolean noRedrawOnAct, boolean collapsable, String objDefaultTag) {
+    protected String decorateObjStart(final String id, String containerRef, ObjType objType, boolean showOnCursor, boolean preserved, boolean loadOnce, boolean clearUnderTooltip, boolean actOnKey, boolean cacheText, boolean looped, boolean noRedrawOnAct, boolean collapsable, String objDefaultTag, int pauseFrames) {
         StringBuilder result = new StringBuilder();
         switch (objType) {
             case STAT:
@@ -813,6 +813,9 @@ public class STEADExportManager extends TextExportManager {
         }
         result.append("    var { tag = '").append(objDefaultTag).append("'; ").append(getContainerExpression(containerRef));
         result.append(" },").append(LINE_SEPARATOR);
+        if (pauseFrames > 0) {
+            result.append("    pause = ").append(pauseFrames).append(";").append(LINE_SEPARATOR);
+        }
         result.append("    nlbid = '").append(id).append("',").append(LINE_SEPARATOR);
         if (actOnKey) {
             result.append("    actonkey = function(s, down, key)").append(LINE_SEPARATOR);

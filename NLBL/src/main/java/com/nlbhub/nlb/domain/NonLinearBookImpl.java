@@ -816,6 +816,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private int m_existingStartFrame;
         private int m_existingMaxFrame;
         private int m_existingPreloadFrames;
+        private int m_existingPauseFrames;
         private Obj.CoordsOrigin m_existingCoordsOrigin;
         private boolean m_existingObjIsClearUnderTooltip;
         private boolean m_existingObjIsActOnKey;
@@ -846,6 +847,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private int m_newStartFrame;
         private int m_newMaxFrame;
         private int m_newPreloadFrames;
+        private int m_newPauseFrames;
         private Obj.CoordsOrigin m_newCoordsOrigin;
         private boolean m_newObjIsClearUnderTooltip;
         private boolean m_newObjIsActOnKey;
@@ -884,6 +886,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final int startFrame,
                 final int maxFrame,
                 final int preloadFrames,
+                final int pauseFrames,
                 final Obj.CoordsOrigin coordsOrigin,
                 final boolean objIsClearUnderTooltip,
                 final boolean objIsActOnKey,
@@ -924,6 +927,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     startFrame,
                     maxFrame,
                     preloadFrames,
+                    pauseFrames,
                     coordsOrigin,
                     objIsClearUnderTooltip,
                     objIsActOnKey,
@@ -966,6 +970,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final int startFrame,
                 final int maxFrame,
                 final int preloadFrames,
+                final int pauseFrames,
                 final Obj.CoordsOrigin coordsOrigin,
                 final boolean objIsClearUnderTooltip,
                 final boolean objIsActOnKey,
@@ -1060,6 +1065,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingStartFrame = obj.getStartFrame();
             m_existingMaxFrame = obj.getMaxFrame();
             m_existingPreloadFrames = obj.getPreloadFrames();
+            m_existingPauseFrames = obj.getPauseFrames();
             m_existingCoordsOrigin = obj.getCoordsOrigin();
             m_existingObjIsClearUnderTooltip = obj.isClearUnderTooltip();
             m_existingObjIsActOnKey = obj.isActOnKey();
@@ -1090,6 +1096,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newStartFrame = startFrame;
             m_newMaxFrame = maxFrame;
             m_newPreloadFrames = preloadFrames;
+            m_newPauseFrames = pauseFrames;
             m_newCoordsOrigin = coordsOrigin;
             m_newObjIsClearUnderTooltip = objIsClearUnderTooltip;
             m_newObjIsActOnKey = objIsActOnKey;
@@ -1130,6 +1137,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setStartFrame(m_newStartFrame);
             m_obj.setMaxFrame(m_newMaxFrame);
             m_obj.setPreloadFrames(m_newPreloadFrames);
+            m_obj.setPauseFrames(m_newPauseFrames);
             m_obj.setCoordsOrigin(m_newCoordsOrigin);
             m_obj.setClearUnderTooltip(m_newObjIsClearUnderTooltip);
             m_obj.setActOnKey(m_newObjIsActOnKey);
@@ -1171,6 +1179,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setStartFrame(m_existingStartFrame);
             m_obj.setMaxFrame(m_existingMaxFrame);
             m_obj.setPreloadFrames(m_existingPreloadFrames);
+            m_obj.setPauseFrames(m_existingPauseFrames);
             m_obj.setCoordsOrigin(m_existingCoordsOrigin);
             m_obj.setClearUnderTooltip(m_existingObjIsClearUnderTooltip);
             m_obj.setActOnKey(m_existingObjIsActOnKey);
@@ -2021,6 +2030,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         obj.getStartFrame(),
                         obj.getMaxFrame(),
                         obj.getPreloadFrames(),
+                        obj.getPauseFrames(),
                         obj.getCoordsOrigin(),
                         obj.isClearUnderTooltip(),
                         obj.isActOnKey(),
@@ -2511,6 +2521,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final int startFrame,
             final int maxFrame,
             final int preloadFrames,
+            final int pauseFrames,
             final Obj.CoordsOrigin coordsOrigin,
             final boolean objIsClearUnderTooltip,
             final boolean objIsActOnKey,
@@ -2552,6 +2563,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         startFrame,
                         maxFrame,
                         preloadFrames,
+                        pauseFrames,
                         coordsOrigin,
                         objIsClearUnderTooltip,
                         objIsActOnKey,

@@ -1,48 +1,6 @@
--- dlgButtonOK_Out
-v_53b088b4_4b84_4939_89a7_191607467229 = gmenu {
-    system_type = true,
-    var { tag = ''; container = function() return v_c7c2ac92_ac1b_4557_8265_8adddb054136; end; topmost = true; },
-    nlbid = '53b088b4-4b84-4939-89a7-191607467229',
-    deref = function(s) return stead.deref(v_53b088b4_4b84_4939_89a7_191607467229); end,
-    nam = "dlgButtonOK_Out",
-    eff = "left-top@0,0",
-    iarm = { [0] = { 900.0, 0.0 } };
-    snd = function(s)
-    end,
-    disp = function(s) end,
-    dscf = function(s) end,
-    dsc = function(s) return s.dscf(s); end,
-    act = function(s)
-        s:acta();
-        return true;
-    end,
-    actt = function(s)
-        return "";
-    end,
-    acta = function(s)
-        s:actf();
-        s:actcmn();
-    end,
-    actf = function(s)
-    end,
-    pic = function(s)
-        if (true) then
-            return 'dice/gfx/dlgbuttonok_out.png';
-
-        end
-    end,
-    imgv = function(s) return img(s.pic(s)); end,
-    used = function(s, w)
-    end,
-    actcmn = function(s)
-    end,
-};
-
-_dlgButtonOK_Out = v_53b088b4_4b84_4939_89a7_191607467229
 -- dialogObj
 v_c7c2ac92_ac1b_4557_8265_8adddb054136 = gmenu {
     system_type = true,
-    accept_child_clicks = true,
     var { tag = ''; container = function() return v_0e49cfc2_eb54_4db1_926d_79ce4d67836c; end; topmost = true; },
     nlbid = 'c7c2ac92-ac1b-4557-8265-8adddb054136',
     deref = function(s) return stead.deref(v_c7c2ac92_ac1b_4557_8265_8adddb054136); end,
@@ -96,6 +54,49 @@ v_c7c2ac92_ac1b_4557_8265_8adddb054136 = gmenu {
 };
 
 _dialogObj = v_c7c2ac92_ac1b_4557_8265_8adddb054136
+
+-- dlgButtonOK_Out
+v_53b088b4_4b84_4939_89a7_191607467229 = gmenu {
+    system_type = true,
+    var { tag = ''; container = function() return v_c7c2ac92_ac1b_4557_8265_8adddb054136; end; topmost = true; },
+    nlbid = '53b088b4-4b84-4939-89a7-191607467229',
+    deref = function(s) return stead.deref(v_53b088b4_4b84_4939_89a7_191607467229); end,
+    nam = "dlgButtonOK_Out",
+    eff = "left-top@0,0",
+    iarm = { [0] = { 900.0, 0.0 } };
+    snd = function(s)
+    end,
+    disp = function(s) end,
+    dscf = function(s) end,
+    dsc = function(s) return s.dscf(s); end,
+    act = function(s)
+        s:acta();
+        return true;
+    end,
+    actt = function(s)
+        return "";
+    end,
+    acta = function(s)
+        s:actf();
+        s:actcmn();
+    end,
+    actf = function(s)
+        _dialogObj:actf();
+    end,
+    pic = function(s)
+        if (true) then
+            return 'dice/gfx/dlgbuttonok_out.png';
+
+        end
+    end,
+    imgv = function(s) return img(s.pic(s)); end,
+    used = function(s, w)
+    end,
+    actcmn = function(s)
+    end,
+};
+
+_dlgButtonOK_Out = v_53b088b4_4b84_4939_89a7_191607467229
 
 _dices_help = gobj {
     nam = "dices_help",

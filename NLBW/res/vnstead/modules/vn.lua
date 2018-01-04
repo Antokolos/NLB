@@ -27,9 +27,9 @@ vntimer = function(f, s, cmd, ...)
     vn.renewticks_diff = get_ticks() - vn.renewticks;
 
     if (vn.vnticks_diff <= vn.hz) then
-    --    if vn:preload() then
+        if vn:preload() then
             return update_cursor_result;
-    --    end
+        end
     end
     vn.slowcpu = (vn.vnticks_diff > vn:ticks_threshold());
     log:trace("vnticks_diff = " .. vn.vnticks_diff);
@@ -406,41 +406,17 @@ vn = obj {
         end
     end;
     click_sprite = function(s, v, g)
-        local clickTargets = {};
-        local clickParentNames = {};
         if not v.noactredraw then
             s:overf(v, false);
         end
-        if v then
-            clickTargets[v.nam] = g;
-            local hierarchy = s:get_hierarchy(v);
-            for kk, vv in pairs(hierarchy) do
-                clickParentNames[vv] = true;
-            end
+        s:invalidate_all();
+        g:onclick(s);
+        if not v.noactredraw then
+            s:start();
+        else
+            s.stopped = false;
         end
-        -- The idea is to NOT call onclick handler for gobj, which have a child, for which onclick handler should be called too.
-        for kkk, g in pairs(clickTargets) do
-            if g.accept_child_clicks or not clickParentNames[kkk] then
-                s:invalidate_all();
-                g:onclick(s);
-                if not v.noactredraw then
-                    s:start();
-                else
-                    s.stopped = false;
-                end
-                return true;  -- Call onclick handler only for first suitable gobj
-            end
-        end
-        return false;
-    end;
-    get_hierarchy = function(s, v)
-        local vv = v;
-        local result = {};
-        while vv.parent do
-            result[vv.nam] = vv.parent;
-            vv = s:parentf(vv);
-        end
-        return result;
+        return true;
     end;
     get_morph = function(s, v, is_over)
         local gob = s:gobf(v);
@@ -1106,6 +1082,7 @@ vn = obj {
             looped = g.looped,
             noactredraw = g.noactredraw,
             showoncur = g.showoncur,
+            pause = g.pause,
             collapsable = g.collapsable,
             dirty_draw = dirty_draw,
             last_rct = false
@@ -2046,7 +2023,9 @@ vn = obj {
         local result = {["datas"] = {}, ["hasmore"] = false};
         local topmost = {};
         for i, v in ipairs(s._effects) do
-            if s:enabled(v) then
+            local need_skip = v.pause and v.lastdraw and (s.vnticks - v.lastdraw >= 0) and (s.vnticks - v.lastdraw < v.pause);
+            if not need_skip and s:enabled(v) then
+                v.lastdraw = s.vnticks;
                 if v.preserved or v.topmost then
                     stead.table.insert(topmost, i);
                 else

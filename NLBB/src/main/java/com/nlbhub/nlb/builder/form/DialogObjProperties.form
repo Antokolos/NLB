@@ -1252,31 +1252,31 @@
                                       <grid id="e5f8f" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
                                         <constraints/>
                                         <properties>
-                                          <minimumSize width="130" height="180"/>
-                                          <preferredSize width="130" height="180"/>
+                                          <minimumSize width="140" height="180"/>
+                                          <preferredSize width="140" height="180"/>
                                         </properties>
                                         <border type="none" title="Frames"/>
                                         <children>
                                           <grid id="b4dd3" layout-manager="BorderLayout" hgap="0" vgap="0">
                                             <constraints/>
                                             <properties>
-                                              <minimumSize width="95" height="42"/>
-                                              <preferredSize width="95" height="42"/>
+                                              <minimumSize width="110" height="30"/>
+                                              <preferredSize width="110" height="30"/>
                                             </properties>
                                             <border type="none"/>
                                             <children>
                                               <component id="5296c" class="javax.swing.JLabel">
-                                                <constraints border-constraint="North"/>
+                                                <constraints border-constraint="West"/>
                                                 <properties>
                                                   <labelFor value="50102"/>
-                                                  <text value="Start Frame"/>
+                                                  <text value="Start"/>
                                                 </properties>
                                               </component>
                                               <component id="50102" class="javax.swing.JSpinner" binding="m_spinnerStartFrame">
-                                                <constraints border-constraint="West"/>
+                                                <constraints border-constraint="East"/>
                                                 <properties>
-                                                  <minimumSize width="90" height="26"/>
-                                                  <preferredSize width="90" height="26"/>
+                                                  <minimumSize width="60" height="26"/>
+                                                  <preferredSize width="60" height="26"/>
                                                 </properties>
                                               </component>
                                             </children>
@@ -1284,44 +1284,71 @@
                                           <grid id="6a540" layout-manager="BorderLayout" hgap="0" vgap="0">
                                             <constraints/>
                                             <properties>
-                                              <minimumSize width="95" height="42"/>
-                                              <preferredSize width="95" height="42"/>
+                                              <minimumSize width="110" height="30"/>
+                                              <preferredSize width="110" height="30"/>
                                             </properties>
                                             <border type="none"/>
                                             <children>
                                               <component id="7a29" class="javax.swing.JLabel">
-                                                <constraints border-constraint="North"/>
+                                                <constraints border-constraint="West"/>
                                                 <properties>
                                                   <labelFor value="80e32"/>
-                                                  <text value="Max Frame"/>
+                                                  <text value="Max"/>
                                                 </properties>
                                               </component>
                                               <component id="80e32" class="javax.swing.JSpinner" binding="m_spinnerMaxFrame">
-                                                <constraints border-constraint="West"/>
+                                                <constraints border-constraint="East"/>
                                                 <properties>
-                                                  <minimumSize width="90" height="26"/>
-                                                  <preferredSize width="90" height="26"/>
+                                                  <minimumSize width="60" height="26"/>
+                                                  <preferredSize width="60" height="26"/>
                                                 </properties>
                                               </component>
                                             </children>
                                           </grid>
                                           <grid id="b2fb3" layout-manager="BorderLayout" hgap="0" vgap="0">
                                             <constraints/>
-                                            <properties/>
+                                            <properties>
+                                              <minimumSize width="110" height="30"/>
+                                              <preferredSize width="110" height="30"/>
+                                            </properties>
                                             <border type="none"/>
                                             <children>
                                               <component id="4786f" class="javax.swing.JLabel">
-                                                <constraints border-constraint="North"/>
+                                                <constraints border-constraint="West"/>
                                                 <properties>
                                                   <labelFor value="d7f9"/>
-                                                  <text value="Preload Frames"/>
+                                                  <text value="Preload"/>
                                                 </properties>
                                               </component>
                                               <component id="d7f9" class="javax.swing.JSpinner" binding="m_spinnerPreloadFrames">
+                                                <constraints border-constraint="East"/>
+                                                <properties>
+                                                  <minimumSize width="60" height="26"/>
+                                                  <preferredSize width="60" height="26"/>
+                                                </properties>
+                                              </component>
+                                            </children>
+                                          </grid>
+                                          <grid id="d0b42" layout-manager="BorderLayout" hgap="0" vgap="0">
+                                            <constraints/>
+                                            <properties>
+                                              <minimumSize width="110" height="30"/>
+                                              <preferredSize width="110" height="30"/>
+                                            </properties>
+                                            <border type="none"/>
+                                            <children>
+                                              <component id="75637" class="javax.swing.JLabel">
                                                 <constraints border-constraint="West"/>
                                                 <properties>
-                                                  <minimumSize width="90" height="26"/>
-                                                  <preferredSize width="90" height="26"/>
+                                                  <labelFor value="ed794"/>
+                                                  <text value="Pause"/>
+                                                </properties>
+                                              </component>
+                                              <component id="ed794" class="javax.swing.JSpinner" binding="m_spinnerPauseFrames">
+                                                <constraints border-constraint="East"/>
+                                                <properties>
+                                                  <minimumSize width="60" height="26"/>
+                                                  <preferredSize width="60" height="26"/>
                                                 </properties>
                                               </component>
                                             </children>

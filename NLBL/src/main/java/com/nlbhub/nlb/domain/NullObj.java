@@ -215,6 +215,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public int getPauseFrames() {
+        return DEFAULT_PAUSE_FRAMES;
+    }
+
+    @Override
     public CoordsOrigin getCoordsOrigin() {
         return CoordsOrigin.LeftTop;
     }

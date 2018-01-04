@@ -90,6 +90,7 @@ public interface Obj extends NodeItem {
     public static final int DEFAULT_START_FRAME = 0;
     public static final int DEFAULT_MAX_FRAME = 8;
     public static final int DEFAULT_PRELOAD_FRAMES = 0;
+    public static final int DEFAULT_PAUSE_FRAMES = 0;
 
     public String getText();
 
@@ -152,6 +153,8 @@ public interface Obj extends NodeItem {
     public int getMaxFrame();
 
     public int getPreloadFrames();
+
+    public int getPauseFrames();
 
     public CoordsOrigin getCoordsOrigin();
 
