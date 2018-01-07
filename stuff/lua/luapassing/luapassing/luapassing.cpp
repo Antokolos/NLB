@@ -48,7 +48,9 @@ static int init(lua_State *L) {
         lua_pushnumber(L, 0.0);
     } else {
         initFunc();
-		CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+#ifdef _WINDOWS
+        CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+#endif
         log("API initialized.\n");
         lua_pushnumber(L, 1.0);
     }
