@@ -315,6 +315,16 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.ACHIEVED;
         } else if (type.equals(Type.GOTO.name())) {
             m_type = Type.GOTO;
+        } else if (type.equals(Type.OPENURL.name())) {
+            m_type = Type.OPENURL;
+        } else if (type.equals(Type.WINGEOM.name())) {
+            m_type = Type.WINGEOM;
+        } else if (type.equals(Type.INVGEOM.name())) {
+            m_type = Type.INVGEOM;
+        } else if (type.equals(Type.WINCOLOR.name())) {
+            m_type = Type.WINCOLOR;
+        } else if (type.equals(Type.INVCOLOR.name())) {
+            m_type = Type.INVCOLOR;
         } else {
             m_type = Type.ASSIGN;
         }
@@ -507,6 +517,21 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "GOTO":
                 m_type = Type.GOTO;
+                break;
+            case "OPENURL":
+                m_type = Type.OPENURL;
+                break;
+            case "WINGEOM":
+                m_type = Type.WINGEOM;
+                break;
+            case "INVGEOM":
+                m_type = Type.INVGEOM;
+                break;
+            case "WINCOLOR":
+                m_type = Type.WINCOLOR;
+                break;
+            case "INVCOLOR":
+                m_type = Type.INVCOLOR;
                 break;
             default:
                 throw new NLBConsistencyException(

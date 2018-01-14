@@ -2681,6 +2681,21 @@ public abstract class ExportManager {
                     case GOTO:
                         stringBuilder.append(decorateGoToOperation(expression.getValue()));
                         break;
+                    case OPENURL:
+                        stringBuilder.append(decorateOpenURLOperation(expression.getValue()));
+                        break;
+                    case WINGEOM:
+                        stringBuilder.append(decorateWinGeomOperation(expression.getValue()));
+                        break;
+                    case INVGEOM:
+                        stringBuilder.append(decorateInvGeomOperation(expression.getValue()));
+                        break;
+                    case WINCOLOR:
+                        stringBuilder.append(decorateWinColorOperation(expression.getValue()));
+                        break;
+                    case INVCOLOR:
+                        stringBuilder.append(decorateInvColorOperation(expression.getValue()));
+                        break;
                     default:
                         throw new NLBConsistencyException(
                                 "Operation has unknown type for modification with id = "
@@ -2765,6 +2780,16 @@ public abstract class ExportManager {
     protected abstract String decorateAchievedOperation(String variableName, String achievementName);
 
     protected abstract String decorateGoToOperation(String locationId);
+
+    protected abstract String decorateOpenURLOperation(String url);
+
+    protected abstract String decorateWinGeomOperation(String arg);
+
+    protected abstract String decorateInvGeomOperation(String arg);
+
+    protected abstract String decorateWinColorOperation(String arg);
+
+    protected abstract String decorateInvColorOperation(String arg);
 
     protected abstract String decorateShuffleOperation(String listVariableName);
 

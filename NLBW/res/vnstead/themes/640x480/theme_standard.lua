@@ -2,6 +2,7 @@ local tr = nlb:theme_root();
 theme.win.geom(20, 20, 450, 440);
 theme.inv.geom(500, 20, 120, 440);
 theme.win.color('white', '#00FF00', 'gold');
+theme.inv.color('white', '#00FF00', 'gold');
 
 theme.set('inv.mode', 'vertical');
 

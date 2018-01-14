@@ -56,5 +56,8 @@ statsAPI = {
         resetAllFunc();
         print("Done.\n");
         return 0.0;
+    end,
+    openURL = function(url)
+        p(url);
     end
 }

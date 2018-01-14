@@ -540,7 +540,9 @@ public class STEADExportManager extends TextExportManager {
             }
         }
         stringBuilder.append("        if geomFuncNeedToCall then").append(getLineSeparator());
-        stringBuilder.append("            if s:autos() then vn:auto_geom('dissolve', function() s.autos(s); end); end;").append(getLineSeparator());
+        //stringBuilder.append("            if s:autos() then vn:auto_geom('dissolve', function() s.autos(s); end); end;").append(getLineSeparator());
+        // TODO: check possible errors because of if s:autos() removal
+        stringBuilder.append("            vn:auto_geom('dissolve', function() s.autos(s); end);").append(getLineSeparator());
         stringBuilder.append("        end;").append(getLineSeparator());
         stringBuilder.append("    end,").append(getLineSeparator());
         return stringBuilder.toString();
@@ -1562,6 +1564,31 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateGoToOperation(String locationId) {
         return "nlb:nlbwalk(nil, " + decorateId(locationId) + ");" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateOpenURLOperation(String url) {
+        return "statsAPI.openURL(\"" + url + "\");" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateWinGeomOperation(String arg) {
+        return "theme.win.geom(" + arg + ");" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateInvGeomOperation(String arg) {
+        return "theme.inv.geom(" + arg + ");" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateWinColorOperation(String arg) {
+        return "theme.win.color(" + arg + ");" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateInvColorOperation(String arg) {
+        return "theme.inv.color(" + arg + ");" + LINE_SEPARATOR;
     }
 
     @Override

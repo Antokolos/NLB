@@ -94,7 +94,12 @@ public interface Modification extends IdentifiableItem {
         RND,
         ACHIEVE,
         ACHIEVED,
-        GOTO
+        GOTO,
+        OPENURL,
+        WINGEOM,
+        INVGEOM,
+        WINCOLOR,
+        INVCOLOR
     }
 
     public boolean isExternal();

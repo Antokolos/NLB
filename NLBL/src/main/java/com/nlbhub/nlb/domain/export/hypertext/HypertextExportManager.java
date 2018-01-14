@@ -399,6 +399,36 @@ public abstract class HypertextExportManager
     }
 
     @Override
+    protected String decorateOpenURLOperation(String url) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateWinGeomOperation(String arg) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateInvGeomOperation(String arg) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateWinColorOperation(String arg) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateInvColorOperation(String arg) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateShuffleOperation(String listVariableName) {
         // TODO: implement
         return EMPTY_STRING;
