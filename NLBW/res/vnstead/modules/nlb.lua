@@ -550,7 +550,10 @@ _syscall_starten = menu {
     system_type = true,
     act = function(s)
         vn:show(vn.busy_spr, 'middle');
-        vn:startcb(function() gamefile('module_en.lua', true); end);
+        vn:startcb(function()
+            vn:unlock_direct();
+            gamefile('module_en.lua', true);
+        end);
     end,
     actf = function(s) return s:act(); end
 }
@@ -560,7 +563,10 @@ _syscall_startru = menu {
     system_type = true,
     act = function(s)
         vn:show(vn.busy_spr, 'middle');
-        vn:startcb(function() gamefile('module_ru.lua', true); end);
+        vn:startcb(function()
+            vn:unlock_direct();
+            gamefile('module_ru.lua', true);
+        end);
     end,
     actf = function(s) return s:act(); end
 }

@@ -1907,8 +1907,10 @@ vn = obj {
         --- return game._lastdisp or "";
     end;
     lock_direct = function(s)
-        s.direct_lock = true;
-        theme.set('scr.gfx.mode', 'direct');
+        if not s.direct_lock then
+            s.direct_lock = true;
+            theme.set('scr.gfx.mode', 'direct');
+        end
     end;
     enter_direct = function(s)
         if not s.direct_lock then
@@ -1916,8 +1918,10 @@ vn = obj {
         end
     end;
     unlock_direct = function(s)
-        s.direct_lock = false;
-        theme.reset('scr.gfx.mode');
+        if s.direct_lock then
+            s.direct_lock = false;
+            theme.reset('scr.gfx.mode');
+        end
     end;
     leave_direct = function(s)
         if not s.direct_lock then
