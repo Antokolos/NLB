@@ -51,7 +51,7 @@ paginatorClick = function(x, y, a, b, c, d)
         if here().autos then
             here():autos();
         end
-        return
+        return true;
     end
 
     if (paginator._last and here().walk_to) or not paginator._last then
