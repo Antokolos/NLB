@@ -4969,6 +4969,18 @@ public class NonLinearBookImpl implements NonLinearBook {
     @Override
     public Map<String, String> getMediaToConstraintMap() {
         Map<String, String> result = new HashMap<>();
+        result.putAll(getMediaToConstraintMapForModule());
+        for (Map.Entry<String, NonLinearBook> entry : getExternalModules().entrySet()) {
+            Map<String, String> moduleResult = entry.getValue().getMediaToConstraintMap();
+            for (Map.Entry<String, String> moduleEntry : moduleResult.entrySet()) {
+                result.put(entry.getKey() + "/" + moduleEntry.getKey(), moduleEntry.getValue());
+            }
+        }
+        return result;
+    }
+
+    public Map<String, String> getMediaToConstraintMapForModule() {
+        Map<String, String> result = new HashMap<>();
         List<MediaFile> imageFiles = getImageFiles();
         for (MediaFile mediaFile : imageFiles) {
             if (StringHelper.notEmpty(mediaFile.getConstrId())) {
@@ -4979,12 +4991,6 @@ public class NonLinearBookImpl implements NonLinearBook {
         for (MediaFile mediaFile : soundFiles) {
             if (StringHelper.notEmpty(mediaFile.getConstrId())) {
                 result.put(mediaFile.getFileName(), getVariableById(mediaFile.getConstrId()).getValue());
-            }
-        }
-        for (Map.Entry<String, PageImpl> entry : m_pages.entrySet()) {
-            final NonLinearBookImpl moduleImpl = entry.getValue().getModuleImpl();
-            if (!moduleImpl.isEmpty()) {
-                result.putAll(moduleImpl.getMediaToConstraintMap());
             }
         }
         return result;
@@ -5021,7 +5027,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         return result;
     }
 
-    public Map<String, MediaExportParameters> getMediaExportParametersMapForModule() {
+    private Map<String, MediaExportParameters> getMediaExportParametersMapForModule() {
         Map<String, MediaExportParameters> result = new HashMap<>();
         List<MediaFile> imageFiles = getImageFiles();
         for (MediaFile mediaFile : imageFiles) {
