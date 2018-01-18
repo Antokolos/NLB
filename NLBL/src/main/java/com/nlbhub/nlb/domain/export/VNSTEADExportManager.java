@@ -179,16 +179,13 @@ public class VNSTEADExportManager extends STEADExportManager {
             for (LinkBuildingBlocks linkBlock : linksBuildingBlocks) {
                 if (!linkBlock.isAuto()) {
                     final boolean constrained = !StringHelper.isEmpty(linkBlock.getLinkConstraint());
-                    if (constrained) {
-                        result.append("if ").append(linkBlock.getLinkConstraint()).append(" then").append(lineSep);
-                    }
+                    result.append("if ").append(constrained ? linkBlock.getLinkConstraint() : "true").append(" then").append(lineSep);
                     result.append(linkBlock.getLinkModifications());
                     result.append(linkBlock.getLinkVariable());
                     result.append(linkBlock.getLinkVisitStateVariable());
                     result.append(linkBlock.getLinkGoTo());
-                    if (constrained) {
-                        result.append("end;").append(lineSep);
-                    }
+                    result.append("    return;").append(lineSep);
+                    result.append("end;").append(lineSep);
                 }
             }
         } else {
