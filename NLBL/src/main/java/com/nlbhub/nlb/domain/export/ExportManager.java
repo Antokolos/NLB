@@ -3018,7 +3018,7 @@ public abstract class ExportManager {
     }
 
     private MediaExportParameters getMediaExportParameters(String externalHierarchy, String fileName) {
-        String key = StringHelper.isEmpty(externalHierarchy) ? fileName : externalHierarchy + "/" + fileName;
+        String key = getMediaMapKeyWithRespectToHierarchy(externalHierarchy, fileName);
         MediaExportParameters result = m_mediaExportParametersMap.get(key);
         if (result != null) {
             return result;
@@ -3074,8 +3074,10 @@ public abstract class ExportManager {
             }
             // Please note that here we use initial file name, not redirected.
             // Thus we can use constraint for this initial file name.
-            if (m_mediaToConstraintMap.containsKey(imageFileName)) {
-                result.setConstraint(m_mediaToConstraintMap.get(imageFileName));
+
+            String key = getMediaMapKeyWithRespectToHierarchy(externalHierarchy, imageFileName);
+            if (m_mediaToConstraintMap.containsKey(key)) {
+                result.setConstraint(m_mediaToConstraintMap.get(key));
             } else {
                 result.setConstraint(Constants.EMPTY_STRING);
             }
@@ -3083,6 +3085,10 @@ public abstract class ExportManager {
         } else {
             throw new NLBExportException("Filename " + imageFileName + " is bad, please rename");
         }
+    }
+
+    private String getMediaMapKeyWithRespectToHierarchy(String externalHierarchy, String imageFileName) {
+        return StringHelper.isEmpty(externalHierarchy) ? imageFileName : externalHierarchy + "/" + imageFileName;
     }
 
     protected List<SoundPathData> getSoundPaths(String externalHierarchy, String soundFileNames) {
