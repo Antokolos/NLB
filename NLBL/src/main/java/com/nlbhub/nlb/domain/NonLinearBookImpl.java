@@ -4960,9 +4960,7 @@ public class NonLinearBookImpl implements NonLinearBook {
 
             final NonLinearBookImpl moduleImpl = entry.getValue().getModuleImpl();
             if (!moduleImpl.isEmpty()) {
-                result.putAll(
-                        moduleImpl.getVariableDataTypes()
-                );
+                result.putAll(moduleImpl.getVariableDataTypes());
             }
         }
         return result;
@@ -4981,6 +4979,12 @@ public class NonLinearBookImpl implements NonLinearBook {
         for (MediaFile mediaFile : soundFiles) {
             if (StringHelper.notEmpty(mediaFile.getConstrId())) {
                 result.put(mediaFile.getFileName(), getVariableById(mediaFile.getConstrId()).getValue());
+            }
+        }
+        for (Map.Entry<String, PageImpl> entry : m_pages.entrySet()) {
+            final NonLinearBookImpl moduleImpl = entry.getValue().getModuleImpl();
+            if (!moduleImpl.isEmpty()) {
+                result.putAll(moduleImpl.getMediaToConstraintMap());
             }
         }
         return result;
