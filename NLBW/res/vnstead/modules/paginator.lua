@@ -220,8 +220,7 @@ stead.module_init(function()
         if paginator.on then
             result = paginatorClick(x, y, a, b, c, d);
         else
-            vn:click(x, y, a, b, c, d);
-            return;
+            return vn:click(x, y, a, b, c, d);
         end
         return result;
     end
