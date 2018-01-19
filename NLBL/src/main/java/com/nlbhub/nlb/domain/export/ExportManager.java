@@ -1,10 +1,8 @@
 /**
- * @(#)URQExportManager.java
- *
- * This file is part of the Non-Linear Book project.
+ * @(#)URQExportManager.java This file is part of the Non-Linear Book project.
  * Copyright (c) 2012-2014 Anton P. Kolosov
  * Authors: Anton P. Kolosov, et al.
- *
+ * <p>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License version 3
  * as published by the Free Software Foundation with the addition of the
@@ -12,7 +10,7 @@
  * FOR ANY PART OF THE COVERED WORK IN WHICH THE COPYRIGHT IS OWNED BY
  * ANTON P. KOLOSOV. ANTON P. KOLOSOV DISCLAIMS THE WARRANTY OF NON INFRINGEMENT
  * OF THIRD PARTY RIGHTS
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
  * or FITNESS FOR A PARTICULAR PURPOSE.
@@ -21,19 +19,19 @@
  * along with this program; if not, see http://www.gnu.org/licenses or write to
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA, 02110-1301 USA.
- *
+ * <p>
  * The interactive user interfaces in modified source and object code versions
  * of this program must display Appropriate Legal Notices, as required under
  * Section 5 of the GNU Affero General Public License.
- *
+ * <p>
  * You can be released from the requirements of the license by purchasing
  * a commercial license. Buying such a license is mandatory as soon as you
  * develop commercial activities involving the Non-Linear Book software without
  * disclosing the source code of your own applications.
- *
+ * <p>
  * For more information, please contact Anton P. Kolosov at this
  * address: antokolos@gmail.com
- *
+ * <p>
  * Copyright (c) 2013 Anton P. Kolosov All rights reserved.
  */
 package com.nlbhub.nlb.domain.export;
@@ -480,12 +478,12 @@ public abstract class ExportManager {
         blocks.setPageCaption(decoratePageCaption(page.getCaption(), page.isUseCaption(), title, page.isNoSave()));
         blocks.setNotes(decoratePageNotes(page.getNotes()));
         blocks.setModuleTitle(title);
-        String imageFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_IMAGE_FILE_NAME: page.getImageFileName());
+        String imageFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_IMAGE_FILE_NAME : page.getImageFileName());
         boolean isAnimatedImage = page.isImageAnimated();
         blocks.setHasAnimatedPageImage(isAnimatedImage);
         blocks.setImageBackground(page.isImageBackground());
         blocks.setPageImage(decoratePageImage(getImagePaths(page.getExternalHierarchy(), imageFileName, isAnimatedImage, false), page.isImageBackground(), theme));
-        String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME: page.getSoundFileName());
+        String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME : page.getSoundFileName());
         blocks.setPageSound(decoratePageSound(pageName, getSoundPaths(page.getExternalHierarchy(), soundFileName), page.isSoundSFX(), theme));
         blocks.setPageTextStart(decoratePageTextStart(page.getId(), pageNumber, StringHelper.getTextChunks(page.getText()), theme));
         boolean hasChoicesOrLeaf = hasChoicesOrLeaf(page);
@@ -900,7 +898,7 @@ public abstract class ExportManager {
             blocks.addContainedObjId(containedObjId);
         }
         blocks.setObjObjEnd(decorateObjObjEnd());
-        String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Obj.DEFAULT_SOUND_FILE_NAME: obj.getSoundFileName());
+        String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Obj.DEFAULT_SOUND_FILE_NAME : obj.getSoundFileName());
         blocks.setObjSound(decorateObjSound(getSoundPaths(obj.getExternalHierarchy(), soundFileName), obj.isSoundSFX()));
         List<Link> links = obj.getLinks();
         for (final Link link : links) {
@@ -1935,8 +1933,14 @@ public abstract class ExportManager {
     }
 
     private boolean isInlineLink(Link link) {
+        // Remember, that link here can have escaped text, like \"Text\" instead of just "Text"
         String text = link.getText();
-        return StringHelper.notEmpty(text) && (text.startsWith("-") || text.startsWith("\"") || text.startsWith("'") || determineTrivialStatus(link));
+        return StringHelper.notEmpty(text)
+                && (
+                text.startsWith(escapeText("-"))
+                        || text.startsWith(escapeText("\""))
+                        || text.startsWith(escapeText("'"))
+                        || determineTrivialStatus(link));
     }
 
     private LinkBuildingBlocks createLinkBuildingBlocks(
@@ -2238,7 +2242,7 @@ public abstract class ExportManager {
                         break;
                     case GETTAG:
                         // Actually this is double check, because empty variable was already checked
-                        String resName = (variable != null) ?  variable.getName() : Constants.EMPTY_STRING;
+                        String resName = (variable != null) ? variable.getName() : Constants.EMPTY_STRING;
                         final String gettagObjId = (expression != null) ? exportData.getObjId(expression.getValue()) : null;
                         stringBuilder.append(
                                 decorateGetTagOperation(
