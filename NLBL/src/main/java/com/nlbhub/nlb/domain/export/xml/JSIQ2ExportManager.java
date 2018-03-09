@@ -579,6 +579,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
+    protected String decorateSnapshotOperation(String snapshotId) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateOpenURLOperation(String url) {
         // TODO: implement
         return EMPTY_STRING;

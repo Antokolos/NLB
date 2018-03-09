@@ -49,6 +49,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -100,6 +101,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("require 'hideinv'").append(LINE_SEPARATOR);
         stringBuilder.append("--require 'para'").append(LINE_SEPARATOR);
         stringBuilder.append("require 'dash'").append(LINE_SEPARATOR);
+        stringBuilder.append("require 'snapshots'").append(LINE_SEPARATOR);
         String lang = nlbBuildingBlocks.getLang();
         if (Constants.RU.equalsIgnoreCase(lang)) {
             // quotes module should be used only for russian language
@@ -233,6 +235,7 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("    prefs:store();").append(LINE_SEPARATOR);
         stringBuilder.append("    nlb:resendAchievements(statsAPI);").append(LINE_SEPARATOR);
+        stringBuilder.append("    resetVariables();").append(LINE_SEPARATOR);
         return stringBuilder.toString();
     }
 
@@ -721,6 +724,17 @@ public class STEADExportManager extends TextExportManager {
         result.append(LINE_SEPARATOR).append("        return false;").append(LINE_SEPARATOR);
         result.append(" end;"); // matching end for if (...)
         result.append(LINE_SEPARATOR);
+        return result.toString();
+    }
+
+    @Override
+    protected String generateVariableInitializationText(Map<String, String> initValuesMap) {
+        StringBuilder result = new StringBuilder(LINE_SEPARATOR);
+        result.append("local resetVariables = function()").append(LINE_SEPARATOR);
+        for (Map.Entry<String, String> entry : initValuesMap.entrySet()) {
+            result.append("    ").append(entry.getKey()).append(" = ").append(entry.getValue()).append(";").append(LINE_SEPARATOR);
+        }
+        result.append("end").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
         return result.toString();
     }
 
@@ -1564,6 +1578,12 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateGoToOperation(String locationId) {
         return "nlb:nlbwalk(nil, " + decorateId(locationId) + ");" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateSnapshotOperation(String snapshotId) {
+        // TODO: use snapshotId? Right now there is only one snapshot
+        return "nlb:snapshot();" + LINE_SEPARATOR;
     }
 
     @Override

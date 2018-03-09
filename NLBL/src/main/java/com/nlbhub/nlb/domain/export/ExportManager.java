@@ -718,26 +718,32 @@ public abstract class ExportManager {
         return false;
     }
 
-    protected Map<String, String> getInitValuesMap() {
+    protected Map<String, String> getInitValuesMap() throws NLBConsistencyException {
         Map<String, String> result = new HashMap<>();
         for (Map.Entry<String, Variable.DataType> entry : m_dataTypeMap.entrySet()) {
-            String defaultValue = getDefaultValue(entry.getValue());
-            result.put(entry.getKey(), defaultValue);
+            Variable.DataType dataType = entry.getValue();
+            String defaultValue = getDefaultValue(dataType, entry.getKey());
+            result.put(
+                    (dataType == Variable.DataType.STRING)
+                            ? decorateStringVar(entry.getKey())
+                            : decorateAutoVar(entry.getKey()),
+                    defaultValue
+            );
         }
         return result;
     }
 
-    private String getDefaultValue(Variable.DataType datatype) {
+    private String getDefaultValue(Variable.DataType datatype, String variableName) throws NLBConsistencyException {
         switch (datatype) {
             case BOOLEAN:
-                return "false";
+                return decorateFalse();
             case AUTO:
             case NUMBER:
                 return "0";
             case STRING:
                 return "\"\"";
             default:
-                return "";
+                throw new NLBConsistencyException("Unsupported datatype '" + datatype.name() + "' for variable '" + variableName + "'");
         }
     }
 
@@ -2685,6 +2691,12 @@ public abstract class ExportManager {
                     case GOTO:
                         stringBuilder.append(decorateGoToOperation(expression.getValue()));
                         break;
+                    case SNAPSHOT:
+                        String snapshotId = expression != null && StringHelper.notEmpty(expression.getValue())
+                                ? translateExpressionBody(expression.getValue()).getExpressionPart()
+                                : "";
+                        stringBuilder.append(decorateSnapshotOperation(snapshotId));
+                        break;
                     case OPENURL:
                         stringBuilder.append(decorateOpenURLOperation(expression.getValue()));
                         break;
@@ -2784,6 +2796,8 @@ public abstract class ExportManager {
     protected abstract String decorateAchievedOperation(String variableName, String achievementName);
 
     protected abstract String decorateGoToOperation(String locationId);
+
+    protected abstract String decorateSnapshotOperation(String snapshotId);
 
     protected abstract String decorateOpenURLOperation(String url);
 

@@ -423,6 +423,12 @@ nlb = obj {
         end
         return io.open(name, mode) or io.open(instead_gamepath() .. "/" .. name, mode);
     end;
+    snapshot = function(s)
+        if isSnapshot(0) then
+            delete_snapshot(0);
+        end
+        make_snapshot(0);
+    end;
 };
 
 _try_again = menu {
@@ -438,7 +444,11 @@ _try_again = menu {
     end,
     act = function(s)
         p(txtc("Restarting..."));
-        stead.restart();
+        if isSnapshot(0) then
+            restore_snapshot(0);
+        else
+            stead.restart();
+        end
     end,
     actf = function(s) return s:act(); end
 }

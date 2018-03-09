@@ -75,6 +75,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
         add(Type.ELSE);
         add(Type.END);
         add(Type.RETURN);
+        add(Type.SNAPSHOT);
     }};
     private boolean m_external;
     private Type m_type = Type.ASSIGN;
@@ -315,6 +316,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.ACHIEVED;
         } else if (type.equals(Type.GOTO.name())) {
             m_type = Type.GOTO;
+        } else if (type.equals(Type.SNAPSHOT.name())) {
+            m_type = Type.SNAPSHOT;
         } else if (type.equals(Type.OPENURL.name())) {
             m_type = Type.OPENURL;
         } else if (type.equals(Type.WINGEOM.name())) {
@@ -517,6 +520,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "GOTO":
                 m_type = Type.GOTO;
+                break;
+            case "SNAPSHOT":
+                m_type = Type.SNAPSHOT;
                 break;
             case "OPENURL":
                 m_type = Type.OPENURL;

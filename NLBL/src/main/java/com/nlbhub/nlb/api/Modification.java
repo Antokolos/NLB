@@ -95,6 +95,7 @@ public interface Modification extends IdentifiableItem {
         ACHIEVE,
         ACHIEVED,
         GOTO,
+        SNAPSHOT,
         OPENURL,
         WINGEOM,
         INVGEOM,

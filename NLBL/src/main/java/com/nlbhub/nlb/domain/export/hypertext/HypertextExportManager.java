@@ -399,6 +399,12 @@ public abstract class HypertextExportManager
     }
 
     @Override
+    protected String decorateSnapshotOperation(String snapshotId) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateOpenURLOperation(String url) {
         // TODO: implement
         return EMPTY_STRING;

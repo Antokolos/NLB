@@ -80,7 +80,7 @@ public abstract class TextExportManager extends ExportManager {
         }
     }
 
-    protected String generateNLBText(final NLBBuildingBlocks nlbBlocks) {
+    protected String generateNLBText(final NLBBuildingBlocks nlbBlocks) throws NLBConsistencyException {
         StringBuilder stringBuilder = new StringBuilder();
         final List<ObjBuildingBlocks> objsBlocks = nlbBlocks.getObjsBuildingBlocks();
         final List<PageBuildingBlocks> pagesBlocks = nlbBlocks.getPagesBuildingBlocks();
