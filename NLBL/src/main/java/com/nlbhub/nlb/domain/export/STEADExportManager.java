@@ -730,7 +730,7 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String generateVariableInitializationText(Map<String, String> initValuesMap) {
         StringBuilder result = new StringBuilder(LINE_SEPARATOR);
-        result.append("local resetVariables = function()").append(LINE_SEPARATOR);
+        result.append("function resetVariables()").append(LINE_SEPARATOR);
         for (Map.Entry<String, String> entry : initValuesMap.entrySet()) {
             result.append("    ").append(entry.getKey()).append(" = ").append(entry.getValue()).append(";").append(LINE_SEPARATOR);
         }
