@@ -443,7 +443,6 @@ _try_again = menu {
         end
     end,
     act = function(s)
-        p(txtc("Restarting..."));
         if isSnapshot(0) then
             restore_snapshot(0);
         else

@@ -474,6 +474,9 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(pageBlocks.getPageVariable());
         }
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
+        stringBuilder.append("        s:initf();").append(LINE_SEPARATOR);
+        stringBuilder.append("    end,").append(LINE_SEPARATOR);
+        stringBuilder.append("    initf = function(s, load)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.snd(s);").append(LINE_SEPARATOR);
         stringBuilder.append(generateDirectModeStartText(pageBlocks));
         stringBuilder.append("        s.add_gobj(s);").append(LINE_SEPARATOR);

@@ -242,6 +242,7 @@ vn = obj {
         else
             nlb:theme_switch("theme_standard.lua", true);
         end
+        if load then here():initf(); end;
         s.vnticks = stead.ticks();
         s.renewticks = s.vnticks;
         s.vnticks_diff = s:ticks_threshold();
