@@ -22,6 +22,10 @@ void setAchievementUnsafe(UserStatsObject* pStats, const char* achievementName) 
 	// Steam set achievement here
 }
 
+void setAchievementProgressUnsafe(UserStatsObject* pStats, const char* achievementName, int current, int max) {
+	// Steam set achievement progress here
+}
+
 void storeUnsafe(UserStatsObject* pStats) {
 	// Steam store stats here
 }
@@ -74,6 +78,16 @@ void setAchievementFunc(const char* achievementName) {
 		setAchievementUnsafe(pStats, achievementName);
 	} else {
 		log("Error setting achievement %s: user stats object is undefined.\n", achievementName);
+	}
+}
+
+void setAchievementProgressFunc(const char* achievementName, int current, int max) {
+	UserStatsObject* pStats = getUserStatsObject();
+	if (pStats != NULL) {
+		setAchievementProgressUnsafe(pStats, achievementName, current, max);
+	}
+	else {
+		log("Error setting achievement progress %s: user stats object is undefined.\n", achievementName);
 	}
 }
 

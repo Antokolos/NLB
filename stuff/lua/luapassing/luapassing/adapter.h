@@ -9,6 +9,8 @@ void initFunc();
 
 void setAchievementFunc(const char* achievementName);
 
+void setAchievementProgressFunc(const char* achievementName, int current, int max);
+
 void storeFunc();
 
 void clearAchievementFunc(const char* achievementName);

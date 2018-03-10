@@ -78,6 +78,22 @@ static int setAchievement(lua_State *L) {
     return 1;
 }
 
+static int setAchievementProgress(lua_State *L) {
+	const char* achievementName = lua_tostring(L, 1);
+	int current = (int) lua_tonumber(L, 2);
+	int max = (int) lua_tonumber(L, 3);
+	bool storeImmediately = lua_toboolean(L, 4);
+	checkInit();
+	log("Setting achievement progress '%s', %d of %d...\n", achievementName, current, max);
+	setAchievementProgressFunc(achievementName, current, max);
+	if (storeImmediately) {
+		storeFunc();
+	}
+	log("Achievement progress set.\n");
+	lua_pushnumber(L, 0.0);
+	return 1;
+}
+
 static int store(lua_State *L) {
     checkInit();
     log("Storing...\n");
@@ -160,6 +176,7 @@ extern "C" int luaopen_luapassing ( lua_State *L) {
     static const luaL_reg Map [] = {
         {"init", init},
         {"setAchievement", setAchievement},
+		{ "setAchievementProgress", setAchievementProgress },
         {"clearAchievement", clearAchievement},
         {"store", store},
         {"resetAll", resetAll},
