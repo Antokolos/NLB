@@ -226,6 +226,12 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    if not prefs.achievements then").append(LINE_SEPARATOR);
         stringBuilder.append("        prefs.achievements = {};").append(LINE_SEPARATOR);
         stringBuilder.append("    end").append(LINE_SEPARATOR);
+        stringBuilder.append("    if not prefs.achievements_max then").append(LINE_SEPARATOR);
+        stringBuilder.append("        prefs.achievements_max = {};").append(LINE_SEPARATOR);
+        stringBuilder.append("    end").append(LINE_SEPARATOR);
+        stringBuilder.append("    if not prefs.achievements_ids then").append(LINE_SEPARATOR);
+        stringBuilder.append("        prefs.achievements_ids = {};").append(LINE_SEPARATOR);
+        stringBuilder.append("    end").append(LINE_SEPARATOR);
         stringBuilder.append(initBlockAchievements(nlbBuildingBlocks));
         String perfectGame = nlbBuildingBlocks.getAchievementNamePerfectGame();
         if (StringHelper.notEmpty(perfectGame)) {
@@ -1568,9 +1574,13 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAchieveOperation(String achievementName) {
-        // TODO: implement
-        return "nlb:setAchievement(statsAPI, '" + achievementName + "');" + LINE_SEPARATOR;
+    protected String decorateAchMaxOperation(String achievementName, int max) {
+        return "nlb:setAchievementMax(statsAPI, '" + achievementName + "', " + max + ");" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateAchieveOperation(String achievementName, String modificationId) {
+        return "nlb:setAchievement(statsAPI, '" + achievementName + "', '" + modificationId + "');" + LINE_SEPARATOR;
     }
 
     @Override

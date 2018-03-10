@@ -2680,8 +2680,22 @@ public abstract class ExportManager {
                                 )
                         );
                         break;
+                    case ACHMAX:
+                        if (variable != null) {
+                            stringBuilder.append(
+                                    decorateAchMaxOperation(
+                                            variable.getName(),
+                                            Integer.parseInt(expression.getValue())
+                                    )
+                            );
+                        } else {
+                            throw new NLBConsistencyException(
+                                    "Destination achievement name is not specified for ACHMAX operation"
+                            );
+                        }
+                        break;
                     case ACHIEVE:
-                        stringBuilder.append(decorateAchieveOperation(expression.getValue()));
+                        stringBuilder.append(decorateAchieveOperation(expression.getValue(), modification.getId()));
                         break;
                     case ACHIEVED:
                         assert variable != null;
@@ -2791,7 +2805,9 @@ public abstract class ExportManager {
 
     protected abstract String decorateRndOperation(String variableName, String maxValue);
 
-    protected abstract String decorateAchieveOperation(String achievementName);
+    protected abstract String decorateAchMaxOperation(String achievementName, int max);
+
+    protected abstract String decorateAchieveOperation(String achievementName, String modificationId);
 
     protected abstract String decorateAchievedOperation(String variableName, String achievementName);
 

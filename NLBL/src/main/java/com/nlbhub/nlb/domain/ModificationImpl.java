@@ -179,7 +179,7 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             default:
                 // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, IFHAVE, ADD, ADDU, ADDINV, ADDALL, ADDALLU,
                 // REMOVE, RMINV, CLEAR, CLRINV, SPUSH, WPUSH, PUSH, SINJECT, INJECT, SHUFFLE, PDSC, PDSCS, ACT, USE
-                // SSND, WSND, SND, ACHIEVE, GOTO
+                // SSND, WSND, SND, ACHIEVE, GOTO, SNAPSHOT, ACHMAX
                 // It is funny, but RETURN operation currently does not actually return anything :)
                 return false;
         }
@@ -310,6 +310,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.SIZE;
         } else if (type.equals(Type.RND.name())) {
             m_type = Type.RND;
+        } else if (type.equals(Type.ACHMAX.name())) {
+            m_type = Type.ACHMAX;
         } else if (type.equals(Type.ACHIEVE.name())) {
             m_type = Type.ACHIEVE;
         } else if (type.equals(Type.ACHIEVED.name())) {
@@ -511,6 +513,9 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "RND":
                 m_type = Type.RND;
+                break;
+            case "ACHMAX":
+                m_type = Type.ACHMAX;
                 break;
             case "ACHIEVE":
                 m_type = Type.ACHIEVE;

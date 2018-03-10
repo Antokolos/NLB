@@ -4,6 +4,9 @@ end
 local setAchievementFunc = function(achievementName)
 end
 
+local setAchievementProgressFunc = function(achievementName, current, max)
+end
+
 local storeFunc = function()
 end
 
@@ -34,6 +37,15 @@ statsAPI = {
             storeFunc();
         end
         print("Achievement set.\n");
+        return 0.0;
+    end,
+    setAchievementProgress = function(achievementName, current, max, storeImmediately)
+        print("Setting achievement progress '"..achievementName.."', "..tostring(current).." of "..tostring(max).."...\n");
+        setAchievementProgressFunc(achievementName, current, max);
+        if (storeImmediately) then
+            storeFunc();
+        end
+        print("Achievement progress set.\n");
         return 0.0;
     end,
     store = function()

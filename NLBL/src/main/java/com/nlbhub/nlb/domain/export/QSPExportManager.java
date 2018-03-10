@@ -545,7 +545,13 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateAchieveOperation(String achievementName) {
+    protected String decorateAchMaxOperation(String achievementName, int max) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateAchieveOperation(String achievementName, String modificationId) {
         // TODO: implement
         return EMPTY_STRING;
     }

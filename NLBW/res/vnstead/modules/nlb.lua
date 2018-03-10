@@ -332,17 +332,25 @@ nlb = obj {
             src.lasttext = lasttext;
         end
     end;
-    setAchievement = function(s, statsAPI, achievementName)
+    setAchievementMax = function(s, statsAPI, achievementName, max)
+        prefs.achievements_max[achievementName] = max;
+        prefs:store();
+    end;
+    setAchievement = function(s, statsAPI, achievementName, modificationId)
         -- There is no harm to call statsAPI.init() one more time,
         -- we are just trying to init Stats one more time in case of failure to init on start
         statsAPI.init();
         local achievementNamePerfectGame = prefs.achievementNamePerfectGame;
-        if not prefs.achievements[achievementName] then
+        if not prefs.achievements_ids[achievementName] then
+            prefs.achievements_ids[achievementName] = {};
+        end
+        prefs.achievements_ids[achievementName][modificationId] = 1;
+        if not prefs.achievements[achievementName] or not prefs.achievements_max[achievementName] then
             prefs.achievements[achievementName] = 1;
-        else
+        elseif prefs.achievements_max[achievementName] and (tablelength(prefs.achievements_ids[achievementName]) <= prefs.achievements_max[achievementName]) then
             prefs.achievements[achievementName] = prefs.achievements[achievementName] + 1;
         end
-        statsAPI.setAchievement(achievementName, true);
+        s:storeAchievement(statsAPI, achievementName);
         if achievementNamePerfectGame then
             prefs.achievements[achievementNamePerfectGame] = 1; -- let's assume we already got all achievements
         end
@@ -361,6 +369,17 @@ nlb = obj {
         prefs:store();
         return true;
     end;
+    storeAchievement = function(s, statsAPI, achievementName)
+        if not prefs.achievements_max[achievementName] then
+            statsAPI.setAchievement(achievementName, true);
+        else
+            local len = tablelength(prefs.achievements_ids[achievementName]);
+            statsAPI.setAchievementProgress(achievementName, len, prefs.achievements_max[achievementName], true);
+            if len >= prefs.achievements_max[achievementName] then
+                statsAPI.setAchievement(achievementName, true);
+            end
+        end
+    end;
     getAchievement = function(s, statsAPI, achievementName)
         if prefs.achievements[achievementName] then
             return prefs.achievements[achievementName];
@@ -371,7 +390,7 @@ nlb = obj {
     resendAchievements = function(s, statsAPI)
         for k, v in pairs(prefs.achievements) do
             if v and v > 0 then
-                statsAPI.setAchievement(k, true);
+                s:storeAchievement(statsAPI, k);
             end
         end
     end;
@@ -430,6 +449,12 @@ nlb = obj {
         make_snapshot(0);
     end;
 };
+
+function tablelength(t)
+    local count = 0
+    for _ in pairs(t) do count = count + 1 end
+    return count
+end;
 
 _try_again = menu {
     nam = "try_again",

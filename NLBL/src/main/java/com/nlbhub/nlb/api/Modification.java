@@ -92,6 +92,7 @@ public interface Modification extends IdentifiableItem {
         USE,
         SIZE,
         RND,
+        ACHMAX,
         ACHIEVE,
         ACHIEVED,
         GOTO,
