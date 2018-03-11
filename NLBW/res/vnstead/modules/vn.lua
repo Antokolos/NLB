@@ -221,28 +221,22 @@ vn = obj {
     end;
     ini = function(s, load)
         s.fading = 8;
-        if s:in_vnr() then
-            nlb:theme_switch("theme_vn.lua", true);
-        elseif s:in_choices() then
-            nlb:theme_switch("theme_vn.lua", true);  -- or maybe create theme_vn_choices.lua?
-            local is_end = true;
-            for i, v in ipairs(objs()) do
-                if (stead.nameof(v) ~= stead.nameof(_try_again)) then
-                    is_end = false;
+        local here = here();
+        if here and here.initf then
+            local x, y, w, h = here:initf(true);
+            if s:in_choices() then
+                local is_end = true;
+                for i, v in ipairs(objs()) do
+                    if (stead.nameof(v) ~= stead.nameof(_try_again)) then
+                        is_end = false;
+                    end
+                end
+                if not is_end then
+                    s._wf = 0;
                 end
             end
-            local x, y, w, h;
-            if is_end then
-                x, y, w, h = s:get_end_coords();
-            else
-                s._wf = 0;
-                x, y, w, h = s:get_choices_coords();
-            end
             theme.win.geom(x, y, w, h);
-        else
-            nlb:theme_switch("theme_standard.lua", true);
-        end
-        if load then here():initf(); end;
+        end;
         s.vnticks = stead.ticks();
         s.renewticks = s.vnticks;
         s.vnticks_diff = s:ticks_threshold();
@@ -1777,6 +1771,7 @@ vn = obj {
             s:start(effect);
         end;
         s:commit();
+        return x, y, w, h;
     end;
     scene = function(s, bg, eff, preserve_cache)
         s:cleanup_scene(preserve_cache);

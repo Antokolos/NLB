@@ -465,34 +465,32 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
-        stringBuilder.append("        nlb:theme_switch(s:theme_file());").append(LINE_SEPARATOR);
-        if (hasFastAnim) {
-            stringBuilder.append("        nlbticks = stead.ticks();").append(LINE_SEPARATOR);
-        }
         stringBuilder.append("        s.lasttext = nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        s.wastext = false;").append(LINE_SEPARATOR);
-        if (timerSet) {
-            stringBuilder.append("        ").append(pageBlocks.getPageTimerVariableInit()).append(LINE_SEPARATOR);
-        }
         stringBuilder.append("        if not (f.autowired) then").append(LINE_SEPARATOR);
         if (varsOrModsPresent) {
             stringBuilder.append(pageBlocks.getPageModifications());
             stringBuilder.append(pageBlocks.getPageVariable());
         }
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        s:initf();").append(LINE_SEPARATOR);
+        stringBuilder.append("        s:initf(false);").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
-        stringBuilder.append("    initf = function(s, load)").append(LINE_SEPARATOR);
-        stringBuilder.append("        s.snd(s);").append(LINE_SEPARATOR);
-        stringBuilder.append(generateDirectModeStartText(pageBlocks));
-        stringBuilder.append("        s.add_gobj(s);").append(LINE_SEPARATOR);
+        stringBuilder.append("    initf = function(s, from_vn)").append(LINE_SEPARATOR);
+        stringBuilder.append("        nlb:theme_switch(s:theme_file(), from_vn);").append(LINE_SEPARATOR);
+        if (hasFastAnim) {
+            stringBuilder.append("        nlbticks = stead.ticks();").append(LINE_SEPARATOR);
+        }
         if (timerSet) {
+            stringBuilder.append("        ").append(pageBlocks.getPageTimerVariableInit()).append(LINE_SEPARATOR);
             int timerRate = (hasFastAnim ? 1 : 200);
             stringBuilder.append("        ").append(pageBlocks.getPageTimerVariable()).append(LINE_SEPARATOR);
             // stringBuilder.append("        s.autos(s);").append(LINE_SEPARATOR); -- will be called when timer triggers
             // Timer will be triggered first time immediately after timer:set()
             stringBuilder.append("        timer:set(").append(timerRate).append(");").append(LINE_SEPARATOR);
         }
+        stringBuilder.append("        s.snd(s);").append(LINE_SEPARATOR);
+        stringBuilder.append(generateDirectModeStartText(pageBlocks));
+        stringBuilder.append("        return s.add_gobj(s);").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append(getGraphicalObjectAppendingExpression(pageBlocks));
         stringBuilder.append("    exit = function(s, t)").append(LINE_SEPARATOR);
@@ -515,9 +513,13 @@ public class STEADExportManager extends TextExportManager {
         return stringBuilder.toString();
     }
 
+    protected boolean isDirectMode(PageBuildingBlocks pageBlocks) {
+        return pageBlocks.isDirectMode() && pageBlocks.getTheme() == Theme.VN;
+    }
+
     protected String generateDirectModeStartText(PageBuildingBlocks pageBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
-        if (pageBlocks.isDirectMode() && pageBlocks.getTheme() == Theme.VN) {
+        if (isDirectMode(pageBlocks)) {
             stringBuilder.append("        vn:request_full_clear();").append(LINE_SEPARATOR);
             stringBuilder.append("        vn:lock_direct();").append(LINE_SEPARATOR);
         }
@@ -526,7 +528,7 @@ public class STEADExportManager extends TextExportManager {
 
     protected String generateDirectModeStopText(PageBuildingBlocks pageBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
-        if (pageBlocks.isDirectMode() && pageBlocks.getTheme() == Theme.VN) {
+        if (isDirectMode(pageBlocks)) {
             stringBuilder.append("        vn:request_full_clear();").append(LINE_SEPARATOR);
             stringBuilder.append("        vn:unlock_direct();").append(LINE_SEPARATOR);
         }
@@ -556,6 +558,11 @@ public class STEADExportManager extends TextExportManager {
         // TODO: check possible errors because of if s:autos() removal
         stringBuilder.append("            vn:auto_geom('dissolve', function() s.autos(s); end);").append(getLineSeparator());
         stringBuilder.append("        end;").append(getLineSeparator());
+        if (isDirectMode(pageBuildingBlocks)) {
+            stringBuilder.append("        return 0, 0, vn.scr_w, vn.scr_h;").append(getLineSeparator());
+        } else {
+            stringBuilder.append("        return vn:get_win_coords();").append(getLineSeparator());
+        }
         stringBuilder.append("    end,").append(getLineSeparator());
         return stringBuilder.toString();
     }

@@ -120,10 +120,14 @@ public class VNSTEADExportManager extends STEADExportManager {
         return pageText.toString();
     }
 
+    protected boolean isDirectMode(PageBuildingBlocks pageBlocks) {
+        return pageBlocks.isDirectMode() && pageBlocks.getTheme() != Theme.STANDARD;
+    }
+
     protected String generateDirectModeStartText(PageBuildingBlocks pageBlocks) {
         String lineSep = getLineSeparator();
         StringBuilder stringBuilder = new StringBuilder();
-        if (pageBlocks.isDirectMode() && pageBlocks.getTheme() != Theme.STANDARD) {
+        if (isDirectMode(pageBlocks)) {
             stringBuilder.append("        vn:request_full_clear();").append(lineSep);
             stringBuilder.append("        vn:lock_direct();").append(lineSep);
         }
@@ -133,7 +137,7 @@ public class VNSTEADExportManager extends STEADExportManager {
     protected String generateDirectModeStopText(PageBuildingBlocks pageBlocks) {
         String lineSep = getLineSeparator();
         StringBuilder stringBuilder = new StringBuilder();
-        if (pageBlocks.isDirectMode() && pageBlocks.getTheme() != Theme.STANDARD) {
+        if (isDirectMode(pageBlocks)) {
             stringBuilder.append("        vn:request_full_clear();").append(lineSep);
             stringBuilder.append("        vn:unlock_direct();").append(lineSep);
         }
@@ -204,10 +208,16 @@ public class VNSTEADExportManager extends STEADExportManager {
             }
             if (theEnd) {
                 result.append("        put(_try_again);").append(lineSep);
-                result.append("        vn:auto_geom_end('dissolve');").append(lineSep);
-            } else {
-                result.append("        vn:auto_geom_choices('dissolve');").append(lineSep);
             }
+            result.append("        s:initf(false);").append(lineSep);
+        }
+        result.append("    end,").append(lineSep);
+        result.append("    initf = function(s, from_vn) ").append(lineSep);
+        result.append("        if from_vn then nlb:theme_switch(\"theme_vn.lua\", from_vn); end;").append(lineSep); // TODO: or maybe create theme_vn_choices.lua?
+        if (theEnd) {
+            result.append("        return vn:auto_geom_end('dissolve');").append(lineSep);
+        } else {
+            result.append("        return vn:auto_geom_choices('dissolve');").append(lineSep);
         }
         result.append("    end,").append(lineSep);
         result.append("    exit = function(s) ").append(lineSep);
