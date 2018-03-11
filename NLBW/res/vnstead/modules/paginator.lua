@@ -5,19 +5,6 @@ require "theme"
 require "modules/vn"
 require 'modules/log'
 
-iface.cmd = stead.hook(iface.cmd, function(f, s, cmd, ...)
-    vn:need_renew();
-    return paginatorIfaceCmd(f, s, cmd, ...);
-end)
-
-iface.fmt = stead.hook(iface.fmt, function(f, self, cmd, st, moved, r, av, objs, pv)
-    return paginatorIfaceFmt(f, self, cmd, st, moved, r, av, objs, pv);
-end)
-
-instead.get_title = stead.hook(instead.get_title, function(f, s, cmd, ...)
-    return paginatorGetTitle(f, s, cmd, ...);
-end)
-
 click.bg = true
 
 local clickInInvArea = function(x, y)
@@ -33,35 +20,7 @@ local clickInInvArea = function(x, y)
     return false;
 end
 
-paginatorClick = function(x, y, a, b, c, d)
-
-    if here().debug then
-        return
-    end
-
-    if clickInInvArea(x, y) then
-        -- Click in inventory area
-        return
-    end
-
-    local v, g = vn:test_click(x, y);
-    if v then
-        -- Click inside some gobj in vn
-        vn:click_sprite(v, g);
-        if here().autos then
-            here():autos();
-        end
-        return true;
-    end
-
-    if (paginator._last and here().walk_to) or not paginator._last then
-        return paginatorKbd(true, 'space')
-    else
-        vn:finish();
-    end
-end
-
-paginatorKbd = function(down, key)
+local paginatorKbd = function(down, key)
     if here().debug then
         return
     end
@@ -94,6 +53,33 @@ paginatorKbd = function(down, key)
         paginator.process = true
         RAW_TEXT = true
         return game._realdisp
+    end
+end
+
+local paginatorClick = function(x, y, a, b, c, d)
+    if here().debug then
+        return
+    end
+
+    if clickInInvArea(x, y) then
+        -- Click in inventory area
+        return
+    end
+
+    local v, g = vn:test_click(x, y);
+    if v then
+        -- Click inside some gobj in vn
+        vn:click_sprite(v, g);
+        if here().autos then
+            here():autos();
+        end
+        return true;
+    end
+
+    if (paginator._last and here().walk_to) or not paginator._last then
+        return paginatorKbd(true, 'space')
+    else
+        vn:finish();
     end
 end
 
@@ -154,7 +140,7 @@ paginator = obj {
     end;
 }
 
-paginatorIfaceCmd = function(f, s, cmd, ...)
+local paginatorIfaceCmd = function(f, s, cmd, ...)
     local r, v = f(s, cmd, ...)
     if here().debug or not paginator.on then
         return r, v
@@ -196,7 +182,7 @@ paginatorIfaceCmd = function(f, s, cmd, ...)
     return r, v
 end
 
-paginatorIfaceFmt = function(f, self, cmd, st, moved, r, av, objs, pv)
+local paginatorIfaceFmt = function(f, self, cmd, st, moved, r, av, objs, pv)
     if paginator.on then
         -- st -- changed state (main win), move -- loc changed
         -- maybe we should print action reactions and life texts somewhere, but we shouldn't print it to the main window
@@ -212,6 +198,14 @@ paginatorIfaceFmt = function(f, self, cmd, st, moved, r, av, objs, pv)
         return f(self, cmd, st, moved, r, av, objs, pv);
     end
 end
+
+local paginatorGetTitle = function(f, s, cmd, ...)
+    if not paginator.on then
+        return f(s, cmd, ...)
+    end
+    -- else no title
+end
+stead.phrase_prefix = ''
 
 stead.module_init(function()
     hook_keys('space', 'right ctrl', 'left ctrl');
@@ -233,12 +227,16 @@ stead.module_init(function()
         end
         return result;
     end
-end)
+    iface.cmd = stead.hook(iface.cmd, function(f, s, cmd, ...)
+        vn:need_renew();
+        return paginatorIfaceCmd(f, s, cmd, ...);
+    end)
 
-paginatorGetTitle = function(f, s, cmd, ...)
-    if not paginator.on then
-        return f(s, cmd, ...)
-    end
-    -- else no title
-end
-stead.phrase_prefix = ''
+    iface.fmt = stead.hook(iface.fmt, function(f, self, cmd, st, moved, r, av, objs, pv)
+        return paginatorIfaceFmt(f, self, cmd, st, moved, r, av, objs, pv);
+    end)
+
+    instead.get_title = stead.hook(instead.get_title, function(f, s, cmd, ...)
+        return paginatorGetTitle(f, s, cmd, ...);
+    end)
+end)
