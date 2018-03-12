@@ -29,7 +29,7 @@ nlb = obj {
     end;
     pop = function(s, listname)
         local list = s._lists[listname];
-        if list == nil then
+        if not list then
             return nil;
         else
             s._lists[listname] = list.next;
@@ -38,10 +38,10 @@ nlb = obj {
     end;
     inject = function(s, listname, v)
         local list = s._lists[listname];
-        if list == nil then
+        if not list then
             s._lists[listname] = {next = nil, value = v};
         else
-            while list.next ~= nil do
+            while list.next do
                 list = list.next
             end;
             list.next = {next = nil, value = v};
@@ -51,10 +51,10 @@ nlb = obj {
         local list = s._lists[listname];
         local prevlist = list;
         local islast = true;
-        if list == nil then
+        if not list then
             return nil;
         else
-            while list.next ~= nil do
+            while list.next do
                 prevlist = list
                 list = list.next
                 islast = false
@@ -70,10 +70,10 @@ nlb = obj {
         local list = s._lists[listname];
         local val;
         local prevlist = nil;
-        while list ~= nil do
+        while list do
             val = list.value;
             if (val.nlbid == v.nlbid) then
-                if (prevlist == nil) then
+                if not prevlist then
                     s._lists[listname] = list.next;
                     return;
                 else
@@ -88,13 +88,13 @@ nlb = obj {
     size = function(s, listname)
         local list = s._lists[listname];
         local result = 0;
-        if list == nil then
+        if not list then
             return 0;
         else
             repeat
                 list = list.next;
                 result = result + 1;
-            until list == nil;
+            until not list;
         end;
         return result;
     end;
@@ -105,19 +105,19 @@ nlb = obj {
     end;
     addAll = function(s, obj, destination, destinationList, listName, unique)
         local loclist = s._lists[listName];
-        if loclist == nil then
+        if not loclist then
             return;
         else
             repeat
-                if destination ~= nil then
+                if destination then
                     s:addf(destination, loclist.value, unique);
-                elseif destinationList ~= nil then
+                elseif destinationList then
                     s:push(destinationList, loclist.value);
                 else
                     s:addf(obj, loclist.value, unique);
                 end;
                 loclist = loclist.next;
-            until loclist == nil;
+            until not loclist;
         end;
     end;
     shuffled = function(s, tab)
@@ -131,14 +131,14 @@ nlb = obj {
         local res = {}
         local loclist = list;
         local i = 1;
-        if loclist == nil then
+        if not loclist then
             return nil;
         else
             repeat
                 res[i] = loclist.value;
                 loclist = loclist.next;
                 i = i + 1;
-            until loclist == nil;
+            until not loclist;
         end;
         return res;
     end;
@@ -147,35 +147,29 @@ nlb = obj {
         for i=1,n do s:push(listname, arr[i]) end;
     end;
     usea = function(s, actionObject, targetObject)
-        if actionObject ~= nil and targetObject ~= nil then
-            if actionObject.usea ~= nil then
+        if actionObject and targetObject then
+            if actionObject.usea then
                 actionObject:usea(targetObject);
             end;
         end;
     end;
     acta = function(s, object)
-        if object ~= nil then
-            if object.acta ~= nil then
-                object:acta();
-            end;
+        if object and object.acta then
+            object:acta();
         end;
     end;
     actf = function(s, object)
-        if object ~= nil then
-            if object.actf ~= nil then
-                object:actf();
-            end;
+        if object and object.actf then
+            object:actf();
         end;
     end;
     clear = function(s, object)
-        if object ~= nil then
-            if object.clear ~= nil then
-                object:clear();
-            end;
+        if object and object.clear then
+            object:clear();
         end;
     end;
     addf = function(s, target, object, unique)
-        if target == nil then
+        if not target then
             if not have(object) then
                 take(object);
             elseif not unique then
@@ -188,7 +182,7 @@ nlb = obj {
             elseif not unique then
                 ores = s:clone(object);
             end;
-            if ores ~= nil then
+            if ores then
                 ores.container = function() return target; end;
                 objs(target):add(ores);
             end;
@@ -279,7 +273,7 @@ nlb = obj {
     clonefd = function(s, obj)
         local ret = s:deepcopy(obj);
         local r = s._clones[obj.nlbid];
-        if r == nil then
+        if not r then
             r = 1;
         else
             r = r + 1;
@@ -294,7 +288,7 @@ nlb = obj {
         return ret;
     end;
     curloc = function(s)
-        if s._curloc == nil then
+        if not s._curloc then
             return here();
         else
             return s._curloc;
@@ -322,10 +316,10 @@ nlb = obj {
         else
             local lasttext = src.lasttext;
             local wastext = src.wastext;
-            if src.exit ~= nil then
+            if src.exit then
                 src:exit(src);
             end
-            if src.enter ~= nil then
+            if src.enter then
                 src:enter(src);
             end
             src.wastext = wastext;
@@ -649,7 +643,7 @@ listobj = {
     listnam = "",
     clear = function(s)
         local r = nlb:eject(s.listnam);
-        while r ~= nil do
+        while r do
             r = nlb:eject(s.listnam);
         end;
     end,
@@ -661,11 +655,11 @@ listobj = {
     end,
     actf = function(s)
         local list = nlb._lists[s.listnam];
-        if list ~= nil then
+        if list then
             repeat
                 list.value:acta();
                 list = list.next;
-            until list == nil;
+            until not list;
         end;
     end,
     use = function(s, w)
@@ -676,11 +670,11 @@ listobj = {
     end,
     usef = function(s, w, ww)
         local list = nlb._lists[s.listnam];
-        if list ~= nil then
+        if list then
             repeat
                 list.value:usea(w, ww);
                 list = list.next;
-            until list == nil;
+            until not list;
         end;
     end,
     used = function(s, w)
@@ -691,11 +685,11 @@ listobj = {
     end,
     usedf = function(s, w)
         local list = nlb._lists[s.listnam];
-        if list ~= nil then
+        if list then
             repeat
                 w:usea(list.value, list.value);
                 list = list.next;
-            until list == nil;
+            until not list;
         end;
     end;
 }

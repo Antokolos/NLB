@@ -383,7 +383,7 @@ rollStat = stat {
         if s.data then
             local name = s.data.names[pos];
             local money = s.data.money[pos];
-            return name ~= nil and money > 0;
+            return name and money > 0;
         end
         return false;
     end,
@@ -656,7 +656,7 @@ game_room = vnr {
                 increase_bet_obj:enable();
             end
         end
-        if f ~= nil then
+        if f then
             s._returnto = stead.deref(f);
         end
         vn:turnon();

@@ -146,7 +146,7 @@ dice = menu {
         for i = s.die_count, 1, -1 do
             if s.diceOnScreen then
                 local lastRoll = s.lastRolls[i];
-                if ((s.lastRollFiles[i] ~= nil) and (s.lastRollFiles[i] ~= '')) then
+                if (s.lastRollFiles[i] and (s.lastRollFiles[i] ~= '')) then
                     local st = s:getStartFrame(lastRoll);
                     if fast then
                         vn:hide(s.lastRollFiles[i], s:getPosStr(i).hidefast, vn.hz, s.die_frames_from_stop, nil, st);

@@ -114,7 +114,7 @@ local text_page = function(txt)
     res = res:gsub("[ \t\n]+$", ""):gsub("^[ \t\n]+", "");
 
     local loc = here();
-    if loc.nextsnd ~= nil and res ~= '' then
+    if loc.nextsnd and res ~= '' then
         loc.nextsnd(loc);
     end
 

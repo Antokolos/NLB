@@ -360,7 +360,7 @@ public class STEADExportManager extends TextExportManager {
             usepBuilder.append("        return not wasnouses;").append(LINE_SEPARATOR);
             usepBuilder.append(objBlocks.getObjUseEnd());
             stringBuilder.append("        end;").append(LINE_SEPARATOR);
-            stringBuilder.append("        if w.useda ~= nil then").append(LINE_SEPARATOR);
+            stringBuilder.append("        if w.useda then").append(LINE_SEPARATOR);
             stringBuilder.append("            w.useda(w, s, s);").append(LINE_SEPARATOR);
             stringBuilder.append("        end;").append(LINE_SEPARATOR);
             stringBuilder.append(objBlocks.getObjUseEnd());
@@ -416,7 +416,7 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append("        ").append(pageBlocks.getPageTimerVariable()).append(LINE_SEPARATOR);
             stringBuilder.append("        end; ").append(LINE_SEPARATOR);
             if (hasPageAnim) {
-                stringBuilder.append("        s.add_gobj(s); ").append(LINE_SEPARATOR);
+                stringBuilder.append("        vn:scene(s:bgimg()); ").append(LINE_SEPARATOR);
             }
             stringBuilder.append("        local afl = s.autos(s); ").append(LINE_SEPARATOR);
             stringBuilder.append("        if (s.lasttext ~= nil) and not s.wastext then return s.lasttext; elseif afl and not s.wastext then return true; end; ").append(LINE_SEPARATOR);
@@ -492,7 +492,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(generateDirectModeStartText(pageBlocks));
         stringBuilder.append("        return s.add_gobj(s);").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
-        stringBuilder.append(getGraphicalObjectAppendingExpression(pageBlocks));
+        stringBuilder.append(getGraphicalObjectAppendingExpression(pageBlocks, timerSet));
         stringBuilder.append("    exit = function(s, t)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.sndout(s);").append(LINE_SEPARATOR);
         if (timerSet) {
@@ -503,7 +503,9 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(generateDirectModeStopText(pageBlocks));
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    life = function(s)").append(LINE_SEPARATOR);
-        stringBuilder.append("        if vn.stopped then s.autos(s); end;").append(LINE_SEPARATOR);
+        if (!timerSet) {
+            stringBuilder.append("        if vn.stopped then s.autos(s); end;").append(LINE_SEPARATOR);
+        }
         //stringBuilder.append("        return true;").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append(pageBlocks.getPageSound());
@@ -535,33 +537,38 @@ public class STEADExportManager extends TextExportManager {
         return stringBuilder.toString();
     }
 
-    protected String getGraphicalObjectAppendingExpression(PageBuildingBlocks pageBuildingBlocks) {
+    protected String getGraphicalObjectAppendingExpression(PageBuildingBlocks pageBuildingBlocks, boolean timerSet) {
         StringBuilder stringBuilder = new StringBuilder("    add_gobj = function(s)").append(getLineSeparator());
         stringBuilder.append("        local bg_img = s.bgimg(s);").append(getLineSeparator());
         //final boolean imageBackground = pageBuildingBlocks.isImageBackground();
         // vn:scene should be called in all cases
         stringBuilder.append("        nlb:revive();").append(getLineSeparator());
+        stringBuilder.append("        nlb:ways_chk(s);").append(LINE_SEPARATOR);
         stringBuilder.append("        vn:scene(bg_img);").append(getLineSeparator());
-        stringBuilder.append("        local geomFuncNeedToCall = true;").append(getLineSeparator());
-        if (pageBuildingBlocks.isHasGraphicalObjects()) {
-            for (String graphicalObjId : pageBuildingBlocks.getContainedGraphicalObjIds()) {
-                stringBuilder.append("        if " + graphicalObjId + ".preload then").append(getLineSeparator());
-                stringBuilder.append("            geomFuncNeedToCall = false;").append(getLineSeparator());
-                stringBuilder.append("            " + graphicalObjId + ":preload(s);").append(getLineSeparator());
-                stringBuilder.append("        else").append(getLineSeparator());
-                stringBuilder.append("            vn:gshow(" + graphicalObjId + ");").append(getLineSeparator());
-                stringBuilder.append("        end").append(getLineSeparator());
-            }
-        }
-        stringBuilder.append("        if geomFuncNeedToCall then").append(getLineSeparator());
-        //stringBuilder.append("            if s:autos() then vn:auto_geom('dissolve', function() s.autos(s); end); end;").append(getLineSeparator());
-        // TODO: check possible errors because of if s:autos() removal
-        stringBuilder.append("            vn:auto_geom('dissolve', function() s.autos(s); end);").append(getLineSeparator());
-        stringBuilder.append("        end;").append(getLineSeparator());
-        if (isDirectMode(pageBuildingBlocks)) {
-            stringBuilder.append("        return 0, 0, vn.scr_w, vn.scr_h;").append(getLineSeparator());
-        } else {
+        if (timerSet) {
             stringBuilder.append("        return vn:get_win_coords();").append(getLineSeparator());
+        } else {
+            stringBuilder.append("        local geomFuncNeedToCall = true;").append(getLineSeparator());
+            if (pageBuildingBlocks.isHasGraphicalObjects()) {
+                for (String graphicalObjId : pageBuildingBlocks.getContainedGraphicalObjIds()) {
+                    stringBuilder.append("        if " + graphicalObjId + ".preload then").append(getLineSeparator());
+                    stringBuilder.append("            geomFuncNeedToCall = false;").append(getLineSeparator());
+                    stringBuilder.append("            " + graphicalObjId + ":preload(s);").append(getLineSeparator());
+                    stringBuilder.append("        else").append(getLineSeparator());
+                    stringBuilder.append("            vn:gshow(" + graphicalObjId + ");").append(getLineSeparator());
+                    stringBuilder.append("        end").append(getLineSeparator());
+                }
+            }
+            stringBuilder.append("        if geomFuncNeedToCall then").append(getLineSeparator());
+            //stringBuilder.append("            if s:autos() then vn:auto_geom('dissolve', function() s.autos(s); end); end;").append(getLineSeparator());
+            // TODO: check possible errors because of if s:autos() removal
+            stringBuilder.append("            vn:auto_geom('dissolve', function() s.autos(s); end);").append(getLineSeparator());
+            stringBuilder.append("        end;").append(getLineSeparator());
+            if (isDirectMode(pageBuildingBlocks)) {
+                stringBuilder.append("        return 0, 0, vn.scr_w, vn.scr_h;").append(getLineSeparator());
+            } else {
+                stringBuilder.append("        return vn:get_win_coords();").append(getLineSeparator());
+            }
         }
         stringBuilder.append("    end,").append(getLineSeparator());
         return stringBuilder.toString();
@@ -1464,8 +1471,8 @@ public class STEADExportManager extends TextExportManager {
                 createListObj(destinationListVariableName) +
                         createListObj(sourceListVariableName) +
                         "        nlb:addAll(s, " + ((destinationId != null) ? decorateId(destinationId) : "nil") +
-                        ", " + ((destinationListVariableName != null) ? "(" + destinationListVariableName + " ~= nil) and " + destinationListVariableName + ".listnam or \"\"" : "nil") +
-                        ", " + "(" + sourceListVariableName + " ~= nil) and " + sourceListVariableName + ".listnam or \"\"" +
+                        ", " + ((destinationListVariableName != null) ? destinationListVariableName + " and " + destinationListVariableName + ".listnam or \"\"" : "nil") +
+                        ", " + sourceListVariableName + " and " + sourceListVariableName + ".listnam or \"\"" +
                         (unique ? ", true" : ", false") +
                         ");" + LINE_SEPARATOR
         );
@@ -1525,7 +1532,7 @@ public class STEADExportManager extends TextExportManager {
     private String createListObj(String listVariableName) {
         if (listVariableName != null) {
             return (
-                    "        if " + listVariableName + " == nil then" + LINE_SEPARATOR +
+                    "        if not " + listVariableName + " then" + LINE_SEPARATOR +
                             "            stead.add_var { " + listVariableName + " = nlb:clonelst(listobj, \"" + listVariableName + "\"); }" + LINE_SEPARATOR +
                             "        end;" + LINE_SEPARATOR
             );
@@ -1579,7 +1586,7 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateSizeOperation(String variableName, String listVariableName) {
-        return "if " + listVariableName + " ~= nil then " + variableName + " = nlb:size(" + listVariableName + ".listnam) else " + variableName + " = 0 end;" + LINE_SEPARATOR;
+        return "if " + listVariableName + " then " + variableName + " = nlb:size(" + listVariableName + ".listnam) else " + variableName + " = 0 end;" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1641,7 +1648,7 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String decorateShuffleOperation(String listVariableName) {
         return (
-                "        if (" + listVariableName + " ~= nil) then" + LINE_SEPARATOR +
+                "        if " + listVariableName + " then" + LINE_SEPARATOR +
                         "            nlb:shuffle(" + listVariableName + ".listnam);" + LINE_SEPARATOR +
                         "        end;" + LINE_SEPARATOR
         );

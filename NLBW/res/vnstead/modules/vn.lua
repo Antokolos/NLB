@@ -583,7 +583,7 @@ vn = obj {
     end;
     load_effect = function(s, v)
         local ss = s;
-        if v.spr == nil then v.spr = {}; end;
+        if not v.spr then v.spr = {}; end;
         -- Will return nils if v is sprite
         local prefix, extension = s:split_url(v.pic);
         if v.preserved or v.load_once then
@@ -1930,7 +1930,7 @@ vn = obj {
         if from_step then
             v.step = from_step;
         end
-        if forward ~= nil then
+        if forward then
             v.forward = forward;
         end
         local r = s:draw_step(v);
