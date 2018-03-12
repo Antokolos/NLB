@@ -241,7 +241,7 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("    prefs:store();").append(LINE_SEPARATOR);
         stringBuilder.append("    nlb:resendAchievements(statsAPI);").append(LINE_SEPARATOR);
-        stringBuilder.append("    resetVariables();").append(LINE_SEPARATOR);
+        stringBuilder.append("    initializeVariables();").append(LINE_SEPARATOR);
         return stringBuilder.toString();
     }
 
@@ -746,9 +746,16 @@ public class STEADExportManager extends TextExportManager {
     @Override
     protected String generateVariableInitializationText(Map<String, String> initValuesMap) {
         StringBuilder result = new StringBuilder(LINE_SEPARATOR);
-        result.append("function resetVariables()").append(LINE_SEPARATOR);
+        result.append("-- In INSTEAD, when using the snapshots module, you will run into unpredictable behaviour if the variable is not initialized yet.").append(LINE_SEPARATOR);
+        result.append("-- More specifically, if the value is nil, it won't be included in the snapshot & therefore will not be overwritten when the snapshot is loaded.").append(LINE_SEPARATOR);
+        result.append("-- So, for example, if the flag was initially nil, then you make snapshot, then you walked into location which sets this flag to true,").append(LINE_SEPARATOR);
+        result.append("-- than when loading the snapshot the value of the flag will NOT change back to nil.").append(LINE_SEPARATOR);
+        result.append("-- That's why we should initialize all nil variables on start (so that they equal false or 0 or '', but not nil).").append(LINE_SEPARATOR);
+        result.append("function initializeVariables()").append(LINE_SEPARATOR);
         for (Map.Entry<String, String> entry : initValuesMap.entrySet()) {
-            result.append("    ").append(entry.getKey()).append(" = ").append(entry.getValue()).append(";").append(LINE_SEPARATOR);
+            result.append("    if ").append(entry.getKey()).append(" == nil then").append(LINE_SEPARATOR);
+            result.append("        ").append(entry.getKey()).append(" = ").append(entry.getValue()).append(";").append(LINE_SEPARATOR);
+            result.append("    end").append(LINE_SEPARATOR);
         }
         result.append("end").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
         return result.toString();

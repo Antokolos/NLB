@@ -735,13 +735,13 @@ public abstract class ExportManager {
 
     private String getDefaultValue(Variable.DataType datatype, String variableName) throws NLBConsistencyException {
         switch (datatype) {
-            case BOOLEAN:
-                return decorateFalse();
-            case AUTO:
             case NUMBER:
                 return "0";
             case STRING:
                 return "\"\"";
+            case AUTO:
+            case BOOLEAN:
+                return decorateFalse();
             default:
                 throw new NLBConsistencyException("Unsupported datatype '" + datatype.name() + "' for variable '" + variableName + "'");
         }
