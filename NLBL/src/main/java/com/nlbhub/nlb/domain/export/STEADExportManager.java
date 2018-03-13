@@ -560,9 +560,8 @@ public class STEADExportManager extends TextExportManager {
                 }
             }
             stringBuilder.append("        if geomFuncNeedToCall then").append(getLineSeparator());
-            //stringBuilder.append("            if s:autos() then vn:auto_geom('dissolve', function() s.autos(s); end); end;").append(getLineSeparator());
-            // TODO: check possible errors because of if s:autos() removal
-            stringBuilder.append("            vn:auto_geom('dissolve', function() s.autos(s); end);").append(getLineSeparator());
+            stringBuilder.append("            if s:autos() then vn:auto_geom('dissolve', function() s.autos(s); end); end;").append(getLineSeparator());
+            // TODO: check possible errors because of s:autos() check
             stringBuilder.append("        end;").append(getLineSeparator());
             if (isDirectMode(pageBuildingBlocks)) {
                 stringBuilder.append("        return 0, 0, vn.scr_w, vn.scr_h;").append(getLineSeparator());

@@ -226,7 +226,7 @@ vn = obj {
             local x, y, w, h = here:initf(true);
             if s:in_choices() then
                 local is_end = true;
-                for i, v in ipairs(objs(here)) do
+                for i, v in ipairs(objs()) do
                     if (stead.nameof(v) ~= stead.nameof(_try_again)) then
                         is_end = false;
                     end

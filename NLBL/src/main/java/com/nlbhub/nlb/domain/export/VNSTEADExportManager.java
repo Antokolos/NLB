@@ -193,6 +193,7 @@ public class VNSTEADExportManager extends STEADExportManager {
                 }
             }
         } else {
+            result.append("        vn.skip_mode = false;").append(lineSep);  // deactivate skip mode on choices screen to prevent possible bugs with key pressed but not released properly
             for (LinkBuildingBlocks linkBlock : linksBuildingBlocks) {
                 if (!linkBlock.isAuto()) {
                     final boolean constrained = !StringHelper.isEmpty(linkBlock.getLinkConstraint());
