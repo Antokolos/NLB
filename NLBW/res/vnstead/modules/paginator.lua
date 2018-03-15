@@ -231,16 +231,17 @@ stead.module_init(function()
         end
         return result;
     end
-    iface.cmd = stead.hook(iface.cmd, function(f, s, cmd, ...)
-        vn:need_renew();
-        return paginatorIfaceCmd(f, s, cmd, ...);
-    end)
+end)
 
-    iface.fmt = stead.hook(iface.fmt, function(f, self, cmd, st, moved, r, av, objs, pv)
-        return paginatorIfaceFmt(f, self, cmd, st, moved, r, av, objs, pv);
-    end)
+iface.cmd = stead.hook(iface.cmd, function(f, s, cmd, ...)
+    vn:need_renew();
+    return paginatorIfaceCmd(f, s, cmd, ...);
+end)
 
-    instead.get_title = stead.hook(instead.get_title, function(f, s, cmd, ...)
-        return paginatorGetTitle(f, s, cmd, ...);
-    end)
+iface.fmt = stead.hook(iface.fmt, function(f, self, cmd, st, moved, r, av, objs, pv)
+    return paginatorIfaceFmt(f, self, cmd, st, moved, r, av, objs, pv);
+end)
+
+instead.get_title = stead.hook(instead.get_title, function(f, s, cmd, ...)
+    return paginatorGetTitle(f, s, cmd, ...);
 end)
