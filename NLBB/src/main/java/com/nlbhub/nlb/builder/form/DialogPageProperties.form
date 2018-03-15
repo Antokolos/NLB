@@ -458,6 +458,12 @@
                                                   <text value="No Save"/>
                                                 </properties>
                                               </component>
+                                              <component id="d6d27" class="javax.swing.JCheckBox" binding="m_autosFirstCheckBox">
+                                                <constraints/>
+                                                <properties>
+                                                  <text value="Autos First"/>
+                                                </properties>
+                                              </component>
                                             </children>
                                           </grid>
                                         </children>

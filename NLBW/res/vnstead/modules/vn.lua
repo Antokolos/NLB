@@ -222,8 +222,9 @@ vn = obj {
     ini = function(s, load)
         s.fading = 8;
         local here = here();
-        if here and here.initf then
-            local x, y, w, h = here:initf(true);
+        if here and here.initf and here.theme_file then
+            nlb:theme_switch(here:theme_file(), true);
+            local x, y, w, h = here:initf();
             if s:in_choices() then
                 local is_end = true;
                 for i, v in ipairs(objs()) do

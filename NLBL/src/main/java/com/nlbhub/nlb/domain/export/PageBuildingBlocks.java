@@ -65,6 +65,7 @@ public class PageBuildingBlocks {
     private String m_pageDefaultTag;
     private String m_pageTimerVariableInit;
     private String m_pageModifications;
+    private String m_pageThemeModifications;
     private String m_pageEnd;
     private boolean m_autowired;
     private boolean m_hasObjectsWithAnimatedImages;
@@ -72,6 +73,7 @@ public class PageBuildingBlocks {
     private boolean m_imageBackground;
     private boolean m_hasPageTimer;
     private boolean m_hasPageText;
+    private boolean m_autosFirst;
     private List<String> m_containedObjIds;
     private List<String> m_containedGraphicalObjIds;
     private List<LinkBuildingBlocks> m_linksBuildingBlocks;
@@ -234,6 +236,14 @@ public class PageBuildingBlocks {
         m_hasPageText = hasPageText;
     }
 
+    public boolean isAutosFirst() {
+        return m_autosFirst;
+    }
+
+    public void setAutosFirst(boolean autosFirst) {
+        m_autosFirst = autosFirst;
+    }
+
     public String getPageVariable() {
         return m_pageVariable;
     }
@@ -272,6 +282,14 @@ public class PageBuildingBlocks {
 
     public void setPageModifications(String pageModifications) {
         m_pageModifications = pageModifications;
+    }
+
+    public String getPageThemeModifications() {
+        return m_pageThemeModifications;
+    }
+
+    public void setPageThemeModifications(String pageThemeModifications) {
+        m_pageThemeModifications = pageThemeModifications;
     }
 
     public List<LinkBuildingBlocks> getLinksBuildingBlocks() {

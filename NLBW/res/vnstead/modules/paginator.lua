@@ -73,7 +73,11 @@ local paginatorClick = function(x, y, a, b, c, d)
         if here().autos then
             here():autos();
         end
-        return true;
+        if vn.direct_lock then
+            return true;
+        else
+            return;
+        end
     end
 
     if (paginator._last and here().walk_to) or not paginator._last then

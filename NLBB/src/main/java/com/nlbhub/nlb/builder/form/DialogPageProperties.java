@@ -128,6 +128,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JTextField m_defaultTagTextField;
     private JComboBox m_themeComboBox;
     private JCheckBox m_noSaveCheckBox;
+    private JCheckBox m_autosFirstCheckBox;
 
     public DialogPageProperties(final MainFrame mainFrame, final NonLinearBookFacade nlbFacade, final Page page) {
         m_nlbFacade = nlbFacade;
@@ -405,6 +406,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_useMPLCheckBox.setSelected(m_page.isUseMPL());
         m_globalAutowireCheckBox.setSelected(m_page.isGlobalAutowire());
         m_noSaveCheckBox.setSelected(m_page.isNoSave());
+        m_autosFirstCheckBox.setSelected(m_page.isAutosFirst());
         m_pageText.setText(page.getText());
 
         m_moduleNameTextField.setText(page.getModuleName());
@@ -496,6 +498,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 m_autowireOutConstraintTextField.getText(),
                 m_globalAutowireCheckBox.isSelected(),
                 m_noSaveCheckBox.isSelected(),
+                m_autosFirstCheckBox.isSelected(),
                 ((LinksTableModelSwing) m_linksTable.getModel()).getTableModel()
         );
         m_nlbFacade.removeObserver(m_observerId);
@@ -883,6 +886,9 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_noSaveCheckBox = new JCheckBox();
         m_noSaveCheckBox.setText("No Save");
         panel19.add(m_noSaveCheckBox);
+        m_autosFirstCheckBox = new JCheckBox();
+        m_autosFirstCheckBox.setText("Autos First");
+        panel19.add(m_autosFirstCheckBox);
         final JPanel panel20 = new JPanel();
         panel20.setLayout(new GridBagLayout());
         panel20.setMinimumSize(new Dimension(56, 33));

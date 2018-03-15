@@ -465,6 +465,7 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    enter = function(s, f)").append(LINE_SEPARATOR);
+        stringBuilder.append("        nlb:theme_switch(s:theme_file());").append(LINE_SEPARATOR);
         stringBuilder.append("        s.lasttext = nil;").append(LINE_SEPARATOR);
         stringBuilder.append("        s.wastext = false;").append(LINE_SEPARATOR);
         stringBuilder.append("        if not (f.autowired) then").append(LINE_SEPARATOR);
@@ -473,10 +474,12 @@ public class STEADExportManager extends TextExportManager {
             stringBuilder.append(pageBlocks.getPageVariable());
         }
         stringBuilder.append("        end;").append(LINE_SEPARATOR);
-        stringBuilder.append("        s:initf(false);").append(LINE_SEPARATOR);
+        stringBuilder.append("        s:initf();").append(LINE_SEPARATOR);
         stringBuilder.append("    end,").append(LINE_SEPARATOR);
-        stringBuilder.append("    initf = function(s, from_vn)").append(LINE_SEPARATOR);
-        stringBuilder.append("        nlb:theme_switch(s:theme_file(), from_vn);").append(LINE_SEPARATOR);
+        stringBuilder.append("    initf = function(s)").append(LINE_SEPARATOR);
+        if (!StringHelper.isEmpty(pageBlocks.getPageThemeModifications())) {
+            stringBuilder.append(pageBlocks.getPageThemeModifications()).append(LINE_SEPARATOR);
+        }
         if (hasFastAnim) {
             stringBuilder.append("        nlbticks = stead.ticks();").append(LINE_SEPARATOR);
         }
@@ -490,9 +493,8 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append("        s.snd(s);").append(LINE_SEPARATOR);
         stringBuilder.append(generateDirectModeStartText(pageBlocks));
-        stringBuilder.append("        return s.add_gobj(s);").append(LINE_SEPARATOR);
-        stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append(getGraphicalObjectAppendingExpression(pageBlocks, timerSet));
+        stringBuilder.append("    end,").append(LINE_SEPARATOR);
         stringBuilder.append("    exit = function(s, t)").append(LINE_SEPARATOR);
         stringBuilder.append("        s.sndout(s);").append(LINE_SEPARATOR);
         if (timerSet) {
@@ -538,7 +540,7 @@ public class STEADExportManager extends TextExportManager {
     }
 
     protected String getGraphicalObjectAppendingExpression(PageBuildingBlocks pageBuildingBlocks, boolean timerSet) {
-        StringBuilder stringBuilder = new StringBuilder("    add_gobj = function(s)").append(getLineSeparator());
+        StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("        local bg_img = s.bgimg(s);").append(getLineSeparator());
         //final boolean imageBackground = pageBuildingBlocks.isImageBackground();
         // vn:scene should be called in all cases
@@ -560,8 +562,11 @@ public class STEADExportManager extends TextExportManager {
                 }
             }
             stringBuilder.append("        if geomFuncNeedToCall then").append(getLineSeparator());
-            stringBuilder.append("            if s:autos() then vn:auto_geom('dissolve', function() s.autos(s); end); end;").append(getLineSeparator());
-            // TODO: check possible errors because of s:autos() check
+            if (pageBuildingBlocks.isAutosFirst()) {
+                stringBuilder.append("            if s:autos() then vn:auto_geom('dissolve'); end;").append(getLineSeparator());
+            } else {
+                stringBuilder.append("            vn:auto_geom('dissolve', function() s.autos(s); end);").append(getLineSeparator());
+            }
             stringBuilder.append("        end;").append(getLineSeparator());
             if (isDirectMode(pageBuildingBlocks)) {
                 stringBuilder.append("        return 0, 0, vn.scr_w, vn.scr_h;").append(getLineSeparator());
@@ -569,7 +574,6 @@ public class STEADExportManager extends TextExportManager {
                 stringBuilder.append("        return vn:get_win_coords();").append(getLineSeparator());
             }
         }
-        stringBuilder.append("    end,").append(getLineSeparator());
         return stringBuilder.toString();
     }
 
@@ -1908,6 +1912,11 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageModifications(String modificationsText) {
+        return modificationsText;
+    }
+
+    @Override
+    protected String decoratePageThemeModifications(String modificationsText) {
         return modificationsText;
     }
 

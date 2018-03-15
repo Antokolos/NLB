@@ -808,6 +808,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
+    protected String decoratePageThemeModifications(String modificationsText) {
+        // TODO: implement
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateLinkModifications(String modificationsText) {
         return modificationsText;
     }

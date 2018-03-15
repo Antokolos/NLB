@@ -72,6 +72,7 @@ public interface Page extends NodeItem {
     public static final String DEFAULT_AUTOWIRE_OUT_CONSTR_ID = Constants.EMPTY_STRING;
     public static final boolean DEFAULT_GLOBAL_AUTOWIRED = false;
     public static final boolean DEFAULT_NOSAVE = false;
+    public static final boolean DEFAULT_AUTOS_FIRST = false;
     /**
      * Set to empty String.
      * This means that by default pages should not return to the parent module
@@ -150,6 +151,7 @@ public interface Page extends NodeItem {
     public boolean isAutowire();
     public boolean isGlobalAutowire();
     public boolean isNoSave();
+    public boolean isAutosFirst();
     public String getAutowireInText();
     public MultiLangString getAutowireInTexts();
     public String getAutowireOutText();

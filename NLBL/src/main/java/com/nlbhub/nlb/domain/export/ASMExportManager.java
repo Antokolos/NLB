@@ -214,6 +214,12 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decoratePageThemeModifications(String modificationsText) {
+        // TODO: implement
+        return Constants.EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateLinkModifications(String modificationsText) {
         return modificationsText;
     }

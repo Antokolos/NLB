@@ -54,6 +54,7 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * The ExportManager class
@@ -63,6 +64,12 @@ import java.util.regex.Pattern;
  */
 public abstract class ExportManager {
     private static final Logger LOG = Logger.getLogger(VNSTEADExportManager.class.getName());
+    private static final List<Modification.Type> THEME_MODIFICATION_TYPES = new ArrayList<Modification.Type>() {{
+        add(Modification.Type.WINGEOM);
+        add(Modification.Type.INVGEOM);
+        add(Modification.Type.WINCOLOR);
+        add(Modification.Type.INVCOLOR);
+    }};
 
     private static final String EQ_PLACEHOLDER = "000369f3-943a-4696-9c20-f6471b5c131d";
     private static final String NEQ_PLACEHOLDER = "211c47bf-dad2-49d1-9ab0-162082d2664c";
@@ -476,6 +483,7 @@ public abstract class ExportManager {
         blocks.setPageComment(decoratePageComment(page.getCaption()));
         final String title = getNonEmptyTitle(nlb);
         blocks.setPageCaption(decoratePageCaption(page.getCaption(), page.isUseCaption(), title, page.isNoSave()));
+        blocks.setAutosFirst(page.isAutosFirst());
         blocks.setNotes(decoratePageNotes(page.getNotes()));
         blocks.setModuleTitle(title);
         String imageFileName = ((nlb.isSuppressMedia()) ? Page.DEFAULT_IMAGE_FILE_NAME : page.getImageFileName());
@@ -528,7 +536,12 @@ public abstract class ExportManager {
         }
         blocks.setPageModifications(
                 decoratePageModifications(
-                        buildModificationsText(EMPTY_STRING, page.getModifications(), exportData)
+                        buildModificationsText(EMPTY_STRING, getNonThemeModifications(page.getModifications()), exportData)
+                )
+        );
+        blocks.setPageThemeModifications(
+                decoratePageThemeModifications(
+                        buildModificationsText(EMPTY_STRING, getThemeModifications(page.getModifications()), exportData)
                 )
         );
         blocks.setPageEnd(decoratePageEnd(page.isFinish()));
@@ -690,6 +703,14 @@ public abstract class ExportManager {
             LOG.warning("Page " + page.getId() + " has empty text and non-empty image, and it is not leaf and not pure graphical page");
         }
         return blocks;
+    }
+
+    private List<Modification> getThemeModifications(List<Modification> modifications) {
+        return modifications.stream().filter(modification -> THEME_MODIFICATION_TYPES.contains(modification.getType())).collect(Collectors.toList());
+    }
+
+    private List<Modification> getNonThemeModifications(List<Modification> modifications) {
+        return modifications.stream().filter(modification -> !THEME_MODIFICATION_TYPES.contains(modification.getType())).collect(Collectors.toList());
     }
 
     private boolean hasChoicesOrLeaf(final Page page) {
@@ -1309,6 +1330,11 @@ public abstract class ExportManager {
             @Override
             public boolean isNoSave() {
                 return page.isNoSave();
+            }
+
+            @Override
+            public boolean isAutosFirst() {
+                return page.isAutosFirst();
             }
 
             @Override
@@ -2931,6 +2957,8 @@ public abstract class ExportManager {
     protected abstract String decoratePageTimerVariable(final String variableName);
 
     protected abstract String decoratePageModifications(final String modificationsText);
+
+    protected abstract String decoratePageThemeModifications(final String modificationsText);
 
     protected abstract String decorateLinkModifications(final String modificationsText);
 

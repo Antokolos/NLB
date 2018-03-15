@@ -194,6 +194,7 @@ public class VNSTEADExportManager extends STEADExportManager {
             }
         } else {
             result.append("        vn.skip_mode = false;").append(lineSep);  // deactivate skip mode on choices screen to prevent possible bugs with key pressed but not released properly
+            result.append("        vn:unlock_direct();").append(lineSep);  // deactivate skip mode on choices screen to prevent possible bugs with key pressed but not released properly
             for (LinkBuildingBlocks linkBlock : linksBuildingBlocks) {
                 if (!linkBlock.isAuto()) {
                     final boolean constrained = !StringHelper.isEmpty(linkBlock.getLinkConstraint());
@@ -210,11 +211,11 @@ public class VNSTEADExportManager extends STEADExportManager {
             if (theEnd) {
                 result.append("        put(_try_again);").append(lineSep);
             }
-            result.append("        s:initf(false);").append(lineSep);
+            result.append("        s:initf();").append(lineSep);
         }
         result.append("    end,").append(lineSep);
-        result.append("    initf = function(s, from_vn) ").append(lineSep);
-        result.append("        if from_vn then nlb:theme_switch(\"theme_vn.lua\", from_vn); end;").append(lineSep); // TODO: or maybe create theme_vn_choices.lua?
+        result.append("    theme_file = function(s) return \"theme_vn.lua\"; end,").append(lineSep); // TODO: or maybe create theme_vn_choices.lua?
+        result.append("    initf = function(s) ").append(lineSep);
         if (theEnd) {
             result.append("        return vn:auto_geom_end('dissolve');").append(lineSep);
         } else {

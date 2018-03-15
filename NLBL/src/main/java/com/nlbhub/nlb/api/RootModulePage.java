@@ -231,6 +231,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public boolean isAutosFirst() {
+        return DEFAULT_AUTOS_FIRST;
+    }
+
+    @Override
     public String getAutowireInText() {
         return Constants.EMPTY_STRING;
     }

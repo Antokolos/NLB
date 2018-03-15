@@ -429,6 +429,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final MultiLangString m_existingAutowireOutText;
         private final boolean m_existingGlobalAutowired;
         private final boolean m_existingNoSave;
+        private final boolean m_existingAutosFirst;
         private final boolean m_existingAutoIn;
         private final boolean m_existingAutoOut;
         private final String m_newImageFileName;
@@ -455,6 +456,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_newAutoOut;
         private final boolean m_newGlobalAutowired;
         private final boolean m_newNoSave;
+        private final boolean m_newAutosFirst;
         private AbstractNodeItem.SortLinksCommand m_sortLinkCommand;
         private List<AbstractNodeItem.DeleteLinkCommand> m_deleteLinkCommands = new ArrayList<>();
 
@@ -491,6 +493,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String autowireOutConstraintVariableBody,
                 final boolean globalAutowire,
                 final boolean noSave,
+                final boolean autosFirst,
                 final LinksTableModel linksTableModel
         ) {
             this(
@@ -526,6 +529,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     autowireOutConstraintVariableBody,
                     globalAutowire,
                     noSave,
+                    autosFirst,
                     linksTableModel
             );
         }
@@ -563,6 +567,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String autowireOutConstraintVariableBody,
                 final boolean globalAutowire,
                 final boolean noSave,
+                final boolean autosFirst,
                 final LinksTableModel linksTableModel
         ) {
             m_page = page;
@@ -648,6 +653,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingAutowireOutText = m_page.getAutowireOutTexts();
             m_existingGlobalAutowired = m_page.isGlobalAutowire();
             m_existingNoSave = m_page.isNoSave();
+            m_existingAutosFirst = m_page.isAutosFirst();
             m_existingAutoIn = m_page.isAutoIn();
             m_existingAutoOut = m_page.isAutoOut();
             m_newImageFileName = imageFileName;
@@ -672,6 +678,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newAutowireOutText = autowireOutText;
             m_newGlobalAutowired = globalAutowire;
             m_newNoSave = noSave;
+            m_newAutosFirst = autosFirst;
             m_newAutoIn = autoIn;
             m_newAutoOut = autoOut;
             for (final Link link : m_page.getLinks()) {
@@ -730,6 +737,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setAutoOut(m_newAutoOut);
             m_page.setGlobalAutoWired(m_newGlobalAutowired);
             m_page.setNoSave(m_newNoSave);
+            m_page.setAutosFirst(m_newAutosFirst);
             m_page.notifyObservers();
         }
 
@@ -774,6 +782,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setAutoOut(m_existingAutoOut);
             m_page.setGlobalAutoWired(m_existingGlobalAutowired);
             m_page.setNoSave(m_existingNoSave);
+            m_page.setAutosFirst(m_existingAutosFirst);
             m_page.notifyObservers();
         }
     }
@@ -1984,6 +1993,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         (autoOutConstraint != null) ? autoOutConstraint.getValue() : Constants.EMPTY_STRING,
                         page.isGlobalAutowire(),
                         page.isNoSave(),
+                        page.isAutosFirst(),
                         new LinksTableModel(new ArrayList<Link>())
                 );
                 m_commandChain.addCommand(updatePageCommand);
@@ -2453,6 +2463,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String autowireOutConstraint,
             final boolean globalAutowire,
             final boolean noSave,
+            final boolean autosFirst,
             final LinksTableModel linksTableModel
     ) {
         return (
@@ -2489,6 +2500,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         autowireOutConstraint,
                         globalAutowire,
                         noSave,
+                        autosFirst,
                         linksTableModel
                 )
         );
