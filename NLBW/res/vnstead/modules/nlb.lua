@@ -349,7 +349,8 @@ nlb = obj {
             prefs.achievements[achievementNamePerfectGame] = 1; -- let's assume we already got all achievements
         end
         for k, v in pairs(prefs.achievements) do
-            if not v or (v <= 0) then
+            local max = prefs.achievements_max[k] or 1;
+            if not v or (v < max) then
                 if achievementNamePerfectGame then
                     prefs.achievements[achievementNamePerfectGame] = 0;
                 end
