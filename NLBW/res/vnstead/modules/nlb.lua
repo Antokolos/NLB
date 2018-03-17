@@ -338,12 +338,16 @@ nlb = obj {
         if not prefs.achievements_ids[achievementName] then
             prefs.achievements_ids[achievementName] = {};
         end
-        if not prefs.achievements[achievementName] or not prefs.achievements_max[achievementName] then
+        if not prefs.achievements[achievementName] then
             prefs.achievements[achievementName] = 1;
-        elseif prefs.achievements_max[achievementName] and (tablelength(prefs.achievements_ids[achievementName]) < prefs.achievements_max[achievementName]) then
+        else
             prefs.achievements[achievementName] = prefs.achievements[achievementName] + 1;
         end
-        prefs.achievements_ids[achievementName][modificationId] = 1;
+        if not prefs.achievements_ids[achievementName][modificationId] then
+            prefs.achievements_ids[achievementName][modificationId] = 1;
+        else
+            prefs.achievements_ids[achievementName][modificationId] = prefs.achievements_ids[achievementName][modificationId] + 1;
+        end
         s:storeAchievement(statsAPI, achievementName);
         if achievementNamePerfectGame then
             prefs.achievements[achievementNamePerfectGame] = 1; -- let's assume we already got all achievements
