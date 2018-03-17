@@ -89,8 +89,7 @@ void setAchievementProgressFunc(const char* achievementName, int current, int ma
 	UserStatsObject* pStats = getUserStatsObject();
 	if (pStats != NULL) {
 		setAchievementProgressUnsafe(pStats, achievementName, current, max);
-	}
-	else {
+	} else {
 		log("Error setting achievement progress %s: user stats object is undefined.\n", achievementName);
 	}
 }
@@ -99,8 +98,7 @@ void setStatFunc(const char* statName, int val) {
 	UserStatsObject* pStats = getUserStatsObject();
 	if (pStats != NULL) {
 		setStatUnsafe(pStats, statName, val);
-	}
-	else {
+	} else {
 		log("Error setting stat %s: user stats object is undefined.\n", statName);
 	}
 }
