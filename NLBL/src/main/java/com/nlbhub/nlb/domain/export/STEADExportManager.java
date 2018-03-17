@@ -223,9 +223,6 @@ public class STEADExportManager extends TextExportManager {
         } else {
             stringBuilder.append("    format.quotes = false;").append(LINE_SEPARATOR);
         }
-        stringBuilder.append("    if not prefs.achievements then").append(LINE_SEPARATOR);
-        stringBuilder.append("        prefs.achievements = {};").append(LINE_SEPARATOR);
-        stringBuilder.append("    end").append(LINE_SEPARATOR);
         stringBuilder.append("    if not prefs.achievements_max then").append(LINE_SEPARATOR);
         stringBuilder.append("        prefs.achievements_max = {};").append(LINE_SEPARATOR);
         stringBuilder.append("    end").append(LINE_SEPARATOR);
@@ -235,8 +232,8 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append(initBlockAchievements(nlbBuildingBlocks));
         String perfectGame = nlbBuildingBlocks.getAchievementNamePerfectGame();
         if (StringHelper.notEmpty(perfectGame)) {
-            String achievementItemPerfectGame = "prefs.achievements['" + perfectGame + "']";
-            stringBuilder.append("    if not ").append(achievementItemPerfectGame).append(" then ").append(achievementItemPerfectGame).append(" = 0; end;").append(LINE_SEPARATOR);
+            String achievementItemPerfectGame = "prefs.achievements_ids['" + perfectGame + "']";
+            stringBuilder.append("    if not ").append(achievementItemPerfectGame).append(" then ").append(achievementItemPerfectGame).append(" = {}; end;").append(LINE_SEPARATOR);
             stringBuilder.append("    if not prefs.achievementNamePerfectGame then prefs.achievementNamePerfectGame = '").append(perfectGame).append("'; end;").append(LINE_SEPARATOR);
         }
         stringBuilder.append("    prefs:store();").append(LINE_SEPARATOR);
@@ -248,8 +245,8 @@ public class STEADExportManager extends TextExportManager {
     private String initBlockAchievements(NLBBuildingBlocks nlbBuildingBlocks) {
         StringBuilder stringBuilder = new StringBuilder();
         for (String achievement : nlbBuildingBlocks.getAchievements()) {
-            String achievementItem = "prefs.achievements['" + achievement + "']";
-            stringBuilder.append("    if not ").append(achievementItem).append(" then ").append(achievementItem).append(" = 0; end;").append(LINE_SEPARATOR);
+            String achievementItem = "prefs.achievements_ids['" + achievement + "']";
+            stringBuilder.append("    if not ").append(achievementItem).append(" then ").append(achievementItem).append(" = {}; end;").append(LINE_SEPARATOR);
         }
         return stringBuilder.toString();
     }

@@ -334,36 +334,22 @@ nlb = obj {
         -- There is no harm to call statsAPI.init() one more time,
         -- we are just trying to init Stats one more time in case of failure to init on start
         statsAPI.init();
-        local achievementNamePerfectGame = prefs.achievementNamePerfectGame;
-        if not prefs.achievements_ids[achievementName] then
-            prefs.achievements_ids[achievementName] = {};
-        end
-        if not prefs.achievements[achievementName] then
-            prefs.achievements[achievementName] = 1;
-        else
-            prefs.achievements[achievementName] = prefs.achievements[achievementName] + 1;
-        end
         if not prefs.achievements_ids[achievementName][modificationId] then
             prefs.achievements_ids[achievementName][modificationId] = 1;
         else
             prefs.achievements_ids[achievementName][modificationId] = prefs.achievements_ids[achievementName][modificationId] + 1;
         end
         s:storeAchievement(statsAPI, achievementName);
-        if achievementNamePerfectGame then
-            prefs.achievements[achievementNamePerfectGame] = 1; -- let's assume we already got all achievements
-        end
-        for k, v in pairs(prefs.achievements) do
+        for k, v in pairs(prefs.achievements_ids) do
             local max = prefs.achievements_max[k] or 1;
-            if not v or (v < max) then
-                if achievementNamePerfectGame then
-                    prefs.achievements[achievementNamePerfectGame] = 0;
-                end
+            if tablelength(v) < max then
                 prefs:store();
                 return false;
             end
         end
-        if achievementNamePerfectGame then
-            statsAPI.setAchievement(achievementNamePerfectGame, true);
+        if prefs.achievementNamePerfectGame then
+            prefs.achievements_ids[prefs.achievementNamePerfectGame][modificationId] = 1;
+            statsAPI.setAchievement(prefs.achievementNamePerfectGame, true);
         end
         prefs:store();
         return true;
@@ -380,15 +366,11 @@ nlb = obj {
         end
     end;
     getAchievement = function(s, statsAPI, achievementName)
-        if prefs.achievements[achievementName] then
-            return prefs.achievements[achievementName];
-        else
-            return 0;
-        end
+        return tablelength(prefs.achievements_ids[achievementName]);
     end;
     resendAchievements = function(s, statsAPI)
-        for k, v in pairs(prefs.achievements) do
-            if v and v > 0 then
+        for k, v in pairs(prefs.achievements_ids) do
+            if tablelength(v) > 0 then
                 s:storeAchievement(statsAPI, k);
             end
         end
@@ -450,6 +432,9 @@ nlb = obj {
 };
 
 function tablelength(t)
+    if not t then
+        return 0;
+    end
     local count = 0
     for _ in pairs(t) do count = count + 1 end
     return count
