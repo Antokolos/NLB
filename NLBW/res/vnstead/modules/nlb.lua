@@ -342,7 +342,7 @@ nlb = obj {
         s:storeAchievement(statsAPI, achievementName);
         for k, v in pairs(prefs.achievements_ids) do
             local max = prefs.achievements_max[k] or 1;
-            if tablelength(v) < max then
+            if k ~= prefs.achievementNamePerfectGame and tablelength(v) < max then
                 prefs:store();
                 return false;
             end
