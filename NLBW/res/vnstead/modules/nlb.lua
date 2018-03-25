@@ -360,6 +360,7 @@ nlb = obj {
         else
             local len = tablelength(prefs.achievements_ids[achievementName]);
             statsAPI.setAchievementProgress(achievementName, len, prefs.achievements_max[achievementName], true);
+            statsAPI.setStat('STAT_' .. achievementName, len, true);
             if len >= prefs.achievements_max[achievementName] then
                 statsAPI.setAchievement(achievementName, true);
             end
