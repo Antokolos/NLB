@@ -1128,7 +1128,7 @@ public class STEADExportManager extends TextExportManager {
         result.append("    used = function(s, w)").append(LINE_SEPARATOR);
         String id = hasCmn ? decorateId(commonObjId) : Constants.EMPTY_STRING;
         if (hasCmn) {
-            result.append("        ").append("w:usea(").append(id).append(", s);").append(LINE_SEPARATOR);
+            result.append("        ").append("if w.usea then w:usea(").append(id).append(", s); end;").append(LINE_SEPARATOR);
         }
         result.append("    end,").append(LINE_SEPARATOR);
         result.append("    act = function(s)").append(LINE_SEPARATOR);
@@ -1200,7 +1200,13 @@ public class STEADExportManager extends TextExportManager {
     protected String decorateObjUseStart(String commonObjId) {
         // Before use, execute possible act commands (without printing act text) -> s.actf(s)
         boolean hasCmn = StringHelper.notEmpty(commonObjId);
-        String cmnUse = (hasCmn) ? "        if was_nonempty_usetext then " + decorateId(commonObjId) + ":usef(w, w); else " + decorateId(commonObjId) + ":usea(w, w); end;" + LINE_SEPARATOR : "";
+        String cmnId = decorateId(commonObjId);
+        String template = "        if was_nonempty_usetext then" + LINE_SEPARATOR +
+                "            if %s.usef then %s:usef(w, w); end;" + LINE_SEPARATOR +
+                "        else" + LINE_SEPARATOR +
+                "            if %s.usea then %s:usea(w, w); end;" + LINE_SEPARATOR +
+                "        end;" + LINE_SEPARATOR;
+        String cmnUse = (hasCmn) ? String.format(template, cmnId, cmnId, cmnId, cmnId) : "";
         return (
                 "    use = function(s, w)" + LINE_SEPARATOR +
                         // "        s:actf();" + LINE_SEPARATOR + // TODO: Possible used somewhere
@@ -1268,7 +1274,7 @@ public class STEADExportManager extends TextExportManager {
         result.append("    used = function(s, w)").append(LINE_SEPARATOR);
         String id = hasCmn ? decorateId(commonObjId) : Constants.EMPTY_STRING;
         if (hasCmn) {
-            result.append("        ").append("w:usea(").append(id).append(", s);").append(LINE_SEPARATOR);
+            result.append("        ").append("if w.usea then w:usea(").append(id).append(", s); end;").append(LINE_SEPARATOR);
         }
         result.append("    end,").append(LINE_SEPARATOR);
         result.append("    actcmn = function(s)").append(LINE_SEPARATOR);
