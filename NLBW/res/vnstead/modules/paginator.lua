@@ -70,9 +70,6 @@ local paginatorClick = function(x, y, a, b, c, d)
     if v then
         -- Click inside some gobj in vn
         vn:click_sprite(v, g);
-        if here().autos then
-            here():autos();
-        end
         if vn.direct_lock then
             return true;
         else

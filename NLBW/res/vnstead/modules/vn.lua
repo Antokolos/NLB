@@ -406,10 +406,18 @@ vn = obj {
             s:overf(v, false);
         end
         s:invalidate_all();
-        g:onclick(s);
+        local callback = function()
+            g:onclick(s);
+            s:pause(1, function()
+                if here().autos then
+                    here():autos();
+                end
+            end);
+        end;
         if not v.noactredraw then
-            s:start();
+            s:startcb(callback);
         else
+            callback();
             s.stopped = false;
         end
         return true;
