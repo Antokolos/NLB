@@ -1441,7 +1441,7 @@ vn = obj {
         end
         x, y = s:postoxy(v, idx);
 
-        if v.spr[idx].preloaded_effect then
+        if v.spr[idx] and v.spr[idx].preloaded_effect then
             sp = s:frame(v, s:get_step(v), s:screen(), x, y, only_compute, true);
             alpha = sp.alpha;
             log:dbg("Using preloaded effect in fade(), alpha = " .. alpha);
