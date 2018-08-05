@@ -619,7 +619,11 @@ vn = obj {
     end;
     free_effect = function(s, v)
         for i, vv in pairs(v.spr) do
-            vv:free();
+            if vv.free then
+                vv:free();
+            else
+                log:err("Error freeing sprite " .. v.pic .. "@" .. i);
+            end
         end
         local gob = s:gobf(v);
         if gob and gob.is_dynamic then

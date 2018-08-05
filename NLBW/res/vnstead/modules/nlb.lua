@@ -375,6 +375,14 @@ nlb = obj {
                 s:storeAchievement(statsAPI, k);
             end
         end
+        -- This code is for compatibility with previous achievements
+        if prefs.achievements then
+            for k, v in pairs(prefs.achievements) do
+                if v > 0 then
+                    s:setAchievement(statsAPI, k, "compat_id");
+                end
+            end
+        end
     end;
     pdscf = function(s, ov)
         if ov and not ov:disabled() then
