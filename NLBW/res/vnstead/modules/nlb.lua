@@ -334,6 +334,10 @@ nlb = obj {
         -- There is no harm to call statsAPI.init() one more time,
         -- we are just trying to init Stats one more time in case of failure to init on start
         statsAPI.init();
+        if not prefs.achievements_ids[achievementName] then
+            -- This initialization is mainly used for backward compatibility with previous achievements
+            prefs.achievements_ids[achievementName] = {};
+        end
         if not prefs.achievements_ids[achievementName][modificationId] then
             prefs.achievements_ids[achievementName][modificationId] = 1;
         else
