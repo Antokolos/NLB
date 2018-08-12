@@ -311,7 +311,8 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         m_linkTextTextField.setColumns(40);
         scrollPane1.setViewportView(m_linkTextTextField);
         final JLabel label1 = new JLabel();
-        label1.setFont(new Font(label1.getFont().getName(), label1.getFont().getStyle(), label1.getFont().getSize()));
+        Font label1Font = this.$$$getFont$$$(null, -1, -1, label1.getFont());
+        if (label1Font != null) label1.setFont(label1Font);
         label1.setText("Link text");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -350,7 +351,8 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         m_altTextTextField.setColumns(40);
         scrollPane2.setViewportView(m_altTextTextField);
         final JLabel label2 = new JLabel();
-        label2.setFont(new Font(label2.getFont().getName(), label2.getFont().getStyle(), label2.getFont().getSize()));
+        Font label2Font = this.$$$getFont$$$(null, -1, -1, label2.getFont());
+        if (label2Font != null) label2.setFont(label2Font);
         label2.setText("Alt text");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -519,6 +521,25 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         label3.setLabelFor(m_linkIdTextField);
         label4.setLabelFor(m_linkConstraintsTextField);
         label5.setLabelFor(m_linkVariableTextField);
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    private Font $$$getFont$$$(String fontName, int style, int size, Font currentFont) {
+        if (currentFont == null) return null;
+        String resultName;
+        if (fontName == null) {
+            resultName = currentFont.getName();
+        } else {
+            Font testFont = new Font(fontName, Font.PLAIN, 10);
+            if (testFont.canDisplay('a') && testFont.canDisplay('1')) {
+                resultName = fontName;
+            } else {
+                resultName = currentFont.getName();
+            }
+        }
+        return new Font(resultName, style >= 0 ? style : currentFont.getStyle(), size >= 0 ? size : currentFont.getSize());
     }
 
     /**

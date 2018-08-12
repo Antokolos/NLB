@@ -768,7 +768,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objDispTextArea.setWrapStyleWord(true);
         scrollPane1.setViewportView(m_objDispTextArea);
         final JLabel label1 = new JLabel();
-        label1.setFont(new Font(label1.getFont().getName(), label1.getFont().getStyle(), label1.getFont().getSize()));
+        Font label1Font = this.$$$getFont$$$(null, -1, -1, label1.getFont());
+        if (label1Font != null) label1.setFont(label1Font);
         label1.setText("Obj display name");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -811,7 +812,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objTextTextArea.setWrapStyleWord(true);
         scrollPane2.setViewportView(m_objTextTextArea);
         final JLabel label2 = new JLabel();
-        label2.setFont(new Font(label2.getFont().getName(), label2.getFont().getStyle(), label2.getFont().getSize()));
+        Font label2Font = this.$$$getFont$$$(null, -1, -1, label2.getFont());
+        if (label2Font != null) label2.setFont(label2Font);
         label2.setText("Obj text");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -847,7 +849,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objActTextTextArea.setWrapStyleWord(true);
         scrollPane3.setViewportView(m_objActTextTextArea);
         final JLabel label3 = new JLabel();
-        label3.setFont(new Font(label3.getFont().getName(), label3.getFont().getStyle(), label3.getFont().getSize()));
+        Font label3Font = this.$$$getFont$$$(null, -1, -1, label3.getFont());
+        if (label3Font != null) label3.setFont(label3Font);
         label3.setText("Obj Act text");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -883,7 +886,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objNouseTextTextArea.setWrapStyleWord(true);
         scrollPane4.setViewportView(m_objNouseTextTextArea);
         final JLabel label4 = new JLabel();
-        label4.setFont(new Font(label4.getFont().getName(), label4.getFont().getStyle(), label4.getFont().getSize()));
+        Font label4Font = this.$$$getFont$$$(null, -1, -1, label4.getFont());
+        if (label4Font != null) label4.setFont(label4Font);
         label4.setText("Obj nouse text");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -901,7 +905,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         gbc.anchor = GridBagConstraints.EAST;
         panel26.add(label5, gbc);
         final JLabel label6 = new JLabel();
-        label6.setFont(new Font(label6.getFont().getName(), label6.getFont().getStyle(), label6.getFont().getSize()));
+        Font label6Font = this.$$$getFont$$$(null, -1, -1, label6.getFont());
+        if (label6Font != null) label6.setFont(label6Font);
         label6.setText("Obj name");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -1653,6 +1658,25 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         buttonGroup.add(m_coordsOriginMiddleBottom);
         buttonGroup.add(m_coordsOriginMiddleMiddle);
         buttonGroup.add(m_coordsOriginRightBottom);
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    private Font $$$getFont$$$(String fontName, int style, int size, Font currentFont) {
+        if (currentFont == null) return null;
+        String resultName;
+        if (fontName == null) {
+            resultName = currentFont.getName();
+        } else {
+            Font testFont = new Font(fontName, Font.PLAIN, 10);
+            if (testFont.canDisplay('a') && testFont.canDisplay('1')) {
+                resultName = fontName;
+            } else {
+                resultName = currentFont.getName();
+            }
+        }
+        return new Font(resultName, style >= 0 ? style : currentFont.getStyle(), size >= 0 ? size : currentFont.getSize());
     }
 
     /**
