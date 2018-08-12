@@ -352,6 +352,10 @@ nlb = obj {
             end
         end
         if prefs.achievementNamePerfectGame then
+            if not prefs.achievements_ids[prefs.achievementNamePerfectGame] then
+                -- This initialization is mainly used for backward compatibility with previous achievements
+                prefs.achievements_ids[prefs.achievementNamePerfectGame] = {};
+            end
             prefs.achievements_ids[prefs.achievementNamePerfectGame][modificationId] = 1;
             statsAPI.setAchievement(prefs.achievementNamePerfectGame, true);
         end
