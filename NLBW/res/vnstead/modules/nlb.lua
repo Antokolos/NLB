@@ -334,10 +334,6 @@ nlb = obj {
         -- There is no harm to call statsAPI.init() one more time,
         -- we are just trying to init Stats one more time in case of failure to init on start
         statsAPI.init();
-        if not prefs.achievements_ids[achievementName] then
-            -- This initialization is mainly used for backward compatibility with previous achievements
-            prefs.achievements_ids[achievementName] = {};
-        end
         if not prefs.achievements_ids[achievementName][modificationId] then
             prefs.achievements_ids[achievementName][modificationId] = 1;
         else
@@ -347,15 +343,14 @@ nlb = obj {
         for k, v in pairs(prefs.achievements_ids) do
             local max = prefs.achievements_max[k] or 1;
             if k ~= prefs.achievementNamePerfectGame and tablelength(v) < max then
+                if prefs.achievementNamePerfectGame then
+                    statsAPI.clearAchievement(prefs.achievementNamePerfectGame, true);
+                end
                 prefs:store();
                 return false;
             end
         end
         if prefs.achievementNamePerfectGame then
-            if not prefs.achievements_ids[prefs.achievementNamePerfectGame] then
-                -- This initialization is mainly used for backward compatibility with previous achievements
-                prefs.achievements_ids[prefs.achievementNamePerfectGame] = {};
-            end
             prefs.achievements_ids[prefs.achievementNamePerfectGame][modificationId] = 1;
             statsAPI.setAchievement(prefs.achievementNamePerfectGame, true);
         end
@@ -385,10 +380,25 @@ nlb = obj {
         end
         -- This code is for compatibility with previous achievements
         if prefs.achievements then
+            local achievementsToSet = {};
             for k, v in pairs(prefs.achievements) do
-                if v > 0 then
-                    s:setAchievement(statsAPI, k, "compat_id");
+                if not prefs.achievements_ids[k] then
+                    -- This initialization is mainly used for backward compatibility with previous achievements
+                    prefs.achievements_ids[k] = {};
                 end
+                if v > 0 then
+                    achievementsToSet[k] = v;
+                end
+            end
+            if prefs.achievementNamePerfectGame then
+                if not prefs.achievements_ids[prefs.achievementNamePerfectGame] then
+                    -- This initialization is mainly used for backward compatibility with previous achievements
+                    prefs.achievements_ids[prefs.achievementNamePerfectGame] = {};
+                end
+            end
+            prefs:store();
+            for k, v in pairs(achievementsToSet) do
+                s:setAchievement(statsAPI, k, "compat_id");
             end
         end
     end;
