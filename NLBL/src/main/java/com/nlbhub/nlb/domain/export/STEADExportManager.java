@@ -1191,7 +1191,7 @@ public class STEADExportManager extends TextExportManager {
                         "        else" + LINE_SEPARATOR +
                         "            vn:set_step(v, nil, not v.forward);" + LINE_SEPARATOR +
                         "        end" + LINE_SEPARATOR +
-                        "        vn:start();" + LINE_SEPARATOR
+                        "        vn:startcb(function() vn:need_update() end);" + LINE_SEPARATOR
         ) : "";
         return prefix + "    end," + LINE_SEPARATOR;
     }

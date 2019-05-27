@@ -79,7 +79,8 @@ vntimer = function(f, s, cmd, ...)
     end
     if vn._need_update then
         vn._need_update = false;
-        return true;
+        RAW_TEXT = true;
+        return game._lastdisp or "";
     end
     return update_cursor_result;
 end
