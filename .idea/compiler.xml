@@ -32,7 +32,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="NLB" options="-bootclasspath $PROJECT_DIR$/../../java/jdk-17.0.4.1/lib/rt.jar" />
+      <module name="NLB" options="" />
       <module name="NLBB" options="-bootclasspath $PROJECT_DIR$/../../java/jdk-17.0.4.1/lib/rt.jar" />
       <module name="NLBL" options="-bootclasspath $PROJECT_DIR$/../../java/jdk-17.0.4.1/lib/rt.jar" />
       <module name="NLBW" options="-bootclasspath $PROJECT_DIR$/../../java/jdk-17.0.4.1/lib/rt.jar" />
