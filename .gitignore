@@ -1,3 +1,15 @@
+# Visual Studio
+**/.vs/
+**/*.sdf
+**/*.VC.opendb
+**/Debug/
+**/Generated\ Files/
+**/Release/
+**/ipch/
+**/*.obj
+**/*.VC.db
+**/*.user
+
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm
 
 ## Directory-based project format
@@ -12,9 +24,9 @@
 .idea/dynamic.xml
 
 ## File-based project format
-*.ipr
-*.iws
-*.iml
+**/*.ipr
+**/*.iws
+**/*.iml
 
 ## Additional for IntelliJ
 out/

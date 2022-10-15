@@ -41,10 +41,7 @@ package com.nlbhub.user.domain;
 import com.nlbhub.nlb.api.Link;
 import com.nlbhub.nlb.exception.DecisionException;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.*;
 import java.util.LinkedList;
 import java.util.List;
 

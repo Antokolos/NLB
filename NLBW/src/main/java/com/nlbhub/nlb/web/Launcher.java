@@ -70,6 +70,8 @@ public class Launcher implements Runnable {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
         m_server.setHandler(context);
+        /*
+        TODO: FIX
         ServletHolder holder = (
                 context.addServlet(org.apache.wink.server.internal.servlet.RestServlet.class, "/nlb/*")
         );
@@ -77,6 +79,7 @@ public class Launcher implements Runnable {
                 "javax.ws.rs.Application",
                 "com.nlbhub.nlb.web.service.rest.NLBServiceWebApplication"
         );
+        */
     }
 
     private void start() throws LauncherException {

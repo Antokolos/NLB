@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <option name="DEFAULT_COMPILER" value="Javac" />
-    <resourceExtensions />
     <wildcardResourcePatterns>
       <entry name="?*.properties" />
       <entry name="?*.xml" />
@@ -16,25 +14,28 @@
       <entry name="?*.ftl" />
     </wildcardResourcePatterns>
     <annotationProcessing>
-      <profile default="true" name="Default" enabled="false">
-        <processorPath useClasspath="true" />
-      </profile>
-      <profile default="false" name="Maven default annotation processors profile" enabled="true">
+      <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="true" />
-        <module name="NLBB" />
         <module name="NLBL" />
+        <module name="NLBB" />
         <module name="NLBW" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="NLB" target="1.7" />
-      <module name="NLBB" target="1.7" />
-      <module name="NLBL" target="1.7" />
-      <module name="NLBW" target="1.7" />
+      <module name="NLB" target="17" />
+      <module name="NLBB" target="17" />
+      <module name="NLBL" target="17" />
+      <module name="NLBW" target="17" />
     </bytecodeTargetLevel>
   </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="NLB" options="-bootclasspath $PROJECT_DIR$/../../java/jdk-17.0.4.1/lib/rt.jar" />
+      <module name="NLBB" options="-bootclasspath $PROJECT_DIR$/../../java/jdk-17.0.4.1/lib/rt.jar" />
+      <module name="NLBL" options="-bootclasspath $PROJECT_DIR$/../../java/jdk-17.0.4.1/lib/rt.jar" />
+      <module name="NLBW" options="-bootclasspath $PROJECT_DIR$/../../java/jdk-17.0.4.1/lib/rt.jar" />
+    </option>
+  </component>
 </project>
-

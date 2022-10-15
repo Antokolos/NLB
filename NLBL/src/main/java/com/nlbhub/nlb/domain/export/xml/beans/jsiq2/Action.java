@@ -38,7 +38,7 @@
  */
 package com.nlbhub.nlb.domain.export.xml.beans.jsiq2;
 
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.*;
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "action")

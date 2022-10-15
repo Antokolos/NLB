@@ -47,7 +47,7 @@ import com.nlbhub.nlb.util.FileManipulator;
 import com.nlbhub.nlb.util.StringHelper;
 import org.jetbrains.annotations.NotNull;
 
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;

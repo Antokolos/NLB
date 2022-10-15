@@ -42,9 +42,9 @@ import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.Coords;
 import com.nlbhub.nlb.api.NLBObserver;
 import com.nlbhub.nlb.api.NodeItem;
-import edu.umd.cs.piccolo.PNode;
-import edu.umd.cs.piccolo.nodes.PText;
-import edu.umd.cs.piccolo.util.PBounds;
+import org.piccolo2d.PNode;
+import org.piccolo2d.nodes.PText;
+import org.piccolo2d.util.PBounds;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;

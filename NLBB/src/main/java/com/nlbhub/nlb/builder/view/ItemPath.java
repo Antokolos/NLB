@@ -38,7 +38,7 @@
  */
 package com.nlbhub.nlb.builder.view;
 
-import edu.umd.cs.piccolo.nodes.PPath;
+import org.piccolo2d.nodes.PPath;
 
 /**
  * The ItemPath class

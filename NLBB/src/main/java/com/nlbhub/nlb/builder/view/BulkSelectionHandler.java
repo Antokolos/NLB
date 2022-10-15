@@ -40,10 +40,10 @@ package com.nlbhub.nlb.builder.view;
 
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.NodeItem;
-import edu.umd.cs.piccolo.PLayer;
-import edu.umd.cs.piccolo.PNode;
-import edu.umd.cs.piccolo.nodes.PPath;
-import edu.umd.cs.piccolo.util.PNodeFilter;
+import org.piccolo2d.PLayer;
+import org.piccolo2d.PNode;
+import org.piccolo2d.nodes.PPath;
+import org.piccolo2d.util.PNodeFilter;
 
 import java.awt.*;
 import java.util.*;

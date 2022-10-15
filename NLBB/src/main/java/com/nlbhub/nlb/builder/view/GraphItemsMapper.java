@@ -41,7 +41,7 @@ package com.nlbhub.nlb.builder.view;
 import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.util.StringHelper;
-import edu.umd.cs.piccolo.PNode;
+import org.piccolo2d.PNode;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;

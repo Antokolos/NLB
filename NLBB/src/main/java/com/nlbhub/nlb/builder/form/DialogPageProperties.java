@@ -50,6 +50,7 @@ import org.jdesktop.swingx.JXImageView;
 import org.jdesktop.swingx.JXTable;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -1349,7 +1350,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         panel55.setLayout(new GridBagLayout());
         panel55.setMinimumSize(new Dimension(10, 250));
         panel54.add(panel55, BorderLayout.CENTER);
-        panel55.setBorder(BorderFactory.createTitledBorder("Page text"));
+        panel55.setBorder(BorderFactory.createTitledBorder(null, "Page text", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         final JScrollPane scrollPane17 = new JScrollPane();
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -1477,4 +1478,5 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     public JComponent $$$getRootComponent$$$() {
         return contentPane;
     }
+
 }

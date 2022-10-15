@@ -40,7 +40,7 @@ package com.nlbhub.nlb.builder.view;
 
 import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.util.StringHelper;
-import edu.umd.cs.piccolo.nodes.PText;
+import org.piccolo2d.nodes.PText;
 
 import java.awt.*;
 

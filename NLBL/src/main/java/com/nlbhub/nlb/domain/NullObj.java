@@ -41,7 +41,7 @@ package com.nlbhub.nlb.domain;
 import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.util.MultiLangString;
 
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 import java.util.List;
 import java.util.Map;
 

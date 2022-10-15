@@ -46,6 +46,7 @@ import com.nlbhub.nlb.builder.model.SearchResultsTableModelSwing;
 import org.jdesktop.swingx.JXTable;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -264,7 +265,7 @@ public class DialogSearch extends JDialog {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         panel9.add(panel11, gbc);
-        panel11.setBorder(BorderFactory.createTitledBorder("Find where?"));
+        panel11.setBorder(BorderFactory.createTitledBorder(null, "Find where?", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         m_idsCheckBox = new JCheckBox();
         m_idsCheckBox.setSelected(true);
         m_idsCheckBox.setText("Ids");
@@ -292,7 +293,7 @@ public class DialogSearch extends JDialog {
         gbc.gridy = 2;
         gbc.fill = GridBagConstraints.BOTH;
         panel9.add(panel12, gbc);
-        panel12.setBorder(BorderFactory.createTitledBorder("Find how?"));
+        panel12.setBorder(BorderFactory.createTitledBorder(null, "Find how?", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         m_ignoreCaseCheckBox = new JCheckBox();
         m_ignoreCaseCheckBox.setText("Ignore case");
         panel12.add(m_ignoreCaseCheckBox);
@@ -340,4 +341,5 @@ public class DialogSearch extends JDialog {
     public JComponent $$$getRootComponent$$$() {
         return contentPane;
     }
+
 }

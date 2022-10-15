@@ -169,7 +169,7 @@ public class GitAdapter implements VCSAdapter {
 
     private List<String> listRepositoryContents() throws IOException, NLBVCSException {
         List<String> result = new ArrayList<>();
-        Ref head = m_localRepo.getRef(Constants.HEAD);
+        Ref head = m_localRepo.exactRef(Constants.HEAD);
         // head can be null if repo is broken (for example, .git directory was deleted)
         if (head == null) {
             throw new NLBVCSException("Your Git repository is broken.\nPlease either properly clone it (using 'git clone' command) or use 'runlight' command to run the program.");

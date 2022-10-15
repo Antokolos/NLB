@@ -40,9 +40,9 @@ package com.nlbhub.nlb.builder.view;
 
 import com.nlbhub.nlb.api.Coords;
 import com.nlbhub.nlb.api.NodeItem;
-import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
-import edu.umd.cs.piccolo.event.PInputEvent;
-import edu.umd.cs.piccolo.nodes.PPath;
+import org.piccolo2d.event.PBasicInputEventHandler;
+import org.piccolo2d.event.PInputEvent;
+import org.piccolo2d.nodes.PPath;
 
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Rectangle2D;

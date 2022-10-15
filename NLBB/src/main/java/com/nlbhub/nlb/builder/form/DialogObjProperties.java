@@ -48,10 +48,14 @@ import com.nlbhub.nlb.util.StringHelper;
 import org.jdesktop.swingx.JXImageView;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.plaf.FontUIResource;
+import javax.swing.text.StyleContext;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 
 public class DialogObjProperties extends JDialog implements NLBObserver {
     private final String m_observerId;
@@ -1279,7 +1283,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         panel42.setMinimumSize(new Dimension(380, 180));
         panel42.setPreferredSize(new Dimension(380, 180));
         panel41.add(panel42);
-        panel42.setBorder(BorderFactory.createTitledBorder("Coords origin"));
+        panel42.setBorder(BorderFactory.createTitledBorder(null, "Coords origin", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         final JPanel panel43 = new JPanel();
         panel43.setLayout(new BorderLayout(0, 0));
         panel42.add(panel43, BorderLayout.CENTER);
@@ -1394,7 +1398,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         panel45.setMinimumSize(new Dimension(260, 180));
         panel45.setPreferredSize(new Dimension(260, 180));
         panel41.add(panel45);
-        panel45.setBorder(BorderFactory.createTitledBorder("Effect"));
+        panel45.setBorder(BorderFactory.createTitledBorder(null, "Effect", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         final JPanel panel46 = new JPanel();
         panel46.setLayout(new BorderLayout(0, 0));
         panel45.add(panel46, BorderLayout.CENTER);
@@ -1483,7 +1487,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         panel48.setMinimumSize(new Dimension(140, 180));
         panel48.setPreferredSize(new Dimension(140, 180));
         panel41.add(panel48);
-        panel48.setBorder(BorderFactory.createTitledBorder("Frames"));
+        panel48.setBorder(BorderFactory.createTitledBorder(null, "Frames", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         final JPanel panel49 = new JPanel();
         panel49.setLayout(new BorderLayout(0, 0));
         panel49.setMinimumSize(new Dimension(110, 30));
@@ -1537,7 +1541,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         panel53.setMinimumSize(new Dimension(260, 150));
         panel53.setPreferredSize(new Dimension(260, 150));
         panel41.add(panel53);
-        panel53.setBorder(BorderFactory.createTitledBorder("Movement direction"));
+        panel53.setBorder(BorderFactory.createTitledBorder(null, "Movement direction", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         final JPanel panel54 = new JPanel();
         panel54.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         panel53.add(panel54, BorderLayout.NORTH);
@@ -1676,7 +1680,10 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 resultName = currentFont.getName();
             }
         }
-        return new Font(resultName, style >= 0 ? style : currentFont.getStyle(), size >= 0 ? size : currentFont.getSize());
+        Font font = new Font(resultName, style >= 0 ? style : currentFont.getStyle(), size >= 0 ? size : currentFont.getSize());
+        boolean isMac = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("mac");
+        Font fontWithFallback = isMac ? new Font(font.getFamily(), font.getStyle(), font.getSize()) : new StyleContext().getFont(font.getFamily(), font.getStyle(), font.getSize());
+        return fontWithFallback instanceof FontUIResource ? fontWithFallback : new FontUIResource(fontWithFallback);
     }
 
     /**
@@ -1685,4 +1692,5 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     public JComponent $$$getRootComponent$$$() {
         return contentPane;
     }
+
 }

@@ -40,15 +40,11 @@ package com.nlbhub.nlb.api;
 
 import com.nlbhub.nlb.domain.ModificationImpl;
 import com.nlbhub.nlb.domain.SearchResult;
-import com.nlbhub.nlb.domain.VariableImpl;
 import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.StringHelper;
 import org.jetbrains.annotations.NotNull;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
