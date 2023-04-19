@@ -54,7 +54,9 @@ public interface Link extends ModifyingItem, NLBObservable {
     public final static String DEFAULT_CONSTR_ID = Constants.EMPTY_STRING;
     public final static String DEFAULT_STROKE = "0000FF";
     public final static boolean DEFAUlT_AUTO = false;
+    public final static boolean DEFAUlT_NEEDS_ACTION = false;
     public final static boolean DEFAUlT_ONCE = false;
+    public final static boolean DEFAUlT_TECHNICAL = false;
 
     public String getVarId();
 
@@ -76,6 +78,8 @@ public interface Link extends ModifyingItem, NLBObservable {
 
     public boolean isAuto();
 
+    public boolean isNeedsAction();
+
     public boolean isOnce();
 
     /**
@@ -96,4 +100,5 @@ public interface Link extends ModifyingItem, NLBObservable {
     public boolean isTraversalLink();
 
     public boolean isReturnLink();
+    public boolean isTechnical();
 }

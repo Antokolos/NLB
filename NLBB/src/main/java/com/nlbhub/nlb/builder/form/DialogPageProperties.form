@@ -1060,6 +1060,12 @@
                                               <text value="Auto In"/>
                                             </properties>
                                           </component>
+                                          <component id="c43df" class="javax.swing.JCheckBox" binding="m_needsActionCheckBox" default-binding="true">
+                                            <constraints/>
+                                            <properties>
+                                              <text value="Needs Action"/>
+                                            </properties>
+                                          </component>
                                           <component id="3b842" class="javax.swing.JCheckBox" binding="m_autoOutCheckBox">
                                             <constraints/>
                                             <properties>

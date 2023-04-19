@@ -261,6 +261,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public boolean isNeedsAction() {
+        return DEFAULT_NEEDS_ACTION;
+    }
+
+    @Override
     public boolean isAutoOut() {
         return DEFAULT_AUTO_OUT;
     }

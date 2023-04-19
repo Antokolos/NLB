@@ -40,8 +40,6 @@ package com.nlbhub.nlb.api;
 
 import com.nlbhub.nlb.util.MultiLangString;
 
-import java.util.List;
-
 /**
  * The Page class
  *
@@ -67,6 +65,7 @@ public interface Page extends NodeItem {
     public static final boolean DEFAULT_AUTO_TRAVERSE = false;
     public static final boolean DEFAULT_AUTO_RETURN = false;
     public static final boolean DEFAULT_AUTO_IN = false;
+    public static final boolean DEFAULT_NEEDS_ACTION = false;
     public static final boolean DEFAULT_AUTO_OUT = false;
     public static final String DEFAULT_AUTOWIRE_IN_CONSTR_ID = Constants.EMPTY_STRING;
     public static final String DEFAULT_AUTOWIRE_OUT_CONSTR_ID = Constants.EMPTY_STRING;
@@ -157,6 +156,7 @@ public interface Page extends NodeItem {
     public String getAutowireOutText();
     public MultiLangString getAutowireOutTexts();
     public boolean isAutoIn();
+    public boolean isNeedsAction();
     public boolean isAutoOut();
     public String getAutowireInConstrId();
     public String getAutowireOutConstrId();

@@ -431,6 +431,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_existingNoSave;
         private final boolean m_existingAutosFirst;
         private final boolean m_existingAutoIn;
+        private final boolean m_existingNeedsAction;
         private final boolean m_existingAutoOut;
         private final String m_newImageFileName;
         private final boolean m_newImageBackground;
@@ -453,6 +454,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final MultiLangString m_newAutowireInText;
         private final MultiLangString m_newAutowireOutText;
         private final boolean m_newAutoIn;
+        private final boolean m_newNeedsAction;
         private final boolean m_newAutoOut;
         private final boolean m_newGlobalAutowired;
         private final boolean m_newNoSave;
@@ -488,6 +490,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString autowireInText,
                 final MultiLangString autowireOutText,
                 final boolean autoIn,
+                final boolean needsAction,
                 final boolean autoOut,
                 final String autowireInConstraintVariableBody,
                 final String autowireOutConstraintVariableBody,
@@ -524,6 +527,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     autowireInText,
                     autowireOutText,
                     autoIn,
+                    needsAction,
                     autoOut,
                     autowireInConstraintVariableBody,
                     autowireOutConstraintVariableBody,
@@ -562,6 +566,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString autowireInText,
                 final MultiLangString autowireOutText,
                 final boolean autoIn,
+                final boolean needsAction,
                 final boolean autoOut,
                 final String autowireInConstraintVariableBody,
                 final String autowireOutConstraintVariableBody,
@@ -655,6 +660,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingNoSave = m_page.isNoSave();
             m_existingAutosFirst = m_page.isAutosFirst();
             m_existingAutoIn = m_page.isAutoIn();
+            m_existingNeedsAction = m_page.isNeedsAction();
             m_existingAutoOut = m_page.isAutoOut();
             m_newImageFileName = imageFileName;
             m_newImageBackground = imageBackground;
@@ -680,6 +686,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newNoSave = noSave;
             m_newAutosFirst = autosFirst;
             m_newAutoIn = autoIn;
+            m_newNeedsAction = needsAction;
             m_newAutoOut = autoOut;
             for (final Link link : m_page.getLinks()) {
                 boolean absentInModel = true;
@@ -734,6 +741,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setAutowireInTexts(m_newAutowireInText);
             m_page.setAutowireOutTexts(m_newAutowireOutText);
             m_page.setAutoIn(m_newAutoIn);
+            m_page.setNeedsAction(m_newNeedsAction);
             m_page.setAutoOut(m_newAutoOut);
             m_page.setGlobalAutoWired(m_newGlobalAutowired);
             m_page.setNoSave(m_newNoSave);
@@ -779,6 +787,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setAutowireInTexts(m_existingAutowireInText);
             m_page.setAutowireOutTexts(m_existingAutowireOutText);
             m_page.setAutoIn(m_existingAutoIn);
+            m_page.setNeedsAction(m_existingNeedsAction);
             m_page.setAutoOut(m_existingAutoOut);
             m_page.setGlobalAutoWired(m_existingGlobalAutowired);
             m_page.setNoSave(m_existingNoSave);
@@ -1988,6 +1997,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         page.getAutowireInTexts(),
                         page.getAutowireOutTexts(),
                         page.isAutoIn(),
+                        page.isNeedsAction(),
                         page.isAutoOut(),
                         (autoInConstraint != null) ? autoInConstraint.getValue() : Constants.EMPTY_STRING,
                         (autoOutConstraint != null) ? autoOutConstraint.getValue() : Constants.EMPTY_STRING,
@@ -2458,6 +2468,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final MultiLangString autowireInText,
             final MultiLangString autowireOutText,
             final boolean autoIn,
+            final boolean needsAction,
             final boolean autoOut,
             final String autowireInConstraint,
             final String autowireOutConstraint,
@@ -2495,6 +2506,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         autowireInText,
                         autowireOutText,
                         autoIn,
+                        needsAction,
                         autoOut,
                         autowireInConstraint,
                         autowireOutConstraint,
@@ -3209,6 +3221,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                             source.getModuleConstrId(),
                             Constants.EMPTY_STRING,
                             source.isAutoTraverse(),
+                            source.isNeedsAction(),
                             false,
                             true,
                             false,
@@ -3233,6 +3246,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                                     link.getConstrId(),
                                     link.getVarId(),
                                     link.isAuto(),
+                                    link.isNeedsAction(),
                                     link.isOnce(),
                                     link.isPositiveConstraint(),
                                     false,
@@ -3246,7 +3260,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 }
             } else {
                 // Create return link on the fly.
-                // If page has module constraint, than module return links should be added to the
+                // If page has module constraint, then module return links should be added to the
                 // each page of the module.
                 // These links should have constraints in form of 'NOT (module_constraint)'
                 // (i.e. negative constraints)
@@ -3262,6 +3276,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                                 Constants.EMPTY_STRING,
                                 Constants.EMPTY_STRING,
                                 source.isAutoReturn(),
+                                false,
                                 false,
                                 StringHelper.isEmpty(m_parentPage.getModuleConstrId()),
                                 !source.isLeaf(),

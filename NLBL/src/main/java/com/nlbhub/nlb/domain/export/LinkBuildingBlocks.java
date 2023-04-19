@@ -60,6 +60,7 @@ public class LinkBuildingBlocks {
     private int m_targetPageNumber;
     private String m_linkEnd;
     private boolean m_auto;
+    private boolean m_needsAction;
     /** Link is considered trivial if it has default text and has no constraints. */
     private boolean m_isTrivial;
     private boolean m_inline;
@@ -186,6 +187,14 @@ public class LinkBuildingBlocks {
 
     public void setAuto(boolean auto) {
         m_auto = auto;
+    }
+
+    public boolean isNeedsAction() {
+        return m_needsAction;
+    }
+
+    public void setNeedsAction(boolean needsAction) {
+        m_needsAction = needsAction;
     }
 
     public Theme getTheme() {

@@ -761,12 +761,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, boolean isTechnical, int pageNumber, Theme theme) {
         return linkText;
     }
 
     @Override
-    protected String decorateLinkGoTo(String linkId, String linkText, String linkSource, int sourcePageNumber, String linkTarget, int targetPageNumber, Theme theme) {
+    protected String decorateLinkGoTo(String linkId, String linkText, String linkSource, int sourcePageNumber, String linkTarget, int targetPageNumber, boolean isTechnical, Theme theme) {
         return Integer.toString(targetPageNumber - 1);
     }
 

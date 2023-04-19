@@ -69,6 +69,7 @@ public class LinkLw implements Link {
     private String m_constrId;
     private String m_varId;
     private boolean m_auto;
+    private boolean m_needsAction;
     private boolean m_once;
     private boolean m_positiveConstraint;
     private boolean m_shouldObeyToModuleConstraint;
@@ -81,13 +82,14 @@ public class LinkLw implements Link {
      * @param text
      * @param altText
      * @param constrId
-     * @param varId has meaning only for MPL links; represent ID of the MPL link variable
+     * @param varId                        has meaning only for MPL links; represent ID of the MPL link variable
      * @param auto
+     * @param needsAction
      * @param once
      * @param positiveConstraint
      * @param shouldObeyToModuleConstraint
-     * @param mplLinkId should be equal to the corresponding link id if link is MPL, empty otherwise
-     * @param modifications modifications to be added or null. Will be completely ignored for autowired links.
+     * @param mplLinkId                    should be equal to the corresponding link id if link is MPL, empty otherwise
+     * @param modifications                modifications to be added or null. Will be completely ignored for autowired links.
      */
     public LinkLw(
             Type type,
@@ -98,6 +100,7 @@ public class LinkLw implements Link {
             String constrId,
             String varId,
             boolean auto,
+            boolean needsAction,
             boolean once,
             boolean positiveConstraint,
             boolean shouldObeyToModuleConstraint,
@@ -112,6 +115,7 @@ public class LinkLw implements Link {
         m_constrId = constrId;
         m_varId = varId;
         m_auto = auto;
+        m_needsAction = needsAction;
         m_once = once;
         m_positiveConstraint = positiveConstraint;
         m_shouldObeyToModuleConstraint = shouldObeyToModuleConstraint;
@@ -203,6 +207,12 @@ public class LinkLw implements Link {
     }
 
     @Override
+    @XmlElement(name = "is-technical")
+    public boolean isTechnical() {
+        return isAuto() || m_type == Type.AutowiredIn || m_type == Type.AutowiredOut;
+    }
+
+    @Override
     @XmlElement(name = "stroke")
     public String getStroke() {
         return Constants.EMPTY_STRING;
@@ -217,6 +227,12 @@ public class LinkLw implements Link {
     @XmlElement(name = "is-auto")
     public boolean isAuto() {
         return m_auto;
+    }
+
+    @Override
+    @XmlElement(name = "needs-action")
+    public boolean isNeedsAction() {
+        return m_needsAction;
     }
 
     @Override

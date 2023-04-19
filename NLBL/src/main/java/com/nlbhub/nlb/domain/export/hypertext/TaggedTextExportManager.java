@@ -79,7 +79,7 @@ public class TaggedTextExportManager extends HypertextExportManager<TXTParagraph
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, boolean isTechnical, int pageNumber, Theme theme) {
         return linkText;
     }
 
@@ -91,6 +91,7 @@ public class TaggedTextExportManager extends HypertextExportManager<TXTParagraph
             int sourcePageNumber,
             String linkTarget,
             int targetPageNumber,
+            boolean isTechnical,
             Theme theme) {
         return String.valueOf(targetPageNumber);
     }

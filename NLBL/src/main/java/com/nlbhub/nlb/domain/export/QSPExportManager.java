@@ -206,7 +206,7 @@ public class QSPExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, boolean isTechnical, int pageNumber, Theme theme) {
         return "  ACT '" + linkText + "':" + LINE_SEPARATOR;
     }
 
@@ -218,6 +218,7 @@ public class QSPExportManager extends TextExportManager {
             int sourcePageNumber,
             String linkTarget,
             int targetPageNumber,
+            boolean isTechnical,
             Theme theme) {
         return "    GOTO '" + linkTarget + "'" + LINE_SEPARATOR;
     }

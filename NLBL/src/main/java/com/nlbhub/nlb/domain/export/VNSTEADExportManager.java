@@ -247,9 +247,9 @@ public class VNSTEADExportManager extends STEADExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, boolean isTechnical, int pageNumber, Theme theme) {
         if (!isVN(theme)) {
-            return super.decorateLinkStart(linkId, linkText, isAuto, isTrivial, pageNumber, theme);
+            return super.decorateLinkStart(linkId, linkText, isAuto, isTrivial, isTechnical, pageNumber, theme);
         }
         String lineSep = getLineSeparator();
         StringBuilder result = new StringBuilder();
@@ -267,10 +267,11 @@ public class VNSTEADExportManager extends STEADExportManager {
             int sourcePageNumber,
             String linkTarget,
             int targetPageNumber,
+            boolean isTechnical,
             Theme theme
     ) {
         if (!isVN(theme)) {
-            return super.decorateLinkGoTo(linkId, linkText, linkSource, sourcePageNumber, linkTarget, targetPageNumber, theme);
+            return super.decorateLinkGoTo(linkId, linkText, linkSource, sourcePageNumber, linkTarget, targetPageNumber, isTechnical, theme);
         }
         return (
                 "        nlb:nlbwalk("
@@ -285,6 +286,7 @@ public class VNSTEADExportManager extends STEADExportManager {
                                 ? decorateId(String.valueOf(targetPageNumber))
                                 : decorateId(linkTarget)
                 )
+                        + (isTechnical ? ", true" : ", false")
                         + "); " + getLineSeparator()
         );
     }

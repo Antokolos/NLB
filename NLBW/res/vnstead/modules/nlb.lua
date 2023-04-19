@@ -1,5 +1,6 @@
 require 'prefs'
 require 'sprites'
+require 'counters'
 
 nlb = obj {
     nam = 'nlb';
@@ -9,6 +10,12 @@ nlb = obj {
     _clones = {};
     _filter = {};
     _curloc = nil;
+    _inv_count = 0;
+    _act_count = 0;
+    _use_count = 0;
+    _walk_count = 0;
+    _technical_walk_count = 0;
+    _technical_act_count = 0;
     rst = function(s)
         s._lists = {};
         s._clones = {};
@@ -302,10 +309,13 @@ nlb = obj {
             return '';
         end
     end;
-    nlbwalk = function(s, src, tgt)
+    nlbwalk = function(s, src, tgt, is_technical)
         vn:request_full_clear();
         if not src then
             src = s:curloc();
+        end
+        if is_technical then
+            s:inc_technical_walk_count()
         end
         if (src ~= tgt) then
             lifeoff(src);
@@ -455,6 +465,38 @@ nlb = obj {
             delete_snapshot(0);
         end
         make_snapshot(0);
+    end;
+    inc_technical_walk_count = function(s)
+        s._technical_walk_count = s._technical_walk_count + 1;
+    end;
+    inc_technical_act_count = function(s)
+        s._technical_act_count = s._technical_act_count + 1;
+    end;
+    has_action = function(s)
+        local result = false;
+        local ic = inv_count();
+        if ic ~= s._inv_count then
+            s._inv_count = ic;
+            result = true;
+        end
+        local ac = act_count();
+        if ac ~= s._act_count + s._technical_act_count then
+            s._act_count = ac;
+            s._technical_act_count = 0;
+            result = true;
+        end
+        local uc = use_count();
+        if uc ~= s._use_count then
+            s._use_count = uc;
+            result = true;
+        end
+        local wc = walk_count();
+        if wc ~= s._walk_count + s._technical_walk_count then
+            s._walk_count = wc;
+            s._technical_walk_count = 0;
+            result = true;
+        end
+        return result;
     end;
 };
 

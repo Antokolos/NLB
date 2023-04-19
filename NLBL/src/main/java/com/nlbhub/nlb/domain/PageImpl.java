@@ -87,6 +87,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String AUTO_IN_TEXT_SUBDIR_NAME = "aintext";
     private static final String AUTO_OUT_TEXT_SUBDIR_NAME = "aouttext";
     private static final String AUTO_IN_FILE_NAME = "auto_in";
+    private static final String NEEDS_ACTION_FILE_NAME = "needsact";
     private static final String AUTO_OUT_FILE_NAME = "auto_out";
     private static final String AUTOWIRE_IN_CONSTRID_FILE_NAME = "autoid";
     private static final String AUTOWIRE_OUT_CONSTRID_FILE_NAME = "autoutid";
@@ -123,6 +124,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private MultiLangString m_autowireOutText = DEFAULT_AUTOWIRE_OUT_TEXT;
 
     private boolean m_autoIn = DEFAULT_AUTO_IN;
+    private boolean m_needsAction = DEFAULT_NEEDS_ACTION;
     private boolean m_autoOut = DEFAULT_AUTO_OUT;
     private String m_autowireInConstrId = DEFAULT_AUTOWIRE_IN_CONSTR_ID;
     private String m_autowireOutConstrId = DEFAULT_AUTOWIRE_OUT_CONSTR_ID;
@@ -177,6 +179,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         setNoSave(source.isNoSave());
         setAutosFirst(source.isAutosFirst());
         setAutoIn(source.isAutoIn());
+        setNeedsAction(source.isNeedsAction());
         setAutoOut(source.isAutoOut());
         setAutowireInConstrId(source.getAutowireInConstrId());
         setAutowireOutConstrId(source.getAutowireOutConstrId());
@@ -486,6 +489,10 @@ public class PageImpl extends AbstractNodeItem implements Page {
         m_autoIn = autoIn;
     }
 
+    public void setNeedsAction(boolean needsAction) {
+        m_needsAction = needsAction;
+    }
+
     public void setAutoOut(boolean autoOut) {
         m_autoOut = autoOut;
     }
@@ -569,6 +576,11 @@ public class PageImpl extends AbstractNodeItem implements Page {
     @Override
     public boolean isAutoIn() {
         return m_autoIn;
+    }
+
+    @Override
+    public boolean isNeedsAction() {
+        return m_needsAction;
     }
 
     @Override
@@ -754,6 +766,12 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     AUTO_IN_FILE_NAME,
                     String.valueOf(m_autoIn),
                     String.valueOf(DEFAULT_AUTO_IN)
+            );
+            fileManipulator.writeOptionalString(
+                    pageDir,
+                    NEEDS_ACTION_FILE_NAME,
+                    String.valueOf(m_needsAction),
+                    String.valueOf(DEFAULT_NEEDS_ACTION)
             );
             fileManipulator.writeOptionalString(
                     pageDir,
@@ -956,6 +974,13 @@ public class PageImpl extends AbstractNodeItem implements Page {
                             pageDir,
                             AUTO_IN_FILE_NAME,
                             String.valueOf(DEFAULT_AUTO_IN)
+                    )
+            );
+            m_needsAction = "true".equals(
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            NEEDS_ACTION_FILE_NAME,
+                            String.valueOf(DEFAULT_NEEDS_ACTION)
                     )
             );
             m_autoOut = "true".equals(

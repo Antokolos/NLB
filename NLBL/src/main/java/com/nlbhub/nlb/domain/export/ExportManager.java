@@ -582,6 +582,7 @@ public abstract class ExportManager {
                             page.getModuleConstrId(),
                             Constants.EMPTY_STRING,
                             page.isAutoTraverse(),
+                            page.isNeedsAction(),
                             false,
                             true,
                             false,
@@ -605,6 +606,7 @@ public abstract class ExportManager {
                                     link.getConstrId(),
                                     link.getVarId(),
                                     link.isAuto(),
+                                    link.isNeedsAction(),
                                     link.isOnce(),
                                     link.isPositiveConstraint(),
                                     false,
@@ -634,6 +636,7 @@ public abstract class ExportManager {
                                 Constants.EMPTY_STRING,
                                 page.isAutoReturn(),
                                 false,
+                                false,
                                 StringHelper.isEmpty(exportData.getModulePage().getModuleConstrId()),
                                 !page.isLeaf(),
                                 Constants.EMPTY_STRING,
@@ -658,6 +661,7 @@ public abstract class ExportManager {
                                             + page.getId() + NonLinearBook.LC_VARID_SEPARATOR_OUT + nlbPage.getId(),
                                     Constants.EMPTY_STRING,
                                     page.isAutoOut(),
+                                    false,
                                     false,
                                     true,
                                     false,
@@ -687,6 +691,7 @@ public abstract class ExportManager {
                                     autowiredPage.getAutowireInConstrId(),
                                     Constants.EMPTY_STRING,
                                     autowiredPage.isAutoIn(),
+                                    autowiredPage.isNeedsAction(),
                                     false,
                                     true,
                                     false,
@@ -1065,6 +1070,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public boolean isNeedsAction() {
+                return link.isNeedsAction();
+            }
+
+            @Override
             public boolean isOnce() {
                 return link.isOnce();
             }
@@ -1087,6 +1097,11 @@ public abstract class ExportManager {
             @Override
             public boolean isReturnLink() {
                 return link.isReturnLink();
+            }
+
+            @Override
+            public boolean isTechnical() {
+                return link.isTechnical();
             }
 
             @Override
@@ -1364,6 +1379,11 @@ public abstract class ExportManager {
             @Override
             public boolean isAutoIn() {
                 return page.isAutoIn();
+            }
+
+            @Override
+            public boolean isNeedsAction() {
+                return page.isNeedsAction();
             }
 
             @Override
@@ -1985,6 +2005,7 @@ public abstract class ExportManager {
         blocks.setTheme(theme);
         final boolean trivial = determineTrivialStatus(link);
         blocks.setAuto(link.isAuto());
+        blocks.setNeedsAction(link.isNeedsAction());
         blocks.setInline(isInlineLink(link));
         String expandedLinkText = expandVariablesForLinks(StringHelper.getTextChunks(link.getText()), theme);
         blocks.setLinkText(expandedLinkText);
@@ -1999,6 +2020,7 @@ public abstract class ExportManager {
                         expandedLinkText,
                         link.isAuto(),
                         trivial,
+                        link.isTechnical(),
                         checkedGetPageNumber(link.getTarget()),
                         theme
                 )
@@ -2055,6 +2077,7 @@ public abstract class ExportManager {
                         checkedGetPageNumber(page.getId()),
                         link.getTarget(),
                         targetPageNumber,
+                        link.isTechnical(),
                         theme
                 )
         );
@@ -2928,7 +2951,15 @@ public abstract class ExportManager {
 
     protected abstract String decorateLinkComment(String comment);
 
-    protected abstract String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme);
+    protected abstract String decorateLinkStart(
+            String linkId,
+            String linkText,
+            boolean isAuto,
+            boolean isTrivial,
+            boolean isTechnical,
+            int pageNumber,
+            Theme theme
+    );
 
     protected abstract String decorateLinkGoTo(
             String linkId,
@@ -2937,6 +2968,7 @@ public abstract class ExportManager {
             int sourcePageNumber,
             String linkTarget,
             int targetPageNumber,
+            boolean isTechnical,
             Theme theme
     );
 

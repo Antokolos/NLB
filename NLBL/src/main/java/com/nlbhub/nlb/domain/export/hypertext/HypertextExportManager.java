@@ -575,7 +575,7 @@ public abstract class HypertextExportManager
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, boolean isTechnical, int pageNumber, Theme theme) {
         return linkText + " (" + String.valueOf(pageNumber) + ")";
     }
 
@@ -587,6 +587,7 @@ public abstract class HypertextExportManager
             int sourcePageNumber,
             String linkTarget,
             int targetPageNumber,
+            boolean isTechnical,
             Theme theme) {
         return linkTarget;
     }

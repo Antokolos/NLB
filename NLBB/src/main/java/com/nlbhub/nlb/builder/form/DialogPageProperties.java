@@ -130,6 +130,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JComboBox m_themeComboBox;
     private JCheckBox m_noSaveCheckBox;
     private JCheckBox m_autosFirstCheckBox;
+    private JCheckBox m_needsActionCheckBox;
 
     public DialogPageProperties(final MainFrame mainFrame, final NonLinearBookFacade nlbFacade, final Page page) {
         m_nlbFacade = nlbFacade;
@@ -426,6 +427,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_autowireInTexts = page.getAutowireInTexts();
         m_autowireOutTexts = page.getAutowireOutTexts();
         m_autoInCheckBox.setSelected(page.isAutoIn());
+        m_needsActionCheckBox.setSelected(page.isNeedsAction());
         m_autoOutCheckBox.setSelected(page.isAutoOut());
         m_autowireInConstraintTextField.setText(autowireInConstraint != null ? autowireInConstraint.getValue() : "");
         m_autowireOutConstraintTextField.setText(autowireOutConstraint != null ? autowireOutConstraint.getValue() : "");
@@ -494,6 +496,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 m_autowireInTexts,
                 m_autowireOutTexts,
                 m_autoInCheckBox.isSelected(),
+                m_needsActionCheckBox.isSelected(),
                 m_autoOutCheckBox.isSelected(),
                 m_autowireInConstraintTextField.getText(),
                 m_autowireOutConstraintTextField.getText(),
@@ -1283,6 +1286,9 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_autoInCheckBox = new JCheckBox();
         m_autoInCheckBox.setText("Auto In");
         panel47.add(m_autoInCheckBox);
+        m_needsActionCheckBox = new JCheckBox();
+        m_needsActionCheckBox.setText("Needs Action");
+        panel47.add(m_needsActionCheckBox);
         m_autoOutCheckBox = new JCheckBox();
         m_autoOutCheckBox.setText("Auto Out");
         panel47.add(m_autoOutCheckBox);

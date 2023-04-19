@@ -66,6 +66,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     private static final String CONSTRID_FILE_NAME = "constrid";
     private static final String STROKE_FILE_NAME = "stroke";
     private static final String AUTO_FILE_NAME = "auto";
+    private static final String NEEDS_ACTION_FILE_NAME = "needsact";
     private static final String ONCE_FILE_NAME = "once";
     private String m_varId = DEFAULT_VAR_ID;
     /**
@@ -90,6 +91,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     private String m_stroke = DEFAULT_STROKE;
     private CoordsImpl m_coords = new CoordsImpl();
     private boolean m_auto = DEFAUlT_AUTO;
+    private boolean m_needsAction = DEFAUlT_NEEDS_ACTION;
     private boolean m_once = DEFAUlT_ONCE;
     private ObserverHandler m_observerHandler = new ObserverHandler();
     private boolean m_isPositiveConstraint = true;
@@ -133,6 +135,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
         m_isTraversalLink = sourceLink.isTraversalLink();
         m_isReturnLink = sourceLink.isReturnLink();
         m_auto = sourceLink.isAuto();
+        m_needsAction = sourceLink.isNeedsAction();
         m_once = sourceLink.isOnce();
     }
 
@@ -246,6 +249,12 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
         return m_isReturnLink;
     }
 
+    @Override
+    @XmlElement(name = "is-technical")
+    public boolean isTechnical() {
+        return DEFAUlT_TECHNICAL;
+    }
+
     public void setConstrId(String constrId) {
         m_constrId = constrId;
     }
@@ -270,8 +279,18 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
         return m_auto;
     }
 
+    @Override
+    @XmlElement(name = "needs-action")
+    public boolean isNeedsAction() {
+        return m_needsAction;
+    }
+
     public void setAuto(boolean auto) {
         m_auto = auto;
+    }
+
+    public void setNeedsAction(boolean needsAction) {
+        m_needsAction = needsAction;
     }
 
     @Override
@@ -341,6 +360,12 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
             );
             fileManipulator.writeOptionalString(
                     linkDir,
+                    NEEDS_ACTION_FILE_NAME,
+                    String.valueOf(m_needsAction),
+                    String.valueOf(DEFAUlT_NEEDS_ACTION)
+            );
+            fileManipulator.writeOptionalString(
+                    linkDir,
                     ONCE_FILE_NAME,
                     String.valueOf(m_once),
                     String.valueOf(DEFAUlT_ONCE)
@@ -399,6 +424,13 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
                         linkDir,
                         AUTO_FILE_NAME,
                         String.valueOf(DEFAUlT_AUTO)
+                )
+        );
+        m_needsAction = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        linkDir,
+                        NEEDS_ACTION_FILE_NAME,
+                        String.valueOf(DEFAUlT_NEEDS_ACTION)
                 )
         );
         m_once = "true".equals(

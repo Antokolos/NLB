@@ -154,7 +154,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, boolean isTechnical, int pageNumber, Theme theme) {
         if (isAuto || isTrivial) {
             return "*goto " + linkId + LINE_SEPARATOR;
         } else {
@@ -170,6 +170,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
             int sourcePageNumber,
             String linkTarget,
             int targetPageNumber,
+            boolean isTechnical,
             Theme theme) {
         return "*goto " + linkTarget + LINE_SEPARATOR + LINE_SEPARATOR;
     }

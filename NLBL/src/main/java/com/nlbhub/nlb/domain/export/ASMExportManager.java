@@ -146,7 +146,7 @@ public class ASMExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, boolean isTechnical, int pageNumber, Theme theme) {
         return "[[" + linkText + "|" + linkId + "]]" + LINE_SEPARATOR;
     }
 
@@ -158,6 +158,7 @@ public class ASMExportManager extends TextExportManager {
             int sourcePageNumber,
             String linkTarget,
             int targetPageNumber,
+            boolean isTechnical,
             Theme theme) {
         return "<<goto '" + linkTarget + "'>>" + LINE_SEPARATOR;
     }

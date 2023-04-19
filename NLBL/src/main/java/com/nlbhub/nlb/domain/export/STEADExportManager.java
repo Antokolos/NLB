@@ -738,7 +738,11 @@ public class STEADExportManager extends TextExportManager {
         final boolean constrained = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
         StringBuilder result = new StringBuilder();
         result.append("        ");
-        result.append("if (").append((constrained) ? linkBlocks.getLinkConstraint() : "true").append(") then ");
+        result
+                .append("if (")
+                .append((constrained) ? linkBlocks.getLinkConstraint() : "true")
+                .append((linkBlocks.isNeedsAction()) ? " and nlb:has_action()" : "")
+                .append(") then ");
         result.append(linkBlocks.getLinkModifications());
         result.append(linkBlocks.getLinkVariable());
         result.append(linkBlocks.getLinkVisitStateVariable());
@@ -1617,7 +1621,7 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateGoToOperation(String locationId) {
-        return "nlb:nlbwalk(nil, " + decorateId(locationId) + ");" + LINE_SEPARATOR;
+        return "nlb:nlbwalk(nil, " + decorateId(locationId) + ", true);" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1807,9 +1811,9 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
-    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, int pageNumber, Theme theme) {
+    protected String decorateLinkStart(String linkId, String linkText, boolean isAuto, boolean isTrivial, boolean isTechnical, int pageNumber, Theme theme) {
         if (isVN(theme)) {
-            return m_vnsteadExportManager.decorateLinkStart(linkId, linkText, isAuto, isTrivial, pageNumber, theme);
+            return m_vnsteadExportManager.decorateLinkStart(linkId, linkText, isAuto, isTrivial, isTechnical, pageNumber, theme);
         }
         /*
         // Legacy version
@@ -1823,7 +1827,9 @@ public class STEADExportManager extends TextExportManager {
         return (
                 id + "_XLnk = xact(" + LINE_SEPARATOR
                         + "'" + id + "_XLnk'," + LINE_SEPARATOR
-                        + "function() walk('" + id + "'); end" + LINE_SEPARATOR
+                        + "function() nlb:inc_technical_act_count(); nlb:nlbwalk(nil, '" + id + "', "
+                        + (isTechnical ? "true" : "false")
+                        + "); end" + LINE_SEPARATOR
                         + ");" + LINE_SEPARATOR + LINE_SEPARATOR
                         + id + " = room {" + LINE_SEPARATOR
                         + "    nam = '" + id + "'," + LINE_SEPARATOR
@@ -1842,12 +1848,18 @@ public class STEADExportManager extends TextExportManager {
             int sourcePageNumber,
             String linkTarget,
             int targetPageNumber,
+            boolean isTechnical,
             Theme theme
     ) {
         if (isVN(theme)) {
-            return m_vnsteadExportManager.decorateLinkGoTo(linkId, linkText, linkSource, sourcePageNumber, linkTarget, targetPageNumber, theme);
+            return m_vnsteadExportManager.decorateLinkGoTo(linkId, linkText, linkSource, sourcePageNumber, linkTarget, targetPageNumber, isTechnical, theme);
         }
-        return "        nlb:nlbwalk(" + decoratePageName(linkSource, sourcePageNumber) + ", " + decoratePageName(linkTarget, targetPageNumber) + "); ";
+        return (
+                "        nlb:nlbwalk(" + decoratePageName(linkSource, sourcePageNumber)
+                        + ", " + decoratePageName(linkTarget, targetPageNumber)
+                        + (isTechnical ? ", true" : ", false")
+                        + "); "
+        );
     }
 
     @Override
@@ -2184,7 +2196,7 @@ public class STEADExportManager extends TextExportManager {
         String roomName = decoratePageName(labelText, pageNumber);
         if (pageNumber == 1) {
             roomBeginning.append("main, ").append(roomName);
-            roomBeginning.append(" = room { nam = 'main', enter = function(s) nlb:nlbwalk(s, ").append(roomName).append("); end }, ");
+            roomBeginning.append(" = room { nam = 'main', enter = function(s) nlb:nlbwalk(s, ").append(roomName).append(", true); end }, ");
         } else {
             roomBeginning.append(roomName).append(" = ");
         }
