@@ -473,30 +473,37 @@ nlb = obj {
         s._technical_act_count = s._technical_act_count + 1;
     end;
     has_action = function(s)
-        local result = false;
+        local diff = 0;
         local ic = inv_count();
-        if ic ~= s._inv_count then
-            s._inv_count = ic;
-            result = true;
+        local ic_prev = s._inv_count;
+        if ic ~= ic_prev then
+            diff = diff + ic - ic_prev;
         end
         local ac = act_count();
-        if ac ~= s._act_count + s._technical_act_count then
-            s._act_count = ac;
-            s._technical_act_count = 0;
-            result = true;
+        local ac_prev = s._act_count + s._technical_act_count;
+        if ac ~= ac_prev then
+            diff = diff + ac - ac_prev;
         end
         local uc = use_count();
-        if uc ~= s._use_count then
-            s._use_count = uc;
-            result = true;
+        local uc_prev = s._use_count
+        if uc ~= uc_prev then
+            diff = diff + uc - uc_prev;
         end
         local wc = walk_count();
-        if wc ~= s._walk_count + s._technical_walk_count then
-            s._walk_count = wc;
-            s._technical_walk_count = 0;
-            result = true;
+        local wc_prev = s._walk_count + s._technical_walk_count;
+        if wc ~= wc_prev then
+            diff = diff + wc - wc_prev;
         end
-        return result;
+        if diff < 3 then
+            return false;
+        end
+        s._inv_count = ic;
+        s._act_count = ac;
+        s._technical_act_count = 0;
+        s._use_count = uc;
+        s._walk_count = wc;
+        s._technical_walk_count = 0;
+        return true;
     end;
 };
 
