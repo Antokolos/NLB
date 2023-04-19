@@ -422,7 +422,8 @@ public abstract class ExportManager {
                 text.getGameAct(),
                 text.getGameInv(),
                 text.getGameNouse(),
-                export.isGameForceDsc()
+                export.isGameForceDsc(),
+                export.getNeedsActionCount()
         );
         //stringBuilder.append("#mode quote").append(LINE_SEPARATOR);
         for (final Obj obj : exportData.getObjList()) {

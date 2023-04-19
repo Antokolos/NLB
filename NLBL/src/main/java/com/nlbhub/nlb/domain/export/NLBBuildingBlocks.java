@@ -58,6 +58,7 @@ public class NLBBuildingBlocks {
     private String m_gameInvText;
     private String m_gameNouseText;
     private boolean m_gameForcedsc;
+    private int m_needsActionCount;
     private List<PageBuildingBlocks> m_pagesBuildingBlocks;
     private List<ObjBuildingBlocks> m_objsBuildingBlocks;
 
@@ -71,7 +72,8 @@ public class NLBBuildingBlocks {
             String gameActText,
             String gameInvText,
             String gameNouseText,
-            boolean gameForceDsc
+            boolean gameForceDsc,
+            int needsActionCount
     ) {
         m_title = title;
         m_author = author;
@@ -85,6 +87,7 @@ public class NLBBuildingBlocks {
         m_gameInvText = gameInvText;
         m_gameNouseText = gameNouseText;
         m_gameForcedsc = gameForceDsc;
+        m_needsActionCount = needsActionCount;
     }
 
     public String getTitle() {
@@ -158,6 +161,10 @@ public class NLBBuildingBlocks {
 
     public boolean isGameForcedsc() {
         return m_gameForcedsc;
+    }
+
+    public int getNeedsActionCount() {
+        return m_needsActionCount;
     }
 
     public Set<String> getAchievements() {

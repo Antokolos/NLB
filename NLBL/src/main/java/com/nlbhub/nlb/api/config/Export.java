@@ -54,6 +54,8 @@ public class Export {
     private int m_quality;
     @XmlElement(name = "game-forcedsc")
     private boolean m_gameForceDsc;
+    @XmlElement(name = "needs-action-count")
+    private int m_needsActionCount;
     @XmlElementWrapper(name = "texts")
     @XmlElement(name = "text")
     private List<Text> m_texts;
@@ -80,6 +82,14 @@ public class Export {
 
     public void setGameForceDsc(boolean gameForceDsc) {
         m_gameForceDsc = gameForceDsc;
+    }
+
+    public int getNeedsActionCount() {
+        return m_needsActionCount;
+    }
+
+    public void setNeedsActionCount(int needsActionCount) {
+        m_needsActionCount = needsActionCount;
     }
 
     public List<Text> getTexts() {

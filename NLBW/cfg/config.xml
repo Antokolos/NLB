@@ -10,6 +10,7 @@
                 <convertpng2jpg>true</convertpng2jpg>
                 <quality>80</quality>
                 <game-forcedsc>false</game-forcedsc>
+                <needs-action-count>3</needs-action-count>
                 <texts>
                     <text lang="en">
                         <game-act>Nothing happens.</game-act>

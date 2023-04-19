@@ -494,7 +494,7 @@ nlb = obj {
         if wc ~= wc_prev then
             diff = diff + wc - wc_prev;
         end
-        if diff < 3 then
+        if diff < _needs_action_count then
             return false;
         end
         s._inv_count = ic;
