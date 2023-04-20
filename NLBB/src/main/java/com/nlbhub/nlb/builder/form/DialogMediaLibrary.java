@@ -228,7 +228,7 @@ public class DialogMediaLibrary extends JDialog {
                                 nonLinearBookFacade.addSoundFile(PLACEHOLDER_SOUND, placeholderName + PH_SOUND_EXT);
                                 break;
                         }
-                        m_mediaFileList.updateUI();
+                        m_mediaFileModelSwing.fireTableDataChanged();
                     }
                 } catch (NLBConsistencyException | NLBIOException | NLBVCSException | NLBFileManipulationException | IOException ex) {
                     JOptionPane.showMessageDialog(
@@ -253,7 +253,7 @@ public class DialogMediaLibrary extends JDialog {
                                 break;
                         }
                     }
-                    m_mediaFileList.updateUI();
+                    m_mediaFileModelSwing.fireTableDataChanged();
                 } catch (NLBFileManipulationException | NLBIOException | NLBConsistencyException | NLBVCSException ex) {
                     JOptionPane.showMessageDialog(
                             self,
@@ -276,7 +276,7 @@ public class DialogMediaLibrary extends JDialog {
                             nonLinearBookFacade.removeSoundFile(mediaFileName);
                             break;
                     }
-                    m_mediaFileList.updateUI();
+                    m_mediaFileModelSwing.fireTableDataChanged();
                 } catch (NLBFileManipulationException | NLBIOException | NLBConsistencyException ex) {
                     JOptionPane.showMessageDialog(
                             self,

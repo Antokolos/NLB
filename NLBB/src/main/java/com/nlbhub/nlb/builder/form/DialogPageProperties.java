@@ -86,6 +86,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JButton m_deleteButton;
     private JTextField m_pageIdTextField;
     private JXTable m_linksTable;
+    private LinksTableModelSwing m_linksTableModelSwing;
     private JButton m_modificationsButton;
     private JButton m_undoButton;
     private JButton m_redoButton;
@@ -156,28 +157,28 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_editButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onEditSelectedLink();
-                m_linksTable.updateUI();
+                m_linksTableModelSwing.fireTableDataChanged();
             }
         });
 
         m_deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onDeleteSelectedLink();
-                m_linksTable.updateUI();
+                m_linksTableModelSwing.fireTableDataChanged();
             }
         });
 
         m_moveUpButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onMoveUpSelectedLink();
-                m_linksTable.updateUI();
+                m_linksTableModelSwing.fireTableDataChanged();
             }
         });
 
         m_moveDownButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onMoveDownSelectedLink();
-                m_linksTable.updateUI();
+                m_linksTableModelSwing.fireTableDataChanged();
             }
         });
 
@@ -421,7 +422,8 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_autowireInTextTextField.setText(page.getAutowireInText());
         m_autowireOutTextTextField.setText(page.getAutowireOutText());
 
-        m_linksTable.setModel(new LinksTableModelSwing(m_page.getLinks()));
+        m_linksTableModelSwing = new LinksTableModelSwing(m_page.getLinks());
+        m_linksTable.setModel(m_linksTableModelSwing);
 
         m_autowireCheckBox.setSelected(page.isAutowire());
         m_autowireInTexts = page.getAutowireInTexts();

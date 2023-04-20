@@ -168,14 +168,14 @@ public class DialogModifications extends JDialog implements NLBObserver {
         m_moveUpButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onMoveUpSelectedLink();
-                m_modifications.updateUI();
+                m_modificationsTableModel.fireTableDataChanged();
             }
         });
 
         m_moveDownButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onMoveDownSelectedLink();
-                m_modifications.updateUI();
+                m_modificationsTableModel.fireTableDataChanged();
             }
         });
 
@@ -262,12 +262,12 @@ public class DialogModifications extends JDialog implements NLBObserver {
                 m_modificationsTableModel.getModificationIdsAt(m_modifications.getSelectedRows())
         );
         m_modifications.clearSelection();
-        m_modifications.updateUI();
+        m_modificationsTableModel.fireTableDataChanged();
     }
 
     private void onAdd() {
         m_modificationsTableModel.add(m_modifyingItem);
-        m_modifications.updateUI();
+        m_modificationsTableModel.fireTableDataChanged();
     }
 
     private void onOK() {
