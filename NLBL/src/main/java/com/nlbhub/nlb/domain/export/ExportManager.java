@@ -2761,6 +2761,20 @@ public abstract class ExportManager {
                                 : "";
                         stringBuilder.append(decorateSnapshotOperation(snapshotId));
                         break;
+                    case COUNTGET:
+                        assert variable != null;
+                        // Left part of assignment should be always number.
+                        // TODO: throw exception if its datatype is not number???
+                        stringBuilder.append(
+                                decorateCountGetOperation(
+                                        decorateAutoVar(variable.getName()),
+                                        Integer.parseInt(expression.getValue())
+                                )
+                        );
+                        break;
+                    case COUNTRST:
+                        stringBuilder.append(decorateCountResetOperation());
+                        break;
                     case OPENURL:
                         stringBuilder.append(decorateOpenURLOperation(expression.getValue()));
                         break;
@@ -2864,6 +2878,10 @@ public abstract class ExportManager {
     protected abstract String decorateGoToOperation(String locationId);
 
     protected abstract String decorateSnapshotOperation(String snapshotId);
+
+    protected abstract String decorateCountGetOperation(String variableName, int statType);
+
+    protected abstract String decorateCountResetOperation();
 
     protected abstract String decorateOpenURLOperation(String url);
 

@@ -472,38 +472,54 @@ nlb = obj {
     inc_technical_act_count = function(s)
         s._technical_act_count = s._technical_act_count + 1;
     end;
-    has_action = function(s)
-        local diff = 0;
+    count_reset = function(s)
         local ic = inv_count();
-        local ic_prev = s._inv_count;
-        if ic ~= ic_prev then
-            diff = diff + ic - ic_prev;
-        end
         local ac = act_count();
-        local ac_prev = s._act_count + s._technical_act_count;
-        if ac ~= ac_prev then
-            diff = diff + ac - ac_prev;
-        end
         local uc = use_count();
-        local uc_prev = s._use_count
-        if uc ~= uc_prev then
-            diff = diff + uc - uc_prev;
-        end
         local wc = walk_count();
-        local wc_prev = s._walk_count + s._technical_walk_count;
-        if wc ~= wc_prev then
-            diff = diff + wc - wc_prev;
-        end
-        if diff < _needs_action_count then
-            return false;
-        end
         s._inv_count = ic;
         s._act_count = ac;
         s._technical_act_count = 0;
         s._use_count = uc;
         s._walk_count = wc;
         s._technical_walk_count = 0;
-        return true;
+    end;
+    bitand = function(s, a, b)
+        local result = 0
+        local bitval = 1
+        while a > 0 and b > 0 do
+            if a % 2 == 1 and b % 2 == 1 then -- test the rightmost bits
+                result = result + bitval      -- set the current bit
+            end
+            bitval = bitval * 2 -- shift left
+            a = math.floor(a/2) -- shift right
+            b = math.floor(b/2)
+        end
+        return result
+    end;
+    count_get = function(s, statType)
+        local diff = 0;
+        if statType == 0 or s:bitand(statType, 1) > 0 then
+            local ic = inv_count();
+            local ic_prev = s._inv_count;
+            diff = diff + ic - ic_prev;
+        end
+        if statType == 0 or s:bitand(statType, 2) > 0 then
+            local ac = act_count() - s._technical_act_count;
+            local ac_prev = s._act_count;
+            diff = diff + ac - ac_prev;
+        end
+        if statType == 0 or s:bitand(statType, 4) > 0 then
+            local uc = use_count();
+            local uc_prev = s._use_count
+            diff = diff + uc - uc_prev;
+        end
+        if statType == 0 or s:bitand(statType, 8) > 0 then
+            local wc = walk_count() - s._technical_walk_count;
+            local wc_prev = s._walk_count;
+            diff = diff + wc - wc_prev;
+        end
+        return diff;
     end;
 };
 

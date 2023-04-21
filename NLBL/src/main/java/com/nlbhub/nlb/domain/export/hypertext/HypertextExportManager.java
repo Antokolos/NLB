@@ -411,6 +411,18 @@ public abstract class HypertextExportManager
     }
 
     @Override
+    protected String decorateCountGetOperation(String variableName, int statType) {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
+    protected String decorateCountResetOperation() {
+        // TODO: implement
+        return EMPTY_STRING;
+    }
+
+    @Override
     protected String decorateOpenURLOperation(String url) {
         // TODO: implement
         return EMPTY_STRING;

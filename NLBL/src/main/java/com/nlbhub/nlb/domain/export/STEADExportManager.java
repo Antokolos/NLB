@@ -152,6 +152,14 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    p('$'..s:gsub('\\n', '^')..'$^^')").append(LINE_SEPARATOR);
         stringBuilder.append("end").append(LINE_SEPARATOR);
 
+        stringBuilder.append("function has_action()").append(LINE_SEPARATOR);
+        stringBuilder.append("    if _action_count_diff < _needs_action_count then").append(LINE_SEPARATOR);
+        stringBuilder.append("        return false;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end").append(LINE_SEPARATOR);
+        stringBuilder.append("    nlb:count_reset();").append(LINE_SEPARATOR);
+        stringBuilder.append("    return true;").append(LINE_SEPARATOR);
+        stringBuilder.append("end").append(LINE_SEPARATOR);
+
         stringBuilder.append("function init()").append(LINE_SEPARATOR);
         stringBuilder.append("    statsAPI.init();").append(LINE_SEPARATOR);
         stringBuilder.append("    if dice then").append(LINE_SEPARATOR);
@@ -218,6 +226,7 @@ public class STEADExportManager extends TextExportManager {
         String lang = nlbBuildingBlocks.getLang();
         stringBuilder.append("    _export_lang = '").append(lang).append("';").append(LINE_SEPARATOR);
         int count = nlbBuildingBlocks.getNeedsActionCount();
+        stringBuilder.append("    _action_count_diff = 0;").append(LINE_SEPARATOR);
         stringBuilder.append("    _needs_action_count = ").append(count).append(";").append(LINE_SEPARATOR);
         stringBuilder.append("    _syscall_showmenubtn:act();").append(LINE_SEPARATOR);
         if (Constants.RU.equalsIgnoreCase(lang)) {
@@ -426,6 +435,7 @@ public class STEADExportManager extends TextExportManager {
         autosBuilder.append("    autos = function(s)").append(LINE_SEPARATOR);
         autosBuilder.append("        nlb:revive();").append(LINE_SEPARATOR);
         autosBuilder.append("        nlb:ways_chk(s);").append(LINE_SEPARATOR);
+        autosBuilder.append("        _action_count_diff = nlb:count_get(0);").append(LINE_SEPARATOR);
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             if (linkBlocks.isAuto()) {
@@ -743,7 +753,7 @@ public class STEADExportManager extends TextExportManager {
         result
                 .append("if (")
                 .append((constrained) ? linkBlocks.getLinkConstraint() : "true")
-                .append((linkBlocks.isNeedsAction()) ? " and nlb:has_action()" : "")
+                .append((linkBlocks.isNeedsAction()) ? " and has_action()" : "")
                 .append(") then ");
         result.append(linkBlocks.getLinkModifications());
         result.append(linkBlocks.getLinkVariable());
@@ -1633,6 +1643,16 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateCountGetOperation(String variableName, int statType) {
+        return variableName + " = nlb:count_get(" + statType + ");" + LINE_SEPARATOR;
+    }
+
+    @Override
+    protected String decorateCountResetOperation() {
+        return "nlb:count_reset(); _action_count_diff = 0;" + LINE_SEPARATOR;
+    }
+
+    @Override
     protected String decorateOpenURLOperation(String url) {
         return "statsAPI.openURL(\"" + url + "\");" + LINE_SEPARATOR;
     }
@@ -1859,7 +1879,7 @@ public class STEADExportManager extends TextExportManager {
         return (
                 "        nlb:nlbwalk(" + decoratePageName(linkSource, sourcePageNumber)
                         + ", " + decoratePageName(linkTarget, targetPageNumber)
-                        + (isTechnical ? ", true" : ", false")
+                        + ", true"  // All such walks are technical for non-VN style, because it is made from technical room
                         + "); "
         );
     }

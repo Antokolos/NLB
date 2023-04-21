@@ -75,6 +75,8 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
         add(Type.END);
         add(Type.RETURN);
         add(Type.SNAPSHOT);
+        add(Type.COUNTGET);
+        add(Type.COUNTRST);
     }};
     private boolean m_external;
     private Type m_type = Type.ASSIGN;
@@ -174,11 +176,12 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             case ACTT:
             case OBJS:
             case ACHIEVED:
+            case COUNTGET:
                 return true;
             default:
                 // TAG, WHILE, IF, ELSE, ELSEIF, END, RETURN, IFHAVE, ADD, ADDU, ADDINV, ADDALL, ADDALLU,
                 // REMOVE, RMINV, CLEAR, CLRINV, SPUSH, WPUSH, PUSH, SINJECT, INJECT, SHUFFLE, PDSC, PDSCS, ACT, USE
-                // SSND, WSND, SND, ACHIEVE, GOTO, SNAPSHOT, ACHMAX
+                // SSND, WSND, SND, ACHIEVE, GOTO, SNAPSHOT, COUNTRST, ACHMAX
                 // It is funny, but RETURN operation currently does not actually return anything :)
                 return false;
         }
@@ -319,6 +322,10 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
             m_type = Type.GOTO;
         } else if (type.equals(Type.SNAPSHOT.name())) {
             m_type = Type.SNAPSHOT;
+        } else if (type.equals(Type.COUNTGET.name())) {
+            m_type = Type.COUNTGET;
+        } else if (type.equals(Type.COUNTRST.name())) {
+            m_type = Type.COUNTRST;
         } else if (type.equals(Type.OPENURL.name())) {
             m_type = Type.OPENURL;
         } else if (type.equals(Type.WINGEOM.name())) {
@@ -527,6 +534,12 @@ public class ModificationImpl extends AbstractIdentifiableItem implements Modifi
                 break;
             case "SNAPSHOT":
                 m_type = Type.SNAPSHOT;
+                break;
+            case "COUNTGET":
+                m_type = Type.COUNTGET;
+                break;
+            case "COUNTRST":
+                m_type = Type.COUNTRST;
                 break;
             case "OPENURL":
                 m_type = Type.OPENURL;
