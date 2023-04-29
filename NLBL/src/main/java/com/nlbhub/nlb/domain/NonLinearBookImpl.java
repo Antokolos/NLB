@@ -842,6 +842,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private boolean m_existingObjIsLooped;
         private boolean m_existingObjIsNoRedrawOnAct;
         private boolean m_existingObjIsTakable;
+        private boolean m_existingObjIsCallback;
         private boolean m_existingImageInScene;
         private boolean m_existingImageInInventory;
         private String m_newObjName;
@@ -873,6 +874,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private boolean m_newObjIsLooped;
         private boolean m_newObjIsNoRedrawOnAct;
         private boolean m_newObjIsTakable;
+        private boolean m_newObjIsCallback;
         private boolean m_newImageInScene;
         private boolean m_newImageInInventory;
 
@@ -914,6 +916,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String objMorphOverName,
                 final String objMorphOutName,
                 final boolean objIsTakable,
+                final boolean objIsCallback,
                 final boolean imageInScene,
                 final boolean imageInInventory
         ) {
@@ -955,6 +958,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     objMorphOverName,
                     objMorphOutName,
                     objIsTakable,
+                    objIsCallback,
                     imageInScene,
                     imageInInventory
             );
@@ -998,6 +1002,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final String objMorphOverName,
                 final String objMorphOutName,
                 final boolean objIsTakable,
+                final boolean objIsCallback,
                 final boolean imageInScene,
                 final boolean imageInInventory
         ) {
@@ -1091,6 +1096,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingObjIsLooped = obj.isLooped();
             m_existingObjIsNoRedrawOnAct = obj.isNoRedrawOnAct();
             m_existingObjIsTakable = obj.isTakable();
+            m_existingObjIsCallback = obj.isCallback();
             m_existingImageInScene = obj.isImageInScene();
             m_existingImageInInventory = obj.isImageInInventory();
             m_newObjName = objName;
@@ -1122,6 +1128,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newObjIsLooped = objIsLooped;
             m_newObjIsNoRedrawOnAct = objIsNoRedrawOnAct;
             m_newObjIsTakable = objIsTakable;
+            m_newObjIsCallback = objIsCallback;
             m_newImageInScene = imageInScene;
             m_newImageInInventory = imageInInventory;
         }
@@ -1163,6 +1170,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setLooped(m_newObjIsLooped);
             m_obj.setNoRedrawOnAct(m_newObjIsNoRedrawOnAct);
             m_obj.setTakable(m_newObjIsTakable);
+            m_obj.setCallback(m_newObjIsCallback);
             m_obj.setImageInScene(m_newImageInScene);
             m_obj.setImageInInventory(m_newImageInInventory);
             m_obj.notifyObservers();
@@ -1205,6 +1213,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setLooped(m_existingObjIsLooped);
             m_obj.setNoRedrawOnAct(m_existingObjIsNoRedrawOnAct);
             m_obj.setTakable(m_existingObjIsTakable);
+            m_obj.setCallback(m_existingObjIsCallback);
             m_obj.setImageInScene(m_existingImageInScene);
             m_obj.setImageInInventory(m_existingImageInInventory);
             m_obj.notifyObservers();
@@ -2060,6 +2069,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         (objMorphOver != null) ? objMorphOver.getName() : Constants.EMPTY_STRING,
                         (objMorphOut != null) ? objMorphOut.getName() : Constants.EMPTY_STRING,
                         obj.isTakable(),
+                        obj.isCallback(),
                         obj.isImageInScene(),
                         obj.isImageInInventory()
                 );
@@ -2555,6 +2565,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final String objMorphOver,
             final String objMorphOut,
             final boolean objIsTakable,
+            final boolean objIsCallback,
             final boolean imageInScene,
             final boolean imageInInventory
     ) {
@@ -2597,6 +2608,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         objMorphOver,
                         objMorphOut,
                         objIsTakable,
+                        objIsCallback,
                         imageInScene,
                         imageInInventory
                 )

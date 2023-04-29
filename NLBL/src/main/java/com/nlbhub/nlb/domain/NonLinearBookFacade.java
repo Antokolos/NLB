@@ -45,7 +45,6 @@ import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.ResourceManager;
 import com.nlbhub.nlb.util.StringHelper;
 import com.nlbhub.nlb.vcs.Author;
-import com.nlbhub.nlb.vcs.GitAdapterWithPathDecoration;
 import com.nlbhub.nlb.vcs.VCSAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,8 +52,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-
-import static com.nlbhub.nlb.util.ResourceManager.*;
 
 /**
  * The NonLinearBookFacade class
@@ -471,6 +468,7 @@ public class NonLinearBookFacade implements NLBObservable {
             final String objMorphOver,
             final String objMorphOut,
             final boolean objIsTakable,
+            final boolean objIsCallback,
             final boolean imageInScene,
             final boolean imageInInventory
     ) {
@@ -512,6 +510,7 @@ public class NonLinearBookFacade implements NLBObservable {
                         objMorphOver,
                         objMorphOut,
                         objIsTakable,
+                        objIsCallback,
                         imageInScene,
                         imageInInventory
                 )

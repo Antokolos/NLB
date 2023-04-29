@@ -62,6 +62,7 @@ public class ObjBuildingBlocks {
     private String m_morphOver;
     private String m_morphOut;
     private boolean m_takable;
+    private boolean m_callback;
     private String m_objTak;
     private String m_objInv;
     private String m_objActStart;
@@ -198,6 +199,14 @@ public class ObjBuildingBlocks {
 
     public void setTakable(boolean takable) {
         m_takable = takable;
+    }
+
+    public boolean isCallback() {
+        return m_callback;
+    }
+
+    public void setCallback(boolean callback) {
+        m_callback = callback;
     }
 
     public String getObjTak() {

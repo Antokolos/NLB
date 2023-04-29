@@ -82,6 +82,7 @@ public interface Obj extends NodeItem {
     public static final String DEFAULT_MORPH_OUT_ID = Constants.EMPTY_STRING;
     public static final String DEFAULT_OFFSET = Constants.EMPTY_STRING;
     public static final boolean DEFAULT_TAKABLE = false;
+    public static final boolean DEFAULT_CALLBACK = false;
     public static final boolean DEFAULT_IMAGE_IN_SCENE = true;
     public static final boolean DEFAULT_IMAGE_IN_INVENTORY = true;
     public static final String DEFAULT_CONTAINER_ID = Constants.EMPTY_STRING;
@@ -181,6 +182,8 @@ public interface Obj extends NodeItem {
     public Coords getRelativeCoords(final boolean lookInMorphs);
 
     public boolean isTakable();
+
+    public boolean isCallback();
 
     public boolean isImageInScene();
 

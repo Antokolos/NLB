@@ -77,6 +77,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JTextField m_objVariableTextField;
     private JButton m_modificationsButton;
     private JCheckBox m_objIsTakable;
+    private JCheckBox m_callback;
     private JButton m_undoButton;
     private JButton m_redoButton;
     private JTextField m_objDispTextField;
@@ -342,6 +343,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objNouseTextTextArea.setText(obj.getNouseText());
         m_suppressDsc.setSelected(obj.isSuppressDsc());
         m_objIsTakable.setSelected(obj.isTakable());
+        m_callback.setSelected(obj.isCallback());
         m_objIsGraphical.setSelected(obj.isGraphical());
         m_objIsShowOnCursor.setSelected(obj.isShowOnCursor());
         m_objIsPreserved.setSelected(obj.isPreserved());
@@ -497,6 +499,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 m_morphOver.getText(),
                 m_morphOut.getText(),
                 m_objIsTakable.isSelected(),
+                m_callback.isSelected(),
                 m_imageInScene.isSelected(),
                 m_imageInInventory.isSelected()
         );
@@ -1046,6 +1049,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_objIsTakable = new JCheckBox();
         m_objIsTakable.setText("Can be taken to the inventory");
         panel33.add(m_objIsTakable);
+        m_callback = new JCheckBox();
+        m_callback.setText("Callback");
+        panel33.add(m_callback);
         m_suppressDsc = new JCheckBox();
         m_suppressDsc.setText("Suppress dsc");
         panel33.add(m_suppressDsc);

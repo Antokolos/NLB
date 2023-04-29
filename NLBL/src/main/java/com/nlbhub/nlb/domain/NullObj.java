@@ -283,6 +283,11 @@ public class NullObj extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    public boolean isCallback() {
+        return Obj.DEFAULT_CALLBACK;
+    }
+
+    @Override
     public boolean isImageInScene() {
         return Obj.DEFAULT_IMAGE_IN_SCENE;
     }

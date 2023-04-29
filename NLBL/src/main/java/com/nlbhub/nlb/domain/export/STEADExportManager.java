@@ -152,6 +152,30 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    p('$'..s:gsub('\\n', '^')..'$^^')").append(LINE_SEPARATOR);
         stringBuilder.append("end").append(LINE_SEPARATOR);
 
+        stringBuilder.append("function update_action_count()").append(LINE_SEPARATOR);
+        stringBuilder.append("    _action_count_diff_prev = _action_count_diff;").append(LINE_SEPARATOR);
+        stringBuilder.append("    _action_count_diff = nlb:count_get(0);").append(LINE_SEPARATOR);
+        stringBuilder.append("    if _action_count_diff <= _action_count_diff_prev then").append(LINE_SEPARATOR);
+        stringBuilder.append("        return false;").append(LINE_SEPARATOR);
+        stringBuilder.append("    end").append(LINE_SEPARATOR);
+        for (ObjBuildingBlocks objBuildingBlocks : nlbBuildingBlocks.getObjsBuildingBlocks()) {
+            if (objBuildingBlocks.isCallback()) {
+                String constraint = objBuildingBlocks.getObjConstraint();
+                boolean hasConstraint = !constraint.isEmpty();
+                String objId = objBuildingBlocks.getObjLabel();
+                if (hasConstraint) {
+                    stringBuilder.append("    if ").append(objId).append(":alive() then").append(LINE_SEPARATOR);
+                }
+                stringBuilder.append("    ").append(hasConstraint ? "    " : "")
+                        .append(objId).append(":acta();").append(LINE_SEPARATOR);
+                if (hasConstraint) {
+                    stringBuilder.append("    end").append(LINE_SEPARATOR);
+                }
+            }
+        }
+        stringBuilder.append("    return true;").append(LINE_SEPARATOR);
+        stringBuilder.append("end").append(LINE_SEPARATOR);
+
         stringBuilder.append("function has_action()").append(LINE_SEPARATOR);
         stringBuilder.append("    if _action_count_diff < _needs_action_count then").append(LINE_SEPARATOR);
         stringBuilder.append("        return false;").append(LINE_SEPARATOR);
@@ -227,6 +251,7 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("    _export_lang = '").append(lang).append("';").append(LINE_SEPARATOR);
         int count = nlbBuildingBlocks.getNeedsActionCount();
         stringBuilder.append("    _action_count_diff = 0;").append(LINE_SEPARATOR);
+        stringBuilder.append("    _action_count_diff_prev = 0;").append(LINE_SEPARATOR);
         stringBuilder.append("    _needs_action_count = ").append(count).append(";").append(LINE_SEPARATOR);
         stringBuilder.append("    _syscall_showmenubtn:act();").append(LINE_SEPARATOR);
         if (Constants.RU.equalsIgnoreCase(lang)) {
@@ -433,9 +458,9 @@ public class STEADExportManager extends TextExportManager {
         }
         stringBuilder.append(pageBlocks.getPageTextStart());
         autosBuilder.append("    autos = function(s)").append(LINE_SEPARATOR);
+        autosBuilder.append("        update_action_count();").append(LINE_SEPARATOR);
         autosBuilder.append("        nlb:revive();").append(LINE_SEPARATOR);
         autosBuilder.append("        nlb:ways_chk(s);").append(LINE_SEPARATOR);
-        autosBuilder.append("        _action_count_diff = nlb:count_get(0);").append(LINE_SEPARATOR);
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             if (linkBlocks.isAuto()) {
@@ -1649,7 +1674,7 @@ public class STEADExportManager extends TextExportManager {
 
     @Override
     protected String decorateCountResetOperation() {
-        return "nlb:count_reset(); _action_count_diff = 0;" + LINE_SEPARATOR;
+        return "nlb:count_reset(); _action_count_diff = 0; _action_count_diff_prev = 0;" + LINE_SEPARATOR;
     }
 
     @Override

@@ -97,6 +97,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private static final String MORPH_OUT_FILE_NAME = "morphout";
     private static final String OFFSET_FILE_NAME = "offset";
     private static final String TAKABLE_FILE_NAME = "takable";
+    private static final String CALLBACK_FILE_NAME = "callback";
     private static final String IMAGE_IN_SCENE_FILE_NAME = "imgscene";
     private static final String IMAGE_IN_INVENTORY_FILE_NAME = "imginv";
     private static final String CONTAINERID_FILE_NAME = "containerid";
@@ -136,6 +137,10 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
      * Object can be taken to the inventory
      */
     private boolean m_takable = DEFAULT_TAKABLE;
+    /**
+     * Object modifications should be executed after each action if object constraint is satisfied
+     */
+    private boolean m_callback = DEFAULT_CALLBACK;
     private String m_containerId = DEFAULT_CONTAINER_ID;
     private String m_imageFileName = DEFAULT_IMAGE_FILE_NAME;
     private boolean m_animatedImage = DEFAULT_ANIMATED_IMAGE;
@@ -202,6 +207,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         m_morphOverId = source.getMorphOverId();
         m_morphOutId = source.getMorphOutId();
         m_takable = source.isTakable();
+        m_callback = source.isCallback();
         m_suppressDsc = source.isSuppressDsc();
         m_imageInScene = source.isImageInScene();
         m_imageInInventory = source.isImageInInventory();
@@ -650,6 +656,16 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     }
 
     @Override
+    @XmlElement(name = "callback")
+    public boolean isCallback() {
+        return m_callback;
+    }
+
+    public void setCallback(boolean callback) {
+        m_callback = callback;
+    }
+
+    @Override
     @XmlElement(name = "image-in-scene")
     public boolean isImageInScene() {
         return m_imageInScene;
@@ -893,6 +909,12 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                     TAKABLE_FILE_NAME,
                     String.valueOf(m_takable),
                     String.valueOf(DEFAULT_TAKABLE)
+            );
+            fileManipulator.writeOptionalString(
+                    objDir,
+                    CALLBACK_FILE_NAME,
+                    String.valueOf(m_callback),
+                    String.valueOf(DEFAULT_CALLBACK)
             );
             fileManipulator.writeOptionalString(
                     objDir,
@@ -1223,6 +1245,13 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
                         objDir,
                         TAKABLE_FILE_NAME,
                         String.valueOf(DEFAULT_TAKABLE)
+                )
+        );
+        m_callback = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        objDir,
+                        CALLBACK_FILE_NAME,
+                        String.valueOf(DEFAULT_CALLBACK)
                 )
         );
         m_imageInScene = "true".equals(

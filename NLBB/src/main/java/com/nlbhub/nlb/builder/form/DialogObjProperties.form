@@ -655,6 +655,12 @@
                                           <text value="Can be taken to the inventory"/>
                                         </properties>
                                       </component>
+                                      <component id="2640" class="javax.swing.JCheckBox" binding="m_callback">
+                                        <constraints/>
+                                        <properties>
+                                          <text value="Callback"/>
+                                        </properties>
+                                      </component>
                                       <component id="60799" class="javax.swing.JCheckBox" binding="m_suppressDsc">
                                         <constraints/>
                                         <properties>

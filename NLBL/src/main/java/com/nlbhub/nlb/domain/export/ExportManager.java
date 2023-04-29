@@ -916,6 +916,7 @@ public abstract class ExportManager {
         blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), expandVariables(StringHelper.getTextChunks(obj.getText())), hasImage && obj.isImageInScene(), obj.isGraphical()));
         blocks.setGraphical(obj.isGraphical());
         blocks.setTakable(obj.isTakable());
+        blocks.setCallback(obj.isCallback());
         String commonObjId = commonToObj != null ? commonToObj.getId() : Constants.EMPTY_STRING;
         blocks.setObjTak(decorateObjTak(obj.getName(), commonObjId));
         blocks.setObjInv(decorateObjInv(objType));
@@ -1722,6 +1723,11 @@ public abstract class ExportManager {
             @Override
             public boolean isTakable() {
                 return obj.isTakable();
+            }
+
+            @Override
+            public boolean isCallback() {
+                return obj.isCallback();
             }
 
             @Override
