@@ -7,7 +7,7 @@
     <groupId>com.nlbhub</groupId>
     <artifactId>NLB</artifactId>
     <packaging>pom</packaging>
-    <version>0.10.81</version>
+    <version>1.0.1</version>
     <name>NLB</name>
 
     <properties>
@@ -20,18 +20,15 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>2.16.2</version>
+                <version>2.17.1</version>
                 <executions>
                     <execution>
                         <id>update-pom-versions</id>
                         <goals>
-                            <goal>increment</goal>
+                            <goal>set</goal>
                             <goal>commit</goal>
                         </goals>
                         <phase>compile</phase>
-                        <configuration>
-                            <updateMatchingVersions>true</updateMatchingVersions>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
