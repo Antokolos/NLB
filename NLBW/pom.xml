@@ -1,17 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <artifactId>NLBW</artifactId>
     <packaging>jar</packaging>
     <version>0.10.81</version>
     <name>NLBW</name>
-    <url>http://maven.apache.org</url>
+
     <parent>
         <groupId>com.nlbhub</groupId>
         <artifactId>NLB</artifactId>
         <version>0.10.81</version>
     </parent>
+
     <dependencies>
         <dependency>
             <groupId>com.nlbhub</groupId>
@@ -21,37 +24,37 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-http</artifactId>
-            <version>11.0.16</version>
+            <version>11.0.22</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-io</artifactId>
-            <version>11.0.12</version>
+            <version>11.0.22</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-security</artifactId>
-            <version>11.0.12</version>
+            <version>11.0.22</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <version>11.0.14</version>
+            <version>11.0.22</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlet</artifactId>
-            <version>11.0.12</version>
+            <version>11.0.22</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-util</artifactId>
-            <version>11.0.12</version>
+            <version>11.0.22</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-webapp</artifactId>
-            <version>11.0.12</version>
+            <version>11.0.22</version>
         </dependency>
         <dependency>
             <groupId>javax.ws.rs</groupId>
@@ -61,7 +64,7 @@
         <dependency>
             <groupId>net.sf.saxon</groupId>
             <artifactId>Saxon-HE</artifactId>
-            <version>11.4</version>
+            <version>12.5</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
