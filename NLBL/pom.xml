@@ -6,13 +6,13 @@
 
     <artifactId>NLBL</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.3-SNAPSHOT</version>
     <name>NLBL</name>
 
     <parent>
         <groupId>com.nlbhub</groupId>
         <artifactId>NLB</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.3-SNAPSHOT</version>
     </parent>
 
     <dependencies>
