@@ -41,10 +41,13 @@ package com.nlbhub.nlb.web;
 import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.web.exception.LauncherException;
 import com.nlbhub.nlb.web.service.rest.GetNLBDataService;
+import com.nlbhub.nlb.web.service.rest.NLBServiceWebApplication;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletContainer;
 
 /**
  * The Launcher class
@@ -70,16 +73,8 @@ public class Launcher implements Runnable {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
         m_server.setHandler(context);
-        /*
-        TODO: FIX
-        ServletHolder holder = (
-                context.addServlet(org.apache.wink.server.internal.servlet.RestServlet.class, "/nlb/*")
-        );
-        holder.setInitParameter(
-                "javax.ws.rs.Application",
-                "com.nlbhub.nlb.web.service.rest.NLBServiceWebApplication"
-        );
-        */
+        ResourceConfig resourceConfig = new NLBServiceWebApplication();
+        context.addServlet(new ServletHolder(new ServletContainer(resourceConfig)), "/nlb/*");
     }
 
     private void start() throws LauncherException {

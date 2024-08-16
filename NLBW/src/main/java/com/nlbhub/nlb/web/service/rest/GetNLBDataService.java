@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.web.service.rest;
 
 import com.nlbhub.nlb.api.*;
+import com.nlbhub.nlb.api.Link;
 import com.nlbhub.nlb.domain.*;
 import com.nlbhub.nlb.exception.DecisionException;
 import com.nlbhub.nlb.exception.NLBConsistencyException;
@@ -48,11 +49,10 @@ import com.nlbhub.nlb.util.JaxbMarshaller;
 import com.nlbhub.nlb.util.StringHelper;
 import com.nlbhub.user.domain.DecisionPoint;
 import com.nlbhub.user.domain.History;
-import org.apache.wink.common.internal.MultivaluedMapImpl;
 
 import javax.script.ScriptException;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -131,7 +131,6 @@ public class GetNLBDataService {
                 for (String value : entry.getValue()) {
                     builder.append(";").append(entry.getKey()).append("=").append(value);
                 }
-
             }
             return builder.toString();
         }
@@ -713,13 +712,17 @@ public class GetNLBDataService {
         String[] idParts = decisionPoint.getBookId().split(";");
         StringBuilder bookIdBuilder = new StringBuilder();
         bookIdBuilder.append(idParts[0]);  // The book name
-        for (int i = 1; i < idParts.length; i++) {
-            String[] moduleIdParts = idParts[i].split("=");
-            if (Integer.parseInt(moduleIdParts[0]) != moduleData.getModuleDepth()) {
-                bookIdBuilder.append(";").append(idParts[i]);
-            } else {
-                result.setModulePageId(moduleIdParts[1]);
+        if (idParts.length > 1) {
+            for (int i = 1; i < idParts.length; i++) {
+                String[] moduleIdParts = idParts[i].split("=");
+                if (Integer.parseInt(moduleIdParts[0]) != moduleData.getModuleDepth()) {
+                    bookIdBuilder.append(";").append(idParts[i]);
+                } else {
+                    result.setModulePageId(moduleIdParts[1]);
+                }
             }
+        } else {
+            result.setModulePageId("");
         }
         result.setBookId(bookIdBuilder.toString());
         return result;
