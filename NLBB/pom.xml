@@ -15,6 +15,17 @@
         <version>1.0.3-SNAPSHOT</version>
     </parent>
 
+    <repositories>
+        <repository>
+            <id>jetbrains.releases</id>
+            <url>https://www.jetbrains.com/intellij-repository/releases</url>
+        </repository>
+        <repository>
+            <id>jetbrains.3rdparty</id>
+            <url>https://cache-redirector.jetbrains.com/intellij-dependencies</url>
+        </repository>
+    </repositories>
+
     <build>
         <plugins>
             <plugin>
@@ -32,9 +43,42 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <configuration>
+                            <target>
+                                <path id="j2sp">
+                                    <pathelement location="${project.basedir}/src/main/java"/>
+                                </path>
+                                <taskdef name="javac2" classpathref="maven.runtime.classpath" classname="com.intellij.ant.Javac2"/>
+                                <javac2 destdir="${project.basedir}/target/classes">
+                                    <src refid="j2sp"/>
+                                </javac2>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>com.jetbrains.intellij.java</groupId>
+            <artifactId>java-gui-forms-rt</artifactId>
+            <version>${intellij.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jetbrains.intellij.java</groupId>
+            <artifactId>java-compiler-ant-tasks</artifactId>
+            <version>${intellij.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.piccolo2d</groupId>
             <artifactId>piccolo2d-core</artifactId>

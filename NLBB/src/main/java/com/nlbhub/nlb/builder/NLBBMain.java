@@ -119,7 +119,7 @@ public class NLBBMain implements Runnable {
         MainFrame mf = new MainFrame(m_nlbFacade, m_launcher);
 
         final Container container = frame.getContentPane();
-        JComponent component = mf.$$$getRootComponent$$$();
+        JComponent component = mf.getMainFramePanel();
         container.add(component);
         JMenuBar menuBar = createMenuBar();
         // TODO: uncomment the following line to use the menu
