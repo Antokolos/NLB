@@ -45,7 +45,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <phase>compile</phase>
@@ -57,6 +57,7 @@
                                 <taskdef name="javac2" classpathref="maven.runtime.classpath" classname="com.intellij.ant.Javac2"/>
                                 <javac2 destdir="${project.basedir}/target/classes">
                                     <src refid="j2sp"/>
+                                    <classpath refid="maven.compile.classpath"/>
                                 </javac2>
                             </target>
                         </configuration>
