@@ -29,17 +29,216 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.moditect</groupId>
+                <artifactId>moditect-maven-plugin</artifactId>
+                <version>1.2.2.Final</version>
+                <executions>
+                    <execution>
+                        <id>generate-module-info</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-module-info</goal>
+                        </goals>
+                        <configuration>
+                            <overwriteExistingFiles>true</overwriteExistingFiles>
+                            <outputDirectory>${project.build.directory}/modules</outputDirectory>
+                            <modules>
+                                <!-- NLBL -->
+                                <module>
+                                    <artifact>
+                                        <groupId>com.itextpdf</groupId>
+                                        <artifactId>itextpdf</artifactId>
+                                        <version>5.5.13.4</version>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>itextpdf</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.eclipse.jgit</groupId>
+                                        <artifactId>org.eclipse.jgit</artifactId>
+                                        <version>6.10.0.202406032230-r</version>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>org.eclipse.jgit</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.slf4j</groupId>
+                                        <artifactId>slf4j-reload4j</artifactId>
+                                        <version>2.0.16</version>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>slf4j.reload4j</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.mozilla</groupId>
+                                        <artifactId>rhino</artifactId>
+                                        <version>1.7.15</version>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>org.mozilla.rhino</name>
+                                    </moduleInfo>
+                                </module>
+                                <!-- NLBW -->
+                                <module>
+                                    <artifact>
+                                        <groupId>org.glassfish.jersey.containers</groupId>
+                                        <artifactId>jersey-container-servlet-core</artifactId>
+                                        <version>3.1.8</version>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>jersey.container.servlet.core</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.glassfish.jersey.core</groupId>
+                                        <artifactId>jersey-server</artifactId>
+                                        <version>3.1.8</version>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>jersey.server</name>
+                                    </moduleInfo>
+                                </module>
+                                <!-- NLBB -->
+                                <module>
+                                    <artifact>
+                                        <groupId>org.piccolo2d</groupId>
+                                        <artifactId>piccolo2d-core</artifactId>
+                                        <version>2.0</version>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>piccolo2d.core</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.piccolo2d</groupId>
+                                        <artifactId>piccolo2d-extras</artifactId>
+                                        <version>2.0</version>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>piccolo2d.extras</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.swinglabs</groupId>
+                                        <artifactId>swingx</artifactId>
+                                        <version>1.6.1</version>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>swingx</name>
+                                    </moduleInfo>
+                                </module>
+                            </modules>
+                            <jdepsExtraArgs>
+                                <arg>--multi-release=9</arg>
+                                <arg>--ignore-missing-deps</arg>
+                            </jdepsExtraArgs>
+                        </configuration>
+                    </execution>
+                    <!--execution>
+                        <id>create-runtime-image</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>create-runtime-image</goal>
+                        </goals>
+                        <configuration>
+                            <!-=-requires toolchains.xml file in .m2/ user folder -=->
+                            <!-=-baseJdk>version=21,vendor=openjdk</baseJdk-=->
+                            <modulePath>
+                                <path>${project.build.directory}/${project.artifactId}-${project.version}.${project.packaging}</path>
+                                <path>${project.build.directory}/modules</path>
+                                <path>${project.build.directory}/lib</path>
+                            </modulePath>
+                            <modules>
+                                <module>NLBB</module>
+                            </modules>
+                            <launcher>
+                                <name>NLBB</name>
+                                <module>NLBB/com.nlbhub.nlb.builder.NLBBMain</module>
+                            </launcher>
+                            <outputDirectory>${project.build.directory}/jlink-image</outputDirectory>
+                            <compression>2</compression>
+                            <stripDebug>true</stripDebug>
+                        </configuration>
+                    </execution-->
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>3.7.1</version>
                 <executions>
                     <execution>
                         <id>src-dependencies</id>
-                        <phase>package</phase>
+                        <phase>prepare-package</phase>
                         <goals>
                             <!-- use unpack-dependencies instead if you want to explode the sources -->
                             <goal>copy-dependencies</goal>
                         </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>false</overWriteIfNewer>
+                            <!--includeArtifactIds>
+                                NLBL,
+                                NLBW,
+                                slf4j-api,
+                                annotations,
+                                jersey-common,
+                                jersey-client,
+                                jetty-servlet,
+                                jetty-server,
+                                asm,
+                                asm-analysis,
+                                asm-commons,
+                                asm-tree,
+                                asm-util,
+                                commons-codec,
+                                jakarta.activation-api,
+                                jakarta.annotation-api,
+                                jakarta.inject-api,
+                                jakarta.validation-api,
+                                jakarta.ws.rs-api,
+                                jakarta.xml.bind-api,
+                                JavaEWAH,
+                                jetty-http,
+                                jetty-io,
+                                jetty-jakarta-servlet-api,
+                                jetty-security,
+                                jetty-server,
+                                jetty-servlet,
+                                jetty-util,
+                                jetty-webapp,
+                                jetty-xml,
+                                log4j-api,
+                                log4j-core,
+                                nashorn-core,
+                                jakarta.servlet-api,
+                                jakarta.persistence-api
+                            </includeArtifactIds-->
+                            <!--excludeArtifactIds>piccolo2d-extras,piccolo2d-core,swingx,junit,slf4j-reload4j,org.eclipse.jgit,hamcrest-core,hk2-utils,javax.servlet-api,swing-worker,aopalliance-repackaged,commons-codec,filters,hk2-api,hk2-locator,java-compiler-ant-tasks,java-gui-forms-rt,JavaEWAH,javassist</excludeArtifactIds-->
+                            <excludeArtifactIds>
+                                itextpdf,
+                                org.eclipse.jgit,
+                                slf4j-reload4j,
+                                rhino,
+                                jersey-container-servlet-core,
+                                jersey-server,
+                                piccolo2d-extras,
+                                piccolo2d-core,
+                                swingx
+                            </excludeArtifactIds>
+                            <includeScope>compile</includeScope>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
