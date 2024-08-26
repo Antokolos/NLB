@@ -188,44 +188,6 @@
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>false</overWriteIfNewer>
-                            <!--includeArtifactIds>
-                                NLBL,
-                                NLBW,
-                                slf4j-api,
-                                annotations,
-                                jersey-common,
-                                jersey-client,
-                                jetty-servlet,
-                                jetty-server,
-                                asm,
-                                asm-analysis,
-                                asm-commons,
-                                asm-tree,
-                                asm-util,
-                                commons-codec,
-                                jakarta.activation-api,
-                                jakarta.annotation-api,
-                                jakarta.inject-api,
-                                jakarta.validation-api,
-                                jakarta.ws.rs-api,
-                                jakarta.xml.bind-api,
-                                JavaEWAH,
-                                jetty-http,
-                                jetty-io,
-                                jetty-jakarta-servlet-api,
-                                jetty-security,
-                                jetty-server,
-                                jetty-servlet,
-                                jetty-util,
-                                jetty-webapp,
-                                jetty-xml,
-                                log4j-api,
-                                log4j-core,
-                                nashorn-core,
-                                jakarta.servlet-api,
-                                jakarta.persistence-api
-                            </includeArtifactIds-->
-                            <!--excludeArtifactIds>piccolo2d-extras,piccolo2d-core,swingx,junit,slf4j-reload4j,org.eclipse.jgit,hamcrest-core,hk2-utils,javax.servlet-api,swing-worker,aopalliance-repackaged,commons-codec,filters,hk2-api,hk2-locator,java-compiler-ant-tasks,java-gui-forms-rt,JavaEWAH,javassist</excludeArtifactIds-->
                             <excludeArtifactIds>
                                 itextpdf,
                                 org.eclipse.jgit,
