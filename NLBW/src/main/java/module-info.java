@@ -7,7 +7,7 @@ module NLBW {
     requires NLBL;
 
     requires org.eclipse.jetty.server;
-    requires org.eclipse.jetty.servlet;
+    requires org.eclipse.jetty.ee10.servlet;
     requires jakarta.ws.rs;
     requires jersey.common;
     requires jersey.server;

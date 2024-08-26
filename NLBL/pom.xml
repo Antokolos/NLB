@@ -87,7 +87,6 @@
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
             <version>4.0.5</version>
-            <scope>runtime</scope>
         </dependency>
     </dependencies>
 </project>
