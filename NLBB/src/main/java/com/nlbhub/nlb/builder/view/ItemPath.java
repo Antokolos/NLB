@@ -46,6 +46,6 @@ import org.piccolo2d.nodes.PPath;
  * @author Anton P. Kolosov
  * @version 1.0 1/22/14
  */
-public abstract class ItemPath extends PPath {
+public abstract class ItemPath extends PPath.Double {
     protected abstract String buildText();
 }

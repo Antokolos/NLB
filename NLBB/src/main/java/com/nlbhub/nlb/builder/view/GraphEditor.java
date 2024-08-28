@@ -102,7 +102,7 @@ public class GraphEditor extends PCanvas {
     private GraphItemsMapper m_graphItemsMapper = new GraphItemsMapper();
     private NodeResizeExecutor m_nodeResizeExecutor;
     private Point2D m_selectionStart = null;
-    private PPath m_selectionFrame = new PPath();
+    private PPath.Double m_selectionFrame = new PPath.Double();
     private BulkSelectionHandler m_bulkSelectionHandler = new BulkSelectionHandler();
     private final MainFrame m_mainFrame;
 
@@ -253,13 +253,14 @@ public class GraphEditor extends PCanvas {
     private class GraphDragEventHandler<T extends NodePath> extends PDragEventHandler {
         private T m_prevNode = null;
         private T m_selectedNode = null;
-        private PPath m_dragEdge = new PPath();
+        private PPath.Double m_dragEdge = new PPath.Double();
         private Color m_mouseOverColor;
         private String m_attributeName;
         private Set<NodeItem> m_additionallyMovedNodes = new HashSet<>();
 
         {
             m_dragEdge.setStrokePaint(LinkPath.NORMAL_STROKE_PAINT);
+            m_dragEdge.setPickable(false);
             m_dragLayer.addChild(m_dragEdge);
             PInputEventFilter filter = new PInputEventFilter();
             filter.setOrMask(InputEvent.BUTTON1_MASK | InputEvent.BUTTON3_MASK);
@@ -303,10 +304,10 @@ public class GraphEditor extends PCanvas {
         }
 
         private void moveToFront(PNode node) {
-            node.moveToFront();
+            node.raiseToTop();
             List<PNode> containedObjsNodes = m_graphItemsMapper.getContainedObjsNodes(node);
             for (PNode containedNode : containedObjsNodes) {
-                containedNode.moveInFrontOf(node);
+                containedNode.raiseAbove(node);
             }
         }
 
@@ -340,7 +341,7 @@ public class GraphEditor extends PCanvas {
             Set<String> movedObjsIds = new HashSet<>();
             List<PNode> containedObjsNodes = m_graphItemsMapper.getContainedObjsNodes(container);
             for (PNode node : containedObjsNodes) {
-                node.moveInFrontOf(container);
+                node.raiseAbove(container);
                 node.offset(deltaX, deltaY);
                 NodeItem nodeItem = (NodeItem) node.getAttribute(Constants.NLB_PAGE_ATTR);
                 if (nodeItem == null) {

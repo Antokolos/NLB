@@ -53,7 +53,7 @@ import java.awt.geom.Rectangle2D;
  * @author Anton P. Kolosov
  * @version 1.0 12/25/13
  */
-public class ResizeBar extends PPath {
+public class ResizeBar extends PPath.Double {
     private float m_resizeBarThickness = (float) 5.0;
     private float m_resizeBarCornerOffsetHorz = (float) 22.0;
     private float m_resizeBarCornerOffsetVert = (float) 12.0;

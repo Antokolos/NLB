@@ -110,7 +110,7 @@
                                     <artifact>
                                         <groupId>org.piccolo2d</groupId>
                                         <artifactId>piccolo2d-core</artifactId>
-                                        <version>2.0</version>
+                                        <version>3.0.1</version>
                                     </artifact>
                                     <moduleInfo>
                                         <name>piccolo2d.core</name>
@@ -120,7 +120,7 @@
                                     <artifact>
                                         <groupId>org.piccolo2d</groupId>
                                         <artifactId>piccolo2d-extras</artifactId>
-                                        <version>2.0</version>
+                                        <version>3.0.1</version>
                                     </artifact>
                                     <moduleInfo>
                                         <name>piccolo2d.extras</name>
@@ -244,12 +244,12 @@
         <dependency>
             <groupId>org.piccolo2d</groupId>
             <artifactId>piccolo2d-core</artifactId>
-            <version>2.0</version>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.piccolo2d</groupId>
             <artifactId>piccolo2d-extras</artifactId>
-            <version>2.0</version>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.swinglabs</groupId>

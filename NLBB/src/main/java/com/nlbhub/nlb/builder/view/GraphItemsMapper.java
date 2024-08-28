@@ -84,7 +84,7 @@ public class GraphItemsMapper {
             }
             for (String containedObjId : objFrom.getContainedObjIds()) {
                 final ObjPath objPath = getObjById(containedObjId);
-                objPath.moveInFrontOf(objPathFrom);
+                objPath.raiseAbove(objPathFrom);
             }
         }
 
@@ -186,7 +186,6 @@ public class GraphItemsMapper {
 
         return rect;
     }
-
 
     public PagePath addNode(
             final NonLinearBook nonLinearBook,
