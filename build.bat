@@ -1,5 +1,13 @@
-call mvn generate-sources package
-rd /S /Q dist
+:: Clean first: each build increments the project version, so jars from previous builds
+:: (with other version numbers) would otherwise remain in target\ and be copied to dist\lib
+call mvn clean generate-sources package
+if errorlevel 1 exit /b 1
+if exist dist rd /S /Q dist
+:: rd fails silently if some file in dist is locked (e.g. NLBB is running from dist)
+if exist dist (
+    echo Cannot delete dist directory, please close all programs which use it and try again
+    exit /b 1
+)
 mkdir dist
 copy NLBB\script\* dist
 mkdir dist\lib
