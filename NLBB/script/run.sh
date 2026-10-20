@@ -1,15 +1,14 @@
 #!/bin/sh
+# All paths (lib, cfg etc.) are relative to the distribution directory
+cd "$(dirname "$0")"
 
-JAVA=/usr/local/java/java7/bin/java
+# Use the Java runtime bundled with the distribution; if it is absent, use JAVA_HOME or java from PATH
+if [ -x ./runtime/bin/java ]; then
+    JAVA=./runtime/bin/java
+elif [ -n "$JAVA_HOME" ]; then
+    JAVA="$JAVA_HOME/bin/java"
+else
+    JAVA=java
+fi
 
-# Set application lib directory
-APP_LIB=./lib
-
-# prepare internal variables - do not change
-CP=./bin
-for jar in `ls $APP_LIB`
-do
-CP=$CP:$APP_LIB/$jar
-done
-
-$JAVA -classpath $CP -DconsoleEncoding=UTF-8 com.nlbhub.nlb.builder.NLBBMain
+exec "$JAVA" -classpath "./bin:./lib/*" -DconsoleEncoding=UTF-8 com.nlbhub.nlb.builder.NLBBMain "$@"
