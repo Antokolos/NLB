@@ -1,0 +1,4 @@
+#!/bin/sh
+# Increments the project version (e.g. 1.0.5-SNAPSHOT -> 1.0.6-SNAPSHOT) in all pom.xml files
+set -e
+mvn versions:set

@@ -23,19 +23,12 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
                 <version>2.17.1</version>
-                <executions>
-                    <execution>
-                        <id>update-pom-versions</id>
-                        <goals>
-                            <goal>set</goal>
-                            <goal>commit</goal>
-                        </goals>
-                        <phase>compile</phase>
-                        <configuration>
-                            <nextSnapshot>true</nextSnapshot>
-                        </configuration>
-                    </execution>
-                </executions>
+                <!-- The version is not incremented during the build anymore, run bump-version.sh / bump-version.bat
+                     (i.e. mvn versions:set) when the next version is needed -->
+                <configuration>
+                    <nextSnapshot>true</nextSnapshot>
+                    <generateBackupPoms>false</generateBackupPoms>
+                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -1,5 +1,5 @@
-:: Clean first: each build increments the project version, so jars from previous builds
-:: (with other version numbers) would otherwise remain in target\ and be copied to dist\lib
+:: Clean first, otherwise jars from previous builds (e.g. with other version numbers)
+:: would remain in target\ and be copied to dist\lib
 call mvn clean generate-sources package
 if errorlevel 1 exit /b 1
 if exist dist rd /S /Q dist
