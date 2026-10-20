@@ -58,7 +58,7 @@
                                     <artifact>
                                         <groupId>org.eclipse.jgit</groupId>
                                         <artifactId>org.eclipse.jgit</artifactId>
-                                        <version>6.10.0.202406032230-r</version>
+                                        <version>6.10.1.202505221210-r</version>
                                     </artifact>
                                     <moduleInfo>
                                         <name>org.eclipse.jgit</name>
@@ -78,7 +78,7 @@
                                     <artifact>
                                         <groupId>org.mozilla</groupId>
                                         <artifactId>rhino</artifactId>
-                                        <version>1.7.15</version>
+                                        <version>1.7.15.1</version>
                                     </artifact>
                                     <moduleInfo>
                                         <name>org.mozilla.rhino</name>
