@@ -13,7 +13,7 @@
 set -e
 
 NAVIGATOR_REPO=https://github.com/Antokolos/NLBNavigator
-NAVIGATOR_COMMIT=93a6ea9
+NAVIGATOR_COMMIT=2ae4049
 
 TOOLS_DIR=$(cd "$(dirname "$0")" && pwd)
 ROOT_DIR=$(cd "$TOOLS_DIR/../.." && pwd)

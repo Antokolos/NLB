@@ -46,7 +46,10 @@ NEXT_TEXTS = ("Далее", "Next")
 
 class Player:
     def __init__(self, args, home):
-        cmd = [args.player, args.book, "explore", args.mode, "--log", args.log, "--no-sound"]
+        # --deterministic: случайность книги (RND, SHUFFLE) воспроизводима — k-й rnd(n) даёт
+        # (k mod n) + 1, SHUFFLE разворачивает список; так же делает Java-плеер в режиме сверки
+        cmd = [args.player, args.book, "explore", args.mode, "--log", args.log, "--no-sound",
+               "--deterministic"]
         if args.config:
             cmd += ["--config", args.config]
         env = dict(os.environ, HOME=home)
@@ -185,8 +188,9 @@ def screen_actions(screen):
     return actions
 
 
-# Вес действий: переходы двигают сюжет, остальное — чтобы задеть объекты и инвентарь
-WEIGHTS = {"choice": 6.0, "scene": 2.0, "inventory": 1.0, "use": 1.0, "wait": 1.0}
+# Вес действий: переходы двигают сюжет, остальное — чтобы задеть объекты и инвентарь;
+# ожидание — чтобы на страницах с таймером он успевал тикать
+WEIGHTS = {"choice": 6.0, "scene": 2.0, "inventory": 1.0, "use": 1.0, "wait": 3.0}
 
 
 def main():
