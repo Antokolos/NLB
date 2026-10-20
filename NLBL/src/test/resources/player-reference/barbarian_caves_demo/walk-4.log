@@ -30,38 +30,18 @@ Loaded: The Barbarian and the Subterranean Caves (Demo) by NLB project
 l. Осмотреться
 m. Меню
 
-Ваш выбор: o2
-Острый слух
-[IMAGE: bat1_1.png — +0,0]
+Ваш выбор: o1
+Грамотность
+[IMAGE: owl_1.png — +0,0]
 
 Здесь:
-  o1. Грамотность [left-top +160,153]
+  o1. Острый слух [left-top +1039,155] (можно взять)
   o2. Распознавание лжи [left-top +158,453]
   o3. Ночное зрение [left-top +1044,452] (можно взять)
   o4. Внимание к деталям [left-top +158,799]
   o5. Воровство [left-top +1047,798] (можно взять)
   · abilitiesMainContainer [left-top@1520, 40]
       · abilitiesContainer [+0,0]
-          o6. Острый слух [+0,0]
-  o7. abilitiesTrigger [left-top@1550,0]
-  · ВЫБЕРИТЕ ТРИ ЛЮБЫХ НАВЫКА [left-top@550,50]
-  · Чтобы выбрать навык, кликните по его иконке в большом свитке. Если вы случайно выбрали не тот навык, кликните по его иконке на маленьком свитке, и он вернётся обратно в большой. [left-top@250, 1030]
-
-l. Осмотреться
-m. Меню
-
-Ваш выбор: o1
-Грамотность
-[IMAGE: owl_1.png — +0,0]
-
-Здесь:
-  o1. Распознавание лжи [left-top +158,453]
-  o2. Ночное зрение [left-top +1044,452] (можно взять)
-  o3. Внимание к деталям [left-top +158,799]
-  o4. Воровство [left-top +1047,798] (можно взять)
-  · abilitiesMainContainer [left-top@1520, 40]
-      · abilitiesContainer [+0,0]
-          o5. Острый слух [+0,0]
           o6. Грамотность [+0,0]
   o7. abilitiesTrigger [left-top@1550,0]
   · ВЫБЕРИТЕ ТРИ ЛЮБЫХ НАВЫКА [left-top@550,50]
@@ -70,8 +50,28 @@ m. Меню
 l. Осмотреться
 m. Меню
 
-Ваш выбор: o3
+Ваш выбор: o4
 Внимание к деталям
+[IMAGE: surikat_1.png — +0,0]
+
+Здесь:
+  o1. Острый слух [left-top +1039,155] (можно взять)
+  o2. Распознавание лжи [left-top +158,453]
+  o3. Ночное зрение [left-top +1044,452] (можно взять)
+  o4. Воровство [left-top +1047,798] (можно взять)
+  · abilitiesMainContainer [left-top@1520, 40]
+      · abilitiesContainer [+0,0]
+          o5. Грамотность [+0,0]
+          o6. Внимание к деталям [+0,0]
+  o7. abilitiesTrigger [left-top@1550,0]
+  · ВЫБЕРИТЕ ТРИ ЛЮБЫХ НАВЫКА [left-top@550,50]
+  · Чтобы выбрать навык, кликните по его иконке в большом свитке. Если вы случайно выбрали не тот навык, кликните по его иконке на маленьком свитке, и он вернётся обратно в большой. [left-top@250, 1030]
+
+l. Осмотреться
+m. Меню
+
+Ваш выбор: o1
+Острый слух
 [IMAGE: 262f23.png]
 [MUSIC: 3.ogg]
 
@@ -103,6 +103,27 @@ m. Меню
 l. Осмотреться
 m. Меню
 
+Ваш выбор: o1
+[IMAGE: abilitiescntbg.png — left-top@1520, 40]
+[IMAGE: emptycnt1.png — +0,0]
+[IMAGE: owl_1.png — +0,0]
+[IMAGE: surikat_1.png — +0,0]
+[IMAGE: bat1_1.png — +0,0]
+
+Здесь:
+  · abilitiesMainContainer [left-top@1520, 40]
+      · abilitiesContainer [+0,0]
+          o1. Грамотность [+0,0]
+          o2. Внимание к деталям [+0,0]
+          o3. Острый слух [+0,0]
+  o4. abilitiesTrigger [left-top@1550,0]
+  · inventoryMainContainer [left-top@1120, 40] (свёрнут)
+  o5. inventoryTrigger [left-top@1150,0]
+
+1. Далее
+l. Осмотреться
+m. Меню
+
 Ваш выбор: 1
 [IMAGE: 2.2f22.png]
 
@@ -111,10 +132,14 @@ m. Меню
 – Проклятье, – пробормотал Рагнар. И решив про себя, что позже обязательно отыщет красотку, двинулся дальше.
 
 Здесь:
-  · abilitiesMainContainer [left-top@1520, 40] (свёрнут)
-  o1. abilitiesTrigger [left-top@1550,0]
+  · abilitiesMainContainer [left-top@1520, 40]
+      · abilitiesContainer [+0,0]
+          o1. Грамотность [+0,0]
+          o2. Внимание к деталям [+0,0]
+          o3. Острый слух [+0,0]
+  o4. abilitiesTrigger [left-top@1550,0]
   · inventoryMainContainer [left-top@1120, 40] (свёрнут)
-  o2. inventoryTrigger [left-top@1150,0]
+  o5. inventoryTrigger [left-top@1150,0]
 
 1. Далее
 l. Осмотреться
@@ -128,57 +153,28 @@ m. Меню
 "Надо узнать, что там", – подумал мужчина, и принялся прокладывать себе путь, интенсивно работая локтями. В этот момент, его высокая, статная фигура напоминала скалу, возвышающуюся над поверхностью бурного моря.
 
 Здесь:
-  · abilitiesMainContainer [left-top@1520, 40] (свёрнут)
-  o1. abilitiesTrigger [left-top@1550,0]
+  · abilitiesMainContainer [left-top@1520, 40]
+      · abilitiesContainer [+0,0]
+          o1. Грамотность [+0,0]
+          o2. Внимание к деталям [+0,0]
+          o3. Острый слух [+0,0]
+  o4. abilitiesTrigger [left-top@1550,0]
   · inventoryMainContainer [left-top@1120, 40] (свёрнут)
-  o2. inventoryTrigger [left-top@1150,0]
+  o5. inventoryTrigger [left-top@1150,0]
 
 1. Далее
 l. Осмотреться
 m. Меню
 
-Ваш выбор: o2
-[IMAGE: inventorycntbg.png — left-top@1120, 40]
-[IMAGE: emptycnt1_1.png — +0,0]
-[IMAGE: meshok2.1.png — +0,0]
-
-Здесь:
-  · abilitiesMainContainer [left-top@1520, 40] (свёрнут)
-  o1. abilitiesTrigger [left-top@1550,0]
-  · inventoryMainContainer [left-top@1120, 40]
-      · inventoryContainer [+0,0]
-          · 150 монет [+0,0]
-  o2. inventoryTrigger [left-top@1150,0]
-
-1. Далее
-l. Осмотреться
-m. Меню
-
-Ваш выбор: o2
-
-Здесь:
-  · abilitiesMainContainer [left-top@1520, 40] (свёрнут)
-  o1. abilitiesTrigger [left-top@1550,0]
-  · inventoryMainContainer [left-top@1120, 40] (свёрнут)
-  o2. inventoryTrigger [left-top@1150,0]
-
-1. Далее
-l. Осмотреться
-m. Меню
-
-Ваш выбор: o1
-[IMAGE: abilitiescntbg.png — left-top@1520, 40]
-[IMAGE: emptycnt1.png — +0,0]
-[IMAGE: bat1_1.png — +0,0]
-[IMAGE: owl_1.png — +0,0]
-[IMAGE: surikat_1.png — +0,0]
+Ваш выбор: o3
+Острый слух
 
 Здесь:
   · abilitiesMainContainer [left-top@1520, 40]
       · abilitiesContainer [+0,0]
-          o1. Острый слух [+0,0]
-          o2. Грамотность [+0,0]
-          o3. Внимание к деталям [+0,0]
+          o1. Грамотность [+0,0]
+          o2. Внимание к деталям [+0,0]
+          o3. Острый слух [+0,0]
   o4. abilitiesTrigger [left-top@1550,0]
   · inventoryMainContainer [left-top@1120, 40] (свёрнут)
   o5. inventoryTrigger [left-top@1150,0]
@@ -195,9 +191,9 @@ m. Меню
 Здесь:
   · abilitiesMainContainer [left-top@1520, 40]
       · abilitiesContainer [+0,0]
-          o1. Острый слух [+0,0]
-          o2. Грамотность [+0,0]
-          o3. Внимание к деталям [+0,0]
+          o1. Грамотность [+0,0]
+          o2. Внимание к деталям [+0,0]
+          o3. Острый слух [+0,0]
   o4. abilitiesTrigger [left-top@1550,0]
   · inventoryMainContainer [left-top@1120, 40] (свёрнут)
   o5. inventoryTrigger [left-top@1150,0]
@@ -208,50 +204,45 @@ m. Меню
 l. Осмотреться
 m. Меню
 
-Ваш выбор: 3
-[IMAGE: 006f21.png]
-
-Рагнар обладал огромной силой, высоким ростом и весьма брутальной внешностью, которая производила на людей неизгладимое впечатление: в женщинах воспламеняя чувства, а мужчин заставляя трепетать от страха.
-Зная, какое действие его внешность оказывает на людей, он взглядом искал в толпе отнюдь не самого хилого горожанина.
+Ваш выбор: o3
+Острый слух
 
 Здесь:
   · abilitiesMainContainer [left-top@1520, 40]
       · abilitiesContainer [+0,0]
-          o1. Острый слух [+0,0]
-          o2. Грамотность [+0,0]
-          o3. Внимание к деталям [+0,0]
+          o1. Грамотность [+0,0]
+          o2. Внимание к деталям [+0,0]
+          o3. Острый слух [+0,0]
   o4. abilitiesTrigger [left-top@1550,0]
   · inventoryMainContainer [left-top@1120, 40] (свёрнут)
   o5. inventoryTrigger [left-top@1150,0]
 
-1. Далее
+1. Подойти и прочитать объявление
+2. Подслушать разговор двух горожан
+3. Спросить у кого-нибудь из толпы
 l. Осмотреться
 m. Меню
 
-Ваш выбор: 1
-[IMAGE: 006f21.png]
-
-– Послушай, любезнейший, что здесь написано? – наконец обратился лемуриец к бородатому здоровяку. Но тот, взглянув на огромные мускулы и суровое лицо Рагнара, только округлил глаза и промямлил:
-– Не знаю, господин, я неграмотный. И поспешил убраться подальше. Иногда облик лемурийца оказывал ему медвежью услугу.
+Ваш выбор: o2
+Внимание к деталям
 
 Здесь:
   · abilitiesMainContainer [left-top@1520, 40]
       · abilitiesContainer [+0,0]
-          o1. Острый слух [+0,0]
-          o2. Грамотность [+0,0]
-          o3. Внимание к деталям [+0,0]
+          o1. Грамотность [+0,0]
+          o2. Внимание к деталям [+0,0]
+          o3. Острый слух [+0,0]
   o4. abilitiesTrigger [left-top@1550,0]
   · inventoryMainContainer [left-top@1120, 40] (свёрнут)
   o5. inventoryTrigger [left-top@1150,0]
 
-1. Подслушать разговор двух горожан
-2. Пойти в кабак выпить
-3. Ещё погулять по городу
-4. Подойти и прочитать листовку
+1. Подойти и прочитать объявление
+2. Подслушать разговор двух горожан
+3. Спросить у кого-нибудь из толпы
 l. Осмотреться
 m. Меню
 
-Ваш выбор: 1
+Ваш выбор: 2
 [IMAGE: 005f21.png]
 
 Заметив двух горожан, отстоящих несколько особняком, лемуриец решил подслушать их разговор. Подобравшись к ним как можно ближе, Рагнар сделал вид будто читает объявление.
@@ -272,9 +263,9 @@ m. Меню
 Здесь:
   · abilitiesMainContainer [left-top@1520, 40]
       · abilitiesContainer [+0,0]
-          o1. Острый слух [+0,0]
-          o2. Грамотность [+0,0]
-          o3. Внимание к деталям [+0,0]
+          o1. Грамотность [+0,0]
+          o2. Внимание к деталям [+0,0]
+          o3. Острый слух [+0,0]
   o4. abilitiesTrigger [left-top@1550,0]
   · inventoryMainContainer [left-top@1120, 40] (свёрнут)
   o5. inventoryTrigger [left-top@1150,0]
@@ -292,9 +283,9 @@ m. Меню
 Здесь:
   · abilitiesMainContainer [left-top@1520, 40]
       · abilitiesContainer [+0,0]
-          o1. Острый слух [+0,0]
-          o2. Грамотность [+0,0]
-          o3. Внимание к деталям [+0,0]
+          o1. Грамотность [+0,0]
+          o2. Внимание к деталям [+0,0]
+          o3. Острый слух [+0,0]
   o4. abilitiesTrigger [left-top@1550,0]
   · inventoryMainContainer [left-top@1120, 40] (свёрнут)
   o5. inventoryTrigger [left-top@1150,0]
@@ -313,73 +304,12 @@ m. Меню
 Здесь:
   · abilitiesMainContainer [left-top@1520, 40]
       · abilitiesContainer [+0,0]
-          o1. Острый слух [+0,0]
-          o2. Грамотность [+0,0]
-          o3. Внимание к деталям [+0,0]
+          o1. Грамотность [+0,0]
+          o2. Внимание к деталям [+0,0]
+          o3. Острый слух [+0,0]
   o4. abilitiesTrigger [left-top@1550,0]
   · inventoryMainContainer [left-top@1120, 40] (свёрнут)
   o5. inventoryTrigger [left-top@1150,0]
-
-1. Далее
-l. Осмотреться
-m. Меню
-
-Ваш выбор: o5
-[IMAGE: inventorycntbg.png — left-top@1120, 40]
-[IMAGE: emptycnt1_1.png — +0,0]
-[IMAGE: meshok2.1.png — +0,0]
-
-Здесь:
-  · abilitiesMainContainer [left-top@1520, 40]
-      · abilitiesContainer [+0,0]
-          o1. Острый слух [+0,0]
-          o2. Грамотность [+0,0]
-          o3. Внимание к деталям [+0,0]
-  o4. abilitiesTrigger [left-top@1550,0]
-  · inventoryMainContainer [left-top@1120, 40]
-      · inventoryContainer [+0,0]
-          · 150 монет [+0,0]
-  o5. inventoryTrigger [left-top@1150,0]
-
-1. Далее
-l. Осмотреться
-m. Меню
-
-Ваш выбор: o4
-
-Здесь:
-  · abilitiesMainContainer [left-top@1520, 40] (свёрнут)
-  o1. abilitiesTrigger [left-top@1550,0]
-  · inventoryMainContainer [left-top@1120, 40]
-      · inventoryContainer [+0,0]
-          · 150 монет [+0,0]
-  o2. inventoryTrigger [left-top@1150,0]
-
-1. Далее
-l. Осмотреться
-m. Меню
-
-Ваш выбор: o2
-
-Здесь:
-  · abilitiesMainContainer [left-top@1520, 40] (свёрнут)
-  o1. abilitiesTrigger [left-top@1550,0]
-  · inventoryMainContainer [left-top@1120, 40] (свёрнут)
-  o2. inventoryTrigger [left-top@1150,0]
-
-1. Далее
-l. Осмотреться
-m. Меню
-
-Ваш выбор: o2
-
-Здесь:
-  · abilitiesMainContainer [left-top@1520, 40] (свёрнут)
-  o1. abilitiesTrigger [left-top@1550,0]
-  · inventoryMainContainer [left-top@1120, 40]
-      · inventoryContainer [+0,0]
-          · 150 монет [+0,0]
-  o2. inventoryTrigger [left-top@1150,0]
 
 1. Далее
 l. Осмотреться
@@ -392,12 +322,14 @@ m. Меню
 Приглашая гостя занять место на одном из мягких диванов, управляющий сделал плавный жест рукой, при этом сверкнул крупный рубин, вставленный в массивный перстень, украшающий пухлый палец.
 
 Здесь:
-  · abilitiesMainContainer [left-top@1520, 40] (свёрнут)
-  o1. abilitiesTrigger [left-top@1550,0]
-  · inventoryMainContainer [left-top@1120, 40]
-      · inventoryContainer [+0,0]
-          · 150 монет [+0,0]
-  o2. inventoryTrigger [left-top@1150,0]
+  · abilitiesMainContainer [left-top@1520, 40]
+      · abilitiesContainer [+0,0]
+          o1. Грамотность [+0,0]
+          o2. Внимание к деталям [+0,0]
+          o3. Острый слух [+0,0]
+  o4. abilitiesTrigger [left-top@1550,0]
+  · inventoryMainContainer [left-top@1120, 40] (свёрнут)
+  o5. inventoryTrigger [left-top@1150,0]
 
 1. Далее
 l. Осмотреться
@@ -418,80 +350,14 @@ m. Меню
 Абу Али с облегчением выдохнул, радуясь окончанию этой встречи. Уж слишком грозным  и даже диким показался ему вид этого посетителя.
 
 Здесь:
-  · abilitiesMainContainer [left-top@1520, 40] (свёрнут)
-  o1. abilitiesTrigger [left-top@1550,0]
-  · inventoryMainContainer [left-top@1120, 40]
-      · inventoryContainer [+0,0]
-          · 150 монет [+0,0]
-  o2. inventoryTrigger [left-top@1150,0]
-
-1. Далее
-l. Осмотреться
-m. Меню
-
-Ваш выбор: o1
-[IMAGE: abilitiescntbg.png — left-top@1520, 40]
-[IMAGE: emptycnt1.png — +0,0]
-[IMAGE: bat1_1.png — +0,0]
-[IMAGE: owl_1.png — +0,0]
-[IMAGE: surikat_1.png — +0,0]
-
-Здесь:
   · abilitiesMainContainer [left-top@1520, 40]
       · abilitiesContainer [+0,0]
-          o1. Острый слух [+0,0]
-          o2. Грамотность [+0,0]
-          o3. Внимание к деталям [+0,0]
+          o1. Грамотность [+0,0]
+          o2. Внимание к деталям [+0,0]
+          o3. Острый слух [+0,0]
   o4. abilitiesTrigger [left-top@1550,0]
-  · inventoryMainContainer [left-top@1120, 40]
-      · inventoryContainer [+0,0]
-          · 150 монет [+0,0]
-  o5. inventoryTrigger [left-top@1150,0]
-
-1. Далее
-l. Осмотреться
-m. Меню
-
-Ваш выбор: o3
-Внимание к деталям
-
-Здесь:
-  · abilitiesMainContainer [left-top@1520, 40]
-      · abilitiesContainer [+0,0]
-          o1. Острый слух [+0,0]
-          o2. Грамотность [+0,0]
-          o3. Внимание к деталям [+0,0]
-  o4. abilitiesTrigger [left-top@1550,0]
-  · inventoryMainContainer [left-top@1120, 40]
-      · inventoryContainer [+0,0]
-          · 150 монет [+0,0]
-  o5. inventoryTrigger [left-top@1150,0]
-
-1. Далее
-l. Осмотреться
-m. Меню
-
-Ваш выбор: o4
-
-Здесь:
-  · abilitiesMainContainer [left-top@1520, 40] (свёрнут)
-  o1. abilitiesTrigger [left-top@1550,0]
-  · inventoryMainContainer [left-top@1120, 40]
-      · inventoryContainer [+0,0]
-          · 150 монет [+0,0]
-  o2. inventoryTrigger [left-top@1150,0]
-
-1. Далее
-l. Осмотреться
-m. Меню
-
-Ваш выбор: o2
-
-Здесь:
-  · abilitiesMainContainer [left-top@1520, 40] (свёрнут)
-  o1. abilitiesTrigger [left-top@1550,0]
   · inventoryMainContainer [left-top@1120, 40] (свёрнут)
-  o2. inventoryTrigger [left-top@1150,0]
+  o5. inventoryTrigger [left-top@1150,0]
 
 1. Далее
 l. Осмотреться
@@ -504,62 +370,11 @@ m. Меню
 Когда первый луч солнца, показавшись из-за горизонта, озарил небо и побежал по земле, Рагнар уже стоял у колодца. Здесь, в засохшей грязи, застыло множество следов. Бугорки на земле отбрасывали причудливые тени в лучах восходящего солнца.
 
 Здесь:
-  · abilitiesMainContainer [left-top@1520, 40] (свёрнут)
-  o1. abilitiesTrigger [left-top@1550,0]
-  · inventoryMainContainer [left-top@1120, 40] (свёрнут)
-  o2. inventoryTrigger [left-top@1150,0]
-
-1. Далее
-l. Осмотреться
-m. Меню
-
-Ваш выбор: o1
-[IMAGE: abilitiescntbg.png — left-top@1520, 40]
-[IMAGE: emptycnt1.png — +0,0]
-[IMAGE: bat1_1.png — +0,0]
-[IMAGE: owl_1.png — +0,0]
-[IMAGE: surikat_1.png — +0,0]
-
-Здесь:
   · abilitiesMainContainer [left-top@1520, 40]
       · abilitiesContainer [+0,0]
-          o1. Острый слух [+0,0]
-          o2. Грамотность [+0,0]
-          o3. Внимание к деталям [+0,0]
-  o4. abilitiesTrigger [left-top@1550,0]
-  · inventoryMainContainer [left-top@1120, 40] (свёрнут)
-  o5. inventoryTrigger [left-top@1150,0]
-
-1. Далее
-l. Осмотреться
-m. Меню
-
-Ваш выбор: o3
-Внимание к деталям
-
-Здесь:
-  · abilitiesMainContainer [left-top@1520, 40]
-      · abilitiesContainer [+0,0]
-          o1. Острый слух [+0,0]
-          o2. Грамотность [+0,0]
-          o3. Внимание к деталям [+0,0]
-  o4. abilitiesTrigger [left-top@1550,0]
-  · inventoryMainContainer [left-top@1120, 40] (свёрнут)
-  o5. inventoryTrigger [left-top@1150,0]
-
-1. Далее
-l. Осмотреться
-m. Меню
-
-Ваш выбор: o2
-Грамотность
-
-Здесь:
-  · abilitiesMainContainer [left-top@1520, 40]
-      · abilitiesContainer [+0,0]
-          o1. Острый слух [+0,0]
-          o2. Грамотность [+0,0]
-          o3. Внимание к деталям [+0,0]
+          o1. Грамотность [+0,0]
+          o2. Внимание к деталям [+0,0]
+          o3. Острый слух [+0,0]
   o4. abilitiesTrigger [left-top@1550,0]
   · inventoryMainContainer [left-top@1120, 40] (свёрнут)
   o5. inventoryTrigger [left-top@1150,0]
@@ -576,26 +391,9 @@ m. Меню
 Здесь:
   · abilitiesMainContainer [left-top@1520, 40]
       · abilitiesContainer [+0,0]
-          o1. Острый слух [+0,0]
-          o2. Грамотность [+0,0]
-          o3. Внимание к деталям [+0,0]
-  o4. abilitiesTrigger [left-top@1550,0]
-  · inventoryMainContainer [left-top@1120, 40] (свёрнут)
-  o5. inventoryTrigger [left-top@1150,0]
-
-1. Далее
-l. Осмотреться
-m. Меню
-
-Ваш выбор: o1
-Острый слух
-
-Здесь:
-  · abilitiesMainContainer [left-top@1520, 40]
-      · abilitiesContainer [+0,0]
-          o1. Острый слух [+0,0]
-          o2. Грамотность [+0,0]
-          o3. Внимание к деталям [+0,0]
+          o1. Грамотность [+0,0]
+          o2. Внимание к деталям [+0,0]
+          o3. Острый слух [+0,0]
   o4. abilitiesTrigger [left-top@1550,0]
   · inventoryMainContainer [left-top@1120, 40] (свёрнут)
   o5. inventoryTrigger [left-top@1150,0]
@@ -612,9 +410,9 @@ m. Меню
 Здесь:
   · abilitiesMainContainer [left-top@1520, 40]
       · abilitiesContainer [+0,0]
-          o1. Острый слух [+0,0]
-          o2. Грамотность [+0,0]
-          o3. Внимание к деталям [+0,0]
+          o1. Грамотность [+0,0]
+          o2. Внимание к деталям [+0,0]
+          o3. Острый слух [+0,0]
   o4. abilitiesTrigger [left-top@1550,0]
   · inventoryMainContainer [left-top@1120, 40] (свёрнут)
   o5. inventoryTrigger [left-top@1150,0]
@@ -631,28 +429,14 @@ m. Меню
 Здесь:
   · abilitiesMainContainer [left-top@1520, 40]
       · abilitiesContainer [+0,0]
-          o1. Острый слух [+0,0]
-          o2. Грамотность [+0,0]
-          o3. Внимание к деталям [+0,0]
+          o1. Грамотность [+0,0]
+          o2. Внимание к деталям [+0,0]
+          o3. Острый слух [+0,0]
   o4. abilitiesTrigger [left-top@1550,0]
   · inventoryMainContainer [left-top@1120, 40]
       · inventoryContainer [+0,0]
           · 150 монет [+0,0]
   o5. inventoryTrigger [left-top@1150,0]
-
-1. Далее
-l. Осмотреться
-m. Меню
-
-Ваш выбор: o4
-
-Здесь:
-  · abilitiesMainContainer [left-top@1520, 40] (свёрнут)
-  o1. abilitiesTrigger [left-top@1550,0]
-  · inventoryMainContainer [left-top@1120, 40]
-      · inventoryContainer [+0,0]
-          · 150 монет [+0,0]
-  o2. inventoryTrigger [left-top@1150,0]
 
 1. Далее
 l. Осмотреться
@@ -664,12 +448,16 @@ m. Меню
 ...и решительно шагнул внутрь.
 
 Здесь:
-  · abilitiesMainContainer [left-top@1520, 40] (свёрнут)
-  o1. abilitiesTrigger [left-top@1550,0]
+  · abilitiesMainContainer [left-top@1520, 40]
+      · abilitiesContainer [+0,0]
+          o1. Грамотность [+0,0]
+          o2. Внимание к деталям [+0,0]
+          o3. Острый слух [+0,0]
+  o4. abilitiesTrigger [left-top@1550,0]
   · inventoryMainContainer [left-top@1120, 40]
       · inventoryContainer [+0,0]
           · 150 монет [+0,0]
-  o2. inventoryTrigger [left-top@1150,0]
+  o5. inventoryTrigger [left-top@1150,0]
 
 1. Далее
 l. Осмотреться

@@ -4,7 +4,8 @@
 # 1. Скачивает NLBNavigator на зафиксированном коммите и собирает nlb_main (без SDL).
 # 2. Скачивает книги из books.txt на зафиксированных коммитах (с подмодулями).
 # 3. Для каждой книги делает несколько случайных прохождений (walk.py) и кладёт пары
-#    «ввод + журнал» в NLBL/src/test/resources/player-reference/<книга>/.
+#    «ввод + журнал» в NLBL/src/test/resources/player-reference/<книга>/. Если есть
+#    scripts/<книга>/walk-N.script, прохождение N начинается по этому сценарию.
 #
 # Нужны: git, cmake, ninja, C++-компилятор, python3.
 # Каталог для скачанного: $NLB_REFERENCE_CACHE (по умолчанию ~/.cache/nlb-player-reference).
@@ -56,9 +57,14 @@ grep -v '^#' "$TOOLS_DIR/books.txt" | while read -r name url commit mode walks s
     mkdir -p "$OUT/$name"
     seed=1
     while [ "$seed" -le "$walks" ]; do
-        python3 "$TOOLS_DIR/walk.py" --player "$PLAYER" --book "$BOOKS/$name" --mode "$mode" \
+        # Сценарий начала прохождения, если есть (для книг, где случайный игрок не доходит
+        # до нужных мест): scripts/<книга>/walk-N.script
+        script=$TOOLS_DIR/scripts/$name/walk-$seed.script
+        set -- --player "$PLAYER" --book "$BOOKS/$name" --mode "$mode" \
             --config "$CONFIG" --seed "$seed" --max-steps "$steps" \
             --log "$OUT/$name/walk-$seed.log" --input "$OUT/$name/walk-$seed.input"
+        [ -f "$script" ] && set -- "$@" --script "$script"
+        python3 "$TOOLS_DIR/walk.py" "$@"
         seed=$((seed + 1))
     done
     {

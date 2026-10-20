@@ -8,6 +8,17 @@
 
 Выбор действий зависит только от зерна (--seed) и экрана, поэтому при той же книге и том же
 nlb_main прохождение воспроизводится.
+
+Сценарий (--script) задаёт начало прохождения — для книг, где случайный игрок не доходит до
+нужных мест. Строки сценария — по тексту, а не по номерам (номера вариантов меняются):
+    go Холл              переход по варианту с этим текстом
+    obj кнопка           щелчок по объекту сцены, имя которого начинается с этого текста
+    inv Задания          щелчок по предмету инвентаря
+    use Ключ > дверь     применить предмет к объекту сцены или предмету инвентаря
+    o2, 1, w, ...        команда nlb_main как есть
+    # комментарий
+Если действия сценария на экране нет, но есть вариант «Далее», нажимается «Далее», а строка
+сценария ждёт следующего экрана. После сценария игра продолжается случайно.
 """
 import argparse
 import os
@@ -23,9 +34,13 @@ CONFIRM_PROMPT = "нет: "
 END_MARK = "=== КОНЕЦ ==="
 
 RE_CHOICE = re.compile(r"^(\d+)\. ", re.M)
-RE_SCENE = re.compile(r"^\s*o(\d+)\. ", re.M)
-RE_INVENTORY = re.compile(r"^\s*i(\d+)\. ", re.M)
+# Объекты и предметы: по одному на строке (вложенные — с отступом) или в одну строку
+# после «Здесь:» / «Инвентарь:» («Здесь:  o1. кровать  o2. стол»)
+RE_SCENE = re.compile(r"(?<!\S)o(\d+)\. ")
+RE_INVENTORY = re.compile(r"(?<!\S)i(\d+)\. ")
 RE_WAIT = re.compile(r"^w\. ", re.M)
+RE_ITEM_TAIL = re.compile(r"\s+(\[[^\]]*\]|\(можно взять\))\s*$")
+NEXT_TEXTS = ("Далее", "Next")
 
 
 class Player:
@@ -62,10 +77,23 @@ class Player:
         self.proc.stdin.flush()
 
 
-def screen_actions(screen):
-    """Действия, доступные на экране (последнее меню в выводе)."""
-    # Берём только последний экран: от последней пустой строки перед меню
-    choices = RE_CHOICE.findall(screen)
+def named_items(line, regex):
+    """Номера и имена объектов в строке: «o1. кровать  o2. стол [left-top +1,2]»."""
+    matches = list(regex.finditer(line))
+    result = []
+    for k, m in enumerate(matches):
+        end = matches[k + 1].start() if k + 1 < len(matches) else len(line)
+        name = line[m.end():end].strip()
+        while RE_ITEM_TAIL.search(name):
+            name = RE_ITEM_TAIL.sub("", name)
+        result.append((m.group(1), name))
+    return result
+
+
+def parse_screen(screen):
+    """Варианты, объекты сцены и инвентарь экрана: списки пар (номер, текст)."""
+    choices = [(m.group(1), screen[m.end():].split("\n", 1)[0].strip())
+               for m in RE_CHOICE.finditer(screen)]
     scene = []
     inventory = []
     section = None
@@ -76,12 +104,73 @@ def screen_actions(screen):
             section = "inventory"
         elif not line.startswith(" "):
             section = None
-        m = RE_SCENE.match(line)
-        if m and section == "scene":
-            scene.append(m.group(1))
-        m = RE_INVENTORY.match(line)
-        if m and section == "inventory":
-            inventory.append(m.group(1))
+        if section == "scene":
+            scene += named_items(line, RE_SCENE)
+        elif section == "inventory":
+            inventory += named_items(line, RE_INVENTORY)
+    return choices, scene, inventory
+
+
+def resolve_script_line(line, screen):
+    """Команда nlb_main для строки сценария на этом экране; None — действия на экране нет."""
+    choices, scene, inventory = parse_screen(screen)
+    verb, _, arg = line.partition(" ")
+    arg = arg.strip()
+
+    def find(items, name):
+        for number, text in items:
+            if text.startswith(name):
+                return number
+        return None
+
+    if verb == "go":
+        for number, text in choices:
+            if text == arg:
+                return number
+        return None
+    if verb == "obj":
+        number = find(scene, arg)
+        return None if number is None else "o" + number
+    if verb == "inv":
+        number = find(inventory, arg)
+        return None if number is None else "i" + number
+    if verb == "use":
+        source, _, target = arg.partition(">")
+        source_number = find(inventory, source.strip())
+        target_number = find(scene, target.strip())
+        target_ref = None if target_number is None else "o" + target_number
+        if target_ref is None:
+            target_number = find(inventory, target.strip())
+            target_ref = None if target_number is None else "i" + target_number
+        if source_number is None or target_ref is None:
+            return None
+        return "u%s %s" % (source_number, target_ref)
+    return line
+
+
+def next_choice(screen):
+    for number, text in parse_screen(screen)[0]:
+        if text in NEXT_TEXTS:
+            return number
+    return None
+
+
+def read_script(path):
+    lines = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith("#"):
+                lines.append(line)
+    return lines
+
+
+def screen_actions(screen):
+    """Действия, доступные на экране (последнее меню в выводе)."""
+    choices, scene, inventory = parse_screen(screen)
+    choices = [number for number, _ in choices]
+    scene = [number for number, _ in scene]
+    inventory = [number for number, _ in inventory]
     actions = []
     actions += [("choice", c) for c in choices]
     actions += [("scene", "o" + o) for o in scene]
@@ -105,10 +194,11 @@ def main():
     parser.add_argument("--mode", default="vn", choices=["vn", "standard"])
     parser.add_argument("--config", help="nlb.json (настройки экспорта)")
     parser.add_argument("--seed", type=int, required=True)
-    parser.add_argument("--max-steps", type=int, default=200)
+    parser.add_argument("--max-steps", type=int, default=200, help="случайных шагов после сценария")
     parser.add_argument("--log", required=True, help="журнал прохождения (пишет nlb_main)")
     parser.add_argument("--input", required=True, help="файл для записи ввода")
     parser.add_argument("--timeout", type=float, default=60.0)
+    parser.add_argument("--script", help="сценарий начала прохождения (см. выше)")
     args = parser.parse_args()
     args.log = os.path.abspath(args.log)
     args.book = os.path.abspath(args.book)
@@ -116,32 +206,54 @@ def main():
         args.config = os.path.abspath(args.config)
 
     rng = random.Random(args.seed)
+    script = read_script(args.script) if args.script else []
     inputs = []
     with tempfile.TemporaryDirectory() as home:
         player = Player(args, home)
-        steps = 0
+        steps = 0  # случайные шаги (после сценария)
+        scripted = 0
         while True:
             screen, prompt = player.read_screen(args.timeout)
             if prompt is None:
                 break
             if prompt == CONFIRM_PROMPT:
                 line = "1"  # подтверждаем выход
-            elif END_MARK in screen or steps >= args.max_steps:
+            elif END_MARK in screen:
+                if script:
+                    player.proc.kill()
+                    sys.exit("Игра кончилась раньше сценария, осталось: %s" % script[0])
+                line = "0"
+            elif script:
+                line = resolve_script_line(script[0], screen)
+                if line is not None:
+                    script.pop(0)
+                else:
+                    line = next_choice(screen)
+                    if line is None:
+                        player.proc.kill()
+                        sys.exit("Действие сценария «%s» не найдено на экране:\n%s"
+                                 % (script[0], screen[-1500:]))
+                scripted += 1
+            elif steps >= args.max_steps:
                 line = "0"
             else:
                 actions = screen_actions(screen)
                 if not actions:
                     line = "0"
                 else:
-                    weights = [WEIGHTS[kind] for kind, _ in actions]
-                    line = rng.choices(actions, weights=weights)[0][1]
+                    # Сначала вид действия по весу, затем действие этого вида: иначе применений
+                    # (каждый предмет к каждой цели) было бы больше, чем переходов
+                    kinds = sorted({kind for kind, _ in actions}, key=list(WEIGHTS).index)
+                    kind = rng.choices(kinds, weights=[WEIGHTS[k] for k in kinds])[0]
+                    line = rng.choice([cmd for k, cmd in actions if k == kind])
                     steps += 1
             inputs.append(line)
             player.send(line)
         player.proc.wait(timeout=args.timeout)
     with open(args.input, "w", encoding="utf-8") as f:
         f.write("\n".join(inputs) + "\n")
-    print("%s: %d шагов, ввод: %s, журнал: %s" % (os.path.basename(args.book), steps, args.input, args.log))
+    print("%s: %d шагов по сценарию, %d случайных, ввод: %s, журнал: %s"
+          % (os.path.basename(args.book), scripted, steps, args.input, args.log))
     return 0
 
 
