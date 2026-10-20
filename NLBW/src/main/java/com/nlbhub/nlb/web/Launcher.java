@@ -70,16 +70,25 @@ public class Launcher implements Runnable {
         http.setPort(8111);
         http.setIdleTimeout(30000);
         m_server.addConnector(http);
+    }
+
+    /**
+     * Jersey resource configuration cannot be reused after the server was stopped
+     * ("The resource configuration is not modifiable in this context"), so the context
+     * should be created anew for each server start.
+     */
+    private ServletContextHandler createContext() {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
-        m_server.setHandler(context);
         ResourceConfig resourceConfig = new NLBServiceWebApplication();
         context.addServlet(new ServletHolder(new ServletContainer(resourceConfig)), "/nlb/*");
+        return context;
     }
 
     private void start() throws LauncherException {
         try {
             if (m_server.isStopped()) {
+                m_server.setHandler(createContext());
                 m_server.start();
                 m_server.join();
             } else {
