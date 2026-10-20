@@ -15,6 +15,7 @@ nlb_main прохождение воспроизводится.
     obj кнопка           щелчок по объекту сцены, имя которого начинается с этого текста
     inv Задания          щелчок по предмету инвентаря
     use Ключ > дверь     применить предмет к объекту сцены или предмету инвентаря
+    obj кран #2          второй из объектов с таким именем (то же для inv и use)
     o2, 1, w, ...        команда nlb_main как есть
     # комментарий
 Если действия сценария на экране нет, но есть вариант «Далее», нажимается «Далее», а строка
@@ -118,10 +119,11 @@ def resolve_script_line(line, screen):
     arg = arg.strip()
 
     def find(items, name):
-        for number, text in items:
-            if text.startswith(name):
-                return number
-        return None
+        # «кран #2» — второй из подходящих по имени
+        name, _, ordinal = name.partition(" #")
+        matches = [number for number, text in items if text.startswith(name.strip())]
+        index = int(ordinal) - 1 if ordinal else 0
+        return matches[index] if index < len(matches) else None
 
     if verb == "go":
         for number, text in choices:
