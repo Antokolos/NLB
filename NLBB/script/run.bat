@@ -1,25 +1,14 @@
 @echo off
- 
-Set RegQry=HKLM\Hardware\Description\System\CentralProcessor\0
- 
-REG.exe Query %RegQry% > checkOS.txt
- 
-Find /i "x86" < CheckOS.txt > StringCheck.txt
- 
-If %ERRORLEVEL% == 0 (
-    Echo "This is 32 Bit Operating system"
-    SET JAVA_HOME=jre-7u51-windows-i586
-) ELSE (
-    Echo "This is 64 Bit Operating System"
-    SET JAVA_HOME=jre-7u51-windows-x64
+:: All paths (lib, cfg etc.) are relative to the distribution directory
+cd /d "%~dp0"
+
+:: Use the Java runtime bundled with the distribution; if it is absent, use JAVA_HOME or java from PATH
+if exist runtime\bin\java.exe (
+    set "JAVA=runtime\bin\java.exe"
+) else if defined JAVA_HOME (
+    set "JAVA=%JAVA_HOME%\bin\java.exe"
+) else (
+    set "JAVA=java"
 )
 
-:: Set application lib directory
-SET COMMON_LIB=lib\
-
-:: prepare classpath
-setlocal EnableDelayedExpansion
-set CP=./bin
-for %%f in (%COMMON_LIB%\*.jar) do set CP=%%f;!CP!
-
-"%JAVA_HOME%/bin/java" -classpath %CP% -DconsoleEncoding=UTF-8 com.nlbhub.nlb.builder.NLBBMain
+"%JAVA%" -classpath "bin;lib\*" -DconsoleEncoding=UTF-8 com.nlbhub.nlb.builder.NLBBMain %*
