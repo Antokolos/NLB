@@ -41,6 +41,7 @@ package com.nlbhub.nlb.builder.form;
 import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.builder.model.LinksTableModelSwing;
 import com.nlbhub.nlb.builder.util.ImageHelper;
+import com.nlbhub.nlb.builder.util.LanguageHelper;
 import com.nlbhub.nlb.builder.util.WheelScaleListener;
 import com.nlbhub.nlb.builder.util.Zoomer;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
@@ -258,7 +259,9 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
             public void actionPerformed(ActionEvent e) {
                 JComboBox cb = (JComboBox) e.getSource();
                 refreshTextsForCurrentLanguage();
-                String selectedLanguage = (String) cb.getSelectedItem();
+                String selectedLanguage = LanguageHelper.processLanguageSelection(
+                        cb, m_selectedLanguage, DialogPageProperties.this
+                );
                 m_pageCaptionTextField.setText(m_pageCaptionTexts.get(selectedLanguage));
                 m_pageText.setText(m_pageTexts.get(selectedLanguage));
                 m_traverseTextTextField.setText(m_traverseTexts.get(selectedLanguage));
@@ -370,19 +373,13 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_soundSFXCheckBox.setSelected(page.isSoundSFX());
         m_soundFileNameLabel.setText(m_soundFileName);
 
-        DefaultComboBoxModel<String> languageComboboxModel = new DefaultComboBoxModel<>();
-        languageComboboxModel.addElement(Constants.RU);
-        languageComboboxModel.addElement(Constants.EN);
-        m_languageComboBox.setModel(languageComboboxModel);
-        m_languageComboBox.setSelectedIndex(
-                page.getCurrentNLB().getLanguage().equals(Constants.RU) ? 0 : 1
-        );
+        LanguageHelper.initLanguageComboBox(m_languageComboBox, page.getCurrentNLB());
 
         m_pageCaptionTexts = page.getCaptions();
         m_pageTexts = page.getTexts();
         m_traverseTexts = page.getTraverseTexts();
         m_returnTexts = page.getReturnTexts();
-        m_selectedLanguage = (String) languageComboboxModel.getSelectedItem();
+        m_selectedLanguage = (String) m_languageComboBox.getSelectedItem();
 
         variable = m_nlbFacade.getNlb().getVariableById(page.getVarId());
         timerVariable = m_nlbFacade.getNlb().getVariableById(page.getTimerVarId());

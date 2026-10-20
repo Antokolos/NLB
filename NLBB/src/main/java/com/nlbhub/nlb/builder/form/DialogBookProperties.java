@@ -38,9 +38,9 @@
  */
 package com.nlbhub.nlb.builder.form;
 
-import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.api.Theme;
+import com.nlbhub.nlb.builder.util.LanguageHelper;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 
 import javax.swing.*;
@@ -49,7 +49,6 @@ import java.awt.event.*;
 
 public class DialogBookProperties extends JDialog {
     private NonLinearBookFacade m_nlbFacade;
-    private DefaultComboBoxModel<String> m_languageComboboxModel;
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -112,13 +111,7 @@ public class DialogBookProperties extends JDialog {
         m_fullAutowireCheckBox.setSelected(nonLinearBook.isFullAutowire());
         m_suppressMediaCheckBox.setSelected(nonLinearBook.isSuppressMedia());
         m_suppressSoundCheckBox.setSelected(nonLinearBook.isSuppressSound());
-        m_languageComboboxModel = new DefaultComboBoxModel<>();
-        m_languageComboboxModel.addElement(Constants.RU);
-        m_languageComboboxModel.addElement(Constants.EN);
-        m_languageComboBox.setModel(m_languageComboboxModel);
-        m_languageComboBox.setSelectedIndex(
-                nonLinearBook.getLanguage().equals(Constants.RU) ? 0 : 1
-        );
+        LanguageHelper.initLanguageComboBox(m_languageComboBox, nonLinearBook);
         DefaultComboBoxModel<Theme> themeComboboxModel = new DefaultComboBoxModel<>();
         Theme[] possibleValues = nonLinearBook.getTheme().getDeclaringClass().getEnumConstants();
         for (Theme theme : possibleValues) {
@@ -141,10 +134,22 @@ public class DialogBookProperties extends JDialog {
     }
 
     private void onOK() {
+        final Object editedLanguage = m_languageComboBox.getEditor().getItem();
+        final String language = LanguageHelper.normalize(editedLanguage != null ? editedLanguage.toString() : null);
+        if (language == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Incorrect language code: '" + editedLanguage + "'.\n"
+                            + "Please use ISO 639 code, for example: ru, en, zh, de, fr, zh-tw",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
         m_nlbFacade.updateBookProperties(
                 m_licenseTextArea.getText(),
                 (Theme) m_themeComboBox.getSelectedItem(),
-                m_languageComboboxModel.getElementAt(m_languageComboBox.getSelectedIndex()),
+                language,
                 m_titleTextField.getText(),
                 m_authorTextField.getText(),
                 m_versionTextField.getText(),

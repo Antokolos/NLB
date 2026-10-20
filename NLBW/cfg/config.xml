@@ -22,6 +22,11 @@
                         <game-inv>Хм... Странная штука...</game-inv>
                         <game-nouse>Не сработает...</game-nouse>
                     </text>
+                    <text lang="zh">
+                        <game-act>什么也没有发生。</game-act>
+                        <game-inv>嗯……这东西真奇怪……</game-inv>
+                        <game-nouse>没有用……</game-nouse>
+                    </text>
                 </texts>
             </export>
         </config>

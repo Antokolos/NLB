@@ -40,6 +40,7 @@ package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.builder.util.ImageHelper;
+import com.nlbhub.nlb.builder.util.LanguageHelper;
 import com.nlbhub.nlb.builder.util.WheelScaleListener;
 import com.nlbhub.nlb.builder.util.Zoomer;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
@@ -220,7 +221,9 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
             public void actionPerformed(ActionEvent e) {
                 JComboBox cb = (JComboBox) e.getSource();
                 refreshTextsForCurrentLanguage();
-                String selectedLanguage = (String) cb.getSelectedItem();
+                String selectedLanguage = LanguageHelper.processLanguageSelection(
+                        cb, m_selectedLanguage, DialogObjProperties.this
+                );
                 m_objDispTextArea.setText(m_objDisplayNames.get(selectedLanguage));
                 m_objTextTextArea.setText(m_objTexts.get(selectedLanguage));
                 m_objActTextTextArea.setText(m_objActTexts.get(selectedLanguage));
@@ -442,19 +445,13 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_soundSFXCheckBox.setSelected(obj.isSoundSFX());
         m_soundFileNameLabel.setText(m_soundFileName);
 
-        DefaultComboBoxModel<String> languageComboboxModel = new DefaultComboBoxModel<>();
-        languageComboboxModel.addElement(Constants.RU);
-        languageComboboxModel.addElement(Constants.EN);
-        m_languageComboBox.setModel(languageComboboxModel);
-        m_languageComboBox.setSelectedIndex(
-                obj.getCurrentNLB().getLanguage().equals(Constants.RU) ? 0 : 1
-        );
+        LanguageHelper.initLanguageComboBox(m_languageComboBox, obj.getCurrentNLB());
 
         m_objDisplayNames = obj.getDisps();
         m_objTexts = obj.getTexts();
         m_objActTexts = obj.getActTexts();
         m_objNouseTexts = obj.getNouseTexts();
-        m_selectedLanguage = (String) languageComboboxModel.getSelectedItem();
+        m_selectedLanguage = (String) m_languageComboBox.getSelectedItem();
         m_imageFileName = obj.getImageFileName();
         m_animatedImageCheckBox.setSelected(obj.isAnimatedImage());
         m_imageFileNameLabel.setText(m_imageFileName);
