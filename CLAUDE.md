@@ -2,7 +2,7 @@
 
 Отвечать и писать комментарии, сообщения коммитов и документацию — на русском языке.
 
-## Модули (Maven, Java 21; корневой `pom.xml`, версия 1.0.5-SNAPSHOT)
+## Модули (Maven, Java 21; корневой `pom.xml`)
 - **NLBL** — библиотека: модель книги (`com.nlbhub.nlb.api`, `domain`: `NonLinearBookImpl`,
   `PageImpl`, `ObjImpl`, `LinkImpl`, `ModificationImpl`, `VariableImpl`, `MediaFileImpl`),
   чтение/запись каталога книги, выражения через ScriptEngine (Rhino/Nashorn), экспортёры
@@ -16,7 +16,35 @@
   `xsl/history.xsl`). Здесь же лежат ресурсы экспорта в INSTEAD: `res/vnstead/modules/nlb.lua`,
   `vn.lua`, `paginator.lua`, `gobj.lua`…, и настройки экспорта `cfg/config.xml`.
 
-Сборка: `mvn -q -DskipTests package` (из корня). Тесты — `mvn test`.
+Сборка: `mvn -q -DskipTests package` (из корня). Тесты — `mvn test`. Дистрибутив со встроенной
+Java — `build.sh` / `build.bat` (папка `dist`). Версия проекта при сборке не меняется; повысить —
+`bump-version.sh` / `bump-version.bat`.
+
+### Сборка в облачной сессии Claude
+NLBB зависит от библиотек форм IntelliJ (`java-gui-forms-rt`, `java-compiler-ant-tasks`), которые
+есть только в репозиториях JetBrains. В облачной среде они доступны только через прокси среды, а
+Maven по умолчанию ходит в сеть напрямую. Порт прокси меняется в каждой сессии, поэтому в начале
+сессии, перед первой сборкой, создать `~/.m2/settings.xml` (Maven Central — напрямую, через прокси
+он отвечает 429):
+
+```bash
+P=${HTTPS_PROXY#*://}; P=${P##*@}; P=${P%/}; H=${P%:*}; PORT=${P##*:}
+NP='localhost|127.0.0.1|repo.maven.apache.org|repo1.maven.org'
+mkdir -p ~/.m2 && cat > ~/.m2/settings.xml <<XML
+<settings><proxies>
+  <proxy><id>ccr-https</id><active>true</active><protocol>https</protocol><host>$H</host><port>$PORT</port><nonProxyHosts>$NP</nonProxyHosts></proxy>
+  <proxy><id>ccr-http</id><active>true</active><protocol>http</protocol><host>$H</host><port>$PORT</port><nonProxyHosts>$NP</nonProxyHosts></proxy>
+</proxies></settings>
+XML
+```
+
+Если прошлая попытка сборки упала, Maven кэширует неудачу — запускать с `-U`.
+В сетевых настройках среды (Allowed domains) должны быть разрешены: `www.jetbrains.com`,
+`cache-redirector.jetbrains.com`, `d2cico3c979uwg.cloudfront.net`,
+`artifacts-caching-proxy.aws.intellij.net` (на последние два JetBrains перенаправляет загрузку;
+если адрес сменится, сборка назовёт новый в ошибке — попросить владельца добавить его).
+Редактор можно запустить без экрана для проверки: `xvfb-run -a sh dist/run.sh novcs`,
+скриншот — `import -window root файл.png` (ImageMagick) внутри того же `xvfb-run`.
 
 ## Главная задача: полноценный веб-плеер на Java (NLBW)
 Текущий веб-плеер — отладочный инструмент редактора: навигация через `History`/`DecisionPoint`
