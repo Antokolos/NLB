@@ -1,0 +1,6 @@
+# Тестовые книги для сверки Java-плеера с NLBNavigator.
+# Формат: имя  репозиторий  коммит  режим(vn|standard)  число_прохождений  шагов_в_прохождении
+# Подмодули (внешние модули книги) скачиваются вместе с книгой.
+wolfman               https://github.com/nlbproject/wolfman               888b4b7  vn  5  300
+barbarian_caves_demo  https://github.com/nlbproject/barbarian_caves_demo  d3c9f35  vn  5  300
+chaperonrougehub      https://github.com/nlbproject/chaperonrougehub      a1086d1  vn  5  400
