@@ -1,5 +1,10 @@
-mvn generate-sources package
-rm -r dist
+#!/bin/sh
+# Stop on the first error, otherwise dist can be assembled from stale or partial build results
+set -e
+# Clean first: each build increments the project version, so jars from previous builds
+# (with other version numbers) would otherwise remain in target/ and be copied to dist/lib
+mvn clean generate-sources package
+rm -rf dist
 mkdir dist
 cp NLBB/script/* dist/
 mkdir dist/lib

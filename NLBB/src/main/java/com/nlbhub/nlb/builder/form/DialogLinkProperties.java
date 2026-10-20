@@ -38,10 +38,10 @@
  */
 package com.nlbhub.nlb.builder.form;
 
-import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.Link;
 import com.nlbhub.nlb.api.NLBObserver;
 import com.nlbhub.nlb.api.Variable;
+import com.nlbhub.nlb.builder.util.LanguageHelper;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.util.MultiLangString;
 
@@ -129,7 +129,9 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
             public void actionPerformed(ActionEvent e) {
                 JComboBox cb = (JComboBox) e.getSource();
                 refreshTextsForCurrentLanguage();
-                String selectedLanguage = (String) cb.getSelectedItem();
+                String selectedLanguage = LanguageHelper.processLanguageSelection(
+                        cb, m_selectedLanguage, DialogLinkProperties.this
+                );
                 m_linkTextTextField.setText(m_linkTexts.get(selectedLanguage));
                 m_altTextTextField.setText(m_altTexts.get(selectedLanguage));
                 m_selectedLanguage = selectedLanguage;
@@ -183,17 +185,11 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         m_onceCheckBox.setSelected(link.isOnce());
         m_linkConstraintsTextField.setText(m_constraint != null ? m_constraint.getValue() : "");
 
-        DefaultComboBoxModel<String> languageComboboxModel = new DefaultComboBoxModel<>();
-        languageComboboxModel.addElement(Constants.RU);
-        languageComboboxModel.addElement(Constants.EN);
-        m_languageComboBox.setModel(languageComboboxModel);
-        m_languageComboBox.setSelectedIndex(
-                link.getCurrentNLB().getLanguage().equals(Constants.RU) ? 0 : 1
-        );
+        LanguageHelper.initLanguageComboBox(m_languageComboBox, link.getCurrentNLB());
 
         m_linkTexts = link.getTexts();
         m_altTexts = link.getAltTexts();
-        m_selectedLanguage = (String) languageComboboxModel.getSelectedItem();
+        m_selectedLanguage = (String) m_languageComboBox.getSelectedItem();
     }
 
     private void onOK() {

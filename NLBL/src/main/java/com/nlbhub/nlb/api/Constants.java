@@ -50,6 +50,7 @@ public interface Constants {
     String MEDIA_FILE_NAME_SEP = ";";
     String RU = "ru";
     String EN = "en";
+    String ZH = "zh";
     String MAIN_MODULE_NAME = "MAIN";
     String EMPTY_STRING = "";
     String VOID = "VOID";

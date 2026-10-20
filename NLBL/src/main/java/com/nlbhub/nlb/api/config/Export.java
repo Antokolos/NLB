@@ -38,6 +38,8 @@
  */
 package com.nlbhub.nlb.api.config;
 
+import com.nlbhub.nlb.api.Constants;
+
 import jakarta.xml.bind.annotation.*;
 import java.util.List;
 
@@ -100,10 +102,22 @@ public class Export {
         m_texts = texts;
     }
 
+    /**
+     * @return texts for the given language; if there are no such texts in the config, then texts for English
+     * are returned, and if they are absent too, then the first texts from the config are returned
+     */
     public Text getTextByLang(String lang) {
-        if (m_texts == null) {
+        if (m_texts == null || m_texts.isEmpty()) {
             return null;
         }
+        Text result = findTextByLang(lang);
+        if (result == null) {
+            result = findTextByLang(Constants.EN);
+        }
+        return (result != null) ? result : m_texts.get(0);
+    }
+
+    private Text findTextByLang(String lang) {
         for (Text text : m_texts) {
             if (lang.equalsIgnoreCase(text.getLang())) {
                 return text;

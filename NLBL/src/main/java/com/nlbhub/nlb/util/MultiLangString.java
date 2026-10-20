@@ -71,6 +71,7 @@ public class MultiLangString {
         MultiLangString linkText = new MultiLangString();
         linkText.put(Constants.RU, "Далее");
         linkText.put(Constants.EN, "Next");
+        linkText.put(Constants.ZH, "继续");
         return linkText;
     }
 
@@ -78,6 +79,7 @@ public class MultiLangString {
         MultiLangString linkText = new MultiLangString();
         linkText.put(Constants.RU, "Зайти внутрь");
         linkText.put(Constants.EN, "Go inside");
+        linkText.put(Constants.ZH, "进入");
         return linkText;
     }
 
