@@ -134,16 +134,10 @@ public class DialogBookProperties extends JDialog {
     }
 
     private void onOK() {
-        final Object editedLanguage = m_languageComboBox.getEditor().getItem();
-        final String language = LanguageHelper.normalize(editedLanguage != null ? editedLanguage.toString() : null);
+        final String language = LanguageHelper.validateLanguage(
+                m_languageComboBox, m_languageComboBox.getEditor().getItem(), this
+        );
         if (language == null) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Incorrect language code: '" + editedLanguage + "'.\n"
-                            + "Please use ISO 639 code, for example: ru, en, zh, de, fr, zh-tw",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
             return;
         }
         m_nlbFacade.updateBookProperties(

@@ -63,6 +63,7 @@ public class LanguageHelper {
      * e.g. "ru", "en", "zh", "zh-tw", "pt_br"
      */
     private static final Pattern LANGUAGE_CODE_PATTERN = Pattern.compile("[a-z]{2,3}([-_][a-z0-9]{1,8})*");
+    private static Set<String> s_knownLanguages;
 
     private LanguageHelper() {
     }
@@ -95,15 +96,8 @@ public class LanguageHelper {
             final Component parent
     ) {
         final Object selectedItem = comboBox.getSelectedItem();
-        final String language = normalize(selectedItem != null ? selectedItem.toString() : null);
+        final String language = validateLanguage(comboBox, selectedItem, parent);
         if (language == null) {
-            JOptionPane.showMessageDialog(
-                    parent,
-                    "Incorrect language code: '" + selectedItem + "'.\n"
-                            + "Please use ISO 639 code, for example: ru, en, zh, de, fr, zh-tw",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
             comboBox.setSelectedItem(currentLanguage);
             return currentLanguage;
         }
@@ -118,7 +112,35 @@ public class LanguageHelper {
     }
 
     /**
-     * @return trimmed lowercase language code, or null if the code is invalid
+     * Checks the language entered into the language combobox. Languages already present in the combobox
+     * (i.e. already used in the book) are always accepted, new languages should have a known ISO 639 code.
+     *
+     * @return trimmed lowercase language code, or null if the code is invalid (error message is shown in that case)
+     */
+    public static String validateLanguage(
+            final JComboBox<String> comboBox,
+            final Object value,
+            final Component parent
+    ) {
+        final String language = normalize(value != null ? value.toString() : null);
+        if (language != null) {
+            DefaultComboBoxModel<String> model = (DefaultComboBoxModel<String>) comboBox.getModel();
+            if (model.getIndexOf(language) >= 0 || isKnownLanguage(language)) {
+                return language;
+            }
+        }
+        JOptionPane.showMessageDialog(
+                parent,
+                "Incorrect language code: '" + value + "'.\n"
+                        + "Please use ISO 639 code, for example: ru, en, zh, de, fr, zh-tw",
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+        );
+        return null;
+    }
+
+    /**
+     * @return trimmed lowercase language code, or null if the code has incorrect format
      */
     public static String normalize(final String language) {
         if (language == null) {
@@ -128,8 +150,32 @@ public class LanguageHelper {
         return isValid(result) ? result : null;
     }
 
+    /**
+     * Checks only the format of the language code, so that it can be safely used as a file name
+     */
     public static boolean isValid(final String language) {
         return language != null && LANGUAGE_CODE_PATTERN.matcher(language).matches();
+    }
+
+    /**
+     * @return true if the primary subtag of the language code (e.g. "zh" for "zh-tw")
+     * is a known ISO 639-1 or ISO 639-2 language code
+     */
+    public static boolean isKnownLanguage(final String language) {
+        final String primaryLanguage = language.split("[-_]", 2)[0];
+        return getKnownLanguages().contains(primaryLanguage);
+    }
+
+    private static synchronized Set<String> getKnownLanguages() {
+        if (s_knownLanguages == null) {
+            Set<String> knownLanguages = new HashSet<>();
+            for (String language : Locale.getISOLanguages()) {
+                knownLanguages.add(language);
+                knownLanguages.add(Locale.forLanguageTag(language).getISO3Language());
+            }
+            s_knownLanguages = knownLanguages;
+        }
+        return s_knownLanguages;
     }
 
     /**
@@ -138,7 +184,8 @@ public class LanguageHelper {
      */
     public static List<String> getAvailableLanguages(final NonLinearBook nlb) {
         NonLinearBook rootNLB = nlb;
-        while (rootNLB.getParentNLB() != null) {
+        // The parent of the main book is DummyNLB, which has no pages, so we should stop before it
+        while (rootNLB.getParentNLB() != null && !rootNLB.getParentNLB().isDummy()) {
             rootNLB = rootNLB.getParentNLB();
         }
         Set<String> usedLanguages = new TreeSet<>();
