@@ -1,0 +1,130 @@
+/* Веб-плеер NLB: экран в духе темы INSTEAD по умолчанию (STANDARD) */
+:root {
+  --bg: #f4f1ea;
+  --panel: #ebe6da;
+  --text: #2b2620;
+  --muted: #7a7064;
+  --link: #6b2a17;
+  --link-hover: #b04a1f;
+  --title: #4a3424;
+  --selected: #f6d38a;
+  --shadow: rgba(0, 0, 0, 0.25);
+  --font: Georgia, "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1d1b18;
+    --panel: #262320;
+    --text: #e6dfd2;
+    --muted: #9d9385;
+    --link: #e2a36b;
+    --link-hover: #ffc58e;
+    --title: #f0d6b0;
+    --selected: #6b4f1d;
+    --shadow: rgba(0, 0, 0, 0.6);
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 19px;
+  line-height: 1.5;
+}
+[hidden] { display: none !important; }
+button { font: inherit; }
+
+/* Библиотека книг */
+.library { max-width: 760px; margin: 0 auto; padding: 24px 16px; }
+.library h1 { color: var(--title); font-weight: normal; }
+.books { list-style: none; padding: 0; }
+.books li { padding: 12px 0; border-bottom: 1px solid var(--panel); }
+.books .book-title { color: var(--link); cursor: pointer; font-size: 1.15em; }
+.books .book-title:hover { color: var(--link-hover); }
+.books .book-meta { color: var(--muted); font-size: 0.85em; }
+.books select { font: inherit; font-size: 0.85em; margin-left: 8px; }
+
+/* Игра */
+.game { display: flex; flex-direction: column; min-height: 100%; }
+.bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 6px 16px; background: var(--panel);
+  box-shadow: 0 1px 4px var(--shadow);
+}
+.bar-title { flex: 1; color: var(--muted); font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-button {
+  background: none; border: 1px solid var(--muted); color: var(--text);
+  border-radius: 4px; padding: 2px 12px; cursor: pointer;
+}
+.bar-button:hover { color: var(--link-hover); border-color: var(--link-hover); }
+.screen {
+  flex: 1; display: flex; gap: 24px; width: 100%; max-width: 1200px;
+  margin: 0 auto; padding: 16px;
+}
+.stage { flex: 1; min-width: 0; }
+.inventory {
+  width: 260px; flex: none; align-self: flex-start;
+  background: var(--panel); border-radius: 6px; padding: 10px 14px;
+}
+.inventory:empty { visibility: hidden; }
+.inventory .item { display: block; margin: 2px 0; }
+.inventory .item.inactive { color: var(--muted); cursor: default; }
+.inventory .item img { height: 1.4em; vertical-align: middle; margin-right: 6px; }
+.inventory .item.selected { background: var(--selected); border-radius: 3px; }
+.inventory .child { margin-left: 16px; }
+@media (max-width: 760px) {
+  .screen { flex-direction: column; gap: 12px; }
+  .inventory { width: 100%; }
+}
+
+.picture { text-align: center; }
+.picture img { max-width: 100%; max-height: 52vh; }
+.objects { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 8px 0; }
+.objects:empty { display: none; }
+.objects .object { text-align: center; font-size: 0.85em; }
+.objects .object img { max-height: 120px; max-width: 160px; display: block; margin: 0 auto 2px; }
+
+.text p { margin: 0 0 0.6em; white-space: pre-wrap; }
+.text p.title { text-align: center; color: var(--title); font-size: 1.1em; margin-bottom: 0.3em; }
+.text p.ways { text-align: center; margin-bottom: 1em; }
+.text p.em { font-style: italic; }
+.text p.inline-link { margin-bottom: 0.3em; }
+.text p.end { text-align: center; color: var(--muted); margin-top: 1.2em; }
+a.link, span.link {
+  color: var(--link); text-decoration: none; cursor: pointer;
+  border-bottom: 1px dotted transparent;
+}
+a.link:hover, span.link:hover { color: var(--link-hover); border-bottom-color: var(--link-hover); }
+.text .title .link { color: var(--title); }
+
+.hint {
+  position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%);
+  background: var(--panel); padding: 6px 14px; border-radius: 6px;
+  box-shadow: 0 2px 8px var(--shadow); font-size: 0.85em; max-width: calc(100% - 32px);
+}
+/* сообщения — внизу справа: вверху справа — инвентарь */
+.toasts { position: fixed; right: 16px; bottom: 64px; display: flex; flex-direction: column; gap: 8px; z-index: 5; }
+.toast {
+  background: var(--panel); border-left: 4px solid var(--link);
+  padding: 8px 14px; border-radius: 4px; box-shadow: 0 2px 8px var(--shadow);
+  max-width: min(360px, calc(100vw - 32px)); animation: toast-in 0.3s ease-out;
+}
+@keyframes toast-in { from { opacity: 0; transform: translateY(-6px); } }
+
+.dialog {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45);
+  display: flex; align-items: center; justify-content: center; z-index: 10; padding: 16px;
+}
+.dialog-box {
+  background: var(--bg); border-radius: 8px; padding: 18px 22px;
+  min-width: min(360px, 100%); max-width: 520px; max-height: 90vh; overflow: auto;
+  box-shadow: 0 6px 24px var(--shadow);
+}
+.dialog-box h2 { margin: 0 0 10px; font-weight: normal; color: var(--title); font-size: 1.2em; }
+.dialog-box .menu-item { display: block; width: 100%; text-align: left; margin: 2px 0; padding: 6px 8px;
+  background: none; border: none; color: var(--link); cursor: pointer; border-radius: 4px; }
+.dialog-box .menu-item:hover { background: var(--panel); color: var(--link-hover); }
+.dialog-box .menu-item:disabled { color: var(--muted); cursor: default; background: none; }
+.dialog-box .note { color: var(--muted); font-size: 0.85em; }
