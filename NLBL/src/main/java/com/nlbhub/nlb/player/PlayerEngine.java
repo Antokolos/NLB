@@ -1144,7 +1144,9 @@ public class PlayerEngine {
      * ExportManager.determineTrivialStatus(Link)
      */
     private static boolean isTrivial(MultiLangString texts, MultiLangString altTexts, boolean autoFlag) {
-        return (Link.DEFAULT_TEXT.equals(texts) && Link.DEFAULT_ALT_TEXT.equals(altTexts)) || autoFlag;
+        // как в ExportManager: matchesDefault, а не equals (старые книги хранят «Далее» только на ru и en)
+        return (texts.matchesDefault(Link.DEFAULT_TEXT, Page.DEFAULT_TRAVERSE_TEXT)
+                && altTexts.matchesDefault(Link.DEFAULT_ALT_TEXT)) || autoFlag;
     }
 
     /**
