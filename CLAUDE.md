@@ -120,10 +120,9 @@ git clone --recurse-submodules https://github.com/nlbproject/<книга>.git
 | `servant-of-ra` | STANDARD, объекты и инвентарь, применение предметов | `instead-servant-of-ra` |
 | `barbarian_caves_demo` | VN, en+ru, выбор навыков объектами на старте, внешняя игра (`play_bp_*`) | `instead-barbarian_caves_demo` |
 | `wild-island-quest` | VN, en+ru, 6 внутренних модулей, инвентарь, длинные варианты | `instead-wild-island-quest` |
-| `wolfman` | en+ru, 7 внутренних модулей, проходится до конца | — |
+| `wolfman` («Am I a monster?» / «Я -- монстр») | VN, en+ru, 7 внутренних модулей, проходится до конца | `instead-am_i_a_monster_vn` |
 | `chaperonrougehub` | VN-хаб, en+ru, достижения; внешние модули в три уровня: `chaperon_filling_hub` -> `chaperon_forest_hub`, `chaperon_tutorial` (тема STANDARD) | `instead-chaperon_new` |
 | `Frontier` | большая (431 страница, 2838 картинок), ru; внешние модули `frontierwarriors`, `sabotage`, `waspsnest` | `instead-frontier` |
-| — | только экспорт, исходной книги нет | `instead-am_i_a_monster_vn` |
 
 Модули «Шапочки» и «Фронтира» лежат и отдельными репозиториями — то же содержимое, что
 приходит подмодулями.
