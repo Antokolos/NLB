@@ -38,6 +38,11 @@
  */
 package com.nlbhub.nlb.player;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nlbhub.nlb.api.Coords;
 import com.nlbhub.nlb.api.Link;
 import com.nlbhub.nlb.api.Modification;
@@ -51,6 +56,8 @@ import com.nlbhub.nlb.api.config.Export;
 import com.nlbhub.nlb.api.config.Text;
 import com.nlbhub.nlb.util.MultiLangString;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -442,6 +449,51 @@ public class PlayerEngine {
         }
     }
 
+    /**
+     * Сведения о сохранении (для списка слотов)
+     */
+    public static final class SaveInfo {
+        private final boolean m_valid;
+        private final boolean m_compatible;
+        private final String m_time;
+        private final String m_label;
+
+        SaveInfo(boolean valid, boolean compatible, String time, String label) {
+            m_valid = valid;
+            m_compatible = compatible;
+            m_time = time;
+            m_label = label;
+        }
+
+        /**
+         * Это сохранение NLB (а не что-то другое)
+         */
+        public boolean isValid() {
+            return m_valid;
+        }
+
+        /**
+         * Сохранение сделано для этой книги
+         */
+        public boolean isCompatible() {
+            return m_compatible;
+        }
+
+        /**
+         * Время сохранения, "ГГГГ-ММ-ДД ЧЧ:ММ"
+         */
+        public String getTime() {
+            return m_time;
+        }
+
+        /**
+         * Где находился игрок: заголовок или начало текста страницы
+         */
+        public String getLabel() {
+            return m_label;
+        }
+    }
+
     private enum LinkKind {Normal, Traverse, Return, AutowiredIn, AutowiredOut}
 
     private enum ObjKind {Obj, Menu, Stat}
@@ -483,6 +535,10 @@ public class PlayerEngine {
      * ~10 с при тике 200 мс: пауза хода противника, короткие анимации
      */
     private static final int SHORT_WAIT_TICKS = 50;
+    private static final String SAVE_FORMAT = "nlb-save";
+    private static final int SAVE_VERSION = 1;
+    private static final int SAVE_LABEL_LENGTH = 80;
+    private static final ObjectMapper JSON = new ObjectMapper();
 
     private final NonLinearBook m_rootBook;
     private final Settings m_settings;
@@ -524,6 +580,10 @@ public class PlayerEngine {
      * Начало событий последней показанной страницы — чтобы убрать «пустые» промежуточные страницы
      */
     private int m_lastRenderStart = 0;
+    /**
+     * Снимок SNAPSHOT — игра целиком, в том же виде, что сохранение; null — снимка нет
+     */
+    private ObjectNode m_snapshot = null;
 
     public PlayerEngine(NonLinearBook rootBook, Settings settings) {
         m_rootBook = rootBook;
@@ -553,6 +613,7 @@ public class PlayerEngine {
         m_currentMusic = "";
         m_preservedRoots.clear();
         m_preservedImagesShown.clear();
+        m_snapshot = null;
     }
 
     /**
@@ -673,6 +734,20 @@ public class PlayerEngine {
     public void restart() {
         createState();
         start();
+    }
+
+    /**
+     * «Попробовать ещё раз» в конце VN-игры (_try_again в nlb.lua): вернуться к снимку SNAPSHOT,
+     * если он сделан, иначе начать заново. Прогресс достижений сохраняется
+     */
+    public void tryAgain() {
+        if (m_snapshot == null) {
+            restart();
+            return;
+        }
+        ObjectNode snapshot = m_snapshot;
+        applySave(snapshot);
+        m_snapshot = snapshot;
     }
 
     /**
@@ -889,6 +964,171 @@ public class PlayerEngine {
         walkTo(returnTo, false);
         settle(false);
         return true;
+    }
+
+    // ------------------------------------------------------------------ сохранения
+
+    /**
+     * Можно ли сохраниться сейчас. Страница с флагом «не сохранять» (nosave) запрещает
+     * сохранение, как game.enable_save в nlb.lua; загружаться можно всегда
+     */
+    public boolean canSave() {
+        return m_page != null && !m_page.isNoSave();
+    }
+
+    /**
+     * Сохранение игры — JSON. Как и в INSTEAD, сохраняется состояние мира, а не история: после
+     * загрузки страница показывается заново, без исполнения её модификаций. Достижения в
+     * сохранение не входят (см. {@link Achievements#toJson()})
+     */
+    public String saveGame() {
+        if (m_page == null) {
+            throw new PlayerException("игра не начата");
+        }
+        if (!canSave()) {
+            throw new PlayerException("здесь сохраняться нельзя");
+        }
+        ObjectNode root = buildSave();
+        if (m_snapshot != null) {
+            root.set("snapshot", m_snapshot);
+        }
+        try {
+            return JSON.writerWithDefaultPrettyPrinter().writeValueAsString(root);
+        } catch (JsonProcessingException e) {
+            throw new PlayerException("не удалось записать сохранение: " + e.getOriginalMessage());
+        }
+    }
+
+    /**
+     * Игра целиком (без снимка SNAPSHOT) — для сохранения и для самого снимка
+     */
+    private ObjectNode buildSave() {
+        ObjectNode root = JSON.createObjectNode();
+        root.put("format", SAVE_FORMAT);
+        root.put("version", SAVE_VERSION);
+        ObjectNode book = root.putObject("book");
+        book.put("title", nz(m_rootBook.getTitle()));
+        book.put("startPoint", nz(m_rootBook.getStartPoint()));
+        root.put("time", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        root.put("label", saveLabel());
+        root.put("page", m_page.getId());
+        root.put("lastText", m_interpreter.lastText());
+        root.put("actionPrev", m_actionCountDiffPrev);
+        root.put("music", m_currentMusic);
+        if (m_externalGame != null) {
+            ObjectNode external = root.putObject("external");
+            external.put("name", m_externalGame.getName());
+            external.put("returnPage", m_externalGame.getReturnPageId());
+        }
+        ArrayNode preserved = root.putArray("preserved");
+        m_preservedRoots.forEach(preserved::add);
+        m_context.saveState(root.putObject("world"));
+        return root;
+    }
+
+    /**
+     * Подпись слота: заголовок страницы, если он показывается игроку, иначе начало текста
+     */
+    private String saveLabel() {
+        String label = m_page.isUseCaption() ? trim(displayText(m_interpreter.expandText(nz(m_page.getCaption())))) : "";
+        if (label.isEmpty()) {
+            label = trim(displayText(m_interpreter.expandText(nz(m_page.getText()))));
+            int eol = label.indexOf('\n');
+            if (eol >= 0) {
+                label = label.substring(0, eol);
+            }
+            if (label.codePointCount(0, label.length()) > SAVE_LABEL_LENGTH) {
+                label = label.substring(0, label.offsetByCodePoints(0, SAVE_LABEL_LENGTH)) + "…";
+            }
+        }
+        return label;
+    }
+
+    private static JsonNode parseSave(String json) {
+        try {
+            JsonNode root = JSON.readTree(json);
+            return (root != null && SAVE_FORMAT.equals(root.path("format").asText())) ? root : null;
+        } catch (JsonProcessingException e) {
+            return null;
+        }
+    }
+
+    private boolean isSaveForThisBook(JsonNode root) {
+        JsonNode book = root.path("book");
+        return nz(m_rootBook.getStartPoint()).equals(book.path("startPoint").asText())
+                && nz(m_rootBook.getTitle()).equals(book.path("title").asText());
+    }
+
+    /**
+     * Сведения о сохранении для списка слотов; не изменяет игру
+     */
+    public SaveInfo readSaveInfo(String json) {
+        JsonNode root = json == null ? null : parseSave(json);
+        if (root == null) {
+            return new SaveInfo(false, false, "", "");
+        }
+        return new SaveInfo(true, isSaveForThisBook(root), root.path("time").asText(), root.path("label").asText());
+    }
+
+    /**
+     * Загрузить игру: состояние мира целиком из сохранения, страница показывается заново без
+     * исполнения её модификаций. При ошибке игра не меняется
+     */
+    public void loadGame(String json) {
+        JsonNode root = parseSave(json);
+        if (root == null) {
+            throw new PlayerException("это не сохранение NLB");
+        }
+        if (root.path("version").asInt() != SAVE_VERSION) {
+            throw new PlayerException("неподдерживаемая версия сохранения: " + root.path("version").asText());
+        }
+        if (!isSaveForThisBook(root)) {
+            throw new PlayerException("сохранение сделано для другой книги («" + root.path("book").path("title").asText() + "»)");
+        }
+        String pageId = root.path("page").asText();
+        if (m_interpreter.findPage(pageId) == null) {
+            throw new PlayerException("в книге нет страницы из сохранения (" + pageId + ")");
+        }
+        JsonNode snapshot = root.get("snapshot");
+        applySave(root);
+        m_snapshot = snapshot instanceof ObjectNode ? (ObjectNode) snapshot : null;
+    }
+
+    /**
+     * Ставит игру в состояние из проверенного сохранения (или снимка SNAPSHOT) и показывает страницу
+     */
+    private void applySave(JsonNode root) {
+        String pageId = root.path("page").asText();
+        Page page = m_interpreter.findPage(pageId);
+        m_context.loadState(root.path("world"));
+        m_events = new ArrayList<>();
+        m_page = page;
+        m_book = m_interpreter.bookOfPage(pageId);
+        m_actionCountDiffPrev = root.path("actionPrev").asLong(0);
+        m_transitions = 0;
+        m_interpreter.resetLastText();
+        m_interpreter.setLastText(root.path("lastText").asText());
+        m_shownImages.clear();
+        // Музыка, звучавшая в момент сохранения (INSTEAD тоже восстанавливает её при загрузке)
+        m_currentMusic = root.path("music").asText();
+        m_preservedRoots.clear();
+        m_preservedRoots.addAll(PlayerContext.strings(root.path("preserved")));
+        m_preservedImagesShown.clear();  // после загрузки экран рисуется заново
+        if (!m_currentMusic.isEmpty()) {
+            m_events.add(new Event(Event.Kind.Music, m_currentMusic));
+        }
+        renderPage();
+        // Сохранено во время внешней игры — продолжаем её
+        JsonNode external = root.path("external");
+        m_externalGame = external.has("name")
+                ? new ExternalGame(external.path("name").asText(), external.path("returnPage").asText())
+                : null;
+        m_pendingExternalGame = null;
+        if (m_externalGame != null) {
+            m_events.add(new Event(Event.Kind.ExternalGame, m_externalGame.getName()));
+        } else if (isFinished()) {
+            m_events.add(new Event(Event.Kind.Finish, ""));
+        }
     }
 
     public List<Event> takeEvents() {
@@ -1373,6 +1613,10 @@ public class PlayerEngine {
             tick = true;  // следующая итерация — прошёл ещё один тик
         }
         startPendingExternalGame();
+        // make_snapshot в INSTEAD: снимок — в конце хода, когда игра уже пришла в покой
+        if (m_context.takeSnapshotRequest()) {
+            m_snapshot = buildSave();
+        }
         if (m_externalGame == null && isFinished()) {
             m_events.add(new Event(Event.Kind.Finish, ""));
         }

@@ -38,6 +38,9 @@
  */
 package com.nlbhub.nlb.player;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.api.Obj;
 import com.nlbhub.nlb.api.Page;
@@ -50,7 +53,6 @@ import java.util.Deque;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -110,7 +112,7 @@ public class PlayerContext {
     private static final String ACHIEVEMENT_PREFIX = "Получено достижение: ";
 
     /**
-     * Игровое состояние, которое сохраняет SNAPSHOT
+     * Игровое состояние (без переменных): то, что попадает в сохранение
      */
     private static final class GameState {
         private Map<String, Deque<String>> m_lists = new TreeMap<>();
@@ -126,28 +128,6 @@ public class PlayerContext {
         private Set<String> m_followedLinks = new TreeSet<>();
         private Set<NonLinearBook> m_initializedBooks = Collections.newSetFromMap(new IdentityHashMap<>());
         private Set<String> m_collapsed = new TreeSet<>();
-
-        private GameState copy() {
-            GameState result = new GameState();
-            for (Map.Entry<String, Deque<String>> entry : m_lists.entrySet()) {
-                result.m_lists.put(entry.getKey(), new ArrayDeque<>(entry.getValue()));
-            }
-            result.m_inventory = new ArrayList<>(m_inventory);
-            for (Map.Entry<String, List<String>> entry : m_containers.entrySet()) {
-                result.m_containers.put(entry.getKey(), new ArrayList<>(entry.getValue()));
-            }
-            result.m_containerOf = new TreeMap<>(m_containerOf);
-            result.m_cloneProto = new TreeMap<>(m_cloneProto);
-            result.m_cloneCounters = new TreeMap<>(m_cloneCounters);
-            result.m_tags = new TreeMap<>(m_tags);
-            result.m_counts = new TreeMap<>(m_counts);
-            result.m_countsAtReset = new TreeMap<>(m_countsAtReset);
-            result.m_pageHistory = new ArrayList<>(m_pageHistory);
-            result.m_followedLinks = new TreeSet<>(m_followedLinks);
-            result.m_initializedBooks.addAll(m_initializedBooks);
-            result.m_collapsed = new TreeSet<>(m_collapsed);
-            return result;
-        }
     }
 
     private final NonLinearBook m_rootBook;
@@ -157,23 +137,28 @@ public class PlayerContext {
     private Map<String, Value> m_vars = new TreeMap<>();
     private GameState m_state = new GameState();
 
-    private boolean m_hasSnapshot = false;
-    private Map<String, Value> m_snapshotVars = new TreeMap<>();
-    private GameState m_snapshotState = new GameState();
+    /**
+     * SNAPSHOT исполнен: снимок игры сделает движок в конце хода
+     */
+    private boolean m_snapshotRequested = false;
 
     private final Achievements m_achievements;
     private final String m_perfectGameName;
 
     private final List<OutputItem> m_output = new ArrayList<>();
     private String m_goto = null;
-    private final Random m_random;
+    /**
+     * Состояние генератора случайных чисел (SplitMix64): одно число, поэтому оно сохраняется
+     * вместе с игрой, и после загрузки случайность продолжается так же, как без перерыва
+     */
+    private long m_randomState;
     private boolean m_deterministic = false;
     private long m_deterministicCounter = 0;
 
     public PlayerContext(NonLinearBook rootBook, Achievements achievements, long randomSeed) {
         m_rootBook = rootBook;
         m_achievements = achievements;
-        m_random = new Random(randomSeed);
+        m_randomState = randomSeed;
         // Литералы true/false в выражениях книги
         m_vars.put("true", Value.TRUE);
         m_vars.put("false", Value.FALSE);
@@ -337,7 +322,10 @@ public class PlayerContext {
         if (m_deterministic) {
             Collections.reverse(values);
         } else {
-            Collections.shuffle(values, m_random);
+            // Фишер — Йейтс
+            for (int i = values.size() - 1; i > 0; i--) {
+                Collections.swap(values, i, (int) (nextDouble() * (i + 1)));
+            }
         }
         items.clear();
         items.addAll(values);
@@ -601,27 +589,21 @@ public class PlayerContext {
 
     // ------------------------------------------------------------------ SNAPSHOT
 
+    /**
+     * SNAPSHOT: как make_snapshot в INSTEAD, снимок всей игры (это то же, что сохранение)
+     * делается в конце хода — его делает движок, см. {@link #takeSnapshotRequest()}
+     */
     public void makeSnapshot() {
-        m_snapshotVars = new TreeMap<>(m_vars);
-        m_snapshotState = m_state.copy();
-        m_hasSnapshot = true;
-    }
-
-    public boolean hasSnapshot() {
-        return m_hasSnapshot;
+        m_snapshotRequested = true;
     }
 
     /**
-     * Восстанавливает игровое состояние; достижения и очередь вывода не трогает
+     * @return был ли с прошлого вызова исполнен SNAPSHOT
      */
-    public boolean restoreSnapshot() {
-        if (!m_hasSnapshot) {
-            return false;
-        }
-        m_vars = new TreeMap<>(m_snapshotVars);
-        m_state = m_snapshotState.copy();
-        m_goto = null;
-        return true;
+    public boolean takeSnapshotRequest() {
+        boolean result = m_snapshotRequested;
+        m_snapshotRequested = false;
+        return result;
     }
 
     // ------------------------------------------------------------------ вывод и навигация
@@ -692,7 +674,124 @@ public class PlayerContext {
         if (m_deterministic) {
             return Math.floorMod(m_deterministicCounter++, n) + 1;
         }
-        return 1 + (long) (m_random.nextDouble() * n);
+        return 1 + (long) (nextDouble() * n);
+    }
+
+    /**
+     * SplitMix64: равномерно на [0, 1)
+     */
+    private double nextDouble() {
+        long z = (m_randomState += 0x9E3779B97F4A7C15L);
+        z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
+        z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
+        z = z ^ (z >>> 31);
+        return (z >>> 11) * 0x1.0p-53;
+    }
+
+    // ------------------------------------------------------------------ сохранение игры
+    //
+    // Состояние мира — JSON: переменные (значения с типом, см. Value.encode), списки, инвентарь,
+    // контейнеры, клоны, теги, счётчики, история страниц, однократные ссылки, свёрнутые объекты
+    // и состояние случайности. Достижения сюда не входят — они живут отдельно
+
+    /**
+     * Записывает состояние мира в out
+     */
+    public void saveState(ObjectNode out) {
+        writeGameState(out, m_vars, m_state);
+        ObjectNode random = out.putObject("random");
+        random.put("state", m_randomState);
+        random.put("deterministicCounter", m_deterministicCounter);
+    }
+
+    /**
+     * Заменяет состояние мира сохранённым (то, чего в сохранении нет, — как в начале игры).
+     * Очередь вывода и запрошенный GOTO сбрасываются, достижения не меняются
+     */
+    public void loadState(JsonNode in) {
+        Map<String, Value> vars = new TreeMap<>();
+        GameState state = new GameState();
+        readGameState(in, vars, state);
+        JsonNode random = in.path("random");
+        if (random.has("state")) {
+            m_randomState = random.get("state").asLong();
+        }
+        m_deterministicCounter = random.path("deterministicCounter").asLong(0);
+        m_vars = vars;
+        m_state = state;
+        m_goto = null;
+        m_snapshotRequested = false;
+        m_output.clear();
+        // Переменные, появившиеся в книге после сохранения, — значения по умолчанию
+        if (m_rootBook != null) {
+            ensureBookVars(m_rootBook);
+        }
+    }
+
+    private static void writeGameState(ObjectNode out, Map<String, Value> vars, GameState st) {
+        ObjectNode varsNode = out.putObject("vars");
+        for (Map.Entry<String, Value> entry : vars.entrySet()) {
+            if (!"true".equals(entry.getKey()) && !"false".equals(entry.getKey())) {
+                varsNode.put(entry.getKey(), entry.getValue().encode());
+            }
+        }
+        ObjectNode lists = out.putObject("lists");
+        for (Map.Entry<String, Deque<String>> entry : st.m_lists.entrySet()) {
+            putStrings(lists.putArray(entry.getKey()), entry.getValue());
+        }
+        putStrings(out.putArray("inventory"), st.m_inventory);
+        ObjectNode containers = out.putObject("containers");
+        for (Map.Entry<String, List<String>> entry : st.m_containers.entrySet()) {
+            putStrings(containers.putArray(entry.getKey()), entry.getValue());
+        }
+        putStringMap(out.putObject("containerOf"), st.m_containerOf);
+        putStringMap(out.putObject("cloneProto"), st.m_cloneProto);
+        ObjectNode cloneCounters = out.putObject("cloneCounters");
+        st.m_cloneCounters.forEach(cloneCounters::put);
+        putStringMap(out.putObject("tags"), st.m_tags);
+        ObjectNode counts = out.putObject("counts");
+        st.m_counts.forEach(counts::put);
+        ObjectNode countsAtReset = out.putObject("countsAtReset");
+        st.m_countsAtReset.forEach(countsAtReset::put);
+        putStrings(out.putArray("pageHistory"), st.m_pageHistory);
+        putStrings(out.putArray("followedLinks"), st.m_followedLinks);
+        putStrings(out.putArray("collapsed"), st.m_collapsed);
+    }
+
+    private static void readGameState(JsonNode in, Map<String, Value> vars, GameState st) {
+        vars.put("true", Value.TRUE);
+        vars.put("false", Value.FALSE);
+        in.path("vars").fields().forEachRemaining(e -> vars.put(e.getKey(), Value.decode(e.getValue().asText())));
+        in.path("lists").fields().forEachRemaining(e -> st.m_lists.put(e.getKey(), new ArrayDeque<>(strings(e.getValue()))));
+        st.m_inventory = strings(in.path("inventory"));
+        in.path("containers").fields().forEachRemaining(e -> st.m_containers.put(e.getKey(), strings(e.getValue())));
+        in.path("containerOf").fields().forEachRemaining(e -> st.m_containerOf.put(e.getKey(), e.getValue().asText()));
+        in.path("cloneProto").fields().forEachRemaining(e -> st.m_cloneProto.put(e.getKey(), e.getValue().asText()));
+        in.path("cloneCounters").fields().forEachRemaining(e -> st.m_cloneCounters.put(e.getKey(), e.getValue().asInt()));
+        in.path("tags").fields().forEachRemaining(e -> st.m_tags.put(e.getKey(), e.getValue().asText()));
+        in.path("counts").fields().forEachRemaining(e -> st.m_counts.put(e.getKey(), e.getValue().asLong()));
+        in.path("countsAtReset").fields().forEachRemaining(e -> st.m_countsAtReset.put(e.getKey(), e.getValue().asLong()));
+        st.m_pageHistory = strings(in.path("pageHistory"));
+        st.m_followedLinks = new TreeSet<>(strings(in.path("followedLinks")));
+        st.m_collapsed = new TreeSet<>(strings(in.path("collapsed")));
+    }
+
+    private static void putStrings(ArrayNode array, Iterable<String> items) {
+        for (String item : items) {
+            array.add(item);
+        }
+    }
+
+    private static void putStringMap(ObjectNode out, Map<String, String> map) {
+        map.forEach(out::put);
+    }
+
+    static List<String> strings(JsonNode array) {
+        List<String> result = new ArrayList<>();
+        for (JsonNode item : array) {
+            result.add(item.asText());
+        }
+        return result;
     }
 
     // ------------------------------------------------------------------ инициализация
