@@ -341,7 +341,7 @@ public class ScreenModel {
             return result;
         }
 
-        ObjectNode toJson() {
+        public ObjectNode toJson() {
             ObjectNode result = JSON.objectNode();
             ArrayNode runs = result.putArray("runs");
             for (TextRun run : m_runs) {

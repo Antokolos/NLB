@@ -48,6 +48,7 @@ import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.exception.*;
 import com.nlbhub.nlb.util.BareBonesBrowserLaunch;
 import com.nlbhub.nlb.web.Launcher;
+import com.nlbhub.nlb.web.player.BookLibrary;
 import org.jdesktop.swingx.JXStatusBar;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -65,6 +66,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -1078,8 +1081,10 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                         Thread thread = new Thread(m_launcher);
                         thread.start();
                         Thread.sleep(START_SERVER_TIMEOUT);
+                        // новый плеер (старый отладочный остаётся по адресу /nlb/<книга>/start)
                         BareBonesBrowserLaunch.openURL(
-                                "http://localhost:8111/nlb/" + bookId + "/start"
+                                "http://localhost:8111/play/?book=" + URLEncoder.encode(bookId, StandardCharsets.UTF_8)
+                                        + "&mode=" + BookLibrary.defaultMode(mainNLB)
                         );
                         m_startServerButton.setEnabled(false);
                         m_stopServerButton.setEnabled(true);

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NLB</title>
+<link rel="stylesheet" href="static/player.css">
+</head>
+<body>
+<div id="library" class="library" hidden>
+  <h1 id="library-title">NLB</h1>
+  <ul id="books" class="books"></ul>
+</div>
+<div id="game" class="game" hidden>
+  <header class="bar">
+    <span id="title" class="bar-title"></span>
+    <button id="menu-button" class="bar-button" type="button"></button>
+  </header>
+  <main class="screen">
+    <section id="stage" class="stage">
+      <div id="picture" class="picture"></div>
+      <div id="objects" class="objects"></div>
+      <div id="text" class="text" aria-live="polite"></div>
+    </section>
+    <aside id="inventory" class="inventory"></aside>
+  </main>
+  <div id="hint" class="hint" hidden></div>
+  <div id="toasts" class="toasts"></div>
+</div>
+<div id="dialog" class="dialog" hidden>
+  <div class="dialog-box">
+    <div id="dialog-body"></div>
+  </div>
+</div>
+<script src="static/player.js"></script>
+</body>
+</html>

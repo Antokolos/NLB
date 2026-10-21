@@ -44,6 +44,7 @@ import com.nlbhub.nlb.api.PropertyManager;
 import com.nlbhub.nlb.api.config.Export;
 import com.nlbhub.nlb.api.config.Settings;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
+import com.nlbhub.nlb.util.BookPack;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -71,7 +72,7 @@ import java.util.List;
  *   m        — меню: сохранить, загрузить, начать заново, выйти
  *   0        — выход (с подтверждением)
  * </pre>
- * Запуск: {@code java -cp NLBL.jar com.nlbhub.nlb.player.ConsolePlayer <каталог книги> [vn|standard]
+ * Запуск: {@code java -cp NLBL.jar com.nlbhub.nlb.player.ConsolePlayer <каталог книги или .nlbpack> [vn|standard]
  * [--deterministic[=n]] [--config cfg/config.xml] [--echo]}
  *
  * @author Anton P. Kolosov
@@ -729,8 +730,14 @@ public class ConsolePlayer {
     /**
      * Загружает книгу; null — не удалось
      */
+    /**
+     * Книга из каталога или из пакета .nlbpack (распаковывается в {@link BookPack#defaultCacheDir()})
+     */
     public static NonLinearBookImpl loadBook(File bookDir) {
         try {
+            if (BookPack.isPackFile(bookDir)) {
+                bookDir = BookPack.read(bookDir).unpack(BookPack.defaultCacheDir());
+            }
             NonLinearBookImpl book = new NonLinearBookImpl();
             return book.load(bookDir.getPath(), new DummyProgressData()) ? book : null;
         } catch (Exception e) {
@@ -759,7 +766,7 @@ public class ConsolePlayer {
         }
         PrintStream stdout = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         if (positional.isEmpty()) {
-            stdout.println("Usage: ConsolePlayer <path_to_nlb_directory> [vn|standard] [--config <config.xml>]"
+            stdout.println("Usage: ConsolePlayer <path_to_nlb_directory|book.nlbpack> [vn|standard] [--config <config.xml>]"
                     + " [--deterministic[=<n>]] [--echo]");
             System.exit(1);
         }

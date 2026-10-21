@@ -42,6 +42,9 @@ import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.web.exception.LauncherException;
 import com.nlbhub.nlb.web.service.rest.GetNLBDataService;
 import com.nlbhub.nlb.web.service.rest.NLBServiceWebApplication;
+import com.nlbhub.nlb.web.player.BookLibrary;
+import com.nlbhub.nlb.web.player.PlayerServer;
+import com.nlbhub.nlb.api.PropertyManager;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
@@ -57,6 +60,10 @@ import org.glassfish.jersey.servlet.ServletContainer;
  */
 public class Launcher implements Runnable {
     private Server m_server = new Server();
+    /**
+     * Книги нового веб-плеера (/play/): та же библиотека и та же книга из редактора, что у старого
+     */
+    private final BookLibrary m_playerLibrary = new BookLibrary(null);
 
     public Launcher() {
         // set the TransformFactory to use the Saxon TransformerFactoryImpl method
@@ -82,6 +89,10 @@ public class Launcher implements Runnable {
         context.setContextPath("/");
         ResourceConfig resourceConfig = new NLBServiceWebApplication();
         context.addServlet(new ServletHolder(new ServletContainer(resourceConfig)), "/nlb/*");
+        PlayerServer.addTo(
+                context, m_playerLibrary,
+                PropertyManager.getSettings() == null ? null : PropertyManager.getSettings().getDefaultConfig().getExport()
+        );
         return context;
     }
 
@@ -120,6 +131,7 @@ public class Launcher implements Runnable {
             throw new LauncherException("Cannot change NLB library root while server is running!");
         }
         GetNLBDataService.s_nlbLibraryRoot = path + "/";
+        m_playerLibrary.setRoot(new java.io.File(path));
     }
 
     public void putNLBInMemoryToCache(
@@ -127,10 +139,12 @@ public class Launcher implements Runnable {
             final NonLinearBook nlb
     ) {
         GetNLBDataService.putNLBInMemoryToCache(bookId, nlb);
+        m_playerLibrary.putEditorBook(bookId, nlb);
     }
 
     public void clearNLBCache() {
         GetNLBDataService.clearNLBCache();
+        m_playerLibrary.clear();
     }
 
     @Override

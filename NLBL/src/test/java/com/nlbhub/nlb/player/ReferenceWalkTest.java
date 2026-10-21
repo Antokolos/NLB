@@ -48,6 +48,9 @@ public class ReferenceWalkTest {
                 mismatches.add(book + ": книга не загрузилась");
                 continue;
             }
+            // копия для проигрывания (веб-плеер так играет книгу редактора на другом языке)
+            // должна играть так же, как загруженная книга
+            NonLinearBookImpl copy = nlb.copyForPlayback();
             boolean vn = "vn".equals(manifest.getProperty(book + ".mode"));
             int walks = Integer.parseInt(manifest.getProperty(book + ".walks"));
             for (int walk = 1; walk <= walks; walk++) {
@@ -59,6 +62,10 @@ public class ReferenceWalkTest {
                 if (mismatch != null) {
                     mismatches.add(name + " (книга на коммите " + manifest.getProperty(book + ".commit") + "): "
                             + mismatch);
+                }
+                String copyMismatch = firstMismatch(expected, play(copy, vn, export, input));
+                if (copyMismatch != null) {
+                    mismatches.add(name + " (копия книги): " + copyMismatch);
                 }
                 checked++;
             }
