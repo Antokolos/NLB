@@ -43,9 +43,7 @@ import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.exception.NLBIOException;
 import com.nlbhub.nlb.exception.NLBVCSException;
-import com.nlbhub.user.domain.History;
 
-import javax.script.ScriptException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -358,8 +356,6 @@ public interface NonLinearBook {
     public Map<String, Obj> getObjs();
 
     public Obj getObjById(String objId);
-
-    public Page createFilteredPage(final String sourceId, final History history) throws ScriptException, NLBConsistencyException;
 
     public boolean load(final String path, final ProgressData progressData) throws NLBIOException, NLBConsistencyException, NLBVCSException;
 

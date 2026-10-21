@@ -371,6 +371,25 @@ STANDARD, как в C++.
 **Этап 7. Уборка.**
 Удаление старого плеера (`GetNLBDataService`, XSL, `History`/`DecisionPoint`,
 `createFilteredPage`), если они больше нигде не нужны.
+*Сделано:* поиск по NLBL/NLBB/NLBW показал, что старое нужно было только старому плееру.
+- NLBW: удалены `service/rest` (`GetNLBDataService`, `NLBServiceWebApplication`,
+  `CustomExceptionMapper`, `MultivaluedMapImpl`) и `xsl/` (`page.xsl`, `history.xsl`);
+  зависимости Jersey (container-servlet, hk2, server), jakarta.ws.rs, Saxon-HE и
+  jakarta.persistence; в NLBB — их модули moditect; `build.sh`/`build.bat` больше не копируют
+  `xsl`. `Launcher` поднимает только `/play/*`; прежние адреса `/nlb/<книга>/…` и корень
+  сервера перенаправляются на `/play/` (книга — в `?book=`).
+- NLBL: удалены `NonLinearBook.createFilteredPage` (и в `DummyNLB`, `NonLinearBookImpl` — с её
+  помощниками на движке JavaScript), `PageImpl.createFilteredCloneWithSubstitutions`,
+  `AbstractNodeItem.filterTargetLinkList`, пакет `com.nlbhub.user.domain` (`History`,
+  `DecisionPoint`) и `DecisionException`. Модель и формат книги не менялись; `Obj.getCumulativeText`
+  (часть API объекта) оставлен.
+
+Приёмка: `mvn clean install` — все тесты; экспорт в INSTEAD (STEAD и VN) семи тестовых книг
+совпадает с экспортом до уборки байт в байт (кроме времени экспорта в заголовке
+wild-island-quest); дистрибутив: редактор запускается (`run.sh novcs` под xvfb), его сервер
+отдаёт `/play/`, `/nlb/wolfman/start` -> `/play/?book=wolfman`, `/` -> `/play/`; в
+`NLBB/target/lib` нет Jersey и Saxon; в браузере wolfman (VN, до конца) и «Слуга Ра»
+(STANDARD) — без ошибок.
 
 ## Тестовые книги
 

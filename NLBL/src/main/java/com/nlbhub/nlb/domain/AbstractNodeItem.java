@@ -606,19 +606,6 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
         }
     }
 
-    public static void filterTargetLinkList(
-            AbstractNodeItem target,
-            AbstractNodeItem source,
-            List<String> linkIdsToBeExcluded
-    ) {
-        target.m_links = new ArrayList<>();
-        for (LinkImpl link : source.m_links) {
-            if (!linkIdsToBeExcluded.contains(link.getId())) {
-                target.m_links.add(new LinkImpl(target, link));
-            }
-        }
-    }
-
     /**
      * Dangerous method to use... Use it only when book does not contain any related information about this link
      * (e.g. link variables, link modifications etc) and link files does not exist on disk. Also please note that

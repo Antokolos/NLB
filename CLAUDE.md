@@ -9,12 +9,15 @@
   (`domain/export`: `ExportManager`, `STEADExportManager`, `VNSTEADExportManager`, QSP, URQ,
   ChoiceScript, ASM, текст, HTML/PDF…).
 - **NLBB** — редактор (Swing, piccolo2d, swingx). Встраивает веб-плеер NLBW: `MainFrame` кладёт
-  книгу в кэш `Launcher.putNLBInMemoryToCache` и открывает её в браузере.
-- **NLBW** — веб-плеер на Jetty (ee10) + Jersey: `Launcher` (сервер, сервлет на `/nlb/*`),
-  `service/rest/GetNLBDataService` (REST: `/{bookId}/start`, `/{bookId}/page/{toPageId}`,
-  `/{bookId}/link/{fromPageId}/{linkId}`), страницы — XML + XSL (`xsl/page.xsl`,
-  `xsl/history.xsl`). Здесь же лежат ресурсы экспорта в INSTEAD: `res/vnstead/modules/nlb.lua`,
-  `vn.lua`, `paginator.lua`, `gobj.lua`…, и настройки экспорта `cfg/config.xml`.
+  книгу в `Launcher.putNLBInMemoryToCache` и открывает `http://localhost:8111/play/?book=…`.
+- **NLBW** — веб-плеер на Jetty (ee10): ядро плеера — пакет `com.nlbhub.nlb.player` в NLBL,
+  веб-слой — `web/player` (`PlayerServlet` на `/play/*`: REST JSON, медиа, тема; `BookLibrary`,
+  `WebSession`, `ScreenTheme`, `PlayerServer`), клиент — `resources/.../player/client`
+  (`screen.js` — экран VN и STANDARD как GameScreen NLBNavigator). Темы INSTEAD:
+  `res/instead/themes/default` (базовая) и `res/vnstead/themes/default` (тема игры, она же —
+  тема экспорта). Здесь же лежат ресурсы экспорта в INSTEAD: `res/vnstead/modules/nlb.lua`,
+  `vn.lua`, `paginator.lua`, `gobj.lua`…, и настройки экспорта `cfg/config.xml`. Устройство и
+  история — `docs/web-player.md`.
 
 Сборка: `mvn -q -DskipTests package` (из корня). Тесты — `mvn test`. Дистрибутив со встроенной
 Java — `build.sh` / `build.bat` (папка `dist`). Версия проекта при сборке не меняется; повысить —
@@ -47,10 +50,10 @@ XML
 скриншот — `import -window root файл.png` (ImageMagick) внутри того же `xvfb-run`.
 
 ## Главная задача: полноценный веб-плеер на Java (NLBW)
-Текущий веб-плеер — отладочный инструмент редактора: навигация через `History`/`DecisionPoint`
-и `NonLinearBookImpl.createFilteredPage`, один общий `static` журнал на всех (`s_history`),
-вывод — XML + XSL. Нужно довести его до плеера, который играет книги так же полно, как
-экспорт в INSTEAD: **все виды модификаций, внутренние и внешние модули (подмодули),
+Прежний веб-плеер был отладочным инструментом редактора (навигация через `History`/
+`DecisionPoint` и `NonLinearBookImpl.createFilteredPage`, общий `static` журнал, вывод — XML +
+XSL); он заменён новым и удалён (этапы 1–7, `docs/web-player.md`). Задача — плеер, который
+играет книги так же полно, как экспорт в INSTEAD: **все виды модификаций, внутренние и внешние модули (подмодули),
 автопереходы (autowired), объекты и инвентарь (взять/применить/контейнеры), теги, таймеры
 страниц, достижения, сохранения, темы VN и STANDARD, картинки/анимация/звук/музыка, языки
 книги**. Реализация — целиком на Java, без Emscripten/WebAssembly. Один в один с C++-плеером
