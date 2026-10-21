@@ -12,39 +12,30 @@
   <ul id="books" class="books"></ul>
 </div>
 <div id="game" class="game" hidden>
-  <header class="bar">
-    <span id="title" class="bar-title"></span>
-    <button id="menu-button" class="bar-button" type="button"></button>
-  </header>
-  <main class="screen">
-    <section id="stage" class="stage">
-      <div id="picture" class="picture"></div>
-      <div id="objects" class="objects"></div>
-      <div id="text" class="text" aria-live="polite"></div>
-    </section>
-    <aside id="inventory" class="inventory"></aside>
-  </main>
-  <div id="hint" class="hint" hidden></div>
-  <div id="toasts" class="toasts"></div>
-</div>
-<div id="vn" class="vn" hidden>
-  <div id="vn-stage" class="vn-stage">
-    <img id="vn-bg" class="vn-bg" alt="" hidden>
-    <div id="vn-objects" class="vn-objects"></div>
-    <div id="vn-band" class="vn-band" hidden></div>
-    <div id="vn-text" class="vn-text"><div id="vn-text-inner"></div></div>
-    <div id="vn-choices" class="vn-choices" hidden></div>
-    <div id="vn-inventory" class="vn-inventory" hidden></div>
-    <button id="vn-menu-button" class="vn-menu-button" type="button"></button>
-    <div id="vn-hint" class="vn-hint" hidden></div>
+  <div id="stage" class="stage">
+    <img id="stage-theme-bg" class="stage-image" alt="" hidden>
+    <img id="stage-picture" class="stage-image" alt="" hidden>
+    <div id="stage-objects" class="stage-objects"></div>
+    <div id="stage-panel" class="stage-panel" hidden></div>
+    <div id="stage-band" class="stage-band" hidden></div>
+    <div id="stage-header" class="stage-header" hidden></div>
+    <div id="stage-text" class="stage-text" hidden><div id="stage-text-inner"></div></div>
+    <div id="stage-up" class="stage-arrow" hidden></div>
+    <div id="stage-down" class="stage-arrow" hidden></div>
+    <div id="stage-choices" class="stage-choices" hidden></div>
+    <div id="stage-inventory" class="stage-inventory" hidden></div>
+    <button id="stage-menu-button" class="stage-menu-button" type="button"></button>
+    <div id="stage-hint" class="stage-hint" hidden></div>
   </div>
 </div>
+<div id="error" class="error" hidden></div>
+<div id="toasts" class="toasts"></div>
 <div id="dialog" class="dialog" hidden>
   <div class="dialog-box">
     <div id="dialog-body"></div>
   </div>
 </div>
-<script src="static/vn.js"></script>
+<script src="static/screen.js"></script>
 <script src="static/player.js"></script>
 </body>
 </html>

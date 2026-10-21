@@ -1,4 +1,4 @@
-/* Веб-плеер NLB: экран в духе темы INSTEAD по умолчанию (STANDARD) */
+/* Веб-плеер NLB: список книг и экран игры 1920×1080 (screen.js), как GameScreen NLBNavigator */
 :root {
   --bg: #f4f1ea;
   --panel: #ebe6da;
@@ -7,7 +7,6 @@
   --link: #6b2a17;
   --link-hover: #b04a1f;
   --title: #4a3424;
-  --selected: #f6d38a;
   --shadow: rgba(0, 0, 0, 0.25);
   --font: Georgia, "Times New Roman", serif;
 }
@@ -20,7 +19,6 @@
     --link: #e2a36b;
     --link-hover: #ffc58e;
     --title: #f0d6b0;
-    --selected: #6b4f1d;
     --shadow: rgba(0, 0, 0, 0.6);
   }
 }
@@ -45,147 +43,80 @@ button { font: inherit; }
 .books .book-title:hover { color: var(--link-hover); }
 .books .book-meta { color: var(--muted); font-size: 0.85em; }
 .books select { font: inherit; font-size: 0.85em; margin-left: 8px; }
+.error { max-width: 760px; margin: 0 auto; padding: 24px 16px; }
 
-/* Игра */
-.game { display: flex; flex-direction: column; min-height: 100%; }
-.bar {
-  display: flex; align-items: center; gap: 12px;
-  padding: 6px 16px; background: var(--panel);
-  box-shadow: 0 1px 4px var(--shadow);
+/* Экран игры: 1920×1080, screen.js вписывает его в окно с полями (letterbox) */
+body.playing { background: #0c0c10; overflow: hidden; }
+.game { position: fixed; inset: 0; overflow: hidden; }
+.stage {
+  position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
+  transform-origin: 0 0; overflow: hidden; background: #011322;
+  user-select: none; -webkit-user-select: none; cursor: default; line-height: normal;
 }
-.bar-title { flex: 1; color: var(--muted); font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.bar-button {
-  background: none; border: 1px solid var(--muted); color: var(--text);
-  border-radius: 4px; padding: 2px 12px; cursor: pointer;
+.stage-image { position: absolute; display: block; }
+.stage-objects { position: absolute; inset: 0; }
+.stage-obj { position: absolute; }
+.stage-obj img { display: block; pointer-events: none; }
+.stage-obj.hit { cursor: pointer; }
+.stage-label { position: absolute; white-space: pre; pointer-events: none; }
+.stage a.link { color: var(--link); text-decoration: none; border: none; }
+.stage a.link:hover { color: var(--alink); }
+/* окно текста; VN — полупрозрачная полоса во всю ширину, STANDARD с картинкой-фоном — подложка */
+.stage-band { position: absolute; left: 0; width: 1920px; background: rgba(0, 0, 0, 0.43); }
+.stage-panel { position: absolute; background: rgba(0, 0, 0, 0.55); }
+.stage-text, .stage-header { position: absolute; }
+.stage-text { overflow: hidden; }
+.stage-text p, .stage-header p { margin: 0; overflow-wrap: break-word; }
+.stage p.title { text-align: center; font-family: var(--font-bold); }
+.stage p.ways { text-align: center; }
+.stage p.em { font-family: var(--font-italic); font-style: var(--em-style, italic); }
+.stage-arrow { position: absolute; cursor: pointer; line-height: 1; }
+.stage-arrow img { display: block; }
+/* экран вариантов VN */
+.stage-choices {
+  position: absolute; background: rgba(0, 0, 0, 0.47); padding: 0.5em 10px 0; box-sizing: border-box;
 }
-.bar-button:hover { color: var(--link-hover); border-color: var(--link-hover); }
-.screen {
-  flex: 1; display: flex; gap: 24px; width: 100%; max-width: 1200px;
-  margin: 0 auto; padding: 16px;
-}
-.stage { flex: 1; min-width: 0; }
-.inventory {
-  width: 260px; flex: none; align-self: flex-start;
-  background: var(--panel); border-radius: 6px; padding: 10px 14px;
-}
-.inventory:empty { visibility: hidden; }
-.inventory .item { display: block; margin: 2px 0; }
-.inventory .item.inactive { color: var(--muted); cursor: default; }
-.inventory .item img { height: 1.4em; vertical-align: middle; margin-right: 6px; }
-.inventory .item.selected { background: var(--selected); border-radius: 3px; }
-.inventory .child { margin-left: 16px; }
-@media (max-width: 760px) {
-  .screen { flex-direction: column; gap: 12px; }
-  .inventory { width: 100%; }
+.stage-choices .choice { display: flex; color: var(--link); cursor: pointer; }
+.stage-choices .choice .num { flex: none; white-space: pre; }
+.stage-choices .choice:hover { color: var(--alink); }
+.stage-choices .choice.disabled { color: inherit; cursor: default; }
+/* инвентарь: предметы через « | »; VN — на чёрной полосе до низа экрана */
+.stage-inventory { position: absolute; overflow: hidden; }
+.stage-inventory.strip { background: #000; }
+.stage-inventory .item { white-space: nowrap; }
+.stage-inventory .item img { vertical-align: top; margin-right: 6px; }
+.stage-inventory .item.selected { background: rgba(0, 0, 0, 0.59); color: var(--alink); outline: 6px solid rgba(0, 0, 0, 0.59); }
+.stage-menu-button { position: absolute; padding: 0; margin: 0; border: none; background: none; cursor: pointer; z-index: 3; }
+.stage-menu-button img { display: block; }
+.stage-menu-button.text { color: #82beff; font: 32px sans-serif; padding: 12px 20px; background: rgba(0, 0, 0, 0.5); }
+.stage-hint {
+  position: absolute; left: 46px; bottom: 6px; padding: 6px 14px; background: rgba(0, 0, 0, 0.75);
+  color: rgb(240, 200, 120); font: 26px sans-serif; z-index: 3;
 }
 
-.picture { text-align: center; }
-.picture img { max-width: 100%; max-height: 52vh; }
-.objects { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 8px 0; }
-.objects:empty { display: none; }
-.objects .object { text-align: center; font-size: 0.85em; }
-.objects .object img { max-height: 120px; max-width: 160px; display: block; margin: 0 auto 2px; }
-
-.text p { margin: 0 0 0.6em; white-space: pre-wrap; }
-.text p.title { text-align: center; color: var(--title); font-size: 1.1em; margin-bottom: 0.3em; }
-.text p.ways { text-align: center; margin-bottom: 1em; }
-.text p.em { font-style: italic; }
-.text p.inline-link { margin-bottom: 0.3em; }
-.text p.end { text-align: center; color: var(--muted); margin-top: 1.2em; }
-a.link, span.link {
-  color: var(--link); text-decoration: none; cursor: pointer;
-  border-bottom: 1px dotted transparent;
-}
-a.link:hover, span.link:hover { color: var(--link-hover); border-bottom-color: var(--link-hover); }
-.text .title .link { color: var(--title); }
-
-.hint {
-  position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%);
-  background: var(--panel); padding: 6px 14px; border-radius: 6px;
-  box-shadow: 0 2px 8px var(--shadow); font-size: 0.85em; max-width: calc(100% - 32px);
-}
-/* сообщения — внизу справа: вверху справа — инвентарь */
-.toasts { position: fixed; right: 16px; bottom: 64px; display: flex; flex-direction: column; gap: 8px; z-index: 5; }
+/* Сообщения: вверху справа, как GameScreen */
+.toasts { position: fixed; right: 16px; top: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 5; }
 .toast {
-  background: var(--panel); border-left: 4px solid var(--link);
+  background: rgb(90, 70, 30); color: rgb(235, 230, 220);
   padding: 8px 14px; border-radius: 4px; box-shadow: 0 2px 8px var(--shadow);
   max-width: min(360px, calc(100vw - 32px)); animation: toast-in 0.3s ease-out;
 }
 @keyframes toast-in { from { opacity: 0; transform: translateY(-6px); } }
 
+/* Меню и вопросы — затемнением поверх сцены, пункты по центру (шрифт меню темы) */
 .dialog {
-  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45);
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.63);
   display: flex; align-items: center; justify-content: center; z-index: 10; padding: 16px;
 }
 .dialog-box {
-  background: var(--bg); border-radius: 8px; padding: 18px 22px;
-  min-width: min(360px, 100%); max-width: 520px; max-height: 90vh; overflow: auto;
-  box-shadow: 0 6px 24px var(--shadow);
+  max-height: 90vh; overflow: auto; max-width: 90vw; text-align: center; color: rgb(235, 230, 220);
+  font-size: calc(32px * var(--stage-scale, 0.6)); font-family: var(--menu-font, var(--font));
 }
-.dialog-box h2 { margin: 0 0 10px; font-weight: normal; color: var(--title); font-size: 1.2em; }
-.dialog-box .menu-item { display: block; width: 100%; text-align: left; margin: 2px 0; padding: 6px 8px;
-  background: none; border: none; color: var(--link); cursor: pointer; border-radius: 4px; }
-.dialog-box .menu-item:hover { background: var(--panel); color: var(--link-hover); }
-.dialog-box .menu-item:disabled { color: var(--muted); cursor: default; background: none; }
-.dialog-box .note { color: var(--muted); font-size: 0.85em; }
-
-/* Визуальная новелла: экран 1920×1080 (vn.js вписывает его в окно с полями), как GameScreen VN */
-body.vn-mode { background: #0c0c10; overflow: hidden; }
-.vn { position: fixed; inset: 0; overflow: hidden; }
-.vn-stage {
-  position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
-  transform-origin: 0 0; overflow: hidden; background: #011322;
-  user-select: none; -webkit-user-select: none; cursor: default;
+.dialog-box h2 { margin: 0 0 0.6em; font-weight: normal; color: rgb(235, 230, 220); font-size: 1.45em; }
+.dialog-box .menu-item {
+  display: block; width: 100%; text-align: center; margin: 2px 0; padding: 0.25em 0.6em; font-family: inherit;
+  background: none; border: none; color: rgb(130, 190, 255); cursor: pointer;
 }
-.vn-bg { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: fill; }
-.vn-objects { position: absolute; inset: 0; }
-.vn-obj { position: absolute; }
-.vn-obj img { display: block; pointer-events: none; }
-.vn-obj.vn-hit { cursor: pointer; }
-.vn-label { position: absolute; white-space: pre; color: #fff; pointer-events: none; }
-/* полоса текста: полупрозрачная, во всю ширину */
-.vn-band { position: absolute; left: 0; width: 1920px; background: rgba(0, 0, 0, 0.43); }
-.vn-text { position: absolute; overflow: hidden; }
-.vn-text p { margin: 0; text-align-last: auto; }
-.vn-text p, .vn-choices { overflow-wrap: break-word; }
-.vn-stage a.link { color: var(--vn-link); border: none; text-decoration: none; }
-.vn-stage a.link:hover { color: var(--vn-alink); }
-/* экран вариантов */
-.vn-choices {
-  position: absolute; background: rgba(0, 0, 0, 0.47); padding: 0 10px; box-sizing: border-box;
-  padding-top: 0.5em;
-}
-.vn-choice { display: flex; color: var(--vn-link); cursor: pointer; }
-.vn-choice .num { flex: none; white-space: pre; }
-.vn-choice:hover { color: var(--vn-alink); }
-.vn-choice.disabled { color: inherit; cursor: default; }
-/* инвентарь: строка предметов на чёрной полосе до низа экрана */
-.vn-inventory { position: absolute; left: 0; width: 1920px; background: #000; }
-.vn-inventory .vn-item { white-space: nowrap; }
-.vn-inventory .vn-item img { vertical-align: top; margin-right: 6px; }
-.vn-inventory .vn-item.selected { background: rgba(0, 0, 0, 0.59); color: var(--vn-alink); outline: 6px solid rgba(0, 0, 0, 0.59); }
-.vn-inventory .inactive { color: inherit; }
-.vn-menu-button {
-  position: absolute; right: 0; top: 0; padding: 0; margin: 0; border: none; background: none; cursor: pointer; z-index: 3;
-}
-.vn-menu-button img { display: block; }
-.vn-menu-button.text { color: #82beff; font: 32px sans-serif; padding: 12px 20px; background: rgba(0, 0, 0, 0.5); }
-.vn-hint {
-  position: absolute; left: 46px; bottom: 6px; padding: 6px 14px; background: rgba(0, 0, 0, 0.75);
-  color: rgb(240, 200, 120); font: 26px sans-serif; z-index: 3;
-}
-/* меню и сообщения поверх VN — как меню GameScreen: затемнение, пункты по центру */
-body.vn-mode .dialog { background: rgba(0, 0, 0, 0.63); }
-body.vn-mode .dialog-box {
-  background: none; box-shadow: none; text-align: center; color: rgb(235, 230, 220);
-  font-size: calc(32px * var(--vn-scale, 1)); max-width: 90vw; min-width: 0;
-  font-family: "nlb-vn-text", Georgia, "Times New Roman", serif;  /* menu.fnt.name темы */
-}
-body.vn-mode .dialog-box .menu-item { font-family: inherit; }
-body.vn-mode .dialog-box h2 { color: rgb(235, 230, 220); font-size: calc(46px * var(--vn-scale, 1)); margin-bottom: 0.6em; }
-body.vn-mode .dialog-box .menu-item { text-align: center; color: rgb(130, 190, 255); padding: 0.25em 0.6em; }
-body.vn-mode .dialog-box .menu-item:hover { background: none; color: rgb(255, 215, 0); }
-body.vn-mode .dialog-box .menu-item:disabled { color: rgb(150, 150, 150); }
-body.vn-mode .dialog-box .note { color: rgb(235, 230, 220); font-size: 1em; }
-body.vn-mode .toasts { top: 24px; bottom: auto; }
-body.vn-mode .toast { background: rgb(90, 70, 30); color: rgb(235, 230, 220); border-left: none; }
+.dialog-box .menu-item:hover { color: rgb(255, 215, 0); }
+.dialog-box .menu-item:disabled { color: rgb(150, 150, 150); cursor: default; }
+.dialog-box .note { color: rgb(235, 230, 220); }

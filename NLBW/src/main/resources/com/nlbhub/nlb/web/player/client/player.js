@@ -97,12 +97,9 @@
     state: null,
     mode: params.get('mode') === 'standard' ? 'standard' : 'vn',
     lastPage: null,
-    lastReaction: '',
-    reactionThenRoom: true,
     queue: Promise.resolve(),
     timer: null,
-    lastTick: 0,
-    animation: null
+    lastTick: 0
   };
 
   // Команды игрока выполняются по очереди: ответ одной — снимок, по которому рисуется экран
@@ -147,7 +144,7 @@
   }
 
   async function startGame() {
-    await vnScreen.loadTheme();
+    await screen.loadTheme();
     const saved = store.session('nlb.session.' + game.bookId + '.' + game.mode);
     if (saved) {
       try {
@@ -159,43 +156,25 @@
     try {
       await newGame();
     } catch (e) {
-      $('game').hidden = false;
-      $('text').textContent = ui.failed + e.message;
+      $('error').hidden = false;
+      $('error').textContent = ui.failed + e.message;
     }
   }
 
   // ------------------------------------------------------------------ ответ сервера
-  function plain(paragraphs) {
-    return paragraphs.map((p) => p.runs.map((r) => r.text).join('')).join('\n');
-  }
-
-  // Экран VN (vn.js) — для страниц VN в режиме VN; страницы STANDARD и режим STANDARD — экран INSTEAD
-  const isVnView = (state) => state.mode === 'vn' && state.screen.layout === 'VisualNovel';
-
   function apply(state, commandName) {
     game.state = state;
     ui = state.language === 'ru' ? UI.ru : UI.en;
     document.documentElement.lang = state.language || 'en';
     store.set('nlb.achievements.' + game.bookId, state.achievements);
     const s = state.screen;
-    const reaction = plain(s.reactionText);
-    // Как GameScreen: действие привело на новую страницу — ответ (если есть) и описание комнаты;
-    // новое действие на той же странице — только ответ
     const newPage = s.pageId !== game.lastPage || ['restart', 'tryAgain', 'load'].includes(commandName);
-    if (newPage) {
-      game.reactionThenRoom = true;
-    } else if (reaction && reaction !== game.lastReaction) {
-      game.reactionThenRoom = false;
-    }
-    game.lastReaction = reaction;
-    const vnView = isVnView(state);
-    if (vnView) vnScreen.update(state, commandName);
-    processEvents(state.events, newPage, vnView);
+    screen.update(state, commandName);
+    processEvents(state.events, newPage);
     game.lastPage = s.pageId;
-    document.body.classList.toggle('vn-mode', vnView);
-    $('game').hidden = vnView;
-    $('vn').hidden = !vnView;
-    if (vnView) vnScreen.render(); else render();
+    document.body.classList.add('playing');
+    $('game').hidden = false;
+    screen.render();
     scheduleTimer();
   }
 
@@ -219,8 +198,11 @@
     audio.music.play().catch(() => {});
   }
   function playEffect(name) {
-    if (!name || audio.muted) return;
-    new Audio(mediaUrl(name)).play().catch(() => {});
+    if (name) playSoundUrl(mediaUrl(name));
+  }
+  function playSoundUrl(url) {
+    if (audio.muted) return;
+    new Audio(url).play().catch(() => {});
   }
   function playVoice(name) {
     if (audio.voice) { audio.voice.pause(); audio.voice = null; }
@@ -243,7 +225,7 @@
     }
   }
 
-  function processEvents(events, newPage, vnView) {
+  function processEvents(events, newPage) {
     for (const e of events) {
       switch (e.kind) {
         case 'Music': playMusic(e.text); break;
@@ -256,7 +238,7 @@
     // Озвучка страницы: без порций текста — первая фраза при входе на страницу; уход — стоп.
     // На экране VN с порциями фразы идут по порциям (vn.js)
     if (newPage) {
-      const byPortions = vnView && vnScreen.voicesByPortion();
+      const byPortions = screen.voicesByPortion();
       playVoice(!byPortions && game.state.voices.length ? game.state.voices[0] : '');
     }
     if (!audio.musicName && game.state.music && !audio.muted && !audio.music) {
@@ -306,156 +288,12 @@
       if (!image.looped && tick >= image.frameCount - 1) clearInterval(id);
     }, 40);
   }
-  function picture(image, cls, alt) {
-    const url = imageUrl(image);
-    if (!url) return null;
-    const img = el('img', cls);
-    img.src = url;
-    img.alt = alt || '';
-    img.onerror = () => { img.hidden = true; };
-    animate(img, image);
-    return img;
-  }
-
-  // ------------------------------------------------------------------ текст
+  // Ссылка в тексте экрана (переход, объект, предмет)
   function link(text, onClick, cls) {
     const a = el('a', 'link' + (cls ? ' ' + cls : ''), text);
     a.href = '#';
     a.addEventListener('click', (ev) => { ev.preventDefault(); onClick(); });
     return a;
-  }
-  function runNode(run) {
-    if (run.kind === 'ObjectLink') return link(run.text, () => command('object', { id: run.target }));
-    if (run.kind === 'ChoiceLink') {
-      return run.target === '-1' ? link(run.text, () => command('look'))
-        : link(run.text, () => command('choose', { index: Number(run.target) }));
-    }
-    return document.createTextNode(run.text);
-  }
-  function paragraphNode(p) {
-    const node = el('p', p.cls || '');
-    for (const run of p.runs) node.appendChild(runNode(run));
-    return node;
-  }
-  const choiceRun = (c) => ({ kind: 'ChoiceLink', text: c.text, target: String(c.index) });
-
-  // Как GameScreen::renderTextWindow для STANDARD (INSTEAD, stead2): заголовок комнаты по центру
-  // (щелчок — осмотреться), пути через « | », сцена: описание комнаты, описания объектов;
-  // после действия — курсивом ответ (на новой странице — и её описание)
-  function composeStandard(s) {
-    const out = [];
-    if (s.roomTitle) out.push({ cls: 'title', runs: [{ kind: 'ChoiceLink', text: s.roomTitle, target: '-1' }] });
-    const ways = [];
-    for (const c of s.choices) {
-      if (!c.enabled || c.inlineLink) continue;
-      if (ways.length) ways.push({ kind: 'Plain', text: ' | ' });
-      ways.push(choiceRun(c));
-    }
-    if (ways.length) out.push({ cls: 'ways', runs: ways });
-    const scene = [];
-    if (s.reactionText.length) {
-      for (const p of s.reactionText) {
-        if (!p.runs.length) continue;
-        const last = scene[scene.length - 1];
-        if (p.joinPrevious && last && last.cls === 'em') {
-          last.runs = last.runs.concat([{ kind: 'Plain', text: ' ' }], p.runs);
-        } else {
-          scene.push({ cls: 'em', runs: p.runs.slice() });
-        }
-      }
-      if (game.reactionThenRoom) scene.push(...s.roomText);
-    } else {
-      scene.push(...s.roomText);
-    }
-    scene.push(...s.objectsText);
-    for (const c of s.choices) {
-      if (!c.enabled && c.altText) scene.push({ runs: [{ kind: 'Plain', text: c.altText }] });
-    }
-    for (const c of s.choices) {
-      if (c.enabled && c.inlineLink) scene.push({ cls: 'inline-link', runs: [choiceRun(c)] });
-    }
-    scene.push(...s.modText);
-    return out.concat(scene);
-  }
-
-  // Страница VN (полноценная раскладка VN — этап 6): текст, ответ и варианты в окне текста
-  function composeVisualNovel(s) {
-    const out = s.pageText.slice();
-    for (const p of s.reactionText) out.push({ cls: 'em', runs: p.runs });
-    for (const c of s.choices) {
-      if (c.enabled) out.push({ cls: 'inline-link', runs: [choiceRun(c)] });
-      else if (c.altText) out.push({ runs: [{ kind: 'Plain', text: c.altText }] });
-    }
-    return out;
-  }
-
-  // ------------------------------------------------------------------ экран
-  function render() {
-    const state = game.state;
-    const s = state.screen;
-    $('title').textContent = state.book.title || '';
-    document.title = state.book.title || 'NLB';
-    $('menu-button').textContent = ui.menu;
-
-    const pic = $('picture');
-    pic.textContent = '';
-    const page = picture(s.pageImage, '', '');
-    if (page) pic.appendChild(page);
-
-    // Графические объекты — рядом с картинкой, без подписей, как GameScreen::renderSceneObjects
-    // в STANDARD (на своих местах и с эффектами — клиент VN, этап 6); остальные объекты — в тексте
-    const objects = $('objects');
-    objects.textContent = '';
-    for (const o of s.sceneObjects) {
-      if (!o.graphical || !o.visible || o.collapsed) continue;
-      const img = picture(o.image, '', o.label);
-      if (!img) continue;
-      const box = el('div', 'object');
-      box.title = o.label;
-      if (o.active) {
-        const a = link('', () => command('object', { id: o.id }));
-        a.appendChild(img);
-        box.appendChild(a);
-      } else {
-        box.appendChild(img);
-      }
-      objects.appendChild(box);
-    }
-
-    const text = $('text');
-    text.textContent = '';
-    const paragraphs = s.layout === 'VisualNovel' ? composeVisualNovel(s) : composeStandard(s);
-    for (const p of paragraphs) {
-      if (!p.runs.length) { text.appendChild(el('p', '', ' ')); continue; }
-      text.appendChild(paragraphNode(p));
-    }
-    if (s.finished) {
-      const end = el('p', 'end', ui.theEnd + ' ');
-      end.appendChild(link(ui.tryAgain, () => command('tryAgain')));
-      text.appendChild(end);
-    }
-
-    renderInventory(s, state.selected);
-    const hint = $('hint');
-    hint.hidden = !state.selected;
-    hint.textContent = ui.itemSelected;
-  }
-
-  function renderInventory(s, selected) {
-    const inv = $('inventory');
-    inv.textContent = '';
-    const ids = new Set(s.inventory.map((i) => i.id));
-    for (const item of s.inventory) {
-      const label = item.label.replace(/\n/g, ' ');
-      const node = item.active ? link(label, () => command('item', { id: item.id })) : el('span', '', label);
-      node.classList.add('item');
-      if (!item.active) node.classList.add('inactive');
-      if (item.id === selected) node.classList.add('selected');
-      if (item.parentId && ids.has(item.parentId)) node.classList.add('child');
-      const icon = picture(item.icon, '', '');
-      if (icon) node.insertBefore(icon, node.firstChild);
-      inv.appendChild(node);
-    }
   }
 
   // ------------------------------------------------------------------ сообщения и меню
@@ -558,7 +396,7 @@
       }
     ];
     if (game.state.languages.length > 1) items.push({ label: ui.language, action: languageMenu });
-    if (game.state.mode === 'vn') items.push(vnScreen.menuItem());
+    if (game.state.mode === 'vn') items.push(screen.menuItem());
     items.push({ label: audio.muted ? ui.soundOn : ui.soundOff, action: () => setMuted(!audio.muted) });
     items.push({ label: ui.library, action: () => { location.href = location.pathname; } });
     items.push({ label: ui.back, action: null });
@@ -606,14 +444,13 @@
   }
 
   // ------------------------------------------------------------------ ввод
-  $('menu-button').addEventListener('click', mainMenu);
   $('dialog').addEventListener('click', (ev) => { if (ev.target === $('dialog')) closeDialog(); });
   document.addEventListener('contextmenu', (ev) => {
     if (game.state && game.state.selected) { ev.preventDefault(); command('clear'); }
   });
   document.addEventListener('keydown', (ev) => {
     if (!game.state) return;
-    if ($('dialog').hidden && isVnView(game.state) && !ev.ctrlKey && !ev.altKey && !ev.metaKey && vnScreen.key(ev)) {
+    if ($('dialog').hidden && !ev.ctrlKey && !ev.altKey && !ev.metaKey && screen.key(ev)) {
       ev.preventDefault();
       return;
     }
@@ -632,9 +469,9 @@
     }
   });
 
-  const vnScreen = window.NLBVisualNovel({
+  const screen = window.NLBScreen({
     el: el, api: api, store: store, link: link, command: command, dialog: dialog, mainMenu: mainMenu,
-    imageUrl: (image) => imageUrl(image), animate: animate, playVoice: playVoice,
+    imageUrl: (image) => imageUrl(image), animate: animate, playVoice: playVoice, playSoundUrl: playSoundUrl,
     ui: () => ui, bookId: () => game.bookId
   });
 

@@ -127,18 +127,31 @@ public class PlayerServletTest {
 
     @Test
     public void servesTheme() throws Exception {
-        // тема VN экспорта по умолчанию — зашита в NLBW (у книги из редактора нет своей темы)
+        // у книги из редактора нет своей темы: базовая — стандартная тема INSTEAD, тема игры — тема
+        // экспорта NLB (обе зашиты в NLBW); параметры темы игры важнее
         JsonNode theme = JSON.readTree(request("api/books/rooms/theme", null).body);
         JsonNode vn = theme.path("vn");
-        assertEquals("base/fonts/STEINEMU.ttf", vn.path("text").path("font").asText());
+        assertEquals("game/fonts/STEINEMU.ttf", vn.path("text").path("font").asText());
         assertEquals(32.0, vn.path("text").path("fontSize").asDouble(), 0);
         assertEquals("#00ff00", vn.path("text").path("link").asText());
         assertEquals(1050.0, vn.path("inventory").path("y").asDouble(), 0);
-        assertEquals("base/gfx/menubtn_ru.png", vn.path("menuButtonRu").asText());
-        assertEquals("#000000", theme.path("standard").path("text").path("fg").asText());
-        assertEquals(200, request("theme/rooms/base/fonts/STEINEMU.ttf", null).status);
-        assertEquals(200, request("theme/rooms/base/gfx/menubtn.png", null).status);
-        assertEquals(404, request("theme/rooms/game/theme.ini", null).status);
+        assertEquals("game/gfx/menubtn_ru.png", vn.path("menuButtonRu").asText());
+        assertEquals("game/fonts/STEINEMU.ttf", vn.path("menuFont").asText());
+        JsonNode standard = theme.path("standard");
+        assertEquals("#000000", standard.path("text").path("fg").asText());
+        assertEquals("game/fonts/sans-i.ttf", standard.path("text").path("fontItalic").asText());
+        assertEquals("game/gfx/aup.png", standard.path("text").path("upImage").asText());
+        assertEquals("game/gfx/bg.jpg", standard.path("pageBackground").asText());
+        assertEquals(640.0, standard.path("pictureArea").path("h").asDouble(), 0);
+        // только в базовой теме: звук щелчка (snd.click) — путь от её корня
+        assertEquals("base/click.wav", standard.path("clickSound").asText());
+        assertEquals("base/click.wav", vn.path("clickSound").asText());
+        assertEquals(200, request("theme/rooms/game/fonts/STEINEMU.ttf", null).status);
+        assertEquals(200, request("theme/rooms/game/gfx/menubtn.png", null).status);
+        assertEquals(200, request("theme/rooms/base/click.wav", null).status);
+        assertEquals(200, request("theme/rooms/base/theme.ini", null).status);
+        assertEquals(404, request("theme/rooms/other/theme.ini", null).status);
+        assertEquals(404, request("theme/rooms/base/missing.png", null).status);
         // выход из темы: Jetty отвергает такой путь сам (400), сервлет — 404
         assertTrue(request("theme/rooms/base/%2E%2E/theme.ini", null).status >= 400);
         assertEquals(404, request("theme/nobook/base/theme.ini", null).status);

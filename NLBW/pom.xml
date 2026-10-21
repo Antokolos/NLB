@@ -87,10 +87,15 @@
             <resource>
                 <directory>src/main/resources</directory>
             </resource>
-            <!-- Тема INSTEAD по умолчанию (как в экспорте VN): оформление экрана VN веб-плеера -->
+            <!-- Оформление экрана веб-плеера, как в INSTEAD: базовая тема — стандартная тема
+                 INSTEAD, поверх неё — тема игры NLB (та же, что в экспорте) -->
+            <resource>
+                <directory>res/instead/themes/default</directory>
+                <targetPath>com/nlbhub/nlb/web/player/theme/base</targetPath>
+            </resource>
             <resource>
                 <directory>res/vnstead/themes/default</directory>
-                <targetPath>com/nlbhub/nlb/web/player/theme</targetPath>
+                <targetPath>com/nlbhub/nlb/web/player/theme/game</targetPath>
             </resource>
         </resources>
     </build>
