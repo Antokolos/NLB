@@ -111,6 +111,11 @@ public class PlayerEngine {
         public boolean deterministic = false;
         public long deterministicStart = 0;
         /**
+         * Режим реального времени (веб-клиент): время идёт только через advanceTime(), ожидание
+         * таймера не проматывается мгновенно, как в консоли
+         */
+        public boolean realTime = false;
+        /**
          * Прогресс достижений (prefs INSTEAD): переживает «Начать заново»; null — свой у движка
          */
         public Achievements achievements = null;
@@ -584,6 +589,29 @@ public class PlayerEngine {
      * Снимок SNAPSHOT — игра целиком, в том же виде, что сохранение; null — снимка нет
      */
     private ObjectNode m_snapshot = null;
+    // Состояние для снимка экрана
+    /**
+     * Ответ на последнюю команду (lasttext), с метками {…}
+     */
+    private final List<String> m_reactionText = new ArrayList<>();
+    /**
+     * Текст из модификаций страницы при входе
+     */
+    private final List<String> m_pageModText = new ArrayList<>();
+    /**
+     * WINGEOM/INVGEOM/WINCOLOR/INVCOLOR
+     */
+    private ScreenModel.WindowStyle m_windowStyle = new ScreenModel.WindowStyle();
+    private long m_revision = 0;
+    private int m_timeAccumulatorMs = 0;
+    /**
+     * Тики для кадров анимации на странице
+     */
+    private long m_animationTicks = 0;
+    /**
+     * 1000 / nlb._fps
+     */
+    private static final int ANIMATION_TICK_MS = 40;
 
     public PlayerEngine(NonLinearBook rootBook, Settings settings) {
         m_rootBook = rootBook;
@@ -732,7 +760,13 @@ public class PlayerEngine {
      * Новая игра с начала (_try_again в VN-экспорте); прогресс достижений сохраняется
      */
     public void restart() {
+        // Новая игра — в тишине: игравшая музыка останавливается, музыка стартовой страницы
+        // (если есть) придёт следом. Иначе интерфейс доиграл бы прежнюю дорожку
+        boolean musicPlaying = !m_currentMusic.isEmpty();
         createState();
+        if (musicPlaying) {
+            m_events.add(new Event(Event.Kind.Music, ""));
+        }
         start();
     }
 
@@ -769,6 +803,7 @@ public class PlayerEngine {
         if (m_externalGame != null || m_page == null) {
             return false;
         }
+        beginCommand();
         List<PlayerLink> choices = availableChoices();
         if (choiceIndex < 0 || choiceIndex >= choices.size()) {
             return false;
@@ -799,6 +834,7 @@ public class PlayerEngine {
             obj = over;
             target = over.getId();
         }
+        beginCommand();
         m_transitions = 0;
         m_context.countIncrement(PlayerContext.COUNT_ACT);
         if (obj.isTakable()) {
@@ -842,6 +878,7 @@ public class PlayerEngine {
         if (m_externalGame != null || m_page == null || !isInInventoryTree(instanceId)) {
             return false;
         }
+        beginCommand();
         m_transitions = 0;
         m_context.countIncrement(PlayerContext.COUNT_INV);
         Obj obj = m_interpreter.findObj(m_context.protoOf(instanceId));
@@ -888,6 +925,7 @@ public class PlayerEngine {
         if (!targetVisible || source == null || target == null) {
             return false;
         }
+        beginCommand();
         m_transitions = 0;
         m_context.countIncrement(PlayerContext.COUNT_USE);
         // decorateObjUseStart: use(s, w) = s:usea(w, w) + общий объект (usef, если текст уже был)
@@ -924,6 +962,9 @@ public class PlayerEngine {
             return false;
         }
         m_transitions = 0;
+        if (!m_settings.realTime) {
+            beginCommand();  // тики реального времени не стирают ответ игроку
+        }
         // ровно один тик таймера (плюс автоматическое ожидание, если ходов нет)
         finishAction(true);
         return true;
@@ -937,6 +978,7 @@ public class PlayerEngine {
         if (m_page == null) {
             return false;
         }
+        beginCommand();  // «осмотреться» — новая команда: прежний ответ стирается
         m_shownImages.clear();
         m_preservedImagesShown.clear();
         renderPage();
@@ -1100,6 +1142,7 @@ public class PlayerEngine {
     private void applySave(JsonNode root) {
         String pageId = root.path("page").asText();
         Page page = m_interpreter.findPage(pageId);
+        String musicBefore = m_currentMusic;
         m_context.loadState(root.path("world"));
         m_events = new ArrayList<>();
         m_page = page;
@@ -1114,7 +1157,9 @@ public class PlayerEngine {
         m_preservedRoots.clear();
         m_preservedRoots.addAll(PlayerContext.strings(root.path("preserved")));
         m_preservedImagesShown.clear();  // после загрузки экран рисуется заново
-        if (!m_currentMusic.isEmpty()) {
+        // Музыка — как в сохранении (снимке): в том числе тишина, если тогда ничего не играло,
+        // а сейчас играет (иначе после «ещё раз» к титулу продолжалась бы музыка финала)
+        if (!m_currentMusic.isEmpty() || !musicBefore.isEmpty()) {
             m_events.add(new Event(Event.Kind.Music, m_currentMusic));
         }
         renderPage();
@@ -1573,7 +1618,7 @@ public class PlayerEngine {
      * Сколько тиков таймера проматывать автоматически на текущей странице (0 — не ждать)
      */
     private int autoWaitTicks() {
-        if (!hasTimer() || !availableChoices().isEmpty()) {
+        if (m_settings.realTime || !hasTimer() || !availableChoices().isEmpty()) {
             return 0;
         }
         boolean hasAuto = false;
@@ -1772,25 +1817,33 @@ public class PlayerEngine {
             }
         }
         // Текст из модификаций страницы, затем достижения — после текста страницы
-        appendTextEvents(output);
+        m_pageModText.clear();
+        ++m_revision;
+        appendTextEvents(output, m_pageModText);
     }
 
     private void flushOutput() {
         List<PlayerContext.OutputItem> output = m_context.takeOutput();
         // Звуки и картинки — первыми, достижения — последними
         appendMediaEvents(output);
-        appendTextEvents(output);
+        appendTextEvents(output, m_reactionText);
     }
 
-    private void appendTextEvents(List<PlayerContext.OutputItem> output) {
+    /**
+     * Текст и служебные сообщения вывода — событиями; текст (с метками {…}) ещё и в shownText —
+     * для снимка экрана: ответ на команду или текст модификаций страницы
+     */
+    private void appendTextEvents(List<PlayerContext.OutputItem> output, List<String> shownText) {
         for (PlayerContext.OutputItem item : output) {
             if (item.getKind() == PlayerContext.OutputKind.Text) {
                 String text = displayText(replaceInteractionMarks(item.getText()));
                 if (!trim(text).isEmpty()) {
                     m_events.add(new Event(Event.Kind.Text, text));
+                    shownText.add(displayText(item.getText()));
                 }
             } else if (item.getKind() == PlayerContext.OutputKind.Info) {
                 m_events.add(new Event(Event.Kind.Info, item.getText()));
+                captureStyle(item.getText());
             }
         }
         for (PlayerContext.OutputItem item : output) {
@@ -2180,6 +2233,442 @@ public class PlayerEngine {
             }
         }
         return m_context.inventory().isEmpty();
+    }
+
+    // ------------------------------------------------------------------ снимок экрана и время
+
+    private void beginCommand() {
+        m_reactionText.clear();
+        ++m_revision;
+    }
+
+    private void captureStyle(String info) {
+        String geom = styleValue(info, "WINGEOM");
+        if (geom != null) {
+            m_windowStyle.m_textGeometry = geom;
+        }
+        String invGeom = styleValue(info, "INVGEOM");
+        if (invGeom != null) {
+            m_windowStyle.m_inventoryGeometry = invGeom;
+        }
+        String color = styleValue(info, "WINCOLOR");
+        if (color != null) {
+            m_windowStyle.m_textColor = color;
+        }
+        String invColor = styleValue(info, "INVCOLOR");
+        if (invColor != null) {
+            m_windowStyle.m_inventoryColor = invColor;
+        }
+    }
+
+    /**
+     * "[WINGEOM: значение]" -> значение
+     */
+    private static String styleValue(String info, String name) {
+        String prefix = "[" + name + ": ";
+        return (info.startsWith(prefix) && info.length() > prefix.length())
+                ? info.substring(prefix.length(), info.length() - 1) : null;
+    }
+
+    /**
+     * Интервал таймера текущей страницы, мс (0 — таймера нет). STEADExportManager:
+     * timer:set(hasFastAnim ? 1 : 200), если у страницы есть таймер или анимация и нет
+     * графических объектов — у тех свой цикл vn
+     */
+    public int timerIntervalMs() {
+        if (m_page == null) {
+            return 0;
+        }
+        boolean animated = m_page.isImageAnimated();
+        boolean graphical = false;
+        for (String id : sceneObjects()) {
+            Obj obj = m_interpreter.findObj(m_context.protoOf(id));
+            if (obj != null) {
+                animated = animated || obj.isAnimatedImage();
+                graphical = graphical || obj.isGraphical();
+            }
+        }
+        if (graphical) {
+            return hasTimer() ? 200 : 0;
+        }
+        // Быстрая анимация: timer:set(1), но тик — не чаще, чем раз в 1000 / nlb._fps мс
+        if (animated) {
+            return ANIMATION_TICK_MS;
+        }
+        return hasTimer() ? 200 : 0;
+    }
+
+    /**
+     * Прошло реальное время: таймер страницы тикает с её интервалом, кадры анимации сменяются.
+     * Возвращает число тиков; их события — как обычно, через takeEvents()
+     */
+    public int advanceTime(int milliseconds) {
+        int interval = timerIntervalMs();
+        if (m_page == null || m_externalGame != null || interval <= 0 || milliseconds <= 0) {
+            return 0;
+        }
+        m_timeAccumulatorMs += milliseconds;
+        int ticks = 0;
+        // Не больше 1000 тиков за вызов: после долгой паузы не «догонять» вечно
+        while (m_timeAccumulatorMs >= interval && ticks < 1000 && m_externalGame == null) {
+            m_timeAccumulatorMs -= interval;
+            ++ticks;
+            ++m_animationTicks;
+            Page before = m_page;
+            waitTick();
+            if (m_page != before) {
+                m_timeAccumulatorMs = 0;  // новая страница — её таймер начинается заново
+                m_animationTicks = 0;
+                break;
+            }
+        }
+        if (ticks >= 1000) {
+            m_timeAccumulatorMs = 0;
+        }
+        if (ticks > 0) {
+            ++m_revision;
+        }
+        return ticks;
+    }
+
+    private ScreenModel.ImageRef imageRefFor(String itemId, boolean looped) {
+        ScreenModel.ImageRef ref = new ScreenModel.ImageRef();
+        PlayerContext.OutputItem image = m_interpreter.selectImage(itemId);
+        if (image == null) {
+            return ref;
+        }
+        if (image.getKind() == PlayerContext.OutputKind.Animation) {
+            ref.m_framePattern = image.getText();
+            ref.m_frameCount = image.getFrames();
+            ref.m_looped = looped;
+            if (ref.m_frameCount > 0) {
+                long t = m_animationTicks;
+                ref.m_currentFrame = (int) (looped ? t % ref.m_frameCount : Math.min(t, ref.m_frameCount - 1)) + 1;
+            }
+        } else {
+            ref.m_file = image.getText();
+        }
+        return ref;
+    }
+
+    /**
+     * {метка} в описании объекта — ссылка на объект; в остальном тексте метка ссылается на объект
+     * сцены с такой подписью (PDSCS выводит описания вложенных объектов), иначе становится текстом
+     */
+    private List<ScreenModel.TextRun> textRuns(String text, String objectId) {
+        List<ScreenModel.TextRun> runs = new ArrayList<>();
+        int pos = 0;
+        while (pos < text.length()) {
+            int open = text.indexOf('{', pos);
+            int close = open < 0 ? -1 : text.indexOf('}', open);
+            if (open < 0 || close < 0) {
+                runs.add(new ScreenModel.TextRun(ScreenModel.TextRun.Kind.Plain, text.substring(pos), ""));
+                break;
+            }
+            if (open > pos) {
+                runs.add(new ScreenModel.TextRun(ScreenModel.TextRun.Kind.Plain, text.substring(pos, open), ""));
+            }
+            String label = text.substring(open + 1, close);
+            if (!label.isEmpty()) {
+                String target = objectId;
+                if (target.isEmpty()) {
+                    for (String id : sceneObjects()) {
+                        if (trim(sceneLabel(id)).equals(trim(label))) {
+                            target = id;
+                            break;
+                        }
+                    }
+                }
+                runs.add(new ScreenModel.TextRun(
+                        target.isEmpty() ? ScreenModel.TextRun.Kind.Plain : ScreenModel.TextRun.Kind.ObjectLink,
+                        label, target
+                ));
+            }
+            pos = close + 1;
+        }
+        return runs;
+    }
+
+    /**
+     * Разбиение по '\n' с последней (возможно пустой) строкой
+     */
+    private static List<String> allLines(String text) {
+        List<String> lines = new ArrayList<>();
+        int start = 0;
+        while (true) {
+            int eol = text.indexOf('\n', start);
+            if (eol < 0) {
+                lines.add(text.substring(start));
+                return lines;
+            }
+            lines.add(text.substring(start, eol));
+            start = eol + 1;
+        }
+    }
+
+    private void addParagraphs(List<ScreenModel.Paragraph> out, String text, String objectId) {
+        for (String line : allLines(text)) {
+            ScreenModel.Paragraph paragraph = new ScreenModel.Paragraph();
+            paragraph.m_runs.addAll(textRuns(line, objectId));
+            out.add(paragraph);
+        }
+    }
+
+    private static int[] parsePair(String s) {
+        if (s == null) {
+            return null;
+        }
+        int comma = s.indexOf(',');
+        if (comma < 0) {
+            return null;
+        }
+        Long x = parseCInt(s.substring(0, comma));
+        Long y = parseCInt(s.substring(comma + 1));
+        return (x == null || y == null) ? null : new int[]{x.intValue(), y.intValue()};
+    }
+
+    /**
+     * Как std::stoi: пробелы, знак, цифры; остаток строки не важен. null — числа нет
+     */
+    private static Long parseCInt(String s) {
+        int i = 0;
+        while (i < s.length() && Character.isWhitespace(s.charAt(i))) {
+            i++;
+        }
+        int start = i;
+        if (i < s.length() && (s.charAt(i) == '+' || s.charAt(i) == '-')) {
+            i++;
+        }
+        int digits = i;
+        while (i < s.length() && Character.isDigit(s.charAt(i))) {
+            i++;
+        }
+        if (i == digits) {
+            return null;
+        }
+        try {
+            long value = Long.parseLong(s.substring(start, i));
+            return (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) ? null : value;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Снимок экрана: что должно быть видно сейчас (порт PlayerEngine::screen NLBNavigator)
+     */
+    public ScreenModel screen() {
+        ScreenModel m = new ScreenModel();
+        m.m_revision = m_revision;
+        if (m_page == null) {
+            return m;
+        }
+        Page page = m_page;
+        boolean vn = isVnPage(page);
+        m.m_layout = vn ? ScreenModel.Layout.VisualNovel : ScreenModel.Layout.Standard;
+        m.m_pageId = page.getId();
+        if (!vn && page.isUseCaption()) {
+            m.m_caption = trim(displayText(m_interpreter.expandText(nz(page.getCaption()))));
+        }
+        if (!vn) {
+            // STEADExportManager.decoratePageCaption: nam = заголовок или название модуля
+            // (у модуля без названия — название родителя; совсем без — «...»)
+            m.m_roomTitle = m.m_caption;
+            for (NonLinearBook b = page.getCurrentNLB(); m.m_roomTitle.isEmpty() && b != null; b = b.getParentNLB()) {
+                m.m_roomTitle = trim(b.getTitle());
+            }
+            if (m.m_roomTitle.isEmpty()) {
+                m.m_roomTitle = "...";
+            }
+        }
+        if (!m_rootBook.isSuppressMedia()) {
+            m.m_pageImage = imageRefFor(page.getId(), true);
+        }
+        m.m_imageIsBackground = page.isImageBackground();
+
+        String pageText = displayText(m_interpreter.expandText(nz(page.getText())));
+        if (!pageText.isEmpty()) {
+            addParagraphs(m.m_pageText, pageText, "");
+            addParagraphs(m.m_roomText, pageText, "");
+        }
+        PageView view = view();
+        List<String> visible = sceneObjects();
+        Map<String, Integer> depths = new HashMap<>(m_sceneDepth);
+        // Описания объектов (как в renderPage): неграфические стандартной темы, без suppress_dsc
+        if (!vn) {
+            for (String instanceId : visible) {
+                Obj obj = m_interpreter.findObj(m_context.protoOf(instanceId));
+                if (obj == null || obj.isSuppressDsc()) {
+                    continue;
+                }
+                String dsc = displayText(m_interpreter.objDscF(instanceId));
+                if (trim(dsc).isEmpty()) {
+                    continue;
+                }
+                addParagraphs(m.m_pageText, dsc, instanceId);
+                // STEAD: описания объектов идут одним абзацем через пробел
+                if (m.m_objectsText.isEmpty()) {
+                    m.m_objectsText.add(new ScreenModel.Paragraph());
+                }
+                List<ScreenModel.TextRun> runs = m.m_objectsText.get(m.m_objectsText.size() - 1).m_runs;
+                ScreenModel.TextRun space = new ScreenModel.TextRun(ScreenModel.TextRun.Kind.Plain, " ", "");
+                if (!runs.isEmpty()) {
+                    runs.add(space);
+                }
+                for (String line : allLines(dsc)) {
+                    if (trim(line).isEmpty()) {
+                        continue;
+                    }
+                    runs.addAll(textRuns(trim(line), instanceId));
+                    runs.add(space);
+                }
+                if (!runs.isEmpty() && runs.get(runs.size() - 1).m_text.equals(" ")) {
+                    runs.remove(runs.size() - 1);
+                }
+            }
+        }
+        for (String text : m_pageModText) {
+            addParagraphs(m.m_pageText, text, "");
+            addParagraphs(m.m_modText, text, "");
+        }
+        for (String text : m_reactionText) {
+            // следующий ответ продолжает предыдущий через пробел (STEAD: p() — через пробел),
+            // а строки внутри одного ответа — каждая с новой строки
+            int first = m.m_reactionText.size();
+            addParagraphs(m.m_reactionText, text, "");
+            if (first > 0 && first < m.m_reactionText.size()) {
+                m.m_reactionText.get(first).m_joinPrevious = true;
+            }
+        }
+
+        // Варианты: доступные и (в стандартной теме) недоступные с альтернативным текстом
+        for (int i = 0; i < view.getChoices().size(); i++) {
+            Choice choice = view.getChoices().get(i);
+            ScreenModel.Choice c = new ScreenModel.Choice();
+            c.m_index = i;
+            c.m_text = choice.getText();
+            c.m_trivial = choice.isTrivial();
+            c.m_inlineLink = choice.isInlineLink();
+            m.m_choices.add(c);
+        }
+        if (!vn) {
+            for (PlayerLink link : buildLinks()) {
+                if (!link.autoFlag && !link.altText.isEmpty() && !isLinkAvailable(link)) {
+                    ScreenModel.Choice c = new ScreenModel.Choice();
+                    c.m_index = -1;
+                    c.m_enabled = false;
+                    c.m_text = displayText(m_interpreter.expandText(link.text));
+                    c.m_altText = displayText(m_interpreter.expandText(link.altText));
+                    m.m_choices.add(c);
+                }
+            }
+        }
+
+        // Объекты сцены: все, что на экране, в порядке обхода (родитель раньше детей), включая
+        // безымянные декорации (фоны, подложки подсказок): графическому интерфейсу их нужно нарисовать
+        Set<String> listed = new java.util.HashSet<>(visible);
+        int z = 0;
+        for (String instanceId : visible) {
+            Obj obj = m_interpreter.findObj(m_context.protoOf(instanceId));
+            if (obj == null) {
+                continue;
+            }
+            ScreenModel.SceneObject so = new ScreenModel.SceneObject();
+            so.m_id = instanceId;
+            String owner = m_context.containerOf(instanceId);
+            if (!isEmpty(owner) && listed.contains(owner)) {
+                so.m_parentId = owner;
+            }
+            so.m_label = trim(sceneLabel(instanceId));
+            so.m_graphical = obj.isGraphical();
+            if (obj.isImageInScene() && !m_rootBook.isSuppressMedia()) {
+                so.m_image = imageRefFor(instanceId, obj.isLooped());
+            }
+            Obj over = isEmpty(obj.getMorphOverId()) ? null : obj.getMorphOverObj();
+            if (over != null) {
+                so.m_hoverImage = imageRefFor(over.getId(), over.isLooped());
+            }
+            Placement p = objPlacement(instanceId);
+            int origin = java.util.Arrays.asList(Placement.ORIGINS).indexOf(p.m_origin);
+            so.m_placement.m_anchor = ScreenModel.Anchor.values()[origin < 0 ? 0 : origin];
+            int[] offset = p.m_offset.isEmpty() ? null : parsePair(p.m_offset);
+            if (offset != null) {
+                so.m_placement.m_hasOffset = true;
+                so.m_placement.m_offsetX = offset[0];
+                so.m_placement.m_offsetY = offset[1];
+            }
+            so.m_placement.m_armX = p.m_armX;
+            so.m_placement.m_armY = p.m_armY;
+            if (!p.m_parentId.isEmpty() && obj.getContainerType() == Obj.ContainerType.Obj) {
+                // iarm (decorateObjArm): только у объекта, вложенного в объект в самой книге —
+                // его offset или координаты относительно родителя
+                so.m_placement.m_hasInnerArm = true;
+                int[] inner = parsePair(obj.getOffset());
+                if (inner != null) {
+                    so.m_placement.m_innerArmX = inner[0];
+                    so.m_placement.m_innerArmY = inner[1];
+                } else {
+                    Coords rel = obj.getRelativeCoords(true);
+                    so.m_placement.m_innerArmX = (int) rel.getLeft();
+                    so.m_placement.m_innerArmY = (int) rel.getTop();
+                }
+            }
+            ScreenModel.Appearance a = so.m_appearance;
+            a.m_effect = obj.getEffect() == null
+                    ? ScreenModel.AppearEffect.None : ScreenModel.AppearEffect.valueOf(obj.getEffect().name());
+            a.m_direction = obj.getMovementDirection() == null
+                    ? ScreenModel.MoveDirection.None : ScreenModel.MoveDirection.valueOf(obj.getMovementDirection().name());
+            a.m_maxStep = so.m_image.m_frameCount > 0 ? so.m_image.m_frameCount : obj.getMaxFrame();
+            a.m_startFrame = obj.getStartFrame();
+            boolean noMove = a.m_effect == ScreenModel.AppearEffect.FadeIn || a.m_effect == ScreenModel.AppearEffect.FadeOut
+                    || a.m_effect == ScreenModel.AppearEffect.None;
+            a.m_curStep = obj.getStartFrame() > 0 ? obj.getStartFrame() : (noMove ? 0 : 2);
+            a.m_pauseFrames = obj.getPauseFrames();
+            a.m_preloadFrames = obj.getPreloadFrames();
+            so.m_zOrder = z++;
+            so.m_visible = m_interpreter.isObjEnabled(instanceId);
+            so.m_collapsed = m_context.isCollapsed(instanceId);
+            so.m_active = hasBehaviour(obj);
+            so.m_takable = obj.isTakable();
+            so.m_preserved = obj.isPreserved();
+            so.m_showOnCursor = obj.isShowOnCursor();
+            so.m_clearUnderTooltip = obj.isClearUnderTooltip();
+            so.m_actOnKey = obj.isActOnKey();
+            so.m_loadOnce = obj.isLoadOnce();
+            so.m_cacheText = obj.isCacheText();
+            so.m_noRedrawOnAct = obj.isNoRedrawOnAct();
+            m.m_sceneObjects.add(so);
+        }
+        m_sceneDepth.clear();
+        m_sceneDepth.putAll(depths);
+        Set<String> inInventory = new java.util.HashSet<>();
+        for (ObjectView item : view.getInventory()) {
+            inInventory.add(item.getInstanceId());
+        }
+        for (ObjectView iv : view.getInventory()) {
+            Obj obj = m_interpreter.findObj(m_context.protoOf(iv.getInstanceId()));
+            ScreenModel.InventoryItem item = new ScreenModel.InventoryItem();
+            item.m_id = iv.getInstanceId();
+            String owner = m_context.containerOf(iv.getInstanceId());
+            if (!isEmpty(owner) && inInventory.contains(owner)) {
+                item.m_parentId = owner;
+            }
+            item.m_label = iv.getDisp();
+            item.m_active = iv.isActive();
+            if (obj != null && obj.isImageInInventory() && !m_rootBook.isSuppressMedia()) {
+                item.m_icon = imageRefFor(iv.getInstanceId(), obj.isLooped());
+            }
+            m.m_inventory.add(item);
+        }
+        m.m_style = m_windowStyle.copy();
+        m.m_timerIntervalMs = timerIntervalMs();
+        m.m_timerActive = m.m_timerIntervalMs > 0;
+        m.m_finished = view.isFinished();
+        m.m_canSave = canSave();
+        if (m_externalGame != null) {
+            m.m_externalGame = m_externalGame.getName();
+        }
+        return m;
     }
 
     // ------------------------------------------------------------------ текст

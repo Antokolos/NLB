@@ -62,6 +62,13 @@ autowired-страницы), прохождение начинается по с
 прохождения консольному Java-плееру (`com.nlbhub.nlb.player.ConsolePlayer`) и построчно
 сравнивает его вывод с журналом, начиная со строки `Loaded:`; при расхождении печатает первую
 отличающуюся строку и несколько строк перед ней. Книги должны быть на коммитах из `books.txt`.
+`ScreenModelReferenceTest` так же проигрывает ввод и на каждом шаге сравнивает снимок экрана
+(`PlayerEngine.screen()` и порции текста VN) с эталоном NLBNavigator —
+`NLBL/src/test/resources/player-screens/<книга>/walk-N.screens.jsonl.gz`. Эталон строит
+`screen/make-screens.sh` (после `make-reference.sh`, на той же сборке NLBNavigator): программа
+`screen/harness.cpp` — тот же консольный плеер, что `nlb_main explore`, но после каждого шага
+она пишет снимок экрана одной строкой JSON.
+
 Без книг эти проверки пропускаются:
 
 ```bash

@@ -121,6 +121,10 @@ public class ConsolePlayer {
      * Номера строк ввода (с нуля), прочитанных как команда игры (на главном экране)
      */
     private final List<Integer> m_commandInputs = new ArrayList<>();
+    /**
+     * Вызывается раз на шаг (после старта, каждой команды и внешней игры), перед выводом событий
+     */
+    private Runnable m_stepListener = null;
 
     public ConsolePlayer(NonLinearBook book, PlayerEngine.Settings settings, BufferedReader in, PrintWriter out) {
         m_engine = new PlayerEngine(book, settings);
@@ -187,6 +191,13 @@ public class ConsolePlayer {
      */
     public List<Integer> commandInputs() {
         return m_commandInputs;
+    }
+
+    /**
+     * Слушатель шагов игры (как EventListener NLBExplorer): например, снимок экрана после каждой команды
+     */
+    public void setStepListener(Runnable stepListener) {
+        m_stepListener = stepListener;
     }
 
     public PlayerEngine engine() {
@@ -272,6 +283,9 @@ public class ConsolePlayer {
     }
 
     private void printEvents() {
+        if (m_stepListener != null) {
+            m_stepListener.run();
+        }
         boolean achieved = false;
         for (PlayerEngine.Event event : m_engine.takeEvents()) {
             achieved = achieved || event.getKind() == PlayerEngine.Event.Kind.Achievement;

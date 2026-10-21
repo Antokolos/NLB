@@ -2,13 +2,8 @@ package com.nlbhub.nlb.player;
 
 import com.nlbhub.nlb.api.Modification;
 import com.nlbhub.nlb.api.Variable;
-import com.nlbhub.nlb.domain.AbstractModifyingItem;
 import com.nlbhub.nlb.domain.LinkImpl;
-import com.nlbhub.nlb.domain.ModificationImpl;
-import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.PageImpl;
-import com.nlbhub.nlb.domain.VariableImpl;
-import com.nlbhub.nlb.util.MultiLangString;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -25,86 +20,6 @@ import static org.junit.Assert.fail;
  * в ссылках, достижения после «Начать заново».
  */
 public class PlayerEngineTest {
-    /**
-     * Книга в памяти: страницы, ссылки, переменные и модификации
-     */
-    private static final class Book {
-        final NonLinearBookImpl nlb = new NonLinearBookImpl();
-
-        /**
-         * Свой объект текста: setText у новой страницы или ссылки поменял бы общий текст по
-         * умолчанию (DEFAULT_TEXT) сразу у всех
-         */
-        MultiLangString text(String text) {
-            MultiLangString result = MultiLangString.createEmptyText();
-            result.put(nlb.getLanguage(), text);
-            return result;
-        }
-
-        PageImpl page(String text) {
-            PageImpl page = new PageImpl(nlb);
-            page.setTexts(text(text));
-            nlb.addPage(page);
-            if (nlb.getStartPoint() == null || nlb.getStartPoint().isEmpty()) {
-                nlb.setStartPoint(page.getId());
-            }
-            return page;
-        }
-
-        LinkImpl link(PageImpl from, PageImpl to, String text) {
-            LinkImpl link = new LinkImpl(from, to.getId());
-            link.setTexts(text(text));
-            from.addLink(link);
-            return link;
-        }
-
-        VariableImpl variable(Variable.Type type, Variable.DataType dataType, String name, String value) {
-            VariableImpl variable = new VariableImpl(nlb, type, dataType, name, value, null);
-            nlb.addVariable(variable);
-            return variable;
-        }
-
-        /**
-         * Модификация: varName — имя переменной-получателя (null — без неё), expr — выражение
-         * или операнд (null — без него)
-         */
-        void mod(AbstractModifyingItem item, Modification.Type type, String varName, String expr) {
-            ModificationImpl mod = new ModificationImpl(item);
-            mod.setType(type.name());
-            if (varName != null) {
-                mod.setVarId(variable(Variable.Type.VAR, Variable.DataType.AUTO, varName, null).getId());
-            }
-            if (expr != null) {
-                mod.setExprId(variable(Variable.Type.EXPRESSION, Variable.DataType.AUTO, null, expr).getId());
-            }
-            item.addModification(mod);
-        }
-
-        /**
-         * Ограничение ссылки (выражение)
-         */
-        void constraint(LinkImpl link, String expr) {
-            link.setConstrId(variable(Variable.Type.LINKCONSTRAINT, Variable.DataType.BOOLEAN, null, expr).getId());
-        }
-
-        PlayerEngine start() {
-            PlayerEngine engine = create(true);
-            engine.start();
-            return engine;
-        }
-
-        /**
-         * Движок без старта; deterministic = false — настоящая случайность с постоянным зерном
-         */
-        PlayerEngine create(boolean deterministic) {
-            PlayerEngine.Settings settings = new PlayerEngine.Settings();
-            settings.exportMode = PlayerEngine.ExportMode.STANDARD;
-            settings.deterministic = deterministic;
-            settings.randomSeed = 12345;
-            return new PlayerEngine(nlb, settings);
-        }
-    }
-
     private static List<String> texts(PlayerEngine engine, PlayerEngine.Event.Kind kind) {
         List<String> result = new ArrayList<>();
         for (PlayerEngine.Event event : engine.takeEvents()) {
@@ -125,7 +40,7 @@ public class PlayerEngineTest {
 
     @Test
     public void assignmentIsExpandedInPageText() {
-        Book book = new Book();
+        TestBook book = new TestBook();
         PageImpl start = book.page("x = $x$, s = $s$");
         book.mod(start, Modification.Type.ASSIGN, "x", "2 + 3 * 4");
         book.mod(start, Modification.Type.ASSIGN, "s", "\"a\" + x");
@@ -135,7 +50,7 @@ public class PlayerEngineTest {
 
     @Test
     public void ifElseAndWhile() {
-        Book book = new Book();
+        TestBook book = new TestBook();
         PageImpl start = book.page("$branch$ $sum$");
         book.mod(start, Modification.Type.ASSIGN, "i", "0");
         book.mod(start, Modification.Type.ASSIGN, "sum", "0");
@@ -156,7 +71,7 @@ public class PlayerEngineTest {
 
     @Test
     public void deterministicRandom() {
-        Book book = new Book();
+        TestBook book = new TestBook();
         PageImpl start = book.page("$a$ $b$ $c$");
         book.mod(start, Modification.Type.RND, "a", "6");
         book.mod(start, Modification.Type.RND, "b", "6");
@@ -168,7 +83,7 @@ public class PlayerEngineTest {
 
     @Test
     public void listsPushPopEject() {
-        Book book = new Book();
+        TestBook book = new TestBook();
         PageImpl start = book.page("$n$ $top$ $tail$ $left$");
         // Операнд PUSH — имя переменной (или объекта), значение берётся из неё
         book.mod(start, Modification.Type.ASSIGN, "v", "1");
@@ -188,7 +103,7 @@ public class PlayerEngineTest {
 
     @Test
     public void timerTicksOncePerTurn() {
-        Book book = new Book();
+        TestBook book = new TestBook();
         PageImpl start = book.page("Ждём");
         PageImpl done = book.page("Дождались: $t$");
         start.setTimerVarId(book.variable(Variable.Type.TIMER, Variable.DataType.NUMBER, "t", null).getId());
@@ -212,7 +127,7 @@ public class PlayerEngineTest {
 
     @Test
     public void timerIsFastForwardedWhenNothingToChoose() {
-        Book book = new Book();
+        TestBook book = new TestBook();
         PageImpl start = book.page("Заставка");
         PageImpl done = book.page("После заставки");
         start.setTimerVarId(book.variable(Variable.Type.TIMER, Variable.DataType.NUMBER, "t", null).getId());
@@ -226,7 +141,7 @@ public class PlayerEngineTest {
 
     @Test
     public void onceLinkDisappearsAfterUse() {
-        Book book = new Book();
+        TestBook book = new TestBook();
         PageImpl hub = book.page("Хаб");
         PageImpl room = book.page("Комната");
         LinkImpl once = book.link(hub, room, "Один раз");
@@ -242,7 +157,7 @@ public class PlayerEngineTest {
 
     @Test
     public void gotoInLinkOverridesTarget() {
-        Book book = new Book();
+        TestBook book = new TestBook();
         PageImpl start = book.page("Старт");
         PageImpl target = book.page("Цель ссылки");
         PageImpl other = book.page("Цель GOTO");
@@ -255,7 +170,7 @@ public class PlayerEngineTest {
 
     @Test
     public void returnInLinkCancelsTransition() {
-        Book book = new Book();
+        TestBook book = new TestBook();
         PageImpl start = book.page("Старт");
         PageImpl target = book.page("Закрыто");
         LinkImpl link = book.link(start, target, "Дверь");
@@ -270,7 +185,7 @@ public class PlayerEngineTest {
 
     @Test
     public void achievementsSurviveRestart() {
-        Book book = new Book();
+        TestBook book = new TestBook();
         PageImpl start = book.page("Старт");
         book.mod(start, Modification.Type.ACHIEVE, null, "first");
         book.mod(start, Modification.Type.ACHIEVED, "count", "first");
@@ -285,7 +200,7 @@ public class PlayerEngineTest {
 
     @Test
     public void pageWithoutMovesFinishesGame() {
-        Book book = new Book();
+        TestBook book = new TestBook();
         PageImpl start = book.page("Старт");
         PageImpl end = book.page("Конец");
         book.link(start, end, "Дальше");
@@ -301,7 +216,7 @@ public class PlayerEngineTest {
 
     @Test
     public void loadRestoresWorldAndShowsPageAgain() {
-        Book book = new Book();
+        TestBook book = new TestBook();
         PageImpl start = book.page("Старт");
         PageImpl room = book.page("Комната: $x$");
         PageImpl far = book.page("Дальше");
@@ -337,7 +252,7 @@ public class PlayerEngineTest {
 
     @Test
     public void randomContinuesAfterLoad() {
-        Book book = new Book();
+        TestBook book = new TestBook();
         PageImpl hub = book.page("Хаб");
         PageImpl roll = book.page("Выпало $r$");
         book.mod(roll, Modification.Type.RND, "r", "1000000");
@@ -356,7 +271,7 @@ public class PlayerEngineTest {
 
     @Test
     public void noSavePageForbidsSaving() {
-        Book book = new Book();
+        TestBook book = new TestBook();
         PageImpl start = book.page("Нельзя");
         start.setNoSave(true);
         PlayerEngine engine = book.start();
@@ -371,9 +286,9 @@ public class PlayerEngineTest {
 
     @Test
     public void saveOfOtherBookIsRejected() {
-        Book first = new Book();
+        TestBook first = new TestBook();
         first.page("Первая");
-        Book second = new Book();
+        TestBook second = new TestBook();
         second.page("Вторая");
         String save = first.start().saveGame();
         PlayerEngine engine = second.start();
@@ -391,7 +306,7 @@ public class PlayerEngineTest {
 
     @Test
     public void tryAgainReturnsToSnapshot() {
-        Book book = new Book();
+        TestBook book = new TestBook();
         PageImpl start = book.page("Старт");
         PageImpl checkpoint = book.page("Контрольная точка: $x$");
         PageImpl end = book.page("Конец");
@@ -425,7 +340,7 @@ public class PlayerEngineTest {
 
     @Test
     public void tryAgainWithoutSnapshotRestarts() {
-        Book book = new Book();
+        TestBook book = new TestBook();
         PageImpl start = book.page("Старт: $x$");
         PageImpl end = book.page("Конец");
         book.mod(start, Modification.Type.ASSIGN, "x", "x + 1");
@@ -457,5 +372,43 @@ public class PlayerEngineTest {
         assertEquals(2, restored.count("a"));
         assertEquals(Integer.valueOf(2), restored.max("a"));
         assertTrue(restored.isGranted("a"));
+    }
+
+    private static List<String> music(PlayerEngine engine) {
+        return texts(engine, PlayerEngine.Event.Kind.Music);
+    }
+
+    @Test
+    public void musicAfterTryAgainAndRestart() {
+        TestBook book = new TestBook();
+        PageImpl title = book.page("Титул");
+        PageImpl checkpoint = book.page("Контрольная точка");
+        PageImpl end = book.page("Конец");
+        book.link(title, checkpoint, "Дальше");
+        book.link(checkpoint, end, "Погибнуть");
+        end.setSoundFileName("finale.ogg");
+        book.mod(title, Modification.Type.SNAPSHOT, null, null);
+        PlayerEngine engine = book.start();
+        engine.choose(0);
+        engine.choose(0);
+        assertEquals(List.of("finale.ogg"), music(engine));
+        // снимок на титуле, музыки тогда не было — после «ещё раз» тишина
+        engine.tryAgain();
+        assertEquals(List.of(""), music(engine));
+        // снимок с музыкой — музыка страницы снимка
+        checkpoint.setSoundFileName("cave.ogg");
+        book.mod(checkpoint, Modification.Type.SNAPSHOT, null, null);
+        engine.restart();
+        engine.takeEvents();
+        engine.choose(0);
+        engine.choose(0);
+        engine.takeEvents();
+        engine.tryAgain();
+        assertEquals(List.of("cave.ogg"), music(engine));
+        // «Начать заново»: игравшая музыка останавливается, у титула её нет
+        engine.restart();
+        assertEquals(List.of(""), music(engine));
+        engine.restart();
+        assertEquals(List.of(), music(engine));
     }
 }
