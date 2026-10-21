@@ -59,8 +59,11 @@ import java.util.regex.Pattern;
  * экран 1920×1080 с полями. Пути к файлам (шрифты, картинки) — «base/…» или «game/…»: от корня
  * той темы, где задан параметр (клиент берёт их по адресу /play/theme/&lt;книга&gt;/&lt;путь&gt;).
  * <p>
- * Базовая тема — каталог __base_theme__ пакета книги, иначе тема INSTEAD «default» экспорта NLB,
- * зашитая в NLBW (res/vnstead/themes/default); тема игры — каталог __theme__ пакета (pack --theme)
+ * Как в INSTEAD и NLBNavigator (--base-theme, --theme): базовая тема задаёт параметры по
+ * умолчанию (звук щелчка, шрифты, цвета…), тема игры переопределяет часть из них. Базовая тема —
+ * каталог __base_theme__ пакета книги, иначе стандартная тема INSTEAD (res/instead/themes/default);
+ * тема игры — каталог __theme__ пакета (pack --theme), иначе тема экспорта NLB
+ * (res/vnstead/themes/default). Обе встроенные темы зашиты в jar NLBW
  *
  * @author Anton P. Kolosov
  * @version 1.0
@@ -73,7 +76,7 @@ public final class ScreenTheme {
     private static final String BASE_DIR = "__base_theme__";
 
     /**
-     * Корень темы: каталог на диске или встроенная тема (null)
+     * Корень темы: каталог на диске или встроенная тема (dir == null: ресурсы NLBW theme/&lt;имя&gt;)
      */
     public static final class Root {
         private final String m_name;
@@ -96,7 +99,7 @@ public final class ScreenTheme {
                 return null;
             }
             if (m_dir == null) {
-                return ScreenTheme.class.getResourceAsStream(BUILTIN + rel);
+                return ScreenTheme.class.getResourceAsStream(BUILTIN + m_name + "/" + rel);
             }
             File file = new File(m_dir, rel);
             return file.isFile() ? Files.newInputStream(file.toPath()) : null;
@@ -132,14 +135,14 @@ public final class ScreenTheme {
     }
 
     /**
-     * Корни тем книги: [базовая, тема игры или null]
+     * Корни тем книги: [базовая, тема игры] — из пакета книги, иначе встроенные
      */
     public static Root[] roots(File bookDir) {
         File base = bookDir == null ? null : new File(bookDir, BASE_DIR);
         File game = bookDir == null ? null : new File(bookDir, GAME_DIR);
         return new Root[]{
                 new Root(BASE, base != null && base.isDirectory() ? base : null),
-                game != null && game.isDirectory() ? new Root(GAME, game) : null
+                new Root(GAME, game != null && game.isDirectory() ? game : null)
         };
     }
 
@@ -152,6 +155,7 @@ public final class ScreenTheme {
         String font = "", fontBold = "", fontItalic = "";
         double fontSize;
         double lineHeight = 1.0;
+        String upImage = "", downImage = "";
 
         Window(double x, double y, double w, double h, int[] fg, int[] link, int[] alink, double fontSize) {
             this.x = x;
@@ -170,6 +174,7 @@ public final class ScreenTheme {
             node.put("fg", css(fg)).put("link", css(link)).put("alink", css(alink));
             node.put("font", font).put("fontBold", fontBold).put("fontItalic", fontItalic);
             node.put("fontSize", fontSize).put("lineHeight", lineHeight);
+            node.put("upImage", upImage).put("downImage", downImage);
             return node;
         }
     }
@@ -180,11 +185,40 @@ public final class ScreenTheme {
 
     int[] m_background = {0x01, 0x13, 0x22};
     double m_scale = 1.0;
+    /**
+     * Где экран темы (scr.w×scr.h) на экране 1920×1080
+     */
+    double[] m_screenArea = {0, 0, 1920, 1080};
+    /**
+     * scr.gfx.bg, если это картинка (а не box:…)
+     */
+    String m_backgroundImage = "";
+    /**
+     * Фон страниц STANDARD: экспорт задаёт каждой такой странице bgimg = nlb:std_bg() — gfx/bg.jpg
+     * активной темы (темы игры, иначе базовой); он заменяет scr.gfx.bg
+     */
+    String m_pageBackground = "";
+    /**
+     * scr.gfx.x/y/w/h — картинка страницы STANDARD
+     */
+    double[] m_pictureArea = {40, 30, 1787, 640};
+    boolean m_waysBottom = false;
+    String m_themeMenuButton = "";
+    double m_menuButtonX = 0, m_menuButtonY = 0;
+    String m_clickSound = "";
+    /**
+     * menu.fnt.name — шрифт меню
+     */
+    String m_menuFont = "";
     Window m_text;
     Window m_inventory;
     boolean m_inventoryHorizontal = true;
     String m_inventoryAlign = "center";
     String m_align = "justify";
+    /**
+     * Кнопка меню, которую ставит игра NLB (nlb.lua): gfx/menubtn.png и gfx/menubtn_ru.png
+     * активной темы, в правом верхнем углу
+     */
     String m_menuButton = "";
     String m_menuButtonRu = "";
 
@@ -324,9 +358,25 @@ public final class ScreenTheme {
         double ox = (1920 - sw * k) / 2;
         double oy = (1080 - sh * k) / 2;
         t.m_scale = k;
+        t.m_screenArea = new double[]{ox, oy, sw * k, sh * k};
         if (ini.containsKey("scr.col.bg")) {
             t.m_background = color(ini.get("scr.col.bg").value, t.m_background);
         }
+        IniValue bg = ini.get("scr.gfx.bg");
+        if (bg != null) {
+            if (bg.value.startsWith("box:")) {
+                int comma = bg.value.indexOf(',');
+                if (comma >= 0) {
+                    t.m_background = color(bg.value.substring(comma + 1), t.m_background);
+                }
+            } else if (!bg.value.isEmpty()) {
+                t.m_backgroundImage = path(bg.root, bg.value);
+            }
+        }
+        if (ini.containsKey("scr.gfx.x")) t.m_pictureArea[0] = ox + number(ini, "scr.gfx.x", 0) * k;
+        if (ini.containsKey("scr.gfx.y")) t.m_pictureArea[1] = oy + number(ini, "scr.gfx.y", 0) * k;
+        if (number(ini, "scr.gfx.w", -1) >= 0) t.m_pictureArea[2] = number(ini, "scr.gfx.w", 0) * k;
+        if (number(ini, "scr.gfx.h", -1) >= 0) t.m_pictureArea[3] = number(ini, "scr.gfx.h", 0) * k;
         for (String prefix : new String[]{"win", "inv"}) {
             Window w = prefix.equals("win") ? t.m_text : t.m_inventory;
             if (ini.containsKey(prefix + ".x")) w.x = ox + number(ini, prefix + ".x", 0) * k;
@@ -338,6 +388,10 @@ public final class ScreenTheme {
             if (ini.containsKey(prefix + ".col.alink")) w.alink = color(ini.get(prefix + ".col.alink").value, w.alink);
             if (ini.containsKey(prefix + ".fnt.size")) w.fontSize = number(ini, prefix + ".fnt.size", w.fontSize / k) * k;
             w.lineHeight = number(ini, prefix + ".fnt.height", w.lineHeight);
+            IniValue up = ini.get(prefix + ".gfx.up");
+            if (up != null) w.upImage = path(up.root, up.value);
+            IniValue down = ini.get(prefix + ".gfx.down");
+            if (down != null) w.downImage = path(down.root, down.value);
             IniValue font = ini.get(prefix + ".fnt.name");
             if (font != null) {
                 w.font = path(font.root, fontVariant(font.value, 0));
@@ -354,10 +408,22 @@ public final class ScreenTheme {
         if (ini.containsKey("win.align")) {
             t.m_align = ini.get("win.align").value;
         }
+        if (ini.containsKey("win.ways.mode")) {
+            t.m_waysBottom = ini.get("win.ways.mode").value.equals("bottom");
+        }
+        IniValue menuButton = ini.get("menu.gfx.button");
+        if (menuButton != null) t.m_themeMenuButton = path(menuButton.root, menuButton.value);
+        if (ini.containsKey("menu.button.x")) t.m_menuButtonX = ox + number(ini, "menu.button.x", 0) * k;
+        if (ini.containsKey("menu.button.y")) t.m_menuButtonY = oy + number(ini, "menu.button.y", 0) * k;
+        IniValue menuFont = ini.get("menu.fnt.name");
+        if (menuFont != null) t.m_menuFont = path(menuFont.root, fontVariant(menuFont.value, 0));
+        IniValue click = ini.get("snd.click");
+        if (click != null && !click.value.isEmpty()) t.m_clickSound = path(click.root, click.value);
         for (Root root : roots) {
             if (root == null) {
                 continue;
             }
+            if (root.exists("gfx/bg.jpg")) t.m_pageBackground = path(root, "gfx/bg.jpg");
             if (root.exists("gfx/menubtn.png")) t.m_menuButton = path(root, "gfx/menubtn.png");
             if (root.exists("gfx/menubtn_ru.png")) t.m_menuButtonRu = path(root, "gfx/menubtn_ru.png");
             String lua = root.read(visualNovel ? "theme_vn.lua" : "theme_standard.lua");
@@ -414,6 +480,22 @@ public final class ScreenTheme {
         node.put("align", m_align);
         node.put("menuButton", m_menuButton);
         node.put("menuButtonRu", m_menuButtonRu);
+        node.put("themeMenuButton", m_themeMenuButton);
+        node.put("menuButtonX", m_menuButtonX);
+        node.put("menuButtonY", m_menuButtonY);
+        node.put("backgroundImage", m_backgroundImage);
+        node.put("pageBackground", m_pageBackground);
+        node.set("screenArea", area(m_screenArea));
+        node.set("pictureArea", area(m_pictureArea));
+        node.put("waysBottom", m_waysBottom);
+        node.put("clickSound", m_clickSound);
+        node.put("menuFont", m_menuFont);
+        return node;
+    }
+
+    private static ObjectNode area(double[] r) {
+        ObjectNode node = JsonNodeFactory.instance.objectNode();
+        node.put("x", r[0]).put("y", r[1]).put("w", r[2]).put("h", r[3]);
         return node;
     }
 }
