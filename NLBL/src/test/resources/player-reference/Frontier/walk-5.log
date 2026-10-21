@@ -20,9 +20,9 @@ m. Меню
 Ваш выбор: 1
 [ANIMATION: intro-1.jpg ... intro-1478.jpg, кадров: 1478, смена по таймеру]
 [MUSIC: intro.ogg]
-[IMAGE: filler_long.png]
-[IMAGE: filler_long.png]
-[IMAGE: filler_long.png]
+[IMAGE: filler_long.png — filler1]
+[IMAGE: filler_long.png — filler2]
+[IMAGE: filler_long.png — Пропустить заставку]
 [Пропустить заставку]
 
 Здесь:  o1. Пропустить заставку
@@ -105,10 +105,10 @@ l. Осмотреться
 m. Меню
 
 Ваш выбор: 1
-[IMAGE: cardsexample.png]
-[IMAGE: securityofficer.png]
-[IMAGE: navigationofficer.png]
-[IMAGE: tacticsofficer.png]
+[IMAGE: cardsexample.png — cardsExampleObj]
+[IMAGE: securityofficer.png — Офицер по безопасности]
+[IMAGE: navigationofficer.png — Офицер по навигации]
+[IMAGE: tacticsofficer.png — Офицер по тактике]
 
 ==================================================
 ПРАВИЛА ИГРЫ
@@ -394,7 +394,7 @@ m. Меню
 [MUSIC: geomystery - blue shaman.ogg]
 
 Этот фиктивный параграф введён, чтобы обойти багофичу NLBB: при переходе на страницу с autowired-страницы модификации не выполняются.
-[IMAGE: checkbox_full.png]
+[IMAGE: checkbox_full.png — Показывать эту страницу]
 
 Вы начинаете сражение с вражеским флотом. Выбирайте свои действия на текущий ход из списка доступных вариантов в правой части экрана.
 
@@ -413,8 +413,8 @@ m. Меню
 Ваш выбор: 1
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj1]
 Выберите своё действие
 
 Здесь:
@@ -433,7 +433,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common10e.png]
+[IMAGE: common10e.png — Сила карты 10]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -445,9 +445,9 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj2]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -479,10 +479,10 @@ m. Меню
 
 Ваш выбор: i1
 [SOUND: zalp_raket.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 Вы открываете новую карту.
 [VOICE: flight2.ogg]
-[IMAGE: common10e.png]
+[IMAGE: common10e.png — Сила карты 10]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -494,11 +494,11 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj3]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -607,7 +607,7 @@ m. Меню
 
 Приготовиться к бою!
 [VOICE: flight2.ogg]
-[IMAGE: common15e.png]
+[IMAGE: common15e.png — Сила карты 15]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -615,7 +615,7 @@ m. Меню
 Вы нанесли врагу урон 5 HP.
 [VOICE: laser1.ogg]
 [VOICE: explosion.ogg]
-[IMAGE: common15e.png]
+[IMAGE: common15e.png — Сила карты 15]
 
 Враг сыграл Концентрацию, но вы атаковали. Противник теряет здоровье и вытянутую карту!
 
@@ -624,10 +624,10 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj4]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -679,10 +679,10 @@ m. Меню
 
 Ваш выбор: i1
 [SOUND: zalp_raket.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 Вы открываете новую карту.
 [VOICE: flight2.ogg]
-[IMAGE: common15e.png]
+[IMAGE: common15e.png — Сила карты 15]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -694,12 +694,12 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common15e.png]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj5]
+[IMAGE: common15e.png — Сила карты 15]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -814,7 +814,7 @@ m. Меню
 
 Приготовиться к бою!
 [VOICE: flight2.ogg]
-[IMAGE: common20e.png]
+[IMAGE: common20e.png — Сила карты 20]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -822,7 +822,7 @@ m. Меню
 Вы нанесли врагу урон 5 HP.
 [VOICE: laser1.ogg]
 [VOICE: explosion.ogg]
-[IMAGE: common20e.png]
+[IMAGE: common20e.png — Сила карты 20]
 
 Враг сыграл Концентрацию, но вы атаковали. Противник теряет здоровье и вытянутую карту!
 
@@ -831,11 +831,11 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common15e.png]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj1]
+[IMAGE: common15e.png — Сила карты 15]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -907,7 +907,7 @@ m. Меню
 
 Ваш выбор: i1
 [SOUND: zalp_raket.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 Вы открываете новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -919,7 +919,7 @@ m. Меню
 Враг нанёс вам урон 10 HP.
 [VOICE: laser1.ogg]
 [VOICE: explosion.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 
 Вы сыграли Концентрацию, но противник атаковал. Вы теряете здоровье и вытянутую карту...
 
@@ -1064,9 +1064,9 @@ l. Осмотреться
 m. Меню
 
 Ваш выбор: i4
-[IMAGE: checkbox_full.png]
-[IMAGE: checkbox_full.png]
-[IMAGE: checkbox_full.png]
+[IMAGE: checkbox_full.png — Карточные бои]
+[IMAGE: checkbox_full.png — Показывать страницу помощи перед боем]
+[IMAGE: checkbox_full.png — AI в боях (если убрать флажок, можно играть с другом через хот-сит)]
 
 ==================================================
 НАСТРОЙКИ
@@ -1100,7 +1100,7 @@ m. Меню
 [MUSIC: geomystery - blue shaman.ogg]
 
 Этот фиктивный параграф введён, чтобы обойти багофичу NLBB: при переходе на страницу с autowired-страницы модификации не выполняются.
-[IMAGE: checkbox_full.png]
+[IMAGE: checkbox_full.png — Показывать эту страницу]
 
 Вы начинаете сражение с вражеским флотом. Выбирайте свои действия на текущий ход из списка доступных вариантов в правой части экрана.
 
@@ -1132,7 +1132,7 @@ l. Осмотреться
 m. Меню
 
 Ваш выбор: 1
-[IMAGE: checkbox_full.png]
+[IMAGE: checkbox_full.png — Показывать эту страницу]
 
 Вы начинаете сражение с вражеским флотом. Выбирайте свои действия на текущий ход из списка доступных вариантов в правой части экрана.
 
@@ -1159,7 +1159,7 @@ l. Осмотреться
 m. Меню
 
 Ваш выбор: o1
-[IMAGE: checkbox_empty.png]
+[IMAGE: checkbox_empty.png — Показывать эту страницу]
 
 Здесь:  o1. Показывать эту страницу
 Инвентарь:  i1. Подсказка
@@ -1171,8 +1171,8 @@ m. Меню
 Ваш выбор: 1
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj2]
 Выберите своё действие
 
 Здесь:
@@ -1188,10 +1188,10 @@ m. Меню
 
 Ваш выбор: i1
 [SOUND: zalp_raket.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 Вы открываете новую карту.
 [VOICE: flight2.ogg]
-[IMAGE: common10e.png]
+[IMAGE: common10e.png — Сила карты 10]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -1203,10 +1203,10 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj3]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -1292,7 +1292,7 @@ m. Меню
 
 Приготовиться к бою!
 [VOICE: flight2.ogg]
-[IMAGE: common10e.png]
+[IMAGE: common10e.png — Сила карты 10]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -1300,7 +1300,7 @@ m. Меню
 Вы нанесли врагу урон 5 HP.
 [VOICE: laser1.ogg]
 [VOICE: explosion.ogg]
-[IMAGE: common10e.png]
+[IMAGE: common10e.png — Сила карты 10]
 
 Враг сыграл Концентрацию, но вы атаковали. Противник теряет здоровье и вытянутую карту!
 
@@ -1309,9 +1309,9 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj4]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -1379,7 +1379,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common15e.png]
+[IMAGE: common15e.png — Сила карты 15]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -1391,10 +1391,10 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common15e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj5]
+[IMAGE: common15e.png — Сила карты 15]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -1448,7 +1448,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common15e.png]
+[IMAGE: common15e.png — Сила карты 15]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -1460,11 +1460,11 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common15e.png]
-[IMAGE: common15e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj1]
+[IMAGE: common15e.png — Сила карты 15]
+[IMAGE: common15e.png — Сила карты 15]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -1501,7 +1501,7 @@ m. Меню
 
 Ваш выбор: i1
 [SOUND: zalp_raket.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 Вы открываете новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -1513,7 +1513,7 @@ m. Меню
 Враг нанёс вам урон 10 HP.
 [VOICE: laser1.ogg]
 [VOICE: explosion.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 
 Вы сыграли Концентрацию, но противник атаковал. Вы теряете здоровье и вытянутую карту...
 
@@ -1522,8 +1522,8 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj2]
 Выберите своё действие
 
 Здесь:
@@ -1626,7 +1626,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common20e.png]
+[IMAGE: common20e.png — Сила карты 20]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -1638,9 +1638,9 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common20e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj3]
+[IMAGE: common20e.png — Сила карты 20]
 Выберите своё действие
 
 Здесь:
@@ -1708,7 +1708,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common25e.png]
+[IMAGE: common25e.png — Сила карты 25]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -1720,10 +1720,10 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common25e.png]
-[IMAGE: common20e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj4]
+[IMAGE: common25e.png — Сила карты 25]
+[IMAGE: common20e.png — Сила карты 20]
 Выберите своё действие
 
 Здесь:
@@ -1877,7 +1877,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: rare20healm3e.png]
+[IMAGE: rare20healm3e.png — Сила карты 20; -3 Боеспособности]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -1889,11 +1889,11 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: rare20healm3e.png]
-[IMAGE: common25e.png]
-[IMAGE: common20e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj5]
+[IMAGE: rare20healm3e.png — Сила карты 20; -3 Боеспособности]
+[IMAGE: common25e.png — Сила карты 25]
+[IMAGE: common20e.png — Сила карты 20]
 Выберите своё действие
 
 Здесь:
@@ -1942,8 +1942,8 @@ m. Меню
 Атака противника не удалась!
 [VOICE: laser1.ogg]
 [VOICE: block1.ogg]
-[IMAGE: rare20healm3e.png]
-[IMAGE: common25e.png]
+[IMAGE: rare20healm3e.png — Сила карты 20; -3 Боеспособности]
+[IMAGE: common25e.png — Сила карты 25]
 
 Враг атаковал, но вы удачно сыграли Блок. Не все атаки врага достигли цели!
 
@@ -1981,7 +1981,7 @@ m. Меню
 [MUSIC: geomystery - blue shaman.ogg]
 
 Этот фиктивный параграф введён, чтобы обойти багофичу NLBB: при переходе на страницу с autowired-страницы модификации не выполняются.
-[IMAGE: checkbox_empty.png]
+[IMAGE: checkbox_empty.png — Показывать эту страницу]
 
 Вы начинаете сражение с вражеским флотом. Выбирайте свои действия на текущий ход из списка доступных вариантов в правой части экрана.
 
@@ -1991,8 +1991,8 @@ m. Меню
  Показывать эту страницу
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj1]
 Выберите своё действие
 
 Здесь:
@@ -2011,7 +2011,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common10e.png]
+[IMAGE: common10e.png — Сила карты 10]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -2023,9 +2023,9 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj2]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -2042,10 +2042,10 @@ m. Меню
 
 Ваш выбор: i1
 [SOUND: zalp_raket.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 Вы открываете новую карту.
 [VOICE: flight2.ogg]
-[IMAGE: common10e.png]
+[IMAGE: common10e.png — Сила карты 10]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -2057,11 +2057,11 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj3]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -2244,7 +2244,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common15e.png]
+[IMAGE: common15e.png — Сила карты 15]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -2256,12 +2256,12 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common15e.png]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj4]
+[IMAGE: common15e.png — Сила карты 15]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -2377,7 +2377,7 @@ m. Меню
 
 Приготовиться к бою!
 [VOICE: flight2.ogg]
-[IMAGE: common15e.png]
+[IMAGE: common15e.png — Сила карты 15]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -2385,7 +2385,7 @@ m. Меню
 Вы нанесли врагу урон 5 HP.
 [VOICE: laser1.ogg]
 [VOICE: explosion.ogg]
-[IMAGE: common15e.png]
+[IMAGE: common15e.png — Сила карты 15]
 
 Враг сыграл Концентрацию, но вы атаковали. Противник теряет здоровье и вытянутую карту!
 
@@ -2394,11 +2394,11 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common15e.png]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj5]
+[IMAGE: common15e.png — Сила карты 15]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -2438,7 +2438,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common20e.png]
+[IMAGE: common20e.png — Сила карты 20]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -2450,12 +2450,12 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common20e.png]
-[IMAGE: common15e.png]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj1]
+[IMAGE: common20e.png — Сила карты 20]
+[IMAGE: common15e.png — Сила карты 15]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -2545,8 +2545,8 @@ m. Меню
 Атака противника не удалась!
 [VOICE: laser1.ogg]
 [VOICE: block1.ogg]
-[IMAGE: common20e.png]
-[IMAGE: common15e.png]
+[IMAGE: common20e.png — Сила карты 20]
+[IMAGE: common15e.png — Сила карты 15]
 
 Враг атаковал, но вы удачно сыграли Блок. Не все атаки врага достигли цели!
 
@@ -2555,8 +2555,8 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj2]
 Выберите своё действие
 
 Здесь:
@@ -2617,7 +2617,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common25e.png]
+[IMAGE: common25e.png — Сила карты 25]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -2629,9 +2629,9 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common25e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj3]
+[IMAGE: common25e.png — Сила карты 25]
 Выберите своё действие
 
 Здесь:
@@ -2648,10 +2648,10 @@ m. Меню
 
 Ваш выбор: i1
 [SOUND: zalp_raket.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 Вы открываете новую карту.
 [VOICE: flight2.ogg]
-[IMAGE: rare20healm3e.png]
+[IMAGE: rare20healm3e.png — Сила карты 20; -3 Боеспособности]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -2663,11 +2663,11 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: rare20healm3e.png]
-[IMAGE: common25e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj4]
+[IMAGE: rare20healm3e.png — Сила карты 20; -3 Боеспособности]
+[IMAGE: common25e.png — Сила карты 25]
 Выберите своё действие
 
 Здесь:
@@ -2783,7 +2783,7 @@ m. Меню
 Атака не удалась...
 [VOICE: laser1.ogg]
 [VOICE: block1.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 
 Вы атаковали, но противник удачно сыграл Блок. Не все ваши атаки достигли цели...
 
@@ -2792,10 +2792,10 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: rare20healm3e.png]
-[IMAGE: common25e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj5]
+[IMAGE: rare20healm3e.png — Сила карты 20; -3 Боеспособности]
+[IMAGE: common25e.png — Сила карты 25]
 Выберите своё действие
 
 Здесь:
@@ -2816,7 +2816,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: rare5heal10e.png]
+[IMAGE: rare5heal10e.png — Сила карты 5; +10 Боеспособности]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -2828,11 +2828,11 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: rare5heal10e.png]
-[IMAGE: rare20healm3e.png]
-[IMAGE: common25e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj1]
+[IMAGE: rare5heal10e.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare20healm3e.png — Сила карты 20; -3 Боеспособности]
+[IMAGE: common25e.png — Сила карты 25]
 Выберите своё действие
 
 Здесь:
@@ -3076,8 +3076,8 @@ m. Меню
 Атака противника не удалась!
 [VOICE: laser1.ogg]
 [VOICE: block1.ogg]
-[IMAGE: rare5heal10e.png]
-[IMAGE: rare20healm3e.png]
+[IMAGE: rare5heal10e.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare20healm3e.png — Сила карты 20; -3 Боеспособности]
 
 Враг атаковал, но вы удачно сыграли Блок. Не все атаки врага достигли цели!
 
@@ -3115,7 +3115,7 @@ m. Меню
 [MUSIC: geomystery - blue shaman.ogg]
 
 Этот фиктивный параграф введён, чтобы обойти багофичу NLBB: при переходе на страницу с autowired-страницы модификации не выполняются.
-[IMAGE: checkbox_empty.png]
+[IMAGE: checkbox_empty.png — Показывать эту страницу]
 
 Вы начинаете сражение с вражеским флотом. Выбирайте свои действия на текущий ход из списка доступных вариантов в правой части экрана.
 
@@ -3125,8 +3125,8 @@ m. Меню
  Показывать эту страницу
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj2]
 Выберите своё действие
 
 Здесь:
@@ -3142,10 +3142,10 @@ m. Меню
 
 Ваш выбор: i1
 [SOUND: zalp_raket.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 Вы открываете новую карту.
 [VOICE: flight2.ogg]
-[IMAGE: common10e.png]
+[IMAGE: common10e.png — Сила карты 10]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -3157,10 +3157,10 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj3]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -3198,7 +3198,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common10e.png]
+[IMAGE: common10e.png — Сила карты 10]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -3210,11 +3210,11 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj4]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -3241,7 +3241,7 @@ m. Меню
 Атака не удалась...
 [VOICE: laser1.ogg]
 [VOICE: block1.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 
 Вы атаковали, но противник удачно сыграл Блок. Не все ваши атаки достигли цели...
 
@@ -3250,10 +3250,10 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj5]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -3305,10 +3305,10 @@ m. Меню
 
 Ваш выбор: i1
 [SOUND: zalp_raket.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 Вы открываете новую карту.
 [VOICE: flight2.ogg]
-[IMAGE: common15e.png]
+[IMAGE: common15e.png — Сила карты 15]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -3320,12 +3320,12 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common15e.png]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj1]
+[IMAGE: common15e.png — Сила карты 15]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -3412,8 +3412,8 @@ m. Меню
 Атака противника не удалась!
 [VOICE: laser1.ogg]
 [VOICE: block1.ogg]
-[IMAGE: common15e.png]
-[IMAGE: common10e.png]
+[IMAGE: common15e.png — Сила карты 15]
+[IMAGE: common10e.png — Сила карты 10]
 
 Враг атаковал, но вы удачно сыграли Блок. Не все атаки врага достигли цели!
 
@@ -3422,9 +3422,9 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj2]
 Выберите своё действие
 
 Здесь:
@@ -3444,7 +3444,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common15e.png]
+[IMAGE: common15e.png — Сила карты 15]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -3456,10 +3456,10 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common15e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj3]
+[IMAGE: common15e.png — Сила карты 15]
 Выберите своё действие
 
 Здесь:
@@ -3485,7 +3485,7 @@ m. Меню
 Атака не удалась...
 [VOICE: laser1.ogg]
 [VOICE: block1.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 
 Вы атаковали, но противник удачно сыграл Блок. Не все ваши атаки достигли цели...
 
@@ -3494,9 +3494,9 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common15e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj4]
+[IMAGE: common15e.png — Сила карты 15]
 Выберите своё действие
 
 Здесь:
@@ -3578,7 +3578,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common20e.png]
+[IMAGE: common20e.png — Сила карты 20]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -3590,10 +3590,10 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common20e.png]
-[IMAGE: common15e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj5]
+[IMAGE: common20e.png — Сила карты 20]
+[IMAGE: common15e.png — Сила карты 15]
 Выберите своё действие
 
 Здесь:
@@ -3614,7 +3614,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common25e.png]
+[IMAGE: common25e.png — Сила карты 25]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -3626,11 +3626,11 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common25e.png]
-[IMAGE: common20e.png]
-[IMAGE: common15e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj1]
+[IMAGE: common25e.png — Сила карты 25]
+[IMAGE: common20e.png — Сила карты 20]
+[IMAGE: common15e.png — Сила карты 15]
 Выберите своё действие
 
 Здесь:
@@ -3687,7 +3687,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: rare20healm3e.png]
+[IMAGE: rare20healm3e.png — Сила карты 20; -3 Боеспособности]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -3699,12 +3699,12 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: rare20healm3e.png]
-[IMAGE: common25e.png]
-[IMAGE: common20e.png]
-[IMAGE: common15e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj2]
+[IMAGE: rare20healm3e.png — Сила карты 20; -3 Боеспособности]
+[IMAGE: common25e.png — Сила карты 25]
+[IMAGE: common20e.png — Сила карты 20]
+[IMAGE: common15e.png — Сила карты 15]
 Выберите своё действие
 
 Здесь:
@@ -3854,7 +3854,7 @@ m. Меню
 
 Ваш выбор: i1
 [SOUND: zalp_raket.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 Вы открываете новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -3868,7 +3868,7 @@ m. Меню
 Враг нанёс вам урон 15 HP.
 [VOICE: laser1.ogg]
 [VOICE: explosion.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 
 Вы сыграли Концентрацию, но противник атаковал. Вы теряете здоровье и вытянутую карту...
 
@@ -3906,7 +3906,7 @@ m. Меню
 [MUSIC: geomystery - blue shaman.ogg]
 
 Этот фиктивный параграф введён, чтобы обойти багофичу NLBB: при переходе на страницу с autowired-страницы модификации не выполняются.
-[IMAGE: checkbox_empty.png]
+[IMAGE: checkbox_empty.png — Показывать эту страницу]
 
 Вы начинаете сражение с вражеским флотом. Выбирайте свои действия на текущий ход из списка доступных вариантов в правой части экрана.
 
@@ -3916,8 +3916,8 @@ m. Меню
  Показывать эту страницу
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj3]
 Выберите своё действие
 
 Здесь:
@@ -3961,10 +3961,10 @@ m. Меню
 
 Ваш выбор: i1
 [SOUND: zalp_raket.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 Вы открываете новую карту.
 [VOICE: flight2.ogg]
-[IMAGE: common10e.png]
+[IMAGE: common10e.png — Сила карты 10]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -3976,10 +3976,10 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj4]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -4060,10 +4060,10 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj5]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -4098,7 +4098,7 @@ m. Меню
 
 Ваш выбор: i1
 [SOUND: zalp_raket.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 Вы открываете новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -4106,7 +4106,7 @@ m. Меню
 Враг нанёс вам урон 10 HP.
 [VOICE: laser1.ogg]
 [VOICE: explosion.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 
 Вы сыграли Концентрацию, но противник атаковал. Вы теряете здоровье и вытянутую карту...
 
@@ -4115,9 +4115,9 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj1]
 Выберите своё действие
 
 Здесь:
@@ -4137,7 +4137,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common10e.png]
+[IMAGE: common10e.png — Сила карты 10]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -4149,10 +4149,10 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj2]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:

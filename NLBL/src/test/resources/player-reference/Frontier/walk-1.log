@@ -20,9 +20,9 @@ m. Меню
 Ваш выбор: 1
 [ANIMATION: intro-1.jpg ... intro-1478.jpg, кадров: 1478, смена по таймеру]
 [MUSIC: intro.ogg]
-[IMAGE: filler_long.png]
-[IMAGE: filler_long.png]
-[IMAGE: filler_long.png]
+[IMAGE: filler_long.png — filler1]
+[IMAGE: filler_long.png — filler2]
+[IMAGE: filler_long.png — Пропустить заставку]
 [Пропустить заставку]
 
 Здесь:  o1. Пропустить заставку
@@ -75,10 +75,10 @@ l. Осмотреться
 m. Меню
 
 Ваш выбор: 1
-[IMAGE: cardsexample.png]
-[IMAGE: securityofficer.png]
-[IMAGE: navigationofficer.png]
-[IMAGE: tacticsofficer.png]
+[IMAGE: cardsexample.png — cardsExampleObj]
+[IMAGE: securityofficer.png — Офицер по безопасности]
+[IMAGE: navigationofficer.png — Офицер по навигации]
+[IMAGE: tacticsofficer.png — Офицер по тактике]
 
 ==================================================
 ПРАВИЛА ИГРЫ
@@ -125,10 +125,10 @@ l. Осмотреться
 m. Меню
 
 Ваш выбор: 1
-[IMAGE: cardsexample.png]
-[IMAGE: securityofficer.png]
-[IMAGE: navigationofficer.png]
-[IMAGE: tacticsofficer.png]
+[IMAGE: cardsexample.png — cardsExampleObj]
+[IMAGE: securityofficer.png — Офицер по безопасности]
+[IMAGE: navigationofficer.png — Офицер по навигации]
+[IMAGE: tacticsofficer.png — Офицер по тактике]
 
 ==================================================
 ПРАВИЛА ИГРЫ
@@ -175,10 +175,10 @@ l. Осмотреться
 m. Меню
 
 Ваш выбор: 1
-[IMAGE: cardsexample.png]
-[IMAGE: securityofficer.png]
-[IMAGE: navigationofficer.png]
-[IMAGE: tacticsofficer.png]
+[IMAGE: cardsexample.png — cardsExampleObj]
+[IMAGE: securityofficer.png — Офицер по безопасности]
+[IMAGE: navigationofficer.png — Офицер по навигации]
+[IMAGE: tacticsofficer.png — Офицер по тактике]
 
 ==================================================
 ПРАВИЛА ИГРЫ
@@ -225,10 +225,10 @@ l. Осмотреться
 m. Меню
 
 Ваш выбор: 1
-[IMAGE: cardsexample.png]
-[IMAGE: securityofficer.png]
-[IMAGE: navigationofficer.png]
-[IMAGE: tacticsofficer.png]
+[IMAGE: cardsexample.png — cardsExampleObj]
+[IMAGE: securityofficer.png — Офицер по безопасности]
+[IMAGE: navigationofficer.png — Офицер по навигации]
+[IMAGE: tacticsofficer.png — Офицер по тактике]
 
 ==================================================
 ПРАВИЛА ИГРЫ
@@ -750,7 +750,7 @@ m. Меню
 
 Ваш выбор: 2
 [IMAGE: 19.png]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 
 Командир!
 Вражеские шатлы состыковались с нашими кораблями. Экипажи ведут тяжелый бой. Мы несем большие потери! Враг смог захватить один из наших кораблей. Мы вынуждены уничтожить захваченный корабль, чтобы противник не смог его использовать против нас.
@@ -950,7 +950,7 @@ l. Осмотреться
 m. Меню
 
 Ваш выбор: i2
-[IMAGE: derek.png]
+[IMAGE: derek.png — mapContainerObj]
 
 ==================================================
 КАРТА ГАЛАКТИКИ АЛЬКОНА
@@ -1055,7 +1055,7 @@ l. Осмотреться
 m. Меню
 
 Ваш выбор: i2
-[IMAGE: derek.png]
+[IMAGE: derek.png — mapContainerObj]
 
 ==================================================
 КАРТА ГАЛАКТИКИ АЛЬКОНА
@@ -1170,7 +1170,7 @@ m. Меню
 [MUSIC: geomystery - blue shaman.ogg]
 
 Этот фиктивный параграф введён, чтобы обойти багофичу NLBB: при переходе на страницу с autowired-страницы модификации не выполняются.
-[IMAGE: checkbox_full.png]
+[IMAGE: checkbox_full.png — Показывать эту страницу]
 
 Вы начинаете сражение с вражеским флотом. Выбирайте свои действия на текущий ход из списка доступных вариантов в правой части экрана.
 
@@ -1189,8 +1189,8 @@ m. Меню
 Ваш выбор: 1
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj1]
 Выберите своё действие
 
 Здесь:
@@ -1251,7 +1251,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common10e.png]
+[IMAGE: common10e.png — Сила карты 10]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -1263,9 +1263,9 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj2]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -1314,10 +1314,10 @@ m. Меню
 
 Ваш выбор: i1
 [SOUND: zalp_raket.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 Вы открываете новую карту.
 [VOICE: flight2.ogg]
-[IMAGE: common10e.png]
+[IMAGE: common10e.png — Сила карты 10]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -1329,11 +1329,11 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj3]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -1407,7 +1407,7 @@ m. Меню
 
 Приготовиться к бою!
 [VOICE: flight2.ogg]
-[IMAGE: common15e.png]
+[IMAGE: common15e.png — Сила карты 15]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -1415,7 +1415,7 @@ m. Меню
 Вы нанесли врагу урон 5 HP.
 [VOICE: laser1.ogg]
 [VOICE: explosion.ogg]
-[IMAGE: common15e.png]
+[IMAGE: common15e.png — Сила карты 15]
 
 Враг сыграл Концентрацию, но вы атаковали. Противник теряет здоровье и вытянутую карту!
 
@@ -1424,10 +1424,10 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj4]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -1448,7 +1448,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common15e.png]
+[IMAGE: common15e.png — Сила карты 15]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -1460,11 +1460,11 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common15e.png]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj5]
+[IMAGE: common15e.png — Сила карты 15]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -1486,7 +1486,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common20e.png]
+[IMAGE: common20e.png — Сила карты 20]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -1498,12 +1498,12 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common20e.png]
-[IMAGE: common15e.png]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj1]
+[IMAGE: common20e.png — Сила карты 20]
+[IMAGE: common15e.png — Сила карты 15]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -1631,8 +1631,8 @@ m. Меню
 Атака противника не удалась!
 [VOICE: laser1.ogg]
 [VOICE: block1.ogg]
-[IMAGE: common20e.png]
-[IMAGE: common15e.png]
+[IMAGE: common20e.png — Сила карты 20]
+[IMAGE: common15e.png — Сила карты 15]
 
 Враг атаковал, но вы удачно сыграли Блок. Не все атаки врага достигли цели!
 
@@ -1641,8 +1641,8 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj2]
 Выберите своё действие
 
 Здесь:
@@ -1672,10 +1672,10 @@ m. Меню
 
 Ваш выбор: i1
 [SOUND: zalp_raket.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 Вы открываете новую карту.
 [VOICE: flight2.ogg]
-[IMAGE: common25e.png]
+[IMAGE: common25e.png — Сила карты 25]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -1687,10 +1687,10 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common25e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj3]
+[IMAGE: common25e.png — Сила карты 25]
 Выберите своё действие
 
 Здесь:
@@ -1708,7 +1708,7 @@ m. Меню
 
 Ваш выбор: i1
 [SOUND: zalp_raket.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 Вы открываете новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -1716,7 +1716,7 @@ m. Меню
 Враг нанёс вам урон 25 HP.
 [VOICE: laser1.ogg]
 [VOICE: explosion.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 
 Вы сыграли Концентрацию, но противник атаковал. Вы теряете здоровье и вытянутую карту...
 
@@ -1750,7 +1750,7 @@ m. Меню
 [MUSIC: geomystery - blue shaman.ogg]
 
 Этот фиктивный параграф введён, чтобы обойти багофичу NLBB: при переходе на страницу с autowired-страницы модификации не выполняются.
-[IMAGE: checkbox_full.png]
+[IMAGE: checkbox_full.png — Показывать эту страницу]
 
 Вы начинаете сражение с вражеским флотом. Выбирайте свои действия на текущий ход из списка доступных вариантов в правой части экрана.
 
@@ -1769,8 +1769,8 @@ m. Меню
 Ваш выбор: 1
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj4]
 Выберите своё действие
 
 Здесь:
@@ -1789,7 +1789,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common10e.png]
+[IMAGE: common10e.png — Сила карты 10]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -1801,9 +1801,9 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj5]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -1823,7 +1823,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common10e.png]
+[IMAGE: common10e.png — Сила карты 10]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -1835,10 +1835,10 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj1]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -1992,7 +1992,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common15e.png]
+[IMAGE: common15e.png — Сила карты 15]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -2004,11 +2004,11 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common15e.png]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj2]
+[IMAGE: common15e.png — Сила карты 15]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -2153,7 +2153,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common15e.png]
+[IMAGE: common15e.png — Сила карты 15]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -2165,12 +2165,12 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common15e.png]
-[IMAGE: common15e.png]
-[IMAGE: common10e.png]
-[IMAGE: common10e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj3]
+[IMAGE: common15e.png — Сила карты 15]
+[IMAGE: common15e.png — Сила карты 15]
+[IMAGE: common10e.png — Сила карты 10]
+[IMAGE: common10e.png — Сила карты 10]
 Выберите своё действие
 
 Здесь:
@@ -2391,8 +2391,8 @@ m. Меню
 Атака противника не удалась!
 [VOICE: laser1.ogg]
 [VOICE: block1.ogg]
-[IMAGE: common15e.png]
-[IMAGE: common15e.png]
+[IMAGE: common15e.png — Сила карты 15]
+[IMAGE: common15e.png — Сила карты 15]
 
 Враг атаковал, но вы удачно сыграли Блок. Не все атаки врага достигли цели!
 
@@ -2401,8 +2401,8 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj4]
 Выберите своё действие
 
 Здесь:
@@ -2421,7 +2421,7 @@ m. Меню
 
 Мы готовы к отражению атаки!
 [VOICE: flight2.ogg]
-[IMAGE: common20e.png]
+[IMAGE: common20e.png — Сила карты 20]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -2433,9 +2433,9 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common20e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj5]
+[IMAGE: common20e.png — Сила карты 20]
 Выберите своё действие
 
 Здесь:
@@ -2452,10 +2452,10 @@ m. Меню
 
 Ваш выбор: i1
 [SOUND: zalp_raket.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 Вы открываете новую карту.
 [VOICE: flight2.ogg]
-[IMAGE: common25e.png]
+[IMAGE: common25e.png — Сила карты 25]
 Враг открывает новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -2467,11 +2467,11 @@ m. Меню
 И у вас, и у врага ещё достаточно сил для драки!
 
 Раунд схватки начинается...
-[IMAGE: card_placeholder.png]
-[IMAGE: common5.png]
-[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру]
-[IMAGE: common25e.png]
-[IMAGE: common20e.png]
+[IMAGE: card_placeholder.png — cardPlaceholderObj]
+[IMAGE: common5.png — Сила карты 5]
+[ANIMATION: btla1.jpg ... btla999.jpg, кадров: 999, смена по таймеру — bgObj1]
+[IMAGE: common25e.png — Сила карты 25]
+[IMAGE: common20e.png — Сила карты 20]
 Выберите своё действие
 
 Здесь:
@@ -2543,7 +2543,7 @@ m. Меню
 
 Ваш выбор: i1
 [SOUND: zalp_raket.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 Вы открываете новую карту.
 
 Применяются эффекты карт "перед атакой".
@@ -2553,7 +2553,7 @@ m. Меню
 Враг нанёс вам урон 20 HP.
 [VOICE: laser1.ogg]
 [VOICE: explosion.ogg]
-[IMAGE: common5.png]
+[IMAGE: common5.png — Сила карты 5]
 
 Вы сыграли Концентрацию, но противник атаковал. Вы теряете здоровье и вытянутую карту...
 
@@ -2584,24 +2584,24 @@ l. Осмотреться
 m. Меню
 
 Ваш выбор: i1
-[IMAGE: selectedcardsru.png]
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare20healm3.png]
-[IMAGE: common25.png]
-[IMAGE: common20.png]
-[IMAGE: common15.png]
-[IMAGE: common15.png]
-[IMAGE: common10.png]
-[IMAGE: common10.png]
-[IMAGE: availablecardsru.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
+[IMAGE: selectedcardsru.png — Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare20healm3.png — Сила карты 20; -3 Боеспособности]
+[IMAGE: common25.png — Сила карты 25]
+[IMAGE: common20.png — Сила карты 20]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: availablecardsru.png — Это доступные вам карты. Нажмите ссылку "В выбранные" справа и щёлкните на любую карту из этого списка, чтобы переместить её в список выбранных.]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
 
 Здесь:
   o1. Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.
@@ -2800,14 +2800,14 @@ m. Меню
 
 Ваш выбор: u2 o23
 Карта перемещена в резерв.
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: common15.png]
-[IMAGE: common10.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
 
 Здесь:
   o1. Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.
@@ -2876,14 +2876,14 @@ m. Меню
 
 Ваш выбор: u2 o11
 Карта перемещена в резерв.
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: common15.png]
-[IMAGE: common10.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
 
 Здесь:
   o1. Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.
@@ -2933,25 +2933,25 @@ l. Осмотреться
 m. Меню
 
 Ваш выбор: 1
-[IMAGE: selectedcardsru.png]
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: common25.png]
-[IMAGE: common20.png]
-[IMAGE: common15.png]
-[IMAGE: common15.png]
-[IMAGE: common10.png]
-[IMAGE: common10.png]
-[IMAGE: availablecardsru.png]
-[IMAGE: rare20healm3.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
+[IMAGE: selectedcardsru.png — Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: common25.png — Сила карты 25]
+[IMAGE: common20.png — Сила карты 20]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: availablecardsru.png — Это доступные вам карты. Нажмите ссылку "В выбранные" справа и щёлкните на любую карту из этого списка, чтобы переместить её в список выбранных.]
+[IMAGE: rare20healm3.png — Сила карты 20; -3 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
 
 Здесь:
   o1. Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.
@@ -3054,14 +3054,14 @@ m. Меню
 
 Ваш выбор: u2 o11
 Карта перемещена в резерв.
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: common15.png]
-[IMAGE: common10.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
 
 Здесь:
   o1. Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.
@@ -3608,15 +3608,15 @@ m. Меню
 
 Ваш выбор: u2 o23
 Карта перемещена в резерв.
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: common15.png]
-[IMAGE: common10.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
 
 Здесь:
   o1. Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.
@@ -3757,15 +3757,15 @@ m. Меню
 
 Ваш выбор: u2 o11
 Карта перемещена в резерв.
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: common15.png]
-[IMAGE: common10.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
 
 Здесь:
   o1. Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.
@@ -3851,26 +3851,26 @@ l. Осмотреться
 m. Меню
 
 Ваш выбор: 1
-[IMAGE: selectedcardsru.png]
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: common15.png]
-[IMAGE: common15.png]
-[IMAGE: common10.png]
-[IMAGE: common10.png]
-[IMAGE: availablecardsru.png]
-[IMAGE: common20.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: common25.png]
-[IMAGE: rare20healm3.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
+[IMAGE: selectedcardsru.png — Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: availablecardsru.png — Это доступные вам карты. Нажмите ссылку "В выбранные" справа и щёлкните на любую карту из этого списка, чтобы переместить её в список выбранных.]
+[IMAGE: common20.png — Сила карты 20]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: common25.png — Сила карты 25]
+[IMAGE: rare20healm3.png — Сила карты 20; -3 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
 
 Здесь:
   o1. Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.
@@ -3941,15 +3941,15 @@ m. Меню
 
 Ваш выбор: u2 o24
 Карта перемещена в резерв.
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: common15.png]
-[IMAGE: common10.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
 
 Здесь:
   o1. Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.
@@ -4022,15 +4022,15 @@ m. Меню
 
 Ваш выбор: u1 o10
 Карта перемещена в список активных.
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: common15.png]
-[IMAGE: common10.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
 
 Здесь:
   o1. Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.
@@ -4176,15 +4176,15 @@ m. Меню
 
 Ваш выбор: u1 o20
 Карта перемещена в список активных.
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: common15.png]
-[IMAGE: common10.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
 
 Здесь:
   o1. Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.
@@ -4308,27 +4308,27 @@ l. Осмотреться
 m. Меню
 
 Ваш выбор: 1
-[IMAGE: selectedcardsru.png]
-[IMAGE: common20.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: common15.png]
-[IMAGE: common15.png]
-[IMAGE: common10.png]
-[IMAGE: common10.png]
-[IMAGE: availablecardsru.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: common25.png]
-[IMAGE: rare20healm3.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
+[IMAGE: selectedcardsru.png — Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.]
+[IMAGE: common20.png — Сила карты 20]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: availablecardsru.png — Это доступные вам карты. Нажмите ссылку "В выбранные" справа и щёлкните на любую карту из этого списка, чтобы переместить её в список выбранных.]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: common25.png — Сила карты 25]
+[IMAGE: rare20healm3.png — Сила карты 20; -3 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
 
 Здесь:
   o1. Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.
@@ -4365,15 +4365,15 @@ m. Меню
 
 Ваш выбор: u2 o12
 Карта перемещена в резерв.
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: common15.png]
-[IMAGE: common10.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
 
 Здесь:
   o1. Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.
@@ -4463,28 +4463,28 @@ l. Осмотреться
 m. Меню
 
 Ваш выбор: 1
-[IMAGE: selectedcardsru.png]
-[IMAGE: common20.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common5.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: common8.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: common15.png]
-[IMAGE: common15.png]
-[IMAGE: common10.png]
-[IMAGE: common10.png]
-[IMAGE: availablecardsru.png]
-[IMAGE: common8.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: common25.png]
-[IMAGE: rare20healm3.png]
-[IMAGE: rare5heal10.png]
-[IMAGE: rare5heal10.png]
+[IMAGE: selectedcardsru.png — Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.]
+[IMAGE: common20.png — Сила карты 20]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common5.png — Сила карты 5]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common15.png — Сила карты 15]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: common10.png — Сила карты 10]
+[IMAGE: availablecardsru.png — Это доступные вам карты. Нажмите ссылку "В выбранные" справа и щёлкните на любую карту из этого списка, чтобы переместить её в список выбранных.]
+[IMAGE: common8.png — Сила карты 8]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: common25.png — Сила карты 25]
+[IMAGE: rare20healm3.png — Сила карты 20; -3 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
+[IMAGE: rare5heal10.png — Сила карты 5; +10 Боеспособности]
 
 Здесь:
   o1. Это ваша активная колода карт, которая будет использована в бою. Нажмите кнопку "в доступные" справа, чтобы убрать карту из активной колоды и переместить её в резерв.

@@ -61,7 +61,7 @@ m. Меню
 Ваш выбор: 1
 [MUSIC: redhoodday1heat.ogg]
 [IMAGE: quest_1.png]
-[IMAGE: abandon_quest_ru.png — right-top@-103,680]
+[IMAGE: abandon_quest_ru.png — abandonQuestOutObj @ right-top@-103,680]
 
 ==================================================
 Красная Шапочка : в поисках начинки
@@ -87,8 +87,8 @@ m. Меню
 
 Ваш выбор: 1
 [IMAGE: house.png]
-[IMAGE: bg70.png — middle-bottom@0,-90]
-[IMAGE: skip_tutorial_ru.png — right-top@-103,680]
+[IMAGE: bg70.png @ middle-bottom@0,-90]
+[IMAGE: skip_tutorial_ru.png — skipTutorialOutObj @ right-top@-103,680]
 
 ==================================================
 Дом
@@ -152,7 +152,7 @@ m. Меню
 
 Ваш выбор: 1
 [IMAGE: quest_3.png]
-[IMAGE: abandon_quest_ru.png — right-top@-103,680]
+[IMAGE: abandon_quest_ru.png — abandonQuestOutObj @ right-top@-103,680]
 
 ==================================================
 Мама
@@ -692,7 +692,7 @@ m. Меню
 Ваш выбор: 1
 [MUSIC: redhoodday1heat.ogg]
 [IMAGE: quest_1.png]
-[IMAGE: abandon_quest_ru.png — right-top@-103,680]
+[IMAGE: abandon_quest_ru.png — abandonQuestOutObj @ right-top@-103,680]
 
 ==================================================
 Красная Шапочка : в поисках начинки
@@ -718,8 +718,8 @@ m. Меню
 
 Ваш выбор: 1
 [IMAGE: house.png]
-[IMAGE: bg70.png — middle-bottom@0,-90]
-[IMAGE: skip_tutorial_ru.png — right-top@-103,680]
+[IMAGE: bg70.png @ middle-bottom@0,-90]
+[IMAGE: skip_tutorial_ru.png — skipTutorialOutObj @ right-top@-103,680]
 
 ==================================================
 Дом
@@ -821,7 +821,7 @@ m. Меню
 
 Ваш выбор: 1
 [IMAGE: quest_3.png]
-[IMAGE: abandon_quest_ru.png — right-top@-103,680]
+[IMAGE: abandon_quest_ru.png — abandonQuestOutObj @ right-top@-103,680]
 
 ==================================================
 Мама
@@ -1101,14 +1101,14 @@ m. Меню
 
 Ваш выбор: o3
 [IMAGE: spices_base.png]
-[IMAGE: raisins.png — left-top@205, 292]
-[IMAGE: coriandr.png — left-top@735, 133]
-[IMAGE: gvozdika.png — left-top@1109, 29]
-[IMAGE: sugar.png — left-top@563, 814]
-[IMAGE: zira.png — left-top@883, 713]
-[IMAGE: pepper.png — left-top@1157, 590]
-[IMAGE: tmin.png — left-top@1391, 480]
-[IMAGE: back2barn.png — left-top +101,806]
+[IMAGE: raisins.png — Корица @ left-top@205, 292]
+[IMAGE: coriandr.png — Кориандр @ left-top@735, 133]
+[IMAGE: gvozdika.png — Гвоздика @ left-top@1109, 29]
+[IMAGE: sugar.png — Кунжут @ left-top@563, 814]
+[IMAGE: zira.png — Зира @ left-top@883, 713]
+[IMAGE: pepper.png — Перец @ left-top@1157, 590]
+[IMAGE: tmin.png — Тмин @ left-top@1391, 480]
+[IMAGE: back2barn.png — Назад @ left-top +101,806]
 
 Здесь:
   o1. Корица [left-top@205, 292]
@@ -1126,10 +1126,10 @@ m. Меню
 Ваш выбор: o7
 Тмин
 [IMAGE: tmin_bg.png]
-[IMAGE: tmin_big.png — left-top@571, 61]
-[IMAGE: label.png — left-top@1320, 0]
-[IMAGE: empty.png — +0,0]
-[IMAGE: back2shelf.png — left-top +262,816]
+[IMAGE: tmin_big.png — tminSackObj @ left-top@571, 61]
+[IMAGE: label.png — l7 @ left-top@1320, 0]
+[IMAGE: empty.png @ +0,0]
+[IMAGE: back2shelf.png — Назад @ left-top +262,816]
 
 Здесь:
   o1. tminSackObj [left-top@571, 61]
@@ -1181,14 +1181,14 @@ m. Меню
 Ваш выбор: o2
 Назад
 [IMAGE: spices_base.png]
-[IMAGE: raisins.png — left-top@205, 292]
-[IMAGE: coriandr.png — left-top@735, 133]
-[IMAGE: gvozdika.png — left-top@1109, 29]
-[IMAGE: sugar.png — left-top@563, 814]
-[IMAGE: zira.png — left-top@883, 713]
-[IMAGE: pepper.png — left-top@1157, 590]
-[IMAGE: tmin.png — left-top@1391, 480]
-[IMAGE: back2barn.png — left-top +101,806]
+[IMAGE: raisins.png — Корица @ left-top@205, 292]
+[IMAGE: coriandr.png — Кориандр @ left-top@735, 133]
+[IMAGE: gvozdika.png — Гвоздика @ left-top@1109, 29]
+[IMAGE: sugar.png — Кунжут @ left-top@563, 814]
+[IMAGE: zira.png — Зира @ left-top@883, 713]
+[IMAGE: pepper.png — Перец @ left-top@1157, 590]
+[IMAGE: tmin.png — Тмин @ left-top@1391, 480]
+[IMAGE: back2barn.png — Назад @ left-top +101,806]
 
 Здесь:
   o1. Корица [left-top@205, 292]
@@ -1206,10 +1206,10 @@ m. Меню
 Ваш выбор: o3
 Гвоздика
 [IMAGE: gvozdika_bg.png]
-[IMAGE: gvozdika_big.png — left-top@588, 102]
-[IMAGE: label.png — left-top@1320, 0]
-[IMAGE: empty.png — +0,0]
-[IMAGE: back2shelf.png — left-top +373,776]
+[IMAGE: gvozdika_big.png — gvozdikaSackObj @ left-top@588, 102]
+[IMAGE: label.png — l3 @ left-top@1320, 0]
+[IMAGE: empty.png @ +0,0]
+[IMAGE: back2shelf.png — Назад @ left-top +373,776]
 
 Здесь:
   o1. gvozdikaSackObj [left-top@588, 102]
@@ -1235,14 +1235,14 @@ m. Меню
 Ваш выбор: o2
 Назад
 [IMAGE: spices_base.png]
-[IMAGE: raisins.png — left-top@205, 292]
-[IMAGE: coriandr.png — left-top@735, 133]
-[IMAGE: gvozdika.png — left-top@1109, 29]
-[IMAGE: sugar.png — left-top@563, 814]
-[IMAGE: zira.png — left-top@883, 713]
-[IMAGE: pepper.png — left-top@1157, 590]
-[IMAGE: tmin.png — left-top@1391, 480]
-[IMAGE: back2barn.png — left-top +101,806]
+[IMAGE: raisins.png — Корица @ left-top@205, 292]
+[IMAGE: coriandr.png — Кориандр @ left-top@735, 133]
+[IMAGE: gvozdika.png — Гвоздика @ left-top@1109, 29]
+[IMAGE: sugar.png — Кунжут @ left-top@563, 814]
+[IMAGE: zira.png — Зира @ left-top@883, 713]
+[IMAGE: pepper.png — Перец @ left-top@1157, 590]
+[IMAGE: tmin.png — Тмин @ left-top@1391, 480]
+[IMAGE: back2barn.png — Назад @ left-top +101,806]
 
 Здесь:
   o1. Корица [left-top@205, 292]
@@ -1260,10 +1260,10 @@ m. Меню
 Ваш выбор: o4
 Кунжут
 [IMAGE: sugar_bg.png]
-[IMAGE: sugar_big.png — left-top@572, 99]
-[IMAGE: label.png — left-top@1320, 0]
-[IMAGE: empty.png — +0,0]
-[IMAGE: back2shelf.png — left-top +111,824]
+[IMAGE: sugar_big.png — simsimSackObj @ left-top@572, 99]
+[IMAGE: label.png — l5 @ left-top@1320, 0]
+[IMAGE: empty.png @ +0,0]
+[IMAGE: back2shelf.png — Назад @ left-top +111,824]
 
 Здесь:
   o1. simsimSackObj [left-top@572, 99]
@@ -1302,14 +1302,14 @@ m. Меню
 Ваш выбор: o2
 Назад
 [IMAGE: spices_base.png]
-[IMAGE: raisins.png — left-top@205, 292]
-[IMAGE: coriandr.png — left-top@735, 133]
-[IMAGE: gvozdika.png — left-top@1109, 29]
-[IMAGE: sugar.png — left-top@563, 814]
-[IMAGE: zira.png — left-top@883, 713]
-[IMAGE: pepper.png — left-top@1157, 590]
-[IMAGE: tmin.png — left-top@1391, 480]
-[IMAGE: back2barn.png — left-top +101,806]
+[IMAGE: raisins.png — Корица @ left-top@205, 292]
+[IMAGE: coriandr.png — Кориандр @ left-top@735, 133]
+[IMAGE: gvozdika.png — Гвоздика @ left-top@1109, 29]
+[IMAGE: sugar.png — Кунжут @ left-top@563, 814]
+[IMAGE: zira.png — Зира @ left-top@883, 713]
+[IMAGE: pepper.png — Перец @ left-top@1157, 590]
+[IMAGE: tmin.png — Тмин @ left-top@1391, 480]
+[IMAGE: back2barn.png — Назад @ left-top +101,806]
 
 Здесь:
   o1. Корица [left-top@205, 292]
@@ -1327,10 +1327,10 @@ m. Меню
 Ваш выбор: o2
 Кориандр
 [IMAGE: coriandr_bg.png]
-[IMAGE: coriandr_big.png — left-top@559, 132]
-[IMAGE: label.png — left-top@1320, 0]
-[IMAGE: empty.png — +0,0]
-[IMAGE: back2shelf.png — left-top +184,816]
+[IMAGE: coriandr_big.png — coriandrSackObj @ left-top@559, 132]
+[IMAGE: label.png — l4 @ left-top@1320, 0]
+[IMAGE: empty.png @ +0,0]
+[IMAGE: back2shelf.png — Назад @ left-top +184,816]
 
 Здесь:
   o1. coriandrSackObj [left-top@559, 132]
@@ -1369,14 +1369,14 @@ m. Меню
 Ваш выбор: o2
 Назад
 [IMAGE: spices_base.png]
-[IMAGE: raisins.png — left-top@205, 292]
-[IMAGE: coriandr.png — left-top@735, 133]
-[IMAGE: gvozdika.png — left-top@1109, 29]
-[IMAGE: sugar.png — left-top@563, 814]
-[IMAGE: zira.png — left-top@883, 713]
-[IMAGE: pepper.png — left-top@1157, 590]
-[IMAGE: tmin.png — left-top@1391, 480]
-[IMAGE: back2barn.png — left-top +101,806]
+[IMAGE: raisins.png — Корица @ left-top@205, 292]
+[IMAGE: coriandr.png — Кориандр @ left-top@735, 133]
+[IMAGE: gvozdika.png — Гвоздика @ left-top@1109, 29]
+[IMAGE: sugar.png — Кунжут @ left-top@563, 814]
+[IMAGE: zira.png — Зира @ left-top@883, 713]
+[IMAGE: pepper.png — Перец @ left-top@1157, 590]
+[IMAGE: tmin.png — Тмин @ left-top@1391, 480]
+[IMAGE: back2barn.png — Назад @ left-top +101,806]
 
 Здесь:
   o1. Корица [left-top@205, 292]
@@ -1394,10 +1394,10 @@ m. Меню
 Ваш выбор: o2
 Кориандр
 [IMAGE: coriandr_bg.png]
-[IMAGE: coriandr_big.png — left-top@559, 132]
-[IMAGE: label.png — left-top@1320, 0]
-[IMAGE: empty.png — +0,0]
-[IMAGE: back2shelf.png — left-top +184,816]
+[IMAGE: coriandr_big.png — coriandrSackObj @ left-top@559, 132]
+[IMAGE: label.png — l4 @ left-top@1320, 0]
+[IMAGE: empty.png @ +0,0]
+[IMAGE: back2shelf.png — Назад @ left-top +184,816]
 
 Здесь:
   o1. coriandrSackObj [left-top@559, 132]
@@ -1410,14 +1410,14 @@ m. Меню
 Ваш выбор: o2
 Назад
 [IMAGE: spices_base.png]
-[IMAGE: raisins.png — left-top@205, 292]
-[IMAGE: coriandr.png — left-top@735, 133]
-[IMAGE: gvozdika.png — left-top@1109, 29]
-[IMAGE: sugar.png — left-top@563, 814]
-[IMAGE: zira.png — left-top@883, 713]
-[IMAGE: pepper.png — left-top@1157, 590]
-[IMAGE: tmin.png — left-top@1391, 480]
-[IMAGE: back2barn.png — left-top +101,806]
+[IMAGE: raisins.png — Корица @ left-top@205, 292]
+[IMAGE: coriandr.png — Кориандр @ left-top@735, 133]
+[IMAGE: gvozdika.png — Гвоздика @ left-top@1109, 29]
+[IMAGE: sugar.png — Кунжут @ left-top@563, 814]
+[IMAGE: zira.png — Зира @ left-top@883, 713]
+[IMAGE: pepper.png — Перец @ left-top@1157, 590]
+[IMAGE: tmin.png — Тмин @ left-top@1391, 480]
+[IMAGE: back2barn.png — Назад @ left-top +101,806]
 
 Здесь:
   o1. Корица [left-top@205, 292]
@@ -1435,10 +1435,10 @@ m. Меню
 Ваш выбор: o7
 Тмин
 [IMAGE: tmin_bg.png]
-[IMAGE: tmin_big.png — left-top@571, 61]
-[IMAGE: label.png — left-top@1320, 0]
-[IMAGE: empty.png — +0,0]
-[IMAGE: back2shelf.png — left-top +262,816]
+[IMAGE: tmin_big.png — tminSackObj @ left-top@571, 61]
+[IMAGE: label.png — l7 @ left-top@1320, 0]
+[IMAGE: empty.png @ +0,0]
+[IMAGE: back2shelf.png — Назад @ left-top +262,816]
 
 Здесь:
   o1. tminSackObj [left-top@571, 61]
@@ -1451,14 +1451,14 @@ m. Меню
 Ваш выбор: o2
 Назад
 [IMAGE: spices_base.png]
-[IMAGE: raisins.png — left-top@205, 292]
-[IMAGE: coriandr.png — left-top@735, 133]
-[IMAGE: gvozdika.png — left-top@1109, 29]
-[IMAGE: sugar.png — left-top@563, 814]
-[IMAGE: zira.png — left-top@883, 713]
-[IMAGE: pepper.png — left-top@1157, 590]
-[IMAGE: tmin.png — left-top@1391, 480]
-[IMAGE: back2barn.png — left-top +101,806]
+[IMAGE: raisins.png — Корица @ left-top@205, 292]
+[IMAGE: coriandr.png — Кориандр @ left-top@735, 133]
+[IMAGE: gvozdika.png — Гвоздика @ left-top@1109, 29]
+[IMAGE: sugar.png — Кунжут @ left-top@563, 814]
+[IMAGE: zira.png — Зира @ left-top@883, 713]
+[IMAGE: pepper.png — Перец @ left-top@1157, 590]
+[IMAGE: tmin.png — Тмин @ left-top@1391, 480]
+[IMAGE: back2barn.png — Назад @ left-top +101,806]
 
 Здесь:
   o1. Корица [left-top@205, 292]
@@ -1476,10 +1476,10 @@ m. Меню
 Ваш выбор: o7
 Тмин
 [IMAGE: tmin_bg.png]
-[IMAGE: tmin_big.png — left-top@571, 61]
-[IMAGE: label.png — left-top@1320, 0]
-[IMAGE: empty.png — +0,0]
-[IMAGE: back2shelf.png — left-top +262,816]
+[IMAGE: tmin_big.png — tminSackObj @ left-top@571, 61]
+[IMAGE: label.png — l7 @ left-top@1320, 0]
+[IMAGE: empty.png @ +0,0]
+[IMAGE: back2shelf.png — Назад @ left-top +262,816]
 
 Здесь:
   o1. tminSackObj [left-top@571, 61]
@@ -1492,14 +1492,14 @@ m. Меню
 Ваш выбор: o2
 Назад
 [IMAGE: spices_base.png]
-[IMAGE: raisins.png — left-top@205, 292]
-[IMAGE: coriandr.png — left-top@735, 133]
-[IMAGE: gvozdika.png — left-top@1109, 29]
-[IMAGE: sugar.png — left-top@563, 814]
-[IMAGE: zira.png — left-top@883, 713]
-[IMAGE: pepper.png — left-top@1157, 590]
-[IMAGE: tmin.png — left-top@1391, 480]
-[IMAGE: back2barn.png — left-top +101,806]
+[IMAGE: raisins.png — Корица @ left-top@205, 292]
+[IMAGE: coriandr.png — Кориандр @ left-top@735, 133]
+[IMAGE: gvozdika.png — Гвоздика @ left-top@1109, 29]
+[IMAGE: sugar.png — Кунжут @ left-top@563, 814]
+[IMAGE: zira.png — Зира @ left-top@883, 713]
+[IMAGE: pepper.png — Перец @ left-top@1157, 590]
+[IMAGE: tmin.png — Тмин @ left-top@1391, 480]
+[IMAGE: back2barn.png — Назад @ left-top +101,806]
 
 Здесь:
   o1. Корица [left-top@205, 292]
@@ -1517,10 +1517,10 @@ m. Меню
 Ваш выбор: o7
 Тмин
 [IMAGE: tmin_bg.png]
-[IMAGE: tmin_big.png — left-top@571, 61]
-[IMAGE: label.png — left-top@1320, 0]
-[IMAGE: empty.png — +0,0]
-[IMAGE: back2shelf.png — left-top +262,816]
+[IMAGE: tmin_big.png — tminSackObj @ left-top@571, 61]
+[IMAGE: label.png — l7 @ left-top@1320, 0]
+[IMAGE: empty.png @ +0,0]
+[IMAGE: back2shelf.png — Назад @ left-top +262,816]
 
 Здесь:
   o1. tminSackObj [left-top@571, 61]
@@ -1546,14 +1546,14 @@ m. Меню
 Ваш выбор: o2
 Назад
 [IMAGE: spices_base.png]
-[IMAGE: raisins.png — left-top@205, 292]
-[IMAGE: coriandr.png — left-top@735, 133]
-[IMAGE: gvozdika.png — left-top@1109, 29]
-[IMAGE: sugar.png — left-top@563, 814]
-[IMAGE: zira.png — left-top@883, 713]
-[IMAGE: pepper.png — left-top@1157, 590]
-[IMAGE: tmin.png — left-top@1391, 480]
-[IMAGE: back2barn.png — left-top +101,806]
+[IMAGE: raisins.png — Корица @ left-top@205, 292]
+[IMAGE: coriandr.png — Кориандр @ left-top@735, 133]
+[IMAGE: gvozdika.png — Гвоздика @ left-top@1109, 29]
+[IMAGE: sugar.png — Кунжут @ left-top@563, 814]
+[IMAGE: zira.png — Зира @ left-top@883, 713]
+[IMAGE: pepper.png — Перец @ left-top@1157, 590]
+[IMAGE: tmin.png — Тмин @ left-top@1391, 480]
+[IMAGE: back2barn.png — Назад @ left-top +101,806]
 
 Здесь:
   o1. Корица [left-top@205, 292]
@@ -1571,10 +1571,10 @@ m. Меню
 Ваш выбор: o4
 Кунжут
 [IMAGE: sugar_bg.png]
-[IMAGE: sugar_big.png — left-top@572, 99]
-[IMAGE: label.png — left-top@1320, 0]
-[IMAGE: empty.png — +0,0]
-[IMAGE: back2shelf.png — left-top +111,824]
+[IMAGE: sugar_big.png — simsimSackObj @ left-top@572, 99]
+[IMAGE: label.png — l5 @ left-top@1320, 0]
+[IMAGE: empty.png @ +0,0]
+[IMAGE: back2shelf.png — Назад @ left-top +111,824]
 
 Здесь:
   o1. simsimSackObj [left-top@572, 99]
@@ -1587,14 +1587,14 @@ m. Меню
 Ваш выбор: o2
 Назад
 [IMAGE: spices_base.png]
-[IMAGE: raisins.png — left-top@205, 292]
-[IMAGE: coriandr.png — left-top@735, 133]
-[IMAGE: gvozdika.png — left-top@1109, 29]
-[IMAGE: sugar.png — left-top@563, 814]
-[IMAGE: zira.png — left-top@883, 713]
-[IMAGE: pepper.png — left-top@1157, 590]
-[IMAGE: tmin.png — left-top@1391, 480]
-[IMAGE: back2barn.png — left-top +101,806]
+[IMAGE: raisins.png — Корица @ left-top@205, 292]
+[IMAGE: coriandr.png — Кориандр @ left-top@735, 133]
+[IMAGE: gvozdika.png — Гвоздика @ left-top@1109, 29]
+[IMAGE: sugar.png — Кунжут @ left-top@563, 814]
+[IMAGE: zira.png — Зира @ left-top@883, 713]
+[IMAGE: pepper.png — Перец @ left-top@1157, 590]
+[IMAGE: tmin.png — Тмин @ left-top@1391, 480]
+[IMAGE: back2barn.png — Назад @ left-top +101,806]
 
 Здесь:
   o1. Корица [left-top@205, 292]
@@ -1612,10 +1612,10 @@ m. Меню
 Ваш выбор: o5
 Зира
 [IMAGE: zira_bg.png]
-[IMAGE: zira_big.png — left-top@566, 95]
-[IMAGE: label.png — left-top@1320, 0]
-[IMAGE: empty.png — +0,0]
-[IMAGE: back2shelf.png — left-top +83,804]
+[IMAGE: zira_big.png — ziraSackObj @ left-top@566, 95]
+[IMAGE: label.png — l2 @ left-top@1320, 0]
+[IMAGE: empty.png @ +0,0]
+[IMAGE: back2shelf.png — Назад @ left-top +83,804]
 
 Здесь:
   o1. ziraSackObj [left-top@566, 95]
@@ -1641,14 +1641,14 @@ m. Меню
 Ваш выбор: o2
 Назад
 [IMAGE: spices_base.png]
-[IMAGE: raisins.png — left-top@205, 292]
-[IMAGE: coriandr.png — left-top@735, 133]
-[IMAGE: gvozdika.png — left-top@1109, 29]
-[IMAGE: sugar.png — left-top@563, 814]
-[IMAGE: zira.png — left-top@883, 713]
-[IMAGE: pepper.png — left-top@1157, 590]
-[IMAGE: tmin.png — left-top@1391, 480]
-[IMAGE: back2barn.png — left-top +101,806]
+[IMAGE: raisins.png — Корица @ left-top@205, 292]
+[IMAGE: coriandr.png — Кориандр @ left-top@735, 133]
+[IMAGE: gvozdika.png — Гвоздика @ left-top@1109, 29]
+[IMAGE: sugar.png — Кунжут @ left-top@563, 814]
+[IMAGE: zira.png — Зира @ left-top@883, 713]
+[IMAGE: pepper.png — Перец @ left-top@1157, 590]
+[IMAGE: tmin.png — Тмин @ left-top@1391, 480]
+[IMAGE: back2barn.png — Назад @ left-top +101,806]
 
 Здесь:
   o1. Корица [left-top@205, 292]
@@ -1666,10 +1666,10 @@ m. Меню
 Ваш выбор: o4
 Кунжут
 [IMAGE: sugar_bg.png]
-[IMAGE: sugar_big.png — left-top@572, 99]
-[IMAGE: label.png — left-top@1320, 0]
-[IMAGE: empty.png — +0,0]
-[IMAGE: back2shelf.png — left-top +111,824]
+[IMAGE: sugar_big.png — simsimSackObj @ left-top@572, 99]
+[IMAGE: label.png — l5 @ left-top@1320, 0]
+[IMAGE: empty.png @ +0,0]
+[IMAGE: back2shelf.png — Назад @ left-top +111,824]
 
 Здесь:
   o1. simsimSackObj [left-top@572, 99]
@@ -1695,14 +1695,14 @@ m. Меню
 Ваш выбор: o2
 Назад
 [IMAGE: spices_base.png]
-[IMAGE: raisins.png — left-top@205, 292]
-[IMAGE: coriandr.png — left-top@735, 133]
-[IMAGE: gvozdika.png — left-top@1109, 29]
-[IMAGE: sugar.png — left-top@563, 814]
-[IMAGE: zira.png — left-top@883, 713]
-[IMAGE: pepper.png — left-top@1157, 590]
-[IMAGE: tmin.png — left-top@1391, 480]
-[IMAGE: back2barn.png — left-top +101,806]
+[IMAGE: raisins.png — Корица @ left-top@205, 292]
+[IMAGE: coriandr.png — Кориандр @ left-top@735, 133]
+[IMAGE: gvozdika.png — Гвоздика @ left-top@1109, 29]
+[IMAGE: sugar.png — Кунжут @ left-top@563, 814]
+[IMAGE: zira.png — Зира @ left-top@883, 713]
+[IMAGE: pepper.png — Перец @ left-top@1157, 590]
+[IMAGE: tmin.png — Тмин @ left-top@1391, 480]
+[IMAGE: back2barn.png — Назад @ left-top +101,806]
 
 Здесь:
   o1. Корица [left-top@205, 292]
@@ -1720,10 +1720,10 @@ m. Меню
 Ваш выбор: o1
 Корица
 [IMAGE: raisin_bg.png]
-[IMAGE: label.png — left-top@1320, 0]
-[IMAGE: empty.png — +0,0]
-[IMAGE: raisin_big.png — left-top@574, 146]
-[IMAGE: back2shelf.png — left-top +72,812]
+[IMAGE: label.png — l6 @ left-top@1320, 0]
+[IMAGE: empty.png @ +0,0]
+[IMAGE: raisin_big.png — cinnamonSackObj @ left-top@574, 146]
+[IMAGE: back2shelf.png — Назад @ left-top +72,812]
 
 Здесь:
   · l6 [left-top@1320, 0]
@@ -1749,14 +1749,14 @@ m. Меню
 Ваш выбор: o2
 Назад
 [IMAGE: spices_base.png]
-[IMAGE: raisins.png — left-top@205, 292]
-[IMAGE: coriandr.png — left-top@735, 133]
-[IMAGE: gvozdika.png — left-top@1109, 29]
-[IMAGE: sugar.png — left-top@563, 814]
-[IMAGE: zira.png — left-top@883, 713]
-[IMAGE: pepper.png — left-top@1157, 590]
-[IMAGE: tmin.png — left-top@1391, 480]
-[IMAGE: back2barn.png — left-top +101,806]
+[IMAGE: raisins.png — Корица @ left-top@205, 292]
+[IMAGE: coriandr.png — Кориандр @ left-top@735, 133]
+[IMAGE: gvozdika.png — Гвоздика @ left-top@1109, 29]
+[IMAGE: sugar.png — Кунжут @ left-top@563, 814]
+[IMAGE: zira.png — Зира @ left-top@883, 713]
+[IMAGE: pepper.png — Перец @ left-top@1157, 590]
+[IMAGE: tmin.png — Тмин @ left-top@1391, 480]
+[IMAGE: back2barn.png — Назад @ left-top +101,806]
 
 Здесь:
   o1. Корица [left-top@205, 292]
@@ -1774,10 +1774,10 @@ m. Меню
 Ваш выбор: o1
 Корица
 [IMAGE: raisin_bg.png]
-[IMAGE: label.png — left-top@1320, 0]
-[IMAGE: empty.png — +0,0]
-[IMAGE: raisin_big.png — left-top@574, 146]
-[IMAGE: back2shelf.png — left-top +72,812]
+[IMAGE: label.png — l6 @ left-top@1320, 0]
+[IMAGE: empty.png @ +0,0]
+[IMAGE: raisin_big.png — cinnamonSackObj @ left-top@574, 146]
+[IMAGE: back2shelf.png — Назад @ left-top +72,812]
 
 Здесь:
   · l6 [left-top@1320, 0]
@@ -1790,14 +1790,14 @@ m. Меню
 Ваш выбор: o2
 Назад
 [IMAGE: spices_base.png]
-[IMAGE: raisins.png — left-top@205, 292]
-[IMAGE: coriandr.png — left-top@735, 133]
-[IMAGE: gvozdika.png — left-top@1109, 29]
-[IMAGE: sugar.png — left-top@563, 814]
-[IMAGE: zira.png — left-top@883, 713]
-[IMAGE: pepper.png — left-top@1157, 590]
-[IMAGE: tmin.png — left-top@1391, 480]
-[IMAGE: back2barn.png — left-top +101,806]
+[IMAGE: raisins.png — Корица @ left-top@205, 292]
+[IMAGE: coriandr.png — Кориандр @ left-top@735, 133]
+[IMAGE: gvozdika.png — Гвоздика @ left-top@1109, 29]
+[IMAGE: sugar.png — Кунжут @ left-top@563, 814]
+[IMAGE: zira.png — Зира @ left-top@883, 713]
+[IMAGE: pepper.png — Перец @ left-top@1157, 590]
+[IMAGE: tmin.png — Тмин @ left-top@1391, 480]
+[IMAGE: back2barn.png — Назад @ left-top +101,806]
 
 Здесь:
   o1. Корица [left-top@205, 292]
@@ -1815,10 +1815,10 @@ m. Меню
 Ваш выбор: o2
 Кориандр
 [IMAGE: coriandr_bg.png]
-[IMAGE: coriandr_big.png — left-top@559, 132]
-[IMAGE: label.png — left-top@1320, 0]
-[IMAGE: empty.png — +0,0]
-[IMAGE: back2shelf.png — left-top +184,816]
+[IMAGE: coriandr_big.png — coriandrSackObj @ left-top@559, 132]
+[IMAGE: label.png — l4 @ left-top@1320, 0]
+[IMAGE: empty.png @ +0,0]
+[IMAGE: back2shelf.png — Назад @ left-top +184,816]
 
 Здесь:
   o1. coriandrSackObj [left-top@559, 132]
@@ -1831,14 +1831,14 @@ m. Меню
 Ваш выбор: o2
 Назад
 [IMAGE: spices_base.png]
-[IMAGE: raisins.png — left-top@205, 292]
-[IMAGE: coriandr.png — left-top@735, 133]
-[IMAGE: gvozdika.png — left-top@1109, 29]
-[IMAGE: sugar.png — left-top@563, 814]
-[IMAGE: zira.png — left-top@883, 713]
-[IMAGE: pepper.png — left-top@1157, 590]
-[IMAGE: tmin.png — left-top@1391, 480]
-[IMAGE: back2barn.png — left-top +101,806]
+[IMAGE: raisins.png — Корица @ left-top@205, 292]
+[IMAGE: coriandr.png — Кориандр @ left-top@735, 133]
+[IMAGE: gvozdika.png — Гвоздика @ left-top@1109, 29]
+[IMAGE: sugar.png — Кунжут @ left-top@563, 814]
+[IMAGE: zira.png — Зира @ left-top@883, 713]
+[IMAGE: pepper.png — Перец @ left-top@1157, 590]
+[IMAGE: tmin.png — Тмин @ left-top@1391, 480]
+[IMAGE: back2barn.png — Назад @ left-top +101,806]
 
 Здесь:
   o1. Корица [left-top@205, 292]
@@ -1856,7 +1856,7 @@ m. Меню
 Ваш выбор: o8
 Назад
 [IMAGE: quest_20.png]
-[IMAGE: abandon_quest_ru.png — right-top@-103,680]
+[IMAGE: abandon_quest_ru.png — abandonQuestOutObj @ right-top@-103,680]
 
 ==================================================
 Амбар
@@ -2634,7 +2634,7 @@ m. Меню
 Ваш выбор: 1
 [MUSIC: redhoodday1heat.ogg]
 [IMAGE: quest_1.png]
-[IMAGE: abandon_quest_ru.png — right-top@-103,680]
+[IMAGE: abandon_quest_ru.png — abandonQuestOutObj @ right-top@-103,680]
 
 ==================================================
 Красная Шапочка : в поисках начинки
@@ -2660,8 +2660,8 @@ m. Меню
 
 Ваш выбор: 1
 [IMAGE: house.png]
-[IMAGE: bg70.png — middle-bottom@0,-90]
-[IMAGE: skip_tutorial_ru.png — right-top@-103,680]
+[IMAGE: bg70.png @ middle-bottom@0,-90]
+[IMAGE: skip_tutorial_ru.png — skipTutorialOutObj @ right-top@-103,680]
 
 ==================================================
 Дом
@@ -2707,7 +2707,7 @@ m. Меню
 
 Ваш выбор: 2
 [IMAGE: house.png]
-[IMAGE: bg70.png — middle-bottom@0,-90]
+[IMAGE: bg70.png @ middle-bottom@0,-90]
 
 ==================================================
 Дом
@@ -2740,7 +2740,7 @@ m. Меню
 
 Ваш выбор: 2
 [IMAGE: house.png]
-[IMAGE: bg70.png — middle-bottom@0,-90]
+[IMAGE: bg70.png @ middle-bottom@0,-90]
 
 ==================================================
 Дом
@@ -2763,7 +2763,7 @@ m. Меню
 
 Ваш выбор: 2
 [IMAGE: house.png]
-[IMAGE: bg70.png — middle-bottom@0,-90]
+[IMAGE: bg70.png @ middle-bottom@0,-90]
 
 ==================================================
 Дом
@@ -2786,7 +2786,7 @@ m. Меню
 
 Ваш выбор: o2
 [IMAGE: quest_4a.png]
-[IMAGE: bg70_1.png — middle-bottom@0,-90]
+[IMAGE: bg70_1.png @ middle-bottom@0,-90]
 
 ==================================================
 Шкаф
@@ -2879,7 +2879,7 @@ m. Меню
 
 Ваш выбор: 2
 [IMAGE: quest_4a.png]
-[IMAGE: bg70_1.png — middle-bottom@0,-90]
+[IMAGE: bg70_1.png @ middle-bottom@0,-90]
 
 ==================================================
 Шкаф
@@ -2924,7 +2924,7 @@ m. Меню
 
 Ваш выбор: 2
 [IMAGE: quest_4a.png]
-[IMAGE: bg70_1.png — middle-bottom@0,-90]
+[IMAGE: bg70_1.png @ middle-bottom@0,-90]
 
 ==================================================
 Шкаф
@@ -2944,7 +2944,7 @@ m. Меню
 
 Ваш выбор: o1
 Шапочка взяла вазу.
-[IMAGE: bg70_2.png — middle-bottom@0,-90]
+[IMAGE: bg70_2.png @ middle-bottom@0,-90]
 
 Здесь:
       · Вы можете осмотреть предмет в инвентаре, дважды нажав на него. [+0,0]
@@ -2995,7 +2995,7 @@ m. Меню
 
 Ваш выбор: 2
 [IMAGE: quest_4a.png]
-[IMAGE: bg70_2.png — middle-bottom@0,-90]
+[IMAGE: bg70_2.png @ middle-bottom@0,-90]
 
 ==================================================
 Шкаф
@@ -3028,7 +3028,7 @@ m. Меню
 
 Ваш выбор: 1
 [IMAGE: quest_3.png]
-[IMAGE: abandon_quest_ru.png — right-top@-103,680]
+[IMAGE: abandon_quest_ru.png — abandonQuestOutObj @ right-top@-103,680]
 
 ==================================================
 Мама
@@ -3622,14 +3622,14 @@ m. Меню
 
 Ваш выбор: o3
 [IMAGE: spices_base.png]
-[IMAGE: raisins.png — left-top@205, 292]
-[IMAGE: coriandr.png — left-top@735, 133]
-[IMAGE: gvozdika.png — left-top@1109, 29]
-[IMAGE: sugar.png — left-top@563, 814]
-[IMAGE: zira.png — left-top@883, 713]
-[IMAGE: pepper.png — left-top@1157, 590]
-[IMAGE: tmin.png — left-top@1391, 480]
-[IMAGE: back2barn.png — left-top +101,806]
+[IMAGE: raisins.png — Корица @ left-top@205, 292]
+[IMAGE: coriandr.png — Кориандр @ left-top@735, 133]
+[IMAGE: gvozdika.png — Гвоздика @ left-top@1109, 29]
+[IMAGE: sugar.png — Кунжут @ left-top@563, 814]
+[IMAGE: zira.png — Зира @ left-top@883, 713]
+[IMAGE: pepper.png — Перец @ left-top@1157, 590]
+[IMAGE: tmin.png — Тмин @ left-top@1391, 480]
+[IMAGE: back2barn.png — Назад @ left-top +101,806]
 
 Здесь:
   o1. Корица [left-top@205, 292]
@@ -3682,10 +3682,10 @@ m. Меню
 Ваш выбор: o6
 Перец
 [IMAGE: pepper_bg.png]
-[IMAGE: pepper_big.png — left-top@565, 68]
-[IMAGE: label.png — left-top@1320,0]
-[IMAGE: empty.png — +0,0]
-[IMAGE: back2shelf.png — left-top +312,804]
+[IMAGE: pepper_big.png — pepperSackObj @ left-top@565, 68]
+[IMAGE: label.png — l1 @ left-top@1320,0]
+[IMAGE: empty.png @ +0,0]
+[IMAGE: back2shelf.png — Назад @ left-top +312,804]
 
 Здесь:
   o1. pepperSackObj [left-top@565, 68]
@@ -3725,14 +3725,14 @@ m. Меню
 Ваш выбор: o2
 Назад
 [IMAGE: spices_base.png]
-[IMAGE: raisins.png — left-top@205, 292]
-[IMAGE: coriandr.png — left-top@735, 133]
-[IMAGE: gvozdika.png — left-top@1109, 29]
-[IMAGE: sugar.png — left-top@563, 814]
-[IMAGE: zira.png — left-top@883, 713]
-[IMAGE: pepper.png — left-top@1157, 590]
-[IMAGE: tmin.png — left-top@1391, 480]
-[IMAGE: back2barn.png — left-top +101,806]
+[IMAGE: raisins.png — Корица @ left-top@205, 292]
+[IMAGE: coriandr.png — Кориандр @ left-top@735, 133]
+[IMAGE: gvozdika.png — Гвоздика @ left-top@1109, 29]
+[IMAGE: sugar.png — Кунжут @ left-top@563, 814]
+[IMAGE: zira.png — Зира @ left-top@883, 713]
+[IMAGE: pepper.png — Перец @ left-top@1157, 590]
+[IMAGE: tmin.png — Тмин @ left-top@1391, 480]
+[IMAGE: back2barn.png — Назад @ left-top +101,806]
 
 Здесь:
   o1. Корица [left-top@205, 292]
@@ -3785,7 +3785,7 @@ m. Меню
 Ваш выбор: o8
 Назад
 [IMAGE: quest_20.png]
-[IMAGE: abandon_quest_ru.png — right-top@-103,680]
+[IMAGE: abandon_quest_ru.png — abandonQuestOutObj @ right-top@-103,680]
 
 ==================================================
 Амбар
@@ -5833,7 +5833,7 @@ m. Меню
 Ваш выбор: 1
 [MUSIC: redhoodday1heat.ogg]
 [IMAGE: quest_1.png]
-[IMAGE: abandon_quest_ru.png — right-top@-103,680]
+[IMAGE: abandon_quest_ru.png — abandonQuestOutObj @ right-top@-103,680]
 
 ==================================================
 Красная Шапочка : в поисках начинки
@@ -5859,7 +5859,7 @@ m. Меню
 
 Ваш выбор: 1
 [IMAGE: house.png]
-[IMAGE: skip_tutorial_ru.png — right-top@-103,680]
+[IMAGE: skip_tutorial_ru.png — skipTutorialOutObj @ right-top@-103,680]
 
 ==================================================
 Дом
