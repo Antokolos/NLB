@@ -1,0 +1,15 @@
+# Прохождение от автора книги (o: — объект, c: — вариант, u: — применить)
+obj apple
+go To the tower
+go Enter the tower
+go Map
+go Close map
+go Upstairs
+go Leave the tower
+go Back to the store
+go To the pantry
+use Apple > bell
+go Help
+go More help
+go Back to the pantry
+go To the gate
