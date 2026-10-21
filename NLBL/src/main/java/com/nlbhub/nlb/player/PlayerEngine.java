@@ -1042,6 +1042,21 @@ public class PlayerEngine {
     }
 
     /**
+     * Игра целиком — как {@link #saveGame()}, но и на странице nosave: чтобы перенести игру в
+     * другой экземпляр той же книги (например, на другом языке) и сразу продолжить
+     */
+    public String exportState() {
+        if (m_page == null) {
+            throw new PlayerException("игра не начата");
+        }
+        ObjectNode root = buildSave();
+        if (m_snapshot != null) {
+            root.set("snapshot", m_snapshot);
+        }
+        return root.toString();
+    }
+
+    /**
      * Игра целиком (без снимка SNAPSHOT) — для сохранения и для самого снимка
      */
     private ObjectNode buildSave() {

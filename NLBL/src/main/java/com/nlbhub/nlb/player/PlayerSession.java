@@ -83,9 +83,22 @@ public class PlayerSession {
      * settings.realTime включается всегда: время идёт через {@link #advance(int)}
      */
     public PlayerSession(NonLinearBook book, PlayerEngine.Settings settings) {
+        this(book, settings, null);
+    }
+
+    /**
+     * Сессия, которая начинается не со стартовой страницы, а с сохранения (state — JSON из
+     * {@link PlayerEngine#saveGame()} или {@link PlayerEngine#exportState()}): так игра переходит
+     * на экземпляр книги на другом языке. null — с начала игры
+     */
+    public PlayerSession(NonLinearBook book, PlayerEngine.Settings settings, String state) {
         settings.realTime = true;
         m_engine = new PlayerEngine(book, settings);
-        m_engine.start();
+        if (state == null) {
+            m_engine.start();
+        } else {
+            m_engine.loadGame(state);
+        }
         afterCommand();
     }
 

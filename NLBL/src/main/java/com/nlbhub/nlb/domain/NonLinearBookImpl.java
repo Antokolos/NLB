@@ -2869,6 +2869,63 @@ public class NonLinearBookImpl implements NonLinearBook {
         return m_language;
     }
 
+    /**
+     * Язык текстов книги и всех её модулей (внутренних и внешних) — для проигрывания книги на
+     * другом языке. Книга в каталоге не меняется: это то же, что выбрать язык в свойствах книги,
+     * но без команды редактора (её нет в истории правок) и без записи на диск
+     */
+    public void setPlaybackLanguage(final String language) {
+        m_language = language;
+        for (PageImpl page : m_pages.values()) {
+            NonLinearBookImpl module = page.getModuleImpl();
+            if (module != null && module != this) {
+                module.setPlaybackLanguage(language);
+            }
+        }
+        // исходные экземпляры внешних модулей (страницы играют их копии — они обойдены выше)
+        for (NonLinearBook module : m_externalModules.values()) {
+            if (module instanceof NonLinearBookImpl) {
+                ((NonLinearBookImpl) module).setPlaybackLanguage(language);
+            }
+        }
+    }
+
+    /**
+     * Копия книги для проигрывания (например, на другом языке, см. {@link #setPlaybackLanguage}):
+     * страницы с модулями, объекты, переменные, свойства, медиафайлы и внешние модули. Нужна для
+     * книги из редактора, у которой могут быть несохранённые правки, — с диска её не перечитать.
+     * Порядок автопереходов сохраняется как в исходной книге: от него зависит порядок вариантов
+     */
+    public NonLinearBookImpl copyForPlayback() {
+        NonLinearBookImpl copy = new NonLinearBookImpl();
+        copy.append(this, true, true);
+        copy.m_rootDir = m_rootDir;
+        copy.m_perfectGameAchievementName = m_perfectGameAchievementName;
+        copy.m_imageFiles.addAll(m_imageFiles);
+        copy.m_soundFiles.addAll(m_soundFiles);
+        for (Map.Entry<String, NonLinearBook> entry : m_externalModules.entrySet()) {
+            NonLinearBook module = entry.getValue();
+            copy.m_externalModules.put(
+                    entry.getKey(),
+                    module instanceof NonLinearBookImpl ? ((NonLinearBookImpl) module).copyForPlayback() : module
+            );
+        }
+        copy.copyAutowiredOrder(this);
+        return copy;
+    }
+
+    private void copyAutowiredOrder(final NonLinearBookImpl source) {
+        m_autowiredPages.clear();
+        m_autowiredPages.addAll(source.m_autowiredPages);
+        for (Map.Entry<String, PageImpl> entry : m_pages.entrySet()) {
+            PageImpl sourcePage = source.m_pages.get(entry.getKey());
+            NonLinearBookImpl module = entry.getValue().getModuleImpl();
+            if (sourcePage != null && module != null && module != this && sourcePage.getModuleImpl() != null) {
+                module.copyAutowiredOrder(sourcePage.getModuleImpl());
+            }
+        }
+    }
+
     @Override
     public String getLicense() {
         return m_license;
