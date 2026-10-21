@@ -126,6 +126,26 @@ public class PlayerServletTest {
     }
 
     @Test
+    public void servesTheme() throws Exception {
+        // тема VN экспорта по умолчанию — зашита в NLBW (у книги из редактора нет своей темы)
+        JsonNode theme = JSON.readTree(request("api/books/rooms/theme", null).body);
+        JsonNode vn = theme.path("vn");
+        assertEquals("base/fonts/STEINEMU.ttf", vn.path("text").path("font").asText());
+        assertEquals(32.0, vn.path("text").path("fontSize").asDouble(), 0);
+        assertEquals("#00ff00", vn.path("text").path("link").asText());
+        assertEquals(1050.0, vn.path("inventory").path("y").asDouble(), 0);
+        assertEquals("base/gfx/menubtn_ru.png", vn.path("menuButtonRu").asText());
+        assertEquals("#000000", theme.path("standard").path("text").path("fg").asText());
+        assertEquals(200, request("theme/rooms/base/fonts/STEINEMU.ttf", null).status);
+        assertEquals(200, request("theme/rooms/base/gfx/menubtn.png", null).status);
+        assertEquals(404, request("theme/rooms/game/theme.ini", null).status);
+        // выход из темы: Jetty отвергает такой путь сам (400), сервлет — 404
+        assertTrue(request("theme/rooms/base/%2E%2E/theme.ini", null).status >= 400);
+        assertEquals(404, request("theme/nobook/base/theme.ini", null).status);
+        assertEquals(404, request("api/books/nobook/theme", null).status);
+    }
+
+    @Test
     public void twoPlayersAreIndependent() throws Exception {
         JsonNode first = newGame("ru");
         JsonNode second = newGame("ru");

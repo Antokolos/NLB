@@ -128,3 +128,64 @@ a.link:hover, span.link:hover { color: var(--link-hover); border-bottom-color: v
 .dialog-box .menu-item:hover { background: var(--panel); color: var(--link-hover); }
 .dialog-box .menu-item:disabled { color: var(--muted); cursor: default; background: none; }
 .dialog-box .note { color: var(--muted); font-size: 0.85em; }
+
+/* Визуальная новелла: экран 1920×1080 (vn.js вписывает его в окно с полями), как GameScreen VN */
+body.vn-mode { background: #0c0c10; overflow: hidden; }
+.vn { position: fixed; inset: 0; overflow: hidden; }
+.vn-stage {
+  position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
+  transform-origin: 0 0; overflow: hidden; background: #011322;
+  user-select: none; -webkit-user-select: none; cursor: default;
+}
+.vn-bg { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: fill; }
+.vn-objects { position: absolute; inset: 0; }
+.vn-obj { position: absolute; }
+.vn-obj img { display: block; pointer-events: none; }
+.vn-obj.vn-hit { cursor: pointer; }
+.vn-label { position: absolute; white-space: pre; color: #fff; pointer-events: none; }
+/* полоса текста: полупрозрачная, во всю ширину */
+.vn-band { position: absolute; left: 0; width: 1920px; background: rgba(0, 0, 0, 0.43); }
+.vn-text { position: absolute; overflow: hidden; }
+.vn-text p { margin: 0; text-align-last: auto; }
+.vn-text p, .vn-choices { overflow-wrap: break-word; }
+.vn-stage a.link { color: var(--vn-link); border: none; text-decoration: none; }
+.vn-stage a.link:hover { color: var(--vn-alink); }
+/* экран вариантов */
+.vn-choices {
+  position: absolute; background: rgba(0, 0, 0, 0.47); padding: 0 10px; box-sizing: border-box;
+  padding-top: 0.5em;
+}
+.vn-choice { display: flex; color: var(--vn-link); cursor: pointer; }
+.vn-choice .num { flex: none; white-space: pre; }
+.vn-choice:hover { color: var(--vn-alink); }
+.vn-choice.disabled { color: inherit; cursor: default; }
+/* инвентарь: строка предметов на чёрной полосе до низа экрана */
+.vn-inventory { position: absolute; left: 0; width: 1920px; background: #000; }
+.vn-inventory .vn-item { white-space: nowrap; }
+.vn-inventory .vn-item img { vertical-align: top; margin-right: 6px; }
+.vn-inventory .vn-item.selected { background: rgba(0, 0, 0, 0.59); color: var(--vn-alink); outline: 6px solid rgba(0, 0, 0, 0.59); }
+.vn-inventory .inactive { color: inherit; }
+.vn-menu-button {
+  position: absolute; right: 0; top: 0; padding: 0; margin: 0; border: none; background: none; cursor: pointer; z-index: 3;
+}
+.vn-menu-button img { display: block; }
+.vn-menu-button.text { color: #82beff; font: 32px sans-serif; padding: 12px 20px; background: rgba(0, 0, 0, 0.5); }
+.vn-hint {
+  position: absolute; left: 46px; bottom: 6px; padding: 6px 14px; background: rgba(0, 0, 0, 0.75);
+  color: rgb(240, 200, 120); font: 26px sans-serif; z-index: 3;
+}
+/* меню и сообщения поверх VN — как меню GameScreen: затемнение, пункты по центру */
+body.vn-mode .dialog { background: rgba(0, 0, 0, 0.63); }
+body.vn-mode .dialog-box {
+  background: none; box-shadow: none; text-align: center; color: rgb(235, 230, 220);
+  font-size: calc(32px * var(--vn-scale, 1)); max-width: 90vw; min-width: 0;
+  font-family: "nlb-vn-text", Georgia, "Times New Roman", serif;  /* menu.fnt.name темы */
+}
+body.vn-mode .dialog-box .menu-item { font-family: inherit; }
+body.vn-mode .dialog-box h2 { color: rgb(235, 230, 220); font-size: calc(46px * var(--vn-scale, 1)); margin-bottom: 0.6em; }
+body.vn-mode .dialog-box .menu-item { text-align: center; color: rgb(130, 190, 255); padding: 0.25em 0.6em; }
+body.vn-mode .dialog-box .menu-item:hover { background: none; color: rgb(255, 215, 0); }
+body.vn-mode .dialog-box .menu-item:disabled { color: rgb(150, 150, 150); }
+body.vn-mode .dialog-box .note { color: rgb(235, 230, 220); font-size: 1em; }
+body.vn-mode .toasts { top: 24px; bottom: auto; }
+body.vn-mode .toast { background: rgb(90, 70, 30); color: rgb(235, 230, 220); border-left: none; }
