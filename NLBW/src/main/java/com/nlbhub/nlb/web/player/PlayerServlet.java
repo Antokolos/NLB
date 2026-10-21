@@ -49,6 +49,7 @@ import com.nlbhub.nlb.player.PlayerEngine;
 import com.nlbhub.nlb.player.PlayerException;
 import com.nlbhub.nlb.player.PlayerSession;
 import com.nlbhub.nlb.player.ScreenModel;
+import com.nlbhub.nlb.player.TextPortions;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -77,6 +78,8 @@ import java.util.concurrent.ConcurrentHashMap;
  *        choose {index} · object {id} · item {id} · clear · look · advance {ms} · restart ·
  *        tryAgain · finishExternal · save -&gt; {save, time, label} · load {save} · language {language}
  *   GET  /play/media/&lt;книга&gt;/&lt;имя файла&gt; картинки и звуки книги и её модулей
+ *   GET  /play/api/books/&lt;книга&gt;/theme   оформление экрана VN (тема INSTEAD, см. ScreenTheme)
+ *   GET  /play/theme/&lt;книга&gt;/&lt;base|game&gt;/&lt;путь&gt; файлы темы (шрифты, кнопка меню)
  * </pre>
  * Каждая команда отвечает состоянием игры: снимок экрана (ScreenModel.toJson), порции текста VN,
  * выбранный предмет, озвучка страницы, текущая музыка, события хода, прогресс достижений.
@@ -159,8 +162,19 @@ public class PlayerServlet extends HttpServlet {
                 serveClient(p[1], response);
             } else if (p[0].equals("media") && p.length >= 3) {
                 serveMedia(p[1], String.join("/", java.util.Arrays.copyOfRange(p, 2, p.length)), response);
+            } else if (p[0].equals("theme") && p.length >= 4) {
+                serveTheme(p[1], p[2], String.join("/", java.util.Arrays.copyOfRange(p, 3, p.length)), response);
             } else if (p[0].equals("api") && p.length == 2 && p[1].equals("books")) {
                 sendJson(response, books());
+            } else if (p[0].equals("api") && p.length == 4 && p[1].equals("books") && p[3].equals("theme")) {
+                if (!m_library.exists(p[2])) {
+                    throw new HttpError(404, "нет такой книги: " + p[2]);
+                }
+                ObjectNode theme = JSON.createObjectNode();
+                ScreenTheme.Root[] roots = ScreenTheme.roots(m_library.bookDir(p[2]));
+                theme.set("vn", ScreenTheme.load(roots, true).toJson());
+                theme.set("standard", ScreenTheme.load(roots, false).toJson());
+                sendJson(response, theme);
             } else if (p[0].equals("api") && p.length == 3 && p[1].equals("sessions")) {
                 WebSession session = session(p[2]);
                 synchronized (session) {
@@ -405,6 +419,8 @@ public class PlayerServlet extends HttpServlet {
             ArrayNode paragraphs = portions.addArray();
             portion.forEach(p -> paragraphs.add(p.toJson()));
         }
+        // ответ на действие на той же странице показывается с этой порции
+        result.put("pagePortions", TextPortions.of(screen.getPageText()).size());
         result.put("selected", s.selectedItem());
         ArrayNode voices = result.putArray("voices");
         s.voices().forEach(voices::add);
@@ -484,6 +500,29 @@ public class PlayerServlet extends HttpServlet {
             response.setContentLengthLong(file.getLength());
             try (OutputStream out = response.getOutputStream()) {
                 in.transferTo(out);
+            }
+        }
+    }
+
+    private void serveTheme(String bookId, String rootName, String path, HttpServletResponse response)
+            throws IOException, HttpError {
+        if (!m_library.exists(bookId)) {
+            throw new HttpError(404, "нет такой книги: " + bookId);
+        }
+        ScreenTheme.Root[] roots = ScreenTheme.roots(m_library.bookDir(bookId));
+        ScreenTheme.Root root = rootName.equals(ScreenTheme.BASE) ? roots[0]
+                : rootName.equals(ScreenTheme.GAME) ? roots[1] : null;
+        try (InputStream in = root == null ? null : root.open(path)) {
+            if (in == null) {
+                throw new HttpError(404, "нет такого файла темы: " + path);
+            }
+            byte[] bytes = in.readAllBytes();
+            response.setStatus(200);
+            response.setContentType(contentType(path));
+            response.setHeader("Cache-Control", "max-age=3600");
+            response.setContentLength(bytes.length);
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(bytes);
             }
         }
     }

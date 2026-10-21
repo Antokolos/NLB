@@ -82,4 +82,16 @@
             <version>3.1.8</version>
         </dependency>
     </dependencies>
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <!-- Тема INSTEAD по умолчанию (как в экспорте VN): оформление экрана VN веб-плеера -->
+            <resource>
+                <directory>res/vnstead/themes/default</directory>
+                <targetPath>com/nlbhub/nlb/web/player/theme</targetPath>
+            </resource>
+        </resources>
+    </build>
 </project>

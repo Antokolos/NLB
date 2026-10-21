@@ -18,7 +18,8 @@
       externalGame: 'Внешняя игра «%s»: в этом проигрывателе её нет.', backToBook: 'Вернуться в книгу',
       books: 'Книги', noBooks: 'В библиотеке нет книг.', mode: 'Режим', modeVn: 'визуальная новелла',
       modeStandard: 'стандартная тема', sessionLost: 'Игра на сервере не найдена — начинаем заново.',
-      otherBook: ' (другая книга)', loading: 'Загрузка…'
+      otherBook: ' (другая книга)', loading: 'Загрузка…',
+      choicesScreen: 'Варианты: отдельным экраном', choicesInText: 'Варианты: в тексте'
     },
     en: {
       menu: 'Menu', save: 'Save game', saveForbidden: 'Save game — not allowed here', load: 'Load game',
@@ -32,7 +33,8 @@
       externalGame: 'External game «%s» is not available in this player.', backToBook: 'Return to the book',
       books: 'Books', noBooks: 'There are no books in the library.', mode: 'Mode', modeVn: 'visual novel',
       modeStandard: 'standard theme', sessionLost: 'The game was not found on the server — starting anew.',
-      otherBook: ' (other book)', loading: 'Loading…'
+      otherBook: ' (other book)', loading: 'Loading…',
+      choicesScreen: 'Choices: separate screen', choicesInText: 'Choices: in the text'
     }
   };
   const LANGUAGE_NAMES = {
@@ -111,7 +113,7 @@
   async function send(name, body) {
     try {
       const state = await api('sessions/' + encodeURIComponent(game.session) + '/' + name, body || {});
-      apply(state);
+      apply(state, name);
       return state;
     } catch (e) {
       if (e.status === 404 && /игра не найдена|not found/i.test(e.message)) {
@@ -145,7 +147,7 @@
   }
 
   async function startGame() {
-    $('game').hidden = false;
+    await vnScreen.loadTheme();
     const saved = store.session('nlb.session.' + game.bookId + '.' + game.mode);
     if (saved) {
       try {
@@ -157,6 +159,7 @@
     try {
       await newGame();
     } catch (e) {
+      $('game').hidden = false;
       $('text').textContent = ui.failed + e.message;
     }
   }
@@ -166,7 +169,10 @@
     return paragraphs.map((p) => p.runs.map((r) => r.text).join('')).join('\n');
   }
 
-  function apply(state) {
+  // Экран VN (vn.js) — для страниц VN в режиме VN; страницы STANDARD и режим STANDARD — экран INSTEAD
+  const isVnView = (state) => state.mode === 'vn' && state.screen.layout === 'VisualNovel';
+
+  function apply(state, commandName) {
     game.state = state;
     ui = state.language === 'ru' ? UI.ru : UI.en;
     document.documentElement.lang = state.language || 'en';
@@ -175,16 +181,21 @@
     const reaction = plain(s.reactionText);
     // Как GameScreen: действие привело на новую страницу — ответ (если есть) и описание комнаты;
     // новое действие на той же странице — только ответ
-    const newPage = s.pageId !== game.lastPage;
+    const newPage = s.pageId !== game.lastPage || ['restart', 'tryAgain', 'load'].includes(commandName);
     if (newPage) {
       game.reactionThenRoom = true;
     } else if (reaction && reaction !== game.lastReaction) {
       game.reactionThenRoom = false;
     }
     game.lastReaction = reaction;
-    processEvents(state.events, newPage);
+    const vnView = isVnView(state);
+    if (vnView) vnScreen.update(state, commandName);
+    processEvents(state.events, newPage, vnView);
     game.lastPage = s.pageId;
-    render();
+    document.body.classList.toggle('vn-mode', vnView);
+    $('game').hidden = vnView;
+    $('vn').hidden = !vnView;
+    if (vnView) vnScreen.render(); else render();
     scheduleTimer();
   }
 
@@ -232,7 +243,7 @@
     }
   }
 
-  function processEvents(events, newPage) {
+  function processEvents(events, newPage, vnView) {
     for (const e of events) {
       switch (e.kind) {
         case 'Music': playMusic(e.text); break;
@@ -242,9 +253,11 @@
         default: break;
       }
     }
-    // Озвучка страницы: без порций текста — первая фраза при входе на страницу; уход — стоп
+    // Озвучка страницы: без порций текста — первая фраза при входе на страницу; уход — стоп.
+    // На экране VN с порциями фразы идут по порциям (vn.js)
     if (newPage) {
-      playVoice(game.state.voices.length ? game.state.voices[0] : '');
+      const byPortions = vnView && vnScreen.voicesByPortion();
+      playVoice(!byPortions && game.state.voices.length ? game.state.voices[0] : '');
     }
     if (!audio.musicName && game.state.music && !audio.muted && !audio.music) {
       playMusic(game.state.music);  // после перезагрузки страницы браузера — музыка игры
@@ -305,8 +318,8 @@
   }
 
   // ------------------------------------------------------------------ текст
-  function link(text, onClick) {
-    const a = el('a', 'link', text);
+  function link(text, onClick, cls) {
+    const a = el('a', 'link' + (cls ? ' ' + cls : ''), text);
     a.href = '#';
     a.addEventListener('click', (ev) => { ev.preventDefault(); onClick(); });
     return a;
@@ -545,6 +558,7 @@
       }
     ];
     if (game.state.languages.length > 1) items.push({ label: ui.language, action: languageMenu });
+    if (game.state.mode === 'vn') items.push(vnScreen.menuItem());
     items.push({ label: audio.muted ? ui.soundOn : ui.soundOff, action: () => setMuted(!audio.muted) });
     items.push({ label: ui.library, action: () => { location.href = location.pathname; } });
     items.push({ label: ui.back, action: null });
@@ -599,6 +613,10 @@
   });
   document.addEventListener('keydown', (ev) => {
     if (!game.state) return;
+    if ($('dialog').hidden && isVnView(game.state) && !ev.ctrlKey && !ev.altKey && !ev.metaKey && vnScreen.key(ev)) {
+      ev.preventDefault();
+      return;
+    }
     if (ev.key === 'Escape') {
       if (!$('dialog').hidden) closeDialog();
       else if (game.state.selected) command('clear');
@@ -612,6 +630,12 @@
       const c = enabled[Number(ev.key) - 1];
       if (c) command('choose', { index: c.index });
     }
+  });
+
+  const vnScreen = window.NLBVisualNovel({
+    el: el, api: api, store: store, link: link, command: command, dialog: dialog, mainMenu: mainMenu,
+    imageUrl: (image) => imageUrl(image), animate: animate, playVoice: playVoice,
+    ui: () => ui, bookId: () => game.bookId
   });
 
   if (game.bookId) {
