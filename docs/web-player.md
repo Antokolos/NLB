@@ -172,13 +172,10 @@ HTML/CSS/JS для темы STANDARD. Редактор переключаетс�
 
 ## Тестовые книги
 
-Книги — у владельца, в репозиториях github.com/nlbproject (проект NLBB и его экспорт в INSTEAD):
-`wolfman` (экспорт `instead-am_i_a_monster_vn`), `barbarian_caves_demo`
-(`instead-barbarian_caves_demo`), `chaperonrougehub` (`instead-chaperon_new`; внешний модуль —
-подмодуль `chaperon_filling_hub`), `servant-of-ra` (`instead-servant-of-ra`; тема STANDARD,
-autowired), `Frontier` (`instead-frontier`; тема STANDARD, таймеры, случайность, списки;
-внешние модули — подмодули `waspsnest`, `sabotage`, `frontierwarriors`), `wild-island-quest`
-(`instead-wild-island-quest`; картинки по тегу страницы, переадресации), `bookU`
-(синтетическая: списковые модификации, OBJS, ADDU/ADDALLU, HAVE, GOTO, достижения, глобальный
-autowired, модуль; прохождение от автора — `scripts/bookU/walk-1.script`). Экспорты INSTEAD —
-для сверки спорных мест с эталоном семантики.
+Список книг, что каждая проверяет, и их экспорты в INSTEAD — в `CLAUDE.md` («Тестовые книги —
+github.com/nlbproject»). Внешние модули — git-подмодули (у «Шапочки» — в три уровня), книги
+клонируются с `--recurse-submodules`; `make-reference.sh` делает это сам. Эталоны строятся по
+всем книгам с исходным каталогом; что добавляет каждая сверх таблицы в `CLAUDE.md`:
+autowired-страницы «Слуги Ра» (сценарии), таймеры и случайность «Фронтира», выбор картинки по
+тегу страницы в wild-island-quest, прохождение автора bookU (`scripts/bookU/walk-1.script`).
+`instead-am_i_a_monster_vn` исходной книги не имеет — только для сверки спорных мест.
