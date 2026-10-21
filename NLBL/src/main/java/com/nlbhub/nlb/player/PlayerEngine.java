@@ -1176,11 +1176,32 @@ public class PlayerEngine {
         }
     }
 
+    /**
+     * События с прошлого вызова (один ход). Музыки среди них — не больше одного события:
+     * последнего за ход, как в INSTEAD (set_music только запоминает дорожку, играет она после
+     * хода); иначе при цепочке переходов через страницы без текста музыка каждой промежуточной
+     * страницы успевала бы запуститься на долю секунды
+     */
     public List<Event> takeEvents() {
         List<Event> result = m_events;
         m_events = new ArrayList<>();
         m_lastRenderStart = 1;  // события уже отданы интерфейсу
-        return result;
+        int last = -1;
+        for (int i = 0; i < result.size(); i++) {
+            if (result.get(i).getKind() == Event.Kind.Music) {
+                last = i;
+            }
+        }
+        if (last < 0) {
+            return result;
+        }
+        List<Event> collapsed = new ArrayList<>(result.size());
+        for (int i = 0; i < result.size(); i++) {
+            if (result.get(i).getKind() != Event.Kind.Music || i == last) {
+                collapsed.add(result.get(i));
+            }
+        }
+        return collapsed;
     }
 
     // ------------------------------------------------------------------ ссылки
