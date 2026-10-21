@@ -462,7 +462,11 @@ public abstract class ExportManager {
     }
 
     private boolean determineTrivialStatus(Link link) {
-        return (link.getTexts().equals(Link.DEFAULT_TEXT) && link.getAltTexts().equals(Link.DEFAULT_ALT_TEXT)) || link.isAuto();
+        // matchesDefault, а не equals: тексты по умолчанию пополнились языком zh, а старые книги
+        // хранят «Далее»/«Next» явно только на ru и en (у текста входа в модуль zh при чтении
+        // берётся из его собственного значения по умолчанию)
+        return (link.getTexts().matchesDefault(Link.DEFAULT_TEXT, Page.DEFAULT_TRAVERSE_TEXT)
+                && link.getAltTexts().matchesDefault(Link.DEFAULT_ALT_TEXT)) || link.isAuto();
     }
 
     private PageBuildingBlocks createPageBuildingBlocks(

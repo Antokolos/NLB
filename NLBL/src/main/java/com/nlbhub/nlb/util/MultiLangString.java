@@ -42,6 +42,7 @@ import com.nlbhub.nlb.api.Constants;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -125,6 +126,45 @@ public class MultiLangString {
             }
         }
         return true;
+    }
+
+    /**
+     * Языки, на которых тексты по умолчанию были с самого начала. Книги, сохранённые до того,
+     * как к текстам по умолчанию добавились другие языки (zh), хранят явный текст только на них
+     */
+    private static final Set<String> BASE_LANGUAGES = Set.of(Constants.RU, Constants.EN);
+
+    /**
+     * Текст совпадает с текстом по умолчанию defaults — как equals, но с поправкой на языки,
+     * добавленные к текстам по умолчанию позже исходных ru и en (zh). Старые книги хранят такие
+     * тексты явно только на ru и en; перевод на новом языке у них либо отсутствует, либо при чтении
+     * берётся из значения по умолчанию самого поля (у текста входа в модуль — «进入»). Поэтому на
+     * новом языке перевод может отсутствовать или совпадать с одним из unsetValues — это значит,
+     * что автор его не задавал. Переводы на ru и en обязаны совпадать точно
+     */
+    public boolean matchesDefault(final MultiLangString defaults, final MultiLangString... unsetValues) {
+        Set<String> languages = new HashSet<>(m_content.keySet());
+        languages.addAll(defaults.m_content.keySet());
+        for (String language : languages) {
+            String value = get(language);
+            if (value.equals(defaults.get(language))) {
+                continue;
+            }
+            if (!BASE_LANGUAGES.contains(language) && (value.isEmpty() || isUnset(language, value, unsetValues))) {
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean isUnset(String language, String value, MultiLangString[] unsetValues) {
+        for (MultiLangString unset : unsetValues) {
+            if (value.equals(unset.get(language))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isEmpty() {
