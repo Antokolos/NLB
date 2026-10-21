@@ -19,7 +19,8 @@
       books: 'Книги', noBooks: 'В библиотеке нет книг.', mode: 'Режим', modeVn: 'визуальная новелла',
       modeStandard: 'стандартная тема', sessionLost: 'Игра на сервере не найдена — начинаем заново.',
       otherBook: ' (другая книга)', loading: 'Загрузка…',
-      choicesScreen: 'Варианты: отдельным экраном', choicesInText: 'Варианты: в тексте'
+      choicesScreen: 'Варианты: отдельным экраном', choicesInText: 'Варианты: в тексте',
+      textSize: 'Размер текста'
     },
     en: {
       menu: 'Menu', save: 'Save game', saveForbidden: 'Save game — not allowed here', load: 'Load game',
@@ -34,7 +35,8 @@
       books: 'Books', noBooks: 'There are no books in the library.', mode: 'Mode', modeVn: 'visual novel',
       modeStandard: 'standard theme', sessionLost: 'The game was not found on the server — starting anew.',
       otherBook: ' (other book)', loading: 'Loading…',
-      choicesScreen: 'Choices: separate screen', choicesInText: 'Choices: in the text'
+      choicesScreen: 'Choices: separate screen', choicesInText: 'Choices: in the text',
+      textSize: 'Text size'
     }
   };
   const LANGUAGE_NAMES = {
@@ -397,6 +399,17 @@
     ];
     if (game.state.languages.length > 1) items.push({ label: ui.language, action: languageMenu });
     if (game.state.mode === 'vn') items.push(screen.menuItem());
+    const textSize = screen.textSizeItem();
+    // меню остаётся открытым (видно, как меняется размер), выбранным — тот же пункт
+    items.push({
+      label: textSize.label,
+      action: () => {
+        textSize.action();
+        mainMenu();
+        const again = Array.from($('dialog-body').querySelectorAll('.menu-item')).find((b) => b.textContent.startsWith(ui.textSize));
+        if (again) again.focus();
+      }
+    });
     items.push({ label: audio.muted ? ui.soundOn : ui.soundOff, action: () => setMuted(!audio.muted) });
     items.push({ label: ui.library, action: () => { location.href = location.pathname; } });
     items.push({ label: ui.back, action: null });
