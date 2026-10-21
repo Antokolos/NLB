@@ -91,6 +91,52 @@ public final class Value {
         return m_type;
     }
 
+    /**
+     * Значение с типом для сохранения игры: b:1, i:5, r:2.5, s:строка, n: (nil) — как в
+     * сохранениях NLBNavigator. Вещественное записывается без потери точности
+     */
+    public String encode() {
+        switch (m_type) {
+            case BOOL:
+                return m_bool ? "b:1" : "b:0";
+            case INT:
+                return "i:" + m_int;
+            case REAL:
+                return "r:" + Double.toString(m_real);
+            case STR:
+                return "s:" + m_str;
+            case NONE:
+            default:
+                return "n:";
+        }
+    }
+
+    /**
+     * Обратное к {@link #encode()}; без известного префикса — строка целиком
+     */
+    public static Value decode(String encoded) {
+        String tag = encoded.length() >= 2 ? encoded.substring(0, 2) : "";
+        String body = encoded.length() > 2 ? encoded.substring(2) : "";
+        try {
+            switch (tag) {
+                case "b:":
+                    return of("1".equals(body));
+                case "i:":
+                    return of(Long.parseLong(body));
+                case "r:":
+                    return of(Double.parseDouble(body));
+                case "s:":
+                    return of(body);
+                case "n:":
+                    return NONE;
+                default:
+                    return of(encoded);
+            }
+        } catch (NumberFormatException e) {
+            return of(body);
+        }
+    }
+
     public boolean isNumber() {
         return m_type == Type.BOOL || m_type == Type.INT || m_type == Type.REAL;
     }

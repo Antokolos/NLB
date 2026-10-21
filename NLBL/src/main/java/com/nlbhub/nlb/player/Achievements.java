@@ -38,6 +38,11 @@
  */
 package com.nlbhub.nlb.player;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -105,6 +110,36 @@ public class Achievements {
 
     boolean isGranted(String name) {
         return m_granted.contains(name);
+    }
+
+    /**
+     * Прогресс в JSON: {"ids": {имя: [id модификаций]}, "max": {имя: n}, "granted": [имена]}
+     */
+    public ObjectNode toJson() {
+        ObjectNode result = JsonNodeFactory.instance.objectNode();
+        ObjectNode ids = result.putObject("ids");
+        for (Map.Entry<String, Set<String>> entry : m_ids.entrySet()) {
+            ArrayNode array = ids.putArray(entry.getKey());
+            entry.getValue().forEach(array::add);
+        }
+        ObjectNode max = result.putObject("max");
+        m_max.forEach(max::put);
+        ArrayNode granted = result.putArray("granted");
+        m_granted.forEach(granted::add);
+        return result;
+    }
+
+    /**
+     * Добавляет прогресс из JSON ({@link #toJson()}) к текущему
+     */
+    public void restore(JsonNode json) {
+        Map<String, Set<String>> ids = new TreeMap<>();
+        json.path("ids").fields().forEachRemaining(
+                e -> ids.put(e.getKey(), new TreeSet<>(PlayerContext.strings(e.getValue())))
+        );
+        Map<String, Integer> max = new TreeMap<>();
+        json.path("max").fields().forEachRemaining(e -> max.put(e.getKey(), e.getValue().asInt()));
+        restore(ids, max, new TreeSet<>(PlayerContext.strings(json.path("granted"))));
     }
 
     /**

@@ -17,6 +17,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Модификации и навигация на маленьких книгах, собранных в памяти: выражения и подстановка
@@ -87,12 +88,20 @@ public class PlayerEngineTest {
         }
 
         PlayerEngine start() {
-            PlayerEngine.Settings settings = new PlayerEngine.Settings();
-            settings.exportMode = PlayerEngine.ExportMode.STANDARD;
-            settings.deterministic = true;
-            PlayerEngine engine = new PlayerEngine(nlb, settings);
+            PlayerEngine engine = create(true);
             engine.start();
             return engine;
+        }
+
+        /**
+         * Движок без старта; deterministic = false — настоящая случайность с постоянным зерном
+         */
+        PlayerEngine create(boolean deterministic) {
+            PlayerEngine.Settings settings = new PlayerEngine.Settings();
+            settings.exportMode = PlayerEngine.ExportMode.STANDARD;
+            settings.deterministic = deterministic;
+            settings.randomSeed = 12345;
+            return new PlayerEngine(nlb, settings);
         }
     }
 
@@ -286,5 +295,167 @@ public class PlayerEngineTest {
         engine.choose(0);
         assertTrue(engine.isFinished());
         assertEquals(List.of("Конец"), texts(engine, PlayerEngine.Event.Kind.PageText));
+    }
+
+    // ------------------------------------------------------------------ сохранения
+
+    @Test
+    public void loadRestoresWorldAndShowsPageAgain() {
+        Book book = new Book();
+        PageImpl start = book.page("Старт");
+        PageImpl room = book.page("Комната: $x$");
+        PageImpl far = book.page("Дальше");
+        book.mod(start, Modification.Type.ASSIGN, "x", "1");
+        LinkImpl go = book.link(start, room, "В комнату");
+        book.mod(go, Modification.Type.ASSIGN, "x", "x + 1");
+        book.mod(go, Modification.Type.ASSIGN, "v", "\"a\"");
+        book.mod(go, Modification.Type.PUSH, "lst", "v");
+        LinkImpl once = book.link(room, far, "Один раз");
+        once.setOnce(true);
+        book.link(far, room, "Назад");
+        PlayerEngine engine = book.start();
+        engine.choose(0);
+        String save = engine.saveGame();
+        // После сохранения мир меняется...
+        engine.choose(0);
+        engine.choose(0);
+        assertEquals(List.of(), choices(engine));
+        engine.takeEvents();
+        // ...а загрузка возвращает его: страница показывается заново, её модификации не исполняются
+        engine.loadGame(save);
+        assertEquals(room.getId(), engine.currentPage().getId());
+        assertEquals(List.of("Комната: 2"), texts(engine, PlayerEngine.Event.Kind.PageText));
+        assertEquals(2L, engine.getVariable("x").asInt());
+        assertEquals(1, engine.context().listSize("lst"));
+        assertEquals(List.of("Один раз"), choices(engine));
+        // То же в новом движке (другой игрок, другой процесс)
+        PlayerEngine other = book.create(true);
+        other.loadGame(save);
+        assertEquals(room.getId(), other.currentPage().getId());
+        assertEquals(2L, other.getVariable("x").asInt());
+    }
+
+    @Test
+    public void randomContinuesAfterLoad() {
+        Book book = new Book();
+        PageImpl hub = book.page("Хаб");
+        PageImpl roll = book.page("Выпало $r$");
+        book.mod(roll, Modification.Type.RND, "r", "1000000");
+        book.link(hub, roll, "Бросить");
+        book.link(roll, hub, "Назад");
+        PlayerEngine engine = book.create(false);
+        engine.start();
+        String save = engine.saveGame();
+        engine.choose(0);
+        long first = engine.getVariable("r").asInt();
+        PlayerEngine other = book.create(false);
+        other.loadGame(save);
+        other.choose(0);
+        assertEquals(first, other.getVariable("r").asInt());
+    }
+
+    @Test
+    public void noSavePageForbidsSaving() {
+        Book book = new Book();
+        PageImpl start = book.page("Нельзя");
+        start.setNoSave(true);
+        PlayerEngine engine = book.start();
+        assertFalse(engine.canSave());
+        try {
+            engine.saveGame();
+            fail("сохранение на странице nosave");
+        } catch (PlayerException e) {
+            assertEquals("здесь сохраняться нельзя", e.getMessage());
+        }
+    }
+
+    @Test
+    public void saveOfOtherBookIsRejected() {
+        Book first = new Book();
+        first.page("Первая");
+        Book second = new Book();
+        second.page("Вторая");
+        String save = first.start().saveGame();
+        PlayerEngine engine = second.start();
+        assertFalse(engine.readSaveInfo(save).isCompatible());
+        assertTrue(engine.readSaveInfo(save).isValid());
+        assertFalse(engine.readSaveInfo("{}").isValid());
+        try {
+            engine.loadGame(save);
+            fail("загрузилось сохранение другой книги");
+        } catch (PlayerException e) {
+            assertTrue(e.getMessage(), e.getMessage().startsWith("сохранение сделано для другой книги"));
+        }
+        assertEquals(List.of("Вторая"), texts(engine, PlayerEngine.Event.Kind.PageText));
+    }
+
+    @Test
+    public void tryAgainReturnsToSnapshot() {
+        Book book = new Book();
+        PageImpl start = book.page("Старт");
+        PageImpl checkpoint = book.page("Контрольная точка: $x$");
+        PageImpl end = book.page("Конец");
+        book.link(start, checkpoint, "Дальше");
+        book.mod(checkpoint, Modification.Type.ASSIGN, "x", "x + 1");
+        book.mod(checkpoint, Modification.Type.SNAPSHOT, null, null);
+        LinkImpl die = book.link(checkpoint, end, "Погибнуть");
+        book.mod(die, Modification.Type.ASSIGN, "x", "100");
+        PlayerEngine engine = book.start();
+        engine.choose(0);
+        engine.choose(0);
+        assertTrue(engine.isFinished());
+        engine.takeEvents();
+        // Снимок сделан после входа на страницу: x уже 1, модификации повторно не исполняются
+        engine.tryAgain();
+        assertEquals(checkpoint.getId(), engine.currentPage().getId());
+        assertEquals(1L, engine.getVariable("x").asInt());
+        assertEquals(List.of("Контрольная точка: 1"), texts(engine, PlayerEngine.Event.Kind.PageText));
+        // Снимок входит в сохранение и остаётся после «ещё раз»
+        engine.choose(0);
+        String save = engine.saveGame();
+        PlayerEngine other = book.create(true);
+        other.loadGame(save);
+        other.tryAgain();
+        assertEquals(checkpoint.getId(), other.currentPage().getId());
+        // «Начать заново» снимок забывает: без нового SNAPSHOT «ещё раз» — это начало игры
+        other.restart();
+        other.tryAgain();
+        assertEquals(start.getId(), other.currentPage().getId());
+    }
+
+    @Test
+    public void tryAgainWithoutSnapshotRestarts() {
+        Book book = new Book();
+        PageImpl start = book.page("Старт: $x$");
+        PageImpl end = book.page("Конец");
+        book.mod(start, Modification.Type.ASSIGN, "x", "x + 1");
+        book.link(start, end, "Дальше");
+        PlayerEngine engine = book.start();
+        engine.choose(0);
+        engine.takeEvents();
+        engine.tryAgain();
+        assertEquals(start.getId(), engine.currentPage().getId());
+        assertEquals(List.of("Старт: 1"), texts(engine, PlayerEngine.Event.Kind.PageText));
+    }
+
+    @Test
+    public void valuesAndAchievementsSurviveJson() throws Exception {
+        for (Value value : List.of(Value.TRUE, Value.FALSE, Value.NONE, Value.of(-7L), Value.of(2.5),
+                Value.of(1e300), Value.of(Double.POSITIVE_INFINITY), Value.of(""), Value.of("i:5 строка\tс табом"))) {
+            Value decoded = Value.decode(value.encode());
+            assertEquals(value.encode(), value.getType(), decoded.getType());
+            assertEquals(value.encode(), value.toDisplayString(), decoded.toDisplayString());
+        }
+        Achievements achievements = new Achievements();
+        achievements.register("a");
+        achievements.addId("a", "m1");
+        achievements.addId("a", "m2");
+        achievements.setMax("a", 2);
+        achievements.grant("a");
+        Achievements restored = new Achievements();
+        restored.restore(new com.fasterxml.jackson.databind.ObjectMapper().readTree(achievements.toJson().toString()));
+        assertEquals(2, restored.count("a"));
+        assertEquals(Integer.valueOf(2), restored.max("a"));
+        assertTrue(restored.isGranted("a"));
     }
 }

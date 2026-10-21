@@ -11,6 +11,7 @@ module NLBL {
     requires itextpdf;
     requires org.mozilla.rhino;
     requires org.eclipse.jgit;
+    requires com.fasterxml.jackson.databind;
 
     exports com.nlbhub.nlb.api;
     exports com.nlbhub.nlb.api.config;

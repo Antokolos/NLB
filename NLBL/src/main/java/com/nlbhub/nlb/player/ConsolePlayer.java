@@ -53,6 +53,8 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,7 +68,7 @@ import java.util.List;
  *   uN oM    — применить предмет инвентаря N к объекту страницы M (uN iM — к предмету инвентаря)
  *   w        — подождать (тик таймера страницы)
  *   l        — осмотреться: заново показать текущую страницу
- *   m        — меню: начать заново, выйти
+ *   m        — меню: сохранить, загрузить, начать заново, выйти
  *   0        — выход (с подтверждением)
  * </pre>
  * Запуск: {@code java -cp NLBL.jar com.nlbhub.nlb.player.ConsolePlayer <каталог книги> [vn|standard]
@@ -102,6 +104,23 @@ public class ConsolePlayer {
      * Повторять введённую строку в вывод — как журнал сессии nlb_main (ввод не с терминала)
      */
     private boolean m_echoInput = false;
+    /**
+     * Каталог файлов сохранения; null — сохранения недоступны
+     */
+    private File m_savesDir = null;
+    /**
+     * Файл прогресса достижений (prefs INSTEAD); null — только в памяти
+     */
+    private File m_achievementsFile = null;
+    private static final int SAVE_SLOTS = 9;
+    /**
+     * Сколько строк ввода прочитано
+     */
+    private int m_inputsRead = 0;
+    /**
+     * Номера строк ввода (с нуля), прочитанных как команда игры (на главном экране)
+     */
+    private final List<Integer> m_commandInputs = new ArrayList<>();
 
     public ConsolePlayer(NonLinearBook book, PlayerEngine.Settings settings, BufferedReader in, PrintWriter out) {
         m_engine = new PlayerEngine(book, settings);
@@ -117,8 +136,57 @@ public class ConsolePlayer {
         registerExternalGame("play_bp_*", ConsolePlayer::demoDiceGame);
     }
 
+    /**
+     * Каталог файлов сохранения (slot1.json … slot9.json); null — сохранения недоступны
+     */
+    public void setSavesDirectory(File savesDir) {
+        m_savesDir = savesDir;
+    }
+
+    /**
+     * Файл прогресса достижений: читается сразу, записывается при каждом новом достижении
+     */
+    public void setAchievementsFile(File achievementsFile) throws IOException {
+        m_achievementsFile = achievementsFile;
+        if (achievementsFile.isFile()) {
+            String json = Files.readString(achievementsFile.toPath(), StandardCharsets.UTF_8);
+            m_engine.achievements().restore(new com.fasterxml.jackson.databind.ObjectMapper().readTree(json));
+        }
+    }
+
+    private void storeAchievements() {
+        if (m_achievementsFile == null) {
+            return;
+        }
+        try {
+            writeAtomically(m_achievementsFile, m_engine.achievements().toJson().toPrettyString());
+        } catch (IOException e) {
+            m_out.println("Warning: achievements will not be saved: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Запись через временный файл: при сбое прежний файл остаётся целым
+     */
+    private static void writeAtomically(File file, String text) throws IOException {
+        File parent = file.getAbsoluteFile().getParentFile();
+        if (parent != null) {
+            Files.createDirectories(parent.toPath());
+        }
+        File tmp = new File(file.getPath() + ".tmp");
+        Files.writeString(tmp.toPath(), text, StandardCharsets.UTF_8);
+        Files.move(tmp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    }
+
     public void setEchoInput(boolean echoInput) {
         m_echoInput = echoInput;
+    }
+
+    /**
+     * Номера строк ввода (с нуля), которые были командами игры, а не ответами меню и вопросов
+     */
+    public List<Integer> commandInputs() {
+        return m_commandInputs;
     }
 
     public PlayerEngine engine() {
@@ -156,11 +224,13 @@ public class ConsolePlayer {
                     if (line == null || !line.equals("1")) {
                         break;
                     }
-                    m_engine.restart();
+                    // «Попробовать ещё раз»: к снимку SNAPSHOT, если он есть, иначе сначала
+                    m_engine.tryAgain();
                     continue;
                 }
                 printView(view);
                 prompt("\nВаш выбор: ");
+                m_commandInputs.add(m_inputsRead);
                 String line = readLine();
                 if (line == null || !handleCommand(line, view)) {
                     break;
@@ -180,6 +250,9 @@ public class ConsolePlayer {
 
     private String readLine() throws IOException {
         String line = m_in.readLine();
+        if (line != null) {
+            m_inputsRead++;
+        }
         if (line != null && line.endsWith("\r")) {
             line = line.substring(0, line.length() - 1);
         }
@@ -199,7 +272,9 @@ public class ConsolePlayer {
     }
 
     private void printEvents() {
+        boolean achieved = false;
         for (PlayerEngine.Event event : m_engine.takeEvents()) {
+            achieved = achieved || event.getKind() == PlayerEngine.Event.Kind.Achievement;
             String text = event.getText();
             switch (event.getKind()) {
                 case PageCaption:
@@ -248,6 +323,9 @@ public class ConsolePlayer {
                 default:
                     break;  // внешняя игра обрабатывается в runExternalGame
             }
+        }
+        if (achieved) {
+            storeAchievements();
         }
         m_out.flush();
     }
@@ -427,11 +505,18 @@ public class ConsolePlayer {
     }
 
     /**
-     * Меню; false — выход из игры. Сохранения в консольном плеере пока не поддерживаются
+     * Меню; false — выход из игры
      */
     private boolean runMenu() throws IOException {
         while (true) {
-            prompt("\n=== Меню ===\n3. Начать заново\n4. Выйти из игры\n0. Вернуться в игру\n\nВаш выбор: ");
+            StringBuilder menu = new StringBuilder("\n=== Меню ===\n");
+            if (m_savesDir != null) {
+                // На странице «не сохранять» пункт виден, но недоступен — как серый пункт меню INSTEAD
+                menu.append(m_engine.canSave() ? "1. Сохранить игру\n" : "1. Сохранить игру — здесь сохраняться нельзя\n")
+                        .append("2. Загрузить игру\n");
+            }
+            menu.append("3. Начать заново\n4. Выйти из игры\n0. Вернуться в игру\n\nВаш выбор: ");
+            prompt(menu.toString());
             String line = readLine();
             if (line == null) {
                 return false;
@@ -440,7 +525,16 @@ public class ConsolePlayer {
                 m_engine.look();  // как после закрытия меню в INSTEAD: снова видна текущая сцена
                 return true;
             }
-            if (line.equals("3")) {
+            if (line.equals("1") && m_savesDir != null) {
+                if (m_engine.canSave()) {
+                    saveMenu();
+                } else {
+                    m_out.println("Здесь сохраняться нельзя.");
+                }
+            } else if (line.equals("2") && m_savesDir != null) {
+                loadMenu();
+                return true;
+            } else if (line.equals("3")) {
                 if (confirm("Начать игру заново? Несохранённый прогресс будет потерян.")) {
                     m_engine.restart();
                     return true;
@@ -452,6 +546,89 @@ public class ConsolePlayer {
             } else {
                 m_out.println("Неверный выбор.");
             }
+        }
+    }
+
+    private File slotFile(int slot) {
+        return new File(m_savesDir, "slot" + slot + ".json");
+    }
+
+    private PlayerEngine.SaveInfo slotInfo(int slot) {
+        File file = slotFile(slot);
+        if (!file.isFile()) {
+            return null;
+        }
+        try {
+            PlayerEngine.SaveInfo info = m_engine.readSaveInfo(Files.readString(file.toPath(), StandardCharsets.UTF_8));
+            return info.isValid() ? info : null;
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private static String describe(PlayerEngine.SaveInfo info) {
+        return info.getTime() + " — " + info.getLabel() + (info.isCompatible() ? "" : " (другая книга)");
+    }
+
+    /**
+     * Номер слота 1..SAVE_SLOTS или 0
+     */
+    private int readSlot() throws IOException {
+        prompt("0. Отмена\n\nВаш выбор: ");
+        String line = readLine();
+        Long slot = line == null ? null : parseLong(line);
+        return (slot == null || slot < 1 || slot > SAVE_SLOTS) ? 0 : slot.intValue();
+    }
+
+    private void saveMenu() throws IOException {
+        StringBuilder list = new StringBuilder("\nСохранить в слот:\n");
+        for (int slot = 1; slot <= SAVE_SLOTS; slot++) {
+            PlayerEngine.SaveInfo info = slotInfo(slot);
+            list.append(slot).append(". ").append(info != null ? describe(info) : "<пусто>").append("\n");
+        }
+        m_out.print(list);
+        int slot = readSlot();
+        if (slot == 0) {
+            return;
+        }
+        if (slotInfo(slot) != null && !confirm("Слот занят. Перезаписать?")) {
+            return;
+        }
+        try {
+            writeAtomically(slotFile(slot), m_engine.saveGame());
+            m_out.println("Игра сохранена в слот " + slot + ".");
+        } catch (IOException | PlayerException e) {
+            m_out.println("Не удалось сохранить игру: " + e.getMessage());
+        }
+    }
+
+    private void loadMenu() throws IOException {
+        StringBuilder list = new StringBuilder("\nЗагрузить из слота:\n");
+        boolean any = false;
+        for (int slot = 1; slot <= SAVE_SLOTS; slot++) {
+            PlayerEngine.SaveInfo info = slotInfo(slot);
+            if (info != null) {
+                any = true;
+                list.append(slot).append(". ").append(describe(info)).append("\n");
+            }
+        }
+        m_out.print(list);
+        if (!any) {
+            m_out.println("Сохранений нет.");
+            m_engine.look();
+            return;
+        }
+        int slot = readSlot();
+        if (slot == 0) {
+            m_engine.look();
+            return;
+        }
+        try {
+            m_engine.loadGame(Files.readString(slotFile(slot).toPath(), StandardCharsets.UTF_8));
+            m_out.println("Игра загружена из слота " + slot + ".");
+        } catch (IOException | PlayerException e) {
+            m_out.println("Не удалось загрузить игру: " + e.getMessage());
+            m_engine.look();
         }
     }
 
@@ -596,6 +773,11 @@ public class ConsolePlayer {
         PrintWriter out = new PrintWriter(new OutputStreamWriter(stdout, StandardCharsets.UTF_8));
         ConsolePlayer player = new ConsolePlayer(book, settings, in, out);
         player.setEchoInput(echo);
+        // Как в NLBNavigator (~/.nlbnavigator): ~/.nlbplayer/<книга>.saves и <книга>.achievements.json
+        File home = new File(System.getProperty("user.home"), ".nlbplayer");
+        String bookName = bookDir.getAbsoluteFile().toPath().normalize().getFileName().toString();
+        player.setSavesDirectory(new File(home, bookName + ".saves"));
+        player.setAchievementsFile(new File(home, bookName + ".achievements.json"));
         player.explore();
     }
 }
