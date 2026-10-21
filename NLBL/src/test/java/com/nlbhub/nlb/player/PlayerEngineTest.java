@@ -411,4 +411,24 @@ public class PlayerEngineTest {
         engine.restart();
         assertEquals(List.of(), music(engine));
     }
+
+    @Test
+    public void onlyLastMusicOfTurn() {
+        // Цепочка страниц без текста, у каждой своя музыка: за ход — только последняя
+        TestBook book = new TestBook();
+        PageImpl start = book.page("Старт");
+        PageImpl hub = book.page("");
+        PageImpl corridor = book.page("");
+        PageImpl room = book.page("Комната");
+        hub.setSoundFileName("hub.ogg");
+        corridor.setSoundFileName("corridor.ogg");
+        room.setSoundFileName("room.ogg");
+        book.link(start, hub, "Дальше");
+        book.link(hub, corridor, "auto").setAuto(true);
+        book.link(corridor, room, "auto").setAuto(true);
+        PlayerEngine engine = book.start();
+        engine.takeEvents();
+        engine.choose(0);
+        assertEquals(List.of("room.ogg"), music(engine));
+    }
 }
