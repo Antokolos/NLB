@@ -61,7 +61,7 @@ m. Меню
 Ваш выбор: 1
 [MUSIC: redhoodday1heat.ogg]
 [IMAGE: quest_1.png]
-[IMAGE: abandon_quest_ru.png — right-top@-103,680]
+[IMAGE: abandon_quest_ru.png — abandonQuestOutObj @ right-top@-103,680]
 
 ==================================================
 Красная Шапочка : в поисках начинки
@@ -3313,7 +3313,7 @@ m. Меню
 Ваш выбор: 1
 [MUSIC: redhoodday1heat.ogg]
 [IMAGE: quest_1.png]
-[IMAGE: abandon_quest_ru.png — right-top@-103,680]
+[IMAGE: abandon_quest_ru.png — abandonQuestOutObj @ right-top@-103,680]
 
 ==================================================
 Красная Шапочка : в поисках начинки
@@ -3339,8 +3339,8 @@ m. Меню
 
 Ваш выбор: 1
 [IMAGE: house.png]
-[IMAGE: bg70.png — middle-bottom@0,-90]
-[IMAGE: skip_tutorial_ru.png — right-top@-103,680]
+[IMAGE: bg70.png @ middle-bottom@0,-90]
+[IMAGE: skip_tutorial_ru.png — skipTutorialOutObj @ right-top@-103,680]
 
 ==================================================
 Дом
@@ -3573,7 +3573,7 @@ m. Меню
 
 Ваш выбор: o2
 [IMAGE: quest_4a.png]
-[IMAGE: bg70_1.png — middle-bottom@0,-90]
+[IMAGE: bg70_1.png @ middle-bottom@0,-90]
 
 ==================================================
 Шкаф
@@ -3593,7 +3593,7 @@ m. Меню
 
 Ваш выбор: o1
 Шапочка взяла вазу.
-[IMAGE: bg70_2.png — middle-bottom@0,-90]
+[IMAGE: bg70_2.png @ middle-bottom@0,-90]
 
 Здесь:
       · Вы можете осмотреть предмет в инвентаре, дважды нажав на него. [+0,0]
@@ -3617,7 +3617,7 @@ m. Меню
 
 Ваш выбор: 1
 [IMAGE: house.png]
-[IMAGE: bg70.png — middle-bottom@0,-90]
+[IMAGE: bg70.png @ middle-bottom@0,-90]
 
 ==================================================
 Дом
@@ -3673,7 +3673,7 @@ m. Меню
 
 Ваш выбор: 1
 [IMAGE: house.png]
-[IMAGE: bg70.png — middle-bottom@0,-90]
+[IMAGE: bg70.png @ middle-bottom@0,-90]
 
 ==================================================
 Дом
@@ -3932,7 +3932,7 @@ m. Меню
 
 Ваш выбор: 2
 [IMAGE: house.png]
-[IMAGE: bg70.png — middle-bottom@0,-90]
+[IMAGE: bg70.png @ middle-bottom@0,-90]
 
 ==================================================
 Дом
@@ -3956,7 +3956,7 @@ m. Меню
 
 Ваш выбор: 1
 [IMAGE: quest_3.png]
-[IMAGE: abandon_quest_ru.png — right-top@-103,680]
+[IMAGE: abandon_quest_ru.png — abandonQuestOutObj @ right-top@-103,680]
 
 ==================================================
 Мама
@@ -4567,7 +4567,7 @@ m. Меню
 Ваш выбор: 1
 [MUSIC: redhoodday1heat.ogg]
 [IMAGE: quest_1.png]
-[IMAGE: abandon_quest_ru.png — right-top@-103,680]
+[IMAGE: abandon_quest_ru.png — abandonQuestOutObj @ right-top@-103,680]
 
 ==================================================
 Красная Шапочка : в поисках начинки

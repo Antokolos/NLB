@@ -21,6 +21,7 @@ module NLBL {
     exports com.nlbhub.nlb.domain.export.xml;
     exports com.nlbhub.nlb.domain.export.xml.beans.jsiq2;
     exports com.nlbhub.nlb.exception;
+    exports com.nlbhub.nlb.player;
     exports com.nlbhub.nlb.util;
     exports com.nlbhub.nlb.vcs;
     exports com.nlbhub.user.domain;

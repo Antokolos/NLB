@@ -2,17 +2,18 @@
 Loaded: The Barbarian and the Subterranean Caves (Demo) by NLB project
 [IMAGE: page3.jpg]
 [MUSIC: svf.ogg]
-[IMAGE: owl.png — left-top +160,153]
-[IMAGE: bat1.png — left-top +1039,155]
-[IMAGE: hameleon.png — left-top +158,453]
-[IMAGE: sokol.png — left-top +1044,452]
-[IMAGE: surikat.png — left-top +158,799]
-[IMAGE: makaka.png — left-top +1047,798]
-[IMAGE: abilitiescntbg.png — left-top@1520, 40]
-[IMAGE: emptycnt1.png — +0,0]
-[IMAGE: abilities_ru.png — left-top@1550,0]
-[IMAGE: empty_1.png — left-top@550,50]
-[IMAGE: empty_1_1.png — left-top@250, 1030]
+[IMAGE: owl.png — Грамотность @ left-top +160,153]
+[IMAGE: bat1.png — Острый слух @ left-top +1039,155]
+[IMAGE: hameleon.png — Распознавание лжи @ left-top +158,453]
+[IMAGE: sokol.png — Ночное зрение @ left-top +1044,452]
+[IMAGE: surikat.png — Внимание к деталям @ left-top +158,799]
+[IMAGE: makaka.png — Воровство @ left-top +1047,798]
+[IMAGE: abilitiescntbg.png — abilitiesMainContainer @ left-top@1520, 40]
+[IMAGE: emptycnt1.png — abilitiesContainer @ +0,0]
+[IMAGE: abilities_ru.png — abilitiesTrigger @ left-top@1550,0]
+[IMAGE: empty_1.png — ВЫБЕРИТЕ ТРИ ЛЮБЫХ НАВЫКА @ left-top@550,50]
+[IMAGE: empty_1_1.png — Чтобы выбрать навык, кликните по его иконке в большом свитке. Если вы случайно выбрали не тот навык,
+кликните по его иконке на маленьком свитке, и он вернётся обратно в большой. @ left-top@250, 1030]
 
 Здесь:
   o1. Грамотность [left-top +160,153]
@@ -32,7 +33,7 @@ m. Меню
 
 Ваш выбор: o6
 Воровство
-[IMAGE: makaka_1.png — +0,0]
+[IMAGE: makaka_1.png — Воровство @ +0,0]
 
 Здесь:
   o1. Грамотность [left-top +160,153]
@@ -143,7 +144,7 @@ m. Меню
 
 Ваш выбор: o2
 Острый слух
-[IMAGE: bat1_1.png — +0,0]
+[IMAGE: bat1_1.png — Острый слух @ +0,0]
 
 Здесь:
   o1. Грамотность [left-top +160,153]
@@ -179,9 +180,9 @@ l. Осмотреться
 m. Меню
 
 Ваш выбор: o2
-[IMAGE: inventorycntbg.png — left-top@1120, 40]
-[IMAGE: emptycnt1_1.png — +0,0]
-[IMAGE: meshok2.1.png — +0,0]
+[IMAGE: inventorycntbg.png — inventoryMainContainer @ left-top@1120, 40]
+[IMAGE: emptycnt1_1.png — inventoryContainer @ +0,0]
+[IMAGE: meshok2.1.png — 150 монет @ +0,0]
 
 Здесь:
   · abilitiesMainContainer [left-top@1520, 40] (свёрнут)
@@ -314,11 +315,11 @@ l. Осмотреться
 m. Меню
 
 Ваш выбор: o1
-[IMAGE: abilitiescntbg.png — left-top@1520, 40]
-[IMAGE: emptycnt1.png — +0,0]
-[IMAGE: makaka_1.png — +0,0]
-[IMAGE: bat1_1.png — +0,0]
-[IMAGE: surikat_1.png — +0,0]
+[IMAGE: abilitiescntbg.png — abilitiesMainContainer @ left-top@1520, 40]
+[IMAGE: emptycnt1.png — abilitiesContainer @ +0,0]
+[IMAGE: makaka_1.png — Воровство @ +0,0]
+[IMAGE: bat1_1.png — Острый слух @ +0,0]
+[IMAGE: surikat_1.png — Внимание к деталям @ +0,0]
 
 Здесь:
   · abilitiesMainContainer [left-top@1520, 40]
