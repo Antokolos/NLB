@@ -25,10 +25,8 @@ module NLBL {
     exports com.nlbhub.nlb.player;
     exports com.nlbhub.nlb.util;
     exports com.nlbhub.nlb.vcs;
-    exports com.nlbhub.user.domain;
     exports name.fraser.neil.plaintext;
 
     opens com.nlbhub.nlb.api.config to jakarta.xml.bind;
     opens com.nlbhub.nlb.domain to jakarta.xml.bind;
-    opens com.nlbhub.user.domain to jakarta.xml.bind;
 }

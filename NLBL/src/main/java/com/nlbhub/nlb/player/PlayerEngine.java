@@ -75,8 +75,7 @@ import static com.nlbhub.nlb.player.PlayerContext.isEmpty;
  * Движок проигрывания книги NLB без пользовательского интерфейса. Порт PlayerEngine из
  * NLBNavigator; эталон — INSTEAD-экспорт (ExportManager.createPageBuildingBlocks /
  * createLinkBuildingBlocks, STEADExportManager: enter/autos/xact, nlb.lua).
- * {@code NonLinearBookImpl.createFilteredPage} не используется: служебные ссылки (Traverse,
- * Return, AutowiredIn/Out) строятся здесь.
+ * Служебные ссылки (Traverse, Return, AutowiredIn/Out) строятся здесь.
  * <p>
  * Интерфейс вызывает {@link #start()}, затем команды игрока ({@link #choose}, {@link #actOnObject},
  * {@link #clickInventory}, {@link #use}, {@link #waitTick()}, {@link #look()}) и после каждой

@@ -84,27 +84,6 @@
                                         <name>org.mozilla.rhino</name>
                                     </moduleInfo>
                                 </module>
-                                <!-- NLBW -->
-                                <module>
-                                    <artifact>
-                                        <groupId>org.glassfish.jersey.containers</groupId>
-                                        <artifactId>jersey-container-servlet-core</artifactId>
-                                        <version>3.1.8</version>
-                                    </artifact>
-                                    <moduleInfo>
-                                        <name>jersey.container.servlet.core</name>
-                                    </moduleInfo>
-                                </module>
-                                <module>
-                                    <artifact>
-                                        <groupId>org.glassfish.jersey.core</groupId>
-                                        <artifactId>jersey-server</artifactId>
-                                        <version>3.1.8</version>
-                                    </artifact>
-                                    <moduleInfo>
-                                        <name>jersey.server</name>
-                                    </moduleInfo>
-                                </module>
                                 <!-- NLBB -->
                                 <module>
                                     <artifact>
@@ -193,8 +172,6 @@
                                 org.eclipse.jgit,
                                 slf4j-reload4j,
                                 rhino,
-                                jersey-container-servlet-core,
-                                jersey-server,
                                 piccolo2d-extras,
                                 piccolo2d-core,
                                 swingx

@@ -43,9 +43,7 @@ import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.exception.NLBIOException;
 import com.nlbhub.nlb.exception.NLBVCSException;
-import com.nlbhub.user.domain.History;
 
-import javax.script.ScriptException;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
@@ -208,11 +206,6 @@ public class DummyNLB implements NonLinearBook {
     @Override
     public Obj getObjById(String objId) {
         return null;
-    }
-
-    @Override
-    public Page createFilteredPage(String sourceId, History history) throws ScriptException {
-        throw new UnsupportedOperationException("This operation is unsupported!");
     }
 
     @Override

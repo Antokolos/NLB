@@ -40,38 +40,53 @@ package com.nlbhub.nlb.web;
 
 import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.web.exception.LauncherException;
-import com.nlbhub.nlb.web.service.rest.GetNLBDataService;
-import com.nlbhub.nlb.web.service.rest.NLBServiceWebApplication;
 import com.nlbhub.nlb.web.player.BookLibrary;
 import com.nlbhub.nlb.web.player.PlayerServer;
 import com.nlbhub.nlb.api.PropertyManager;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.servlet.ServletContainer;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
- * The Launcher class
+ * Сервер веб-плеера редактора (http://localhost:8111/play/): книги каталога, где лежит книга
+ * редактора, и сама книга редактора со всеми несохранёнными правками
  *
  * @author Anton P. Kolosov
  * @version 1.0 11/13/13
  */
 public class Launcher implements Runnable {
     private Server m_server = new Server();
-    /**
-     * Книги нового веб-плеера (/play/): та же библиотека и та же книга из редактора, что у старого
-     */
     private final BookLibrary m_playerLibrary = new BookLibrary(null);
 
-    public Launcher() {
-        // set the TransformFactory to use the Saxon TransformerFactoryImpl method
-        System.setProperty(
-                "javax.xml.transform.TransformerFactory",
-                "net.sf.saxon.TransformerFactoryImpl"
-        );
+    /**
+     * Прежние адреса (старый отладочный плеер /nlb/&lt;книга&gt;/start, корень сервера) — на новый плеер
+     */
+    private static final class RedirectToPlayer extends HttpServlet {
+        @Override
+        protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+            String path = request.getPathInfo();
+            String book = null;
+            if (request.getServletPath().equals("/nlb") && path != null) {
+                String[] parts = path.split("/");
+                // /nlb/<книга>[;модуль=страница…]/…
+                book = parts.length > 1 ? parts[1].split(";")[0] : null;
+            }
+            response.sendRedirect(
+                    "/play/" + (book == null || book.isEmpty()
+                            ? "" : "?book=" + URLEncoder.encode(book, StandardCharsets.UTF_8))
+            );
+        }
+    }
 
+    public Launcher() {
         ServerConnector http = new ServerConnector(m_server);
         http.setHost("localhost");
         http.setPort(8111);
@@ -80,15 +95,13 @@ public class Launcher implements Runnable {
     }
 
     /**
-     * Jersey resource configuration cannot be reused after the server was stopped
-     * ("The resource configuration is not modifiable in this context"), so the context
-     * should be created anew for each server start.
+     * Контекст создаётся заново при каждом запуске сервера (после остановки Jetty его не переиспользует)
      */
     private ServletContextHandler createContext() {
-        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
         context.setContextPath("/");
-        ResourceConfig resourceConfig = new NLBServiceWebApplication();
-        context.addServlet(new ServletHolder(new ServletContainer(resourceConfig)), "/nlb/*");
+        context.addServlet(new ServletHolder(new RedirectToPlayer()), "/nlb/*");
+        context.addServlet(new ServletHolder(new RedirectToPlayer()), "");
         PlayerServer.addTo(
                 context, m_playerLibrary,
                 PropertyManager.getSettings() == null ? null : PropertyManager.getSettings().getDefaultConfig().getExport()
@@ -130,7 +143,6 @@ public class Launcher implements Runnable {
         if (m_server.isRunning()) {
             throw new LauncherException("Cannot change NLB library root while server is running!");
         }
-        GetNLBDataService.s_nlbLibraryRoot = path + "/";
         m_playerLibrary.setRoot(new java.io.File(path));
     }
 
@@ -138,12 +150,10 @@ public class Launcher implements Runnable {
             final String bookId,
             final NonLinearBook nlb
     ) {
-        GetNLBDataService.putNLBInMemoryToCache(bookId, nlb);
         m_playerLibrary.putEditorBook(bookId, nlb);
     }
 
     public void clearNLBCache() {
-        GetNLBDataService.clearNLBCache();
         m_playerLibrary.clear();
     }
 

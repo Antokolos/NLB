@@ -51,8 +51,6 @@ import org.jetbrains.annotations.NotNull;
 import jakarta.xml.bind.annotation.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 /**
  * The PageImpl class
@@ -1040,88 +1038,5 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     e
             );
         }
-    }
-
-    /**
-     * Creates clone of the current page, with $varName$ expressions substituted with current variable values, some
-     * links of which can be removed and some can be added
-     * @param linkIdsToBeExcluded
-     * @param linksToBeAdded
-     * @param visitedVars
-     * @return
-     */
-    public PageImpl createFilteredCloneWithSubstitutions(
-            final List<String> objIdsToBeExcluded,
-            final List<String> linkIdsToBeExcluded,
-            final List<Link> linksToBeAdded,
-            Map<String, Object> visitedVars
-    ) {
-        PageImpl result = new PageImpl(getCurrentNLB());
-        result.setId(getId());
-        result.setText(StringHelper.replaceVariables(getText(), visitedVars) + generateObjText(objIdsToBeExcluded, visitedVars));
-        final Coords sourceCoords = getCoords();
-        final CoordsImpl resultCoords = result.getCoords();
-        resultCoords.setLeft(sourceCoords.getLeft());
-        resultCoords.setTop(sourceCoords.getTop());
-        resultCoords.setWidth(sourceCoords.getWidth());
-        resultCoords.setHeight(sourceCoords.getHeight());
-        result.setImageFileName(getImageFileName());
-        result.setDeleted(isDeleted());
-        result.setReturnPageId(getReturnPageId());
-        result.setTheme(getTheme());
-        result.setVarId(getVarId());
-        result.setTimerVarId(getTimerVarId());
-        result.setCaption(getCaption());
-        result.setModuleConstrId(getModuleConstrId());
-        result.setModuleName(getModuleName());
-        result.setModuleExternal(isModuleExternal());
-        result.setReturnText(getReturnText());
-        result.setTraverseText(getTraverseText());
-        result.setUseCaption(isUseCaption());
-        result.setUseMPL(isUseMPL());
-        result.setAutoTraverse(isAutoTraverse());
-        result.setAutoReturn(isAutoReturn());
-        result.setAutowireInText(getAutowireInText());
-        result.setAutowireOutText(getAutowireOutText());
-        result.setAutoIn(isAutoIn());
-        result.setAutoOut(isAutoOut());
-        result.setGlobalAutoWired(isGlobalAutowire());
-        result.setNoSave(isNoSave());
-        result.setAutosFirst(isAutosFirst());
-        result.setAutowireInConstrId(getAutowireInConstrId());
-        result.setAutowireOutConstrId(getAutowireOutConstrId());
-        result.setFill(getFill());
-        result.setParent(getParent());
-        result.setStroke(getStroke());
-        result.setDefaultTagId(getDefaultTagId());
-        result.setTextColor(getTextColor());
-        AbstractNodeItem.filterTargetLinkList(result, this, linkIdsToBeExcluded);
-        for (Link link : linksToBeAdded) {
-            result.addLink(new LinkImpl(result, link));
-        }
-        result.replaceVariablesInLinks(visitedVars);
-        return result;
-    }
-
-    /**
-     * Method with side-effect
-     */
-    private void replaceVariablesInLinks(Map<String, Object> visitedVars) {
-        for (LinkImpl link : getLinkImpls()) {
-            link.setText(StringHelper.replaceVariables(link.getText(), visitedVars));
-        }
-    }
-
-    private String generateObjText(final List<String> objIdsToBeExcluded, Map<String, Object> visitedVars) {
-        StringBuilder result = new StringBuilder();
-        for (String objId : getContainedObjIds()) {
-            if (!objIdsToBeExcluded.contains(objId)) {
-                Obj obj = getCurrentNLB().getObjById(objId);
-                if (obj != null) {
-                    result.append(obj.getCumulativeText(objIdsToBeExcluded, visitedVars));
-                }
-            }
-        }
-        return result.toString();
     }
 }
