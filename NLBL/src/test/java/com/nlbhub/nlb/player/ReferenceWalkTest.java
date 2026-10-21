@@ -80,7 +80,7 @@ public class ReferenceWalkTest {
         player.setEchoInput(true);
         player.explore();
         out.flush();
-        List<String> lines = new ArrayList<>(List.of(output.toString().split("\n", -1)));
+        List<String> lines = new ArrayList<>(List.of(output.toString().split("\r?\n", -1)));
         if (!lines.isEmpty() && lines.get(lines.size() - 1).isEmpty()) {
             lines.remove(lines.size() - 1);
         }

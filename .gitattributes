@@ -1,0 +1,5 @@
+# Эталоны сверки Java-плеера сравниваются построчно с выводом плеера — в рабочей копии всегда LF,
+# и в Windows тоже (иначе git при core.autocrlf=true дописывает \r к каждой строке)
+NLBL/src/test/resources/player-expressions/** text eol=lf
+NLBL/src/test/resources/player-reference/** text eol=lf
+tools/player-reference/** text eol=lf

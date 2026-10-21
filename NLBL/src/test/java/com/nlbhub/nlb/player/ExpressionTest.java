@@ -48,7 +48,7 @@ public class ExpressionTest {
         int checked = 0;
         try (InputStream stream = ExpressionTest.class.getResourceAsStream("/player-expressions/cparse-reference.tsv")) {
             String text = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-            for (String line : text.split("\n")) {
+            for (String line : text.split("\r?\n")) {
                 if (line.isEmpty()) {
                     continue;
                 }

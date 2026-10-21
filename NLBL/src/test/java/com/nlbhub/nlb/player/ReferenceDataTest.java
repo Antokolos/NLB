@@ -90,7 +90,7 @@ public class ReferenceDataTest {
         List<String> result = new ArrayList<>();
         try (InputStream stream = resource("manifest.properties")) {
             String text = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-            for (String line : text.split("\n")) {
+            for (String line : text.split("\r?\n")) {
                 if (line.contains(".commit=") && !line.startsWith("navigator.")) {
                     result.add(line.substring(0, line.indexOf(".commit=")));
                 }
@@ -102,7 +102,7 @@ public class ReferenceDataTest {
     static List<String> readLines(String path) throws IOException {
         try (InputStream stream = resource(path)) {
             String text = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-            List<String> lines = new ArrayList<>(List.of(text.split("\n", -1)));
+            List<String> lines = new ArrayList<>(List.of(text.split("\r?\n", -1)));
             if (!lines.isEmpty() && lines.get(lines.size() - 1).isEmpty()) {
                 lines.remove(lines.size() - 1);
             }
