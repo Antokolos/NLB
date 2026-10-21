@@ -153,7 +153,8 @@ wild-island-quest), анимацию, autowired (все пять страниц 
   внешние игры (`play_bp_*`), конец игры; события вывода и вид страницы (`view()`);
 - `ConsolePlayer` — консольный плеер с выводом и командами `nlb_main explore`
   (`java -cp … com.nlbhub.nlb.player.ConsolePlayer <книга> [vn|standard] --deterministic
-  --config NLBW/cfg/config.xml`); настройки экспорта читает новый
+  --config NLBW/cfg/config.xml`; в дистрибутиве — `play.sh <книга> [vn|standard]` /
+  `play.bat …`, путь к книге — от текущего каталога); настройки экспорта читает новый
   `PropertyManager.readSettings(File)`.
 
 Приёмка: `ReferenceWalkTest` воспроизводит ввод всех 35 эталонных прохождений семи книг и
