@@ -73,26 +73,24 @@ public class PropertyManager {
     }
 
     private static Settings readSettings() throws IOException, NLBJAXBException {
-        Settings settings;
-        InputStream input = null;
+        File configDir = new File("cfg");
+        if (!configDir.exists()) {
+            throw new IOException("Config dir 'cfg' does not exist!");
+        }
+        File configFile = new File(configDir, "config.xml");
+        if (!configFile.exists()) {
+            throw new IOException("Config file 'cfg/config.xml' does not exist!");
+        }
+        return readSettings(configFile);
+    }
 
-        try {
-            File configDir = new File("cfg");
-            if (!configDir.exists()) {
-                throw new IOException("Config dir 'cfg' does not exist!");
-            }
-            File configFile = new File(configDir, "config.xml");
-            if (!configFile.exists()) {
-                throw new IOException("Config file 'cfg/config.xml' does not exist!");
-            }
-
-            input = new FileInputStream(configFile);
-            settings = (Settings) CONFIGS_MARSHALLER.unmarshal(input);
-            return settings;
-        } finally {
-            if (input != null) {
-                input.close();
-            }
+    /**
+     * Читает настройки из указанного файла (не трогая текущие настройки приложения): так ими
+     * пользуются плеер и тесты, которым не подходит каталог cfg в текущем каталоге
+     */
+    public static Settings readSettings(File configFile) throws IOException, NLBJAXBException {
+        try (InputStream input = new FileInputStream(configFile)) {
+            return (Settings) CONFIGS_MARSHALLER.unmarshal(input);
         }
     }
 }
