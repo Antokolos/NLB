@@ -5,4 +5,6 @@ wolfman               https://github.com/nlbproject/wolfman               888b4b
 barbarian_caves_demo  https://github.com/nlbproject/barbarian_caves_demo  d3c9f35  vn  5  300
 chaperonrougehub      https://github.com/nlbproject/chaperonrougehub      a1086d1  vn  5  400
 servant-of-ra         https://github.com/nlbproject/servant-of-ra         0962f13  standard  5  300
-Frontier              https://github.com/nlbproject/Frontier              24285a0  vn  5  200
+Frontier              https://github.com/nlbproject/Frontier              24285a0  standard  5  200
+wild-island-quest     https://github.com/nlbproject/wild-island-quest     0aba4c7  vn  5  300
+bookU                 https://github.com/nlbproject/bookU                 c0c7e4e  vn  5  100

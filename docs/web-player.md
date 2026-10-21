@@ -116,14 +116,16 @@
 *Сделано:* `tools/player-reference` (см. README там): `make-reference.sh` собирает `nlb_main`
 на зафиксированном коммите NLBNavigator, скачивает книги wolfman, barbarian_caves_demo,
 chaperonrougehub (с внешним модулем `chaperon_filling_hub` — git-подмодуль), servant-of-ra
-(тема STANDARD) и Frontier (три внешних модуля-подмодуля) и делает по 5 прохождений `walk.py`
+(тема STANDARD), Frontier (тема STANDARD, три внешних модуля-подмодуля), wild-island-quest
+(картинки по тегу страницы и переадресации) и синтетическую bookU и делает по 5 прохождений `walk.py`
 — случайных или начатых по сценарию (`scripts/`); пары «ввод + журнал» — в
 `NLBL/src/test/resources/player-reference`. Случайность книг воспроизводима
 (`nlb_main --deterministic`: k-й `rnd(n)` = `(k mod n) + 1`, `SHUFFLE` разворачивает список) —
 Java-плеер в режиме сверки должен вести себя так же. `ReferenceDataTest` проверяет эталоны и
 загрузку книг в Java. В книгах есть модули (вложенные и внешние), объекты, инвентарь,
 контейнеры, теги, клоны, списки (PUSH/POP/SIZE/SHUFFLE…), WHILE, RND, таймеры страниц,
-достижения, условия и переадресации картинок, анимацию, autowired (все пять страниц «Слуги Ра»
+достижения, условия и переадресации картинок (выбор картинки по тегу страницы — в
+wild-island-quest), анимацию, autowired (все пять страниц «Слуги Ра»
 — по сценариям; глобальный и во внешних модулях), needs-action, callback-объекты, COUNTGET,
 обе темы; не всё из этого встречается в случайных прохождениях — непокрытое добирается
 сценариями и синтетическими книгами в JUnit на этапах 1–2.
@@ -174,6 +176,9 @@ HTML/CSS/JS для темы STANDARD. Редактор переключаетс�
 `wolfman` (экспорт `instead-am_i_a_monster_vn`), `barbarian_caves_demo`
 (`instead-barbarian_caves_demo`), `chaperonrougehub` (`instead-chaperon_new`; внешний модуль —
 подмодуль `chaperon_filling_hub`), `servant-of-ra` (`instead-servant-of-ra`; тема STANDARD,
-autowired), `Frontier` (таймеры, случайность, списки; внешние модули — подмодули `waspsnest`,
-`sabotage`, `frontierwarriors`). Экспорты INSTEAD — для сверки спорных мест с эталоном
-семантики.
+autowired), `Frontier` (`instead-frontier`; тема STANDARD, таймеры, случайность, списки;
+внешние модули — подмодули `waspsnest`, `sabotage`, `frontierwarriors`), `wild-island-quest`
+(`instead-wild-island-quest`; картинки по тегу страницы, переадресации), `bookU`
+(синтетическая: списковые модификации, OBJS, ADDU/ADDALLU, HAVE, GOTO, достижения, глобальный
+autowired, модуль; прохождение от автора — `scripts/bookU/walk-1.script`). Экспорты INSTEAD —
+для сверки спорных мест с эталоном семантики.
