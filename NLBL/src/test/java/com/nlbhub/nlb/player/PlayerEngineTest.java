@@ -373,4 +373,42 @@ public class PlayerEngineTest {
         assertEquals(Integer.valueOf(2), restored.max("a"));
         assertTrue(restored.isGranted("a"));
     }
+
+    private static List<String> music(PlayerEngine engine) {
+        return texts(engine, PlayerEngine.Event.Kind.Music);
+    }
+
+    @Test
+    public void musicAfterTryAgainAndRestart() {
+        TestBook book = new TestBook();
+        PageImpl title = book.page("Титул");
+        PageImpl checkpoint = book.page("Контрольная точка");
+        PageImpl end = book.page("Конец");
+        book.link(title, checkpoint, "Дальше");
+        book.link(checkpoint, end, "Погибнуть");
+        end.setSoundFileName("finale.ogg");
+        book.mod(title, Modification.Type.SNAPSHOT, null, null);
+        PlayerEngine engine = book.start();
+        engine.choose(0);
+        engine.choose(0);
+        assertEquals(List.of("finale.ogg"), music(engine));
+        // снимок на титуле, музыки тогда не было — после «ещё раз» тишина
+        engine.tryAgain();
+        assertEquals(List.of(""), music(engine));
+        // снимок с музыкой — музыка страницы снимка
+        checkpoint.setSoundFileName("cave.ogg");
+        book.mod(checkpoint, Modification.Type.SNAPSHOT, null, null);
+        engine.restart();
+        engine.takeEvents();
+        engine.choose(0);
+        engine.choose(0);
+        engine.takeEvents();
+        engine.tryAgain();
+        assertEquals(List.of("cave.ogg"), music(engine));
+        // «Начать заново»: игравшая музыка останавливается, у титула её нет
+        engine.restart();
+        assertEquals(List.of(""), music(engine));
+        engine.restart();
+        assertEquals(List.of(), music(engine));
+    }
 }

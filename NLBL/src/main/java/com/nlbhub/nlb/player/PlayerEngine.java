@@ -760,7 +760,13 @@ public class PlayerEngine {
      * Новая игра с начала (_try_again в VN-экспорте); прогресс достижений сохраняется
      */
     public void restart() {
+        // Новая игра — в тишине: игравшая музыка останавливается, музыка стартовой страницы
+        // (если есть) придёт следом. Иначе интерфейс доиграл бы прежнюю дорожку
+        boolean musicPlaying = !m_currentMusic.isEmpty();
         createState();
+        if (musicPlaying) {
+            m_events.add(new Event(Event.Kind.Music, ""));
+        }
         start();
     }
 
@@ -1136,6 +1142,7 @@ public class PlayerEngine {
     private void applySave(JsonNode root) {
         String pageId = root.path("page").asText();
         Page page = m_interpreter.findPage(pageId);
+        String musicBefore = m_currentMusic;
         m_context.loadState(root.path("world"));
         m_events = new ArrayList<>();
         m_page = page;
@@ -1150,7 +1157,9 @@ public class PlayerEngine {
         m_preservedRoots.clear();
         m_preservedRoots.addAll(PlayerContext.strings(root.path("preserved")));
         m_preservedImagesShown.clear();  // после загрузки экран рисуется заново
-        if (!m_currentMusic.isEmpty()) {
+        // Музыка — как в сохранении (снимке): в том числе тишина, если тогда ничего не играло,
+        // а сейчас играет (иначе после «ещё раз» к титулу продолжалась бы музыка финала)
+        if (!m_currentMusic.isEmpty() || !musicBefore.isEmpty()) {
             m_events.add(new Event(Event.Kind.Music, m_currentMusic));
         }
         renderPage();
