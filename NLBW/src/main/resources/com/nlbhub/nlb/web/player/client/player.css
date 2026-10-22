@@ -91,7 +91,7 @@ body.playing { background: #0c0c10; overflow: hidden; }
 .stage-menu-button.text { color: #82beff; font: 32px sans-serif; padding: 12px 20px; background: rgba(0, 0, 0, 0.5); }
 .stage-hint {
   position: absolute; left: 46px; bottom: 6px; padding: 6px 14px; background: rgba(0, 0, 0, 0.75);
-  color: rgb(240, 200, 120); font: 26px sans-serif; z-index: 3;
+  color: rgb(240, 200, 120); font: calc(26px * var(--text-scale, 1)) sans-serif; z-index: 3;
 }
 
 /* Сообщения: вверху справа, как GameScreen */
@@ -99,7 +99,8 @@ body.playing { background: #0c0c10; overflow: hidden; }
 .toast {
   background: rgb(90, 70, 30); color: rgb(235, 230, 220);
   padding: 8px 14px; border-radius: 4px; box-shadow: 0 2px 8px var(--shadow);
-  max-width: min(360px, calc(100vw - 32px)); animation: toast-in 0.3s ease-out;
+  max-width: min(calc(360px * var(--text-scale, 1)), calc(100vw - 32px)); animation: toast-in 0.3s ease-out;
+  font-size: calc(19px * var(--text-scale, 1));
 }
 @keyframes toast-in { from { opacity: 0; transform: translateY(-6px); } }
 
@@ -110,7 +111,7 @@ body.playing { background: #0c0c10; overflow: hidden; }
 }
 .dialog-box {
   max-height: 90vh; overflow: auto; max-width: 90vw; text-align: center; color: rgb(235, 230, 220);
-  font-size: calc(32px * var(--stage-scale, 0.6)); font-family: var(--menu-font, var(--font));
+  font-size: calc(32px * var(--stage-scale, 0.6) * var(--text-scale, 1)); font-family: var(--menu-font, var(--font));
 }
 .dialog-box h2 { margin: 0 0 0.6em; font-weight: normal; color: rgb(235, 230, 220); font-size: 1.45em; }
 .dialog-box .menu-item {

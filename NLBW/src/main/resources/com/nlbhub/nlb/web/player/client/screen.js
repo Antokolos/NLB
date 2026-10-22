@@ -53,6 +53,14 @@ window.NLBScreen = function (ctx) {
     nodes: new Map()       // id -> элемент объекта
   };
   let choicesScreen = ctx.store.get('nlb.choicesScreen', true);
+  // Размер текста (GameScreen: textScale, пункт меню «Размер текста»): множитель всех шрифтов
+  // экрана — текста, вариантов, инвентаря, подписей, сообщений, меню. Выбор игрока запоминается;
+  // без него на маленьком экране (телефон: сцена 1920×1080 ужата больше чем вдвое) — 150 %
+  const TEXT_SCALES = [1, 1.25, 1.5, 1.75, 2];
+  const smallScreen = () => Math.min(window.innerWidth / 1920, window.innerHeight / 1080) < 0.5;
+  let textScale = Number(ctx.store.get('nlb.textScale', smallScreen() ? 1.5 : 1));
+  if (!(textScale >= 0.5 && textScale <= 3)) textScale = 1;
+  const fsize = (w) => w.fontSize * textScale;
   let renderToken = 0;
 
   const isVN = () => state && state.screen.layout === 'VisualNovel';
@@ -333,7 +341,7 @@ window.NLBScreen = function (ctx) {
   function labelLines(label) {
     return label.replace(/\r/g, '').split('\n').map((line) => {
       const h1 = /^== (.*) ==$/.exec(line);
-      const size = h1 ? 45 : 29;
+      const size = (h1 ? 45 : 29) * textScale;
       return { text: h1 ? h1[1] : line, size: size, height: line ? fontHeight(size, textFamily()) : 25 };
     });
   }
@@ -547,7 +555,7 @@ window.NLBScreen = function (ctx) {
     const pageH = Math.max(lh, Math.floor(rect.h / lh) * lh);
     place(view, { x: rect.x, y: rect.y, w: rect.w, h: pageH });
     setColors(view, w);
-    view.style.font = fontCss(w.fontSize, family(w.font));
+    view.style.font = fontCss(fsize(w), family(w.font));
     view.style.lineHeight = lh + 'px';
     view.style.setProperty('--font-bold', family(w.fontBold || w.font));
     view.style.setProperty('--font-italic', family(w.fontItalic || w.font));
@@ -678,12 +686,22 @@ window.NLBScreen = function (ctx) {
       $('stage-up').hidden = $('stage-down').hidden = true;
       return;
     }
-    const bandRect = { x: 8, y: 864, w: 1904, h: 184 };
+    // крупный текст: полоса выше в той же пропорции (строк в ней столько же) и с меньшими полями;
+    // низ — на месте, но не ниже строки инвентаря
+    let bottom = 864 + 184;
+    if (textScale > 1 && s.inventory.length) {
+      const inv = t.inventory;
+      const invLine = fontHeight(fsize(inv), family(inv.font)) * inv.lineHeight;
+      bottom = Math.min(bottom, Math.min(inv.y, H - invLine) - 2);
+    }
+    const bandH = Math.min(184 * textScale, H * 0.5);
+    const bandRect = { x: 8, y: bottom - bandH, w: 1904, h: bandH };
+    const margin = 240 / Math.max(1, textScale);
     band.style.top = bandRect.y + 'px';
     band.style.height = (bandRect.h + 16) + 'px';
     const w = t.text;
-    const lh = Math.floor(fontHeight(w.fontSize, family(w.font)) * w.lineHeight);
-    fillTextWindow(paragraphs, w, { x: bandRect.x + 240, y: bandRect.y + 8, w: bandRect.w - 480, h: bandRect.h - 16 }, lh, false);
+    const lh = Math.floor(fontHeight(fsize(w), family(w.font)) * w.lineHeight);
+    fillTextWindow(paragraphs, w, { x: bandRect.x + margin, y: bandRect.y + 8, w: bandRect.w - 2 * margin, h: bandRect.h - 16 }, lh, false);
   }
 
   // STANDARD — как INSTEAD (game.c, stead2): заголовок по центру цветом ссылки (щелчок —
@@ -729,7 +747,7 @@ window.NLBScreen = function (ctx) {
 
   function renderStandardText(s, t) {
     const w = t.text;
-    const lh = Math.floor(fontHeight(w.fontSize, family(w.font)) * w.lineHeight);
+    const lh = Math.floor(fontHeight(fsize(w), family(w.font)) * w.lineHeight);
     const { header, scene } = composeStandard(s, t.waysBottom);
     // картинка-фон: под окном текста — тёмная подложка
     const panel = $('stage-panel');
@@ -745,13 +763,13 @@ window.NLBScreen = function (ctx) {
       head.style.top = w.y + 'px';
       head.style.width = w.w + 'px';
       setColors(head, w);
-      head.style.font = fontCss(w.fontSize, family(w.font));
+      head.style.font = fontCss(fsize(w), family(w.font));
       head.style.lineHeight = lh + 'px';
       head.style.setProperty('--font-bold', family(w.fontBold || w.font));
       header.forEach((p) => {
         const node = paragraphNode(p);
         // game.c: win_spacing = font_size * font_height / 2 — после заголовка
-        if (p.cls === 'title') node.style.marginBottom = Math.floor(w.fontSize * w.lineHeight / 2) + 'px';
+        if (p.cls === 'title') node.style.marginBottom = Math.floor(fsize(w) * w.lineHeight / 2) + 'px';
         head.appendChild(node);
       });
       headerH = head.offsetHeight;
@@ -764,9 +782,9 @@ window.NLBScreen = function (ctx) {
     const panel = $('stage-choices');
     panel.textContent = '';
     const w = t.text;
-    const fs = w.fontSize * 1.25;
+    const fs = fsize(w) * 1.25;
     const lh = fontHeight(fs, family(w.font));
-    const panelW = W * 0.675;
+    const panelW = W * Math.min(0.95, 0.675 * Math.max(1, textScale * 0.8));  // крупный текст — подложка шире
     panel.style.left = ((W - panelW) / 2) + 'px';
     panel.style.width = panelW + 'px';
     panel.style.font = fontCss(fs, family(w.font));
@@ -801,9 +819,9 @@ window.NLBScreen = function (ctx) {
     inv.classList.toggle('strip', vn);
     const w = t.inventory;
     const fam = family(w.font);
-    const lh = Math.floor(fontHeight(w.fontSize, fam) * w.lineHeight);
+    const lh = Math.floor(fontHeight(fsize(w), fam) * w.lineHeight);
     const line = el('div', 'inv-items');
-    line.style.font = fontCss(w.fontSize, fam);
+    line.style.font = fontCss(fsize(w), fam);
     line.style.lineHeight = lh + 'px';
     setColors(line, w);
     line.style.width = w.w + 'px';
@@ -909,7 +927,7 @@ window.NLBScreen = function (ctx) {
   $('stage').addEventListener('wheel', (ev) => {
     if (!state || scr.showChoices) return;
     const w = theme().text;
-    const lh = Math.floor(fontHeight(w.fontSize, family(w.font)) * w.lineHeight);
+    const lh = Math.floor(fontHeight(fsize(w), family(w.font)) * w.lineHeight);
     scr.scroll = Math.max(0, scr.scroll + Math.sign(ev.deltaY) * 3 * lh);
     render();
   }, { passive: true });
@@ -952,8 +970,29 @@ window.NLBScreen = function (ctx) {
     };
   }
 
+  // Пункт меню «Размер текста: N %» — по кругу 100 % -> 125 % -> … -> 200 % -> 100 %; меню
+  // остаётся открытым, чтобы было видно, как меняется размер
+  function textSizeItem() {
+    return {
+      label: ctx.ui().textSize + ': ' + Math.round(textScale * 100) + '%',
+      action: () => {
+        textScale = TEXT_SCALES.find((v) => v > textScale + 0.01) || TEXT_SCALES[0];
+        ctx.store.set('nlb.textScale', textScale);
+        applyTextScale();
+        scr.scroll = 0;  // строки текста переразбиваются заново
+        if (state) render();
+      }
+    };
+  }
+  // Меню, сообщения и подсказка (вне сцены) — в том же масштабе
+  function applyTextScale() {
+    document.documentElement.style.setProperty('--text-scale', String(textScale));
+  }
+  applyTextScale();
+
   return {
     loadTheme: loadTheme,
+    textSizeItem: textSizeItem,
     update: update,
     render: render,
     key: key,
