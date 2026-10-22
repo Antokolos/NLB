@@ -156,6 +156,11 @@ public final class ScreenTheme {
         double fontSize;
         double lineHeight = 1.0;
         String upImage = "", downImage = "";
+        /**
+         * win.up.x/y, win.down.x/y — где стрелки листания (на экране 1920×1080); NaN — по умолчанию
+         * (справа от окна: вверху и внизу)
+         */
+        double upX = Double.NaN, upY = Double.NaN, downX = Double.NaN, downY = Double.NaN;
 
         Window(double x, double y, double w, double h, int[] fg, int[] link, int[] alink, double fontSize) {
             this.x = x;
@@ -175,7 +180,19 @@ public final class ScreenTheme {
             node.put("font", font).put("fontBold", fontBold).put("fontItalic", fontItalic);
             node.put("fontSize", fontSize).put("lineHeight", lineHeight);
             node.put("upImage", upImage).put("downImage", downImage);
+            putPosition(node, "upX", upX);
+            putPosition(node, "upY", upY);
+            putPosition(node, "downX", downX);
+            putPosition(node, "downY", downY);
             return node;
+        }
+
+        private static void putPosition(ObjectNode node, String name, double value) {
+            if (Double.isNaN(value)) {
+                node.putNull(name);
+            } else {
+                node.put(name, value);
+            }
         }
     }
 
@@ -184,6 +201,19 @@ public final class ScreenTheme {
     private static final int[] GOLD = {255, 215, 0};
 
     int[] m_background = {0x01, 0x13, 0x22};
+    /**
+     * scr.col.brd — цвет вокруг экрана темы и вокруг фона меньше экрана
+     */
+    int[] m_border = {0, 0, 0};
+    /**
+     * scr.gfx.mode: float — картинка страницы в области scr.gfx.x/y/w/h; fixed — в окне текста под
+     * заголовком, не прокручивается; embedded — в тексте сцены, прокручивается с ним
+     */
+    String m_gfxMode = "float";
+    /**
+     * scr.gfx.h для fixed/embedded: наибольшая высота картинки (на экране 1920×1080); NaN — без предела
+     */
+    double m_gfxMaxHeight = Double.NaN;
     double m_scale = 1.0;
     /**
      * Где экран темы (scr.w×scr.h) на экране 1920×1080
@@ -362,6 +392,21 @@ public final class ScreenTheme {
         if (ini.containsKey("scr.col.bg")) {
             t.m_background = color(ini.get("scr.col.bg").value, t.m_background);
         }
+        if (ini.containsKey("scr.col.brd")) {
+            t.m_border = color(ini.get("scr.col.brd").value, t.m_border);
+        }
+        if (ini.containsKey("scr.gfx.mode")) {
+            // «float», «fixed», «embedded», у float — и выравнивание через «-» (float-top-left)
+            String mode = ini.get("scr.gfx.mode").value.toLowerCase(Locale.ROOT);
+            int dash = mode.indexOf('-');
+            mode = dash < 0 ? mode : mode.substring(0, dash);
+            if (mode.equals("fixed") || mode.equals("embedded") || mode.equals("float")) {
+                t.m_gfxMode = mode;
+            }
+        }
+        if (number(ini, "scr.gfx.h", -1) >= 0) {
+            t.m_gfxMaxHeight = number(ini, "scr.gfx.h", 0) * k;
+        }
         IniValue bg = ini.get("scr.gfx.bg");
         if (bg != null) {
             if (bg.value.startsWith("box:")) {
@@ -392,6 +437,10 @@ public final class ScreenTheme {
             if (up != null) w.upImage = path(up.root, up.value);
             IniValue down = ini.get(prefix + ".gfx.down");
             if (down != null) w.downImage = path(down.root, down.value);
+            if (number(ini, prefix + ".up.x", -1) >= 0) w.upX = ox + number(ini, prefix + ".up.x", 0) * k;
+            if (number(ini, prefix + ".up.y", -1) >= 0) w.upY = oy + number(ini, prefix + ".up.y", 0) * k;
+            if (number(ini, prefix + ".down.x", -1) >= 0) w.downX = ox + number(ini, prefix + ".down.x", 0) * k;
+            if (number(ini, prefix + ".down.y", -1) >= 0) w.downY = oy + number(ini, prefix + ".down.y", 0) * k;
             IniValue font = ini.get(prefix + ".fnt.name");
             if (font != null) {
                 w.font = path(font.root, fontVariant(font.value, 0));
@@ -472,6 +521,13 @@ public final class ScreenTheme {
     public ObjectNode toJson() {
         ObjectNode node = JsonNodeFactory.instance.objectNode();
         node.put("background", css(m_background));
+        node.put("border", css(m_border));
+        node.put("gfxMode", m_gfxMode);
+        if (Double.isNaN(m_gfxMaxHeight)) {
+            node.putNull("gfxMaxHeight");
+        } else {
+            node.put("gfxMaxHeight", m_gfxMaxHeight);
+        }
         node.put("scale", m_scale);
         node.set("text", m_text.toJson());
         node.set("inventory", m_inventory.toJson());

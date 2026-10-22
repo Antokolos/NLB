@@ -181,6 +181,15 @@ window.NLBScreen = function (ctx) {
     return node;
   }
   const isBlank = (p) => !p.runs.length || p.runs.every((r) => !r.text.trim());
+  // Перестраивать часть экрана, только если она изменилась: на страницах с таймером снимок
+  // приходит несколько раз в секунду, и перестройка между нажатием и отпусканием кнопки мыши
+  // съедала бы щелчок по ссылке. Подпись — содержимое и всё, от чего зависит его вид
+  function unchanged(node, ...parts) {
+    const sig = JSON.stringify(parts, (k, v) => (k === 'picture' && v ? ctx.imageKey(v) : v));
+    if (node.dataset.sig === sig) return true;
+    node.dataset.sig = sig;
+    return false;
+  }
 
   // Варианты отдельным экраном — только на страницах VN (там его вёл paginator INSTEAD)
   const choicesMode = () => choicesScreen && isVN();
@@ -273,7 +282,8 @@ window.NLBScreen = function (ctx) {
     // размеры картинок объектов — до раскладки
     const urls = [];
     for (const o of s.sceneObjects) if (o.graphical) urls.push(ctx.imageUrl(o.image));
-    const loaded = await Promise.all(urls.map(imageSize));
+    const pageUrl = sizeUrl(s.pageImage);
+    const [loaded, pageSize] = await Promise.all([Promise.all(urls.map(imageSize)), imageSize(pageUrl)]);
     if (token !== renderToken) return;  // пришёл новый снимок
     const size = new Map(urls.map((u, i) => [u, loaded[i]]));
     const vn = isVN();
@@ -282,18 +292,23 @@ window.NLBScreen = function (ctx) {
     const stage = $('stage');
     stage.classList.toggle('vn', vn);
     stage.classList.toggle('standard', !vn);
-    stage.style.background = t.background;
+    // вне экрана темы (scr.w×scr.h, вписан в 1920×1080) — цвет рамки scr.col.brd, на нём — scr.col.bg
+    stage.style.background = t.border || '#000';
+    place($('stage-screen'), t.screenArea);
+    // картинка-фон страницы STANDARD заменяет фон темы (theme.gfx.bg в экспорте): вокруг неё — цвет рамки
+    const pageBg = !vn && s.imageIsBackground && !!ctx.imageUrl(s.pageImage);
+    $('stage-screen').style.background = pageBg ? (t.border || '#000') : t.background;
     // меню — шрифтом меню темы (menu.fnt.name), как в INSTEAD
     document.documentElement.style.setProperty('--menu-font', family(t.menuFont));
-    renderThemeBackground(vn, t);
-    renderPicture(s, vn, t);
+    renderThemeBackground(vn || pageBg, t);
+    renderPicture(s, vn, t, pageSize);
     renderObjects(s, size, vn);
     if (vn) {
       renderVisualNovelText(s, t);
     } else {
       $('stage-band').hidden = true;
       $('stage-choices').hidden = true;
-      renderStandardText(s, t);
+      renderStandardText(s, t, pageSize);
     }
     renderInventory(s, vn, t);
     renderMenuButton(t);
@@ -304,11 +319,12 @@ window.NLBScreen = function (ctx) {
     // страницу (её запускает player.js); с порциями — фраза на каждую новую порцию
   }
 
-  function renderThemeBackground(vn, t) {
+  function renderThemeBackground(none, t) {
     // STANDARD: экспорт ставит странице без своего фона bgimg = nlb:std_bg() (gfx/bg.jpg темы);
-    // если его нет — scr.gfx.bg из theme.ini. Фон — на экран темы (scr.w×scr.h)
+    // если его нет — scr.gfx.bg из theme.ini. Фон — на экран темы (scr.w×scr.h). none — фона темы
+    // нет: VN или своя картинка-фон страницы
     const bg = $('stage-theme-bg');
-    const path = vn ? '' : (t.pageBackground || t.backgroundImage);
+    const path = none ? '' : (t.pageBackground || t.backgroundImage);
     bg.hidden = !path;
     if (!path) return;
     place(bg, t.screenArea);
@@ -319,15 +335,50 @@ window.NLBScreen = function (ctx) {
     }
   }
 
-  function renderPicture(s, vn, t) {
-    // VN и картинка-фон — во весь экран; STANDARD — в области scr.gfx, вписанной по центру
+  // Размер картинки страницы — по первому её кадру (у анимации адрес кадра меняется каждый тик)
+  const firstFrameUrl = new Map();
+  function sizeUrl(image) {
+    const url = ctx.imageUrl(image);
+    if (!url) return null;
+    const key = ctx.imageKey(image);
+    if (!firstFrameUrl.has(key)) firstFrameUrl.set(key, url);
+    return firstFrameUrl.get(key);
+  }
+  // Картинка в окне текста (scr.gfx.mode fixed/embedded): размер с масштабом темы, вписанный в
+  // ширину окна и наибольшую высоту scr.gfx.h (game_pict_scale INSTEAD)
+  function fitPicture(size, t) {
+    if (!size) return null;
+    let w = size.w * t.scale, h = size.h * t.scale;
+    const maxH = t.gfxMaxHeight == null ? Infinity : t.gfxMaxHeight;
+    const k = Math.min(1, t.text.w / w, maxH / h);
+    return { w: Math.floor(w * k), h: Math.floor(h * k) };
+  }
+  const inWindowPicture = (s, vn, t) => !vn && !s.imageIsBackground && (t.gfxMode === 'fixed' || t.gfxMode === 'embedded');
+
+  function renderPicture(s, vn, t, size) {
+    // VN — во весь экран; STANDARD: картинка-фон — как фон INSTEAD (в своём размере с масштабом
+    // темы, по центру экрана темы, вокруг — цвет рамки); scr.gfx.mode float — в области scr.gfx,
+    // вписанной по центру; fixed — в окне текста под заголовком (место задаёт renderStandardText);
+    // embedded — в тексте сцены (тоже там), а этот элемент не нужен
     const pic = $('stage-picture');
     const url = ctx.imageUrl(s.pageImage);
-    if (!url) { pic.hidden = true; pic.removeAttribute('src'); pic.dataset.key = ''; return; }
+    const embedded = !vn && !s.imageIsBackground && t.gfxMode === 'embedded';
+    if (!url || embedded) { pic.hidden = true; pic.removeAttribute('src'); pic.dataset.key = ''; return; }
     pic.hidden = false;
-    const full = vn || s.imageIsBackground;
-    place(pic, full ? { x: 0, y: 0, w: W, h: H } : t.pictureArea);
-    pic.style.objectFit = full ? 'fill' : 'contain';
+    pic.style.objectFit = 'fill';
+    if (vn) {
+      place(pic, { x: 0, y: 0, w: W, h: H });
+    } else if (s.imageIsBackground) {
+      const a = t.screenArea;
+      const w = size ? size.w * t.scale : a.w, h = size ? size.h * t.scale : a.h;
+      place(pic, { x: a.x + (a.w - w) / 2, y: a.y + (a.h - h) / 2, w: w, h: h });
+    } else if (t.gfxMode === 'fixed') {
+      const r = fitPicture(size, t);
+      if (r) { pic.style.width = r.w + 'px'; pic.style.height = r.h + 'px'; }
+    } else {
+      place(pic, t.pictureArea);
+      pic.style.objectFit = 'contain';
+    }
     // ключ — без номера текущего кадра: на каждом тике таймера он новый, а анимацию ведёт аниматор
     const key = ctx.imageKey(s.pageImage);
     if (pic.dataset.key !== key) {
@@ -553,8 +604,9 @@ window.NLBScreen = function (ctx) {
   // листания темы (win.gfx.up/down; без них — символы)
   function fillTextWindow(paragraphs, w, rect, lh, arrows) {
     const view = $('stage-text'), inner = $('stage-text-inner');
-    inner.textContent = '';
     view.hidden = false;
+    const same = unchanged(inner, paragraphs, w, rect, lh, textScale, theme().align);
+    if (!same) inner.textContent = '';
     const pageH = Math.max(lh, Math.floor(rect.h / lh) * lh);
     place(view, { x: rect.x, y: rect.y, w: rect.w, h: pageH });
     setColors(view, w);
@@ -565,13 +617,20 @@ window.NLBScreen = function (ctx) {
     view.style.setProperty('--em-style', w.fontItalic ? 'normal' : 'italic');
     const align = theme().align;
     view.style.textAlign = align === 'justify' || align === 'center' || align === 'right' ? align : 'left';
-    for (const p of paragraphs) {
-      if (isBlank(p) && !p.cls) {
-        const gap = el('div', 'stage-gap');
-        gap.style.height = Math.floor(lh / 2) + 'px';
-        inner.appendChild(gap);
-      } else {
-        inner.appendChild(paragraphNode(p));
+    if (!same) {
+      for (const p of paragraphs) {
+        if (p.picture) {
+          // картинка в тексте сцены (scr.gfx.mode = embedded): по центру, прокручивается с текстом
+          const box = el('div', 'stage-embedded');
+          box.appendChild(embeddedPicture(p.picture, p.size));
+          inner.appendChild(box);
+        } else if (isBlank(p) && !p.cls) {
+          const gap = el('div', 'stage-gap');
+          gap.style.height = Math.floor(lh / 2) + 'px';
+          inner.appendChild(gap);
+        } else {
+          inner.appendChild(paragraphNode(p));
+        }
       }
     }
     // Не уместившиеся строки листаются страницами окна: строка, которая видна не целиком, не
@@ -594,8 +653,12 @@ window.NLBScreen = function (ctx) {
     up.hidden = !arrows || scr.scroll <= 0;
     down.hidden = !arrows || !scr.more;
     if (arrows) {
-      arrow(up, w.upImage, '▲', rect.x + rect.w + 6, rect.y, false, lh, w);
-      arrow(down, w.downImage, '▼', rect.x + rect.w + 6, rect.y + pageH, true, lh, w);
+      // места стрелок — win.up.x/y, win.down.x/y темы (левый верхний угол картинки), иначе справа
+      // от окна: вверху и внизу
+      const has = (v) => v !== null && v !== undefined;
+      arrow(up, w.upImage, '\u25b2', has(w.upX) ? w.upX : rect.x + rect.w + 6, has(w.upY) ? w.upY : rect.y, false, lh, w);
+      arrow(down, w.downImage, '\u25bc', has(w.downX) ? w.downX : rect.x + rect.w + 6,
+        has(w.downY) ? w.downY : rect.y + pageH, !has(w.downY), lh, w);
     }
   }
   // Верхние края строк текста окна (в координатах содержимого, без прокрутки)
@@ -748,34 +811,83 @@ window.NLBScreen = function (ctx) {
     return { header: header, scene: scene };
   }
 
-  function renderStandardText(s, t) {
+  // Элемент картинки в тексте сцены — один на всё время: перестройка текста на каждом тике
+  // таймера не должна перезапускать её анимацию
+  const embeddedImg = el('img');
+  embeddedImg.alt = '';
+  embeddedImg.draggable = false;
+  function embeddedPicture(image, size) {
+    const key = ctx.imageKey(image);
+    if (embeddedImg.dataset.key !== key) {
+      embeddedImg.dataset.key = key;
+      embeddedImg.src = ctx.imageUrl(image);
+      ctx.animate(embeddedImg, image);
+    }
+    embeddedImg.style.width = size ? size.w + 'px' : '';
+    embeddedImg.style.height = size ? size.h + 'px' : '';
+    return embeddedImg;
+  }
+
+  function renderStandardText(s, t, pageSize) {
     const w = t.text;
     const lh = Math.floor(fontHeight(fsize(w), family(w.font)) * w.lineHeight);
     const { header, scene } = composeStandard(s, t.waysBottom);
+    // картинка в окне текста (scr.gfx.mode fixed/embedded, game.c INSTEAD): fixed — под заголовком,
+    // не прокручивается, ниже — пути (а без них — отступ win_spacing), затем текст; embedded — в
+    // начале текста сцены, за ней пути и сцена, всё прокручивается
+    const picture = inWindowPicture(s, false, t) && ctx.imageUrl(s.pageImage) ? fitPicture(pageSize, t) : null;
+    const spacing = Math.floor(fsize(w) * w.lineHeight / 2);  // game.c: win_spacing
+    if (picture && t.gfxMode === 'embedded') {
+      const ways = header.findIndex((p) => p.cls === 'ways');
+      const moved = ways >= 0 ? header.splice(ways, 1) : [];
+      scene.unshift({ picture: s.pageImage, size: picture, runs: [] }, ...moved);
+    }
+    const fixed = picture && t.gfxMode === 'fixed';
     // картинка-фон: под окном текста — тёмная подложка
     const panel = $('stage-panel');
     panel.hidden = !s.imageIsBackground;
     if (s.imageIsBackground) place(panel, { x: w.x - 16, y: w.y - 10, w: w.w + 32, h: w.h + 20 });
     // заголовок и пути (INSTEAD: el_title, el_ways) — над сценой, не прокручиваются
     const head = $('stage-header');
-    head.textContent = '';
-    head.hidden = !header.length;
+    head.hidden = !header.length && !fixed;
     let headerH = 0;
-    if (header.length) {
-      head.style.left = w.x + 'px';
-      head.style.top = w.y + 'px';
-      head.style.width = w.w + 'px';
-      setColors(head, w);
-      head.style.font = fontCss(fsize(w), family(w.font));
-      head.style.lineHeight = lh + 'px';
-      head.style.setProperty('--font-bold', family(w.fontBold || w.font));
-      header.forEach((p) => {
-        const node = paragraphNode(p);
-        // game.c: win_spacing = font_size * font_height / 2 — после заголовка
-        if (p.cls === 'title') node.style.marginBottom = Math.floor(fsize(w) * w.lineHeight / 2) + 'px';
-        head.appendChild(node);
-      });
+    if (header.length || fixed) {
+      if (!unchanged(head, header, fixed ? picture : null, w, lh, textScale)) {
+        head.textContent = '';
+        head.style.left = w.x + 'px';
+        head.style.top = w.y + 'px';
+        head.style.width = w.w + 'px';
+        setColors(head, w);
+        head.style.font = fontCss(fsize(w), family(w.font));
+        head.style.lineHeight = lh + 'px';
+        head.style.setProperty('--font-bold', family(w.fontBold || w.font));
+        let spacer = null;
+        header.forEach((p) => {
+          const node = paragraphNode(p);
+          // game.c: win_spacing = font_size * font_height / 2 — после заголовка
+          if (p.cls === 'title') node.style.marginBottom = spacing + 'px';
+          if (fixed && p.cls === 'ways' && !spacer) {
+            spacer = el('div', 'picture-spacer');
+            spacer.style.height = picture.h + 'px';
+            head.appendChild(spacer);
+          }
+          head.appendChild(node);
+        });
+        if (fixed && !spacer) {
+          // путей над текстом нет — после картинки отступ
+          spacer = el('div', 'picture-spacer');
+          spacer.style.height = (picture.h + spacing) + 'px';
+          head.appendChild(spacer);
+        }
+      }
+      if (fixed) {
+        const pic = $('stage-picture');
+        pic.style.left = (w.x + (w.w - picture.w) / 2) + 'px';
+        pic.style.top = (w.y + head.querySelector('.picture-spacer').offsetTop) + 'px';
+      }
       headerH = head.offsetHeight;
+    } else {
+      head.dataset.sig = '';
     }
     fillTextWindow(scene, w, { x: w.x, y: w.y + headerH, w: w.w, h: Math.max(lh, w.h - headerH) }, lh, true);
   }
@@ -783,6 +895,8 @@ window.NLBScreen = function (ctx) {
   function renderChoicesScreen(s, t) {
     // Варианты посередине экрана на полупрозрачной панели (GameScreen::renderChoicesScreen)
     const panel = $('stage-choices');
+    panel.hidden = false;
+    if (unchanged(panel, s.choices, t.text, textScale)) return;
     panel.textContent = '';
     const w = t.text;
     const fs = fsize(w) * 1.25;
@@ -816,6 +930,7 @@ window.NLBScreen = function (ctx) {
 
   function renderInventory(s, vn, t) {
     const inv = $('stage-inventory');
+    if (unchanged(inv, s.inventory, state.selected, vn, t.inventory, t.inventoryHorizontal, t.inventoryAlign, textScale)) return;
     inv.textContent = '';
     if (!s.inventory.length) { inv.hidden = true; return; }
     inv.hidden = false;
