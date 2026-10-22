@@ -280,17 +280,113 @@
     }
     return image.file ? mediaUrl(image.file) : null;
   }
-  // Анимация (картинка с числом кадров): кадры сменяются по 25 в секунду, как nlb._fps
+  // Покадровая анимация (картинка с числом кадров): 25 кадров в секунду, как nlb._fps.
+  // У каждого элемента — один аниматор (повторный вызов с той же картинкой его не перезапускает).
+  // Номер кадра считается по времени от момента, когда готов первый кадр; кадры загружаются
+  // заранее (не больше FRAME_LOADS запросов сразу) и показываются, только когда декодированы.
+  // Загрузка подстраивается под сеть: кадры заказываются с опережением на время доставки, а если
+  // сеть не успевает за 25 кадрами в секунду — через один, два… (сколько успевает); не успевшие
+  // кадры пропускаются, длительность ролика сохраняется.
+  // Пока открыто меню или вкладка скрыта, анимация стоит (как пауза в меню GameScreen)
+  const FRAME_MS = 40, FRAME_BUFFER = 50, FRAME_LOADS = 8;
+  const animators = new Map();  // элемент -> аниматор
+  let animationFrame = 0, animationLast = 0;
+
+  // Картинка без номера текущего кадра: сервер сообщает его на каждом тике таймера
+  const imageKey = (image) => image ? [image.file, image.framePattern, image.frameCount, image.looped].join('|') : '';
+
   function animate(img, image) {
-    if (!(image.frameCount > 0)) return;
-    let tick = Math.max(0, (image.currentFrame || 1) - 1);
-    const id = setInterval(() => {
-      if (!img.isConnected) { clearInterval(id); return; }
-      tick++;
-      const frame = image.looped ? (tick % image.frameCount) + 1 : Math.min(tick, image.frameCount - 1) + 1;
-      img.src = imageUrl(image, frame);
-      if (!image.looped && tick >= image.frameCount - 1) clearInterval(id);
-    }, 40);
+    const old = animators.get(img);
+    if (!image || !(image.frameCount > 0) || !image.framePattern) {
+      if (old) animators.delete(img);
+      return;
+    }
+    const key = imageKey(image);
+    if (old && old.key === key) return;
+    animators.set(img, {
+      key: key, image: image, count: image.frameCount, looped: !!image.looped,
+      start: Math.max(1, Math.min(image.currentFrame || 1, image.frameCount)),
+      elapsed: -1,           // время от первого кадра, мс; -1 — первый кадр ещё не готов
+      shown: 0,              // показанный кадр
+      frames: new Map(),     // номер кадра -> { img, ready }
+      loading: 0,
+      loadMs: 0,             // среднее время доставки кадра
+      done: []               // когда загрузились последние кадры (скорость сети, кадров в секунду)
+    });
+    if (!animationFrame) {
+      animationLast = performance.now();
+      animationFrame = requestAnimationFrame(animationTick);
+    }
+  }
+
+  // Номер кадра через steps кадров от start (с зацикливанием или до последнего)
+  function frameAfter(a, steps) {
+    const n = a.start - 1 + steps;
+    return a.looped ? (n % a.count) + 1 : Math.min(n, a.count - 1) + 1;
+  }
+
+  function loadFrame(a, frame) {
+    if (a.frames.has(frame) || a.loading >= FRAME_LOADS) return;
+    const entry = { img: new Image(), ready: false };
+    a.frames.set(frame, entry);
+    a.loading++;
+    const begin = performance.now();
+    const done = () => {
+      a.loading--;
+      const now = performance.now();
+      a.loadMs = a.loadMs ? a.loadMs * 0.8 + (now - begin) * 0.2 : now - begin;
+      a.done.push(now);
+      while (a.done.length && now - a.done[0] > 2000) a.done.shift();
+    };
+    entry.img.src = imageUrl(a.image, frame);
+    entry.img.decode().then(() => { entry.ready = true; done(); }, () => { done(); });
+  }
+
+  function animationTick(now) {
+    const dt = Math.min(now - animationLast, 1000);
+    animationLast = now;
+    const paused = document.hidden || !$('dialog').hidden;
+    for (const [img, a] of animators) {
+      if (!img.isConnected) { animators.delete(img); continue; }
+      const step = a.elapsed < 0 ? 0 : Math.floor(a.elapsed / FRAME_MS);
+      // загрузка вперёд: с опережением на время доставки (lead) и через stride кадров, если сеть
+      // не успевает (rate — сколько кадров в секунду она доставляет); первый кадр — без пропусков
+      const rate = a.done.length / 2;
+      const stride = a.elapsed < 0 || a.done.length < 8 ? 1 : Math.max(1, Math.ceil(1000 / FRAME_MS / Math.max(rate, 1)));
+      const lead = a.elapsed < 0 ? 0 : Math.ceil(a.loadMs / FRAME_MS);
+      for (let i = lead; i < lead + FRAME_BUFFER && a.loading < FRAME_LOADS; i += stride) {
+        if (!a.looped && a.start - 1 + step + i >= a.count) break;
+        loadFrame(a, frameAfter(a, step + i));
+      }
+      const first = a.frames.get(a.start);
+      if (a.elapsed < 0) {
+        if (!first || !first.ready) continue;  // часы — с готового первого кадра
+        a.elapsed = 0;
+      } else if (!paused) {
+        a.elapsed += dt;
+      }
+      // показать нужный кадр, а если он не готов — последний готовый перед ним
+      const target = Math.floor(a.elapsed / FRAME_MS);
+      for (let back = 0; back <= Math.min(target, FRAME_BUFFER); back++) {
+        const frame = frameAfter(a, target - back);
+        const entry = a.frames.get(frame);
+        if (entry && entry.ready) {
+          if (frame !== a.shown) {
+            a.shown = frame;
+            img.src = entry.img.src;
+          }
+          break;
+        }
+        if (frame === a.shown) break;  // дальше назад — уже показанное
+      }
+      // прошедшие кадры больше не нужны
+      for (const frame of a.frames.keys()) {
+        const ahead = a.looped ? (frame - frameAfter(a, target) + a.count) % a.count : frame - frameAfter(a, target);
+        if (ahead < 0 || ahead > FRAME_BUFFER) a.frames.delete(frame);
+      }
+      if (!a.looped && a.start - 1 + target >= a.count - 1 && a.shown === a.count) animators.delete(img);
+    }
+    animationFrame = animators.size ? requestAnimationFrame(animationTick) : 0;
   }
   // Ссылка в тексте экрана (переход, объект, предмет)
   function link(text, onClick, cls) {
@@ -486,7 +582,7 @@
 
   const screen = window.NLBScreen({
     el: el, api: api, store: store, link: link, command: command, dialog: dialog, mainMenu: mainMenu,
-    imageUrl: (image) => imageUrl(image), animate: animate, playVoice: playVoice, playSoundUrl: playSoundUrl,
+    imageUrl: (image) => imageUrl(image), imageKey: imageKey, animate: animate, playVoice: playVoice, playSoundUrl: playSoundUrl,
     ui: () => ui, bookId: () => game.bookId
   });
 

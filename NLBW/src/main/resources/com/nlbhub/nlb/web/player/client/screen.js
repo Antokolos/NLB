@@ -328,7 +328,8 @@ window.NLBScreen = function (ctx) {
     const full = vn || s.imageIsBackground;
     place(pic, full ? { x: 0, y: 0, w: W, h: H } : t.pictureArea);
     pic.style.objectFit = full ? 'fill' : 'contain';
-    const key = JSON.stringify(s.pageImage);
+    // ключ — без номера текущего кадра: на каждом тике таймера он новый, а анимацию ведёт аниматор
+    const key = ctx.imageKey(s.pageImage);
     if (pic.dataset.key !== key) {
       pic.dataset.key = key;
       pic.src = url;
@@ -449,7 +450,7 @@ window.NLBScreen = function (ctx) {
   }
 
   function fillObject(node, o, r, spriteLabels) {
-    const key = JSON.stringify([o.image, o.hoverImage, o.label, o.active, r.textOnly, spriteLabels]);
+    const key = JSON.stringify([ctx.imageKey(o.image), ctx.imageKey(o.hoverImage), o.label, o.active, r.textOnly, spriteLabels]);
     place(node, r);
     if (node.dataset.key === key) return;
     node.dataset.key = key;
