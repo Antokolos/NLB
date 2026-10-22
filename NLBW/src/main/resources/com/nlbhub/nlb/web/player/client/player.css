@@ -53,7 +53,12 @@ body.playing { background: #0c0c10; overflow: hidden; }
   transform-origin: 0 0; overflow: hidden; background: #011322;
   user-select: none; -webkit-user-select: none; cursor: default; line-height: normal;
 }
+/* экран темы (scr.w×scr.h) — цветом scr.col.bg; вокруг — цвет рамки scr.col.brd (фон сцены) */
+.stage-screen { position: absolute; }
 .stage-image { position: absolute; display: block; }
+/* картинка в тексте сцены (scr.gfx.mode = embedded) */
+.stage-embedded { text-align: center; }
+.stage-embedded img { display: inline-block; vertical-align: top; }
 .stage-objects { position: absolute; inset: 0; }
 .stage-obj { position: absolute; }
 .stage-obj img { display: block; pointer-events: none; }
