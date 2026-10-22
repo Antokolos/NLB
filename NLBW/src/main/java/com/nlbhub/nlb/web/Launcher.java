@@ -56,8 +56,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Сервер веб-плеера редактора (http://localhost:8111/play/): книги каталога, где лежит книга
- * редактора, и сама книга редактора со всеми несохранёнными правками
+ * Сервер веб-плеера редактора (http://localhost:8111/play/): только книга редактора, со всеми
+ * несохранёнными правками. Других книг каталога в списке нет: список загружал бы каждую из них
+ * (у большой книги — секунды), а играть из редактора нужно ту, что редактируется
  *
  * @author Anton P. Kolosov
  * @version 1.0 11/13/13
@@ -137,13 +138,6 @@ public class Launcher implements Runnable {
 
     public boolean isRunning() {
         return m_server.isRunning();
-    }
-
-    public void setNLBLibraryRoot(final String path) throws LauncherException {
-        if (m_server.isRunning()) {
-            throw new LauncherException("Cannot change NLB library root while server is running!");
-        }
-        m_playerLibrary.setRoot(new java.io.File(path));
     }
 
     public void putNLBInMemoryToCache(

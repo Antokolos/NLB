@@ -97,7 +97,8 @@
     bookId: params.get('book'),
     session: null,
     state: null,
-    mode: params.get('mode') === 'standard' ? 'standard' : 'vn',
+    // режим из адреса; без него — по теме книги (её сообщает сервер вместе с темой, startGame)
+    mode: params.get('mode') ? (params.get('mode') === 'standard' ? 'standard' : 'vn') : null,
     lastPage: null,
     queue: Promise.resolve(),
     timer: null,
@@ -147,6 +148,7 @@
 
   async function startGame() {
     await screen.loadTheme();
+    if (!game.mode) game.mode = screen.defaultMode();
     const saved = store.session('nlb.session.' + game.bookId + '.' + game.mode);
     if (saved) {
       try {
