@@ -38,6 +38,7 @@ window.NLBScreen = function (ctx) {
   const $ = (id) => document.getElementById(id);
   const el = ctx.el;
   let themes = DEFAULT_THEMES;
+  let defaultMode = 'vn';  // режим книги по умолчанию (по её теме) — для адреса без ?mode=
   let state = null;
   const scr = {
     portion: 0,            // текущая порция текста (VN)
@@ -90,6 +91,7 @@ window.NLBScreen = function (ctx) {
     try {
       const data = await ctx.api('books/' + encodeURIComponent(ctx.bookId()) + '/theme');
       themes = { vn: data.vn || DEFAULT_THEMES.vn, standard: data.standard || DEFAULT_THEMES.standard };
+      defaultMode = data.mode === 'standard' ? 'standard' : 'vn';
     } catch (e) {
       themes = DEFAULT_THEMES;
     }
@@ -992,6 +994,7 @@ window.NLBScreen = function (ctx) {
 
   return {
     loadTheme: loadTheme,
+    defaultMode: () => defaultMode,
     textSizeItem: textSizeItem,
     update: update,
     render: render,

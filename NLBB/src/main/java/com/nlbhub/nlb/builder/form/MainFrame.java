@@ -1071,9 +1071,6 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                         PaneEditorInfo editorInfo = getMainPaneInfo();
                         NonLinearBook mainNLB = editorInfo.getPaneNlbFacade().getNlb();
                         final File rootDir = mainNLB.getRootDir();
-                        if (rootDir != null) {
-                            m_launcher.setNLBLibraryRoot(rootDir.getParent());
-                        }
                         String bookId = (rootDir != null) ? rootDir.getName() : DEFAULT_BOOK_ID;
                         m_launcher.clearNLBCache();
                         // Always prefer in-memory data
@@ -1081,7 +1078,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                         Thread thread = new Thread(m_launcher);
                         thread.start();
                         Thread.sleep(START_SERVER_TIMEOUT);
-                        // новый плеер (старый отладочный остаётся по адресу /nlb/<книга>/start)
+                        // веб-плеер: в списке книг сервера редактора — только эта книга
                         BareBonesBrowserLaunch.openURL(
                                 "http://localhost:8111/play/?book=" + URLEncoder.encode(bookId, StandardCharsets.UTF_8)
                                         + "&mode=" + BookLibrary.defaultMode(mainNLB)

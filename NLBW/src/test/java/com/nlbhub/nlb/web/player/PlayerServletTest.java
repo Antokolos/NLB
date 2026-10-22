@@ -2,6 +2,7 @@ package com.nlbhub.nlb.web.player;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.LinkImpl;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.PageImpl;
@@ -42,7 +43,10 @@ public class PlayerServletTest {
      * Две комнаты: «Комната 1» -> «Комната 2» и обратно
      */
     private static NonLinearBookImpl book() {
-        NonLinearBookImpl nlb = new NonLinearBookImpl();
+        return book(new NonLinearBookImpl());
+    }
+
+    private static NonLinearBookImpl book(NonLinearBookImpl nlb) {
         PageImpl first = new PageImpl(nlb);
         first.setTexts(text("Комната 1", "Room 1"));
         nlb.addPage(first);
@@ -63,6 +67,13 @@ public class PlayerServletTest {
     public static void start() throws Exception {
         BookLibrary library = new BookLibrary(null);
         library.putEditorBook("rooms", book());
+        // книга с темой STANDARD (тему книги меняет только команда редактора — здесь подкласс)
+        library.putEditorBook("hall", book(new NonLinearBookImpl() {
+            @Override
+            public Theme getTheme() {
+                return Theme.STANDARD;
+            }
+        }));
         s_server = PlayerServer.create(library, null, "localhost", 0);
         s_server.start();
         s_base = "http://localhost:" + ((ServerConnector) s_server.getConnectors()[0]).getLocalPort() + "/play/";
@@ -115,9 +126,13 @@ public class PlayerServletTest {
 
     @Test
     public void listsBooksAndServesClient() throws Exception {
-        JsonNode books = JSON.readTree(request("api/books", null).body);
-        assertEquals("rooms", books.path("books").path(0).path("id").asText());
-        assertEquals("[\"en\",\"ru\"]", books.path("books").path(0).path("languages").toString());
+        JsonNode books = JSON.readTree(request("api/books", null).body).path("books");
+        assertEquals(2, books.size());
+        assertEquals("hall", books.path(0).path("id").asText());
+        assertEquals("standard", books.path(0).path("mode").asText());
+        assertEquals("rooms", books.path(1).path("id").asText());
+        assertEquals("vn", books.path(1).path("mode").asText());
+        assertEquals("[\"en\",\"ru\"]", books.path(1).path("languages").toString());
         Response client = request("", null);
         assertEquals(200, client.status);
         assertTrue(client.body.contains("static/player.js"));
@@ -156,6 +171,19 @@ public class PlayerServletTest {
         assertTrue(request("theme/rooms/base/%2E%2E/theme.ini", null).status >= 400);
         assertEquals(404, request("theme/nobook/base/theme.ini", null).status);
         assertEquals(404, request("api/books/nobook/theme", null).status);
+    }
+
+    @Test
+    public void modeByBookTheme() throws Exception {
+        // без режима в запросе — по теме книги: STANDARD -> standard, иначе (DEFAULT) -> vn
+        assertEquals("vn", JSON.readTree(request("api/books/rooms/theme", null).body).path("mode").asText());
+        assertEquals("standard", JSON.readTree(request("api/books/hall/theme", null).body).path("mode").asText());
+        assertEquals("vn", post("api/sessions", "{\"book\":\"rooms\"}").path("mode").asText());
+        JsonNode hall = post("api/sessions", "{\"book\":\"hall\"}");
+        assertEquals("standard", hall.path("mode").asText());
+        assertEquals("Standard", hall.path("screen").path("layout").asText());
+        // заданный режим важнее темы
+        assertEquals("vn", post("api/sessions", "{\"book\":\"hall\",\"mode\":\"vn\"}").path("mode").asText());
     }
 
     @Test

@@ -72,13 +72,14 @@ import java.util.concurrent.ConcurrentHashMap;
  *   GET  /play/static/&lt;файл&gt;             файлы клиента
  *   GET  /play/api/books                 книги библиотеки
  *   POST /play/api/sessions              новая игра {book, languages?: [по предпочтению],
- *                                        mode?: vn|standard, achievements?}
+ *                                        mode?: vn|standard (нет — по теме книги), achievements?}
  *   GET  /play/api/sessions/&lt;id&gt;         состояние игры
  *   POST /play/api/sessions/&lt;id&gt;/&lt;команда&gt;
  *        choose {index} · object {id} · item {id} · clear · look · advance {ms} · restart ·
  *        tryAgain · finishExternal · save -&gt; {save, time, label} · load {save} · language {language}
  *   GET  /play/media/&lt;книга&gt;/&lt;имя файла&gt; картинки и звуки книги и её модулей
- *   GET  /play/api/books/&lt;книга&gt;/theme   оформление экрана VN (тема INSTEAD, см. ScreenTheme)
+ *   GET  /play/api/books/&lt;книга&gt;/theme   оформление экрана (тема INSTEAD, см. ScreenTheme) и
+ *                                        режим книги по умолчанию
  *   GET  /play/theme/&lt;книга&gt;/&lt;base|game&gt;/&lt;путь&gt; файлы темы (шрифты, кнопка меню)
  * </pre>
  * Каждая команда отвечает состоянием игры: снимок экрана (ScreenModel.toJson), порции текста VN,
@@ -174,6 +175,9 @@ public class PlayerServlet extends HttpServlet {
                 ScreenTheme.Root[] roots = ScreenTheme.roots(m_library.bookDir(p[2]));
                 theme.set("vn", ScreenTheme.load(roots, true).toJson());
                 theme.set("standard", ScreenTheme.load(roots, false).toJson());
+                // режим по умолчанию — для адреса без ?mode=
+                NonLinearBook book = m_library.book(p[2], null);
+                theme.put("mode", book == null ? "vn" : BookLibrary.defaultMode(book));
                 sendJson(response, theme);
             } else if (p[0].equals("api") && p.length == 3 && p[1].equals("sessions")) {
                 WebSession session = session(p[2]);
@@ -278,7 +282,12 @@ public class PlayerServlet extends HttpServlet {
         if (book == null) {
             throw new HttpError(500, "книга не загрузилась: " + bookId);
         }
-        PlayerEngine.ExportMode mode = "standard".equalsIgnoreCase(body.path("mode").asText())
+        // режим не задан — по теме книги, как в списке книг (тема STANDARD — standard, иначе vn)
+        String modeName = body.path("mode").asText("");
+        if (modeName.isEmpty()) {
+            modeName = BookLibrary.defaultMode(book);
+        }
+        PlayerEngine.ExportMode mode = "standard".equalsIgnoreCase(modeName)
                 ? PlayerEngine.ExportMode.STANDARD : PlayerEngine.ExportMode.VN;
         Achievements achievements = new Achievements();
         if (body.path("achievements").isObject()) {
