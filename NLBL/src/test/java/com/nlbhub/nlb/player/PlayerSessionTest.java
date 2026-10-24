@@ -65,7 +65,8 @@ public class PlayerSessionTest {
     @Test
     public void menuItemActsOnFirstClick() {
         // Предмет без применений (menu экспорта: menu = act) — срабатывает с первого щелчка, как
-        // кнопки боя «Фронтира»; предмет с применением (obj) — по-прежнему выбирается
+        // кнопки боя «Фронтира»; предмет с применением (obj) — по-прежнему выбирается; при
+        // выбранном предмете щелчок по menu INSTEAD игнорирует (game.c), выбор остаётся
         TestBook book = new TestBook();
         PageImpl room = book.page("Комната");
         ObjImpl button = book.obj(room, "button", "Тут {кнопка}.", "Кнопка", true);
@@ -73,6 +74,7 @@ public class PlayerSessionTest {
         ObjImpl key = book.obj(room, "key", "На полу {ключ}.", "Ключ", true);
         ObjImpl door = book.obj(room, "door", "Здесь {дверь}.", "Дверь", false);
         key.addLink(new LinkImpl(key, door.getId()));
+        ObjImpl lever = book.obj(room, "lever", "Тут {рычаг}.", "Рычаг", true);
         PlayerSession session = book.session();
         assertTrue(session.clickObject(button.getId()));
         assertTrue(session.clickObject(key.getId()));
@@ -82,12 +84,18 @@ public class PlayerSessionTest {
         assertTrue(session.clickItem(button.getId()));
         assertEquals("", session.selectedItem());
         assertEquals("Щёлк.", reaction(session.screen()));
-        // выбранный предмет и щелчок по menu: menu срабатывает, выбор сбрасывается
+        // выбранный предмет и щелчок по menu (в инвентаре и на сцене) — ничего, выбор остаётся
+        assertTrue(engine.isMenuItem(lever.getId()));
         assertTrue(session.clickItem(key.getId()));
         assertEquals(key.getId(), session.selectedItem());
-        assertTrue(session.clickItem(button.getId()));
+        long before = engine.screen().getRevision();
+        assertFalse(session.clickItem(button.getId()));
+        assertFalse(session.clickObject(lever.getId()));
+        assertEquals(key.getId(), session.selectedItem());
+        assertEquals(before, engine.screen().getRevision());
+        // а щелчок по obj на сцене — применение
+        assertTrue(session.clickObject(door.getId()));
         assertEquals("", session.selectedItem());
-        assertEquals("Щёлк.", reaction(session.screen()));
     }
 
     @Test
