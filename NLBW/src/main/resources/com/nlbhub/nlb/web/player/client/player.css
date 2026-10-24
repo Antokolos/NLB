@@ -126,3 +126,5 @@ body.playing { background: #0c0c10; overflow: hidden; }
 .dialog-box .menu-item:hover { color: rgb(255, 215, 0); }
 .dialog-box .menu-item:disabled { color: rgb(150, 150, 150); cursor: default; }
 .dialog-box .note { color: rgb(235, 230, 220); }
+/* картинка объекта в тексте STANDARD (img() в описании объекта) — посередине строки, как в INSTEAD */
+.stage .text-image { display: inline-block; vertical-align: middle; }

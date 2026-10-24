@@ -259,7 +259,9 @@ public class ScreenModel {
     }
 
     /**
-     * Фрагмент текста: обычный текст или ссылка ({метка} из описания объекта)
+     * Фрагмент текста: обычный текст или ссылка ({метка} из описания объекта). У метки объекта
+     * с картинкой (тема STANDARD, не графический объект) — картинка объекта перед текстом метки,
+     * как img() в {..} экспорта STEAD (decorateObjText); у метки {} — только картинка
      */
     public static final class TextRun {
         public enum Kind {
@@ -274,11 +276,17 @@ public class ScreenModel {
         final Kind m_kind;
         final String m_text;
         final String m_target;
+        final ImageRef m_image;
 
         TextRun(Kind kind, String text, String target) {
+            this(kind, text, target, new ImageRef());
+        }
+
+        TextRun(Kind kind, String text, String target, ImageRef image) {
             m_kind = kind;
             m_text = text;
             m_target = target;
+            m_image = image;
         }
 
         public Kind getKind() {
@@ -293,8 +301,15 @@ public class ScreenModel {
             return m_target;
         }
 
+        /**
+         * Картинка объекта в тексте; пусто — нет
+         */
+        public ImageRef getImage() {
+            return m_image;
+        }
+
         TextRun withText(String text) {
-            return new TextRun(m_kind, text, m_target);
+            return new TextRun(m_kind, text, m_target, m_image);
         }
 
         ObjectNode toJson() {
@@ -302,6 +317,9 @@ public class ScreenModel {
             result.put("kind", m_kind.name());
             result.put("text", m_text);
             result.put("target", m_target);
+            if (!m_image.isEmpty()) {
+                result.set("image", m_image.toJson());
+            }
             return result;
         }
     }
@@ -729,7 +747,7 @@ public class ScreenModel {
     }
 
     /**
-     * Описания объектов — одним абзацем через пробел (STEAD)
+     * Описания объектов — через пробел (STEAD obj_look), «^» и переводы строк — новый абзац
      */
     public List<Paragraph> getObjectsText() {
         return Collections.unmodifiableList(m_objectsText);

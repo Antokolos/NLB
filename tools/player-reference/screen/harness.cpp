@@ -91,7 +91,9 @@ std::string image(const ImageRef& i) {
 }
 std::string paragraph(const Paragraph& p) {
     return "{\"runs\":" + list(p.runs, [](const TextRun& r) {
-        return "{\"kind\":" + str(runKind(r.kind)) + ",\"text\":" + str(r.text) + ",\"target\":" + str(r.target) + "}";
+        // картинка — только у метки объекта с картинкой (как toJson в Java)
+        return "{\"kind\":" + str(runKind(r.kind)) + ",\"text\":" + str(r.text) + ",\"target\":" + str(r.target) +
+               (r.image.empty() ? "" : ",\"image\":" + image(r.image)) + "}";
     }) + ",\"joinPrevious\":" + b(p.joinPrevious) + "}";
 }
 std::string paragraphs(const std::vector<Paragraph>& ps) { return list(ps, paragraph); }
