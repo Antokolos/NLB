@@ -1369,19 +1369,29 @@ vn = obj {
             s._bg = false;
             return
         end
-        if s.bg_spr then
-            if force or s._bg ~= picture then
-                local bg_spr = gr:load(picture);
-                gr:copy(bg_spr, s.bg_spr);
-                gr:free(bg_spr);
-            else
-                log:dbg("Background " .. picture .. " is already set, doing nothing");
-            end
-        else
-            s.bg_spr = gr:load(picture)
+        if s.bg_spr and not force and s._bg == picture then
+            log:dbg("Background " .. picture .. " is already set, doing nothing");
+            return
         end
-        if not s.bg_spr then
+        local pic = gr:load(picture);
+        if not pic then
             error("Can not load bg sprite:" .. tostring(picture))
+        end
+        local w, h = gr:size(pic);
+        local sw, sh = tonumber(s.scr_w), tonumber(s.scr_h);
+        if w ~= sw or h ~= sh then
+            -- фон не во весь экран темы (кадры заставки 480x360 в теме 800x600) — по центру, вокруг
+            -- цвет рамки, как theme.gfx.bg INSTEAD; раньше он ложился в левый верхний угол
+            local bg = gr:box(sw, sh, theme.get('scr.col.brd') or 'black');
+            gr:copy(pic, bg, math.floor((sw - w) / 2), math.floor((sh - h) / 2));
+            gr:free(pic);
+            pic = bg;
+        end
+        if s.bg_spr then
+            gr:copy(pic, s.bg_spr);
+            gr:free(pic);
+        else
+            s.bg_spr = pic;
         end
         s._bg = picture;
     end;

@@ -4836,9 +4836,15 @@ public class NonLinearBookImpl implements NonLinearBook {
     private Map<String, MediaExportParameters> getMediaExportParametersMapForModule() {
         Map<String, MediaExportParameters> result = new HashMap<>();
         List<MediaFile> imageFiles = getImageFiles();
+        File imagesDir = getRootDir() == null ? null : new File(getRootDir(), IMAGES_DIR_NAME);
         for (MediaFile mediaFile : imageFiles) {
-            if (mediaFile.getMediaExportParameters().getPreset() != MediaExportParameters.Preset.DEFAULT) {
-                result.put(mediaFile.getFileName(), mediaFile.getMediaExportParameters());
+            MediaExportParameters parameters = (
+                    imagesDir == null
+                            ? mediaFile.getMediaExportParameters()
+                            : effectiveImageExportParameters(mediaFile, imagesDir)
+            );
+            if (parameters.getPreset() != MediaExportParameters.Preset.DEFAULT) {
+                result.put(mediaFile.getFileName(), parameters);
             }
         }
         List<MediaFile> soundFiles = getSoundFiles();
@@ -5275,6 +5281,51 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
+    /**
+     * Параметры экспорта картинки с учётом прозрачности: при пресете DEFAULT PNG с прозрачностью
+     * остаётся PNG — JPG залил бы прозрачное пурпурным (JPG_BGCOLOR), как pack NLBNavigator.
+     * Те же параметры берёт путь к картинке в экспортированном коде (getMediaExportParametersMap)
+     */
+    private MediaExportParameters effectiveImageExportParameters(MediaFile mediaFile, File mediaDir) {
+        MediaExportParameters parameters = mediaFile.getMediaExportParameters();
+        if (
+                parameters.getPreset() == MediaExportParameters.Preset.DEFAULT
+                        && parameters.isConvertPNG2JPG()
+                        && PNG_REGEX.matcher(mediaFile.getFileName()).find()
+                        && hasTransparency(new File(mediaDir, mediaFile.getFileName()))
+        ) {
+            return MediaExportParameters.fromPreset(MediaExportParameters.Preset.NOCHANGE);
+        }
+        return parameters;
+    }
+
+    private static final Map<String, Boolean> TRANSPARENCY_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * Есть ли в картинке прозрачные пиксели (альфа меньше 255); результат кэшируется по файлу
+     */
+    static boolean hasTransparency(File image) {
+        String key = image.getAbsolutePath() + "@" + image.lastModified();
+        return TRANSPARENCY_CACHE.computeIfAbsent(key, k -> {
+            try {
+                BufferedImage bufferedImage = ImageIO.read(image);
+                if (bufferedImage == null || !bufferedImage.getColorModel().hasAlpha()) {
+                    return false;
+                }
+                for (int y = 0; y < bufferedImage.getHeight(); y++) {
+                    for (int x = 0; x < bufferedImage.getWidth(); x++) {
+                        if ((bufferedImage.getRGB(x, y) >>> 24) < 255) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            } catch (IOException e) {
+                return false;
+            }
+        });
+    }
+
     private void processMediaFile(
             final MediaFile mediaFile,
             final File exportDir,
@@ -5284,7 +5335,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         String mediaFileName = mediaFile.getFileName();
         switch (mediaType) {
             case Image:
-                final MediaExportParameters mediaExportParameters = mediaFile.getMediaExportParameters();
+                final MediaExportParameters mediaExportParameters = effectiveImageExportParameters(mediaFile, mediaDir);
                 Matcher matcher = PNG_REGEX.matcher(mediaFileName);
                 if (mediaExportParameters.isConvertPNG2JPG() && matcher.find()) {
                     String targetFileName = matcher.replaceAll(".jpg");
