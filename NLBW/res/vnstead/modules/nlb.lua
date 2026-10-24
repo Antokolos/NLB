@@ -92,6 +92,16 @@ nlb = obj {
             list = list.next;
         end;
     end;
+    -- AUTO-переменная в числовом сравнении или арифметике (экспорт: nlb:num(_x)): до первого
+    -- присваивания она false (initializeVariables) — как число это 0, true — 1, остальное как есть
+    num = function(s, v)
+        if v == false then
+            return 0;
+        elseif v == true then
+            return 1;
+        end;
+        return v;
+    end;
     size = function(s, listname)
         local list = s._lists[listname];
         local result = 0;
