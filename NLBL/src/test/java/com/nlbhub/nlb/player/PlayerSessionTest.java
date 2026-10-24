@@ -63,6 +63,34 @@ public class PlayerSessionTest {
     }
 
     @Test
+    public void menuItemActsOnFirstClick() {
+        // Предмет без применений (menu экспорта: menu = act) — срабатывает с первого щелчка, как
+        // кнопки боя «Фронтира»; предмет с применением (obj) — по-прежнему выбирается
+        TestBook book = new TestBook();
+        PageImpl room = book.page("Комната");
+        ObjImpl button = book.obj(room, "button", "Тут {кнопка}.", "Кнопка", true);
+        button.setActTexts(book.text("Щёлк."));
+        ObjImpl key = book.obj(room, "key", "На полу {ключ}.", "Ключ", true);
+        ObjImpl door = book.obj(room, "door", "Здесь {дверь}.", "Дверь", false);
+        key.addLink(new LinkImpl(key, door.getId()));
+        PlayerSession session = book.session();
+        assertTrue(session.clickObject(button.getId()));
+        assertTrue(session.clickObject(key.getId()));
+        PlayerEngine engine = session.engine();
+        assertTrue(engine.isMenuItem(button.getId()));
+        assertFalse(engine.isMenuItem(key.getId()));
+        assertTrue(session.clickItem(button.getId()));
+        assertEquals("", session.selectedItem());
+        assertEquals("Щёлк.", reaction(session.screen()));
+        // выбранный предмет и щелчок по menu: menu срабатывает, выбор сбрасывается
+        assertTrue(session.clickItem(key.getId()));
+        assertEquals(key.getId(), session.selectedItem());
+        assertTrue(session.clickItem(button.getId()));
+        assertEquals("", session.selectedItem());
+        assertEquals("Щёлк.", reaction(session.screen()));
+    }
+
+    @Test
     public void realTimeTimer() {
         TestBook book = new TestBook();
         PageImpl start = book.page("Ждём: $t$");

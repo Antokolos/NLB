@@ -186,8 +186,10 @@ public class PlayerSession {
      */
     public boolean clickItem(String itemId) {
         boolean ok;
-        if (m_selected.equals(itemId)) {
-            // второй щелчок по тому же — осмотр (inv)
+        // menu (кнопки боя «Фронтира» и т. п.) срабатывает с первого щелчка, как в INSTEAD
+        // (iface.xref: у menu — команда act); применить к нему ничего нельзя — выбор сбрасывается
+        if (m_engine.isMenuItem(itemId) || m_selected.equals(itemId)) {
+            // menu — действие; второй щелчок по тому же — осмотр (inv)
             m_selected = "";
             ok = m_engine.clickInventory(itemId);
         } else if (!m_selected.isEmpty()) {

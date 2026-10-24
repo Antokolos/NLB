@@ -873,6 +873,15 @@ public class PlayerEngine {
     /**
      * Клик по объекту в инвентаре: use(s, s), иначе game.inv
      */
+    /**
+     * Предмет — menu экспорта (ExportManager.getObjType: takable, без своих ссылок-применений и без
+     * применений к нему): в INSTEAD срабатывает по щелчку (menu = act), не выбирается для use
+     */
+    public boolean isMenuItem(String instanceId) {
+        Obj obj = m_interpreter.findObj(m_context.protoOf(instanceId));
+        return obj != null && objKind(obj) == ObjKind.Menu;
+    }
+
     public boolean clickInventory(String instanceId) {
         if (m_externalGame != null || m_page == null || !isInInventoryTree(instanceId)) {
             return false;
