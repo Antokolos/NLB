@@ -166,9 +166,37 @@ window.NLBScreen = function (ctx) {
   }
   const typo = (s) => quotes(dashes(s));
 
+  // Картинки объектов в тексте STANDARD (img() в {..} экспорта STEAD): в своём размере с
+  // масштабом темы, посередине строки, как в INSTEAD; размеры известны до раскладки (render)
+  const textImageSizes = new Map();
+  function textImageUrls(s) {
+    const urls = [];
+    for (const list of [s.roomText, s.reactionText, s.objectsText, s.modText]) {
+      for (const p of list || []) for (const r of p.runs) if (r.image) urls.push(sizeUrl(r.image));
+    }
+    return urls.filter((u) => u);
+  }
+  function textImage(image) {
+    const img = el('img', 'text-image');
+    img.alt = '';
+    img.draggable = false;
+    img.src = ctx.imageUrl(image);
+    const size = textImageSizes.get(sizeUrl(image));
+    if (size) {
+      img.style.width = (size.w * theme().scale) + 'px';
+      img.style.height = (size.h * theme().scale) + 'px';
+    }
+    ctx.animate(img, image);
+    return img;
+  }
+
   function runNode(run) {
     const text = typo(run.text);
-    if (run.kind === 'ObjectLink') return ctx.link(text, () => ctx.command('object', { id: run.target }), 'hit');
+    if (run.kind === 'ObjectLink') {
+      const a = ctx.link(text, () => ctx.command('object', { id: run.target }), 'hit');
+      if (run.image) a.insertBefore(textImage(run.image), a.firstChild);
+      return a;
+    }
     if (run.kind === 'ChoiceLink') {
       return run.target === '-1' ? ctx.link(text, () => ctx.command('look'), 'hit')
         : ctx.link(text, () => ctx.command('choose', { index: Number(run.target) }), 'hit');
@@ -180,12 +208,12 @@ window.NLBScreen = function (ctx) {
     for (const run of p.runs) node.appendChild(runNode(run));
     return node;
   }
-  const isBlank = (p) => !p.runs.length || p.runs.every((r) => !r.text.trim());
+  const isBlank = (p) => !p.runs.length || p.runs.every((r) => !r.text.trim() && !r.image);
   // Перестраивать часть экрана, только если она изменилась: на страницах с таймером снимок
   // приходит несколько раз в секунду, и перестройка между нажатием и отпусканием кнопки мыши
   // съедала бы щелчок по ссылке. Подпись — содержимое и всё, от чего зависит его вид
   function unchanged(node, ...parts) {
-    const sig = JSON.stringify(parts, (k, v) => (k === 'picture' && v ? ctx.imageKey(v) : v));
+    const sig = JSON.stringify(parts, (k, v) => ((k === 'picture' || k === 'image') && v ? ctx.imageKey(v) : v));
     if (node.dataset.sig === sig) return true;
     node.dataset.sig = sig;
     return false;
@@ -283,9 +311,12 @@ window.NLBScreen = function (ctx) {
     const urls = [];
     for (const o of s.sceneObjects) if (o.graphical) urls.push(ctx.imageUrl(o.image));
     const pageUrl = sizeUrl(s.pageImage);
-    const [loaded, pageSize] = await Promise.all([Promise.all(urls.map(imageSize)), imageSize(pageUrl)]);
+    const textUrls = textImageUrls(s);
+    const [loaded, pageSize, textLoaded] = await Promise.all([Promise.all(urls.map(imageSize)), imageSize(pageUrl),
+      Promise.all(textUrls.map(imageSize))]);
     if (token !== renderToken) return;  // пришёл новый снимок
     const size = new Map(urls.map((u, i) => [u, loaded[i]]));
+    textUrls.forEach((u, i) => textImageSizes.set(u, textLoaded[i]));
     const vn = isVN();
     const t = theme();
     fit();
@@ -636,14 +667,16 @@ window.NLBScreen = function (ctx) {
     // Не уместившиеся строки листаются страницами окна: строка, которая видна не целиком, не
     // показывается, и следующая страница начинается с неё (GameScreen: m_firstHiddenY); последняя
     // страница не возвращается назад — прочитанное не повторяется
-    const lines = lineTops(inner);
-    const last = lines.length ? lines[lines.length - 1] : 0;
+    const lines = textLines(inner, lh);
+    const last = lines.length ? lines[lines.length - 1].top : 0;
     scr.scroll = Math.max(0, Math.min(scr.scroll, last));
     let shown = 0, firstHidden = -1;
-    for (const top of lines) {
-      if (top < scr.scroll - 0.5) continue;
-      if (top + lh <= scr.scroll + pageH + 0.5) shown = top + lh - scr.scroll;
-      else if (firstHidden < 0) firstHidden = top;
+    for (const line of lines) {
+      if (line.top < scr.scroll - 0.5) continue;
+      if (line.bottom <= scr.scroll + pageH + 0.5 || (!shown && firstHidden < 0)) {
+        // строка выше окна (большая картинка) — показывается обрезанной, иначе листание встало бы
+        shown = Math.min(pageH, line.bottom - scr.scroll);
+      } else if (firstHidden < 0) firstHidden = line.top;
     }
     inner.style.transform = 'translateY(' + (-scr.scroll) + 'px)';
     view.style.height = Math.max(lh, shown) + 'px';
@@ -661,23 +694,30 @@ window.NLBScreen = function (ctx) {
         has(w.downY) ? w.downY : rect.y + pageH, !has(w.downY), lh, w);
     }
   }
-  // Верхние края строк текста окна (в координатах содержимого, без прокрутки)
-  function lineTops(inner) {
+  // Строки текста окна (в координатах содержимого, без прокрутки): верх и низ. Строка текста —
+  // высотой lh; строка с картинкой объекта — по картинке (текст рядом с ней — та же строка)
+  function textLines(inner, lh) {
     const k = inner.getBoundingClientRect().height / Math.max(1, inner.offsetHeight) || 1;
     const base = inner.getBoundingClientRect().top;
-    const tops = new Set();
+    const boxes = [];
     const range = document.createRange();
     for (const child of inner.children) {
-      if (!child.textContent.trim()) continue;
+      if (!child.textContent.trim() && !child.querySelector('img')) continue;
       range.selectNodeContents(child);
       for (const r of range.getClientRects()) {
-        if (r.height > 0) tops.add(Math.round((r.top - base) / k));
+        if (r.height <= 0) continue;
+        boxes.push({ top: Math.round((r.top - base) / k), bottom: Math.round((r.bottom - base) / k) });
       }
     }
-    // строки одного абзаца могут дать несколько прямоугольников (ссылки) — по одной на строку
-    const sorted = Array.from(tops).sort((a, b) => a - b);
+    // прямоугольники одной строки (ссылки, картинка и текст рядом) пересекаются — одна строка
+    boxes.sort((a, b) => a.top - b.top);
     const out = [];
-    for (const t of sorted) if (!out.length || t - out[out.length - 1] > 2) out.push(t);
+    for (const b of boxes) {
+      const cur = out[out.length - 1];
+      if (cur && b.top < cur.bottom - 2) cur.bottom = Math.max(cur.bottom, b.bottom);
+      else out.push({ top: b.top, bottom: b.bottom });
+    }
+    for (const line of out) line.bottom = Math.max(line.bottom, line.top + lh);
     return out;
   }
 

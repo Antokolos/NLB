@@ -1992,6 +1992,89 @@ public class PlayerEngine {
     }
 
     /**
+     * Чьи описания выводит сцена STANDARD, по порядку (STEAD obj_look): объект, затем его
+     * содержимое. Объект, положенный в несколько контейнеров (addf без unique), — в каждом
+     */
+    private void describedObjects(String ownerId, List<String> result, int depth) {
+        if (depth > 32) {
+            return;  // защита от циклической вложенности
+        }
+        for (String instanceId : m_context.containerContents(ownerId)) {
+            if (!m_interpreter.isObjEnabled(instanceId)) {
+                continue;  // выключенный объект скрывает и своё содержимое
+            }
+            result.add(instanceId);
+            if (!m_context.isCollapsed(instanceId)) {
+                describedObjects(instanceId, result, depth + 1);
+            }
+        }
+    }
+
+    /**
+     * Описания объектов сцены STANDARD: через пробел (stead.par), «^» и переводы строк — новый
+     * абзац (пустая строка — пустой абзац); пробелы по краям абзаца отбрасываются
+     */
+    private List<ScreenModel.Paragraph> objectsText(List<String> described) {
+        List<ScreenModel.Paragraph> result = new ArrayList<>();
+        ScreenModel.Paragraph current = null;
+        for (String instanceId : described) {
+            Obj obj = m_interpreter.findObj(m_context.protoOf(instanceId));
+            if (obj == null || obj.isSuppressDsc()) {
+                continue;
+            }
+            // без displayText: она срезает хвостовые переводы строк, а «^» в конце описания —
+            // перевод строки (у рук в бою «Фронтира» описание — один «^»)
+            String dsc = m_interpreter.objDscF(instanceId).replace('^', '\n');
+            if (dsc.isEmpty()) {
+                continue;
+            }
+            if (current == null) {
+                current = new ScreenModel.Paragraph();
+                result.add(current);
+            } else {
+                current.m_runs.add(new ScreenModel.TextRun(ScreenModel.TextRun.Kind.Plain, " ", ""));
+            }
+            boolean first = true;
+            for (String line : allLines(dsc)) {
+                if (!first) {
+                    current = new ScreenModel.Paragraph();
+                    result.add(current);
+                }
+                first = false;
+                current.m_runs.addAll(textRuns(line, instanceId));
+            }
+        }
+        for (ScreenModel.Paragraph paragraph : result) {
+            trimRuns(paragraph.m_runs);
+        }
+        // перевод строки в конце последнего описания пустой строки не даёт
+        while (!result.isEmpty() && result.get(result.size() - 1).m_runs.isEmpty()) {
+            result.remove(result.size() - 1);
+        }
+        return result;
+    }
+
+    private static void trimRuns(List<ScreenModel.TextRun> runs) {
+        while (!runs.isEmpty() && isBlankPlain(runs.get(0))) {
+            runs.remove(0);
+        }
+        while (!runs.isEmpty() && isBlankPlain(runs.get(runs.size() - 1))) {
+            runs.remove(runs.size() - 1);
+        }
+        if (!runs.isEmpty() && runs.get(0).m_kind == ScreenModel.TextRun.Kind.Plain) {
+            runs.set(0, runs.get(0).withText(runs.get(0).m_text.replaceAll("^\\s+", "")));
+        }
+        int last = runs.size() - 1;
+        if (last >= 0 && runs.get(last).m_kind == ScreenModel.TextRun.Kind.Plain) {
+            runs.set(last, runs.get(last).withText(runs.get(last).m_text.replaceAll("\\s+$", "")));
+        }
+    }
+
+    private static boolean isBlankPlain(ScreenModel.TextRun run) {
+        return run.m_kind == ScreenModel.TextRun.Kind.Plain && run.m_text.trim().isEmpty();
+    }
+
+    /**
      * Предметы инвентаря вместе с содержимым предметов-контейнеров
      */
     private List<String> inventoryObjects() {
@@ -2387,11 +2470,26 @@ public class PlayerEngine {
     }
 
     /**
-     * {метка} в описании объекта — ссылка на объект; в остальном тексте метка ссылается на объект
-     * сцены с такой подписью (PDSCS выводит описания вложенных объектов), иначе становится текстом
+     * Картинка объекта в его описании: тема STANDARD, картинка «в сцене», объект не графический
+     * (decorateObjText: {"..s.imgv(s).."метка}); анимация — кадр time % N + 1, по кругу. Пусто — нет
+     */
+    private ScreenModel.ImageRef textImage(String instanceId) {
+        Obj obj = m_interpreter.findObj(m_context.protoOf(instanceId));
+        if (obj == null || obj.isGraphical() || !obj.isImageInScene() || isEmpty(obj.getImageFileName())
+                || m_rootBook.isSuppressMedia() || (m_page != null && isVnPage(m_page))) {
+            return new ScreenModel.ImageRef();
+        }
+        return imageRefFor(instanceId, true);
+    }
+
+    /**
+     * {метка} в описании объекта — ссылка на объект (с картинкой объекта, если она есть: тогда и
+     * пустая метка {} — ссылка-картинка); в остальном тексте метка ссылается на объект сцены с
+     * такой подписью (PDSCS выводит описания вложенных объектов), иначе становится текстом
      */
     private List<ScreenModel.TextRun> textRuns(String text, String objectId) {
         List<ScreenModel.TextRun> runs = new ArrayList<>();
+        ScreenModel.ImageRef image = objectId.isEmpty() ? new ScreenModel.ImageRef() : textImage(objectId);
         int pos = 0;
         while (pos < text.length()) {
             int open = text.indexOf('{', pos);
@@ -2404,7 +2502,7 @@ public class PlayerEngine {
                 runs.add(new ScreenModel.TextRun(ScreenModel.TextRun.Kind.Plain, text.substring(pos, open), ""));
             }
             String label = text.substring(open + 1, close);
-            if (!label.isEmpty()) {
+            if (!label.isEmpty() || !image.isEmpty()) {
                 String target = objectId;
                 if (target.isEmpty()) {
                     for (String id : sceneObjects()) {
@@ -2416,7 +2514,7 @@ public class PlayerEngine {
                 }
                 runs.add(new ScreenModel.TextRun(
                         target.isEmpty() ? ScreenModel.TextRun.Kind.Plain : ScreenModel.TextRun.Kind.ObjectLink,
-                        label, target
+                        label, target, image
                 ));
             }
             pos = close + 1;
@@ -2537,30 +2635,13 @@ public class PlayerEngine {
                     continue;
                 }
                 String dsc = displayText(m_interpreter.objDscF(instanceId));
-                if (trim(dsc).isEmpty()) {
-                    continue;
-                }
-                addParagraphs(m.m_pageText, dsc, instanceId);
-                // STEAD: описания объектов идут одним абзацем через пробел
-                if (m.m_objectsText.isEmpty()) {
-                    m.m_objectsText.add(new ScreenModel.Paragraph());
-                }
-                List<ScreenModel.TextRun> runs = m.m_objectsText.get(m.m_objectsText.size() - 1).m_runs;
-                ScreenModel.TextRun space = new ScreenModel.TextRun(ScreenModel.TextRun.Kind.Plain, " ", "");
-                if (!runs.isEmpty()) {
-                    runs.add(space);
-                }
-                for (String line : allLines(dsc)) {
-                    if (trim(line).isEmpty()) {
-                        continue;
-                    }
-                    runs.addAll(textRuns(trim(line), instanceId));
-                    runs.add(space);
-                }
-                if (!runs.isEmpty() && runs.get(runs.size() - 1).m_text.equals(" ")) {
-                    runs.remove(runs.size() - 1);
+                if (!trim(dsc).isEmpty()) {
+                    addParagraphs(m.m_pageText, dsc, instanceId);
                 }
             }
+            List<String> described = new ArrayList<>();
+            describedObjects(page.getId(), described, 0);
+            m.m_objectsText.addAll(objectsText(described));
         }
         for (String text : m_pageModText) {
             addParagraphs(m.m_pageText, text, "");
