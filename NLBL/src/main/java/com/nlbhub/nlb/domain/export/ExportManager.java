@@ -2203,6 +2203,23 @@ public abstract class ExportManager {
         for (final String expressionVar : expressionVars) {
             String decoratedVariable = decorateVariable(expressionVar);
             Variable.DataType dataType = m_dataTypeMap.get(expressionVar);
+            if (dataType == Variable.DataType.AUTO) {
+                // AUTO-переменная до первого присваивания равна false (initializeVariables), и в
+                // числовом сравнении или арифметике INSTEAD падал бы («attempt to compare number
+                // with boolean»): рядом с такими операторами она — число (false -> 0, true -> 1),
+                // как в плеерах NLB; логическое использование и ==/!= не меняются
+                String numeric = decorateNumericOperand(decoratedVariable);
+                if (!numeric.equals(decoratedVariable)) {
+                    String quoted = Pattern.quote(expressionVar);
+                    String numericOp = "(?:<=|>=|<|>|[-+*/%])";
+                    expression = expression.replaceAll(
+                            "\\b" + quoted + "\\b(?=\\s*" + numericOp + ")", Matcher.quoteReplacement(numeric)
+                    );
+                    expression = expression.replaceAll(
+                            "(?<=" + numericOp + "\\s{0,16})\\b" + quoted + "\\b", Matcher.quoteReplacement(numeric)
+                    );
+                }
+            }
             if (dataType != Variable.DataType.BOOLEAN) {
                 String existenceExpression = decorateExistence(decoratedVariable);
                 if (!StringHelper.isEmpty(existenceExpression)) {
@@ -2953,6 +2970,14 @@ public abstract class ExportManager {
     protected abstract String decorateAnd();
 
     protected abstract String decorateExistence(String decoratedVariable);
+
+    /**
+     * AUTO-переменная — операнд числового сравнения или арифметики: приведение к числу
+     * (false -> 0, true -> 1). По умолчанию — без изменений
+     */
+    protected String decorateNumericOperand(String decoratedVariable) {
+        return decoratedVariable;
+    }
 
     protected abstract String decorateBooleanVar(String constraintVar);
 

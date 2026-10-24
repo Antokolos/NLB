@@ -1822,6 +1822,11 @@ public class STEADExportManager extends TextExportManager {
     }
 
     @Override
+    protected String decorateNumericOperand(String decoratedVariable) {
+        return "nlb:num(" + decoratedVariable + ")";
+    }
+
+    @Override
     protected String decorateBooleanVar(String constraintVar) {
         return GLOBAL_VAR_PREFIX + constraintVar;
     }
