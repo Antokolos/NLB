@@ -704,7 +704,11 @@ window.NLBScreen = function (ctx) {
     for (const child of inner.children) {
       if (!child.textContent.trim() && !child.querySelector('img')) continue;
       range.selectNodeContents(child);
-      for (const r of range.getClientRects()) {
+      // картинки — отдельно: внутри ссылки (<a><img>) range отдаёт только строчный прямоугольник
+      // самой ссылки, без картинки, и строка с ней считалась бы высотой в строку текста
+      const rects = Array.from(range.getClientRects());
+      for (const img of child.querySelectorAll('img')) rects.push(img.getBoundingClientRect());
+      for (const r of rects) {
         if (r.height <= 0) continue;
         boxes.push({ top: Math.round((r.top - base) / k), bottom: Math.round((r.bottom - base) / k) });
       }
@@ -812,8 +816,10 @@ window.NLBScreen = function (ctx) {
 
   // STANDARD — как INSTEAD (game.c, stead2): заголовок по центру цветом ссылки (щелчок —
   // «осмотреться»), под ним пути через « | » (или под текстом: win.ways.mode = bottom), затем сцена:
-  // описание комнаты, описания объектов; после действия — курсивом ответ (на новой странице — и
-  // её описание), alt-тексты недоступных ссылок, ссылки в тексте, текст модификаций
+  // после действия — курсивом ответ; на только что открытой странице — текст модификаций (вывод
+  // enter: stead.go выводит его перед сценой), описание комнаты; описания объектов, alt-тексты
+  // недоступных ссылок, ссылки в тексте (xdsc). После действия на той же странице вывода enter
+  // уже нет — только ответ и сцена
   function composeStandard(s, waysBottom) {
     const header = [];
     if (s.roomTitle) header.push({ cls: 'title', runs: [{ kind: 'ChoiceLink', text: s.roomTitle, target: '-1' }] });
@@ -835,9 +841,9 @@ window.NLBScreen = function (ctx) {
           scene.push({ cls: 'em', runs: p.runs.slice() });
         }
       }
-      if (scr.reactionThenRoom) scene.push(...s.roomText);
+      if (scr.reactionThenRoom) scene.push(...s.modText, ...s.roomText);
     } else {
-      scene.push(...s.roomText);
+      scene.push(...s.modText, ...s.roomText);
     }
     scene.push(...s.objectsText);
     for (const c of s.choices) {
@@ -846,7 +852,6 @@ window.NLBScreen = function (ctx) {
     for (const c of s.choices) {
       if (c.enabled && c.inlineLink) scene.push({ runs: [{ kind: 'ChoiceLink', text: c.text, target: String(c.index) }] });
     }
-    scene.push(...s.modText);
     if (ways.length && waysBottom) scene.push({ cls: 'ways', runs: ways });
     return { header: header, scene: scene };
   }
