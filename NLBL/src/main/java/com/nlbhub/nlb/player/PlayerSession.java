@@ -170,6 +170,11 @@ public class PlayerSession {
      * Щелчок по объекту сцены: если выбран предмет — применить его к объекту, иначе действие
      */
     public boolean clickObject(String objectId) {
+        // при выбранном предмете щелчок по menu INSTEAD игнорирует (game.c: ссылка menu — act,
+        // в режиме use она не срабатывает), выбор остаётся
+        if (!m_selected.isEmpty() && m_engine.isMenuItem(objectId)) {
+            return false;
+        }
         boolean ok;
         if (!m_selected.isEmpty()) {
             ok = m_engine.use(m_selected, objectId);
@@ -187,8 +192,13 @@ public class PlayerSession {
     public boolean clickItem(String itemId) {
         boolean ok;
         // menu (кнопки боя «Фронтира» и т. п.) срабатывает с первого щелчка, как в INSTEAD
-        // (iface.xref: у menu — команда act); применить к нему ничего нельзя — выбор сбрасывается
-        if (m_engine.isMenuItem(itemId) || m_selected.equals(itemId)) {
+        // (iface.xref: у menu — команда act); при выбранном предмете щелчок по нему INSTEAD
+        // игнорирует (game.c: в режиме use ссылка act не срабатывает), выбор остаётся
+        boolean menu = m_engine.isMenuItem(itemId);
+        if (menu && !m_selected.isEmpty()) {
+            return false;
+        }
+        if (menu || m_selected.equals(itemId)) {
             // menu — действие; второй щелчок по тому же — осмотр (inv)
             m_selected = "";
             ok = m_engine.clickInventory(itemId);

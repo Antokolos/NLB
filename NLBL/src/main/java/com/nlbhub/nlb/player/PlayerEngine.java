@@ -874,12 +874,13 @@ public class PlayerEngine {
      * Клик по объекту в инвентаре: use(s, s), иначе game.inv
      */
     /**
-     * Предмет — menu экспорта (ExportManager.getObjType: takable, без своих ссылок-применений и без
-     * применений к нему): в INSTEAD срабатывает по щелчку (menu = act), не выбирается для use
+     * Объект — menu экспорта (ExportManager.getObjType: takable, без своих ссылок-применений и без
+     * применений к нему; не графический). Его ссылка в INSTEAD — команда act (iface.xref): щелчок —
+     * действие, а при выбранном предмете щелчок игнорируется (game.c: menu_mode)
      */
     public boolean isMenuItem(String instanceId) {
         Obj obj = m_interpreter.findObj(m_context.protoOf(instanceId));
-        return obj != null && objKind(obj) == ObjKind.Menu;
+        return obj != null && !obj.isGraphical() && objKind(obj) == ObjKind.Menu;
     }
 
     public boolean clickInventory(String instanceId) {
