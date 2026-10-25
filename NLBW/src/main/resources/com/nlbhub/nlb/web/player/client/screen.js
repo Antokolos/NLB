@@ -987,7 +987,8 @@ window.NLBScreen = function (ctx) {
     s.inventory.forEach((item, i) => {
       // предметы в строку разделяются « | », как hinv_delim в INSTEAD
       if (i > 0 && t.inventoryHorizontal) line.appendChild(document.createTextNode(' | '));
-      const label = item.label.replace(/\n/g, ' ');
+      // строки подписи («^» в disp: «Слава: 0^Боеспособность: 45») — с новой строки, как в INSTEAD
+      const label = item.label;
       const node = item.active ? ctx.link(label, () => ctx.command('item', { id: item.id }), 'hit') : el('span', 'inactive', label);
       node.classList.add('item');
       if (item.id === state.selected) node.classList.add('selected');

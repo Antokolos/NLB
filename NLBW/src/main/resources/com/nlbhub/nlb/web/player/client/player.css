@@ -87,7 +87,7 @@ body.playing { background: #0c0c10; overflow: hidden; }
 /* инвентарь: предметы через « | »; VN — на чёрной полосе до низа экрана */
 .stage-inventory { position: absolute; overflow: hidden; }
 .stage-inventory.strip { background: #000; }
-.stage-inventory .item { white-space: nowrap; }
+.stage-inventory .item { white-space: pre; }
 .stage-inventory .item img { vertical-align: top; margin-right: 6px; }
 .stage-inventory .item.selected { background: rgba(0, 0, 0, 0.59); color: var(--alink); outline: 6px solid rgba(0, 0, 0, 0.59); }
 .stage-menu-button { position: absolute; padding: 0; margin: 0; border: none; background: none; cursor: pointer; z-index: 3; }
