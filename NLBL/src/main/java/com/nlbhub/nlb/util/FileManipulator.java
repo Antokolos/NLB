@@ -46,8 +46,10 @@ import com.nlbhub.nlb.exception.NLBVCSException;
 import com.nlbhub.nlb.vcs.VCSAdapter;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 /**
  * The FileManipulator class contains useful file operations.
@@ -310,9 +312,11 @@ public class FileManipulator {
                 final File file = new File(rootDir, fileName);
                 final boolean newFile = !file.exists();
                 if (content != null) {
-                    inputStream = (
-                            new ByteArrayInputStream(content.getBytes(Constants.UNICODE_ENCODING))
-                    );
+                    final byte[] bytes = content.getBytes(Constants.UNICODE_ENCODING);
+                    if (!newFile && hasContent(file, bytes)) {
+                        return;
+                    }
+                    inputStream = new ByteArrayInputStream(bytes);
                     writeFile(file, inputStream);
                     addToVCS(file, newFile);
                 } else {
@@ -344,9 +348,11 @@ public class FileManipulator {
                             deleteFileOrDir(file);
                         }
                     } else {
-                        inputStream = (
-                                new ByteArrayInputStream(content.getBytes(Constants.UNICODE_ENCODING))
-                        );
+                        final byte[] bytes = content.getBytes(Constants.UNICODE_ENCODING);
+                        if (!newFile && hasContent(file, bytes)) {
+                            return;
+                        }
+                        inputStream = new ByteArrayInputStream(bytes);
                         writeFile(file, inputStream);
                         addToVCS(file, newFile);
                     }
@@ -396,7 +402,11 @@ public class FileManipulator {
                                 deleteFileOrDir(file);
                             }
                         } else {
-                            inputStream = new ByteArrayInputStream(content.get(key).getBytes(Constants.UNICODE_ENCODING));
+                            final byte[] bytes = content.get(key).getBytes(Constants.UNICODE_ENCODING);
+                            if (!newFile && hasContent(file, bytes)) {
+                                continue;
+                            }
+                            inputStream = new ByteArrayInputStream(bytes);
                             writeFile(file, inputStream);
                             addToVCS(file, newFile);
                         }
@@ -497,6 +507,15 @@ public class FileManipulator {
         } catch (IOException e) {
             throw new NLBIOException(errorMessage, e);
         }
+    }
+
+    /**
+     * Файл уже содержит ровно эти байты: перезаписывать его (и отмечать в VCS) не нужно. Так
+     * сохранение книги трогает на диске только то, что действительно изменилось, — время
+     * изменения остальных файлов и их статус в VCS остаются прежними
+     */
+    private static boolean hasContent(final File file, final byte[] bytes) throws IOException {
+        return file.isFile() && file.length() == bytes.length && Arrays.equals(Files.readAllBytes(file.toPath()), bytes);
     }
 
     private void createFile(

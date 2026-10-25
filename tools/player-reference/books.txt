@@ -7,4 +7,4 @@ chaperonrougehub      https://github.com/nlbproject/chaperonrougehub      a1086d
 servant-of-ra         https://github.com/nlbproject/servant-of-ra         0962f13  standard  5  300
 Frontier              https://github.com/nlbproject/Frontier              d46085f  standard  5  200
 wild-island-quest     https://github.com/nlbproject/wild-island-quest     0aba4c7  vn  5  300
-bookU                 https://github.com/nlbproject/bookU                 c0c7e4e  vn  5  100
+bookU                 https://github.com/nlbproject/bookU                 ba39652  vn  5  100
