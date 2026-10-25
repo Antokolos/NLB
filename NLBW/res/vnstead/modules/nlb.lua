@@ -324,6 +324,11 @@ nlb = obj {
         if not src then
             src = s:curloc();
         end
+        -- ссылки STANDARD (xact в STEADExportManager.decorateLinkStart) передают цель именем
+        -- комнаты: ниже ей ставится wastext, а строке поле не присвоить
+        if type(tgt) == 'string' then
+            tgt = stead.ref(tgt);
+        end
         if is_technical then
             s:inc_technical_walk_count()
         end
