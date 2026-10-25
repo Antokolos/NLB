@@ -170,6 +170,16 @@ public class PlayerSession {
      * Щелчок по объекту сцены: если выбран предмет — применить его к объекту, иначе действие
      */
     public boolean clickObject(String objectId) {
+        // scene_use (спецспособность карты) — выбирается, как предмет; повторный щелчок — отмена
+        if (m_selected.isEmpty() && m_engine.isSceneUse(objectId)) {
+            m_selected = objectId;
+            ++m_localRevision;
+            return true;
+        }
+        if (m_selected.equals(objectId) && m_engine.isSceneUse(objectId)) {
+            clearSelection();
+            return true;
+        }
         // при выбранном предмете щелчок по menu INSTEAD игнорирует (game.c: ссылка menu — act,
         // в режиме use она не срабатывает), выбор остаётся
         if (!m_selected.isEmpty() && m_engine.isMenuItem(objectId)) {

@@ -313,6 +313,28 @@ public class PlayerContext {
         }
     }
 
+    /**
+     * nlb:rmv(список, obj): убирает первый элемент с тем же nlbid, что у obj, — клон и его прототип
+     * считаются одним объектом (спецспособность карты «Фронтира» убирает из руки карту-шаблон,
+     * а в руке лежит её клон)
+     */
+    public void listRemoveSameObj(String list, String value) {
+        Deque<String> items = m_state.m_lists.get(list);
+        if (items == null) {
+            return;
+        }
+        String proto = protoOf(value);
+        for (java.util.Iterator<String> it = items.iterator(); it.hasNext(); ) {
+            if (protoOf(it.next()).equals(proto)) {
+                it.remove();
+                break;
+            }
+        }
+        if (items.isEmpty()) {
+            m_state.m_lists.remove(list);
+        }
+    }
+
     public void listShuffle(String list) {
         Deque<String> items = m_state.m_lists.get(list);
         if (items == null) {
