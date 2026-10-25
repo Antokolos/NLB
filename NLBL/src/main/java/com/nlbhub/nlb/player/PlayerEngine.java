@@ -818,7 +818,7 @@ public class PlayerEngine {
      * Клик по объекту на странице: tak для переносимых, иначе act
      */
     public boolean actOnObject(String instanceId) {
-        if (m_externalGame != null || m_page == null || !isOnScene(instanceId)) {
+        if (m_externalGame != null || m_page == null || !(isOnScene(instanceId) || isLinkedInText(instanceId))) {
             return false;
         }
         String target = instanceId;
@@ -924,11 +924,23 @@ public class PlayerEngine {
     /**
      * Применить объект инвентаря к объекту страницы или инвентаря
      */
+    /**
+     * Объект — scene_use экспорта (STEADExportManager: не берётся, но у него есть применения): в
+     * INSTEAD его ссылка — команда use (iface.xref): щелчок выбирает его, как предмет инвентаря,
+     * а щелчок по цели применяет (спецспособность карты «Фронтира» -> карта врага)
+     */
+    public boolean isSceneUse(String instanceId) {
+        Obj obj = m_interpreter.findObj(m_context.protoOf(instanceId));
+        return obj != null && !obj.isTakable() && hasLiveLinks(obj);
+    }
+
     public boolean use(String sourceInstanceId, String targetInstanceId) {
-        if (m_externalGame != null || m_page == null || !isInInventoryTree(sourceInstanceId)) {
+        if (m_externalGame != null || m_page == null
+                || !(isInInventoryTree(sourceInstanceId) || isSceneUse(sourceInstanceId))) {
             return false;
         }
-        boolean targetVisible = isInInventoryTree(targetInstanceId) || isOnScene(targetInstanceId);
+        boolean targetVisible = isInInventoryTree(targetInstanceId) || isOnScene(targetInstanceId)
+                || isLinkedInText(targetInstanceId);
         Obj source = m_interpreter.findObj(m_context.protoOf(sourceInstanceId));
         Obj target = m_interpreter.findObj(m_context.protoOf(targetInstanceId));
         if (!targetVisible || source == null || target == null) {
@@ -1885,6 +1897,10 @@ public class PlayerEngine {
                 if (!trim(text).isEmpty()) {
                     m_events.add(new Event(Event.Kind.Text, text));
                     shownText.add(displayText(item.getText()));
+                } else if (item.getText().indexOf('{') >= 0 && item.getText().indexOf('}') > 0) {
+                    // одна метка без текста ({id|} вывода PDSC) — ссылка-картинка: на экране она есть
+                    // (значок подсказки карты «Фронтира»), в текстовом выводе — нет
+                    shownText.add(displayText(item.getText()));
                 }
             } else if (item.getKind() == PlayerContext.OutputKind.Info) {
                 m_events.add(new Event(Event.Kind.Info, item.getText()));
@@ -2064,6 +2080,18 @@ public class PlayerEngine {
         return result;
     }
 
+    /**
+     * Метка вида «id|текст» (ModificationInterpreter.markObjectLabel): id объекта; иначе null
+     */
+    private String markedObject(String label) {
+        int bar = label.indexOf('|');
+        if (bar <= 0) {
+            return null;
+        }
+        String id = label.substring(0, bar);
+        return m_interpreter.findObj(m_context.protoOf(id)) != null ? id : null;
+    }
+
     private static void trimRuns(List<ScreenModel.TextRun> runs) {
         while (!runs.isEmpty() && isBlankPlain(runs.get(0))) {
             runs.remove(0);
@@ -2107,6 +2135,22 @@ public class PlayerEngine {
 
     private boolean isOnScene(String instanceId) {
         return sceneObjects().contains(instanceId);
+    }
+
+    /**
+     * На объект есть ссылка в показанном тексте ({id|метка} вывода PDSC): в INSTEAD по ней можно
+     * щёлкнуть, даже если объекта нет на сцене (спецспособность внутри карты «Фронтира»)
+     */
+    private boolean isLinkedInText(String instanceId) {
+        String mark = "{" + instanceId + "|";
+        for (List<String> texts : java.util.Arrays.asList(m_reactionText, m_pageModText)) {
+            for (String text : texts) {
+                if (text.contains(mark)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static boolean hasLiveLinks(Obj obj) {
@@ -2512,8 +2556,16 @@ public class PlayerEngine {
                 runs.add(new ScreenModel.TextRun(ScreenModel.TextRun.Kind.Plain, text.substring(pos, open), ""));
             }
             String label = text.substring(open + 1, close);
-            if (!label.isEmpty() || !image.isEmpty()) {
-                String target = objectId;
+            ScreenModel.ImageRef runImage = image;
+            String marked = markedObject(label);
+            String target = objectId;
+            if (marked != null) {
+                // {id|метка} — вывод PDSC: ссылка на объект id (с его картинкой)
+                target = marked;
+                label = label.substring(marked.length() + 1);
+                runImage = textImage(marked);
+            }
+            if (!label.isEmpty() || !runImage.isEmpty()) {
                 if (target.isEmpty()) {
                     for (String id : sceneObjects()) {
                         if (trim(sceneLabel(id)).equals(trim(label))) {
@@ -2524,7 +2576,7 @@ public class PlayerEngine {
                 }
                 runs.add(new ScreenModel.TextRun(
                         target.isEmpty() ? ScreenModel.TextRun.Kind.Plain : ScreenModel.TextRun.Kind.ObjectLink,
-                        label, target, image
+                        label, target, runImage
                 ));
             }
             pos = close + 1;
@@ -2844,6 +2896,11 @@ public class PlayerEngine {
             return s;
         }
         String label = trim(s.substring(open + 1, close));
+        // {id|метка} (вывод PDSC) — показывается только метка
+        int bar = label.indexOf('|');
+        if (bar > 0 && label.substring(0, bar).indexOf(' ') < 0) {
+            label = trim(label.substring(bar + 1));
+        }
         return s.substring(0, open) + (label.isEmpty() ? "" : "[" + label + "]") + s.substring(close + 1);
     }
 

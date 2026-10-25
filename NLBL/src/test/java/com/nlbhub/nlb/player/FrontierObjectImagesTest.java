@@ -110,6 +110,69 @@ public class FrontierObjectImagesTest {
         assertFalse(player.stream().anyMatch(f -> f.endsWith("e.png") && !f.contains("placeholder")));
     }
 
+    @Test
+    public void cardAbilityIsLinkWithHelpIcon() {
+        reachBattle();
+        // своя карта (под фоном) — щелчок выводит силу, ссылку на спецспособность и значок подсказки
+        List<ScreenModel.Paragraph> objects = m_engine.screen().getObjectsText();
+        int background = paragraphWithImage(objects, "btla%d.jpg");
+        String card = null;
+        for (ScreenModel.Paragraph p : objects.subList(background + 1, objects.size())) {
+            for (ScreenModel.TextRun run : p.getRuns()) {
+                if (run.getKind() == ScreenModel.TextRun.Kind.ObjectLink && !run.getImage().getFile().contains("placeholder")) {
+                    card = run.getTarget();
+                }
+            }
+        }
+        assertNotNull("своя карта в руке", card);
+        assertTrue(m_engine.actOnObject(card));
+        String ability = null;
+        boolean help = false;
+        for (ScreenModel.Paragraph p : m_engine.screen().getReactionText()) {
+            for (ScreenModel.TextRun run : p.getRuns()) {
+                if (run.getKind() != ScreenModel.TextRun.Kind.ObjectLink) {
+                    continue;
+                }
+                if (!run.getText().isEmpty()) {
+                    ability = run.getTarget();
+                } else if (run.getImage().getFile().endsWith("help-s.png")) {
+                    help = true;
+                }
+            }
+        }
+        assertNotNull("спецспособность — ссылка", ability);
+        assertTrue("значок подсказки — ссылка-картинка", help);
+        // по ссылке на способность можно щёлкнуть, хотя её нет на сцене
+        Value before = m_engine.getVariable("specialUsages");
+        assertTrue(m_engine.isSceneUse(ability) || m_engine.actOnObject(ability));
+        if (!m_engine.isSceneUse(ability)) {
+            assertTrue(m_engine.getVariable("specialUsages").asDouble() > before.asDouble());
+        }
+    }
+
+    private void reachBattle() {
+        choose("Начать игру");
+        for (int i = 0; i < 4; i++) {
+            m_engine.actOnObject(m_engine.view().getSceneObjects().get(0).getInstanceId());
+        }
+        choose("Далее");
+        choose("Таргос");
+        m_engine.advanceTime(13000);
+        choose("Далее");
+        choose("Принять бой");
+        choose("Принять бой");
+        choose("Начать игру");
+        m_engine.advanceTime(1000);
+        String concentration = null;
+        for (PlayerEngine.ObjectView item : m_engine.view().getInventory()) {
+            if (item.getDisp().contains("Концентрация")) {
+                concentration = item.getInstanceId();
+            }
+        }
+        m_engine.clickInventory(concentration);
+        m_engine.advanceTime(8000);
+    }
+
     private void choose(String text) {
         List<PlayerEngine.Choice> choices = m_engine.view().getChoices();
         for (int i = 0; i < choices.size(); i++) {

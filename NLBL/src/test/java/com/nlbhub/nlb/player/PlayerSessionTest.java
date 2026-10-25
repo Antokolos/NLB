@@ -99,6 +99,31 @@ public class PlayerSessionTest {
     }
 
     @Test
+    public void sceneUseObjectIsSelectedThenApplied() {
+        // scene_use экспорта (не берётся, но есть применение): щелчок выбирает его, как предмет
+        // инвентаря, щелчок по цели — применение (спецспособность карты «Фронтира» -> карта врага)
+        TestBook book = new TestBook();
+        PageImpl room = book.page("Комната");
+        ObjImpl laser = book.obj(room, "laser", "Тут {лазер}.", "Лазер", false);
+        ObjImpl target = book.obj(room, "target", "Там {мишень}.", "Мишень", false);
+        LinkImpl use = new LinkImpl(laser, target.getId());
+        use.setTexts(book.text("Мишень сбита."));
+        laser.addLink(use);
+        PlayerSession session = book.session();
+        assertTrue(session.engine().isSceneUse(laser.getId()));
+        assertFalse(session.engine().isSceneUse(target.getId()));
+        assertTrue(session.clickObject(laser.getId()));
+        assertEquals(laser.getId(), session.selectedItem());
+        assertTrue(session.clickObject(target.getId()));
+        assertEquals("", session.selectedItem());
+        assertEquals("Мишень сбита.", reaction(session.screen()));
+        // повторный щелчок по выбранному — отмена
+        assertTrue(session.clickObject(laser.getId()));
+        assertTrue(session.clickObject(laser.getId()));
+        assertEquals("", session.selectedItem());
+    }
+
+    @Test
     public void realTimeTimer() {
         TestBook book = new TestBook();
         PageImpl start = book.page("Ждём: $t$");

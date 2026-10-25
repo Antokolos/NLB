@@ -789,11 +789,25 @@ public class ModificationInterpreter {
         if (!isObjEnabled(instanceId)) {
             return;
         }
-        final String text = objDscF(instanceId);
+        final String text = markObjectLabel(objDscF(instanceId), instanceId);
         if (!text.isEmpty()) {
             m_context.emit(PlayerContext.OutputKind.Text, text);
             m_lastText += " " + text;
         }
+    }
+
+    /**
+     * Метка {…} в описании объекта, выведенном PDSC/PDSCS, — ссылка на этот объект: как
+     * expandInteractionMarks экспорта ({имя|метка}), здесь — {id экземпляра|метка}. Объект может и не
+     * лежать на сцене (спецспособность карты «Фронтира» лежит в самой карте)
+     */
+    static String markObjectLabel(String text, String instanceId) {
+        int open = text.indexOf('{');
+        int close = text.lastIndexOf('}');
+        if (open < 0 || close <= open) {
+            return text;
+        }
+        return text.substring(0, open + 1) + instanceId + "|" + text.substring(open + 1);
     }
 
     private void pdscs(String ownerId) {
@@ -929,7 +943,7 @@ public class ModificationInterpreter {
                 if (destination != null) {
                     m_context.containerRemove(destination, obj);
                 } else if (var != null) {
-                    m_context.listRemove(varList, obj);       // nlb:rmv(список, obj)
+                    m_context.listRemoveSameObj(varList, obj);  // nlb:rmv(список, obj)
                     m_context.containerRemove("", obj);       // obj.container = nil
                 } else {
                     m_context.containerRemove(m_context.currentPageId(), obj);  // objs():del — текущая комната
