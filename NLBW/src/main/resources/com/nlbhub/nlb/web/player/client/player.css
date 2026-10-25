@@ -66,9 +66,8 @@ body.playing { background: #0c0c10; overflow: hidden; }
 .stage-label { position: absolute; white-space: pre; pointer-events: none; }
 .stage a.link { color: var(--link); text-decoration: none; border: none; }
 .stage a.link:hover { color: var(--alink); }
-/* окно текста; VN — полупрозрачная полоса во всю ширину, STANDARD с картинкой-фоном — подложка */
+/* окно текста; VN — полупрозрачная полоса во всю ширину; STANDARD — без подложки, как INSTEAD */
 .stage-band { position: absolute; left: 0; width: 1920px; background: rgba(0, 0, 0, 0.43); }
-.stage-panel { position: absolute; background: rgba(0, 0, 0, 0.55); }
 .stage-text, .stage-header { position: absolute; }
 .stage-text { overflow: hidden; }
 .stage-text p, .stage-header p { margin: 0; overflow-wrap: break-word; }

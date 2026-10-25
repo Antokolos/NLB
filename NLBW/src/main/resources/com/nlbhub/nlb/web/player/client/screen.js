@@ -758,7 +758,6 @@ window.NLBScreen = function (ctx) {
   function renderVisualNovelText(s, t) {
     const band = $('stage-band'), choices = $('stage-choices');
     $('stage-header').hidden = true;
-    $('stage-panel').hidden = true;
     choices.hidden = !scr.showChoices;
     if (scr.showChoices) {
       band.hidden = true;
@@ -888,10 +887,6 @@ window.NLBScreen = function (ctx) {
       scene.unshift({ picture: s.pageImage, size: picture, runs: [] }, ...moved);
     }
     const fixed = picture && t.gfxMode === 'fixed';
-    // картинка-фон: под окном текста — тёмная подложка
-    const panel = $('stage-panel');
-    panel.hidden = !s.imageIsBackground;
-    if (s.imageIsBackground) place(panel, { x: w.x - 16, y: w.y - 10, w: w.w + 32, h: w.h + 20 });
     // заголовок и пути (INSTEAD: el_title, el_ways) — над сценой, не прокручиваются
     const head = $('stage-header');
     head.hidden = !header.length && !fixed;
