@@ -71,6 +71,7 @@ public interface NonLinearBook {
     public static final boolean DEFAULT_FULL_AUTOWIRE = false;
     public static final boolean DEFAULT_SUPPRESS_MEDIA = false;
     public static final boolean DEFAULT_SUPPRESS_SOUND = false;
+    public static final boolean DEFAULT_FORCEDSC = false;
     public static final String DEFAULT_TITLE = Constants.EMPTY_STRING;
     public static final String DEFAULT_AUTHOR = Constants.EMPTY_STRING;
     public static final String DEFAULT_VERSION = Constants.EMPTY_STRING;
@@ -304,6 +305,9 @@ public interface NonLinearBook {
     public boolean isSuppressMedia();
 
     public boolean isSuppressSound();
+
+    /** game.forcedsc экспорта STEAD: описание комнаты показывается и после действий */
+    public boolean isForceDsc();
 
     public String getTitle();
 

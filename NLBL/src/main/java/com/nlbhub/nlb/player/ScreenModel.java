@@ -670,6 +670,11 @@ public class ScreenModel {
     String m_roomTitle = "";
     ImageRef m_pageImage = new ImageRef();
     boolean m_imageIsBackground = false;
+    /**
+     * game.forcedsc экспорта STEAD (свойство книги forcedsc или export/game-forcedsc): после
+     * действия на странице STANDARD описание комнаты показывается снова — перед ответом
+     */
+    boolean m_forceDsc = false;
     final List<Paragraph> m_pageText = new ArrayList<>();
     final List<Paragraph> m_reactionText = new ArrayList<>();
     final List<Paragraph> m_roomText = new ArrayList<>();
@@ -712,6 +717,10 @@ public class ScreenModel {
 
     public String getRoomTitle() {
         return m_roomTitle;
+    }
+
+    public boolean isForceDsc() {
+        return m_forceDsc;
     }
 
     public ImageRef getPageImage() {
@@ -840,6 +849,7 @@ public class ScreenModel {
         result.put("roomTitle", m_roomTitle);
         result.set("pageImage", m_pageImage.toJson());
         result.put("imageIsBackground", m_imageIsBackground);
+        result.put("forceDsc", m_forceDsc);
         result.set("pageText", paragraphs(m_pageText));
         result.set("reactionText", paragraphs(m_reactionText));
         result.set("roomText", paragraphs(m_roomText));

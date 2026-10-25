@@ -60,6 +60,7 @@ public class DialogBookProperties extends JDialog {
     private JCheckBox m_fullAutowireCheckBox;
     private JCheckBox m_suppressMediaCheckBox;
     private JCheckBox m_suppressSoundCheckBox;
+    private JCheckBox m_forceDscCheckBox;
     private JTextField m_titleTextField;
     private JTextField m_perfectGameAchievementTextField;
     private JComboBox m_themeComboBox;
@@ -111,6 +112,7 @@ public class DialogBookProperties extends JDialog {
         m_fullAutowireCheckBox.setSelected(nonLinearBook.isFullAutowire());
         m_suppressMediaCheckBox.setSelected(nonLinearBook.isSuppressMedia());
         m_suppressSoundCheckBox.setSelected(nonLinearBook.isSuppressSound());
+        m_forceDscCheckBox.setSelected(nonLinearBook.isForceDsc());
         LanguageHelper.initLanguageComboBox(m_languageComboBox, nonLinearBook);
         DefaultComboBoxModel<Theme> themeComboboxModel = new DefaultComboBoxModel<>();
         Theme[] possibleValues = nonLinearBook.getTheme().getDeclaringClass().getEnumConstants();
@@ -151,6 +153,7 @@ public class DialogBookProperties extends JDialog {
                 m_fullAutowireCheckBox.isSelected(),
                 m_suppressMediaCheckBox.isSelected(),
                 m_suppressSoundCheckBox.isSelected(),
+                m_forceDscCheckBox.isSelected(),
                 m_propagateToSubmodulesCheckBox.isSelected()
         );
         dispose();
