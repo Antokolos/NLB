@@ -656,8 +656,10 @@ window.NLBScreen = function (ctx) {
           box.appendChild(embeddedPicture(p.picture, p.size));
           inner.appendChild(box);
         } else if (isBlank(p) && !p.cls) {
+          // пустая строка: в STANDARD — целая строка (txt_layout INSTEAD), в VN — полстроки
+          // (там пустая строка лишь разделяет порции), как GameScreen
           const gap = el('div', 'stage-gap');
-          gap.style.height = Math.floor(lh / 2) + 'px';
+          gap.style.height = Math.floor(isVN() ? lh / 2 : lh) + 'px';
           inner.appendChild(gap);
         } else {
           inner.appendChild(paragraphNode(p));
@@ -834,11 +836,16 @@ window.NLBScreen = function (ctx) {
       // game.forcedsc: после действия на той же странице STEAD2 (iface.fmt) выводит сначала
       // me():look() — описание комнаты без вывода enter, — затем ответ
       if (!scr.reactionThenRoom && s.forceDsc) scene.push(...s.roomText);
+      // пустой абзац — пустая строка («^^» внутри ответа, «^» в конце перед следующей частью);
+      // следующий ответ продолжает последнюю строку предыдущего (после «^» в конце — новую)
       for (const p of s.reactionText) {
-        if (!p.runs.length) continue;
         const last = scene[scene.length - 1];
         if (p.joinPrevious && last && last.cls === 'em') {
           last.runs = last.runs.concat([{ kind: 'Plain', text: ' ' }], p.runs);
+        } else if (p.joinPrevious && last && last.reactionGap) {
+          scene[scene.length - 1] = { cls: 'em', runs: p.runs.slice() };
+        } else if (!p.runs.length) {
+          scene.push({ runs: [], reactionGap: true });
         } else {
           scene.push({ cls: 'em', runs: p.runs.slice() });
         }
@@ -854,6 +861,8 @@ window.NLBScreen = function (ctx) {
     for (const c of s.choices) {
       if (c.enabled && c.inlineLink) scene.push({ runs: [{ kind: 'ChoiceLink', text: c.text, target: String(c.index) }] });
     }
+    // переводы строк в конце всей сцены не видны (INSTEAD)
+    while (scene.length && !scene[scene.length - 1].picture && !scene[scene.length - 1].runs.length) scene.pop();
     if (ways.length && waysBottom) scene.push({ cls: 'ways', runs: ways });
     return { header: header, scene: scene };
   }

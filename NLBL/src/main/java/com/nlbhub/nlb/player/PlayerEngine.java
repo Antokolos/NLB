@@ -1901,11 +1901,11 @@ public class PlayerEngine {
                 String text = displayText(replaceInteractionMarks(item.getText()));
                 if (!trim(text).isEmpty()) {
                     m_events.add(new Event(Event.Kind.Text, text));
-                    shownText.add(displayText(item.getText()));
+                    shownText.add(sceneText(item.getText()));
                 } else if (item.getText().indexOf('{') >= 0 && item.getText().indexOf('}') > 0) {
                     // одна метка без текста ({id|} вывода PDSC) — ссылка-картинка: на экране она есть
                     // (значок подсказки карты «Фронтира»), в текстовом выводе — нет
-                    shownText.add(displayText(item.getText()));
+                    shownText.add(sceneText(item.getText()));
                 }
             } else if (item.getKind() == PlayerContext.OutputKind.Info) {
                 m_events.add(new Event(Event.Kind.Info, item.getText()));
@@ -2690,7 +2690,7 @@ public class PlayerEngine {
         String pageText = displayText(m_interpreter.expandText(nz(page.getText())));
         if (!pageText.isEmpty()) {
             addParagraphs(m.m_pageText, pageText, "");
-            addParagraphs(m.m_roomText, pageText, "");
+            addParagraphs(m.m_roomText, sceneText(m_interpreter.expandText(nz(page.getText()))), "");
         }
         PageView view = view();
         List<String> visible = sceneObjects();
@@ -2882,6 +2882,32 @@ public class PlayerEngine {
     /**
      * Текст для показа: '^' — перевод строки INSTEAD; хвостовые пробелы и переводы строк убираются
      */
+    /**
+     * Часть сцены STANDARD (описание комнаты, ответ, вывод enter): как displayText, но «^» в конце
+     * остаются переводами строк — пустыми абзацами в конце. INSTEAD склеивает части сцены через
+     * «^» (iface.fmt, stead.go), и текст, кончающийся на «^», даёт пустую строку перед следующей
+     * частью; следующий ответ (p() через пробел) продолжает с новой строки
+     */
+    static String sceneText(String s) {
+        String r = s == null ? "" : s.replace('^', '\n');
+        int e = r.length();
+        while (e > 0 && isTrimSpace(r.charAt(e - 1)) && r.charAt(e - 1) != '\n') {
+            e--;
+        }
+        int lastText = e;
+        while (lastText > 0 && isTrimSpace(r.charAt(lastText - 1))) {
+            lastText--;
+        }
+        // хвост: перевод строки на каждый «^», без пробелов между ними
+        StringBuilder tail = new StringBuilder();
+        for (int i = lastText; i < e; i++) {
+            if (r.charAt(i) == '\n') {
+                tail.append('\n');
+            }
+        }
+        return lastText == 0 ? "" : r.substring(0, lastText) + tail;
+    }
+
     static String displayText(String s) {
         String r = s == null ? "" : s.replace('^', '\n');
         int e = r.length();
