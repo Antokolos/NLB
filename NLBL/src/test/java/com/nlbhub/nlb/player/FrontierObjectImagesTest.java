@@ -63,6 +63,12 @@ public class FrontierObjectImagesTest {
     }
 
     @Test
+    public void forceDscFromBookProperty() {
+        // «Фронтир» в INSTEAD играл с game.forcedsc = true: свойство книги (файл forcedsc)
+        assertTrue(m_engine.screen().isForceDsc());
+    }
+
+    @Test
     public void battleShowsEnemyCardsBackgroundAndPlayerCards() {
         choose("Начать игру");
         for (int i = 0; i < 4; i++) {

@@ -102,7 +102,7 @@ std::string screen(const ScreenModel& m) {
     std::string r = "{";
     r += "\"layout\":" + str(m.layout == Layout::VisualNovel ? "VisualNovel" : "Standard");
     r += ",\"pageId\":" + str(m.pageId) + ",\"caption\":" + str(m.caption) + ",\"roomTitle\":" + str(m.roomTitle);
-    r += ",\"pageImage\":" + image(m.pageImage) + ",\"imageIsBackground\":" + b(m.imageIsBackground);
+    r += ",\"pageImage\":" + image(m.pageImage) + ",\"imageIsBackground\":" + b(m.imageIsBackground) + ",\"forceDsc\":" + b(m.forceDsc);
     r += ",\"pageText\":" + paragraphs(m.pageText) + ",\"reactionText\":" + paragraphs(m.reactionText);
     r += ",\"roomText\":" + paragraphs(m.roomText) + ",\"objectsText\":" + paragraphs(m.objectsText);
     r += ",\"modText\":" + paragraphs(m.modText);

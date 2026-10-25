@@ -114,6 +114,11 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
+    public boolean isForceDsc() {
+        return DEFAULT_FORCEDSC;
+    }
+
+    @Override
     public String getTitle() {
         return DEFAULT_TITLE;
     }

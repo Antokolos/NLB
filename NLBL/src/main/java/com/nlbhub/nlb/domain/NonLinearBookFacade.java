@@ -307,10 +307,11 @@ public class NonLinearBookFacade implements NLBObservable {
             final boolean fullAutowire,
             final boolean suppressMedia,
             final boolean suppressSound,
+            final boolean forceDsc,
             final boolean propagateToSubmodules
     ) {
         NonLinearBookImpl.UpdateBookPropertiesCommand command = (
-                m_nlb.createUpdateBookPropertiesCommand(license, theme, language, title, author, version, perfectGameAchievementName, fullAutowire, suppressMedia, suppressSound, propagateToSubmodules)
+                m_nlb.createUpdateBookPropertiesCommand(license, theme, language, title, author, version, perfectGameAchievementName, fullAutowire, suppressMedia, suppressSound, forceDsc, propagateToSubmodules)
         );
         m_undoManager.executeAndStore(command);
         notifyObservers();

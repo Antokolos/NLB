@@ -96,6 +96,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     private static final String FULLAUTO_FILE_NAME = "fullauto";
     private static final String SUPPRESS_MEDIA_FILE_NAME = "suppmed";
     private static final String SUPPRESS_SOUND_FILE_NAME = "suppsou";
+    private static final String FORCEDSC_FILE_NAME = "forcedsc";
     private static final String TITLE_FILE_NAME = "title";
     private static final String AUTHOR_FILE_NAME = "author";
     private static final String VERSION_FILE_NAME = "version";
@@ -128,6 +129,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     private boolean m_fullAutowire;
     private boolean m_suppressMedia;
     private boolean m_suppressSound;
+    private boolean m_forceDsc;
     private Map<String, PageImpl> m_pages;
     private List<String> m_autowiredPages;
     private Map<String, ObjImpl> m_objs;
@@ -1811,6 +1813,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final Boolean m_prevFullAutowire;
         private final Boolean m_prevSuppressMedia;
         private final Boolean m_prevSuppressSound;
+        private final Boolean m_prevForceDsc;
         private final String m_newLicense;
         private final Theme m_newTheme;
         private final String m_newLanguage;
@@ -1821,6 +1824,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final Boolean m_newFullAutowire;
         private final Boolean m_newSuppressMedia;
         private final Boolean m_newSuppressSound;
+        private final Boolean m_newForceDsc;
         private List<UpdateBookPropertiesCommand> m_submodulesCommands = new ArrayList<>();
 
         UpdateBookPropertiesCommand(
@@ -1834,6 +1838,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final Boolean fullAutowire,
                 final Boolean suppressMedia,
                 final Boolean suppressSound,
+                final Boolean forceDsc,
                 final boolean propagateToSubmodules
         ) {
             m_prevLicense = m_license;
@@ -1846,6 +1851,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_prevFullAutowire = m_fullAutowire;
             m_prevSuppressMedia = m_suppressMedia;
             m_prevSuppressSound = m_suppressSound;
+            m_prevForceDsc = m_forceDsc;
             m_newLicense = license;
             m_newTheme = theme;
             m_newLanguage = language;
@@ -1856,6 +1862,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newFullAutowire = fullAutowire;
             m_newSuppressMedia = suppressMedia;
             m_newSuppressSound = suppressSound;
+            m_newForceDsc = forceDsc;
             if (propagateToSubmodules) {
                 for (PageImpl page : m_pages.values()) {
                     NonLinearBookImpl moduleImpl = page.getModuleImpl();
@@ -1872,6 +1879,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                                         fullAutowire,
                                         suppressMedia,
                                         suppressSound,
+                                        forceDsc,
                                         true
                                 )
                         );
@@ -1912,6 +1920,9 @@ public class NonLinearBookImpl implements NonLinearBook {
             if (m_newSuppressSound != null) {
                 m_suppressSound = m_newSuppressSound;
             }
+            if (m_newForceDsc != null) {
+                m_forceDsc = m_newForceDsc;
+            }
             for (UpdateBookPropertiesCommand command : m_submodulesCommands) {
                 command.execute();
             }
@@ -1930,6 +1941,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_fullAutowire = m_prevFullAutowire;
             m_suppressMedia = m_prevSuppressMedia;
             m_suppressSound = m_prevSuppressSound;
+            m_forceDsc = m_prevForceDsc;
             for (UpdateBookPropertiesCommand command : m_submodulesCommands) {
                 command.revert();
             }
@@ -2404,6 +2416,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_fullAutowire = DEFAULT_FULL_AUTOWIRE;
         m_suppressMedia = DEFAULT_SUPPRESS_MEDIA;
         m_suppressSound = DEFAULT_SUPPRESS_SOUND;
+        m_forceDsc = DEFAULT_FORCEDSC;
         m_title = DEFAULT_TITLE;
         m_author = DEFAULT_AUTHOR;
         m_version = DEFAULT_VERSION;
@@ -2426,6 +2439,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_fullAutowire = parentNLB.isFullAutowire();
         m_suppressMedia = parentNLB.isSuppressMedia();
         m_suppressSound = parentNLB.isSuppressSound();
+        m_forceDsc = parentNLB.isForceDsc();
         m_title = parentNLB.getTitle();
         m_author = parentNLB.getAuthor();
         m_version = parentNLB.getVersion();
@@ -2655,6 +2669,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final Boolean fullAutowire,
             final Boolean suppressMedia,
             final Boolean suppressSound,
+            final Boolean forceDsc,
             final boolean propagateToSubmodules
     ) {
         // We are updating only properties which are actually changed.
@@ -2671,6 +2686,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 ((fullAutowire != null) && (m_fullAutowire == fullAutowire)) ? null : fullAutowire,
                 ((suppressMedia != null) && (m_suppressMedia == suppressMedia)) ? null : suppressMedia,
                 ((suppressSound != null) && (m_suppressSound == suppressSound)) ? null : suppressSound,
+                ((forceDsc != null) && (m_forceDsc == forceDsc)) ? null : forceDsc,
                 propagateToSubmodules
         );
     }
@@ -2746,6 +2762,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_fullAutowire = operand.isFullAutowire();
         m_suppressMedia = operand.isSuppressMedia();
         m_suppressSound = operand.isSuppressSound();
+        m_forceDsc = operand.isForceDsc();
         m_title = operand.getTitle();
         m_author = operand.getAuthor();
         m_version = operand.getVersion();
@@ -2798,6 +2815,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_fullAutowire = (m_parentNLB != null) ? m_parentNLB.isFullAutowire() : DEFAULT_FULL_AUTOWIRE;
         m_suppressMedia = (m_parentNLB != null) ? m_parentNLB.isSuppressMedia() : DEFAULT_SUPPRESS_MEDIA;
         m_suppressSound = (m_parentNLB != null) ? m_parentNLB.isSuppressSound() : DEFAULT_SUPPRESS_SOUND;
+        m_forceDsc = (m_parentNLB != null) ? m_parentNLB.isForceDsc() : DEFAULT_FORCEDSC;
         m_rootDir = null;
     }
 
@@ -2947,6 +2965,11 @@ public class NonLinearBookImpl implements NonLinearBook {
     @Override
     public boolean isSuppressSound() {
         return m_suppressSound;
+    }
+
+    @Override
+    public boolean isForceDsc() {
+        return m_forceDsc;
     }
 
     @Override
@@ -3377,6 +3400,13 @@ public class NonLinearBookImpl implements NonLinearBook {
                         rootDir,
                         SUPPRESS_SOUND_FILE_NAME,
                         (m_parentNLB != null) ? String.valueOf(m_parentNLB.isSuppressSound()) : String.valueOf(DEFAULT_SUPPRESS_SOUND)
+                )
+        );
+        m_forceDsc = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        rootDir,
+                        FORCEDSC_FILE_NAME,
+                        (m_parentNLB != null) ? String.valueOf(m_parentNLB.isForceDsc()) : String.valueOf(DEFAULT_FORCEDSC)
                 )
         );
         m_title = (
@@ -4073,6 +4103,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             fileManipulator.writeOptionalString(rootDir, FULLAUTO_FILE_NAME, String.valueOf(m_fullAutowire), String.valueOf(m_parentNLB.isFullAutowire()));
             fileManipulator.writeOptionalString(rootDir, SUPPRESS_MEDIA_FILE_NAME, String.valueOf(m_suppressMedia), String.valueOf(m_parentNLB.isSuppressMedia()));
             fileManipulator.writeOptionalString(rootDir, SUPPRESS_SOUND_FILE_NAME, String.valueOf(m_suppressSound), String.valueOf(m_parentNLB.isSuppressSound()));
+            fileManipulator.writeOptionalString(rootDir, FORCEDSC_FILE_NAME, String.valueOf(m_forceDsc), String.valueOf(m_parentNLB.isForceDsc()));
             fileManipulator.writeOptionalString(rootDir, TITLE_FILE_NAME, m_title, m_parentNLB.getTitle());
             fileManipulator.writeOptionalString(rootDir, AUTHOR_FILE_NAME, m_author, m_parentNLB.getAuthor());
             fileManipulator.writeOptionalString(rootDir, VERSION_FILE_NAME, m_version, m_parentNLB.getVersion());
@@ -4082,6 +4113,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             fileManipulator.writeOptionalString(rootDir, FULLAUTO_FILE_NAME, String.valueOf(m_fullAutowire), String.valueOf(DEFAULT_FULL_AUTOWIRE));
             fileManipulator.writeOptionalString(rootDir, SUPPRESS_MEDIA_FILE_NAME, String.valueOf(m_suppressMedia), String.valueOf(DEFAULT_SUPPRESS_MEDIA));
             fileManipulator.writeOptionalString(rootDir, SUPPRESS_SOUND_FILE_NAME, String.valueOf(m_suppressSound), String.valueOf(DEFAULT_SUPPRESS_SOUND));
+            fileManipulator.writeOptionalString(rootDir, FORCEDSC_FILE_NAME, String.valueOf(m_forceDsc), String.valueOf(DEFAULT_FORCEDSC));
             fileManipulator.writeOptionalString(rootDir, TITLE_FILE_NAME, m_title, DEFAULT_TITLE);
             fileManipulator.writeOptionalString(rootDir, AUTHOR_FILE_NAME, m_author, DEFAULT_AUTHOR);
             fileManipulator.writeOptionalString(rootDir, VERSION_FILE_NAME, m_version, DEFAULT_VERSION);

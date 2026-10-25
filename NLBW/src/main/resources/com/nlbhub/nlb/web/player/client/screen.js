@@ -818,7 +818,7 @@ window.NLBScreen = function (ctx) {
   // после действия — курсивом ответ; на только что открытой странице — текст модификаций (вывод
   // enter: stead.go выводит его перед сценой), описание комнаты; описания объектов, alt-тексты
   // недоступных ссылок, ссылки в тексте (xdsc). После действия на той же странице вывода enter
-  // уже нет — только ответ и сцена
+  // уже нет — только ответ и сцена (с game.forcedsc — описание комнаты, ответ и сцена)
   function composeStandard(s, waysBottom) {
     const header = [];
     if (s.roomTitle) header.push({ cls: 'title', runs: [{ kind: 'ChoiceLink', text: s.roomTitle, target: '-1' }] });
@@ -831,6 +831,9 @@ window.NLBScreen = function (ctx) {
     if (ways.length && !waysBottom) header.push({ cls: 'ways', runs: ways });
     const scene = [];
     if (s.reactionText.length) {
+      // game.forcedsc: после действия на той же странице STEAD2 (iface.fmt) выводит сначала
+      // me():look() — описание комнаты без вывода enter, — затем ответ
+      if (!scr.reactionThenRoom && s.forceDsc) scene.push(...s.roomText);
       for (const p of s.reactionText) {
         if (!p.runs.length) continue;
         const last = scene[scene.length - 1];

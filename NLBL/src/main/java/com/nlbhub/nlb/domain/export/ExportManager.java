@@ -422,7 +422,8 @@ public abstract class ExportManager {
                 text.getGameAct(),
                 text.getGameInv(),
                 text.getGameNouse(),
-                export.isGameForceDsc(),
+                // game.forcedsc: свойство книги (файл forcedsc) или общая настройка экспорта
+                nlb.isForceDsc() || export.isGameForceDsc(),
                 export.getNeedsActionCount()
         );
         //stringBuilder.append("#mode quote").append(LINE_SEPARATOR);

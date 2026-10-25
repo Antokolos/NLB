@@ -118,6 +118,10 @@ public class PlayerEngine {
          * Прогресс достижений (prefs INSTEAD): переживает «Начать заново»; null — свой у движка
          */
         public Achievements achievements = null;
+        /**
+         * game.forcedsc для всех книг (config.xml: export/game-forcedsc); иначе — свойство книги
+         */
+        public boolean gameForceDsc = false;
 
         /**
          * Настройки из раздела export конфигурации (cfg/config.xml) для языка книги
@@ -126,6 +130,7 @@ public class PlayerEngine {
             Settings settings = new Settings();
             if (export != null) {
                 settings.needsActionCount = export.getNeedsActionCount();
+                settings.gameForceDsc = export.isGameForceDsc();
                 Text texts = export.getTextByLang(language == null ? "" : language);
                 if (texts != null) {
                     settings.gameInvText = texts.getGameInv();
@@ -2680,6 +2685,7 @@ public class PlayerEngine {
             m.m_pageImage = imageRefFor(page.getId(), true);
         }
         m.m_imageIsBackground = page.isImageBackground();
+        m.m_forceDsc = m_rootBook.isForceDsc() || m_settings.gameForceDsc;
 
         String pageText = displayText(m_interpreter.expandText(nz(page.getText())));
         if (!pageText.isEmpty()) {
