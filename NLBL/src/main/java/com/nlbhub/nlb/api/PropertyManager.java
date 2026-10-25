@@ -68,6 +68,14 @@ public class PropertyManager {
         m_settings = readSettings();
     }
 
+    /**
+     * Настройки приложения из указанного файла — для тестов и программ, запущенных не из каталога
+     * с cfg/config.xml
+     */
+    public static void init(File configFile) throws IOException, NLBJAXBException {
+        m_settings = readSettings(configFile);
+    }
+
     public static Settings getSettings() {
         return m_settings;
     }

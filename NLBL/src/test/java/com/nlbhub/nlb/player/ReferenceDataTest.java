@@ -68,7 +68,7 @@ public class ReferenceDataTest {
         Assume.assumeTrue("Тестовые книги не найдены в " + booksDir + " (см. tools/player-reference)", checked > 0);
     }
 
-    static File booksDir() {
+    public static File booksDir() {
         String env = System.getenv("NLB_TEST_BOOKS");
         if (env != null && !env.isEmpty()) {
             return new File(env);
