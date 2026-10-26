@@ -106,7 +106,6 @@ public class NonLinearBookImpl implements NonLinearBook {
     private static final String VARS_DIR_NAME = "vars";
     private static final String MODULES_DIR_NAME = "modules";
     private static final String AUTOWIRED_PAGES_FILE_NAME = "autopgs";
-    private static final String GITIGNORE_FILENAME = ".gitignore";
     private static final String AUTOWIRED_SEPARATOR = "\n";
     private static final String DEFAULT_AUTOWIRED_PAGES = Constants.EMPTY_STRING;
     public static final Color JPG_BGCOLOR = new Color(255, 0, 255);
@@ -3723,20 +3722,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                 throw new NLBIOException("Cannot create external modules directory");
             }
         }
-        // TODO: .gitignore file is only for Git! support ,hgignore etc
-        File gitignoreFile = new File(m_rootDir, GITIGNORE_FILENAME);
-        if (gitignoreFile.exists()) {
-            if (!gitignoreFile.isFile()) {
-                throw new NLBIOException(GITIGNORE_FILENAME + " is not a file");
-            }
-        } else {
-            /*
-             * .gitignore file content:
-             * /modules/
-             * This means: ignore modules directory and all files inside it, but only in NLB root directory
-             */
-            fileManipulator.writeRequiredString(m_rootDir, GITIGNORE_FILENAME, "/" + MODULES_DIR_NAME + "/");
-        }
+        // .gitignore с «/modules/» больше не создаётся: внешние модули подключаются к книге
+        // подмодулями git (git submodule add <url> modules/<имя>), и такое правило мешало бы
+        // их добавлять. Уже существующий .gitignore книги не трогается
     }
 
     private void writePages(
