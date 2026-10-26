@@ -40,6 +40,7 @@ package com.nlbhub.nlb.domain;
 
 import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.exception.*;
+import com.nlbhub.nlb.util.BookFiles;
 import com.nlbhub.nlb.util.FileManipulator;
 import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.ResourceManager;
@@ -954,9 +955,11 @@ public class NonLinearBookFacade implements NLBObservable {
             // замер открытия книги — в лог запуска (по нему решается, нужна ли ускоренная загрузка)
             final int[] counts = new int[2];
             countPagesAndObjs(m_nlb, counts);
+            final String cache = BookFiles.lastLoadSummary();
             LOGGER.info(
-                    "Book {} read in {} ms (VCS repository opened in {} ms): {} pages, {} objects, including internal modules",
-                    path, (System.nanoTime() - vcsDone) / 1000000, (vcsDone - start) / 1000000, counts[0], counts[1]
+                    "Book {} read in {} ms (VCS repository opened in {} ms): {} pages, {} objects, including internal modules; {}",
+                    path, (System.nanoTime() - vcsDone) / 1000000, (vcsDone - start) / 1000000, counts[0], counts[1],
+                    cache == null ? "book cache is off" : cache
             );
             progressData.setProgressValue(70);
             progressData.setNoteText("Prepare to drawing...");

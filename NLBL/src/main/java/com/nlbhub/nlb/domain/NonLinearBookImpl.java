@@ -3268,10 +3268,10 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     private boolean loadModules(final File rootDir) throws NLBIOException, NLBConsistencyException, NLBVCSException {
         final File modulesDir = new File(rootDir, MODULES_DIR_NAME);
-        if (!modulesDir.exists() || !modulesDir.isDirectory()) {
+        if (!BookFiles.exists(modulesDir) || !BookFiles.isDirectory(modulesDir)) {
             return false;
         }
-        for (final String moduleName : modulesDir.list()) {
+        for (final String moduleName : BookFiles.list(modulesDir)) {
             NonLinearBookImpl moduleImpl = loadModule(modulesDir, moduleName);
             if (moduleImpl == null) {
                 return false;
@@ -3300,9 +3300,23 @@ public class NonLinearBookImpl implements NonLinearBook {
             final ProgressData progressData
     ) throws NLBIOException, NLBConsistencyException, NLBVCSException {
         final File rootDir = new File(path);
-        if (!rootDir.exists()) {
+        if (!BookFiles.exists(rootDir)) {
             return false;
         }
+        // книга целиком (с внутренними и внешними модулями) — через кэш книги, если он включён
+        try {
+            return BookFiles.load(rootDir, () -> loadFrom(rootDir, progressData));
+        } catch (NLBIOException | NLBConsistencyException | NLBVCSException | RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new NLBIOException("Error while loading book " + path, e);
+        }
+    }
+
+    private boolean loadFrom(
+            final File rootDir,
+            final ProgressData progressData
+    ) throws NLBIOException, NLBConsistencyException, NLBVCSException {
         m_rootDir = rootDir;
         progressData.setNoteText("Reading external modules...");
         loadModules(rootDir);
@@ -3334,7 +3348,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final Page parentPage
     ) throws NLBIOException, NLBConsistencyException, NLBVCSException {
         final File rootDir = new File(path);
-        if (!rootDir.exists()) {
+        if (!BookFiles.exists(rootDir)) {
             return false;
         }
         m_rootDir = rootDir;
@@ -3444,8 +3458,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_pages.clear();
         final File pagesDir = new File(rootDir, PAGES_DIR_NAME);
         // pages dir can be nonexistent, in this case there is no pages in the book
-        if (pagesDir.exists()) {
-            File[] pageDirs = pagesDir.listFiles();
+        if (BookFiles.exists(pagesDir)) {
+            File[] pageDirs = BookFiles.listFiles(pagesDir);
             if (pageDirs == null) {
                 throw new NLBIOException("Error when enumerating pages' directory contents");
             }
@@ -3461,8 +3475,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_objs.clear();
         final File objsDir = new File(rootDir, OBJS_DIR_NAME);
         // objs dir can be nonexistent, in this case there is no objects in the book
-        if (objsDir.exists()) {
-            File[] objDirs = objsDir.listFiles();
+        if (BookFiles.exists(objsDir)) {
+            File[] objDirs = BookFiles.listFiles(objsDir);
             if (objDirs == null) {
                 throw new NLBIOException("Error when enumerating objs' directory contents");
             }
@@ -3478,8 +3492,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_variables.clear();
         final File varsDir = new File(rootDir, VARS_DIR_NAME);
         // vars dir can be nonexistent, in this case there is no variables in the book
-        if (varsDir.exists()) {
-            File[] varDirs = varsDir.listFiles();
+        if (BookFiles.exists(varsDir)) {
+            File[] varDirs = BookFiles.listFiles(varsDir);
             if (varDirs == null) {
                 throw new NLBIOException("Error when enumerating vars' directory contents");
             }
@@ -3495,8 +3509,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_imageFiles.clear();
         final File imagesDir = new File(rootDir, IMAGES_DIR_NAME);
         // imagesDir dir can be nonexistent, in this case there is no images in the book
-        if (imagesDir.exists()) {
-            File[] listFiles = imagesDir.listFiles(NON_SPECIAL_FILTER);
+        if (BookFiles.exists(imagesDir)) {
+            File[] listFiles = BookFiles.listFiles(imagesDir, NON_SPECIAL_FILTER);
             if (listFiles == null) {
                 throw new NLBIOException("Error when enumerating images' directory contents");
             }
@@ -3543,8 +3557,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_soundFiles.clear();
         final File soundDir = new File(rootDir, SOUND_DIR_NAME);
         // soundDir dir can be nonexistent, in this case there is no sound in the book
-        if (soundDir.exists()) {
-            File[] listFiles = soundDir.listFiles(NON_SPECIAL_FILTER);
+        if (BookFiles.exists(soundDir)) {
+            File[] listFiles = BookFiles.listFiles(soundDir, NON_SPECIAL_FILTER);
             if (listFiles == null) {
                 throw new NLBIOException("Error when enumerating sound' directory contents");
             }

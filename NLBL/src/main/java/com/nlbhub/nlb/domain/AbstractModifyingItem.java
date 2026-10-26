@@ -43,6 +43,7 @@ import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
 import com.nlbhub.nlb.exception.NLBVCSException;
+import com.nlbhub.nlb.util.BookFiles;
 import com.nlbhub.nlb.util.FileManipulator;
 import org.jetbrains.annotations.NotNull;
 
@@ -151,7 +152,7 @@ public abstract class AbstractModifyingItem extends AbstractIdentifiableItem imp
                 DEFAULT_MODORDER
         );
         final File modsDir = new File(itemDir, MODIFICATIONS_DIR_NAME);
-        if (!modsDir.exists() && !modOrderString.isEmpty()) {
+        if (!BookFiles.exists(modsDir) && !modOrderString.isEmpty()) {
             throw new NLBIOException(
                     "Invalid NLB structure: modifications directory does not exist for item with Id = "
                             + getId()
@@ -159,7 +160,7 @@ public abstract class AbstractModifyingItem extends AbstractIdentifiableItem imp
             );
         }
         m_modifications.clear();
-        File[] modDirs = modsDir.listFiles();
+        File[] modDirs = BookFiles.listFiles(modsDir);
         if (modDirs == null) {
             if (modOrderString.isEmpty()) {
                 modDirs = new File[0];

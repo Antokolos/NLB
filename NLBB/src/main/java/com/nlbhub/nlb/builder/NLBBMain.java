@@ -43,6 +43,7 @@ import com.nlbhub.nlb.api.PropertyManager;
 import com.nlbhub.nlb.builder.form.MainFrame;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.exception.NLBJAXBException;
+import com.nlbhub.nlb.util.BookFiles;
 import com.nlbhub.nlb.vcs.Author;
 import com.nlbhub.nlb.vcs.DummyVCSAdapter;
 import com.nlbhub.nlb.vcs.GitAdapterWithPathDecoration;
@@ -74,6 +75,11 @@ public class NLBBMain implements Runnable {
     }
 
     public static void main(String[] args) {
+        // кэш книги одним файлом: открытие книги из десятков тысяч мелких файлов без открытия
+        // каждого (см. BookFiles); выключается ключом -Dnlb.bookCache=false
+        if (!"false".equalsIgnoreCase(System.getProperty("nlb.bookCache"))) {
+            BookFiles.setCacheDir(BookFiles.defaultCacheDir());
+        }
         SwingUtilities.invokeLater(new NLBBMain(args.length > 0 && "novcs".equalsIgnoreCase(args[0])));
     }
 
