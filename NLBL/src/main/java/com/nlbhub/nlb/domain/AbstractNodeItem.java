@@ -43,6 +43,7 @@ import com.nlbhub.nlb.exception.NLBConsistencyException;
 import com.nlbhub.nlb.exception.NLBFileManipulationException;
 import com.nlbhub.nlb.exception.NLBIOException;
 import com.nlbhub.nlb.exception.NLBVCSException;
+import com.nlbhub.nlb.util.BookFiles;
 import com.nlbhub.nlb.util.FileManipulator;
 import com.nlbhub.nlb.util.StringHelper;
 import org.jetbrains.annotations.NotNull;
@@ -453,7 +454,7 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
                 DEFAULT_LNKORDER
         );
         final File linksDir = new File(nodeDir, LINKS_DIR_NAME);
-        if (!linksDir.exists() && !linkOrderString.isEmpty()) {
+        if (!BookFiles.exists(linksDir) && !linkOrderString.isEmpty()) {
             throw new NLBIOException(
                     "Invalid NLB structure: links directory does not exist for node with Id = "
                             + getId()
@@ -461,7 +462,7 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
             );
         }
         m_links.clear();
-        File[] linkDirs = linksDir.listFiles();
+        File[] linkDirs = BookFiles.listFiles(linksDir);
         if (linkDirs == null) {
             if (linkOrderString.isEmpty()) {
                 linkDirs = new File[0];
@@ -494,7 +495,7 @@ public abstract class AbstractNodeItem extends AbstractModifyingItem implements 
 
     private void readCoords(File nodeDir) throws NLBIOException {
         final File coordsDir = new File(nodeDir, COORDS_DIR_NAME);
-        if (!coordsDir.exists()) {
+        if (!BookFiles.exists(coordsDir)) {
             throw new NLBIOException(
                     "Invalid NLB structure: coords directory does not exist for node with Id = " + getId()
             );

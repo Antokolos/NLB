@@ -154,10 +154,10 @@ public class FileManipulator {
             InputStream fis = null;
             try {
                 final File file = new File(rootDir, fileName);
-                if (!file.exists()) {
+                if (!BookFiles.exists(file)) {
                     throw new NLBIOException(errorMessage);
                 }
-                fis = new FileInputStream(file);
+                fis = new ByteArrayInputStream(BookFiles.read(file));
                 return FileManipulator.getFileAsString(fis);
             } finally {
                 if (fis != null) {
@@ -187,10 +187,10 @@ public class FileManipulator {
             InputStream fis = null;
             try {
                 final File file = new File(rootDir, fileName);
-                if (!file.exists()) {
+                if (!BookFiles.exists(file)) {
                     return defaultValue;
                 }
-                fis = new FileInputStream(file);
+                fis = new ByteArrayInputStream(BookFiles.read(file));
                 return FileManipulator.getFileAsString(fis);
             } finally {
                 if (fis != null) {
@@ -424,21 +424,21 @@ public class FileManipulator {
             final File mlsRootDir,
             final MultiLangString defaultValue
     ) throws NLBIOException {
-        if (!mlsRootDir.exists()) {
+        if (!BookFiles.exists(mlsRootDir)) {
             return MultiLangString.createCopy(defaultValue);
         }
         // Create copy of default value and then overwrite it with actual data, if it exists
         MultiLangString result = MultiLangString.createCopy(defaultValue);
         try {
-            if (mlsRootDir.isDirectory()) {
-                String[] langKeys = mlsRootDir.list();
+            if (BookFiles.isDirectory(mlsRootDir)) {
+                String[] langKeys = BookFiles.list(mlsRootDir);
                 if (langKeys != null) {
                     // if (langKeys.length == 0) then copy of default value will be returned
                     for (String langKey : langKeys) {
                         InputStream fis = null;
                         try {
                             final File file = new File(mlsRootDir, langKey);
-                            fis = new FileInputStream(file);
+                            fis = new ByteArrayInputStream(BookFiles.read(file));
                             result.put(langKey, FileManipulator.getFileAsString(fis));
                         } finally {
                             if (fis != null) {
@@ -453,7 +453,7 @@ public class FileManipulator {
                 // TODO: This code is provided for backward compatibility and should be removed, when all books will be converted
                 InputStream fis = null;
                 try {
-                    fis = new FileInputStream(mlsRootDir);
+                    fis = new ByteArrayInputStream(BookFiles.read(mlsRootDir));
                     result.put(NonLinearBook.DEFAULT_LANGUAGE, FileManipulator.getFileAsString(fis));
                 } finally {
                     if (fis != null) {
