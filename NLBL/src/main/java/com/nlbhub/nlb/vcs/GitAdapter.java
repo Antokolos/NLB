@@ -41,6 +41,7 @@ package com.nlbhub.nlb.vcs;
 import com.nlbhub.nlb.api.ProgressData;
 import com.nlbhub.nlb.exception.NLBVCSException;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.DetachedHeadException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -135,6 +136,9 @@ public class GitAdapter implements VCSAdapter {
             if (m_localRepo.exactRef(Constants.HEAD) == null) {
                 throw new NLBVCSException(BROKEN_REPOSITORY_MESSAGE);
             }
+            // внешний модуль-подмодуль после клонирования — в отсоединённом HEAD: на ветку с тем же
+            // коммитом, иначе push из редактора невозможен
+            GitSubmodules.attachDetachedHead(m_localRepo);
             startStatuses(path);
         } catch (IOException e) {
             throw new NLBVCSException("Error while Git repository opening", e);
@@ -354,6 +358,8 @@ public class GitAdapter implements VCSAdapter {
     public void commit(final String message) throws NLBVCSException {
         awaitStatuses();
         try {
+            // новые коммиты внешних модулей (подмодулей) — тоже часть commit книги
+            GitSubmodules.stageSubmodulePointers(m_git);
             m_git
                     .commit()
                     .setAll(false)
@@ -361,7 +367,7 @@ public class GitAdapter implements VCSAdapter {
                     .setAuthor(m_author.getName(), m_author.getEmail())
                     .setMessage(message)
                     .call();
-        } catch (GitAPIException e) {
+        } catch (GitAPIException | IOException e) {
             throw new NLBVCSException("Error while committing to the Git repository", e);
         }
     }
@@ -387,7 +393,15 @@ public class GitAdapter implements VCSAdapter {
                     .setDryRun(false)
                     .setIgnore(true)
                     .call();
-        } catch (GitAPIException e) {
+            // внешние модули (подмодули) — на записанные в книге коммиты и на ветку
+            List<String> skipped = GitSubmodules.updateSubmodules(m_git, provider, monitor);
+            if (!skipped.isEmpty()) {
+                throw new NLBVCSException(
+                        "The book is pulled, but these modules are not updated because they have uncommitted changes: "
+                                + String.join(", ", skipped) + ". Commit or revert them, then pull again."
+                );
+            }
+        } catch (GitAPIException | IOException e) {
             throw new NLBVCSException(
                     "Error while pulling from the Git repository: " + e.getMessage(),
                     e
@@ -402,13 +416,22 @@ public class GitAdapter implements VCSAdapter {
         progressData.setNoteText("Pushing...");
         ProgressMonitor monitor = new VCSProgressMonitor(progressData);
         try {
-            m_git
+            // сначала внешние модули (подмодули) с неотправленными коммитами: иначе книга сослалась
+            // бы на коммит модуля, которого нет на сервере
+            GitSubmodules.pushSubmodules(m_localRepo, provider, monitor);
+            GitSubmodules.checkPushed("the book", m_git
                     .push()
                     .setRemote("origin")
                     .setCredentialsProvider(provider)
                     .setProgressMonitor(monitor)
-                    .call();
-        } catch (GitAPIException e) {
+                    .call());
+        } catch (DetachedHeadException e) {
+            throw new NLBVCSException(
+                    "Cannot push: HEAD of the repository is detached (not on a branch). Run 'git checkout <branch>' in "
+                            + m_localRepo.getWorkTree() + " and push again.",
+                    e
+            );
+        } catch (GitAPIException | IOException e) {
             throw new NLBVCSException(
                     "Error while pushing to the Git repository: " + e.getMessage(),
                     e
