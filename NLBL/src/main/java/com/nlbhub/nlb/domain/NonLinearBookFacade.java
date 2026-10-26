@@ -48,6 +48,8 @@ import com.nlbhub.nlb.vcs.Author;
 import com.nlbhub.nlb.vcs.VCSAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,6 +62,7 @@ import java.util.*;
  * @version 1.0 1/15/14
  */
 public class NonLinearBookFacade implements NLBObservable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NonLinearBookFacade.class);
     private NonLinearBookImpl m_nlb;
     private Map<String, PageImpl> m_newPagesPool = new HashMap<>();
     private Map<String, ObjImpl> m_newObjsPool = new HashMap<>();
@@ -942,15 +945,34 @@ public class NonLinearBookFacade implements NLBObservable {
             }
             progressData.setNoteText("Opening VCS repository...");
             progressData.setProgressValue(5);
+            final long start = System.nanoTime();
             m_vcsAdapter.openRepo(rootDir.getCanonicalPath());
+            final long vcsDone = System.nanoTime();
             progressData.setNoteText("Loading book contents...");
             progressData.setProgressValue(15);
             m_nlb.load(path, progressData);
+            // замер открытия книги — в лог запуска (по нему решается, нужна ли ускоренная загрузка)
+            final int[] counts = new int[2];
+            countPagesAndObjs(m_nlb, counts);
+            LOGGER.info(
+                    "Book {} read in {} ms (VCS repository opened in {} ms): {} pages, {} objects, including internal modules",
+                    path, (System.nanoTime() - vcsDone) / 1000000, (vcsDone - start) / 1000000, counts[0], counts[1]
+            );
             progressData.setProgressValue(70);
             progressData.setNoteText("Prepare to drawing...");
             notifyObservers();
         } catch (IOException e) {
             throw new NLBIOException("Error while obtaining canonical path for path = " + path);
+        }
+    }
+
+    private static void countPagesAndObjs(final NonLinearBook book, final int[] counts) {
+        counts[0] += book.getPages().size();
+        counts[1] += book.getObjs().size();
+        for (Page page : book.getPages().values()) {
+            if (!page.getModule().isEmpty()) {
+                countPagesAndObjs(page.getModule(), counts);
+            }
         }
     }
 
