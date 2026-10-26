@@ -50,10 +50,14 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.TreeWalk;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 /**
  * The GitAdapter class
@@ -63,9 +67,20 @@ import java.util.*;
  * @version 1.0 1/9/14
  */
 public class GitAdapter implements VCSAdapter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitAdapter.class);
+    private static final String BROKEN_REPOSITORY_MESSAGE = (
+            "Your Git repository is broken.\nPlease either properly clone it (using 'git clone' command) or use 'runlight' command to run the program."
+    );
     private Repository m_localRepo = null;
     private Git m_git = null;
     private Map<String, Status> m_statuses = new HashMap<>();
+    /**
+     * Статусы файлов, которые считаются в фоне после openRepo (git status обходит весь рабочий
+     * каталог книги — секунды на большой книге); null — посчитаны. Любая операция адаптера сначала
+     * дожидается их: так сохранение, начатое раньше, просто подождёт, а книга тем временем читается
+     * и рисуется
+     */
+    private FutureTask<Void> m_statusesTask = null;
     private Author m_author;
 
     public GitAdapter(final Author author) {
@@ -74,6 +89,7 @@ public class GitAdapter implements VCSAdapter {
 
     @Override
     public void initRepo(String path) throws NLBVCSException {
+        finishStatusesQuietly();
         try {
             m_localRepo = FileRepositoryBuilder.create(new File(path, ".git"));
             enableLongPaths(m_localRepo, false);
@@ -101,6 +117,7 @@ public class GitAdapter implements VCSAdapter {
 
     @Override
     public void openRepo(String path) throws NLBVCSException {
+        finishStatusesQuietly();
         try {
             FileRepositoryBuilder builder = new FileRepositoryBuilder();
             // Каталог git не задаётся явно: JGit берёт <path>/.git сам, а если это файл
@@ -114,14 +131,70 @@ public class GitAdapter implements VCSAdapter {
             );
             enableLongPaths(m_localRepo, true);
             m_git = new Git(m_localRepo);
-            initStatuses(true);
+            // сломанный репозиторий (например, удалён каталог .git) — сообщение сразу, при открытии
+            if (m_localRepo.exactRef(Constants.HEAD) == null) {
+                throw new NLBVCSException(BROKEN_REPOSITORY_MESSAGE);
+            }
+            startStatuses(path);
         } catch (IOException e) {
             throw new NLBVCSException("Error while Git repository opening", e);
         }
     }
 
+    private void startStatuses(final String path) {
+        m_statusesTask = new FutureTask<>(() -> {
+            final long start = System.nanoTime();
+            initStatuses(true);
+            LOGGER.info("Git status of {} obtained in background in {} ms", path, (System.nanoTime() - start) / 1000000);
+            return null;
+        });
+        Thread thread = new Thread(m_statusesTask, "git-status");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    /**
+     * Репозиторий нельзя закрывать или подменять, пока его читает фоновый git status: дождаться
+     * его, не глядя на результат — статусы прежнего репозитория больше не нужны
+     */
+    private void finishStatusesQuietly() {
+        if (m_statusesTask != null) {
+            try {
+                m_statusesTask.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException e) {
+                // статусы прежнего репозитория не нужны
+            }
+            m_statusesTask = null;
+        }
+    }
+
+    /**
+     * Дождаться статусов файлов, которые считаются в фоне после openRepo; ошибка их получения —
+     * здесь, при первой операции, которой они нужны
+     */
+    private void awaitStatuses() throws NLBVCSException {
+        if (m_statusesTask == null) {
+            return;
+        }
+        try {
+            m_statusesTask.get();
+            m_statusesTask = null;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new NLBVCSException("Interrupted while obtaining Git repository status", e);
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof NLBVCSException) {
+                throw (NLBVCSException) e.getCause();
+            }
+            throw new NLBVCSException("Error while obtaining Git repository status", e.getCause());
+        }
+    }
+
     @Override
     public void closeAdapter() throws NLBVCSException {
+        finishStatusesQuietly();
         if (m_git != null) {
             m_git.close();
             m_git = null;
@@ -175,7 +248,7 @@ public class GitAdapter implements VCSAdapter {
         Ref head = m_localRepo.exactRef(Constants.HEAD);
         // head can be null if repo is broken (for example, .git directory was deleted)
         if (head == null) {
-            throw new NLBVCSException("Your Git repository is broken.\nPlease either properly clone it (using 'git clone' command) or use 'runlight' command to run the program.");
+            throw new NLBVCSException(BROKEN_REPOSITORY_MESSAGE);
         }
 
         // head.getObjectId() can be null, for example, if repository was never committed.
@@ -214,6 +287,7 @@ public class GitAdapter implements VCSAdapter {
 
     @Override
     public Status getStatus(String path) throws NLBVCSException {
+        awaitStatuses();
         Status status = m_statuses.get(path);
         if (status == null) {
             return Status.VCS_Undefined;
@@ -237,6 +311,7 @@ public class GitAdapter implements VCSAdapter {
 
     @Override
     public boolean remove(String path) throws NLBVCSException {
+        awaitStatuses();
         try {
             // cached - true if files should only be removed from index, false if files should also
             // be deleted from the working directory
@@ -277,6 +352,7 @@ public class GitAdapter implements VCSAdapter {
 
     @Override
     public void commit(final String message) throws NLBVCSException {
+        awaitStatuses();
         try {
             m_git
                     .commit()
@@ -292,6 +368,7 @@ public class GitAdapter implements VCSAdapter {
 
     @Override
     public void pull(String userName, String password, ProgressData progressData) throws NLBVCSException {
+        awaitStatuses();
         CredentialsProvider provider = new UsernamePasswordCredentialsProvider(userName, password);
         progressData.setNoteText("Pulling...");
         ProgressMonitor monitor = new VCSProgressMonitor(progressData);
@@ -320,6 +397,7 @@ public class GitAdapter implements VCSAdapter {
 
     @Override
     public void push(String userName, String password, final ProgressData progressData) throws NLBVCSException {
+        awaitStatuses();
         CredentialsProvider provider = new UsernamePasswordCredentialsProvider(userName, password);
         progressData.setNoteText("Pushing...");
         ProgressMonitor monitor = new VCSProgressMonitor(progressData);
