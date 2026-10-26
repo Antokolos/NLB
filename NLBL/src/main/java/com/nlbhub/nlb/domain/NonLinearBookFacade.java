@@ -64,6 +64,19 @@ import java.util.*;
  */
 public class NonLinearBookFacade implements NLBObservable {
     private static final Logger LOGGER = LoggerFactory.getLogger(NonLinearBookFacade.class);
+    /**
+     * Как сообщить автору, что правка не принята (вкладка внешнего модуля только для чтения);
+     * редактор показывает сообщение, без интерфейса — только лог
+     */
+    private static volatile java.util.function.Consumer<String> s_refusedChangeNotifier = (
+            reason -> LOGGER.warn("Change refused: {}", reason)
+    );
+    /**
+     * Почему правки в этой книге не принимаются, или null. Вкладка внешнего модуля (подмодуль
+     * в modules/) показывает копию модуля, сделанную при загрузке книги-родителя: правки в ней
+     * не сохранялись бы и молча терялись (модуль правится, если открыть его как отдельную книгу)
+     */
+    private String m_readOnlyReason = null;
     private NonLinearBookImpl m_nlb;
     private Map<String, PageImpl> m_newPagesPool = new HashMap<>();
     private Map<String, ObjImpl> m_newObjsPool = new HashMap<>();
@@ -115,9 +128,52 @@ public class NonLinearBookFacade implements NLBObservable {
         NonLinearBookFacade facade = (
                 new NonLinearBookFacade(this, m_author, m_vcsAdapter, page.getModuleImpl())
         );
+        if (page.isModuleExternal()) {
+            facade.m_readOnlyReason = (
+                    "Module '" + page.getModuleName() + "' is an external module (modules/" + page.getModuleName()
+                            + "). This tab shows its copy, and changes here would not be saved. "
+                            + "To edit the module, open modules/" + page.getModuleName() + " as a separate book."
+            );
+        } else {
+            facade.m_readOnlyReason = m_readOnlyReason;  // внутренний модуль внешнего модуля — тоже копия
+        }
         m_moduleFacades.add(facade);
         notifyObservers();
         return facade;
+    }
+
+    public static void setRefusedChangeNotifier(java.util.function.Consumer<String> notifier) {
+        s_refusedChangeNotifier = notifier;
+    }
+
+    /**
+     * null — книгу можно править; иначе — почему нельзя (копия внешнего модуля)
+     */
+    public String getReadOnlyReason() {
+        return m_readOnlyReason;
+    }
+
+    /**
+     * Правка книги только для чтения не принимается: представление возвращается к модели
+     * (перетащенный узел — на место), автору — сообщение (если tell; при перетаскивании — нет,
+     * чтобы не показывать окно на каждое движение мыши)
+     */
+    private boolean refuseChange(final boolean tell) {
+        if (m_readOnlyReason == null) {
+            return false;
+        }
+        if (tell) {
+            s_refusedChangeNotifier.accept(m_readOnlyReason);
+        }
+        // сначала все узлы (перетащенный — на место), потом все связи: связь рисуется по узлам
+        for (Page page : m_nlb.getPages().values()) {
+            page.notifyObservers();
+        }
+        for (Obj obj : m_nlb.getObjs().values()) {
+            obj.notifyObservers();
+        }
+        updateAllViews();
+        return true;
     }
 
     public NonLinearBookFacade getMainFacade() {
@@ -240,6 +296,9 @@ public class NonLinearBookFacade implements NLBObservable {
             final ModifyingItem modifyingItem,
             final ModificationsTableModel modificationsTableModel
     ) {
+        if (refuseChange(true)) {
+            return;
+        }
         NonLinearBookImpl.UpdateModificationsCommand command = (
                 m_nlb.createUpdateModificationsCommand(
                         modifyingItem,
@@ -261,6 +320,9 @@ public class NonLinearBookFacade implements NLBObservable {
      * @param constrId
      */
     public void setMediaFileConstrId(final MediaFile.Type mediaType, final String fileName, final String constrId) {
+        if (refuseChange(true)) {
+            return;
+        }
         m_nlb.setMediaFileConstrId(mediaType, fileName, constrId);
     }
 
@@ -273,6 +335,9 @@ public class NonLinearBookFacade implements NLBObservable {
      * @param redirect
      */
     public void setMediaFileRedirect(final MediaFile.Type mediaType, final String fileName, final String redirect) {
+        if (refuseChange(true)) {
+            return;
+        }
         m_nlb.setMediaFileRedirect(mediaType, fileName, redirect);
     }
 
@@ -285,6 +350,9 @@ public class NonLinearBookFacade implements NLBObservable {
      * @param flag
      */
     public void setMediaFileFlag(final MediaFile.Type mediaType, final String fileName, final boolean flag) {
+        if (refuseChange(true)) {
+            return;
+        }
         m_nlb.setMediaFileFlag(mediaType, fileName, flag);
     }
 
@@ -297,6 +365,9 @@ public class NonLinearBookFacade implements NLBObservable {
      * @param preset
      */
     public void setMediaFileExportParametersPreset(final MediaFile.Type mediaType, final String fileName, final MediaExportParameters.Preset preset) {
+        if (refuseChange(true)) {
+            return;
+        }
         m_nlb.setMediaFileExportParametersPreset(mediaType, fileName, preset);
     }
 
@@ -314,6 +385,9 @@ public class NonLinearBookFacade implements NLBObservable {
             final boolean forceDsc,
             final boolean propagateToSubmodules
     ) {
+        if (refuseChange(true)) {
+            return;
+        }
         NonLinearBookImpl.UpdateBookPropertiesCommand command = (
                 m_nlb.createUpdateBookPropertiesCommand(license, theme, language, title, author, version, perfectGameAchievementName, fullAutowire, suppressMedia, suppressSound, forceDsc, propagateToSubmodules)
         );
@@ -357,6 +431,9 @@ public class NonLinearBookFacade implements NLBObservable {
             final boolean autosFirst,
             final LinksTableModel linksTableModel
     ) {
+        if (refuseChange(true)) {
+            return;
+        }
         NonLinearBookImpl.UpdatePageCommand command = (
                 m_nlb.createUpdatePageCommand(
                         page,
@@ -408,6 +485,9 @@ public class NonLinearBookFacade implements NLBObservable {
             final boolean auto,
             final boolean once
     ) {
+        if (refuseChange(true)) {
+            return;
+        }
         NonLinearBookImpl.UpdateLinkCommand command = (
                 m_nlb.createUpdateLinkCommand(
                         link,
@@ -477,6 +557,9 @@ public class NonLinearBookFacade implements NLBObservable {
             final boolean imageInScene,
             final boolean imageInInventory
     ) {
+        if (refuseChange(true)) {
+            return;
+        }
         NonLinearBookImpl.UpdateObjCommand command = (
                 m_nlb.createUpdateObjCommand(
                         obj,
@@ -529,6 +612,9 @@ public class NonLinearBookFacade implements NLBObservable {
             final float left,
             final float top
     ) {
+        if (refuseChange(false)) {
+            return;
+        }
         final NLBCommand command = new UpdateLinkCoordsCommand(m_nlb, link, left, top);
         m_undoManager.executeAndStore(command);
         notifyObservers();
@@ -538,6 +624,9 @@ public class NonLinearBookFacade implements NLBObservable {
             final Link link,
             final float height
     ) {
+        if (refuseChange(false)) {
+            return;
+        }
         final NLBCommand command = new UpdateLinkCoordsCommand(m_nlb, link, height);
         m_undoManager.executeAndStore(command);
         notifyObservers();
@@ -557,6 +646,9 @@ public class NonLinearBookFacade implements NLBObservable {
             final @NotNull File imageFile,
             final @Nullable String imageFileName
     ) throws NLBFileManipulationException, NLBIOException, NLBConsistencyException, NLBVCSException {
+        if (refuseChange(true)) {
+            return;
+        }
         File rootDir = m_nlb.getRootDir();
         if (rootDir != null) {
             FileManipulator fileManipulator = new FileManipulator(m_vcsAdapter, rootDir);
@@ -580,6 +672,9 @@ public class NonLinearBookFacade implements NLBObservable {
             final @NotNull File soundFile,
             final @Nullable String soundFileName
     ) throws NLBFileManipulationException, NLBIOException, NLBConsistencyException, NLBVCSException {
+        if (refuseChange(true)) {
+            return;
+        }
         File rootDir = m_nlb.getRootDir();
         if (rootDir != null) {
             FileManipulator fileManipulator = new FileManipulator(m_vcsAdapter, rootDir);
@@ -592,6 +687,9 @@ public class NonLinearBookFacade implements NLBObservable {
     public void removeImageFile(
             final String imageFileName
     ) throws NLBFileManipulationException, NLBIOException, NLBConsistencyException {
+        if (refuseChange(true)) {
+            return;
+        }
         File rootDir = m_nlb.getRootDir();
         if (rootDir != null) {
             FileManipulator fileManipulator = new FileManipulator(m_vcsAdapter, rootDir);
@@ -604,6 +702,9 @@ public class NonLinearBookFacade implements NLBObservable {
     public void removeSoundFile(
             final String soundFileName
     ) throws NLBFileManipulationException, NLBIOException, NLBConsistencyException {
+        if (refuseChange(true)) {
+            return;
+        }
         File rootDir = m_nlb.getRootDir();
         if (rootDir != null) {
             FileManipulator fileManipulator = new FileManipulator(m_vcsAdapter, rootDir);
@@ -619,6 +720,9 @@ public class NonLinearBookFacade implements NLBObservable {
             double deltaX,
             double deltaY
     ) {
+        if (refuseChange(false)) {
+            return;
+        }
         AbstractNodeItem node = m_nlb.getPageImplById(nodeItem.getId());
         if (node == null) {
             node = m_nlb.getObjImplById(nodeItem.getId());
@@ -637,6 +741,9 @@ public class NonLinearBookFacade implements NLBObservable {
             final float deltaX,
             final float deltaY
     ) {
+        if (refuseChange(false)) {
+            return;
+        }
         final CommandChainCommand commandChain = new CommandChainCommand();
         updateNodeCoords(commandChain, nodeItem, deltaX, deltaY);
         for (NodeItem additionalNodeItem : additionallyMovedItems) {
@@ -682,6 +789,9 @@ public class NonLinearBookFacade implements NLBObservable {
             final String newContainerId,
             final String objId
     ) {
+        if (refuseChange(true)) {
+            return;
+        }
         AbstractNodeItem prevContainer = null;
         if (!StringHelper.isEmpty(previousContainerId)) {
             prevContainer = m_nlb.getPageImplById(previousContainerId);
@@ -718,6 +828,9 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void changeStartPoint(final String startPoint) {
+        if (refuseChange(true)) {
+            return;
+        }
         NonLinearBookImpl.ChangeStartPointCommand command = (
                 m_nlb.createChangeStartPointCommand(startPoint)
         );
@@ -726,6 +839,9 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void cut(final Collection<String> pageIds, final Collection<String> objIds) {
+        if (refuseChange(true)) {
+            return;
+        }
         CommandChainCommand command = new CommandChainCommand();
         command.addCommand(m_nlb.createCopyCommand(pageIds, objIds));
         command.addCommand(m_nlb.createDeleteCommand(pageIds, objIds));
@@ -740,6 +856,9 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void paste() {
+        if (refuseChange(true)) {
+            return;
+        }
         final NonLinearBookImpl nlbToPaste = Clipboard.singleton().getNonLinearBook();
         if (nlbToPaste != null) {
             NonLinearBookImpl.PasteCommand command = m_nlb.createPasteCommand(nlbToPaste);
@@ -758,6 +877,9 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void addPage(final Page page) {
+        if (refuseChange(true)) {
+            return;
+        }
         final PageImpl pageImpl = m_newPagesPool.get(page.getId());
         // m_newPagesPool.remove(page.getId()); -- do not remove here, instead of it this map
         // will be entirely cleared on save
@@ -776,6 +898,9 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void addObj(final Obj obj) {
+        if (refuseChange(true)) {
+            return;
+        }
         final ObjImpl objImpl = m_newObjsPool.get(obj.getId());
         // m_newObjsPool.remove(obj.getId()); -- do not remove here, instead of it this map
         // will be entirely cleared on save
@@ -798,6 +923,9 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void addLink(final Link link) {
+        if (refuseChange(true)) {
+            return;
+        }
         AbstractNodeItem origin = m_nlb.getPageImplById(link.getParent().getId());
         if (origin == null) {
             origin = m_nlb.getObjImplById(link.getParent().getId());
@@ -980,6 +1108,9 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void deleteNode(final NodeItem nodeToDelete) {
+        if (refuseChange(true)) {
+            return;
+        }
         final List<Link> adjacentLinks = m_nlb.getAssociatedLinks(nodeToDelete);
         PageImpl page = m_nlb.getPageImplById(nodeToDelete.getId());
         NonLinearBookImpl.DeleteNodeCommand command = null;
@@ -996,6 +1127,9 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void deleteLink(final Link link) {
+        if (refuseChange(true)) {
+            return;
+        }
         final IdentifiableItem parent = link.getParent();
         AbstractNodeItem nodeItem = m_nlb.getPageImplById(parent.getId());
         if (nodeItem == null) {
