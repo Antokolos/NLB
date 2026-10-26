@@ -240,6 +240,10 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
      * разогрета, файлы книги не в кэше диска), его время в логе отличается от повторных
      */
     private int m_openCount = 0;
+    /**
+     * Сообщение об отказе в правке уже на экране — не показывать второе поверх
+     */
+    private boolean m_refusedChangeShown = false;
 
     class OpenTask extends Task {
         private File m_file;
@@ -454,6 +458,19 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         //$$$setupUI$$$();
         rearrangeCustomComponents();
         m_graphEditorsPane.setTitleAt(0, "Main");
+        // правка во вкладке внешнего модуля (копия, не сохраняется) не принимается — объяснить почему
+        NonLinearBookFacade.setRefusedChangeNotifier(reason -> SwingUtilities.invokeLater(() -> {
+            if (!m_refusedChangeShown) {
+                m_refusedChangeShown = true;
+                JOptionPane.showMessageDialog(
+                        m_mainFramePanel,
+                        "<html><body style='width: 420px'>" + reason + "</body></html>",  // с переносом строк
+                        "Read-only module",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                m_refusedChangeShown = false;
+            }
+        }));
         m_graphEditorsPane.setComponentAt(0, m_mainEditorInfo.getPaneGraphEditor());
         m_graphEditorsPane.addChangeListener(
                 new ChangeListener() {
@@ -1211,9 +1228,17 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
 
         // We are opening this tab again, so clear its closed state
         paneEditorInfo.setClosedManually(false);
-        addGraphEditorTab(page.getModuleName(), paneEditorInfo);
+        addGraphEditorTab(tabTitle(page.getModuleName(), paneEditorInfo), paneEditorInfo);
 
         return paneEditorInfo;
+    }
+
+    /**
+     * Название вкладки модуля; вкладка внешнего модуля — его копия, только для чтения
+     */
+    private static String tabTitle(final String moduleName, final PaneEditorInfo paneEditorInfo) {
+        final boolean readOnly = paneEditorInfo.getPaneNlbFacade().getReadOnlyReason() != null;
+        return moduleName + (readOnly ? " (read-only)" : "");
     }
 
     private void addGraphEditorTab(final String title, final PaneEditorInfo paneEditorInfo) {
@@ -1338,11 +1363,11 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             PaneEditorInfo paneEditorInfo = m_paneEditorInfoMap.get(info.getModulePageId());
             if (paneEditorInfo != null) {
                 if (paneEditorInfo.getPaneIndex() != PaneEditorInfo.INDEX_UNDEFINED) {
-                    paneEditorInfo.getTabComponent().setTabName(info.getModuleName());
+                    paneEditorInfo.getTabComponent().setTabName(tabTitle(info.getModuleName(), paneEditorInfo));
                 } else {
                     // Do not reopen manually closed tabs
                     if (!paneEditorInfo.isClosedManually()) {
-                        addGraphEditorTab(info.getModuleName(), paneEditorInfo);
+                        addGraphEditorTab(tabTitle(info.getModuleName(), paneEditorInfo), paneEditorInfo);
                     }
                 }
             }
