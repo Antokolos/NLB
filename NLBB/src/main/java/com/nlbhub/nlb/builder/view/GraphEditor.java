@@ -59,6 +59,8 @@ import org.piccolo2d.event.PInputEventFilter;
 import org.piccolo2d.nodes.PPath;
 import org.piccolo2d.util.PAffineTransform;
 import org.piccolo2d.util.PBounds;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.piccolo2d.util.PNodeFilter;
 import org.piccolo2d.util.PPaintContext;
 
@@ -83,6 +85,7 @@ import java.util.List;
 public class GraphEditor extends PCanvas {
     private static enum GraphEditorMode {ADD_PAGE_MODE, ADD_OBJ_MODE, ADD_LINK_MODE, SELECTION_MODE}
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(GraphEditor.class);
     private static final long ANIMATE_DURATION_MILLIS = 1000;
     private static final Font FONT = new Font(Font.MONOSPACED, Font.BOLD, 12);
     // These offsets are used because the drag edge should not be targeted by mouse
@@ -945,7 +948,9 @@ public class GraphEditor extends PCanvas {
             m_nlbFacade.load(nlbFolder.getCanonicalPath(), progressData);
             progressData.setProgressValue(75);
             progressData.setNoteText("Drawing objects...");
+            final long start = System.nanoTime();
             init();
+            LOGGER.info("Book graph built in {} ms", (System.nanoTime() - start) / 1000000);
         } catch (IOException e) {
             throw new NLBIOException("IOException while loading book", e);
         }

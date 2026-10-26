@@ -235,6 +235,12 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         }
     }
 
+    /**
+     * Сколько раз книга открывалась в этом запуске: первое открытие — холодное (JVM не
+     * разогрета, файлы книги не в кэше диска), его время в логе отличается от повторных
+     */
+    private int m_openCount = 0;
+
     class OpenTask extends Task {
         private File m_file;
 
@@ -247,12 +253,19 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             setProgress(0);
             try {
                 // Opening the book
+                final long start = System.nanoTime();
                 clearAll();
                 PaneEditorInfo editorInfo = getMainPaneInfo();
                 editorInfo.getPaneGraphEditor().load(m_file, this);
                 setProgressValue(85);
                 setNoteText("Opening panes...");
+                final long panesStart = System.nanoTime();
                 openModulesPanes();
+                final long done = System.nanoTime();
+                LOGGER.info(
+                        "Book {} opened in {} ms (module panes: {} ms), opening #{} in this run",
+                        m_file, (done - start) / 1000000, (done - panesStart) / 1000000, ++m_openCount
+                );
                 setNoteText("All done!");
                 setProgressValue(100);
             } catch (NLBVCSException | NLBConsistencyException | NLBIOException ex) {
