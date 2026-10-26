@@ -103,10 +103,13 @@ public class GitAdapter implements VCSAdapter {
     public void openRepo(String path) throws NLBVCSException {
         try {
             FileRepositoryBuilder builder = new FileRepositoryBuilder();
+            // Каталог git не задаётся явно: JGit берёт <path>/.git сам, а если это файл
+            // («gitdir: ...» — подмодуль git, например внешний модуль книги в modules/), читает
+            // путь из него. Явный setGitDir(<path>/.git) считал файл каталогом, и книгу-подмодуль
+            // нельзя было открыть
             m_localRepo = (
                     builder.setWorkTree(new File(path))
                             .readEnvironment() // scan environment GIT_* variables
-                            .setGitDir(new File(path, ".git")) // in fact, this can be omitted
                             .build()
             );
             enableLongPaths(m_localRepo, true);
