@@ -233,7 +233,9 @@ nlb = obj {
             if not v() then
                 local t = r.alts[k];
                 if t then
-                    result = result.."^"..t();
+                    -- текст недоступной ссылки — своей строкой, как ссылки после него (xdsc
+                    -- начинается с «^», и «^» перед текстом давал вторую пустую строку)
+                    result = result..t().."^";
                 end
             end
         end

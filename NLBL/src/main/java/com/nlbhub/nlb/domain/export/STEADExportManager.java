@@ -631,7 +631,11 @@ public class STEADExportManager extends TextExportManager {
         */
         StringBuilder wayBuilder = new StringBuilder("    way = {" + LINE_SEPARATOR);
         StringBuilder xdscBuilder = new StringBuilder("    xdsc = function(s)" + LINE_SEPARATOR);
-        if (!pageBuildingBlocks.getContainedObjIds().isEmpty()) {
+        // xdsc — последняя часть сцены: «^» в начале отделяет ссылки после текста пустой строкой от
+        // описания комнаты (STEAD склеивает части сцены через «^»), а после описаний объектов —
+        // переводит строку (как в прежнем экспорте). На странице без текста и объектов пустая
+        // строка над ссылками не нужна; лишний перевод строки в конце сцены INSTEAD не показывает
+        if (pageBuildingBlocks.isHasPageText() || !pageBuildingBlocks.getContainedObjIds().isEmpty()) {
             xdscBuilder.append("        p \"^\";").append(LINE_SEPARATOR);
         }
         xdscBuilder.append("        p(nlb:alts_txt(s));").append(LINE_SEPARATOR);
