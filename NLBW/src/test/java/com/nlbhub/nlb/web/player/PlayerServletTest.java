@@ -152,6 +152,9 @@ public class PlayerServletTest {
         assertEquals(1050.0, vn.path("inventory").path("y").asDouble(), 0);
         assertEquals("game/gfx/menubtn_ru.png", vn.path("menuButtonRu").asText());
         assertEquals("game/fonts/STEINEMU.ttf", vn.path("menuFont").asText());
+        // подписи графических объектов — шрифтом hudFont vn.lua в обеих темах
+        assertEquals("game/fonts/STEINEMU.ttf", vn.path("hudFont").asText());
+        assertEquals("game/fonts/STEINEMU.ttf", theme.path("standard").path("hudFont").asText());
         JsonNode standard = theme.path("standard");
         assertEquals("#000000", standard.path("text").path("fg").asText());
         assertEquals("game/fonts/sans-i.ttf", standard.path("text").path("fontItalic").asText());

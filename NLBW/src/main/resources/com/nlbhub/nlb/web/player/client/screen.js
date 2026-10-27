@@ -85,6 +85,10 @@ window.NLBScreen = function (ctx) {
   const fontFaces = new Map();
   const family = (path) => path && fontFaces.has(path) ? '"' + fontFaces.get(path) + '", ' + FALLBACK : FALLBACK;
   const textFamily = () => family(theme().text.font);
+  // Подписи графических объектов — шрифтом hudFont темы, цвет hud_color = black (draw_hud vn.lua);
+  // без него — шрифт и цвет окна текста
+  const labelFamily = () => theme().hudFont ? family(theme().hudFont) : textFamily();
+  const labelColor = () => theme().hudFont ? 'black' : theme().text.fg;
   const themeUrl = (path) => 'theme/' + encodeURIComponent(ctx.bookId()) + '/' + path.split('/').map(encodeURIComponent).join('/');
 
   async function loadTheme() {
@@ -97,7 +101,7 @@ window.NLBScreen = function (ctx) {
     }
     const loads = [];
     for (const t of [themes.vn, themes.standard]) {
-      for (const w of [t.text, t.inventory, { font: t.menuFont }]) {
+      for (const w of [t.text, t.inventory, { font: t.menuFont }, { font: t.hudFont }]) {
         for (const path of [w.font, w.fontBold, w.fontItalic]) {
           if (!path || fontFaces.has(path)) continue;
           const name = 'nlb-font-' + fontFaces.size;
@@ -427,7 +431,7 @@ window.NLBScreen = function (ctx) {
     return label.replace(/\r/g, '').split('\n').map((line) => {
       const h1 = /^== (.*) ==$/.exec(line);
       const size = (h1 ? 45 : 29) * textScale;
-      return { text: h1 ? h1[1] : line, size: size, height: line ? fontHeight(size, textFamily()) : 25 };
+      return { text: h1 ? h1[1] : line, size: size, height: line ? fontHeight(size, labelFamily()) : 25 };
     });
   }
   function labelNodes(node, lines, x, y) {
@@ -436,9 +440,9 @@ window.NLBScreen = function (ctx) {
         const t = el('div', 'stage-label', line.text);
         t.style.left = x + 'px';
         t.style.top = y + 'px';
-        t.style.font = fontCss(line.size, textFamily());
+        t.style.font = fontCss(line.size, labelFamily());
         t.style.lineHeight = line.height + 'px';
-        t.style.color = theme().text.fg;
+        t.style.color = labelColor();
         node.appendChild(t);
       }
       y += line.height;
@@ -455,7 +459,7 @@ window.NLBScreen = function (ctx) {
     let labelW = 0, labelH = 0, labelCoef = 0;
     if (textOnly) {
       for (const line of labelLines(o.label)) {
-        if (line.text) labelW = Math.max(labelW, textW(line.size, textFamily(), line.text) + 9);
+        if (line.text) labelW = Math.max(labelW, textW(line.size, labelFamily(), line.text) + 9);
         labelH += line.height;
       }
       const row = Math.floor(ANCHORS.indexOf(o.placement.anchor) / 3);
@@ -960,16 +964,17 @@ window.NLBScreen = function (ctx) {
     panel.style.lineHeight = lh + 'px';
     setColors(panel, w);
     let n = 0;
+    // кавычки и тире — как в тексте страницы (модули quotes и dash экспорта)
     for (const c of s.choices) {
       if (!c.enabled && !c.altText) continue;
       const row = el('div', 'choice' + (c.enabled ? ' hit' : ' disabled'));
       row.style.marginBottom = (lh * 0.9) + 'px';
       if (c.enabled) {
         row.appendChild(el('span', 'num', (++n) + '. '));
-        row.appendChild(el('span', 'body', c.text));
+        row.appendChild(el('span', 'body', typo(c.text)));
         row.addEventListener('click', (ev) => { ev.stopPropagation(); ctx.command('choose', { index: c.index }); });
       } else {
-        row.appendChild(el('span', 'body', c.altText));
+        row.appendChild(el('span', 'body', typo(c.altText)));
       }
       panel.appendChild(row);
     }
