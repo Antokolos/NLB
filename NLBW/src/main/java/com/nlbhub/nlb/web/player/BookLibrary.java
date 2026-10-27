@@ -43,6 +43,7 @@ import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.api.Page;
 import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
+import com.nlbhub.nlb.util.BookFiles;
 import com.nlbhub.nlb.util.BookPack;
 
 import java.io.File;
@@ -54,6 +55,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Книги веб-плеера: каталоги книг и пакеты книг (&lt;книга&gt;.nlbpack, формат NLBNavigator) в корне
@@ -69,6 +72,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 1.0
  */
 public class BookLibrary {
+    private static final Logger LOGGER = Logger.getLogger(BookLibrary.class.getName());
     /**
      * Сведения о книге для списка книг
      */
@@ -377,9 +381,19 @@ public class BookLibrary {
             return null;
         }
         try {
+            final long start = System.nanoTime();
             NonLinearBookImpl book = new NonLinearBookImpl();
-            return book.load(dir.getPath(), new DummyProgressData()) ? book : null;
+            if (!book.load(dir.getPath(), new DummyProgressData())) {
+                return null;
+            }
+            String cache = BookFiles.lastLoadSummary();
+            LOGGER.info(String.format(
+                    "Book %s loaded in %d ms; %s",
+                    dir, (System.nanoTime() - start) / 1000000, cache == null ? "book cache is off" : cache
+            ));
+            return book;
         } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Book " + dir + " is not loaded", e);
             return null;
         }
     }
