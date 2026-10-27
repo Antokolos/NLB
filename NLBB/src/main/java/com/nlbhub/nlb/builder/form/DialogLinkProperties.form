@@ -288,6 +288,18 @@
                                               <text value="Once"/>
                                             </properties>
                                           </component>
+                                          <component id="2cd27" class="javax.swing.JLabel">
+                                            <constraints/>
+                                            <properties>
+                                              <text value="Show as"/>
+                                            </properties>
+                                          </component>
+                                          <component id="2cd28" class="javax.swing.JComboBox" binding="m_kindComboBox">
+                                            <constraints/>
+                                            <properties>
+                                              <toolTipText value="STANDARD theme: way (transition between locations, above the text) or choice after the text; Auto follows the book setting"/>
+                                            </properties>
+                                          </component>
                                         </children>
                                       </grid>
                                     </children>

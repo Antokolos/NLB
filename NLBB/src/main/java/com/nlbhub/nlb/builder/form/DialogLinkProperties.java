@@ -76,6 +76,7 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
     private JComboBox m_languageComboBox;
     private JTabbedPane m_tabbedPane1;
     private JCheckBox m_onceCheckBox;
+    private JComboBox<String> m_kindComboBox;
     private JTextField m_altTextTextField;
 
     public DialogLinkProperties(
@@ -183,6 +184,11 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
         m_altTextTextField.setText(link.getAltText());
         m_autoCheckBox.setSelected(link.isAuto());
         m_onceCheckBox.setSelected(link.isOnce());
+        // порядок — как Link.Kind: AUTO, WAY, CHOICE
+        m_kindComboBox.setModel(new DefaultComboBoxModel<>(new String[]{
+                "Auto (book setting)", "Way (location transition)", "Choice (after the text)"
+        }));
+        m_kindComboBox.setSelectedIndex(link.getKind().ordinal());
         m_linkConstraintsTextField.setText(m_constraint != null ? m_constraint.getValue() : "");
 
         LanguageHelper.initLanguageComboBox(m_languageComboBox, link.getCurrentNLB());
@@ -201,7 +207,8 @@ public class DialogLinkProperties extends JDialog implements NLBObserver {
                 m_linkTexts,
                 m_altTexts,
                 m_autoCheckBox.isSelected(),
-                m_onceCheckBox.isSelected()
+                m_onceCheckBox.isSelected(),
+                Link.Kind.values()[m_kindComboBox.getSelectedIndex()]
         );
         m_nlbFacade.removeObserver(m_observerId);
         dispose();
