@@ -1012,7 +1012,8 @@ window.NLBScreen = function (ctx) {
       // предметы в строку разделяются « | », как hinv_delim в INSTEAD
       if (i > 0 && t.inventoryHorizontal) line.appendChild(document.createTextNode(' | '));
       // строки подписи («^» в disp: «Слава: 0^Боеспособность: 45») — с новой строки, как в INSTEAD
-      const label = item.label;
+      // пробелы подряд — один, как в раскладке текста INSTEAD (wolfman: «Волчность: 0    Жизнь: 3»)
+      const label = item.label.replace(/[ \t]+/g, ' ');
       const node = item.active ? ctx.link(label, () => ctx.command('item', { id: item.id }), 'hit') : el('span', 'inactive', label);
       node.classList.add('item');
       if (item.id === state.selected) node.classList.add('selected');

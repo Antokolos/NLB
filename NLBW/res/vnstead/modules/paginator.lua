@@ -184,7 +184,9 @@ local paginatorIfaceCmd = function(f, s, cmd, ...)
 end
 
 local paginatorIfaceFmt = function(f, self, cmd, st, moved, r, av, objs, pv)
-    if paginator.on then
+    -- окно инвентаря (instead.get_inv -> iface:cmd("inv")): его строка приходит сюда как r, а
+    -- ниже r отбрасывается — на VN-страницах инвентарь был пуст (wolfman: «Волчность: 0 Жизнь: 3»)
+    if paginator.on and cmd ~= 'inv' then
         -- st -- changed state (main win), move -- loc changed
         -- maybe we should print action reactions and life texts somewhere, but we shouldn't print it to the main window
         local l, vv
