@@ -1381,11 +1381,26 @@ vn = obj {
         local sw, sh = tonumber(s.scr_w), tonumber(s.scr_h);
         if w ~= sw or h ~= sh then
             -- фон не во весь экран темы (кадры заставки 480x360 в теме 800x600) — по центру, вокруг
-            -- цвет рамки, как theme.gfx.bg INSTEAD; раньше он ложился в левый верхний угол
-            local bg = gr:box(sw, sh, theme.get('scr.col.brd') or 'black');
-            gr:copy(pic, bg, math.floor((sw - w) / 2), math.floor((sh - h) / 2));
+            -- цвет рамки, как theme.gfx.bg INSTEAD; раньше он ложился в левый верхний угол.
+            -- Рамка во весь экран создаётся один раз: gr:box такого размера — несколько мс, а
+            -- заставка «Фронтира» меняет фон 25 раз в секунду (кадры шли рывками, курсор подвисал)
+            local brd = theme.get('scr.col.brd') or 'black';
+            local key = sw .. 'x' .. sh .. ':' .. tostring(brd);
+            if not s._frame_spr or s._frame_key ~= key then
+                if s._frame_spr then
+                    gr:free(s._frame_spr);
+                end
+                s._frame_spr = gr:box(sw, sh, brd);
+                s._frame_key = key;
+            end
+            if not s.bg_spr then
+                s.bg_spr = gr:blank(sw, sh);
+            end
+            gr:copy(s._frame_spr, s.bg_spr);
+            gr:copy(pic, s.bg_spr, math.floor((sw - w) / 2), math.floor((sh - h) / 2));
             gr:free(pic);
-            pic = bg;
+            s._bg = picture;
+            return
         end
         if s.bg_spr then
             gr:copy(pic, s.bg_spr);
