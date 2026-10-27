@@ -3,6 +3,7 @@ package com.nlbhub.nlb.player;
 import com.nlbhub.nlb.api.Modification;
 import com.nlbhub.nlb.api.Variable;
 import com.nlbhub.nlb.domain.LinkImpl;
+import com.nlbhub.nlb.domain.ObjImpl;
 import com.nlbhub.nlb.domain.PageImpl;
 import org.junit.Test;
 
@@ -166,6 +167,38 @@ public class PlayerEngineTest {
         PlayerEngine engine = book.start();
         engine.choose(0);
         assertEquals(other.getId(), engine.currentPage().getId());
+    }
+
+    /**
+     * Ответ на действие после перехода (автоссылкой) показывается перед текстом новой страницы, чтобы
+     * игрок успел его прочитать; ответ, дословно совпадающий с текстом новой страницы, не
+     * повторяется («Шапочка»: цветы в вазу -> VN-страница с той же фразой)
+     */
+    @Test
+    public void reactionEqualToNewPageTextIsNotRepeated() {
+        for (String pageText : new String[]{"Цветы в вазе. Красиво!", "Другая страница"}) {
+            TestBook book = new TestBook();
+            PageImpl start = book.page("Старт");
+            PageImpl next = book.page(pageText);
+            ObjImpl vase = book.obj(start, "vase", "Здесь {ваза}.", "ваза", false);
+            vase.setActTexts(book.text("Цветы  в вазе.^Красиво! "));
+            book.mod(vase, Modification.Type.ASSIGN, "done", "true");
+            LinkImpl auto = book.link(start, next, "auto");
+            auto.setAuto(true);
+            book.constraint(auto, "done");
+            PlayerEngine engine = book.start();
+            assertTrue(engine.actOnObject(vase.getId()));
+            assertEquals(next.getId(), engine.currentPage().getId());
+            List<String> reaction = new ArrayList<>();
+            for (ScreenModel.Paragraph p : engine.screen().getReactionText()) {
+                reaction.add(p.getText());
+            }
+            if (pageText.equals("Другая страница")) {
+                assertEquals(java.util.Arrays.asList("Цветы  в вазе.", "Красиво!"), reaction);
+            } else {
+                assertTrue(reaction.toString(), reaction.isEmpty());
+            }
+        }
     }
 
     @Test

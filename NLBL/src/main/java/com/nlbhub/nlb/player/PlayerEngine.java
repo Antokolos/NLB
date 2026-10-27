@@ -2715,7 +2715,15 @@ public class PlayerEngine {
             addParagraphs(m.m_pageText, text, "");
             addParagraphs(m.m_modText, text, "");
         }
-        for (String text : m_reactionText) {
+        // Ответ на действие показывается и после перехода на другую страницу (автоссылкой или
+        // GOTO): так игрок успевает прочитать результат своего действия (улучшение по сравнению с
+        // INSTEAD, где ответ терялся; в VN-INSTEAD пагинатор вообще не выводит ответы). Но ответ,
+        // дословно совпадающий с текстом новой страницы, не повторяется («Шапочка»: «Шапочка
+        // поставила цветы в вазу. Красиво!» — и ответ на применение, и текст VN-страницы, куда
+        // ведёт GOTO)
+        boolean reactionIsPageText = !pageText.isEmpty()
+                && plainWords(String.join(" ", m_reactionText)).equals(plainWords(pageText));
+        for (String text : reactionIsPageText ? Collections.<String>emptyList() : m_reactionText) {
             // следующий ответ продолжает предыдущий через пробел (STEAD: p() — через пробел),
             // а строки внутри одного ответа — каждая с новой строки
             int first = m.m_reactionText.size();
@@ -2877,6 +2885,14 @@ public class PlayerEngine {
             e--;
         }
         return s.substring(b, e);
+    }
+
+    /**
+     * Слова текста через один пробел ('^' и любые пробелы между ними — один пробел): для сравнения
+     * текстов без учёта разметки строк
+     */
+    static String plainWords(String s) {
+        return trim(s.replace('^', ' ').replaceAll("[ \\t\\r\\n]+", " "));
     }
 
     /**
