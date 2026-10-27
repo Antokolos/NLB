@@ -759,8 +759,9 @@ window.NLBScreen = function (ctx) {
     node.style.fontSize = (lh * 0.8) + 'px';
   }
 
-  // VN: полоса текста vn:geom(8, 864, 1904, 184) экспорта — полупрозрачная, во всю ширину, текст
-  // внутри с полями по 240 px (vn.lua: textpad = 8); текст порциями или (варианты в тексте) весь
+  // VN: окно текста — как vn:auto_geom экспорта: theme.win.geom из theme_vn.lua темы игры (тема NLB
+  // по умолчанию — 248, 838, 1424, 204), вокруг — textpad vn.lua (8 px) и полупрозрачная полоса во
+  // всю ширину (боковины fl/fr); текст порциями или (варианты в тексте) весь
   function renderVisualNovelText(s, t) {
     const band = $('stage-band'), choices = $('stage-choices');
     $('stage-header').hidden = true;
@@ -803,20 +804,21 @@ window.NLBScreen = function (ctx) {
     }
     // крупный текст: полоса выше в той же пропорции (строк в ней столько же) и с меньшими полями;
     // низ — на месте, но не ниже строки инвентаря
-    let bottom = 864 + 184;
+    const w = t.text;
+    const tw = t.vnTextGeom ? { x: w.x, y: w.y, w: w.w, h: w.h } : { x: 248, y: 838, w: 1424, h: 204 };
+    const pad = 8;  // vn.lua: textpad
+    let bottom = tw.y + tw.h;
     if (textScale > 1 && s.inventory.length) {
       const inv = t.inventory;
       const invLine = fontHeight(fsize(inv), family(inv.font)) * inv.lineHeight;
-      bottom = Math.min(bottom, Math.min(inv.y, H - invLine) - 2);
+      bottom = Math.min(bottom, Math.min(inv.y, H - invLine) - 2 - pad);
     }
-    const bandH = Math.min(184 * textScale, H * 0.5);
-    const bandRect = { x: 8, y: bottom - bandH, w: 1904, h: bandH };
-    const margin = 240 / Math.max(1, textScale);
-    band.style.top = bandRect.y + 'px';
-    band.style.height = (bandRect.h + 16) + 'px';
-    const w = t.text;
+    const textH = Math.min(tw.h * textScale, H * 0.5);
+    const shrink = textScale > 1 ? tw.x * (1 - 1 / textScale) : 0;
+    band.style.top = (bottom - textH - pad) + 'px';
+    band.style.height = (textH + 2 * pad) + 'px';
     const lh = Math.floor(fontHeight(fsize(w), family(w.font)) * w.lineHeight);
-    fillTextWindow(paragraphs, w, { x: bandRect.x + margin, y: bandRect.y + 8, w: bandRect.w - 2 * margin, h: bandRect.h - 16 }, lh, false);
+    fillTextWindow(paragraphs, w, { x: tw.x - shrink, y: bottom - textH, w: tw.w + 2 * shrink, h: textH }, lh, false);
   }
 
   // STANDARD — как INSTEAD (game.c, stead2): заголовок по центру цветом ссылки (щелчок —
