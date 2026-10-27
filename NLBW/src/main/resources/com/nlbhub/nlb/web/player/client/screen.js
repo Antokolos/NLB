@@ -859,6 +859,11 @@ window.NLBScreen = function (ctx) {
       scene.push(...s.modText, ...s.roomText);
     }
     scene.push(...s.objectsText);
+    // xdsc экспорта начинается с «^», если у страницы есть текст или объекты: после текста —
+    // пустая строка перед ссылками (части сцены STEAD склеиваются через «^»), после описаний
+    // объектов — только новая строка (GameScreen NLBNavigator)
+    const xdscLines = s.choices.some((c) => c.enabled ? c.inlineLink : !!c.altText);
+    if (xdscLines && s.roomText.length && !s.objectsText.length && scene.length) scene.push({ runs: [] });
     for (const c of s.choices) {
       if (!c.enabled && c.altText) scene.push({ runs: [{ kind: 'Plain', text: c.altText }] });
     }
