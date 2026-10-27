@@ -240,6 +240,11 @@ public final class ScreenTheme {
      * menu.fnt.name — шрифт меню
      */
     String m_menuFont = "";
+    /**
+     * fonts/STEINEMU.ttf темы — шрифт подписей графических объектов (hudFont vn.lua: 29 px,
+     * строка «== … ==» — 45 px, цвет hud_color = black); пусто — шрифт и цвет окна текста
+     */
+    String m_hudFont = "";
     Window m_text;
     Window m_inventory;
     boolean m_inventoryHorizontal = true;
@@ -475,6 +480,7 @@ public final class ScreenTheme {
             if (root.exists("gfx/bg.jpg")) t.m_pageBackground = path(root, "gfx/bg.jpg");
             if (root.exists("gfx/menubtn.png")) t.m_menuButton = path(root, "gfx/menubtn.png");
             if (root.exists("gfx/menubtn_ru.png")) t.m_menuButtonRu = path(root, "gfx/menubtn_ru.png");
+            if (root.exists("fonts/STEINEMU.ttf")) t.m_hudFont = path(root, "fonts/STEINEMU.ttf");
             String lua = root.read(visualNovel ? "theme_vn.lua" : "theme_standard.lua");
             Matcher m = GEOM.matcher(lua);
             while (m.find()) {
@@ -546,6 +552,7 @@ public final class ScreenTheme {
         node.put("waysBottom", m_waysBottom);
         node.put("clickSound", m_clickSound);
         node.put("menuFont", m_menuFont);
+        node.put("hudFont", m_hudFont);
         return node;
     }
 
