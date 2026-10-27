@@ -40,6 +40,7 @@ package com.nlbhub.nlb.web.player;
 
 import com.nlbhub.nlb.api.PropertyManager;
 import com.nlbhub.nlb.api.config.Export;
+import com.nlbhub.nlb.util.BookFiles;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.Server;
@@ -109,6 +110,11 @@ public final class PlayerServer {
         if (root == null || !new File(root).isDirectory()) {
             System.out.println("Usage: PlayerServer <books directory> [--port 8111] [--host localhost] [--config cfg/config.xml]");
             System.exit(1);
+        }
+        // кэш книги одним файлом (BookFiles): первая загрузка большой книги без открытия каждого
+        // её файла; выключается ключом -Dnlb.bookCache=false
+        if (!"false".equalsIgnoreCase(System.getProperty("nlb.bookCache"))) {
+            BookFiles.setCacheDir(BookFiles.defaultCacheDir());
         }
         Export export = null;
         if (new File(config).isFile()) {
