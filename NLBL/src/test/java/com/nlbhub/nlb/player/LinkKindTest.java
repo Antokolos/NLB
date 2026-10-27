@@ -4,6 +4,7 @@ import com.nlbhub.nlb.api.Link;
 import com.nlbhub.nlb.api.PropertyManager;
 import com.nlbhub.nlb.api.config.Settings;
 import com.nlbhub.nlb.domain.LinkImpl;
+import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.PageImpl;
 import com.nlbhub.nlb.util.FileManipulator;
 import com.nlbhub.nlb.vcs.DummyVCSAdapter;
@@ -109,6 +110,31 @@ public class LinkKindTest {
         Book book = new Book(true);
         assertEquals(Arrays.asList("Холл", "Принять бой", "- Реплика"), book.playerChoices());
         assertEquals(Arrays.asList("Назад"), book.exportWays());
+    }
+
+    /**
+     * Внешний модуль читается отдельной книгой (без родителя) и вставляется в страницу-модуль
+     * (append): без своего choicelnk он наследует настройку книги-родителя
+     */
+    @Test
+    public void externalModuleInheritsChoiceLinks() {
+        TestBook book = new TestBook();
+        book.nlb.setChoiceLinks(true);
+        PageImpl modulePage = book.page("Модуль");
+        NonLinearBookImpl external = new NonLinearBookImpl();
+        NonLinearBookImpl module = new NonLinearBookImpl(book.nlb, modulePage);
+        module.append(external, true, true);
+        assertTrue(module.isChoiceLinks());
+        // книга-родитель без настройки — как сам модуль
+        TestBook plain = new TestBook();
+        NonLinearBookImpl ownSetting = new NonLinearBookImpl();
+        ownSetting.setChoiceLinks(true);
+        NonLinearBookImpl module2 = new NonLinearBookImpl(plain.nlb, plain.page("Модуль"));
+        module2.append(ownSetting, true, true);
+        assertTrue(module2.isChoiceLinks());
+        NonLinearBookImpl module3 = new NonLinearBookImpl(plain.nlb, plain.page("Модуль"));
+        module3.append(new NonLinearBookImpl(), true, true);
+        assertFalse(module3.isChoiceLinks());
     }
 
     @Test

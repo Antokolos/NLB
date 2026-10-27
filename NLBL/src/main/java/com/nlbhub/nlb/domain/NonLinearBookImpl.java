@@ -2790,7 +2790,9 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_suppressMedia = operand.isSuppressMedia();
         m_suppressSound = operand.isSuppressSound();
         m_forceDsc = operand.isForceDsc();
-        m_choiceLinks = operand.isChoiceLinks();
+        // внешний модуль читается как отдельная книга (без родителя), и без своего файла choicelnk
+        // у него false; ссылки в нём — выборы, если так настроены книга-родитель или сам модуль
+        m_choiceLinks = operand.isChoiceLinks() || (m_parentNLB != null && m_parentNLB.isChoiceLinks());
         m_title = operand.getTitle();
         m_author = operand.getAuthor();
         m_version = operand.getVersion();
