@@ -383,13 +383,14 @@ public class NonLinearBookFacade implements NLBObservable {
             final boolean suppressMedia,
             final boolean suppressSound,
             final boolean forceDsc,
+            final boolean choiceLinks,
             final boolean propagateToSubmodules
     ) {
         if (refuseChange(true)) {
             return;
         }
         NonLinearBookImpl.UpdateBookPropertiesCommand command = (
-                m_nlb.createUpdateBookPropertiesCommand(license, theme, language, title, author, version, perfectGameAchievementName, fullAutowire, suppressMedia, suppressSound, forceDsc, propagateToSubmodules)
+                m_nlb.createUpdateBookPropertiesCommand(license, theme, language, title, author, version, perfectGameAchievementName, fullAutowire, suppressMedia, suppressSound, forceDsc, choiceLinks, propagateToSubmodules)
         );
         m_undoManager.executeAndStore(command);
         notifyObservers();
@@ -483,7 +484,8 @@ public class NonLinearBookFacade implements NLBObservable {
             final MultiLangString linkText,
             final MultiLangString linkAltText,
             final boolean auto,
-            final boolean once
+            final boolean once,
+            final Link.Kind kind
     ) {
         if (refuseChange(true)) {
             return;
@@ -496,7 +498,8 @@ public class NonLinearBookFacade implements NLBObservable {
                         linkText,
                         linkAltText,
                         auto,
-                        once
+                        once,
+                        kind
                 )
         );
         getUndoManagerByItemId(link.getId()).executeAndStore(command);

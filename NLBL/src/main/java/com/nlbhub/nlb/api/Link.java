@@ -58,6 +58,15 @@ public interface Link extends ModifyingItem, NLBObservable {
     public final static boolean DEFAUlT_ONCE = false;
     public final static boolean DEFAUlT_TECHNICAL = false;
 
+    /**
+     * Вид ссылки на странице STANDARD: переход между локациями (ways INSTEAD, обычно над текстом)
+     * или выбор после текста (xact, как в CYOA). AUTO — по настройке книги (isChoiceLinks).
+     * Реплики («-», кавычки) и «Далее» — всегда выборы. На VN-страницах вид не важен
+     */
+    public static enum Kind {AUTO, WAY, CHOICE}
+
+    public final static Kind DEFAULT_KIND = Kind.AUTO;
+
     public String getVarId();
 
     public String getTarget();
@@ -81,6 +90,13 @@ public interface Link extends ModifyingItem, NLBObservable {
     public boolean isNeedsAction();
 
     public boolean isOnce();
+
+    /**
+     * Вид ссылки (файл kind; созданные на лету ссылки — входа в модуль, возврата, автоссылки — AUTO)
+     */
+    default Kind getKind() {
+        return DEFAULT_KIND;
+    }
 
     /**
      * If true, constraint is fulfilled if its expression is true.

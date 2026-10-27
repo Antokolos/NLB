@@ -69,6 +69,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     private static final String AUTO_FILE_NAME = "auto";
     private static final String NEEDS_ACTION_FILE_NAME = "needsact";
     private static final String ONCE_FILE_NAME = "once";
+    private static final String KIND_FILE_NAME = "kind";
     private String m_varId = DEFAULT_VAR_ID;
     /**
      * Id of the target page of the link (to which this link leads).
@@ -94,6 +95,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     private boolean m_auto = DEFAUlT_AUTO;
     private boolean m_needsAction = DEFAUlT_NEEDS_ACTION;
     private boolean m_once = DEFAUlT_ONCE;
+    private Kind m_kind = DEFAULT_KIND;
     private ObserverHandler m_observerHandler = new ObserverHandler();
     private boolean m_isPositiveConstraint = true;
     private boolean m_isObeyToModuleConstraint = true;
@@ -138,6 +140,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
         m_auto = sourceLink.isAuto();
         m_needsAction = sourceLink.isNeedsAction();
         m_once = sourceLink.isOnce();
+        m_kind = sourceLink.getKind();
     }
 
     public LinkImpl(final NodeItem parent, String target) {
@@ -304,6 +307,28 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
         m_once = once;
     }
 
+    @Override
+    @XmlElement(name = "kind")
+    public Kind getKind() {
+        return m_kind;
+    }
+
+    public void setKind(Kind kind) {
+        m_kind = (kind != null) ? kind : DEFAULT_KIND;
+    }
+
+    /**
+     * Вид из файла kind; неизвестное значение (книга из более новой версии) — AUTO
+     */
+    static Kind kindOf(String value) {
+        for (Kind kind : Kind.values()) {
+            if (kind.name().equals(value.trim())) {
+                return kind;
+            }
+        }
+        return DEFAULT_KIND;
+    }
+
     private void writeCoords(
             FileManipulator fileManipulator,
             File linkDir
@@ -371,6 +396,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
                     String.valueOf(m_once),
                     String.valueOf(DEFAUlT_ONCE)
             );
+            fileManipulator.writeOptionalString(linkDir, KIND_FILE_NAME, m_kind.name(), DEFAULT_KIND.name());
             writeCoords(fileManipulator, linkDir);
             writeModOrderFile(fileManipulator, linkDir);
             writeModifications(fileManipulator, linkDir);
@@ -441,6 +467,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
                         String.valueOf(DEFAUlT_ONCE)
                 )
         );
+        m_kind = kindOf(FileManipulator.getOptionalFileAsString(linkDir, KIND_FILE_NAME, DEFAULT_KIND.name()));
         readCoords(linkDir);
         readModifications(linkDir);
     }

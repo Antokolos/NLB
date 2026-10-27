@@ -97,6 +97,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     private static final String SUPPRESS_MEDIA_FILE_NAME = "suppmed";
     private static final String SUPPRESS_SOUND_FILE_NAME = "suppsou";
     private static final String FORCEDSC_FILE_NAME = "forcedsc";
+    private static final String CHOICE_LINKS_FILE_NAME = "choicelnk";
     private static final String TITLE_FILE_NAME = "title";
     private static final String AUTHOR_FILE_NAME = "author";
     private static final String VERSION_FILE_NAME = "version";
@@ -129,6 +130,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     private boolean m_suppressMedia;
     private boolean m_suppressSound;
     private boolean m_forceDsc;
+    private boolean m_choiceLinks;
     private Map<String, PageImpl> m_pages;
     private List<String> m_autowiredPages;
     private Map<String, ObjImpl> m_objs;
@@ -1239,6 +1241,8 @@ public class NonLinearBookImpl implements NonLinearBook {
         private boolean m_existingOnce;
         private boolean m_newAuto;
         private boolean m_newOnce;
+        private Link.Kind m_existingKind;
+        private Link.Kind m_newKind;
 
         private UpdateLinkCommand(
                 final NonLinearBook currentNLB,
@@ -1248,7 +1252,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString linkText,
                 final MultiLangString linkAltText,
                 final boolean auto,
-                final boolean once
+                final boolean once,
+                final Link.Kind kind
         ) {
             IdentifiableItem parent = link.getParent();
             AbstractNodeItem nodeItem = getPageImplById(parent.getId());
@@ -1263,7 +1268,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                     linkText,
                     linkAltText,
                     auto,
-                    once
+                    once,
+                    kind
             );
         }
 
@@ -1275,9 +1281,10 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString linkText,
                 final MultiLangString linkAltText,
                 final boolean auto,
-                final boolean once
+                final boolean once,
+                final Link.Kind kind
         ) {
-            init(currentNLB, link, linkVariableName, linkConstraintValue, linkText, linkAltText, auto, once);
+            init(currentNLB, link, linkVariableName, linkConstraintValue, linkText, linkAltText, auto, once, kind);
         }
 
         private void init(
@@ -1288,7 +1295,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final MultiLangString linkText,
                 final MultiLangString linkAltText,
                 final boolean auto,
-                final boolean once
+                final boolean once,
+                final Link.Kind kind
         ) {
             m_link = link;
             m_variableTracker = new VariableTracker(
@@ -1319,6 +1327,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingOnce = link.isOnce();
             m_newAuto = auto;
             m_newOnce = once;
+            m_existingKind = link.getKind();
+            m_newKind = kind;
         }
 
         @Override
@@ -1329,6 +1339,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_link.setAltTexts(m_newAltText);
             m_link.setAuto(m_newAuto);
             m_link.setOnce(m_newOnce);
+            m_link.setKind(m_newKind);
             m_link.notifyObservers();
         }
 
@@ -1340,6 +1351,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_link.setAltTexts(m_existingAltText);
             m_link.setAuto(m_existingAuto);
             m_link.setOnce(m_existingOnce);
+            m_link.setKind(m_existingKind);
             m_link.notifyObservers();
         }
     }
@@ -1813,6 +1825,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final Boolean m_prevSuppressMedia;
         private final Boolean m_prevSuppressSound;
         private final Boolean m_prevForceDsc;
+        private final Boolean m_prevChoiceLinks;
         private final String m_newLicense;
         private final Theme m_newTheme;
         private final String m_newLanguage;
@@ -1824,6 +1837,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final Boolean m_newSuppressMedia;
         private final Boolean m_newSuppressSound;
         private final Boolean m_newForceDsc;
+        private final Boolean m_newChoiceLinks;
         private List<UpdateBookPropertiesCommand> m_submodulesCommands = new ArrayList<>();
 
         UpdateBookPropertiesCommand(
@@ -1838,6 +1852,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final Boolean suppressMedia,
                 final Boolean suppressSound,
                 final Boolean forceDsc,
+                final Boolean choiceLinks,
                 final boolean propagateToSubmodules
         ) {
             m_prevLicense = m_license;
@@ -1851,6 +1866,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_prevSuppressMedia = m_suppressMedia;
             m_prevSuppressSound = m_suppressSound;
             m_prevForceDsc = m_forceDsc;
+            m_prevChoiceLinks = m_choiceLinks;
             m_newLicense = license;
             m_newTheme = theme;
             m_newLanguage = language;
@@ -1862,6 +1878,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newSuppressMedia = suppressMedia;
             m_newSuppressSound = suppressSound;
             m_newForceDsc = forceDsc;
+            m_newChoiceLinks = choiceLinks;
             if (propagateToSubmodules) {
                 for (PageImpl page : m_pages.values()) {
                     NonLinearBookImpl moduleImpl = page.getModuleImpl();
@@ -1879,6 +1896,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                                         suppressMedia,
                                         suppressSound,
                                         forceDsc,
+                                        choiceLinks,
                                         true
                                 )
                         );
@@ -1922,6 +1940,9 @@ public class NonLinearBookImpl implements NonLinearBook {
             if (m_newForceDsc != null) {
                 m_forceDsc = m_newForceDsc;
             }
+            if (m_newChoiceLinks != null) {
+                m_choiceLinks = m_newChoiceLinks;
+            }
             for (UpdateBookPropertiesCommand command : m_submodulesCommands) {
                 command.execute();
             }
@@ -1941,6 +1962,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_suppressMedia = m_prevSuppressMedia;
             m_suppressSound = m_prevSuppressSound;
             m_forceDsc = m_prevForceDsc;
+            m_choiceLinks = m_prevChoiceLinks;
             for (UpdateBookPropertiesCommand command : m_submodulesCommands) {
                 command.revert();
             }
@@ -2160,7 +2182,8 @@ public class NonLinearBookImpl implements NonLinearBook {
                         link.getTexts(),
                         link.getAltTexts(),
                         link.isAuto(),
-                        link.isOnce()
+                        link.isOnce(),
+                        link.getKind()
                 );
                 m_commandChain.addCommand(updateLinkCommand);
                 copyModifications(currentNLB, nlbToPaste, link, newLink);
@@ -2416,6 +2439,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_suppressMedia = DEFAULT_SUPPRESS_MEDIA;
         m_suppressSound = DEFAULT_SUPPRESS_SOUND;
         m_forceDsc = DEFAULT_FORCEDSC;
+        m_choiceLinks = DEFAULT_CHOICE_LINKS;
         m_title = DEFAULT_TITLE;
         m_author = DEFAULT_AUTHOR;
         m_version = DEFAULT_VERSION;
@@ -2439,6 +2463,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_suppressMedia = parentNLB.isSuppressMedia();
         m_suppressSound = parentNLB.isSuppressSound();
         m_forceDsc = parentNLB.isForceDsc();
+        m_choiceLinks = parentNLB.isChoiceLinks();
         m_title = parentNLB.getTitle();
         m_author = parentNLB.getAuthor();
         m_version = parentNLB.getVersion();
@@ -2633,9 +2658,10 @@ public class NonLinearBookImpl implements NonLinearBook {
             final MultiLangString linkText,
             final MultiLangString linkAltText,
             final boolean auto,
-            final boolean once
+            final boolean once,
+            final Link.Kind kind
     ) {
-        return new UpdateLinkCommand(this, link, linkVariableName, linkConstraintValue, linkText, linkAltText, auto, once);
+        return new UpdateLinkCommand(this, link, linkVariableName, linkConstraintValue, linkText, linkAltText, auto, once, kind);
     }
 
     UpdateModificationsCommand createUpdateModificationsCommand(
@@ -2669,6 +2695,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final Boolean suppressMedia,
             final Boolean suppressSound,
             final Boolean forceDsc,
+            final Boolean choiceLinks,
             final boolean propagateToSubmodules
     ) {
         // We are updating only properties which are actually changed.
@@ -2686,6 +2713,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 ((suppressMedia != null) && (m_suppressMedia == suppressMedia)) ? null : suppressMedia,
                 ((suppressSound != null) && (m_suppressSound == suppressSound)) ? null : suppressSound,
                 ((forceDsc != null) && (m_forceDsc == forceDsc)) ? null : forceDsc,
+                ((choiceLinks != null) && (m_choiceLinks == choiceLinks)) ? null : choiceLinks,
                 propagateToSubmodules
         );
     }
@@ -2762,6 +2790,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_suppressMedia = operand.isSuppressMedia();
         m_suppressSound = operand.isSuppressSound();
         m_forceDsc = operand.isForceDsc();
+        m_choiceLinks = operand.isChoiceLinks();
         m_title = operand.getTitle();
         m_author = operand.getAuthor();
         m_version = operand.getVersion();
@@ -2815,6 +2844,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_suppressMedia = (m_parentNLB != null) ? m_parentNLB.isSuppressMedia() : DEFAULT_SUPPRESS_MEDIA;
         m_suppressSound = (m_parentNLB != null) ? m_parentNLB.isSuppressSound() : DEFAULT_SUPPRESS_SOUND;
         m_forceDsc = (m_parentNLB != null) ? m_parentNLB.isForceDsc() : DEFAULT_FORCEDSC;
+        m_choiceLinks = (m_parentNLB != null) ? m_parentNLB.isChoiceLinks() : DEFAULT_CHOICE_LINKS;
         m_rootDir = null;
     }
 
@@ -2969,6 +2999,18 @@ public class NonLinearBookImpl implements NonLinearBook {
     @Override
     public boolean isForceDsc() {
         return m_forceDsc;
+    }
+
+    @Override
+    public boolean isChoiceLinks() {
+        return m_choiceLinks;
+    }
+
+    /**
+     * Без команды отмены: для книг, собранных в памяти (тесты); в редакторе — через свойства книги
+     */
+    public void setChoiceLinks(boolean choiceLinks) {
+        m_choiceLinks = choiceLinks;
     }
 
     @Override
@@ -3420,6 +3462,13 @@ public class NonLinearBookImpl implements NonLinearBook {
                         rootDir,
                         FORCEDSC_FILE_NAME,
                         (m_parentNLB != null) ? String.valueOf(m_parentNLB.isForceDsc()) : String.valueOf(DEFAULT_FORCEDSC)
+                )
+        );
+        m_choiceLinks = "true".equals(
+                FileManipulator.getOptionalFileAsString(
+                        rootDir,
+                        CHOICE_LINKS_FILE_NAME,
+                        (m_parentNLB != null) ? String.valueOf(m_parentNLB.isChoiceLinks()) : String.valueOf(DEFAULT_CHOICE_LINKS)
                 )
         );
         m_title = (
@@ -4106,6 +4155,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             fileManipulator.writeOptionalString(rootDir, SUPPRESS_MEDIA_FILE_NAME, String.valueOf(m_suppressMedia), String.valueOf(m_parentNLB.isSuppressMedia()));
             fileManipulator.writeOptionalString(rootDir, SUPPRESS_SOUND_FILE_NAME, String.valueOf(m_suppressSound), String.valueOf(m_parentNLB.isSuppressSound()));
             fileManipulator.writeOptionalString(rootDir, FORCEDSC_FILE_NAME, String.valueOf(m_forceDsc), String.valueOf(m_parentNLB.isForceDsc()));
+            fileManipulator.writeOptionalString(rootDir, CHOICE_LINKS_FILE_NAME, String.valueOf(m_choiceLinks), String.valueOf(m_parentNLB.isChoiceLinks()));
             fileManipulator.writeOptionalString(rootDir, TITLE_FILE_NAME, m_title, m_parentNLB.getTitle());
             fileManipulator.writeOptionalString(rootDir, AUTHOR_FILE_NAME, m_author, m_parentNLB.getAuthor());
             fileManipulator.writeOptionalString(rootDir, VERSION_FILE_NAME, m_version, m_parentNLB.getVersion());
@@ -4116,6 +4166,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             fileManipulator.writeOptionalString(rootDir, SUPPRESS_MEDIA_FILE_NAME, String.valueOf(m_suppressMedia), String.valueOf(DEFAULT_SUPPRESS_MEDIA));
             fileManipulator.writeOptionalString(rootDir, SUPPRESS_SOUND_FILE_NAME, String.valueOf(m_suppressSound), String.valueOf(DEFAULT_SUPPRESS_SOUND));
             fileManipulator.writeOptionalString(rootDir, FORCEDSC_FILE_NAME, String.valueOf(m_forceDsc), String.valueOf(DEFAULT_FORCEDSC));
+            fileManipulator.writeOptionalString(rootDir, CHOICE_LINKS_FILE_NAME, String.valueOf(m_choiceLinks), String.valueOf(DEFAULT_CHOICE_LINKS));
             fileManipulator.writeOptionalString(rootDir, TITLE_FILE_NAME, m_title, DEFAULT_TITLE);
             fileManipulator.writeOptionalString(rootDir, AUTHOR_FILE_NAME, m_author, DEFAULT_AUTHOR);
             fileManipulator.writeOptionalString(rootDir, VERSION_FILE_NAME, m_version, DEFAULT_VERSION);

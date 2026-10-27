@@ -521,6 +521,10 @@ public class PlayerEngine {
         boolean autoFlag = false;
         boolean needsAction = false;
         boolean once = false;
+        /**
+         * Вид ссылки (Link.getKind): переход ways или выбор после текста; созданные на лету — AUTO
+         */
+        Link.Kind display = Link.DEFAULT_KIND;
         boolean positive = true;
         boolean obeyModule = false;
         /**
@@ -1289,6 +1293,7 @@ public class PlayerEngine {
         pl.autoFlag = link.isAuto();
         pl.needsAction = link.isNeedsAction();
         pl.once = link.isOnce();
+        pl.display = link.getKind();
         pl.positive = link.isPositiveConstraint();
         pl.modifications = link.getModifications();
         pl.trivial = isTrivial(link.getTexts(), link.getAltTexts(), pl.autoFlag);
@@ -2335,10 +2340,16 @@ public class PlayerEngine {
             return new PageView("", new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true);
         }
         List<Choice> choices = new ArrayList<>();
+        NonLinearBook pageBook = m_interpreter.bookOfPage(m_page.getId());
+        boolean choiceLinks = pageBook != null && pageBook.isChoiceLinks();
         for (PlayerLink link : availableChoices()) {
-            // ExportManager.isInlineLink: в стандартной теме такая ссылка — xact в тексте, а не путь
+            // ExportManager.isInlineLink: в стандартной теме такая ссылка — xact в тексте, а не путь.
+            // Реплики и «Далее» — всегда выборы, остальное — по виду ссылки, «авто» — по книге
             char first = link.text.isEmpty() ? '\0' : link.text.charAt(0);
-            boolean inlineLink = link.trivial || first == '-' || first == '"' || first == '\'';
+            boolean dialogOrTrivial = link.trivial || first == '-' || first == '"' || first == '\'';
+            boolean inlineLink = link.display == Link.Kind.CHOICE
+                    || dialogOrTrivial
+                    || (link.display == Link.Kind.AUTO && choiceLinks);
             choices.add(new Choice(displayText(m_interpreter.expandText(link.text)), link.trivial, inlineLink));
         }
         List<ObjectView> scene = new ArrayList<>();

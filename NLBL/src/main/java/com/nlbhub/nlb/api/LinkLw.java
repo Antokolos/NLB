@@ -71,6 +71,7 @@ public class LinkLw implements Link {
     private boolean m_auto;
     private boolean m_needsAction;
     private boolean m_once;
+    private Kind m_kind = DEFAULT_KIND;
     private boolean m_positiveConstraint;
     private boolean m_shouldObeyToModuleConstraint;
     private List<Modification> m_modifications = new ArrayList<>();
@@ -239,6 +240,19 @@ public class LinkLw implements Link {
     @XmlElement(name = "is-once")
     public boolean isOnce() {
         return m_once;
+    }
+
+    @Override
+    public Kind getKind() {
+        return m_kind;
+    }
+
+    /**
+     * Вид ссылки, с которой снята эта (ссылки модульной страницы, MPL); остальные — AUTO
+     */
+    public LinkLw setKind(Kind kind) {
+        m_kind = kind;
+        return this;
     }
 
     @Override

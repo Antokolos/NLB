@@ -72,6 +72,7 @@ public interface NonLinearBook {
     public static final boolean DEFAULT_SUPPRESS_MEDIA = false;
     public static final boolean DEFAULT_SUPPRESS_SOUND = false;
     public static final boolean DEFAULT_FORCEDSC = false;
+    public static final boolean DEFAULT_CHOICE_LINKS = false;
     public static final String DEFAULT_TITLE = Constants.EMPTY_STRING;
     public static final String DEFAULT_AUTHOR = Constants.EMPTY_STRING;
     public static final String DEFAULT_VERSION = Constants.EMPTY_STRING;
@@ -308,6 +309,12 @@ public interface NonLinearBook {
 
     /** game.forcedsc экспорта STEAD: описание комнаты показывается и после действий */
     public boolean isForceDsc();
+
+    /**
+     * Ссылки с видом «авто» (Link.Kind.AUTO) — выборы после текста (xact), а не переходы ways
+     * (файл choicelnk книги; модули наследуют). Реплики («-», кавычки) и «Далее» — всегда выборы
+     */
+    public boolean isChoiceLinks();
 
     public String getTitle();
 

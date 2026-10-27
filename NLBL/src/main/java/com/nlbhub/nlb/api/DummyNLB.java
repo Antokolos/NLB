@@ -119,6 +119,11 @@ public class DummyNLB implements NonLinearBook {
     }
 
     @Override
+    public boolean isChoiceLinks() {
+        return DEFAULT_CHOICE_LINKS;
+    }
+
+    @Override
     public String getTitle() {
         return DEFAULT_TITLE;
     }

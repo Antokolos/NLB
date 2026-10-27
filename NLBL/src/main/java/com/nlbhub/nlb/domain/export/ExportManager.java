@@ -618,7 +618,7 @@ public abstract class ExportManager {
                                     false,
                                     link.getId(),
                                     link.getModifications()
-                            )
+                            ).setKind(link.getKind())
                     );
                     LinkBuildingBlocks linkBuildingBlocks = createLinkBuildingBlocks(page, createPreprocessedLink(linklw), exportData);
                     blocks.addLinkBuildingBlocks(linkBuildingBlocks);
@@ -1084,6 +1084,11 @@ public abstract class ExportManager {
             @Override
             public boolean isOnce() {
                 return link.isOnce();
+            }
+
+            @Override
+            public Kind getKind() {
+                return link.getKind();
             }
 
             @Override
@@ -1996,15 +2001,28 @@ public abstract class ExportManager {
         return EMPTY_STRING;
     }
 
-    private boolean isInlineLink(Link link) {
+    /**
+     * Ссылка — выбор после текста (xact), а не переход ways. Реплики («-», кавычки) и «Далее» —
+     * всегда выборы; остальное — по виду ссылки, а вид «авто» — по настройке книги страницы
+     * (NonLinearBook.isChoiceLinks: «Фронтир» — выборы, как в прежнем экспорте без ways)
+     */
+    private boolean isInlineLink(Page page, Link link) {
         // Remember, that link here can have escaped text, like \"Text\" instead of just "Text"
         String text = link.getText();
-        return StringHelper.notEmpty(text)
+        final boolean dialogOrTrivial = StringHelper.notEmpty(text)
                 && (
                 text.startsWith(escapeText("-"))
                         || text.startsWith(escapeText("\""))
                         || text.startsWith(escapeText("'"))
                         || determineTrivialStatus(link));
+        switch (link.getKind()) {
+            case WAY:
+                return dialogOrTrivial;
+            case CHOICE:
+                return true;
+            default:
+                return dialogOrTrivial || page.getCurrentNLB().isChoiceLinks();
+        }
     }
 
     private LinkBuildingBlocks createLinkBuildingBlocks(
@@ -2018,7 +2036,7 @@ public abstract class ExportManager {
         final boolean trivial = determineTrivialStatus(link);
         blocks.setAuto(link.isAuto());
         blocks.setNeedsAction(link.isNeedsAction());
-        blocks.setInline(isInlineLink(link));
+        blocks.setInline(isInlineLink(page, link));
         String expandedLinkText = expandVariablesForLinks(StringHelper.getTextChunks(link.getText()), theme);
         blocks.setLinkText(expandedLinkText);
         blocks.setLinkAltText(decorateLinkAltText(expandVariablesForLinks(StringHelper.getTextChunks(link.getAltText()), theme)));
