@@ -245,6 +245,10 @@ public final class ScreenTheme {
      * строка «== … ==» — 45 px, цвет hud_color = black); пусто — шрифт и цвет окна текста
      */
     String m_hudFont = "";
+    /**
+     * theme.win.geom(…) задан в theme_vn.lua: окно текста VN — оттуда (vn:auto_geom экспорта)
+     */
+    boolean m_vnTextGeom = false;
     Window m_text;
     Window m_inventory;
     boolean m_inventoryHorizontal = true;
@@ -485,6 +489,9 @@ public final class ScreenTheme {
             Matcher m = GEOM.matcher(lua);
             while (m.find()) {
                 Window w = m.group(1).equals("win") ? t.m_text : t.m_inventory;
+                if (visualNovel && m.group(1).equals("win")) {
+                    t.m_vnTextGeom = true;
+                }
                 w.x = ox + Double.parseDouble(m.group(2)) * k;
                 w.y = oy + Double.parseDouble(m.group(3)) * k;
                 w.w = Double.parseDouble(m.group(4)) * k;
@@ -553,6 +560,7 @@ public final class ScreenTheme {
         node.put("clickSound", m_clickSound);
         node.put("menuFont", m_menuFont);
         node.put("hudFont", m_hudFont);
+        node.put("vnTextGeom", m_vnTextGeom);
         return node;
     }
 
