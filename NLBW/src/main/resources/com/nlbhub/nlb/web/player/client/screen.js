@@ -114,8 +114,22 @@ window.NLBScreen = function (ctx) {
         }
       }
     }
+    // боковины подложки текста VN (gfx/fl.png, gfx/fr.png): их размер нужен для раскладки
+    for (const t of [themes.vn, themes.standard]) {
+      for (const path of [t.frameLeft, t.frameRight]) {
+        if (!path || frameSizes.has(path)) continue;
+        frameSizes.set(path, null);
+        loads.push(new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => { frameSizes.set(path, { w: img.naturalWidth, h: img.naturalHeight }); resolve(); };
+          img.onerror = () => resolve();
+          img.src = themeUrl(path);
+        }));
+      }
+    }
     await Promise.all(loads);
   }
+  const frameSizes = new Map();
 
   // Звук щелчка по ссылке, предмету, пункту меню — snd.click темы, как в INSTEAD
   function click() {
@@ -806,7 +820,7 @@ window.NLBScreen = function (ctx) {
     // низ — на месте, но не ниже строки инвентаря
     const w = t.text;
     const tw = t.vnTextGeom ? { x: w.x, y: w.y, w: w.w, h: w.h } : { x: 248, y: 838, w: 1424, h: 204 };
-    const pad = 8;  // vn.lua: textpad
+    const pad = 8 * (t.scale || 1);  // vn.lua: textpad
     let bottom = tw.y + tw.h;
     if (textScale > 1 && s.inventory.length) {
       const inv = t.inventory;
@@ -815,8 +829,32 @@ window.NLBScreen = function (ctx) {
     }
     const textH = Math.min(tw.h * textScale, H * 0.5);
     const shrink = textScale > 1 ? tw.x * (1 - 1 / textScale) : 0;
-    band.style.top = (bottom - textH - pad) + 'px';
-    band.style.height = (textH + 2 * pad) + 'px';
+    // подложка — как vn:textbg / vn:undertext INSTEAD: вокруг окна текста (отступ textpad) чёрный
+    // прямоугольник с альфой 127, слева и справа — gfx/fl.png и gfx/fr.png темы в своём размере
+    // (у темы NLB — 240×220, альфа 0 → 127 и 127 → 0: края уходят в прозрачность); без картинок —
+    // только прямоугольник. При крупном тексте боковины — по высоте полосы
+    const under = { x: tw.x - shrink - pad, y: bottom - textH - pad, w: tw.w + 2 * shrink + 2 * pad, h: textH + 2 * pad };
+    const sc = t.scale || 1;
+    const edge = (path) => {
+      const size = path && frameSizes.get(path);
+      return size ? { url: themeUrl(path), w: size.w * sc, h: textScale > 1 ? under.h : size.h * sc } : null;
+    };
+    const fl = edge(t.frameLeft), fr = edge(t.frameRight);
+    const left = under.x - (fl ? fl.w : 0);
+    const layers = [], sizes = [], positions = [];
+    if (fl) { layers.push('url("' + fl.url + '")'); sizes.push(fl.w + 'px ' + fl.h + 'px'); positions.push('0 0'); }
+    if (fr) { layers.push('url("' + fr.url + '")'); sizes.push(fr.w + 'px ' + fr.h + 'px'); positions.push((under.x + under.w - left) + 'px 0'); }
+    layers.push('linear-gradient(rgba(0, 0, 0, 0.498), rgba(0, 0, 0, 0.498))');
+    sizes.push(under.w + 'px ' + under.h + 'px');
+    positions.push((under.x - left) + 'px 0');
+    band.style.left = left + 'px';
+    band.style.width = (under.w + (fl ? fl.w : 0) + (fr ? fr.w : 0)) + 'px';
+    band.style.top = under.y + 'px';
+    band.style.height = Math.max(under.h, fl ? fl.h : 0, fr ? fr.h : 0) + 'px';
+    band.style.backgroundImage = layers.join(', ');
+    band.style.backgroundSize = sizes.join(', ');
+    band.style.backgroundPosition = positions.join(', ');
+    band.style.backgroundRepeat = 'no-repeat';
     const lh = Math.floor(fontHeight(fsize(w), family(w.font)) * w.lineHeight);
     fillTextWindow(paragraphs, w, { x: tw.x - shrink, y: bottom - textH, w: tw.w + 2 * shrink, h: textH }, lh, false);
   }

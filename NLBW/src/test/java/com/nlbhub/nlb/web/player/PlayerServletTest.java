@@ -157,6 +157,9 @@ public class PlayerServletTest {
         assertEquals("game/fonts/STEINEMU.ttf", theme.path("standard").path("hudFont").asText());
         // окно текста VN — из theme_vn.lua темы экспорта
         assertTrue(vn.path("vnTextGeom").asBoolean());
+        // боковины подложки текста VN — из темы экспорта
+        assertEquals("game/gfx/fl.png", vn.path("frameLeft").asText());
+        assertEquals("game/gfx/fr.png", vn.path("frameRight").asText());
         assertEquals(838.0, vn.path("text").path("y").asDouble(), 0);
         JsonNode standard = theme.path("standard");
         assertEquals("#000000", standard.path("text").path("fg").asText());
