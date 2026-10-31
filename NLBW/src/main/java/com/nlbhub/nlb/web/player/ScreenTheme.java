@@ -259,6 +259,12 @@ public final class ScreenTheme {
      * активной темы, в правом верхнем углу
      */
     String m_menuButton = "";
+    /**
+     * gfx/fl.png и gfx/fr.png темы — боковины подложки текста VN (vn:textbg): слева и справа от
+     * полупрозрачного прямоугольника под окном текста
+     */
+    String m_frameLeft = "";
+    String m_frameRight = "";
     String m_menuButtonRu = "";
 
     private ScreenTheme(boolean visualNovel) {
@@ -483,6 +489,8 @@ public final class ScreenTheme {
             }
             if (root.exists("gfx/bg.jpg")) t.m_pageBackground = path(root, "gfx/bg.jpg");
             if (root.exists("gfx/menubtn.png")) t.m_menuButton = path(root, "gfx/menubtn.png");
+            if (root.exists("gfx/fl.png")) t.m_frameLeft = path(root, "gfx/fl.png");
+            if (root.exists("gfx/fr.png")) t.m_frameRight = path(root, "gfx/fr.png");
             if (root.exists("gfx/menubtn_ru.png")) t.m_menuButtonRu = path(root, "gfx/menubtn_ru.png");
             if (root.exists("fonts/STEINEMU.ttf")) t.m_hudFont = path(root, "fonts/STEINEMU.ttf");
             String lua = root.read(visualNovel ? "theme_vn.lua" : "theme_standard.lua");
@@ -548,6 +556,8 @@ public final class ScreenTheme {
         node.put("inventoryAlign", m_inventoryAlign);
         node.put("align", m_align);
         node.put("menuButton", m_menuButton);
+        node.put("frameLeft", m_frameLeft);
+        node.put("frameRight", m_frameRight);
         node.put("menuButtonRu", m_menuButtonRu);
         node.put("themeMenuButton", m_themeMenuButton);
         node.put("menuButtonX", m_menuButtonX);
