@@ -2083,10 +2083,10 @@ public class PlayerEngine {
         for (ScreenModel.Paragraph paragraph : result) {
             trimRuns(paragraph.m_runs);
         }
-        // перевод строки в конце последнего описания пустой строки не даёт
-        while (!result.isEmpty() && result.get(result.size() - 1).m_runs.isEmpty()) {
-            result.remove(result.size() - 1);
-        }
+        // перевод строки в конце последнего описания остаётся пустым абзацем: за описаниями в
+        // сцене STEAD идёт xdsc экспорта («^» и ссылки после текста) — между описаниями и
+        // «Далее» тогда пустая строка («Фронтир»: «Экипировка флота»). В конце сцены пустые
+        // абзацы не видны — клиент их отбрасывает, как INSTEAD
         return result;
     }
 
@@ -2685,6 +2685,12 @@ public class PlayerEngine {
             // STEADExportManager.decoratePageCaption: nam = заголовок или название модуля
             // (у модуля без названия — название родителя; совсем без — «...»)
             m.m_roomTitle = m.m_caption;
+            // заголовок задан, но из одних пробелов («Фронтир»: страница с роликом — caption " ") —
+            // экспорт пишет nam = " " (StringHelper.notEmpty не обрезает), и INSTEAD показывает
+            // пустой заголовок, а не название книги
+            if (page.isUseCaption() && m.m_caption.isEmpty() && !nz(page.getCaption()).isEmpty()) {
+                m.m_roomTitle = " ";
+            }
             for (NonLinearBook b = page.getCurrentNLB(); m.m_roomTitle.isEmpty() && b != null; b = b.getParentNLB()) {
                 m.m_roomTitle = trim(b.getTitle());
             }
@@ -2860,6 +2866,12 @@ public class PlayerEngine {
             item.m_active = iv.isActive();
             if (obj != null && obj.isImageInInventory() && !m_rootBook.isSuppressMedia()) {
                 item.m_icon = imageRefFor(iv.getInstanceId(), obj.isLooped());
+                // у предмета-картинки без своего disp подписи нет (в INSTEAD disp = img(...)):
+                // не показывать вместо неё имя объекта
+                if (item.m_icon != null && !(item.m_icon.m_file.isEmpty() && item.m_icon.m_framePattern.isEmpty())
+                        && trim(displayText(m_interpreter.expandText(nz(obj.getDisp())))).isEmpty()) {
+                    item.m_label = "";
+                }
             }
             m.m_inventory.add(item);
         }

@@ -836,6 +836,23 @@ public class PlayerContext {
                 containerAdd(obj.getId(), containedId);
             }
         }
+        // Содержимое общего объекта (commonTo) — в начале содержимого каждого объекта, общего
+        // с ним, как в экспорте (ExportManager: объекты commonTo — перед своими): карта «Фронтира»
+        // common25 получает черту «--------------------» из своего общего объекта
+        for (Obj obj : sortedObjs(book)) {
+            Obj common = obj.getCommonToObj(book);
+            if (common == null || common.getId().equals(obj.getContainerId()) || common.getId().equals(obj.getId())) {
+                continue;
+            }
+            List<String> items = m_state.m_containers.computeIfAbsent(obj.getId(), k -> new ArrayList<>());
+            int at = 0;
+            for (String containedId : common.getContainedObjIds()) {
+                if (items.contains(containedId)) {
+                    continue;
+                }
+                items.add(at++, containedId);
+            }
+        }
         // Страховка: объект знает свой контейнер, даже если список владельца его не содержит.
         // Отдельным проходом, после всех списков content: иначе объект, чей id меньше id его
         // контейнера, попадал в контейнер раньше списка и порядок содержимого ломался

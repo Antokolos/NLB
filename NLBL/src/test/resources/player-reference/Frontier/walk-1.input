@@ -43,7 +43,7 @@ i5
 i5
 1
 2
-u4 o1
+u4 o2
 1
 1
 1
@@ -141,23 +141,21 @@ o19
 o4
 o22
 o24
-u3 o4
-u2 o23
+u3 o2
+u2 o22
 u3 o16
 u2 o11
 i3
 1
 o11
 o1
-u2 o11
+u2 o10
 i2
 o11
 o3
-u3 o23
-u1 o15
-o20
-u3 o16
-u3 o7
+u3 i1
+u1 i2
+1
 i2
 o7
 o8
@@ -165,38 +163,40 @@ o9
 o25
 o21
 i2
-u2 o23
+u2 o22
 u1 o6
 o11
-u3 o21
-u2 o12
+u3 o19
+u2 o11
 o4
 i3
 1
 o1
-u2 o25
+u2 o24
 o18
 u1 o10
 o1
-o12
-o5
+o26
+o16
+u1 o20
 o25
 u1 o10
 i3
 1
-u2 o14
+u2 o13
 o23
 i3
 1
 o24
 o11
-u3 o19
-u2 o1
+u3 i1
+u3 o17
+u1 i3
 o14
 i1
 i3
 1
 i2
-u3 o19
+u3 o17
 0
 1
