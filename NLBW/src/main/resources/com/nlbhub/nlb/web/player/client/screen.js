@@ -46,6 +46,14 @@ window.NLBScreen = function (ctx) {
     voicePtr: 0, voicesKey: '',
     showChoices: false,    // экран вариантов (VN)
     scroll: 0,             // листание строк окна текста
+    // плавная прокрутка (колесо, перетаскивание, вписанный первый экран): не целыми строками, до
+    // конца текста по настоящей высоте окна, строки у краёв видны обрезанными — как в INSTEAD
+    smooth: false,
+    // первый экран игры (запуск, «начать заново»): текст вписан в окно концом, как в INSTEAD
+    // (там первая отрисовка прокручивает сцену к изменению — к концу текста, со ссылками)
+    fitToEnd: true,
+    drag: null,            // нажатие в окне текста: { y, last, moved } (прокрутка перетаскиванием)
+    dragged: false,        // было перетаскивание — щелчок после него не считается
     pageH: 0, more: false, morePortions: false,
     lastPage: null, lastReaction: '',
     reactionThenRoom: true,
@@ -260,12 +268,14 @@ window.NLBScreen = function (ctx) {
     const reaction = JSON.stringify(s.reactionText);
     const voicesKey = JSON.stringify(state.voices || []);
     const fresh = command === 'restart' || command === 'tryAgain' || command === 'load';
+    if (!before || command === 'restart' || command === 'tryAgain') scr.fitToEnd = true;
     if (!before || fresh || s.pageId !== scr.lastPage) {
       // новая страница (или та же, но игра начата заново или загружена) — текст с начала,
       // озвучка заново; ответ (если есть) — перед описанием новой комнаты
       scr.portion = 0;
       scr.voiced = -1;
       scr.scroll = 0;
+      scr.smooth = false;
       scr.showChoices = false;
       scr.voicePtr = 0;
       scr.reactionThenRoom = true;
@@ -305,6 +315,7 @@ window.NLBScreen = function (ctx) {
   }
 
   function pageDown() {
+    scr.smooth = false;
     scr.scroll += scr.pageH;
     render();
   }
@@ -657,7 +668,7 @@ window.NLBScreen = function (ctx) {
     const same = unchanged(inner, paragraphs, w, rect, lh, textScale, theme().align);
     if (!same) inner.textContent = '';
     const pageH = Math.max(lh, Math.floor(rect.h / lh) * lh);
-    place(view, { x: rect.x, y: rect.y, w: rect.w, h: pageH });
+    place(view, { x: rect.x, y: rect.y, w: rect.w, h: scr.smooth || scr.fitToEnd ? rect.h : pageH });
     setColors(view, w);
     view.style.font = fontCss(fsize(w), family(w.font));
     view.style.lineHeight = lh + 'px';
@@ -689,9 +700,19 @@ window.NLBScreen = function (ctx) {
     // страница не возвращается назад — прочитанное не повторяется
     const lines = textLines(inner, lh);
     const last = lines.length ? lines[lines.length - 1].top : 0;
-    scr.scroll = Math.max(0, Math.min(scr.scroll, last));
     let shown = 0, firstHidden = -1;
-    for (const line of lines) {
+    if (scr.fitToEnd && !choicesMode()) { scr.smooth = true; scr.scroll = 1e9; }
+    scr.fitToEnd = false;
+    if (scr.smooth) {
+      // плавно: до конца текста по настоящей высоте окна (txt_box_scroll INSTEAD)
+      const end = lines.length ? lines[lines.length - 1].bottom : 0;
+      scr.scroll = Math.max(0, Math.min(scr.scroll, end - rect.h));
+      shown = rect.h;
+      for (const line of lines) {
+        if (line.bottom > scr.scroll + rect.h + 0.5) { firstHidden = line.top; break; }
+      }
+    } else scr.scroll = Math.max(0, Math.min(scr.scroll, last));
+    for (const line of scr.smooth ? [] : lines) {
       if (line.top < scr.scroll - 0.5) continue;
       if (line.bottom <= scr.scroll + pageH + 0.5 || (!shown && firstHidden < 0)) {
         // строка выше окна (большая картинка) — показывается обрезанной, иначе листание встало бы
@@ -702,6 +723,7 @@ window.NLBScreen = function (ctx) {
     view.style.height = Math.max(lh, shown) + 'px';
     scr.more = firstHidden >= 0;
     scr.pageH = scr.more ? Math.max(lh, firstHidden - scr.scroll) : pageH;
+    if (scr.smooth && scr.more && firstHidden <= scr.scroll) scr.pageH = pageH;  // строка выше окна
     const up = $('stage-up'), down = $('stage-down');
     up.hidden = !arrows || scr.scroll <= 0;
     down.hidden = !arrows || !scr.more;
@@ -867,7 +889,13 @@ window.NLBScreen = function (ctx) {
   // уже нет — только ответ и сцена (с game.forcedsc — описание комнаты, ответ и сцена)
   function composeStandard(s, waysBottom) {
     const header = [];
-    if (s.roomTitle) header.push({ cls: 'title', runs: [{ kind: 'ChoiceLink', text: s.roomTitle, target: '-1' }] });
+    // заголовок из пробела (пустая строка с флагом «использовать заголовок», nam = " " в
+    // экспорте; «Фронтир», страница ролика) — как INSTEAD: строка из пробела высоты не имеет,
+    // остаётся только отступ win_spacing под ней
+    if (s.roomTitle) {
+      const blank = !s.roomTitle.trim();
+      header.push({ cls: 'title', blank: blank, runs: blank ? [] : [{ kind: 'ChoiceLink', text: s.roomTitle, target: '-1' }] });
+    }
     const ways = [];
     for (const c of s.choices) {
       if (!c.enabled || c.inlineLink) continue;
@@ -967,6 +995,7 @@ window.NLBScreen = function (ctx) {
           const node = paragraphNode(p);
           // game.c: win_spacing = font_size * font_height / 2 — после заголовка
           if (p.cls === 'title') node.style.marginBottom = spacing + 'px';
+          if (p.blank) node.style.height = '0';
           if (fixed && p.cls === 'ways' && !spacer) {
             spacer = el('div', 'picture-spacer');
             spacer.style.height = picture.h + 'px';
@@ -1058,12 +1087,24 @@ window.NLBScreen = function (ctx) {
       const icon = ctx.imageUrl(item.icon);
       if (icon) {
         const img = el('img');
+        if (!label.trim()) {
+          // предмет — только картинка (в INSTEAD disp = img(...)): в своём размере, в масштабе
+          // экрана темы, как GameScreen (карта в бою «Фронтира»)
+          img.onload = () => {
+            img.style.width = (img.naturalWidth * t.scale) + 'px';
+            img.style.height = (img.naturalHeight * t.scale) + 'px';
+          };
+          img.style.marginRight = '0';
+        } else {
+          img.style.height = lh + 'px';
+          img.style.width = lh + 'px';
+        }
         img.src = icon;
-        img.style.height = lh + 'px';
-        img.style.width = lh + 'px';
         node.insertBefore(img, node.firstChild);
       }
       if (!t.inventoryHorizontal) {
+        // инвентарь столбцом: длинная подпись переносится по ширине окна, как в INSTEAD
+        node.style.whiteSpace = 'pre-wrap';
         const row = el('div');
         row.appendChild(node);
         line.appendChild(row);
@@ -1127,13 +1168,45 @@ window.NLBScreen = function (ctx) {
   }
 
   // ------------------------------------------------------------------ ввод
+  // Перетаскивание с нажатой кнопкой в окне текста — плавная прокрутка, как в INSTEAD (game_click,
+  // motion_mode); щелчок без движения (дрожь руки — до 8 пикселей) — обычный щелчок
+  $('stage-text').addEventListener('pointerdown', (ev) => {
+    if (!state || ev.button !== 0 || scr.showChoices || choicesMode()) return;
+    scr.drag = { y: ev.clientY, last: ev.clientY, moved: false, id: ev.pointerId };
+  });
+  window.addEventListener('pointermove', (ev) => {
+    const d = scr.drag;
+    if (!d || ev.pointerId !== d.id) return;
+    if (!(ev.buttons & 1)) { scr.drag = null; return; }
+    const k = $('stage').getBoundingClientRect().width / Math.max(1, $('stage').offsetWidth) || 1;
+    if (!d.moved && Math.abs(ev.clientY - d.y) / k < 8) return;
+    if (!d.moved && !(scr.scroll > 0 || scr.more)) return;  // прокручивать нечего
+    if (!d.moved) { d.moved = true; d.last = ev.clientY; try { $('stage-text').setPointerCapture(ev.pointerId); } catch (e) { /* ничего */ } }
+    scr.smooth = true;
+    scr.scroll = Math.max(0, scr.scroll - (ev.clientY - d.last) / k);
+    d.last = ev.clientY;
+    render();
+  });
+  window.addEventListener('pointerup', (ev) => {
+    const d = scr.drag;
+    if (!d || ev.pointerId !== d.id) return;
+    scr.drag = null;
+    scr.dragged = d.moved;
+  });
+  // щелчок, которым закончилось перетаскивание, — не щелчок (ни по ссылке, ни по окну)
+  $('stage').addEventListener('click', (ev) => {
+    if (!scr.dragged) return;
+    scr.dragged = false;
+    ev.stopPropagation();
+    ev.preventDefault();
+  }, true);
   $('stage').addEventListener('click', (ev) => {
     if (!state) return;
     if (ev.target.closest('.hit') || ev.target.closest('#stage-menu-button')) {
       click();
       return;
     }
-    if (ev.target.closest('#stage-up')) { click(); scr.scroll = Math.max(0, scr.scroll - scr.pageH); render(); return; }
+    if (ev.target.closest('#stage-up')) { click(); scr.smooth = false; scr.scroll = Math.max(0, scr.scroll - scr.pageH); render(); return; }
     if (ev.target.closest('#stage-down')) { click(); pageDown(); return; }
     if (scr.showChoices) {
       // экран вариантов: щелчок мимо вариантов — назад к тексту
@@ -1150,6 +1223,7 @@ window.NLBScreen = function (ctx) {
     if (!state || scr.showChoices) return;
     const w = theme().text;
     const lh = Math.floor(fontHeight(fsize(w), family(w.font)) * w.lineHeight);
+    scr.smooth = true;  // колесо — плавно, в пределах текста (как GameScreen::wheel)
     scr.scroll = Math.max(0, scr.scroll + Math.sign(ev.deltaY) * 3 * lh);
     render();
   }, { passive: true });
@@ -1174,7 +1248,7 @@ window.NLBScreen = function (ctx) {
       return true;
     }
     if (ev.key === 'PageDown' && scr.more) { pageDown(); return true; }
-    if (ev.key === 'PageUp') { scr.scroll = Math.max(0, scr.scroll - scr.pageH); render(); return true; }
+    if (ev.key === 'PageUp') { scr.smooth = false; scr.scroll = Math.max(0, scr.scroll - scr.pageH); render(); return true; }
     return false;
   }
 
