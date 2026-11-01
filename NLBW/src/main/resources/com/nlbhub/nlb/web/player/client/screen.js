@@ -52,6 +52,7 @@ window.NLBScreen = function (ctx) {
     // первый экран игры (запуск, «начать заново»): текст вписан в окно концом, как в INSTEAD
     // (там первая отрисовка прокручивает сцену к изменению — к концу текста, со ссылками)
     fitToEnd: true,
+    endScreen: false,      // экран конца VN (как в экспорте: «Конец» и «Попробовать ещё раз»)
     drag: null,            // нажатие в окне текста: { y, last, moved } (прокрутка перетаскиванием)
     dragged: false,        // было перетаскивание — щелчок после него не считается
     pageH: 0, more: false, morePortions: false,
@@ -124,7 +125,7 @@ window.NLBScreen = function (ctx) {
     }
     // боковины подложки текста VN (gfx/fl.png, gfx/fr.png): их размер нужен для раскладки
     for (const t of [themes.vn, themes.standard]) {
-      for (const path of [t.frameLeft, t.frameRight]) {
+      for (const path of [t.frameLeft, t.frameRight, t.theEndRu, t.theEndEn]) {
         if (!path || frameSizes.has(path)) continue;
         frameSizes.set(path, null);
         loads.push(new Promise((resolve) => {
@@ -274,6 +275,7 @@ window.NLBScreen = function (ctx) {
     const voicesKey = JSON.stringify(state.voices || []);
     const fresh = command === 'restart' || command === 'tryAgain' || command === 'load';
     if (!before || command === 'restart' || command === 'tryAgain') scr.fitToEnd = true;
+    if (!before || s.pageId !== scr.lastPage || !s.finished) scr.endScreen = false;
     if (!before || fresh || s.pageId !== scr.lastPage) {
       // новая страница (или та же, но игра начата заново или загружена) — текст с начала,
       // озвучка заново; ответ (если есть) — перед описанием новой комнаты
@@ -316,8 +318,62 @@ window.NLBScreen = function (ctx) {
     return true;
   }
 
+  // Картинка «Конец» темы VN: theendru.png для русской книги, иначе theenden.png (nlb.lua: _try_again)
+  function theEndImage() {
+    const t = themes.vn;
+    const path = state.language === 'ru' ? t.theEndRu : t.theEndEn;
+    return path && frameSizes.get(path) ? path : '';
+  }
+
+  // Конец игры: экран конца, как в экспорте (комната _choices последней страницы:
+  // vn:auto_geom_end('dissolve')); без картинки «Конец» в теме — прежнее сообщение
   function gameOver() {
+    if (isVN() && theEndImage()) {
+      if (scr.endScreen) return;
+      scr.endScreen = true;
+      startTransition();
+      render();
+      return;
+    }
     ctx.dialog(ctx.ui().theEnd, [{ label: ctx.ui().tryAgain, action: () => ctx.command('tryAgain') }]);
+  }
+
+  // Экран конца: vn:auto_geom_end -> get_end_coords — окно шириной в картинку «Конец» и высотой
+  // gfx/fl.png (без неё — 200) минус 2 × textpad по центру экрана темы, подложка — как у полосы
+  // текста; в окне — img(theend) .. txtc("^{Попробовать ещё раз}^")
+  function renderEndScreen(t) {
+    const end = $('stage-end'), band = $('stage-band');
+    const path = theEndImage();
+    const size = frameSizes.get(path);
+    const sc = t.scale || 1, pad = 8 * sc;
+    const fl = t.frameLeft && frameSizes.get(t.frameLeft);
+    const area = t.screenArea || { x: 0, y: 0, w: W, h: H };
+    const win = { w: size.w * sc, h: ((fl ? fl.h : 200) - 16) * sc };
+    win.x = area.x + Math.floor((area.w - win.w) / 2);
+    win.y = area.y + Math.floor((area.h - win.h) / 2);
+    band.hidden = false;
+    paintBand(band, { x: win.x - pad, y: win.y - pad, w: win.w + 2 * pad, h: win.h + 2 * pad }, t, false);
+    end.hidden = false;
+    place(end, win);
+    const w = t.text;
+    const lh = Math.floor(fontHeight(fsize(w), family(w.font)) * w.lineHeight);
+    if (unchanged(end, path, w, lh, textScale, state.language)) return;
+    end.textContent = '';
+    setColors(end, w);
+    end.style.font = fontCss(fsize(w), family(w.font));
+    end.style.lineHeight = lh + 'px';
+    const img = el('img');
+    img.src = themeUrl(path);
+    img.style.width = (size.w * sc) + 'px';
+    img.style.height = (size.h * sc) + 'px';
+    end.appendChild(img);
+    const p = el('p');
+    // _try_again.act: restore_snapshot(0) — игра с начала
+    p.appendChild(ctx.link(state.language === 'ru' ? 'Попробовать ещё раз' : 'Try again', () => {
+      scr.endScreen = false;
+      ctx.command('tryAgain');
+    }, 'hit'));
+    end.appendChild(p);
   }
 
   // Переход между сценами (dissolve INSTEAD: fading, gfx_change_screen): прежний кадр — копия
@@ -361,7 +417,7 @@ window.NLBScreen = function (ctx) {
   // «Дальше» (пробел, щелчок мимо ссылок): строки порции, следующая порция, а после последней —
   // экран вариантов или переход по единственной тривиальной ссылке
   function advanceText() {
-    if (scr.showChoices) return;
+    if (scr.showChoices || scr.endScreen) return;
     if (scr.more) { pageDown(); return; }
     if (scr.morePortions) { scr.portion++; scr.scroll = 0; render(); return; }
     if (state.screen.finished && !enabledChoices().length) { gameOver(); return; }
@@ -406,6 +462,7 @@ window.NLBScreen = function (ctx) {
     } else {
       $('stage-band').hidden = true;
       $('stage-choices').hidden = true;
+      $('stage-end').hidden = true;
       renderStandardText(s, t, pageSize);
     }
     renderInventory(s, vn, t);
@@ -691,7 +748,7 @@ window.NLBScreen = function (ctx) {
       });
     }
     // на экране вариантов объектов нет — как в INSTEAD, где на время выбора остаются фон и кнопка меню
-    layer.hidden = scr.showChoices;
+    layer.hidden = scr.showChoices || scr.endScreen;
     scr.shown = shown;
     scr.rects = rects;
     scr.renderedPage = s.pageId;
@@ -840,6 +897,16 @@ window.NLBScreen = function (ctx) {
   function renderVisualNovelText(s, t) {
     const band = $('stage-band'), choices = $('stage-choices');
     $('stage-header').hidden = true;
+    $('stage-end').hidden = true;
+    if (scr.endScreen) {
+      // экран конца: objs():zap() — объектов нет, фон страницы остаётся
+      choices.hidden = true;
+      scr.more = false;
+      $('stage-text').hidden = true;
+      $('stage-up').hidden = $('stage-down').hidden = true;
+      renderEndScreen(t);
+      return;
+    }
     choices.hidden = !scr.showChoices;
     if (scr.showChoices) {
       band.hidden = true;
@@ -895,10 +962,18 @@ window.NLBScreen = function (ctx) {
     // (у темы NLB — 240×220, альфа 0 → 127 и 127 → 0: края уходят в прозрачность); без картинок —
     // только прямоугольник. При крупном тексте боковины — по высоте полосы
     const under = { x: tw.x - shrink - pad, y: bottom - textH - pad, w: tw.w + 2 * shrink + 2 * pad, h: textH + 2 * pad };
+    paintBand(band, under, t, textScale > 1);
+    const lh = Math.floor(fontHeight(fsize(w), family(w.font)) * w.lineHeight);
+    fillTextWindow(paragraphs, w, { x: tw.x - shrink, y: bottom - textH, w: tw.w + 2 * shrink, h: textH }, lh, false);
+  }
+
+  // Подложка текста VN на элементе band: прямоугольник under с альфой 127 и боковины fl/fr темы
+  // (stretch — боковины по высоте полосы, при крупном тексте)
+  function paintBand(band, under, t, stretch) {
     const sc = t.scale || 1;
     const edge = (path) => {
       const size = path && frameSizes.get(path);
-      return size ? { url: themeUrl(path), w: size.w * sc, h: textScale > 1 ? under.h : size.h * sc } : null;
+      return size ? { url: themeUrl(path), w: size.w * sc, h: stretch ? under.h : size.h * sc } : null;
     };
     const fl = edge(t.frameLeft), fr = edge(t.frameRight);
     const left = under.x - (fl ? fl.w : 0);
@@ -916,8 +991,6 @@ window.NLBScreen = function (ctx) {
     band.style.backgroundSize = sizes.join(', ');
     band.style.backgroundPosition = positions.join(', ');
     band.style.backgroundRepeat = 'no-repeat';
-    const lh = Math.floor(fontHeight(fsize(w), family(w.font)) * w.lineHeight);
-    fillTextWindow(paragraphs, w, { x: tw.x - shrink, y: bottom - textH, w: tw.w + 2 * shrink, h: textH }, lh, false);
   }
 
   // STANDARD — как INSTEAD (game.c, stead2): заголовок по центру цветом ссылки (щелчок —

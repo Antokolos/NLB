@@ -266,6 +266,9 @@ public final class ScreenTheme {
     String m_frameLeft = "";
     String m_frameRight = "";
     String m_menuButtonRu = "";
+    /** gfx/theendru.png, gfx/theenden.png — надпись «Конец» экрана конца VN (nlb.lua: _try_again) */
+    String m_theEndRu = "";
+    String m_theEndEn = "";
 
     private ScreenTheme(boolean visualNovel) {
         // Тема по умолчанию экспорта NLB (ScreenTheme::defaults)
@@ -492,6 +495,8 @@ public final class ScreenTheme {
             if (root.exists("gfx/fl.png")) t.m_frameLeft = path(root, "gfx/fl.png");
             if (root.exists("gfx/fr.png")) t.m_frameRight = path(root, "gfx/fr.png");
             if (root.exists("gfx/menubtn_ru.png")) t.m_menuButtonRu = path(root, "gfx/menubtn_ru.png");
+            if (root.exists("gfx/theendru.png")) t.m_theEndRu = path(root, "gfx/theendru.png");
+            if (root.exists("gfx/theenden.png")) t.m_theEndEn = path(root, "gfx/theenden.png");
             if (root.exists("fonts/STEINEMU.ttf")) t.m_hudFont = path(root, "fonts/STEINEMU.ttf");
             String lua = root.read(visualNovel ? "theme_vn.lua" : "theme_standard.lua");
             Matcher m = GEOM.matcher(lua);
@@ -559,6 +564,8 @@ public final class ScreenTheme {
         node.put("frameLeft", m_frameLeft);
         node.put("frameRight", m_frameRight);
         node.put("menuButtonRu", m_menuButtonRu);
+        node.put("theEndRu", m_theEndRu);
+        node.put("theEndEn", m_theEndEn);
         node.put("themeMenuButton", m_themeMenuButton);
         node.put("menuButtonX", m_menuButtonX);
         node.put("menuButtonY", m_menuButtonY);
