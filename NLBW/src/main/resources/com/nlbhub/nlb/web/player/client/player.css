@@ -129,3 +129,7 @@ body.playing { background: #0c0c10; overflow: hidden; }
 .stage .text-image { display: inline-block; vertical-align: middle; }
 /* переход между сценами: копия прежнего кадра поверх нового, исчезает (screen.js: startTransition) */
 .stage-ghost { pointer-events: none; }
+/* экран конца VN (nlb.lua: _try_again): картинка темы «Конец», под ней по центру ссылка */
+.stage-end { position: absolute; }
+.stage-end img { display: block; }
+.stage-end p { margin: 0; text-align: center; white-space: nowrap; }
