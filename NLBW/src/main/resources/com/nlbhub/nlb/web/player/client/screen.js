@@ -265,6 +265,11 @@ window.NLBScreen = function (ctx) {
     const before = state;
     state = newState;
     const s = state.screen;
+    // вход на страницу — vn:auto_geom('dissolve') экспорта; его нет у страниц с таймером (или
+    // анимацией) без графических объектов (enter возвращает vn:get_win_coords() без эффекта)
+    if (before && s.pageId !== scr.lastPage && (s.sceneObjects.some((o) => o.graphical) || !s.timerActive)) {
+      startTransition();
+    }
     const reaction = JSON.stringify(s.reactionText);
     const voicesKey = JSON.stringify(state.voices || []);
     const fresh = command === 'restart' || command === 'tryAgain' || command === 'load';
@@ -307,11 +312,44 @@ window.NLBScreen = function (ctx) {
     if (!choicesMode() || scr.more || scr.showChoices) return false;
     if (!enabledChoices().length) return false;
     scr.showChoices = true;
+    startTransition();  // экран вариантов — vn:auto_geom_choices('dissolve')
     return true;
   }
 
   function gameOver() {
     ctx.dialog(ctx.ui().theEnd, [{ label: ctx.ui().tryAgain, action: () => ctx.command('tryAgain') }]);
+  }
+
+  // Переход между сценами (dissolve INSTEAD: fading, gfx_change_screen): прежний кадр — копия
+  // сцены поверх новой, которая исчезает за 8 шагов по 60 мс (новый кадр с альфой (n + 1) / 8)
+  let ghost = null, ghostTimer = 0;
+  function finishTransition() {
+    if (ghostTimer) clearInterval(ghostTimer);
+    ghostTimer = 0;
+    if (ghost) ghost.remove();
+    ghost = null;
+  }
+  function startTransition() {
+    finishTransition();
+    if (!ctx.store.get('nlb.transitions', true)) return;
+    const stage = $('stage');
+    if (!stage || stage.hidden) return;
+    ghost = stage.cloneNode(true);
+    ghost.removeAttribute('id');
+    for (const n of ghost.querySelectorAll('[id]')) n.removeAttribute('id');
+    ghost.classList.add('stage-ghost');
+    stage.after(ghost);
+  }
+  // новый кадр нарисован — прежний начинает исчезать
+  function runTransition() {
+    if (!ghost || ghostTimer) return;
+    let step = 0;
+    ghost.style.opacity = String(1 - 1 / 8);
+    ghostTimer = setInterval(() => {
+      step++;
+      if (step >= 7 || !ghost) { finishTransition(); return; }
+      ghost.style.opacity = String(1 - (step + 1) / 8);
+    }, 60);
   }
 
   function pageDown() {
@@ -375,6 +413,7 @@ window.NLBScreen = function (ctx) {
     const hint = $('stage-hint');
     hint.hidden = !state.selected;
     hint.textContent = ctx.ui().itemSelected;
+    runTransition();
     // текст без порций (STANDARD, VN с вариантами в тексте): озвучка — первая фраза при входе на
     // страницу (её запускает player.js); с порциями — фраза на каждую новую порцию
   }
@@ -1201,6 +1240,7 @@ window.NLBScreen = function (ctx) {
     ev.preventDefault();
   }, true);
   $('stage').addEventListener('click', (ev) => {
+    finishTransition();  // щелчок во время перехода — сразу новый кадр
     if (!state) return;
     if (ev.target.closest('.hit') || ev.target.closest('#stage-menu-button')) {
       click();
@@ -1235,6 +1275,7 @@ window.NLBScreen = function (ctx) {
   // Клавиши: пробел и Enter — дальше, Esc — назад от экрана вариантов, PgUp/PgDn — листание.
   // true — клавиша обработана
   function key(ev) {
+    finishTransition();
     if (ev.key === ' ' || ev.key === 'Enter') {
       if (choicesMode() && !scr.showChoices) advanceText();
       else if (scr.more) pageDown();
