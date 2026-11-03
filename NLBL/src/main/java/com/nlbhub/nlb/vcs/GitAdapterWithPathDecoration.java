@@ -112,6 +112,12 @@ public class GitAdapterWithPathDecoration implements VCSAdapter {
     }
 
     @Override
+    public void cloneRepo(String url, String path, String userName, String password, ProgressData progressData)
+            throws NLBVCSException {
+        m_gitAdapter.cloneRepo(url, decoratePath(path), userName, password, progressData);
+    }
+
+    @Override
     public void setPrompts(final VCSPrompts prompts) {
         m_gitAdapter.setPrompts(prompts);
     }

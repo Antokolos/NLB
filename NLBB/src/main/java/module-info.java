@@ -5,6 +5,7 @@ module NLBB {
     requires NLBW;
 
     requires org.slf4j;
+    requires java.prefs;
     requires piccolo2d.core;
     requires piccolo2d.extras;
     requires swingx;

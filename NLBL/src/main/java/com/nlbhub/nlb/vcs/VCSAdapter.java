@@ -133,4 +133,15 @@ public interface VCSAdapter {
      */
     public default void setPrompts(VCSPrompts prompts) {
     }
+
+    /**
+     * Скачать книгу с сервера в новую папку path вместе с её внешними модулями (подмодулями, на
+     * любую глубину), без установки git. userName == null — без учётных данных (открытый
+     * репозиторий по https); по ssh — ключи и вопросы, как при pull/push. Не удалось — папка,
+     * если её создало клонирование, удаляется
+     */
+    public default void cloneRepo(String url, String path, String userName, String password, ProgressData progressData)
+            throws NLBVCSException {
+        throw new NLBVCSException("The editor is started without version control (novcs): cloning is not available");
+    }
 }
