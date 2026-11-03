@@ -70,6 +70,18 @@
             <artifactId>jna</artifactId>
             <version>5.14.0</version>
         </dependency>
+        <!-- pull/push по ssh: ключи из ~/.ssh, known_hosts, ssh-agent (Pageant / агент OpenSSH в
+             Windows, SSH_AUTH_SOCK в Linux и macOS) — без установки git и ssh -->
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit.ssh.apache</artifactId>
+            <version>6.10.1.202505221210-r</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit.ssh.apache.agent</artifactId>
+            <version>6.10.1.202505221210-r</version>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-reload4j</artifactId>

@@ -375,6 +375,13 @@ public class NonLinearBookFacade implements NLBObservable {
         return getMainFacade().m_vcsAdapter.getRemoteUrl();
     }
 
+    /**
+     * Вопросы к автору при pull/push по ssh (пароль к ключу, незнакомый сервер)
+     */
+    public void setVcsPrompts(final com.nlbhub.nlb.vcs.VCSPrompts prompts) {
+        getMainFacade().m_vcsAdapter.setPrompts(prompts);
+    }
+
     public void pull(final String userName, final String password, final ProgressData progressData) throws NLBVCSException {
         m_vcsAdapter.pull(userName, password, progressData);
         notifyObservers();

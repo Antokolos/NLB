@@ -181,10 +181,12 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         private final boolean m_fromStore;
         private final boolean m_remember;
         private final PropertyChangeListener m_listener;
+        private final boolean m_ssh;
         private Exception m_error = null;
 
         TransferTask(boolean push, String server, String userName, String password, boolean fromStore, boolean remember,
-                     PropertyChangeListener listener) {
+                     PropertyChangeListener listener, boolean ssh) {
+            m_ssh = ssh;
             m_push = push;
             m_server = server;
             m_userName = userName;
@@ -216,7 +218,16 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             super.done();
             (m_push ? m_pushButton : m_pullButton).setEnabled(true);
             final String action = m_push ? "Push" : "Pull";
-            if (m_error instanceof NLBVCSAuthenticationException) {
+            if (m_error instanceof NLBVCSAuthenticationException && m_ssh) {
+                // ssh: токен ни при чём — ключ не подошёл или его нет
+                JOptionPane.showMessageDialog(
+                        m_mainFramePanel,
+                        "<html>The server did not accept your SSH key.<br><br>"
+                                + "Make sure the public key (for example ~/.ssh/id_ed25519.pub) is added to your account on the server<br>"
+                                + "(GitHub: Settings -&gt; SSH and GPG keys -&gt; New SSH key), or that the key is loaded into ssh-agent.<br>"
+                                + "No key yet? Create one: ssh-keygen -t ed25519 (Windows, macOS and Linux have it).</html>"
+                );
+            } else if (m_error instanceof NLBVCSAuthenticationException) {
                 // сервер не принял: сохранённый токен — забыть; спросить снова
                 if (m_fromStore) {
                     credentials().forgetSecret(m_server, m_userName);
@@ -236,7 +247,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                     );
                 }
             }
-            if (m_error != null) {
+            if (m_error != null && !(m_error instanceof NLBVCSAuthenticationException)) {
                 JOptionPane.showMessageDialog(
                         m_mainFramePanel,
                         "Error while " + (m_push ? "pushing" : "pulling") + ": " + m_error.toString()
@@ -271,24 +282,18 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     private void startTransfer(final boolean push, final String message) {
         final String action = push ? "Push" : "Pull";
         final String url = getMainPaneInfo().getPaneNlbFacade().getRemoteUrl();
-        if (RemoteCredentials.isSsh(url)) {
-            JOptionPane.showMessageDialog(
-                    m_mainFramePanel,
-                    "The book is connected to its server over SSH (" + url + "), which is not supported yet.\n"
-                            + "Use the https:// address of the repository (git remote set-url origin https://...)\n"
-                            + "with a password or token."
-            );
-            return;
-        }
+        final boolean ssh = RemoteCredentials.isSsh(url);
+        // ssh: ключи из ~/.ssh и ssh-agent; пароль к ключу и незнакомый сервер — вопросами в окнах
+        getMainPaneInfo().getPaneNlbFacade().setVcsPrompts(new SwingPrompts(m_mainFramePanel, credentials()));
         final String server = RemoteCredentials.server(url);
         String user = credentials().rememberedUser(server);
         if (user == null && url != null) {
             user = RemoteCredentials.userFromUrl(url);
         }
-        String secret = message == null ? credentials().rememberedSecret(server, user) : null;
+        String secret = message == null && !ssh ? credentials().rememberedSecret(server, user) : null;
         final boolean fromStore = secret != null;
         boolean remember = false;
-        if (!fromStore) {
+        if (!fromStore && !ssh) {
             final DialogGitCredentials.Result result = DialogGitCredentials.ask(
                     m_mainFramePanel, action, server, user, message, credentials().canRememberSecret()
             );
@@ -310,7 +315,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_progressMonitor.setProgress(0);
         m_progressMonitor.setMillisToDecideToPopup(200);
         m_progressMonitor.setMillisToPopup(200);
-        m_task = new TransferTask(push, server, user, secret, fromStore, remember, this);
+        m_task = new TransferTask(push, server, user, secret, fromStore, remember, this, ssh);
         m_task.addPropertyChangeListener(this);
         (push ? m_pushButton : m_pullButton).setEnabled(false);
         m_task.execute();
