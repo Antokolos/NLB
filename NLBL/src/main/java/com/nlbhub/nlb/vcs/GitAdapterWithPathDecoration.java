@@ -112,6 +112,11 @@ public class GitAdapterWithPathDecoration implements VCSAdapter {
     }
 
     @Override
+    public void setPrompts(final VCSPrompts prompts) {
+        m_gitAdapter.setPrompts(prompts);
+    }
+
+    @Override
     public String getRemoteUrl() {
         return m_gitAdapter.getRemoteUrl();
     }

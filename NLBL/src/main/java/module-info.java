@@ -12,6 +12,7 @@ module NLBL {
     requires itextpdf;
     requires org.mozilla.rhino;
     requires org.eclipse.jgit;
+    requires org.eclipse.jgit.ssh.apache;
     requires com.fasterxml.jackson.databind;
     requires com.sun.jna;
 

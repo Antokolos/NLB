@@ -127,4 +127,10 @@ public interface VCSAdapter {
     public default String getRemoteUrl() {
         return null;
     }
+
+    /**
+     * Вопросы к автору при pull/push по ssh (пароль к ключу, незнакомый сервер)
+     */
+    public default void setPrompts(VCSPrompts prompts) {
+    }
 }

@@ -139,6 +139,40 @@ public final class RemoteCredentials {
         }
     }
 
+    private static final String PASSPHRASE_SERVICE = "NLB Builder: SSH key passphrase";
+
+    /**
+     * Сохранённый пароль к ключу ssh; key — что за ключ (текст вопроса JGit с путём к ключу)
+     */
+    public String rememberedPassphrase(final String key) {
+        if (!m_store.isAvailable()) {
+            return null;
+        }
+        try {
+            return m_store.get(PASSPHRASE_SERVICE, key);
+        } catch (SecretStoreException e) {
+            LOGGER.warn("Cannot read the saved passphrase: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    public void rememberPassphrase(final String key, final String passphrase) throws SecretStoreException {
+        if (m_store.isAvailable()) {
+            m_store.put(PASSPHRASE_SERVICE, key, passphrase);
+        }
+    }
+
+    public void forgetPassphrase(final String key) {
+        if (!m_store.isAvailable()) {
+            return;
+        }
+        try {
+            m_store.delete(PASSPHRASE_SERVICE, key);
+        } catch (SecretStoreException e) {
+            LOGGER.warn("Cannot delete the saved passphrase: {}", e.getMessage());
+        }
+    }
+
     /**
      * Ключ настроек — не длиннее Preferences.MAX_KEY_LENGTH (80)
      */

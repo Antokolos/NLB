@@ -51,7 +51,12 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.util.SystemReader;
+import com.nlbhub.nlb.vcs.secrets.RemoteCredentials;
 import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.SshSessionFactory;
+import org.eclipse.jgit.transport.sshd.JGitKeyCache;
+import org.eclipse.jgit.transport.sshd.SshdSessionFactoryBuilder;
+import org.eclipse.jgit.transport.sshd.agent.ConnectorFactory;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.slf4j.Logger;
@@ -409,6 +414,49 @@ public class GitAdapter implements VCSAdapter {
         }
     }
 
+    /**
+     * Вопросы к автору при pull/push по ssh (пароль к ключу, незнакомый сервер)
+     */
+    private VCSPrompts m_prompts = null;
+
+    @Override
+    public void setPrompts(final VCSPrompts prompts) {
+        m_prompts = prompts;
+    }
+
+    /**
+     * По ssh — ключи из ~/.ssh и ssh-agent, вопросы — к автору; по https — имя и пароль (токен)
+     */
+    private CredentialsProvider credentialsProvider(final String userName, final String password) {
+        if (RemoteCredentials.isSsh(getRemoteUrl())) {
+            useSshHome();
+            return new SshCredentialsProvider(m_prompts);
+        }
+        return new UsernamePasswordCredentialsProvider(userName == null ? "" : userName, password == null ? "" : password);
+    }
+
+    private static File s_sshHome = null;
+
+    /**
+     * Фабрика сессий ssh (Apache MINA SSHD): ключи и known_hosts — из ~/.ssh пользователя (на Windows
+     * — %USERPROFILE%\.ssh), ssh-agent — если запущен (Pageant или агент OpenSSH в Windows,
+     * SSH_AUTH_SOCK в Linux и macOS). Ставится для всего JGit: ей пользуются и подмодули
+     */
+    private static synchronized void useSshHome() {
+        final File home = new File(System.getProperty("user.home"));
+        if (home.equals(s_sshHome)) {
+            return;
+        }
+        s_sshHome = home;
+        SshSessionFactory.setInstance(
+                new SshdSessionFactoryBuilder()
+                        .setHomeDirectory(home)
+                        .setSshDirectory(new File(home, ".ssh"))
+                        .setConnectorFactory(ConnectorFactory.getDefault())
+                        .build(new JGitKeyCache())
+        );
+    }
+
     @Override
     public String getRemoteUrl() {
         return m_localRepo == null ? null : m_localRepo.getConfig().getString("remote", "origin", "url");
@@ -422,6 +470,8 @@ public class GitAdapter implements VCSAdapter {
         for (Throwable t = e; t != null; t = t.getCause()) {
             final String message = String.valueOf(t.getMessage()).toLowerCase();
             if (message.contains("not authorized") || message.contains("authentication is required")
+                    || message.contains("auth fail") || message.contains("permission denied") || message.contains("cannot log in")
+                    || message.contains("no more authentication methods")
                     || message.contains("not permitted") || message.contains("authentication not supported")
                     || message.contains("401") || message.contains("403")) {
                 return new NLBVCSAuthenticationException(
@@ -465,7 +515,7 @@ public class GitAdapter implements VCSAdapter {
     @Override
     public void pull(String userName, String password, ProgressData progressData) throws NLBVCSException {
         awaitStatuses();
-        CredentialsProvider provider = new UsernamePasswordCredentialsProvider(userName, password);
+        CredentialsProvider provider = credentialsProvider(userName, password);
         progressData.setNoteText("Pulling...");
         ProgressMonitor monitor = new VCSProgressMonitor(progressData);
         try {
@@ -499,7 +549,7 @@ public class GitAdapter implements VCSAdapter {
     @Override
     public void push(String userName, String password, final ProgressData progressData) throws NLBVCSException {
         awaitStatuses();
-        CredentialsProvider provider = new UsernamePasswordCredentialsProvider(userName, password);
+        CredentialsProvider provider = credentialsProvider(userName, password);
         progressData.setNoteText("Pushing...");
         ProgressMonitor monitor = new VCSProgressMonitor(progressData);
         try {
