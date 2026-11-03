@@ -96,6 +96,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     private JPanel m_mainFramePanel;
     private JButton m_newFileButton;
     private JButton m_openFileButton;
+    private JButton m_cloneFileButton;
     private JButton m_saveFileButton;
     private JButton m_saveFileAsButton;
     private JButton m_exportToQSPText;
@@ -261,6 +262,143 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 m_task.execute();
             }
         }
+    }
+
+    /**
+     * Скачивание книги с сервера (clone) — без установки git. По https сначала с сохранённым токеном
+     * этого сервера или без учётных данных (открытый репозиторий); сервер их потребовал или не
+     * принял — диалог и повтор. По ssh — ключи и вопросы, как при pull/push. Затем книга открывается
+     */
+    class CloneTask extends Task {
+        private final DialogClone.Result m_target;
+        private final String m_server;
+        private final String m_userName;
+        private final String m_password;
+        private final boolean m_fromStore;
+        private final boolean m_remember;
+        private final boolean m_ssh;
+        private final PropertyChangeListener m_listener;
+        private Exception m_error = null;
+
+        CloneTask(DialogClone.Result target, String server, String userName, String password, boolean fromStore,
+                  boolean remember, boolean ssh, PropertyChangeListener listener) {
+            m_target = target;
+            m_server = server;
+            m_userName = userName;
+            m_password = password;
+            m_fromStore = fromStore;
+            m_remember = remember;
+            m_ssh = ssh;
+            m_listener = listener;
+        }
+
+        @Override
+        protected Void doInBackground() throws Exception {
+            setProgress(0);
+            try {
+                getMainPaneInfo().getPaneNlbFacade().cloneBook(
+                        m_target.m_url, m_target.m_dir.getPath(), m_userName, m_password, this
+                );
+                setProgressValue(100);
+            } catch (Exception ex) {
+                m_error = ex;
+            }
+            return null;
+        }
+
+        @Override
+        public void done() {
+            super.done();
+            m_cloneFileButton.setEnabled(true);
+            if (m_error instanceof NLBVCSAuthenticationException && !m_ssh) {
+                if (m_fromStore) {
+                    credentials().forgetSecret(m_server, m_userName);
+                }
+                startClone(m_target, m_userName == null
+                        ? "The server needs a user name and a password or token to download this book."
+                        : "The server did not accept the user name and password or token. Please check them.");
+                return;
+            }
+            if (m_error instanceof NLBVCSAuthenticationException) {
+                JOptionPane.showMessageDialog(
+                        m_mainFramePanel,
+                        "<html>The server did not accept your SSH key.<br><br>"
+                                + "Make sure the public key (for example ~/.ssh/id_ed25519.pub) is added to your account on the server<br>"
+                                + "(GitHub: Settings -&gt; SSH and GPG keys -&gt; New SSH key), or that the key is loaded into ssh-agent.<br>"
+                                + "Or clone the book by its https:// address.</html>"
+                );
+                return;
+            }
+            if (m_error != null) {
+                JOptionPane.showMessageDialog(m_mainFramePanel, "Error while cloning: " + m_error.toString());
+                return;
+            }
+            if (m_server != null && m_userName != null) {
+                try {
+                    credentials().remember(m_server, m_userName, m_remember ? m_password : null);
+                } catch (SecretStoreException ex) {
+                    JOptionPane.showMessageDialog(
+                            m_mainFramePanel, "The book is cloned, but the password or token was not saved: " + ex.getMessage()
+                    );
+                }
+            }
+            // скачанная книга — открыть
+            m_progressMonitor = new ProgressMonitor(m_mainFramePanel, "Opening Non-Linear Book", "Initializing...", 0, 100);
+            m_progressMonitor.setProgress(0);
+            m_progressMonitor.setMillisToDecideToPopup(200);
+            m_progressMonitor.setMillisToPopup(200);
+            m_task = new OpenTask(m_target.m_dir);
+            m_task.addPropertyChangeListener(m_listener);
+            m_openFileButton.setEnabled(false);
+            m_task.execute();
+        }
+    }
+
+    /**
+     * Clone: message == null — первая попытка (с сохранённым токеном сервера или без учётных
+     * данных); иначе — спросить их с этим пояснением
+     */
+    private void startClone(final DialogClone.Result target, final String message) {
+        final String url = target.m_url;
+        final boolean ssh = RemoteCredentials.isSsh(url);
+        getMainPaneInfo().getPaneNlbFacade().setVcsPrompts(new SwingPrompts(m_mainFramePanel, credentials()));
+        final String server = ssh ? null : RemoteCredentials.server(url);
+        String user = null;
+        String secret = null;
+        boolean fromStore = false;
+        boolean remember = false;
+        if (!ssh) {
+            user = credentials().rememberedUser(server);
+            if (user == null) {
+                user = RemoteCredentials.userFromUrl(url);
+            }
+            if (message == null) {
+                secret = credentials().rememberedSecret(server, user);
+                fromStore = secret != null;
+                if (!fromStore) {
+                    user = null;  // открытый репозиторий — без учётных данных
+                }
+            } else {
+                final DialogGitCredentials.Result result = DialogGitCredentials.ask(
+                        m_mainFramePanel, "Clone", server, user, message, credentials().canRememberSecret()
+                );
+                if (result == null) {
+                    return;
+                }
+                user = result.m_user;
+                secret = result.secret();
+                remember = result.m_remember;
+                result.wipe();
+            }
+        }
+        m_progressMonitor = new ProgressMonitor(m_mainFramePanel, "Cloning Non-Linear Book", "Initializing...", 0, 100);
+        m_progressMonitor.setProgress(0);
+        m_progressMonitor.setMillisToDecideToPopup(200);
+        m_progressMonitor.setMillisToPopup(200);
+        m_task = new CloneTask(target, server, user, secret, fromStore, remember, ssh, this);
+        m_task.addPropertyChangeListener(this);
+        m_cloneFileButton.setEnabled(false);
+        m_task.execute();
     }
 
     /**
@@ -613,6 +751,19 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                             m_mainFramePanel,
                             "Error while loading: " + ex.toString()
                     );
+                }
+            }
+        });
+        m_cloneFileButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    final DialogClone.Result target = DialogClone.ask(m_mainFramePanel);
+                    if (target != null) {
+                        startClone(target, null);
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(m_mainFramePanel, "Error while cloning: " + ex.toString());
                 }
             }
         });

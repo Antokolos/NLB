@@ -376,6 +376,15 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     /**
+     * Скачать книгу с сервера в новую папку (с её внешними модулями) — без установки git; открыть
+     * её потом — {@link #load}
+     */
+    public void cloneBook(final String url, final String path, final String userName, final String password,
+                          final ProgressData progressData) throws NLBVCSException {
+        getMainFacade().m_vcsAdapter.cloneRepo(url, path, userName, password, progressData);
+    }
+
+    /**
      * Вопросы к автору при pull/push по ssh (пароль к ключу, незнакомый сервер)
      */
     public void setVcsPrompts(final com.nlbhub.nlb.vcs.VCSPrompts prompts) {

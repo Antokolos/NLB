@@ -244,6 +244,33 @@ final class GitSubmodules {
     }
 
     /**
+     * После clone книги — её внешние модули (подмодули) и их модули, на любую глубину («Шапочка» —
+     * три уровня): init и update, затем каждый — на ветку (иначе push из редактора невозможен)
+     */
+    static void cloneSubmodules(
+            final Git git,
+            final CredentialsProvider provider,
+            final ProgressMonitor monitor
+    ) throws IOException, GitAPIException {
+        final Repository repo = git.getRepository();
+        if (!new java.io.File(repo.getWorkTree(), Constants.DOT_GIT_MODULES).isFile()) {
+            return;
+        }
+        git.submoduleInit().call();
+        git.submoduleUpdate().setCredentialsProvider(provider).setProgressMonitor(monitor).call();
+        try (SubmoduleWalk walk = SubmoduleWalk.forIndex(repo)) {
+            while (walk.next()) {
+                try (Repository sub = walk.getRepository()) {
+                    if (sub != null) {
+                        attachDetachedHead(sub);
+                        cloneSubmodules(Git.wrap(sub), provider, monitor);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * После pull книги — модули на записанные в книге коммиты (недостающие скачиваются) и на
      * ветку; модули с незакоммиченными правками не трогаются
      *

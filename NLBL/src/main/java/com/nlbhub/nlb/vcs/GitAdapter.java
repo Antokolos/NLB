@@ -424,11 +424,47 @@ public class GitAdapter implements VCSAdapter {
         m_prompts = prompts;
     }
 
+    @Override
+    public void cloneRepo(String url, String path, String userName, String password, ProgressData progressData)
+            throws NLBVCSException {
+        final File dir = new File(path);
+        final boolean existed = dir.exists();
+        final CredentialsProvider provider = RemoteCredentials.isSsh(url) || userName != null
+                ? credentialsProvider(url, userName, password)
+                : null;  // открытый репозиторий — без учётных данных; потребует их — спросим
+        progressData.setNoteText("Cloning...");
+        final ProgressMonitor monitor = new VCSProgressMonitor(progressData);
+        try (Git git = Git.cloneRepository()
+                .setURI(url.trim())
+                .setDirectory(dir)
+                .setCredentialsProvider(provider)
+                .setProgressMonitor(monitor)
+                .call()) {
+            progressData.setNoteText("Cloning external modules...");
+            GitSubmodules.cloneSubmodules(git, provider, monitor);
+        } catch (GitAPIException | IOException | RuntimeException e) {
+            // недоклонированную книгу — убрать, иначе повтор упрётся в непустую папку
+            if (!existed) {
+                try {
+                    org.eclipse.jgit.util.FileUtils.delete(dir, org.eclipse.jgit.util.FileUtils.RECURSIVE
+                            | org.eclipse.jgit.util.FileUtils.SKIP_MISSING | org.eclipse.jgit.util.FileUtils.RETRY);
+                } catch (IOException cleanup) {
+                    LOGGER.warn("Cannot remove the partially cloned book {}", dir, cleanup);
+                }
+            }
+            throw transferError("cloning", e);
+        }
+    }
+
     /**
      * По ssh — ключи из ~/.ssh и ssh-agent, вопросы — к автору; по https — имя и пароль (токен)
      */
     private CredentialsProvider credentialsProvider(final String userName, final String password) {
-        if (RemoteCredentials.isSsh(getRemoteUrl())) {
+        return credentialsProvider(getRemoteUrl(), userName, password);
+    }
+
+    private CredentialsProvider credentialsProvider(final String url, final String userName, final String password) {
+        if (RemoteCredentials.isSsh(url)) {
             useSshHome();
             return new SshCredentialsProvider(m_prompts);
         }

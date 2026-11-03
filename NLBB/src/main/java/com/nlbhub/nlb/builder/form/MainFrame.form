@@ -108,6 +108,17 @@
                   <text value=""/>
                 </properties>
               </component>
+              <component id="c1a0e" class="javax.swing.JButton" binding="m_cloneFileButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/clone.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                  <toolTipText value="clone a book from its server (Git; Git does not need to be installed)"/>
+                </properties>
+              </component>
               <component id="12f78" class="javax.swing.JButton" binding="m_saveFileButton">
                 <constraints/>
                 <properties>
