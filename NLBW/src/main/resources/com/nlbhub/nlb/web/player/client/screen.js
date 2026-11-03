@@ -162,10 +162,19 @@ window.NLBScreen = function (ctx) {
   }
 
   // ------------------------------------------------------------------ экран 1920×1080 в окне
+  // В окно вписывается экран темы текущей страницы (scr.w×scr.h внутри 1920×1080), как в INSTEAD и
+  // GameScreen::screenArea: поля только с одной стороны (у темы 800×600 «Фронтира» раньше были и
+  // по бокам — внутри 1920×1080, и сверху-снизу — вокруг него). Вне экрана темы сцена обрезана,
+  // поля окна — цветом рамки темы (scr.col.brd)
   function fit() {
-    const k = Math.min(window.innerWidth / W, window.innerHeight / H);
+    const t = state ? theme() : null;
+    const a = t && t.screenArea ? t.screenArea : { x: 0, y: 0, w: W, h: H };
+    const k = Math.min(window.innerWidth / a.w, window.innerHeight / a.h);
     const stage = $('stage');
-    stage.style.transform = 'translate(' + ((window.innerWidth - W * k) / 2) + 'px,' + ((window.innerHeight - H * k) / 2) + 'px) scale(' + k + ')';
+    const tx = (window.innerWidth - a.w * k) / 2 - a.x * k, ty = (window.innerHeight - a.h * k) / 2 - a.y * k;
+    stage.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + k + ')';
+    stage.style.clipPath = 'inset(' + a.y + 'px ' + (W - a.x - a.w) + 'px ' + (H - a.y - a.h) + 'px ' + a.x + 'px)';
+    if (t && document.body.classList.contains('playing')) document.body.style.background = t.border || '#000';
     document.documentElement.style.setProperty('--stage-scale', String(k));
   }
   window.addEventListener('resize', fit);
