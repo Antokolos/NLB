@@ -47,7 +47,9 @@ import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.util.SystemReader;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.TreeWalk;
@@ -361,6 +363,12 @@ public class GitAdapter implements VCSAdapter {
 
     @Override
     public void commit(final String message) throws NLBVCSException {
+        final Author committer = getCommitter();
+        commit(message, committer != null ? committer : m_author);
+    }
+
+    @Override
+    public void commit(final String message, final Author author) throws NLBVCSException {
         awaitStatuses();
         try {
             // новые коммиты внешних модулей (подмодулей) — тоже часть commit книги
@@ -374,11 +382,57 @@ public class GitAdapter implements VCSAdapter {
                     .setGpgConfig(new GpgConfig(new Config()))
                     .setAll(false)
                     .setAmend(false)
-                    .setAuthor(m_author.getName(), m_author.getEmail())
+                    .setAuthor(author.getName(), author.getEmail())
+                    .setCommitter(author.getName(), author.getEmail())
                     .setMessage(message)
                     .call();
         } catch (GitAPIException | IOException e) {
             throw new NLBVCSException("Error while committing to the Git repository", e);
+        }
+    }
+
+    @Override
+    public Author getCommitter() {
+        try {
+            // настройки репозитория уже включают общие (~/.gitconfig) как запасные
+            final Config config = (m_localRepo != null) ? m_localRepo.getConfig() : SystemReader.getInstance().getUserConfig();
+            final String name = config.getString(ConfigConstants.CONFIG_USER_SECTION, null, ConfigConstants.CONFIG_KEY_NAME);
+            final String email = config.getString(ConfigConstants.CONFIG_USER_SECTION, null, ConfigConstants.CONFIG_KEY_EMAIL);
+            if (name == null || name.trim().isEmpty()) {
+                return null;
+            }
+            return new Author(name.trim(), email == null ? "" : email.trim());
+        } catch (IOException | ConfigInvalidException e) {
+            LOGGER.warn("Cannot read Git user settings", e);
+            return null;
+        }
+    }
+
+    @Override
+    public boolean canSetCommitter() {
+        return m_localRepo != null;
+    }
+
+    @Override
+    public void setCommitter(final Author author) throws NLBVCSException {
+        if (m_localRepo == null) {
+            throw new NLBVCSException("The book repository is not open: save the book first");
+        }
+        final StoredConfig config = m_localRepo.getConfig();
+        setOrUnset(config, ConfigConstants.CONFIG_KEY_NAME, author == null ? null : author.getName());
+        setOrUnset(config, ConfigConstants.CONFIG_KEY_EMAIL, author == null ? null : author.getEmail());
+        try {
+            config.save();
+        } catch (IOException e) {
+            throw new NLBVCSException("Cannot save Git user settings", e);
+        }
+    }
+
+    private static void setOrUnset(final StoredConfig config, final String key, final String value) {
+        if (value == null || value.trim().isEmpty()) {
+            config.unset(ConfigConstants.CONFIG_USER_SECTION, null, key);
+        } else {
+            config.setString(ConfigConstants.CONFIG_USER_SECTION, null, key, value.trim());
         }
     }
 

@@ -107,6 +107,26 @@ public class GitAdapterWithPathDecoration implements VCSAdapter {
     }
 
     @Override
+    public void commit(final String message, final Author author) throws NLBVCSException {
+        m_gitAdapter.commit(message, author);
+    }
+
+    @Override
+    public Author getCommitter() {
+        return m_gitAdapter.getCommitter();
+    }
+
+    @Override
+    public boolean canSetCommitter() {
+        return m_gitAdapter.canSetCommitter();
+    }
+
+    @Override
+    public void setCommitter(final Author author) throws NLBVCSException {
+        m_gitAdapter.setCommitter(author);
+    }
+
+    @Override
     public void pull(String userName, String password, ProgressData progressData) throws NLBVCSException {
         m_gitAdapter.pull(userName, password, progressData);
     }
