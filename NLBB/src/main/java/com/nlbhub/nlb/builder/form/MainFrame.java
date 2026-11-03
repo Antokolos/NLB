@@ -46,6 +46,7 @@ import com.nlbhub.nlb.builder.view.GraphEditor;
 import com.nlbhub.nlb.builder.view.TabComponent;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.exception.*;
+import com.nlbhub.nlb.vcs.Author;
 import com.nlbhub.nlb.util.BareBonesBrowserLaunch;
 import com.nlbhub.nlb.web.Launcher;
 import com.nlbhub.nlb.web.player.BookLibrary;
@@ -615,11 +616,16 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
+                    // от чьего имени коммит: не задано ни в репозитории книги, ни в общих
+                    // настройках git — спросить один раз (запишется в .git/config книги)
+                    final NonLinearBookFacade facade = getMainPaneInfo().getPaneNlbFacade();
+                    if (facade.canSetCommitter() && facade.getCommitter() == null && !askCommitter(facade)) {
+                        return;
+                    }
                     DialogCommit dialog = new DialogCommit();
                     dialog.showDialog();
                     if (dialog.isOk()) {
-                        PaneEditorInfo editorInfo = getMainPaneInfo();
-                        editorInfo.getPaneNlbFacade().commit(dialog.getCommitMessageText());
+                        facade.commit(dialog.getCommitMessageText());
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(
@@ -1198,6 +1204,35 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                     m_mainFramePanel,
                     "Error while NLB clear: " + ex.toString()
             );
+        }
+    }
+
+    /**
+     * Спросить имя и e-mail для коммитов и записать их в настройки репозитория книги
+     * (.git/config — у каждого соавтора свои; их же можно поменять в свойствах книги)
+     */
+    private boolean askCommitter(final NonLinearBookFacade facade) throws NLBVCSException {
+        final JTextField name = new JTextField(30);
+        final JTextField email = new JTextField(30);
+        final JPanel panel = new JPanel(new GridLayout(0, 1, 0, 4));
+        panel.add(new JLabel("Commits need your name and e-mail. They are stored in the book's .git/config"));
+        panel.add(new JLabel("(only in your copy of the book) and can be changed in the book properties."));
+        panel.add(new JLabel("Name"));
+        panel.add(name);
+        panel.add(new JLabel("E-mail"));
+        panel.add(email);
+        while (true) {
+            final int answer = JOptionPane.showConfirmDialog(
+                    m_mainFramePanel, panel, "Commit author", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE
+            );
+            if (answer != JOptionPane.OK_OPTION) {
+                return false;
+            }
+            if (!name.getText().trim().isEmpty() && !email.getText().trim().isEmpty()) {
+                facade.setCommitter(new Author(name.getText().trim(), email.getText().trim()));
+                return true;
+            }
+            JOptionPane.showMessageDialog(m_mainFramePanel, "Please enter both name and e-mail");
         }
     }
 

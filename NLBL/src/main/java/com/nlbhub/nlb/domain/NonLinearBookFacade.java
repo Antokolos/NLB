@@ -329,16 +329,42 @@ public class NonLinearBookFacade implements NLBObservable {
         }
     }
 
+    /**
+     * Кто коммитит книгу: user.name и user.email из настроек её репозитория, иначе из общих
+     * настроек git пользователя; null — не задано (редактор спросит перед commit)
+     */
+    public Author getCommitter() {
+        return getMainFacade().m_vcsAdapter.getCommitter();
+    }
+
+    /**
+     * Имя и e-mail того, кто коммитит, можно записать (репозиторий книги открыт)
+     */
+    public boolean canSetCommitter() {
+        return getMainFacade().m_vcsAdapter.canSetCommitter();
+    }
+
+    /**
+     * Записать имя и e-mail того, кто коммитит, в настройки репозитория книги (.git/config: в
+     * клоне книги, не в её файлах — у каждого соавтора свои)
+     */
+    public void setCommitter(final Author author) throws NLBVCSException {
+        getMainFacade().m_vcsAdapter.setCommitter(author);
+    }
+
     public void commit(final String commitMessageText) throws NLBVCSException {
+        // от имени того, кто задан в настройках репозитория книги (иначе — в общих настройках
+        // git), — и книга, и её внешние модули (у подмодуля свои настройки, но коммит тот же)
+        final Author committer = m_vcsAdapter.getCommitter() != null ? m_vcsAdapter.getCommitter() : m_author;
         // сначала внешние модули, сохранённые из книги, — в их репозитории (подмодули); новые
         // коммиты модулей commit книги затем добавит сам (GitSubmodules.stageSubmodulePointers)
         for (NonLinearBookFacade facade : allModuleFacades()) {
             if (facade.m_externalModuleUncommitted && facade.m_externalModuleVcs != null) {
-                facade.m_externalModuleVcs.commit(commitMessageText);
+                facade.m_externalModuleVcs.commit(commitMessageText, committer);
                 facade.m_externalModuleUncommitted = false;
             }
         }
-        m_vcsAdapter.commit(commitMessageText);
+        m_vcsAdapter.commit(commitMessageText, committer);
         notifyObservers();
     }
 

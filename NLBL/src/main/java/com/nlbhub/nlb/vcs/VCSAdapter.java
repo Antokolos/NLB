@@ -90,4 +90,34 @@ public interface VCSAdapter {
     public default VCSAdapter newAdapter() {
         return new DummyVCSAdapter();
     }
+
+    /**
+     * Commit от имени author (а не того, кто записан в настройках репозитория): внешние модули
+     * коммитятся от имени того же человека, что и книга
+     */
+    public default void commit(String message, Author author) throws NLBVCSException {
+        commit(message);
+    }
+
+    /**
+     * Кто коммитит: имя и e-mail (user.name, user.email) из настроек репозитория книги, а если их
+     * там нет — из общих настроек пользователя; null — не задано или VCS нет
+     */
+    public default Author getCommitter() {
+        return null;
+    }
+
+    /**
+     * Имя и e-mail того, кто коммитит, можно записать: VCS есть и репозиторий книги открыт
+     */
+    public default boolean canSetCommitter() {
+        return false;
+    }
+
+    /**
+     * Записать имя и e-mail того, кто коммитит, в настройки репозитория книги (.git/config — в
+     * клоне книги, не в её файлах: у каждого соавтора своё); пустое значение — убрать
+     */
+    public default void setCommitter(Author author) throws NLBVCSException {
+    }
 }

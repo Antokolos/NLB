@@ -42,6 +42,8 @@ import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.builder.util.LanguageHelper;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
+import com.nlbhub.nlb.exception.NLBVCSException;
+import com.nlbhub.nlb.vcs.Author;
 
 import javax.swing.*;
 import java.awt.*;
@@ -65,6 +67,14 @@ public class DialogBookProperties extends JDialog {
     private JTextField m_titleTextField;
     private JTextField m_perfectGameAchievementTextField;
     private JComboBox m_themeComboBox;
+    /**
+     * Имя и e-mail для коммитов из редактора — не свойства книги, а настройки git (user.name,
+     * user.email) в .git/config её клона: у каждого соавтора свои. Показаны действующие (из
+     * репозитория книги, иначе из общих настроек git)
+     */
+    private JTextField m_commitAuthorTextField;
+    private JTextField m_commitEmailTextField;
+    private Author m_committer;
 
     public DialogBookProperties(final NonLinearBookFacade nlbFacade) {
         m_nlbFacade = nlbFacade;
@@ -123,6 +133,17 @@ public class DialogBookProperties extends JDialog {
         }
         m_themeComboBox.setModel(themeComboboxModel);
         m_themeComboBox.setSelectedItem(nonLinearBook.getTheme());
+        m_committer = m_nlbFacade.getCommitter();
+        m_commitAuthorTextField.setText(m_committer != null ? m_committer.getName() : "");
+        m_commitEmailTextField.setText(m_committer != null ? m_committer.getEmail() : "");
+        final boolean canSet = m_nlbFacade.canSetCommitter();
+        m_commitAuthorTextField.setEnabled(canSet);
+        m_commitEmailTextField.setEnabled(canSet);
+        final String tip = canSet
+                ? "Used for commits from the editor. Stored in the book's .git/config (only in your copy of the book, not in the book files)"
+                : "Available when the book is saved in a Git repository";
+        m_commitAuthorTextField.setToolTipText(tip);
+        m_commitEmailTextField.setToolTipText(tip);
     }
 
     public void showDialog() {
@@ -159,6 +180,20 @@ public class DialogBookProperties extends JDialog {
                 m_choiceLinksCheckBox.isSelected(),
                 m_propagateToSubmodulesCheckBox.isSelected()
         );
+        // имя и e-mail для коммитов — в .git/config книги, только если их поменяли (иначе общие
+        // настройки git, показанные в полях, переписались бы в настройки книги)
+        final String name = m_commitAuthorTextField.getText().trim();
+        final String email = m_commitEmailTextField.getText().trim();
+        final String oldName = m_committer != null ? m_committer.getName() : "";
+        final String oldEmail = m_committer != null ? m_committer.getEmail() : "";
+        if (m_nlbFacade.canSetCommitter() && (!name.equals(oldName) || !email.equals(oldEmail))) {
+            try {
+                m_nlbFacade.setCommitter(name.isEmpty() && email.isEmpty() ? null : new Author(name, email));
+            } catch (NLBVCSException e) {
+                JOptionPane.showMessageDialog(this, "Cannot save commit author: " + e.getMessage());
+                return;
+            }
+        }
         dispose();
     }
 
