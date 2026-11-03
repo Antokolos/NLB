@@ -44,8 +44,16 @@ import com.nlbhub.nlb.exception.NLBVCSException;
 public class GitAdapterWithPathDecoration implements VCSAdapter {
     GitAdapter m_gitAdapter;
 
+    private final Author m_author;
+
     public GitAdapterWithPathDecoration(final Author author) {
+        m_author = author;
         m_gitAdapter = new GitAdapter(author);
+    }
+
+    @Override
+    public VCSAdapter newAdapter() {
+        return new GitAdapterWithPathDecoration(m_author);
     }
 
     @Override

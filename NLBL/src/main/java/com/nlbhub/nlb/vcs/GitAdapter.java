@@ -84,6 +84,11 @@ public class GitAdapter implements VCSAdapter {
     private FutureTask<Void> m_statusesTask = null;
     private Author m_author;
 
+    @Override
+    public VCSAdapter newAdapter() {
+        return new GitAdapter(m_author);
+    }
+
     public GitAdapter(final Author author) {
         m_author = author;
     }
@@ -362,6 +367,11 @@ public class GitAdapter implements VCSAdapter {
             GitSubmodules.stageSubmodulePointers(m_git);
             m_git
                     .commit()
+                    // редактор коммиты не подписывает; без явной пустой настройки JGit читает
+                    // gpg.* из настроек git пользователя и падает на незнакомом ему формате
+                    // подписи (gpg.format=ssh) — коммит из редактора был бы невозможен
+                    .setSign(false)
+                    .setGpgConfig(new GpgConfig(new Config()))
                     .setAll(false)
                     .setAmend(false)
                     .setAuthor(m_author.getName(), m_author.getEmail())

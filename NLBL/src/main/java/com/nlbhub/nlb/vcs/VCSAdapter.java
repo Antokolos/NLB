@@ -82,4 +82,12 @@ public interface VCSAdapter {
     public void pull(String userName, String password, ProgressData progressData) throws NLBVCSException;
 
     public void push(String userName, String password, ProgressData progressData) throws NLBVCSException;
+
+    /**
+     * Новый адаптер того же вида — для отдельного репозитория (внешний модуль книги в modules/ —
+     * подмодуль git со своим репозиторием). По умолчанию — без системы контроля версий
+     */
+    public default VCSAdapter newAdapter() {
+        return new DummyVCSAdapter();
+    }
 }

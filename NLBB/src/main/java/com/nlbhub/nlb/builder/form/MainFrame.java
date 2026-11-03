@@ -1246,11 +1246,15 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     }
 
     /**
-     * Название вкладки модуля; вкладка внешнего модуля — его копия, только для чтения
+     * Название вкладки модуля: внешний модуль, который правится прямо в книге (сохраняется в
+     * modules/<имя>), — «(external)»; копия только для чтения — «(read-only)»
      */
     private static String tabTitle(final String moduleName, final PaneEditorInfo paneEditorInfo) {
-        final boolean readOnly = paneEditorInfo.getPaneNlbFacade().getReadOnlyReason() != null;
-        return moduleName + (readOnly ? " (read-only)" : "");
+        final NonLinearBookFacade facade = paneEditorInfo.getPaneNlbFacade();
+        if (facade.getReadOnlyReason() != null) {
+            return moduleName + " (read-only)";
+        }
+        return moduleName + (facade.getEditedExternalModuleName() != null ? " (external)" : "");
     }
 
     private void addGraphEditorTab(final String title, final PaneEditorInfo paneEditorInfo) {
