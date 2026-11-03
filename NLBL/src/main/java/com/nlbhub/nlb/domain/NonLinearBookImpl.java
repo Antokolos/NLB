@@ -2961,6 +2961,23 @@ public class NonLinearBookImpl implements NonLinearBook {
         return copy;
     }
 
+    /**
+     * Содержимое книги — из её копии, которую правили в редакторе: внешний модуль (modules/<имя>)
+     * показывается во вкладке копией (страница книги-родителя держит её в своём модуле), а
+     * сохраняется сама книга модуля. Переносятся страницы, объекты, переменные (с пометками
+     * удаления — save() удалит их каталоги), стартовая точка и порядок автопереходов; свойства
+     * книги модуля, её медиафайлы и её собственные внешние модули остаются как были
+     */
+    public void takeContentFrom(final NonLinearBookImpl edited) {
+        m_pages.clear();
+        m_objs.clear();
+        m_variables.clear();
+        m_autowiredPages.clear();
+        append(edited, false, false);
+        m_startPoint = edited.getStartPoint();
+        copyAutowiredOrder(edited);
+    }
+
     private void copyAutowiredOrder(final NonLinearBookImpl source) {
         m_autowiredPages.clear();
         m_autowiredPages.addAll(source.m_autowiredPages);

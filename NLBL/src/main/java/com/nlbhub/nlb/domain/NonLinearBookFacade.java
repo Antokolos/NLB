@@ -95,6 +95,16 @@ public class NonLinearBookFacade implements NLBObservable {
     private boolean m_rootFacade;
     private NonLinearBookFacade m_parentFacade;
     private List<NonLinearBookFacade> m_moduleFacades = new ArrayList<>();
+    /**
+     * Вкладка внешнего модуля, который правится прямо в книге: имя модуля (modules/<имя>), сама
+     * книга модуля (её сохраняет save() книги, перенося в неё правки из копии m_nlb — см.
+     * {@link NonLinearBookImpl#takeContentFrom}), адаптер VCS её репозитория (подмодуль git) и
+     * пометка «сохранён после последнего commit» (тогда commit книги сначала коммитит модуль)
+     */
+    private String m_externalModuleName = null;
+    private NonLinearBookImpl m_externalModuleBook = null;
+    private VCSAdapter m_externalModuleVcs = null;
+    private boolean m_externalModuleUncommitted = false;
 
     public NonLinearBookFacade(Author author, VCSAdapter vcsAdapter) {
         m_rootFacade = true;
@@ -129,17 +139,116 @@ public class NonLinearBookFacade implements NLBObservable {
                 new NonLinearBookFacade(this, m_author, m_vcsAdapter, page.getModuleImpl())
         );
         if (page.isModuleExternal()) {
-            facade.m_readOnlyReason = (
-                    "Module '" + page.getModuleName() + "' is an external module (modules/" + page.getModuleName()
-                            + "). This tab shows its copy, and changes here would not be saved. "
-                            + "To edit the module, open modules/" + page.getModuleName() + " as a separate book."
-            );
+            final String reason = externalModuleReadOnlyReason(page);
+            if (reason == null) {
+                // правится прямо в книге: копия на вкладке, сохраняется книга модуля
+                facade.m_externalModuleName = page.getModuleName();
+                facade.m_externalModuleBook = (NonLinearBookImpl) m_nlb.findExternalModule(page.getModuleName());
+            } else {
+                facade.m_readOnlyReason = reason;
+            }
         } else {
-            facade.m_readOnlyReason = m_readOnlyReason;  // внутренний модуль внешнего модуля — тоже копия
+            // внутренний модуль: правится вместе с книгой или с внешним модулем, в котором лежит
+            facade.m_readOnlyReason = m_readOnlyReason;
         }
         m_moduleFacades.add(facade);
         notifyObservers();
         return facade;
+    }
+
+    /**
+     * Почему внешний модуль страницы нельзя править на его вкладке (null — можно). Правится модуль
+     * из modules/ самой книги (подключённый её страницей или страницей её внутреннего модуля).
+     * Только для чтения: внешний модуль внутри внешнего модуля (он в modules/ того модуля — откройте
+     * тот модуль отдельной книгой) и второе подключение того же модуля (две копии разошлись бы —
+     * правится первая открытая)
+     */
+    private String externalModuleReadOnlyReason(final PageImpl page) {
+        final String name = page.getModuleName();
+        final String asBook = "To edit it, open modules/" + name + " of that module as a separate book.";
+        if (m_readOnlyReason != null || insideExternalModule()) {
+            return "Module '" + name + "' is an external module of another external module. This tab shows its copy, "
+                    + "and changes here would not be saved. " + asBook;
+        }
+        final NonLinearBook module = m_nlb.findExternalModule(name);
+        if (!(module instanceof NonLinearBookImpl) || module.getRootDir() == null) {
+            return "Module '" + name + "' is an external module (modules/" + name + "), but its book was not found. "
+                    + "This tab shows its copy, and changes here would not be saved.";
+        }
+        for (NonLinearBookFacade facade : getMainFacade().allModuleFacades()) {
+            if (name.equals(facade.m_externalModuleName)) {
+                return "Module '" + name + "' is used on several pages of the book, and it is edited in its first tab. "
+                        + "This tab shows its copy, and changes here would not be saved.";
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Эта вкладка — внешний модуль, правящийся в книге, или лежит внутри такого
+     */
+    private boolean insideExternalModule() {
+        for (NonLinearBookFacade facade = this; facade != null; facade = facade.m_parentFacade) {
+            if (facade.m_externalModuleName != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Все вкладки модулей под этой (рекурсивно)
+     */
+    private List<NonLinearBookFacade> allModuleFacades() {
+        List<NonLinearBookFacade> result = new ArrayList<>();
+        for (NonLinearBookFacade facade : m_moduleFacades) {
+            result.add(facade);
+            result.addAll(facade.allModuleFacades());
+        }
+        return result;
+    }
+
+    /**
+     * Имя внешнего модуля, если вкладка правит его прямо в книге; иначе null
+     */
+    public String getEditedExternalModuleName() {
+        return m_externalModuleName;
+    }
+
+    /**
+     * Сохранить внешние модули, которые правились на своих вкладках: правки из копии — в книгу
+     * модуля, она — в modules/<имя> через свой репозиторий (подмодуль git: файлы добавляются в его
+     * индекс). Сама книга внешние модули при сохранении не трогает
+     */
+    private void saveEditedExternalModules() throws NLBVCSException, NLBConsistencyException, NLBFileManipulationException, NLBIOException {
+        for (NonLinearBookFacade facade : allModuleFacades()) {
+            if (facade.m_externalModuleName == null || !facade.hasChanges()) {
+                continue;
+            }
+            // правки — и в экземпляр модуля в памяти (из него делаются копии), но на диск пишется
+            // книга модуля, прочитанная заново так же, как при открытии её отдельной книгой: у
+            // экземпляра нет книги-родителя (свойства записались бы все, в том числе language),
+            // и язык у него — язык игры книги-родителя (setPlaybackLanguage)
+            facade.m_externalModuleBook.takeContentFrom(facade.m_nlb);
+            try {
+                final File moduleDir = facade.m_externalModuleBook.getRootDir();
+                final DummyNLB root = DummyNLB.singleton();
+                final NonLinearBookImpl module = new NonLinearBookImpl(root, new RootModulePage(root, Constants.MAIN_MODULE_NAME));
+                module.load(moduleDir.getCanonicalPath(), new DummyProgressData());
+                module.takeContentFrom(facade.m_nlb);
+                if (facade.m_externalModuleVcs == null) {
+                    facade.m_externalModuleVcs = m_vcsAdapter.newAdapter();
+                    facade.m_externalModuleVcs.openRepo(moduleDir.getCanonicalPath());
+                }
+                final FileManipulator fileManipulator = new FileManipulator(facade.m_externalModuleVcs, moduleDir);
+                final DummyProgressData progress = new DummyProgressData();
+                module.save(fileManipulator, progress, new PartialProgressData(progress, 0, 100, 1));
+                facade.m_externalModuleUncommitted = true;
+                LOGGER.info("External module {} saved to {}", facade.m_externalModuleName, moduleDir);
+            } catch (IOException e) {
+                throw new NLBIOException("Error while obtaining canonical path of external module " + facade.m_externalModuleName, e);
+            }
+        }
     }
 
     public static void setRefusedChangeNotifier(java.util.function.Consumer<String> notifier) {
@@ -197,6 +306,10 @@ public class NonLinearBookFacade implements NLBObservable {
         if (m_rootFacade) {
             m_vcsAdapter.closeAdapter();
         }
+        if (m_externalModuleVcs != null) {
+            m_externalModuleVcs.closeAdapter();
+            m_externalModuleVcs = null;
+        }
         clearUndosAndPools();
     }
 
@@ -217,6 +330,14 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void commit(final String commitMessageText) throws NLBVCSException {
+        // сначала внешние модули, сохранённые из книги, — в их репозитории (подмодули); новые
+        // коммиты модулей commit книги затем добавит сам (GitSubmodules.stageSubmodulePointers)
+        for (NonLinearBookFacade facade : allModuleFacades()) {
+            if (facade.m_externalModuleUncommitted && facade.m_externalModuleVcs != null) {
+                facade.m_externalModuleVcs.commit(commitMessageText);
+                facade.m_externalModuleUncommitted = false;
+            }
+        }
         m_vcsAdapter.commit(commitMessageText);
         notifyObservers();
     }
@@ -963,6 +1084,7 @@ public class NonLinearBookFacade implements NLBObservable {
             final ProgressData progressData
     ) throws NLBVCSException, NLBConsistencyException, NLBFileManipulationException, NLBIOException {
         saveNLB(create, progressData);
+        saveEditedExternalModules();
         clearUndosAndPools();
     }
 
