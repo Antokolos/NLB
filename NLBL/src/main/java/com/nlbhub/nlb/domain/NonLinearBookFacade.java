@@ -368,6 +368,13 @@ public class NonLinearBookFacade implements NLBObservable {
         notifyObservers();
     }
 
+    /**
+     * Адрес сервера книги (remote origin); null — нет
+     */
+    public String getRemoteUrl() {
+        return getMainFacade().m_vcsAdapter.getRemoteUrl();
+    }
+
     public void pull(final String userName, final String password, final ProgressData progressData) throws NLBVCSException {
         m_vcsAdapter.pull(userName, password, progressData);
         notifyObservers();

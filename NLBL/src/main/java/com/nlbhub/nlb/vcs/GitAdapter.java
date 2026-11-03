@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.vcs;
 
 import com.nlbhub.nlb.api.ProgressData;
+import com.nlbhub.nlb.exception.NLBVCSAuthenticationException;
 import com.nlbhub.nlb.exception.NLBVCSException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.DetachedHeadException;
@@ -409,6 +410,31 @@ public class GitAdapter implements VCSAdapter {
     }
 
     @Override
+    public String getRemoteUrl() {
+        return m_localRepo == null ? null : m_localRepo.getConfig().getString("remote", "origin", "url");
+    }
+
+    /**
+     * Ошибка pull/push: если сервер не принял учётные данные — {@link NLBVCSAuthenticationException}
+     * (редактор забудет сохранённый токен и спросит снова)
+     */
+    static NLBVCSException transferError(final String what, final Exception e) {
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            final String message = String.valueOf(t.getMessage()).toLowerCase();
+            if (message.contains("not authorized") || message.contains("authentication is required")
+                    || message.contains("not permitted") || message.contains("authentication not supported")
+                    || message.contains("401") || message.contains("403")) {
+                return new NLBVCSAuthenticationException(
+                        "The server did not accept the user name and password or token (or the token has no write access): "
+                                + e.getMessage(),
+                        e
+                );
+            }
+        }
+        return new NLBVCSException("Error while " + what + " the Git repository: " + e.getMessage(), e);
+    }
+
+    @Override
     public boolean canSetCommitter() {
         return m_localRepo != null;
     }
@@ -466,10 +492,7 @@ public class GitAdapter implements VCSAdapter {
                 );
             }
         } catch (GitAPIException | IOException e) {
-            throw new NLBVCSException(
-                    "Error while pulling from the Git repository: " + e.getMessage(),
-                    e
-            );
+            throw transferError("pulling from", e);
         }
     }
 
@@ -496,10 +519,7 @@ public class GitAdapter implements VCSAdapter {
                     e
             );
         } catch (GitAPIException | IOException e) {
-            throw new NLBVCSException(
-                    "Error while pushing to the Git repository: " + e.getMessage(),
-                    e
-            );
+            throw transferError("pushing to", e);
         }
     }
 }

@@ -120,4 +120,11 @@ public interface VCSAdapter {
      */
     public default void setCommitter(Author author) throws NLBVCSException {
     }
+
+    /**
+     * Адрес сервера книги (remote origin), например https://github.com/user/book.git; null — нет
+     */
+    public default String getRemoteUrl() {
+        return null;
+    }
 }
