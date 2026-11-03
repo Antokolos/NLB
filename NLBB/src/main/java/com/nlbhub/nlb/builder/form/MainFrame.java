@@ -277,6 +277,13 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                         m_mainFramePanel,
                         "Error while loading: " + ex.toString()
                 );
+            } catch (RuntimeException ex) {
+                // иначе исключение пропадает в SwingWorker без следа
+                LOGGER.error("Error while loading " + m_file, ex);
+                JOptionPane.showMessageDialog(
+                        m_mainFramePanel,
+                        "Error while loading: " + ex.toString()
+                );
             }
             return null;
         }
@@ -1170,6 +1177,11 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
 
     private void clearAll() {
         try {
+            // Сначала — на главную вкладку: при удалении остальных вкладок слушатель смены вкладки
+            // ищет выбранную в m_paneEditorInfoMap, а та уже очищена. С вкладки модуля это давало
+            // NullPointerException посреди очистки (открытие книги молча обрывалось: граф вкладки
+            // пустел, а новая книга не открывалась)
+            m_graphEditorsPane.setSelectedIndex(0);
             for (Map.Entry<String, PaneEditorInfo> entry : m_paneEditorInfoMap.entrySet()) {
                 entry.getValue().getPaneGraphEditor().clear();
                 entry.getValue().getPaneNlbFacade().clear();
@@ -1451,8 +1463,8 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 return entry.getValue();
             }
         }
-        assert false;
-        return null;
+        // вкладки уже нет в таблице (книга закрывается или открывается другая) — главная
+        return getMainPaneInfo();
     }
 
     private PaneEditorInfo getMainPaneInfo() {
