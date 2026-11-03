@@ -47,6 +47,8 @@ import com.nlbhub.nlb.builder.view.TabComponent;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.exception.*;
 import com.nlbhub.nlb.vcs.Author;
+import com.nlbhub.nlb.vcs.secrets.RemoteCredentials;
+import com.nlbhub.nlb.vcs.secrets.SecretStoreException;
 import com.nlbhub.nlb.util.BareBonesBrowserLaunch;
 import com.nlbhub.nlb.web.Launcher;
 import com.nlbhub.nlb.web.player.BookLibrary;
@@ -166,14 +168,29 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         }
     }
 
-    class PullTask extends Task {
-        private String m_userName;
-        private String m_password;
-        private PropertyChangeListener m_listener;
+    /**
+     * Pull или push по https с учётными данными: сохранённые (имя — в настройках, пароль или токен —
+     * в системном хранилище секретов) или введённые автором. Сервер их не принял — сохранённый
+     * токен забывается, и автора спрашивают снова
+     */
+    class TransferTask extends Task {
+        private final boolean m_push;
+        private final String m_server;
+        private final String m_userName;
+        private final String m_password;
+        private final boolean m_fromStore;
+        private final boolean m_remember;
+        private final PropertyChangeListener m_listener;
+        private Exception m_error = null;
 
-        PullTask(String userName, String password, PropertyChangeListener listener) {
+        TransferTask(boolean push, String server, String userName, String password, boolean fromStore, boolean remember,
+                     PropertyChangeListener listener) {
+            m_push = push;
+            m_server = server;
             m_userName = userName;
             m_password = password;
+            m_fromStore = fromStore;
+            m_remember = remember;
             m_listener = listener;
         }
 
@@ -181,14 +198,15 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         protected Void doInBackground() throws Exception {
             setProgress(0);
             try {
-                PaneEditorInfo editorInfo = getMainPaneInfo();
-                editorInfo.getPaneNlbFacade().pull(m_userName, m_password, this);
+                final NonLinearBookFacade facade = getMainPaneInfo().getPaneNlbFacade();
+                if (m_push) {
+                    facade.push(m_userName, m_password, this);
+                } else {
+                    facade.pull(m_userName, m_password, this);
+                }
                 setProgressValue(100);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while pulling: " + ex.toString()
-                );
+                m_error = ex;
             }
             return null;
         }
@@ -196,44 +214,106 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         @Override
         public void done() {
             super.done();
-            m_pullButton.setEnabled(true);
-            m_task = new OpenTask(getMainPaneInfo().getPaneNlbFacade().getNlb().getRootDir());
-            m_task.addPropertyChangeListener(m_listener);
-            m_openFileButton.setEnabled(false);
-            m_task.execute();
+            (m_push ? m_pushButton : m_pullButton).setEnabled(true);
+            final String action = m_push ? "Push" : "Pull";
+            if (m_error instanceof NLBVCSAuthenticationException) {
+                // сервер не принял: сохранённый токен — забыть; спросить снова
+                if (m_fromStore) {
+                    credentials().forgetSecret(m_server, m_userName);
+                }
+                startTransfer(m_push, m_fromStore
+                        ? "The server did not accept the saved password or token. Please enter it again."
+                        : "The server did not accept the user name and password or token. Please check them.");
+                return;
+            }
+            if (m_error == null && m_server != null) {
+                try {
+                    credentials().remember(m_server, m_userName, m_remember ? m_password : null);
+                } catch (SecretStoreException ex) {
+                    JOptionPane.showMessageDialog(
+                            m_mainFramePanel,
+                            action + " is done, but the password or token was not saved: " + ex.getMessage()
+                    );
+                }
+            }
+            if (m_error != null) {
+                JOptionPane.showMessageDialog(
+                        m_mainFramePanel,
+                        "Error while " + (m_push ? "pushing" : "pulling") + ": " + m_error.toString()
+                );
+            }
+            if (!m_push) {
+                // книга после pull — заново с диска
+                m_task = new OpenTask(getMainPaneInfo().getPaneNlbFacade().getNlb().getRootDir());
+                m_task.addPropertyChangeListener(m_listener);
+                m_openFileButton.setEnabled(false);
+                m_task.execute();
+            }
         }
     }
 
-    class PushTask extends Task {
-        private String m_userName;
-        private String m_password;
+    /**
+     * Хранилище учётных данных git (создаётся при первом pull/push: подгружает системную библиотеку)
+     */
+    private RemoteCredentials m_credentials = null;
 
-        PushTask(String userName, String password) {
-            m_userName = userName;
-            m_password = password;
+    private RemoteCredentials credentials() {
+        if (m_credentials == null) {
+            m_credentials = RemoteCredentials.system();
         }
+        return m_credentials;
+    }
 
-        @Override
-        protected Void doInBackground() throws Exception {
-            setProgress(0);
-            try {
-                PaneEditorInfo editorInfo = getMainPaneInfo();
-                editorInfo.getPaneNlbFacade().push(m_userName, m_password, this);
-                setProgressValue(100);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while pushing: " + ex.toString()
-                );
+    /**
+     * Pull или push: с сохранёнными учётными данными, если они есть и не было отказа (message ==
+     * null), иначе — спросить
+     */
+    private void startTransfer(final boolean push, final String message) {
+        final String action = push ? "Push" : "Pull";
+        final String url = getMainPaneInfo().getPaneNlbFacade().getRemoteUrl();
+        if (RemoteCredentials.isSsh(url)) {
+            JOptionPane.showMessageDialog(
+                    m_mainFramePanel,
+                    "The book is connected to its server over SSH (" + url + "), which is not supported yet.\n"
+                            + "Use the https:// address of the repository (git remote set-url origin https://...)\n"
+                            + "with a password or token."
+            );
+            return;
+        }
+        final String server = RemoteCredentials.server(url);
+        String user = credentials().rememberedUser(server);
+        if (user == null && url != null) {
+            user = RemoteCredentials.userFromUrl(url);
+        }
+        String secret = message == null ? credentials().rememberedSecret(server, user) : null;
+        final boolean fromStore = secret != null;
+        boolean remember = false;
+        if (!fromStore) {
+            final DialogGitCredentials.Result result = DialogGitCredentials.ask(
+                    m_mainFramePanel, action, server, user, message, credentials().canRememberSecret()
+            );
+            if (result == null) {
+                return;
             }
-            return null;
+            user = result.m_user;
+            secret = result.secret();
+            remember = result.m_remember;
+            result.wipe();
         }
-
-        @Override
-        public void done() {
-            super.done();
-            m_pushButton.setEnabled(true);
-        }
+        m_progressMonitor = new ProgressMonitor(
+                m_mainFramePanel,
+                push ? "Pushing Non-Linear Book" : "Pulling Non-Linear Book",
+                "Initializing...",
+                0,
+                100
+        );
+        m_progressMonitor.setProgress(0);
+        m_progressMonitor.setMillisToDecideToPopup(200);
+        m_progressMonitor.setMillisToPopup(200);
+        m_task = new TransferTask(push, server, user, secret, fromStore, remember, this);
+        m_task.addPropertyChangeListener(this);
+        (push ? m_pushButton : m_pullButton).setEnabled(false);
+        m_task.execute();
     }
 
     /**
@@ -586,24 +666,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    DialogPull dialog = new DialogPull();
-                    dialog.showDialog();
-                    if (dialog.isOk()) {
-                        m_progressMonitor = new ProgressMonitor(
-                                m_mainFramePanel, //$$$getRootComponent$$$()
-                                "Pulling Non-Linear Book",
-                                "Initializing...",
-                                0,
-                                100
-                        );
-                        m_progressMonitor.setProgress(0);
-                        m_progressMonitor.setMillisToDecideToPopup(200);
-                        m_progressMonitor.setMillisToPopup(200);
-                        m_task = new PullTask(dialog.getUserName(), dialog.getPassword(), mainFrame);
-                        m_task.addPropertyChangeListener(mainFrame);
-                        m_pullButton.setEnabled(false);
-                        m_task.execute();
-                    }
+                    startTransfer(false, null);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(
                             m_mainFramePanel,
@@ -639,24 +702,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    DialogPush dialog = new DialogPush();
-                    dialog.showDialog();
-                    if (dialog.isOk()) {
-                        m_progressMonitor = new ProgressMonitor(
-                                m_mainFramePanel, //$$$getRootComponent$$$()
-                                "Pushing Non-Linear Book",
-                                "Initializing...",
-                                0,
-                                100
-                        );
-                        m_progressMonitor.setProgress(0);
-                        m_progressMonitor.setMillisToDecideToPopup(200);
-                        m_progressMonitor.setMillisToPopup(200);
-                        m_task = new PushTask(dialog.getUserName(), dialog.getPassword());
-                        m_task.addPropertyChangeListener(mainFrame);
-                        m_pushButton.setEnabled(false);
-                        m_task.execute();
-                    }
+                    startTransfer(true, null);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(
                             m_mainFramePanel,

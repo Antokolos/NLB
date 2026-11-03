@@ -112,6 +112,11 @@ public class GitAdapterWithPathDecoration implements VCSAdapter {
     }
 
     @Override
+    public String getRemoteUrl() {
+        return m_gitAdapter.getRemoteUrl();
+    }
+
+    @Override
     public Author getCommitter() {
         return m_gitAdapter.getCommitter();
     }

@@ -63,6 +63,13 @@
             <artifactId>slf4j-api</artifactId>
             <version>2.0.16</version>
         </dependency>
+        <!-- системное хранилище секретов (токен git): Windows Credential Manager, связка ключей
+             macOS, libsecret в Linux — прямыми вызовами, без установки git и других программ -->
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>5.14.0</version>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-reload4j</artifactId>

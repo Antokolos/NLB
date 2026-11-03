@@ -1,5 +1,6 @@
 module NLBL {
     requires java.logging;
+    requires java.prefs;
 
     requires transitive java.desktop;
     requires transitive java.scripting;
@@ -12,6 +13,7 @@ module NLBL {
     requires org.mozilla.rhino;
     requires org.eclipse.jgit;
     requires com.fasterxml.jackson.databind;
+    requires com.sun.jna;
 
     exports com.nlbhub.nlb.api;
     exports com.nlbhub.nlb.api.config;
@@ -25,8 +27,11 @@ module NLBL {
     exports com.nlbhub.nlb.player;
     exports com.nlbhub.nlb.util;
     exports com.nlbhub.nlb.vcs;
+    exports com.nlbhub.nlb.vcs.secrets;
     exports name.fraser.neil.plaintext;
 
     opens com.nlbhub.nlb.api.config to jakarta.xml.bind;
     opens com.nlbhub.nlb.domain to jakarta.xml.bind;
+    // JNA читает и пишет поля структур (SecretSchema, CREDENTIAL) через отражение
+    opens com.nlbhub.nlb.vcs.secrets to com.sun.jna;
 }
