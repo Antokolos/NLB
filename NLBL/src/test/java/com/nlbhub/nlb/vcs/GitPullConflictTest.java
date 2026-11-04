@@ -33,6 +33,7 @@ import static org.junit.Assert.fail;
  */
 public class GitPullConflictTest {
     private static final String TEXT = "pages/p1/text/en";
+    private static final String LINK = "pages/p1/links/L0";
     private Path m_dir;
     private File m_server;
     private File m_mine;
@@ -48,6 +49,12 @@ public class GitPullConflictTest {
             write(seed, TEXT, "The shelves are empty.");
             write(seed, "pages/p1/coords/left", "100.0");
             write(seed, "pages/p2/text/en", "Gate.");
+            write(seed, "pages/p2/coords/left", "500.0");
+            // ссылка L0 со страницы p1
+            write(seed, "pages/p1/lnkorder", "L0");
+            write(seed, LINK + "/target", "p2");
+            write(seed, LINK + "/text/en", "To the gate");
+            write(seed, LINK + "/coords/left", "1.0");
             git.add().addFilepattern(".").call();
             commit(git, "book");
             git.push().call();
@@ -188,6 +195,10 @@ public class GitPullConflictTest {
     }
 
     private void pullChoosing(VCSAdapter.ConflictChoice choice) throws Exception {
+        pullChoosing(choice, TEXT);
+    }
+
+    private void pullChoosing(VCSAdapter.ConflictChoice choice, String listed) throws Exception {
         final GitAdapter adapter = adapter();
         try {
             adapter.pull(null, null, new DummyProgressData(), choice);
@@ -199,7 +210,7 @@ public class GitPullConflictTest {
             assertEquals(RepositoryState.SAFE, git.getRepository().getRepositoryState());
             final org.eclipse.jgit.revwalk.RevCommit head = git.log().setMaxCount(1).call().iterator().next();
             assertEquals("коммит слияния", 2, head.getParentCount());
-            assertTrue(head.getFullMessage(), head.getFullMessage().contains(TEXT));
+            assertTrue(head.getFullMessage(), head.getFullMessage().contains(listed));
             assertFalse("без служебных строк JGit", head.getFullMessage().contains("# Conflicts"));
         }
     }
@@ -245,6 +256,89 @@ public class GitPullConflictTest {
         assertEquals("My text.", read(m_mine, TEXT));
         pullChoosing(VCSAdapter.ConflictChoice.THEIRS);
         assertFalse("взято удаление", new File(m_mine, TEXT).exists());
+    }
+
+    private void pullQuietly() throws Exception {
+        final GitAdapter adapter = adapter();
+        try {
+            adapter.pull(null, null, new DummyProgressData());
+        } finally {
+            adapter.closeAdapter();
+        }
+        try (Git git = Git.open(m_mine)) {
+            assertTrue(git.status().call().isClean());
+            assertEquals(RepositoryState.SAFE, git.getRepository().getRepositoryState());
+        }
+    }
+
+    private void edit(File root, String message, String... pathsAndTexts) throws Exception {
+        try (Git git = Git.open(root)) {
+            for (int i = 0; i < pathsAndTexts.length; i += 2) {
+                final File file = new File(root, pathsAndTexts[i]);
+                if (pathsAndTexts[i + 1] == null) {
+                    org.eclipse.jgit.util.FileUtils.delete(file, org.eclipse.jgit.util.FileUtils.RECURSIVE);
+                } else {
+                    write(root, pathsAndTexts[i], pathsAndTexts[i + 1]);
+                }
+            }
+            git.add().addFilepattern(".").call();
+            git.add().setUpdate(true).addFilepattern(".").call();
+            commit(git, message);
+            if (root.equals(m_theirs)) {
+                git.push().call();
+            }
+        }
+    }
+
+    @Test
+    public void linksAddedByBothAndPageMovedByBothMergeSilently() throws Exception {
+        edit(m_theirs, "their link", "pages/p1/links/L2/target", "p2", "pages/p1/links/L2/text/en", "Theirs",
+                "pages/p1/lnkorder", "L0\nL2", "pages/p1/coords/left", "150.0");
+        edit(m_mine, "my link", "pages/p1/links/L1/target", "p2", "pages/p1/links/L1/text/en", "Mine",
+                "pages/p1/lnkorder", "L0\nL1", "pages/p1/coords/left", "200.0");
+        pullQuietly();
+        assertEquals("обе ссылки: наша, затем с сервера", "L0\nL1\nL2", read(m_mine, "pages/p1/lnkorder"));
+        assertEquals("положение на схеме — наше", "200.0", read(m_mine, "pages/p1/coords/left"));
+        assertEquals("Theirs", read(m_mine, "pages/p1/links/L2/text/en"));
+    }
+
+    @Test
+    public void linkDeletedOnServerAndEditedHere() throws Exception {
+        edit(m_theirs, "delete link", LINK, null, "pages/p1/lnkorder", null);
+        edit(m_mine, "edit link", LINK + "/text/en", "To the open gate");
+        final GitAdapter adapter = adapter();
+        try {
+            adapter.pull(null, null, new DummyProgressData());
+            fail("удалено против изменено — решает автор");
+        } catch (NLBVCSConflictException e) {
+            assertEquals(Collections.singletonList(LINK + "/text/en"), e.getPaths());
+        } finally {
+            adapter.closeAdapter();
+        }
+        pullChoosing(VCSAdapter.ConflictChoice.MINE, LINK + "/text/en");
+        assertEquals("To the open gate", read(m_mine, LINK + "/text/en"));
+        assertEquals("ссылка возвращена целиком", "p2", read(m_mine, LINK + "/target"));
+        assertEquals("1.0", read(m_mine, LINK + "/coords/left"));
+        assertEquals("и в порядке ссылок", "L0", read(m_mine, "pages/p1/lnkorder"));
+    }
+
+    @Test
+    public void linkDeletedOnServerAndEditedHereTakeTheirs() throws Exception {
+        edit(m_theirs, "delete link", LINK, null, "pages/p1/lnkorder", null);
+        // у себя: правка текста и новая модификация ссылки — удаляется вместе со ссылкой
+        edit(m_mine, "edit link", LINK + "/text/en", "To the open gate", LINK + "/modifications/M1/type", "ASSIGN",
+                LINK + "/modorder", "M1");
+        pullChoosing(VCSAdapter.ConflictChoice.THEIRS, LINK + "/text/en");
+        assertFalse("ссылки нет целиком", new File(m_mine, LINK).exists());
+        assertFalse(new File(m_mine, "pages/p1/lnkorder").exists());
+    }
+
+    @Test
+    public void pageDeletedOnServerAndMovedHere() throws Exception {
+        edit(m_theirs, "delete page", "pages/p2", null);
+        edit(m_mine, "move page", "pages/p2/coords/left", "600.0");
+        pullQuietly();
+        assertFalse("страница удалена — подвинуть её не повод спрашивать", new File(m_mine, "pages/p2").exists());
     }
 
     private void theirEdits() throws Exception {

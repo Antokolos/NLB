@@ -684,14 +684,31 @@ public class GitAdapter implements VCSAdapter {
                     "The changes on the server touch the same parts of the book as your saved but not committed "
                             + "changes. Nothing is changed. Commit your changes first, then pull again.");
         }
-        boolean resolved = false;
-        if (result.getMergeStatus() == org.eclipse.jgit.api.MergeResult.MergeStatus.CONFLICTING
-                && choice != null && choice != ConflictChoice.NONE) {
-            takeWholeFiles(result.getConflicts().keySet(), choice == ConflictChoice.MINE ? 2 : 3);
-            resolved = true;
+        org.eclipse.jgit.api.MergeResult.MergeStatus status = result.getMergeStatus();
+        java.util.Set<String> chosen = Collections.emptySet();
+        if (status == org.eclipse.jgit.api.MergeResult.MergeStatus.CONFLICTING) {
+            // механическое (порядок, положение на схеме) — само; остальное — как выбрал автор
+            final java.util.Set<String> remaining = autoResolve(result.getConflicts().keySet(), before, theirs.getObjectId());
+            if (remaining.isEmpty()) {
+                status = org.eclipse.jgit.api.MergeResult.MergeStatus.MERGED_NOT_COMMITTED;
+            } else if (choice != null && choice != ConflictChoice.NONE) {
+                takeWholeFiles(remaining, choice == ConflictChoice.MINE ? 2 : 3, before, theirs.getObjectId());
+                chosen = remaining;
+                status = org.eclipse.jgit.api.MergeResult.MergeStatus.MERGED_NOT_COMMITTED;
+            } else {
+                final List<String> paths = new ArrayList<>(remaining);
+                abortMerge(before, theirs.getObjectId());
+                throw new NLBVCSConflictException(
+                        "Your changes and the changes on the server touch the same parts of the book, so they "
+                                + "cannot be merged automatically. Nothing is changed: the book is as it was before pull.",
+                        paths, false
+                );
+            }
         }
-        switch (resolved ? org.eclipse.jgit.api.MergeResult.MergeStatus.MERGED_NOT_COMMITTED : result.getMergeStatus()) {
+        switch (status) {
             case MERGED_NOT_COMMITTED:
+                // списки ссылок и модификаций — ровно по папкам (иначе книга не откроется)
+                reconcileOrders();
                 final Author committer = getCommitter() != null ? getCommitter() : m_author;
                 String message = m_localRepo.readMergeCommitMsg();
                 // MERGE_MSG JGit дописывает строками-комментариями «# Conflicts:» — git их убирает, мы тоже
@@ -699,10 +716,10 @@ public class GitAdapter implements VCSAdapter {
                 if (message.isEmpty()) {
                     message = "Merge changes from the server";
                 }
-                if (resolved) {
+                if (!chosen.isEmpty()) {
                     message += "\n\nOverlapping changes: " + (choice == ConflictChoice.MINE
                             ? "kept the local versions" : "took the versions from the server") + " of\n"
-                            + String.join("\n", new java.util.TreeSet<>(result.getConflicts().keySet()));
+                            + String.join("\n", chosen);
                 }
                 m_git
                         .commit()
@@ -713,15 +730,6 @@ public class GitAdapter implements VCSAdapter {
                         .setMessage(message)
                         .call();
                 return;
-            case CONFLICTING:
-                final List<String> paths = new ArrayList<>(result.getConflicts().keySet());
-                Collections.sort(paths);
-                abortMerge(before, theirs.getObjectId());
-                throw new NLBVCSConflictException(
-                        "Your changes and the changes on the server touch the same parts of the book, so they "
-                                + "cannot be merged automatically. Nothing is changed: the book is as it was before pull.",
-                        paths, false
-                );
             case FAILED:
                 // настоящее (не перемотка) слияние JGit начинает только без незакоммиченных правок
                 // в индексе — любых, не только пересекающихся; файлы он не трогал
@@ -737,10 +745,164 @@ public class GitAdapter implements VCSAdapter {
     }
 
     /**
-     * Пересёкшиеся файлы — целиком с одной стороны слияния (stage 2 — наша версия, 3 — с
-     * сервера); удалён на той стороне — удалить. Остальное слияние уже сделало
+     * Решить механические пересечения ({@link BookMergeRules}): списки id — объединением,
+     * положение на схеме — наше; удалено на одной стороне (элемент удалён), а на другой только
+     * подвинуто — удаление, если других пересечений у этого элемента нет (иначе — вместе с ними,
+     * как выберет автор)
+     *
+     * @return пересечения, которые решает автор
      */
-    private void takeWholeFiles(final java.util.Set<String> paths, final int stage) throws IOException, GitAPIException {
+    private java.util.Set<String> autoResolve(final java.util.Set<String> conflicts, final ObjectId ours,
+                                              final ObjectId theirs) throws IOException, GitAPIException {
+        final java.util.Map<String, String[]> stages = conflictStages(conflicts);
+        final java.util.Set<String> remaining = new java.util.TreeSet<>();
+        for (String path : conflicts) {
+            if (BookMergeRules.isCoords(path)) {
+                final String node = path.substring(0, path.lastIndexOf("/coords/"));
+                boolean otherConflicts = false;
+                for (String other : conflicts) {
+                    if (other.startsWith(node + "/") && !BookMergeRules.isCoords(other)) {
+                        otherConflicts = true;
+                        break;
+                    }
+                }
+                final String[] versions = stages.get(path);
+                if (versions[1] != null && versions[2] != null) {
+                    writeResolved(path, versions[1]);
+                } else if (!otherConflicts) {
+                    // элемент удалён на одной стороне, на другой только подвинут — удалить целиком
+                    takeWholeFiles(Collections.singleton(path), versions[1] == null ? 2 : 3, ours, theirs);
+                } else {
+                    remaining.add(path);
+                }
+            } else if (BookMergeRules.isList(path)) {
+                final String[] versions = stages.get(path);
+                final String merged = BookMergeRules.mergeList(versions[0], versions[1], versions[2]);
+                writeResolved(path, merged.isEmpty() ? null : merged);
+            } else {
+                remaining.add(path);
+            }
+        }
+        return remaining;
+    }
+
+    /**
+     * Содержимое пересёкшихся файлов по стадиям индекса: [0] — общий предок, [1] — наше, [2] — с
+     * сервера; null — нет на этой стороне
+     */
+    private java.util.Map<String, String[]> conflictStages(final java.util.Set<String> paths) throws IOException {
+        final java.util.Map<String, String[]> result = new java.util.HashMap<>();
+        for (String path : paths) {
+            result.put(path, new String[3]);
+        }
+        final org.eclipse.jgit.dircache.DirCache cache = m_localRepo.readDirCache();
+        for (int i = 0; i < cache.getEntryCount(); i++) {
+            final org.eclipse.jgit.dircache.DirCacheEntry entry = cache.getEntry(i);
+            final String[] versions = result.get(entry.getPathString());
+            if (versions != null && entry.getStage() >= 1 && entry.getStage() <= 3) {
+                versions[entry.getStage() - 1] = new String(
+                        m_localRepo.open(entry.getObjectId()).getBytes(), java.nio.charset.StandardCharsets.UTF_8);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Записать решённый файл и отметить решённым в индексе; null — удалить
+     */
+    private void writeResolved(final String path, final String content) throws IOException, GitAPIException {
+        final File file = new File(m_localRepo.getWorkTree(), path);
+        if (content == null) {
+            if (file.isFile() && !file.delete()) {
+                throw new IOException("Cannot remove " + file);
+            }
+            m_git.rm().setCached(true).addFilepattern(path).call();
+        } else {
+            file.getParentFile().mkdirs();
+            java.nio.file.Files.write(file.toPath(), content.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            m_git.add().addFilepattern(path).call();
+        }
+    }
+
+    /**
+     * Сверить lnkorder и modorder каждого элемента с папками его ссылок и модификаций (см.
+     * {@link BookMergeRules#reconcile}); расхождения исправить в рабочей копии и индексе
+     */
+    private void reconcileOrders() throws IOException, GitAPIException {
+        // элемент -> вид (links / modifications) -> id по папкам
+        final java.util.Map<String, java.util.Map<String, java.util.Set<String>>> items = new java.util.TreeMap<>();
+        final org.eclipse.jgit.dircache.DirCache cache = m_localRepo.readDirCache();
+        for (int i = 0; i < cache.getEntryCount(); i++) {
+            final String path = cache.getEntry(i).getPathString();
+            final String[] parts = path.split("/");
+            for (int k = 1; k + 2 < parts.length; k++) {
+                if ("links".equals(parts[k]) || "modifications".equals(parts[k])) {
+                    final String item = String.join("/", Arrays.copyOfRange(parts, 0, k));
+                    items.computeIfAbsent(item, x -> new java.util.HashMap<>())
+                            .computeIfAbsent(parts[k], x -> new java.util.HashSet<>()).add(parts[k + 1]);
+                }
+            }
+            if (path.endsWith("/lnkorder") || path.endsWith("/modorder")) {
+                final String item = path.substring(0, path.lastIndexOf('/'));
+                items.computeIfAbsent(item, x -> new java.util.HashMap<>())
+                        .computeIfAbsent(path.endsWith("/lnkorder") ? "links" : "modifications", x -> new java.util.HashSet<>());
+            }
+        }
+        for (java.util.Map.Entry<String, java.util.Map<String, java.util.Set<String>>> item : items.entrySet()) {
+            for (java.util.Map.Entry<String, java.util.Set<String>> kind : item.getValue().entrySet()) {
+                final String orderPath = item.getKey() + "/" + ("links".equals(kind.getKey()) ? "lnkorder" : "modorder");
+                final File orderFile = new File(m_localRepo.getWorkTree(), orderPath);
+                final String current = orderFile.isFile()
+                        ? new String(java.nio.file.Files.readAllBytes(orderFile.toPath()), java.nio.charset.StandardCharsets.UTF_8)
+                        : "";
+                final List<String> order = BookMergeRules.split(current);
+                final List<String> fixed = BookMergeRules.reconcile(order, kind.getValue());
+                if (!fixed.equals(order)) {
+                    LOGGER.info("Merge: {} corrected to match the existing {}", orderPath, kind.getKey());
+                    writeResolved(orderPath, fixed.isEmpty() ? null : BookMergeRules.join(fixed));
+                }
+            }
+        }
+    }
+
+    /**
+     * Пересёкшиеся файлы — целиком с одной стороны слияния (stage 2 — наша версия, 3 — с
+     * сервера). Удалено на одной стороне, изменено на другой — решается для элемента книги
+     * целиком (страница, объект, ссылка, модификация, переменная): git сообщает о пересечении
+     * только по изменённому файлу, а остальные файлы удалённого элемента убирает молча, так что
+     * «оставить» — вернуть весь элемент с выбранной стороны, «удалить» — убрать его весь (и то,
+     * что в нём успели добавить). Иначе осталась бы, например, ссылка из одного текста — без
+     * цели и координат, и книга не открылась бы
+     *
+     * @param ours   наш коммит (HEAD до слияния)
+     * @param theirs коммит сервера
+     */
+    private void takeWholeFiles(final java.util.Set<String> paths, final int stage, final ObjectId ours,
+                                final ObjectId theirs) throws IOException, GitAPIException {
+        final java.util.Map<String, String[]> stages = conflictStages(paths);
+        final java.util.Set<String> simple = new java.util.TreeSet<>();
+        final java.util.Set<String> removed = new java.util.TreeSet<>();
+        final java.util.Map<String, RevTree> restored = new java.util.TreeMap<>();
+        try (RevWalk walk = new RevWalk(m_localRepo)) {
+            final RevTree ourTree = walk.parseCommit(ours).getTree();
+            final RevTree theirTree = walk.parseCommit(theirs).getTree();
+            for (String path : paths) {
+                final String[] versions = stages.get(path);
+                final boolean chosenHas = versions[stage - 1] != null;
+                final boolean otherHas = versions[stage == 2 ? 2 : 1] != null;
+                if (chosenHas && otherHas) {
+                    simple.add(path);
+                    continue;
+                }
+                final RevTree deleting = chosenHas ? (stage == 2 ? theirTree : ourTree) : (stage == 2 ? ourTree : theirTree);
+                final String element = deletedElement(path, deleting);
+                if (chosenHas) {
+                    restored.put(element, stage == 2 ? ourTree : theirTree);
+                } else {
+                    removed.add(element);
+                }
+            }
+        }
         final List<String> files = new ArrayList<>();
         final org.eclipse.jgit.dircache.DirCache cache = m_localRepo.lockDirCache();
         try {
@@ -748,9 +910,12 @@ public class GitAdapter implements VCSAdapter {
             for (int i = 0; i < cache.getEntryCount(); i++) {
                 final org.eclipse.jgit.dircache.DirCacheEntry entry = cache.getEntry(i);
                 final String path = entry.getPathString();
-                if (!paths.contains(path)) {
+                if (under(path, removed) || under(path, restored.keySet())) {
+                    continue;
+                }
+                if (!simple.contains(path) && !paths.contains(path)) {
                     builder.add(entry);
-                } else if (entry.getStage() == stage) {
+                } else if (simple.contains(path) && entry.getStage() == stage) {
                     final org.eclipse.jgit.dircache.DirCacheEntry chosen = new org.eclipse.jgit.dircache.DirCacheEntry(path);
                     chosen.setFileMode(entry.getFileMode());
                     chosen.setObjectId(entry.getObjectId());
@@ -760,20 +925,84 @@ public class GitAdapter implements VCSAdapter {
                     }
                 }
             }
+            for (java.util.Map.Entry<String, RevTree> element : restored.entrySet()) {
+                try (TreeWalk tree = new TreeWalk(m_localRepo)) {
+                    tree.addTree(element.getValue());
+                    tree.setRecursive(true);
+                    tree.setFilter(org.eclipse.jgit.treewalk.filter.PathFilter.create(element.getKey()));
+                    while (tree.next()) {
+                        final org.eclipse.jgit.dircache.DirCacheEntry entry =
+                                new org.eclipse.jgit.dircache.DirCacheEntry(tree.getPathString());
+                        entry.setFileMode(tree.getFileMode(0));
+                        entry.setObjectId(tree.getObjectId(0));
+                        builder.add(entry);
+                        if (!FileMode.GITLINK.equals(tree.getFileMode(0))) {
+                            files.add(tree.getPathString());
+                        }
+                    }
+                }
+            }
             builder.commit();
         } finally {
             cache.unlock();
         }
+        // рабочая копия: удалённое — убрать (и пустые папки), остальное — из индекса
+        final java.util.Set<String> gone = new java.util.TreeSet<>(removed);
         for (String path : paths) {
+            if (!files.contains(path) && !under(path, restored.keySet())) {
+                gone.add(path);
+            }
+        }
+        for (String path : gone) {
             final File file = new File(m_localRepo.getWorkTree(), path);
-            if (!files.contains(path) && file.isFile() && !file.delete()) {
-                LOGGER.warn("Cannot remove {} while merging", file);
+            if (file.exists()) {
+                org.eclipse.jgit.util.FileUtils.delete(file, org.eclipse.jgit.util.FileUtils.RECURSIVE
+                        | org.eclipse.jgit.util.FileUtils.SKIP_MISSING);
             }
         }
         if (!files.isEmpty()) {
-            // рабочие файлы — из индекса (без маркеров конфликта)
             m_git.checkout().addPaths(files).call();
         }
+    }
+
+    /**
+     * Элементы книги, в которых лежит файл, — от внешнего к внутреннему: pages/&lt;id&gt;,
+     * pages/&lt;id&gt;/links/&lt;id&gt;, …/modifications/&lt;id&gt;, objs/…, vars/…, страницы внутренних модулей
+     */
+    private static List<String> elementDirs(final String path) {
+        final String[] parts = path.split("/");
+        final List<String> result = new ArrayList<>();
+        for (int k = 0; k + 2 < parts.length; k++) {
+            if ("pages".equals(parts[k]) || "objs".equals(parts[k]) || "links".equals(parts[k])
+                    || "modifications".equals(parts[k]) || "vars".equals(parts[k])) {
+                result.add(String.join("/", Arrays.copyOfRange(parts, 0, k + 2)));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Что удалила сторона deleting: самый внешний элемент книги с этим файлом, которого в её
+     * версии нет; все есть (удалено только это поле) — сам файл
+     */
+    private String deletedElement(final String path, final RevTree deleting) throws IOException {
+        for (String dir : elementDirs(path)) {
+            try (TreeWalk entry = TreeWalk.forPath(m_localRepo, dir, deleting)) {
+                if (entry == null) {
+                    return dir;
+                }
+            }
+        }
+        return path;
+    }
+
+    private static boolean under(final String path, final java.util.Collection<String> dirs) {
+        for (String dir : dirs) {
+            if (path.equals(dir) || path.startsWith(dir + "/")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static NLBVCSConflictException uncommittedConflict(final List<String> files, final String message) {
