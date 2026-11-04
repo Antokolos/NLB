@@ -1,6 +1,7 @@
 module NLBL {
     requires java.logging;
     requires java.prefs;
+    requires java.net.http;
 
     requires transitive java.desktop;
     requires transitive java.scripting;
