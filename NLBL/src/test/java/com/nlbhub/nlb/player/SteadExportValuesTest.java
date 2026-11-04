@@ -15,6 +15,7 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -48,6 +49,33 @@ public class SteadExportValuesTest {
         expr.setTarget(page.getId() + ";" + mod.getId());
         mod.setExprId(expr.getId());
         page.addModification(mod);
+    }
+
+    /**
+     * Плеер — как INSTEAD на экспорте той же книги: «2.5 2 5 1» (снято в sdl-instead 3.3.2):
+     * PRN выражения, размер списка после PUSH в конец и INJECT в начало, POP с конца
+     */
+    @Test
+    public void playerPrintsWhatInsteadPrints() {
+        final TestBook book = new TestBook();
+        final PageImpl start = book.page("Старт");
+        modification(book, start, Modification.Type.ASSIGN, "codeValue", Variable.DataType.AUTO, "10");
+        modification(book, start, Modification.Type.ASSIGN, "codePos", Variable.DataType.AUTO, "4");
+        modification(book, start, Modification.Type.PRN, null, Variable.DataType.AUTO, "codeValue / codePos");
+        modification(book, start, Modification.Type.PUSH, "list", Variable.DataType.AUTO, "codePos + 1");
+        modification(book, start, Modification.Type.INJECT, "list", Variable.DataType.AUTO, "1");
+        modification(book, start, Modification.Type.SIZE, "sz", Variable.DataType.AUTO, "list");
+        modification(book, start, Modification.Type.PRN, null, Variable.DataType.AUTO, "sz");
+        modification(book, start, Modification.Type.POP, "x", Variable.DataType.AUTO, "list");
+        modification(book, start, Modification.Type.PRN, null, Variable.DataType.AUTO, "x");
+        modification(book, start, Modification.Type.POP, "y", Variable.DataType.AUTO, "list");
+        modification(book, start, Modification.Type.PRN, null, Variable.DataType.AUTO, "y");
+        final PlayerEngine engine = book.start();
+        final StringBuilder printed = new StringBuilder();
+        for (ScreenModel.Paragraph paragraph : engine.screen().getModText()) {
+            printed.append(paragraph.getText()).append(' ');
+        }
+        assertEquals("2.5 2 5 1", printed.toString().trim());
     }
 
     @Test

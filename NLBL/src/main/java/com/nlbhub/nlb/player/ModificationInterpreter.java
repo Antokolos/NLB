@@ -577,7 +577,19 @@ public class ModificationInterpreter {
         if (!listName.equals(name) || m_context.listExists(listName)) {
             return LIST_REF_PREFIX + listName;
         }
-        return m_context.getVar(name).toDisplayString();
+        // константа или выражение (list INJECT 1, list PUSH codePos + 1) — его значение, как
+        // в экспорте (ExportManager.decorateValue, #300)
+        return isPlainName(name) ? m_context.getVar(name).toDisplayString() : evaluate(name).toDisplayString();
+    }
+
+    private static final Pattern PLAIN_NAME = Pattern.compile("[\\p{L}_][\\p{L}\\p{N}_]*");
+
+    /**
+     * Просто имя (переменной, объекта, списка), а не константа и не выражение
+     */
+    private static boolean isPlainName(String value) {
+        final String trimmed = value == null ? "" : value.trim();
+        return PLAIN_NAME.matcher(trimmed).matches() && !"true".equals(trimmed) && !"false".equals(trimmed);
     }
 
     private void printText(String text) {
@@ -1030,7 +1042,10 @@ public class ModificationInterpreter {
                 m_context.listShuffle(exprList);
                 break;
             case PRN:
-                printText(m_context.getVar(exprValue).toDisplayString());
+                // PRN codeValue / codePos — значение выражения, как в экспорте (#299)
+                printText(isPlainName(exprValue)
+                        ? m_context.getVar(exprValue).toDisplayString()
+                        : evaluate(exprValue).toDisplayString());
                 break;
             case DSC: {
                 requireVar(mod, var);
