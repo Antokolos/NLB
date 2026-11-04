@@ -2294,6 +2294,27 @@ public abstract class ExportManager {
         return decorateNumberVar(constraintVar);
     }
 
+    private static final Pattern PLAIN_NAME = Pattern.compile("[\\p{L}_][\\p{L}\\p{N}_]*");
+
+    /**
+     * Значение — просто имя переменной (или объекта), а не константа и не выражение
+     */
+    private static boolean isPlainName(final String value) {
+        if (value == null) {
+            return false;
+        }
+        final String trimmed = value.trim();
+        return PLAIN_NAME.matcher(trimmed).matches() && !"true".equals(trimmed) && !"false".equals(trimmed);
+    }
+
+    /**
+     * Значение для PUSH и INJECT: имя переменной — как раньше; константа или выражение (list INJECT
+     * 1) — выражением, а не именем «_1» (#300)
+     */
+    private String decorateValue(final String value) throws NLBConsistencyException {
+        return isPlainName(value) ? decorateAutoVar(value) : translateExpressionBody(value).getExpressionPart();
+    }
+
     private String buildModificationsText(
             final String indentString,
             final List<Modification> modifications,
@@ -2610,7 +2631,7 @@ public abstract class ExportManager {
                                     decoratePushOperation(
                                             decorateAutoVar(variable.getName()),
                                             objIdToPush,
-                                            decorateAutoVar(expression.getValue())
+                                            decorateValue(expression.getValue())
                                     )
                             );
                         } else {
@@ -2639,7 +2660,7 @@ public abstract class ExportManager {
                                     decorateInjectOperation(
                                             decorateAutoVar(variable.getName()),
                                             objIdToInject,
-                                            decorateAutoVar(expression.getValue())
+                                            decorateValue(expression.getValue())
                                     )
                             );
                         } else {
@@ -2663,18 +2684,23 @@ public abstract class ExportManager {
                         break;
                     case PRN:
                         String prnArg;
-                        switch (expression.getDataType()) {
-                            case STRING:
-                                prnArg = decorateStringVar(expression.getValue());
-                                break;
-                            case BOOLEAN:
-                                prnArg = decorateBooleanVar(expression.getValue());
-                                break;
-                            case NUMBER:
-                                prnArg = decorateNumberVar(expression.getValue());
-                                break;
-                            default:
-                                prnArg = decorateAutoVar(expression.getValue());
+                        if (!isPlainName(expression.getValue())) {
+                            // не имя переменной (codeValue / codePos, 1, "текст") — выражение (#299)
+                            prnArg = translateExpressionBody(expression.getValue()).getExpressionPart();
+                        } else {
+                            switch (expression.getDataType()) {
+                                case STRING:
+                                    prnArg = decorateStringVar(expression.getValue());
+                                    break;
+                                case BOOLEAN:
+                                    prnArg = decorateBooleanVar(expression.getValue());
+                                    break;
+                                case NUMBER:
+                                    prnArg = decorateNumberVar(expression.getValue());
+                                    break;
+                                default:
+                                    prnArg = decorateAutoVar(expression.getValue());
+                            }
                         }
                         stringBuilder.append(decoratePRNOperation(prnArg));
                         break;
