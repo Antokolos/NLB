@@ -124,6 +124,11 @@ public class GitAdapterWithPathDecoration implements VCSAdapter {
     }
 
     @Override
+    public java.util.List<RestoredElement> getRestoredByLastPull() {
+        return m_gitAdapter.getRestoredByLastPull();
+    }
+
+    @Override
     public void setRemoteUrl(final String url) throws NLBVCSException {
         m_gitAdapter.setRemoteUrl(url);
     }

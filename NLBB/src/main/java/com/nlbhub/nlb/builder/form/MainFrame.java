@@ -49,6 +49,7 @@ import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.exception.*;
 import com.nlbhub.nlb.vcs.Author;
 import com.nlbhub.nlb.vcs.GitHubPublisher;
+import com.nlbhub.nlb.vcs.RestoredElement;
 import com.nlbhub.nlb.vcs.VCSAdapter;
 import com.nlbhub.nlb.vcs.secrets.RemoteCredentials;
 import com.nlbhub.nlb.vcs.secrets.SecretStoreException;
@@ -74,7 +75,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.Map;
@@ -289,8 +292,11 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 showPublished(m_publication);
             }
             if (!m_push) {
-                // книга после pull — заново с диска
-                m_task = new OpenTask(getMainPaneInfo().getPaneNlbFacade().getNlb().getRootDir());
+                // книга после pull — заново с диска; восстановленное слиянием — сказать, когда откроется
+                final List<RestoredElement> restored = m_error == null
+                        ? getMainPaneInfo().getPaneNlbFacade().getRestoredByLastPull() : Collections.emptyList();
+                m_task = new OpenTask(getMainPaneInfo().getPaneNlbFacade().getNlb().getRootDir(),
+                        restored.isEmpty() ? null : () -> showRestored(restored));
                 m_task.addPropertyChangeListener(m_listener);
                 m_openFileButton.setEnabled(false);
                 m_task.execute();
@@ -707,6 +713,34 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     }
 
     /**
+     * Pull слил правки, но кое-что пришлось вернуть: удалённое на одной стороне нужно правкам
+     * другой (ссылка соавтора на удалённую вами страницу, ссылка в ней и т. п.)
+     */
+    private void showRestored(final List<RestoredElement> restored) {
+        final NonLinearBook book = getMainPaneInfo().getPaneNlbFacade().getNlb();
+        final StringBuilder text = new StringBuilder("<html>The changes are merged. To keep the book whole, "
+                + "some deleted parts were restored.<br>");
+        for (boolean locally : new boolean[]{true, false}) {
+            boolean header = false;
+            for (RestoredElement element : restored) {
+                if (element.isDeletedLocally() != locally) {
+                    continue;
+                }
+                if (!header) {
+                    text.append("<br><b>").append(locally
+                            ? "Deleted by you, but your co-author's changes use them:"
+                            : "Deleted by your co-author, but your changes use them:").append("</b><br>");
+                    header = true;
+                }
+                text.append("&nbsp;&nbsp;&bull; ").append(BookFilePaths.describe(book, element.getPath())
+                        .replace("&", "&amp;").replace("<", "&lt;")).append("<br>");
+            }
+        }
+        text.append("<br>If they are not needed, delete them again (together with the links to them).</html>");
+        JOptionPane.showMessageDialog(m_mainFramePanel, new JLabel(text.toString()), "Pull", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /**
      * Хранилище учётных данных git (создаётся при первом pull/push: подгружает системную библиотеку)
      */
     private RemoteCredentials m_credentials = null;
@@ -801,9 +835,18 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
 
     class OpenTask extends Task {
         private File m_file;
+        /**
+         * Что сделать, когда книга открыта (в потоке Swing), или null
+         */
+        private final Runnable m_afterOpen;
 
         OpenTask(File file) {
+            this(file, null);
+        }
+
+        OpenTask(File file, Runnable afterOpen) {
             m_file = file;
+            m_afterOpen = afterOpen;
         }
 
         @Override
@@ -846,6 +889,9 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         public void done() {
             super.done();
             m_openFileButton.setEnabled(true);
+            if (m_afterOpen != null) {
+                m_afterOpen.run();
+            }
         }
     }
 

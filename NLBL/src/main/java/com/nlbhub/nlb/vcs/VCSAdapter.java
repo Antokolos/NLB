@@ -145,6 +145,14 @@ public interface VCSAdapter {
     }
 
     /**
+     * Что последний pull восстановил, чтобы книга осталась целой (см. {@link RestoredElement});
+     * пусто — ничего
+     */
+    public default java.util.List<RestoredElement> getRestoredByLastPull() {
+        return java.util.Collections.emptyList();
+    }
+
+    /**
      * Записать адрес сервера книги (remote origin) и связать с ним текущую ветку (для pull);
      * null — убрать адрес
      */
