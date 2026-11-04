@@ -423,6 +423,13 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     /**
+     * Что последний pull восстановил, чтобы книга осталась целой
+     */
+    public List<com.nlbhub.nlb.vcs.RestoredElement> getRestoredByLastPull() {
+        return getMainFacade().m_vcsAdapter.getRestoredByLastPull();
+    }
+
+    /**
      * Pull с выбором для пересёкшихся правок (см. {@link com.nlbhub.nlb.vcs.VCSAdapter.ConflictChoice})
      */
     public void pull(final String userName, final String password, final ProgressData progressData,

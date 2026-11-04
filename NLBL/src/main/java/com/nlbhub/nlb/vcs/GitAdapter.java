@@ -612,10 +612,21 @@ public class GitAdapter implements VCSAdapter {
         pull(userName, password, progressData, ConflictChoice.NONE);
     }
 
+    /**
+     * Что восстановил последний pull
+     */
+    private List<RestoredElement> m_restored = Collections.emptyList();
+
+    @Override
+    public List<RestoredElement> getRestoredByLastPull() {
+        return m_restored;
+    }
+
     @Override
     public void pull(String userName, String password, ProgressData progressData, ConflictChoice choice)
             throws NLBVCSException {
         awaitStatuses();
+        m_restored = Collections.emptyList();
         CredentialsProvider provider = credentialsProvider(userName, password);
         progressData.setNoteText("Pulling...");
         ProgressMonitor monitor = new VCSProgressMonitor(progressData);
@@ -707,6 +718,8 @@ public class GitAdapter implements VCSAdapter {
         }
         switch (status) {
             case MERGED_NOT_COMMITTED:
+                // удалённое на одной стороне, но нужное правкам другой — вернуть целиком
+                m_restored = restoreNeeded(before, theirs.getObjectId());
                 // списки ссылок и модификаций — ровно по папкам (иначе книга не откроется)
                 reconcileOrders();
                 final Author committer = getCommitter() != null ? getCommitter() : m_author;
@@ -715,6 +728,14 @@ public class GitAdapter implements VCSAdapter {
                 message = message == null ? "" : message.replaceAll("(?m)^#.*(\\R|$)", "").trim();
                 if (message.isEmpty()) {
                     message = "Merge changes from the server";
+                }
+                if (!m_restored.isEmpty()) {
+                    final StringBuilder restored = new StringBuilder("\n\nRestored (deleted on one side, but needed "
+                            + "by the changes of the other):");
+                    for (RestoredElement element : m_restored) {
+                        restored.append("\n").append(element);
+                    }
+                    message += restored;
                 }
                 if (!chosen.isEmpty()) {
                     message += "\n\nOverlapping changes: " + (choice == ConflictChoice.MINE
@@ -822,6 +843,235 @@ public class GitAdapter implements VCSAdapter {
             java.nio.file.Files.write(file.toPath(), content.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             m_git.add().addFilepattern(path).call();
         }
+    }
+
+    private static final java.util.regex.Pattern UUID = java.util.regex.Pattern.compile(
+            "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
+
+    /**
+     * Целостность после слияния: элемент книги (страница, объект, ссылка, модификация,
+     * переменная, страница внутреннего модуля), который на одной стороне удалили, а другая
+     * сторона в него что-то добавила (остался обрывок) или на него сослалась (цель ссылки, объект
+     * в содержимом, переменная модификации, стартовая страница — любой файл с его id, которого нет
+     * в версии удалившей стороны), — вернуть целиком из версии другой стороны. Удалить снова —
+     * одно действие автора, а потерянную работу соавтора не вернуть. Повторяется, пока
+     * восстановленное само не перестанет ссылаться на удалённое
+     */
+    private List<RestoredElement> restoreNeeded(final ObjectId ours, final ObjectId theirs) throws IOException, GitAPIException {
+        final java.util.Map<String, ObjectId> base;
+        final java.util.Map<String, ObjectId> ourFiles;
+        final java.util.Map<String, ObjectId> theirFiles;
+        final RevTree ourTree;
+        final RevTree theirTree;
+        try (RevWalk walk = new RevWalk(m_localRepo)) {
+            final RevCommit ourCommit = walk.parseCommit(ours);
+            final RevCommit theirCommit = walk.parseCommit(theirs);
+            ourTree = ourCommit.getTree();
+            theirTree = theirCommit.getTree();
+            walk.setRevFilter(org.eclipse.jgit.revwalk.filter.RevFilter.MERGE_BASE);
+            walk.markStart(ourCommit);
+            walk.markStart(theirCommit);
+            final RevCommit baseCommit = walk.next();
+            if (baseCommit == null) {
+                return Collections.emptyList();
+            }
+            base = files(baseCommit.getTree());
+            ourFiles = files(ourTree);
+            theirFiles = files(theirTree);
+        }
+        final java.util.Set<String> baseDirs = elementDirsOf(base.keySet());
+        final java.util.Set<String> ourDirs = elementDirsOf(ourFiles.keySet());
+        final java.util.Set<String> theirDirs = elementDirsOf(theirFiles.keySet());
+        final java.util.Map<String, RestoredElement> restored = new java.util.TreeMap<>();
+        // первый проход — то, что нужно правкам другой стороны (о нём сообщить автору); дальше —
+        // то, что нужно самому восстановленному (переменные его модификаций и т. п.)
+        final java.util.Set<String> reported = new java.util.TreeSet<>();
+        boolean first = true;
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            final java.util.Map<String, ObjectId> merged = indexFiles();
+            final java.util.Set<String> mergedDirs = elementDirsOf(merged.keySet());
+            // удалённое одной стороной (было у предка, есть у другой стороны) — по id
+            final java.util.Map<String, String> deletedById = new java.util.HashMap<>();
+            for (String dir : baseDirs) {
+                final boolean here = ourDirs.contains(dir);
+                final boolean there = theirDirs.contains(dir);
+                if (here != there) {
+                    deletedById.put(dir.substring(dir.lastIndexOf('/') + 1), dir);
+                }
+            }
+            final java.util.Set<String> needed = new java.util.TreeSet<>();
+            // обрывки: удалено одной стороной, а в слиянии что-то от элемента осталось
+            for (String dir : deletedById.values()) {
+                if (mergedDirs.contains(dir)) {
+                    needed.add(dir);
+                }
+            }
+            // ссылки на удалённое, которых нет в версии удалившей стороны
+            for (java.util.Map.Entry<String, ObjectId> file : merged.entrySet()) {
+                final String path = file.getKey();
+                // поля книги (не медиа и не внешние модули), принесённые одной из сторон
+                if (!(path.startsWith("pages/") || path.startsWith("objs/") || path.startsWith("vars/")
+                        || path.indexOf('/') < 0)
+                        || file.getValue().equals(ourFiles.get(path)) && file.getValue().equals(theirFiles.get(path))
+                        || !isSmallText(file.getValue())) {
+                    continue;
+                }
+                final String content = new String(m_localRepo.open(file.getValue()).getBytes(),
+                        java.nio.charset.StandardCharsets.UTF_8);
+                final java.util.regex.Matcher matcher = UUID.matcher(content);
+                while (matcher.find()) {
+                    final String dir = deletedById.get(matcher.group());
+                    if (dir == null || mergedDirs.contains(dir) || under(path, Collections.singleton(dir))) {
+                        continue;
+                    }
+                    final java.util.Map<String, ObjectId> deleting = ourDirs.contains(dir) ? theirFiles : ourFiles;
+                    final ObjectId deletingVersion = deleting.get(path);
+                    if (deletingVersion == null || !deletingVersion.equals(file.getValue())) {
+                        needed.add(dir);
+                    }
+                }
+            }
+            for (String dir : needed) {
+                if (restored.containsKey(dir)) {
+                    continue;
+                }
+                final boolean deletedLocally = !ourDirs.contains(dir);
+                restoreElement(dir, deletedLocally ? theirTree : ourTree);
+                restored.put(dir, new RestoredElement(dir, deletedLocally));
+                if (first) {
+                    reported.add(dir);
+                }
+                LOGGER.info("Merge: restored {}{}", restored.get(dir), first ? "" : " (needed by restored elements)");
+                changed = true;
+            }
+            first = false;
+        }
+        if (!restored.isEmpty()) {
+            addRestoredToContainers(restored.keySet());
+        }
+        // вложенное во восстановленное целиком (ссылка восстановленной страницы) — не перечислять
+        final List<RestoredElement> result = new ArrayList<>();
+        for (String dir : reported) {
+            final java.util.Set<String> others = new java.util.HashSet<>(reported);
+            others.remove(dir);
+            if (!under(dir, others)) {
+                result.add(restored.get(dir));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Восстановленный объект — в содержимое (content) его контейнера, если его там нет
+     */
+    private void addRestoredToContainers(final java.util.Set<String> dirs) throws IOException, GitAPIException {
+        final java.util.Map<String, ObjectId> merged = indexFiles();
+        for (String dir : dirs) {
+            final String[] parts = dir.split("/");
+            if (parts.length < 2 || !"objs".equals(parts[parts.length - 2])) {
+                continue;
+            }
+            final ObjectId containerFile = merged.get(dir + "/containerid");
+            if (containerFile == null) {
+                continue;
+            }
+            final String container = new String(m_localRepo.open(containerFile).getBytes(),
+                    java.nio.charset.StandardCharsets.UTF_8).trim();
+            final String prefix = dir.substring(0, dir.length() - ("objs/" + parts[parts.length - 1]).length());
+            for (String kind : new String[]{"pages/", "objs/"}) {
+                final String containerDir = prefix + kind + container;
+                if (elementDirsOf(merged.keySet()).contains(containerDir)) {
+                    final String contentPath = containerDir + "/content";
+                    final ObjectId content = merged.get(contentPath);
+                    final List<String> ids = BookMergeRules.split(content == null ? null : new String(
+                            m_localRepo.open(content).getBytes(), java.nio.charset.StandardCharsets.UTF_8));
+                    final String id = parts[parts.length - 1];
+                    if (!ids.contains(id)) {
+                        ids.add(id);
+                        writeResolved(contentPath, BookMergeRules.join(ids));
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Элемент целиком из версии tree — в индекс и рабочую копию
+     */
+    private void restoreElement(final String dir, final RevTree tree) throws IOException, GitAPIException {
+        final List<String> files = new ArrayList<>();
+        final org.eclipse.jgit.dircache.DirCache cache = m_localRepo.lockDirCache();
+        try {
+            final org.eclipse.jgit.dircache.DirCacheBuilder builder = cache.builder();
+            for (int i = 0; i < cache.getEntryCount(); i++) {
+                final org.eclipse.jgit.dircache.DirCacheEntry entry = cache.getEntry(i);
+                if (!under(entry.getPathString(), Collections.singleton(dir))) {
+                    builder.add(entry);
+                }
+            }
+            try (TreeWalk walk = new TreeWalk(m_localRepo)) {
+                walk.addTree(tree);
+                walk.setRecursive(true);
+                walk.setFilter(org.eclipse.jgit.treewalk.filter.PathFilter.create(dir));
+                while (walk.next()) {
+                    final org.eclipse.jgit.dircache.DirCacheEntry entry =
+                            new org.eclipse.jgit.dircache.DirCacheEntry(walk.getPathString());
+                    entry.setFileMode(walk.getFileMode(0));
+                    entry.setObjectId(walk.getObjectId(0));
+                    builder.add(entry);
+                    files.add(walk.getPathString());
+                }
+            }
+            builder.commit();
+        } finally {
+            cache.unlock();
+        }
+        if (!files.isEmpty()) {
+            m_git.checkout().addPaths(files).call();
+        }
+    }
+
+    private java.util.Map<String, ObjectId> files(final RevTree tree) throws IOException {
+        final java.util.Map<String, ObjectId> result = new java.util.HashMap<>();
+        try (TreeWalk walk = new TreeWalk(m_localRepo)) {
+            walk.addTree(tree);
+            walk.setRecursive(true);
+            while (walk.next()) {
+                result.put(walk.getPathString(), walk.getObjectId(0));
+            }
+        }
+        return result;
+    }
+
+    private java.util.Map<String, ObjectId> indexFiles() throws IOException {
+        final java.util.Map<String, ObjectId> result = new java.util.HashMap<>();
+        final org.eclipse.jgit.dircache.DirCache cache = m_localRepo.readDirCache();
+        for (int i = 0; i < cache.getEntryCount(); i++) {
+            final org.eclipse.jgit.dircache.DirCacheEntry entry = cache.getEntry(i);
+            if (entry.getStage() == 0) {
+                result.put(entry.getPathString(), entry.getObjectId());
+            }
+        }
+        return result;
+    }
+
+    private static java.util.Set<String> elementDirsOf(final java.util.Collection<String> paths) {
+        final java.util.Set<String> result = new java.util.HashSet<>();
+        for (String path : paths) {
+            if (!path.startsWith("modules/")) {
+                result.addAll(elementDirs(path));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Небольшой файл поля (не картинка и не звук): в нём могут быть id других элементов
+     */
+    private boolean isSmallText(final ObjectId blob) throws IOException {
+        return m_localRepo.getObjectDatabase().open(blob).getSize() <= 64 * 1024;
     }
 
     /**
