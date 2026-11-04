@@ -51,6 +51,7 @@ import com.nlbhub.nlb.vcs.Author;
 import com.nlbhub.nlb.vcs.ConflictResolution;
 import com.nlbhub.nlb.vcs.GitHubPublisher;
 import com.nlbhub.nlb.vcs.RestoredElement;
+import com.nlbhub.nlb.vcs.ServerChanges;
 import com.nlbhub.nlb.vcs.secrets.RemoteCredentials;
 import com.nlbhub.nlb.vcs.secrets.SecretStoreException;
 import com.nlbhub.nlb.util.BareBonesBrowserLaunch;
@@ -255,18 +256,28 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 if (m_fromStore) {
                     credentials().forgetSecret(m_server, m_userName);
                 }
+                m_pushAfterPull = !m_push && m_pushAfterPull;
                 startTransfer(m_push, m_fromStore
                         ? "The server did not accept the saved password or token. Please enter it again."
                         : "The server did not accept the user name and password or token. Please check them.",
                         m_publication, null, null, false, m_resolutions);
                 return;
             }
+            // pull, начатый ради отклонённого push: после него — push (переносится через повторы)
+            final boolean pushAfter = !m_push && m_pushAfterPull;
+            m_pushAfterPull = false;
             if (m_error instanceof NLBVCSConflictException) {
                 // правки пересеклись: книга не изменилась (открывать заново не нужно)
                 final Map<String, ConflictResolution> resolutions = askResolutions((NLBVCSConflictException) m_error);
                 if (resolutions != null) {
+                    m_pushAfterPull = pushAfter;
                     startTransfer(false, null, null, m_userName, m_password, m_remember, resolutions);
                 }
+                return;
+            }
+            if (m_error instanceof NLBVCSPushRejectedException && ((NLBVCSPushRejectedException) m_error).isOfBook()
+                    && m_publication == null) {
+                offerPullThenPush(m_userName, m_password, m_remember);
                 return;
             }
             if (m_error == null && m_server != null) {
@@ -295,12 +306,27 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             if (m_error == null && m_publication != null) {
                 showPublished(m_publication);
             }
+            if (m_push && m_error == null) {
+                checkServer();
+            }
             if (!m_push) {
                 // книга после pull — заново с диска; восстановленное слиянием — сказать, когда откроется
                 final List<RestoredElement> restored = m_error == null
                         ? getMainPaneInfo().getPaneNlbFacade().getRestoredByLastPull() : Collections.emptyList();
+                final boolean thenPush = pushAfter && m_error == null;
+                final String user = m_userName;
+                final String password = m_password;
+                final boolean remember = m_remember;
                 m_task = new OpenTask(getMainPaneInfo().getPaneNlbFacade().getNlb().getRootDir(),
-                        restored.isEmpty() ? null : () -> showRestored(restored));
+                        restored.isEmpty() && !thenPush ? null : () -> {
+                            if (!restored.isEmpty()) {
+                                showRestored(restored);
+                            }
+                            if (thenPush) {
+                                // правки соавтора получены — теперь отправить свои
+                                startTransfer(true, null, null, user, password, remember, null);
+                            }
+                        });
                 m_task.addPropertyChangeListener(m_listener);
                 m_openFileButton.setEnabled(false);
                 m_task.execute();
@@ -701,6 +727,140 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     }
 
     /**
+     * Pull, начатый из-за отклонённого push: после успешного pull (и окна конфликтов, если
+     * правки пересеклись) — снова push
+     */
+    private boolean m_pushAfterPull = false;
+
+    /**
+     * Push отклонён: на сервере правки соавтора, которых нет у автора. Предложить получить их и
+     * отправить снова — одним действием
+     */
+    private void offerPullThenPush(final String user, final String password, final boolean remember) {
+        final NonLinearBookFacade facade = getMainPaneInfo().getPaneNlbFacade();
+        if (facade.hasChanges()) {
+            JOptionPane.showMessageDialog(m_mainFramePanel, "<html>Your co-author has already sent changes to the "
+                    + "server that you do not have yet.<br>Save your book first, then press Push again: the editor "
+                    + "will get those changes and send yours.</html>", "Push", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        final Object[] options = {"Get them and push", "Cancel"};
+        final int answer = JOptionPane.showOptionDialog(m_mainFramePanel,
+                "<html>Your co-author has already sent changes to the server that you do not have yet,<br>"
+                        + "so the server did not accept yours. Nothing is lost.<br><br>"
+                        + "<b>Get them and push</b>: their changes are merged into your book (if you both changed "
+                        + "the same parts,<br>you will choose what to keep), then your changes are sent.</html>",
+                "Push", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        if (answer != 0) {
+            return;
+        }
+        m_pushAfterPull = true;
+        startTransfer(false, null, null, user, password, remember, null);
+    }
+
+    /**
+     * Надпись на панели: на сервере есть правки, которых нет у автора (щелчок — Pull)
+     */
+    private final JLabel m_serverChanges = new JLabel();
+    private SwingWorker<ServerChanges, Void> m_serverCheck = null;
+
+    /**
+     * Фоновая проверка сервера: после открытия книги и раз в nlb.serverCheckSeconds секунд (по
+     * умолчанию 300; 0 — не проверять по таймеру)
+     */
+    private void setupServerChecks() {
+        m_serverChanges.setVisible(false);
+        m_serverChanges.setOpaque(true);
+        m_serverChanges.setBackground(new Color(0xFFF4C2));
+        m_serverChanges.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xE0C860)), BorderFactory.createEmptyBorder(4, 8, 4, 8)));
+        m_serverChanges.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        m_serverChanges.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (!m_pullButton.isEnabled()) {
+                    JOptionPane.showMessageDialog(m_mainFramePanel, "Save your book first, then get the changes (Pull).");
+                    return;
+                }
+                m_serverChanges.setVisible(false);
+                startTransfer(false, null);
+            }
+        });
+        m_toolbarPanel.add(m_serverChanges);
+        final int seconds = Integer.getInteger("nlb.serverCheckSeconds", 300);
+        if (seconds > 0) {
+            final javax.swing.Timer timer = new javax.swing.Timer(seconds * 1000, e -> checkServer());
+            timer.start();
+        }
+    }
+
+    /**
+     * Проверить сервер в фоне, ничего не спрашивая: учётные данные — только сохранённые (по https
+     * без них — как открытый репозиторий), пароль к ключу ssh — только из хранилища. Не удалось
+     * — молча (сеть, нет прав): при Pull станет ясно. Не во время pull/push/открытия
+     */
+    private void checkServer() {
+        if (m_serverCheck != null && !m_serverCheck.isDone() || m_task != null && !m_task.isDone()) {
+            return;
+        }
+        final NonLinearBookFacade facade = getMainPaneInfo().getPaneNlbFacade();
+        final String url = facade.getRemoteUrl();
+        if (url == null) {
+            showServerChanges(null);
+            return;
+        }
+        final boolean ssh = RemoteCredentials.isSsh(url);
+        final String server = RemoteCredentials.server(url);
+        String user = ssh ? null : credentials().rememberedUser(server);
+        if (user == null && !ssh) {
+            user = RemoteCredentials.userFromUrl(url);
+        }
+        final String secret = ssh ? null : credentials().rememberedSecret(server, user);
+        final String checkUser = secret == null ? null : user;
+        final QuietPrompts prompts = new QuietPrompts(credentials());
+        m_serverCheck = new SwingWorker<ServerChanges, Void>() {
+            @Override
+            protected ServerChanges doInBackground() throws Exception {
+                return facade.checkServer(checkUser, secret, prompts);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    // книга за это время могла смениться — показывать только для той же
+                    if (facade == getMainPaneInfo().getPaneNlbFacade() && url.equals(facade.getRemoteUrl())) {
+                        showServerChanges(get());
+                    }
+                } catch (Exception ex) {
+                    LOGGER.info("Cannot check the server for new changes: {}", String.valueOf(ex.getCause()));
+                }
+            }
+        };
+        m_serverCheck.execute();
+    }
+
+    private void showServerChanges(final ServerChanges changes) {
+        if (changes == null || changes.getCount() == 0) {
+            m_serverChanges.setVisible(false);
+        } else {
+            final String authors = String.join(", ", changes.getAuthors());
+            final String what = changes.getCount() == 1 ? "1 new change" : changes.getCount() + " new changes";
+            m_serverChanges.setText("<html>&#x2B07; <b>" + what + " on the server</b> — "
+                    + escapeHtml(authors) + (changes.getLastMessage() != null
+                    ? ": \u201C" + escapeHtml(changes.getLastMessage()) + "\u201D" : "")
+                    + " &nbsp;<u>Get them</u></html>");
+            m_serverChanges.setToolTipText("Click to get the changes (Pull). Getting them early means fewer overlapping changes.");
+            m_serverChanges.setVisible(true);
+        }
+        m_toolbarPanel.revalidate();
+        m_toolbarPanel.repaint();
+    }
+
+    private static String escapeHtml(final String text) {
+        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    /**
      * Pull слил правки, но кое-что пришлось вернуть: удалённое на одной стороне нужно правкам
      * другой (ссылка соавтора на удалённую вами страницу, ссылка в ней и т. п.)
      */
@@ -880,6 +1040,8 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             if (m_afterOpen != null) {
                 m_afterOpen.run();
             }
+            // книга открыта (или заново после pull) — что нового на сервере
+            checkServer();
         }
     }
 
@@ -1052,6 +1214,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_fileChooser = new JFileChooser();
         //$$$setupUI$$$();
         rearrangeCustomComponents();
+        setupServerChecks();
         m_graphEditorsPane.setTitleAt(0, "Main");
         // правка во вкладке внешнего модуля (копия, не сохраняется) не принимается — объяснить почему
         NonLinearBookFacade.setRefusedChangeNotifier(reason -> SwingUtilities.invokeLater(() -> {

@@ -232,6 +232,15 @@ final class GitSubmodules {
         for (PushResult result : results) {
             for (RemoteRefUpdate update : result.getRemoteUpdates()) {
                 RemoteRefUpdate.Status status = update.getStatus();
+                if (status == RemoteRefUpdate.Status.REJECTED_NONFASTFORWARD
+                        || status == RemoteRefUpdate.Status.REJECTED_REMOTE_CHANGED) {
+                    // на сервере есть чужие коммиты — сначала получить их
+                    throw new com.nlbhub.nlb.exception.NLBVCSPushRejectedException(
+                            "The server already has changes to " + what + " that you do not have yet. "
+                                    + "Pull first, then push again.",
+                            "the book".equals(what)
+                    );
+                }
                 if (status != RemoteRefUpdate.Status.OK && status != RemoteRefUpdate.Status.UP_TO_DATE) {
                     throw new NLBVCSException(
                             "Push of " + what + " was rejected (" + update.getRemoteName() + ": " + status

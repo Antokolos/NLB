@@ -423,6 +423,14 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     /**
+     * Новое на сервере (фоновая проверка); null — проверить нельзя
+     */
+    public com.nlbhub.nlb.vcs.ServerChanges checkServer(final String userName, final String password,
+                                                        final com.nlbhub.nlb.vcs.VCSPrompts prompts) throws NLBVCSException {
+        return getMainFacade().m_vcsAdapter.checkServer(userName, password, prompts);
+    }
+
+    /**
      * Что последний pull восстановил, чтобы книга осталась целой
      */
     public List<com.nlbhub.nlb.vcs.RestoredElement> getRestoredByLastPull() {

@@ -135,6 +135,11 @@ public class GitAdapterWithPathDecoration implements VCSAdapter {
     }
 
     @Override
+    public ServerChanges checkServer(String userName, String password, VCSPrompts prompts) throws NLBVCSException {
+        return m_gitAdapter.checkServer(userName, password, prompts);
+    }
+
+    @Override
     public void setRemoteUrl(final String url) throws NLBVCSException {
         m_gitAdapter.setRemoteUrl(url);
     }

@@ -155,6 +155,15 @@ public interface VCSAdapter {
     }
 
     /**
+     * Есть ли на сервере то, чего нет у автора: скачать сведения (fetch — книга и её файлы не
+     * меняются) и сосчитать новые коммиты ветки сервера. Для фоновой проверки: prompts — вопросы
+     * по ssh (фоновая проверка ничего не спрашивает). null — проверить нельзя (нет VCS или адреса)
+     */
+    public default ServerChanges checkServer(String userName, String password, VCSPrompts prompts) throws NLBVCSException {
+        return null;
+    }
+
+    /**
      * Что последний pull восстановил, чтобы книга осталась целой (см. {@link RestoredElement});
      * пусто — ничего
      */
