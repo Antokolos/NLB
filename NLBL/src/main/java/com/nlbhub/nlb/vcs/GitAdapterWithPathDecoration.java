@@ -118,6 +118,12 @@ public class GitAdapterWithPathDecoration implements VCSAdapter {
     }
 
     @Override
+    public void pull(String userName, String password, ProgressData progressData, ConflictChoice choice)
+            throws NLBVCSException {
+        m_gitAdapter.pull(userName, password, progressData, choice);
+    }
+
+    @Override
     public void setRemoteUrl(final String url) throws NLBVCSException {
         m_gitAdapter.setRemoteUrl(url);
     }

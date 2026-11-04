@@ -44,10 +44,12 @@ import com.nlbhub.nlb.builder.model.LinkSelectionData;
 import com.nlbhub.nlb.builder.view.BulkSelectionHandler;
 import com.nlbhub.nlb.builder.view.GraphEditor;
 import com.nlbhub.nlb.builder.view.TabComponent;
+import com.nlbhub.nlb.domain.BookFilePaths;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.exception.*;
 import com.nlbhub.nlb.vcs.Author;
 import com.nlbhub.nlb.vcs.GitHubPublisher;
+import com.nlbhub.nlb.vcs.VCSAdapter;
 import com.nlbhub.nlb.vcs.secrets.RemoteCredentials;
 import com.nlbhub.nlb.vcs.secrets.SecretStoreException;
 import com.nlbhub.nlb.util.BareBonesBrowserLaunch;
@@ -73,6 +75,8 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.Map;
 
 /**
@@ -186,11 +190,14 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         private final PropertyChangeListener m_listener;
         private final boolean m_ssh;
         private final Publication m_publication;
+        private final VCSAdapter.ConflictChoice m_choice;
         private Exception m_error = null;
 
         TransferTask(boolean push, String server, String userName, String password, boolean fromStore, boolean remember,
-                     PropertyChangeListener listener, boolean ssh, Publication publication) {
+                     PropertyChangeListener listener, boolean ssh, Publication publication,
+                     VCSAdapter.ConflictChoice choice) {
             m_ssh = ssh;
+            m_choice = choice;
             m_publication = publication;
             m_push = push;
             m_server = server;
@@ -209,7 +216,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 if (m_push) {
                     facade.push(m_userName, m_password, this);
                 } else {
-                    facade.pull(m_userName, m_password, this);
+                    facade.pull(m_userName, m_password, this, m_choice);
                 }
                 setProgressValue(100);
             } catch (Exception ex) {
@@ -244,7 +251,15 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 startTransfer(m_push, m_fromStore
                         ? "The server did not accept the saved password or token. Please enter it again."
                         : "The server did not accept the user name and password or token. Please check them.",
-                        m_publication, null, null, false);
+                        m_publication, null, null, false, m_choice);
+                return;
+            }
+            if (m_error instanceof NLBVCSConflictException) {
+                // правки пересеклись: книга не изменилась (открывать заново не нужно)
+                final VCSAdapter.ConflictChoice choice = askConflictChoice((NLBVCSConflictException) m_error);
+                if (choice != VCSAdapter.ConflictChoice.NONE) {
+                    startTransfer(false, null, null, m_userName, m_password, m_remember, choice);
+                }
                 return;
             }
             if (m_error == null && m_server != null) {
@@ -647,6 +662,51 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     }
 
     /**
+     * Pull не слил правки (книга не изменилась): какие части книги пересеклись — словами автора; что
+     * делать. Пересеклись закоммиченные правки — оставить свои версии этих частей или взять с
+     * сервера (остальное сольётся как обычно); незакоммиченные — сначала Commit
+     *
+     * @return NONE — ничего не делать
+     */
+    private VCSAdapter.ConflictChoice askConflictChoice(final NLBVCSConflictException conflict) {
+        final NonLinearBook book = getMainPaneInfo().getPaneNlbFacade().getNlb();
+        final Set<String> parts = new LinkedHashSet<>();
+        for (String path : conflict.getPaths()) {
+            parts.add(BookFilePaths.describe(book, path));
+        }
+        final JList<String> list = new JList<>(parts.toArray(new String[0]));
+        list.setVisibleRowCount(Math.min(10, Math.max(3, parts.size())));
+        final JScrollPane scroll = new JScrollPane(list);
+        scroll.setPreferredSize(new Dimension(620, scroll.getPreferredSize().height));
+        final JPanel panel = new JPanel(new BorderLayout(0, 8));
+        if (conflict.isUncommitted()) {
+            panel.add(new JLabel("<html>The changes on the server cannot be merged while you have saved but not "
+                    + "committed changes.<br>Nothing is changed. Press <b>Commit</b>, then <b>Pull</b> again.<br><br>"
+                    + "Not committed:</html>"), BorderLayout.NORTH);
+            panel.add(scroll, BorderLayout.CENTER);
+            JOptionPane.showMessageDialog(m_mainFramePanel, panel, "Pull", JOptionPane.WARNING_MESSAGE);
+            return VCSAdapter.ConflictChoice.NONE;
+        }
+        panel.add(new JLabel("<html>You and your co-author changed the same parts of the book.<br>"
+                + "<b>Nothing is changed yet</b> — the book is as it was before Pull.<br><br>"
+                + "Changed by both:</html>"), BorderLayout.NORTH);
+        panel.add(scroll, BorderLayout.CENTER);
+        panel.add(new JLabel("<html>Choose whose version of <b>these parts</b> to keep. All other changes from the "
+                + "server<br>are merged as usual. The version you do not keep stays in the history.<br>"
+                + "Not sure? Cancel and agree with your co-author first.</html>"), BorderLayout.SOUTH);
+        final Object[] options = {"Keep my versions", "Take versions from the server", "Cancel"};
+        final int answer = JOptionPane.showOptionDialog(m_mainFramePanel, panel, "Pull: overlapping changes",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[2]);
+        if (answer == 0) {
+            return VCSAdapter.ConflictChoice.MINE;
+        }
+        if (answer == 1) {
+            return VCSAdapter.ConflictChoice.THEIRS;
+        }
+        return VCSAdapter.ConflictChoice.NONE;
+    }
+
+    /**
      * Хранилище учётных данных git (создаётся при первом pull/push: подгружает системную библиотеку)
      */
     private RemoteCredentials m_credentials = null;
@@ -663,15 +723,22 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
      * null), иначе — спросить
      */
     private void startTransfer(final boolean push, final String message) {
-        startTransfer(push, message, null, null, null, false);
+        startTransfer(push, message, null, null, null, false, VCSAdapter.ConflictChoice.NONE);
+    }
+
+    private void startTransfer(final boolean push, final String message, final Publication publication,
+                               final String presetUser, final String presetSecret, final boolean presetRemember) {
+        startTransfer(push, message, publication, presetUser, presetSecret, presetRemember, VCSAdapter.ConflictChoice.NONE);
     }
 
     /**
      * @param publication публикация книги (первый push) или null
-     * @param presetUser  учётные данные, уже известные (токен GitHub из публикации), или null
+     * @param presetUser  учётные данные, уже известные (токен GitHub из публикации, повтор pull), или null
+     * @param choice      pull: как решать пересёкшиеся правки
      */
     private void startTransfer(final boolean push, final String message, final Publication publication,
-                               final String presetUser, final String presetSecret, final boolean presetRemember) {
+                               final String presetUser, final String presetSecret, final boolean presetRemember,
+                               final VCSAdapter.ConflictChoice choice) {
         final String action = publication != null ? "Publish" : push ? "Push" : "Pull";
         final String url = getMainPaneInfo().getPaneNlbFacade().getRemoteUrl();
         final boolean ssh = RemoteCredentials.isSsh(url);
@@ -713,7 +780,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_progressMonitor.setProgress(0);
         m_progressMonitor.setMillisToDecideToPopup(200);
         m_progressMonitor.setMillisToPopup(200);
-        m_task = new TransferTask(push, server, user, secret, fromStore, remember, this, ssh, publication);
+        m_task = new TransferTask(push, server, user, secret, fromStore, remember, this, ssh, publication, choice);
         m_task.addPropertyChangeListener(this);
         (push ? m_pushButton : m_pullButton).setEnabled(false);
         if (publication != null) {
