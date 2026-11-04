@@ -129,6 +129,22 @@ public interface VCSAdapter {
     }
 
     /**
+     * Как решать пересёкшиеся правки при pull: NONE — не сливать (ошибка
+     * {@link com.nlbhub.nlb.exception.NLBVCSConflictException}, книга как была), MINE / THEIRS —
+     * пересёкшиеся части книги (файлы-поля) целиком из нашей версии или с сервера, остальное
+     * сливается как обычно
+     */
+    public enum ConflictChoice {NONE, MINE, THEIRS}
+
+    /**
+     * Pull с выбором для пересёкшихся правок
+     */
+    public default void pull(String userName, String password, ProgressData progressData, ConflictChoice choice)
+            throws NLBVCSException {
+        pull(userName, password, progressData);
+    }
+
+    /**
      * Записать адрес сервера книги (remote origin) и связать с ним текущую ветку (для pull);
      * null — убрать адрес
      */

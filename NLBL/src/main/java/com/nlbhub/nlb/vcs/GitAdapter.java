@@ -40,6 +40,7 @@ package com.nlbhub.nlb.vcs;
 
 import com.nlbhub.nlb.api.ProgressData;
 import com.nlbhub.nlb.exception.NLBVCSAuthenticationException;
+import com.nlbhub.nlb.exception.NLBVCSConflictException;
 import com.nlbhub.nlb.exception.NLBVCSException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.DetachedHeadException;
@@ -608,17 +609,24 @@ public class GitAdapter implements VCSAdapter {
 
     @Override
     public void pull(String userName, String password, ProgressData progressData) throws NLBVCSException {
+        pull(userName, password, progressData, ConflictChoice.NONE);
+    }
+
+    @Override
+    public void pull(String userName, String password, ProgressData progressData, ConflictChoice choice)
+            throws NLBVCSException {
         awaitStatuses();
         CredentialsProvider provider = credentialsProvider(userName, password);
         progressData.setNoteText("Pulling...");
         ProgressMonitor monitor = new VCSProgressMonitor(progressData);
         try {
             m_git
-                    .pull()
+                    .fetch()
                     .setRemote("origin")
                     .setCredentialsProvider(provider)
                     .setProgressMonitor(monitor)
                     .call();
+            mergeFetched(monitor, choice);
             // Analogous to `git clean -fd` command. It is needed to remove empty directories that can remain after
             // `git pull` command.
             m_git
@@ -638,6 +646,200 @@ public class GitAdapter implements VCSAdapter {
         } catch (GitAPIException | IOException e) {
             throw transferError("pulling from", e);
         }
+    }
+
+    /**
+     * Вторая половина pull — слияние скачанной ветки сервера с нашей. Не через PullCommand: тот
+     * при пересечении правок оставлял в файлах книги маркеры конфликта (<<<<<<<) и незавершённое
+     * слияние, а коммит слияния делал сам — с подписью по настройкам git пользователя (на
+     * gpg.format=ssh JGit падает). Здесь: слияние без коммита; удалось — коммит от того, кто
+     * коммитит книгу, без подписи; правки пересеклись — книга возвращается к состоянию до pull
+     * и {@link NLBVCSConflictException} называет пересёкшиеся файлы
+     */
+    private void mergeFetched(final ProgressMonitor monitor, final ConflictChoice choice)
+            throws GitAPIException, IOException, NLBVCSException {
+        final String branch = m_localRepo.getBranch();
+        String upstream = m_localRepo.getConfig().getString(ConfigConstants.CONFIG_BRANCH_SECTION, branch,
+                ConfigConstants.CONFIG_KEY_MERGE);
+        if (upstream == null) {
+            upstream = Constants.R_HEADS + branch;
+        }
+        final Ref theirs = m_localRepo.exactRef(Constants.R_REMOTES + "origin/" + Repository.shortenRefName(upstream));
+        if (theirs == null) {
+            return;  // на сервере этой ветки ещё нет — сливать нечего
+        }
+        final ObjectId before = m_localRepo.resolve(Constants.HEAD);
+        final org.eclipse.jgit.api.MergeResult result;
+        try {
+            result = m_git
+                    .merge()
+                    .include(theirs)
+                    .setCommit(false)
+                    .setFastForward(org.eclipse.jgit.api.MergeCommand.FastForwardMode.FF)
+                    .setProgressMonitor(monitor)
+                    .call();
+        } catch (org.eclipse.jgit.api.errors.CheckoutConflictException e) {
+            // перемотка вперёд упёрлась в сохранённые, но не закоммиченные правки тех же файлов
+            throw uncommittedConflict(e.getConflictingPaths(),
+                    "The changes on the server touch the same parts of the book as your saved but not committed "
+                            + "changes. Nothing is changed. Commit your changes first, then pull again.");
+        }
+        boolean resolved = false;
+        if (result.getMergeStatus() == org.eclipse.jgit.api.MergeResult.MergeStatus.CONFLICTING
+                && choice != null && choice != ConflictChoice.NONE) {
+            takeWholeFiles(result.getConflicts().keySet(), choice == ConflictChoice.MINE ? 2 : 3);
+            resolved = true;
+        }
+        switch (resolved ? org.eclipse.jgit.api.MergeResult.MergeStatus.MERGED_NOT_COMMITTED : result.getMergeStatus()) {
+            case MERGED_NOT_COMMITTED:
+                final Author committer = getCommitter() != null ? getCommitter() : m_author;
+                String message = m_localRepo.readMergeCommitMsg();
+                // MERGE_MSG JGit дописывает строками-комментариями «# Conflicts:» — git их убирает, мы тоже
+                message = message == null ? "" : message.replaceAll("(?m)^#.*(\\R|$)", "").trim();
+                if (message.isEmpty()) {
+                    message = "Merge changes from the server";
+                }
+                if (resolved) {
+                    message += "\n\nOverlapping changes: " + (choice == ConflictChoice.MINE
+                            ? "kept the local versions" : "took the versions from the server") + " of\n"
+                            + String.join("\n", new java.util.TreeSet<>(result.getConflicts().keySet()));
+                }
+                m_git
+                        .commit()
+                        .setSign(false)
+                        .setGpgConfig(new GpgConfig(new Config()))
+                        .setAuthor(committer.getName(), committer.getEmail())
+                        .setCommitter(committer.getName(), committer.getEmail())
+                        .setMessage(message)
+                        .call();
+                return;
+            case CONFLICTING:
+                final List<String> paths = new ArrayList<>(result.getConflicts().keySet());
+                Collections.sort(paths);
+                abortMerge(before, theirs.getObjectId());
+                throw new NLBVCSConflictException(
+                        "Your changes and the changes on the server touch the same parts of the book, so they "
+                                + "cannot be merged automatically. Nothing is changed: the book is as it was before pull.",
+                        paths, false
+                );
+            case FAILED:
+                // настоящее (не перемотка) слияние JGit начинает только без незакоммиченных правок
+                // в индексе — любых, не только пересекающихся; файлы он не трогал
+                throw uncommittedConflict(result.getFailingPaths() == null
+                                ? Collections.emptyList() : new ArrayList<>(result.getFailingPaths().keySet()),
+                        "Your saved changes are not committed yet, and the changes on the server have to be merged "
+                                + "with yours. Nothing is changed. Commit your changes first, then pull again.");
+            default:
+                if (!result.getMergeStatus().isSuccessful()) {
+                    throw new NLBVCSException("Cannot merge the changes from the server: " + result.getMergeStatus());
+                }
+        }
+    }
+
+    /**
+     * Пересёкшиеся файлы — целиком с одной стороны слияния (stage 2 — наша версия, 3 — с
+     * сервера); удалён на той стороне — удалить. Остальное слияние уже сделало
+     */
+    private void takeWholeFiles(final java.util.Set<String> paths, final int stage) throws IOException, GitAPIException {
+        final List<String> files = new ArrayList<>();
+        final org.eclipse.jgit.dircache.DirCache cache = m_localRepo.lockDirCache();
+        try {
+            final org.eclipse.jgit.dircache.DirCacheBuilder builder = cache.builder();
+            for (int i = 0; i < cache.getEntryCount(); i++) {
+                final org.eclipse.jgit.dircache.DirCacheEntry entry = cache.getEntry(i);
+                final String path = entry.getPathString();
+                if (!paths.contains(path)) {
+                    builder.add(entry);
+                } else if (entry.getStage() == stage) {
+                    final org.eclipse.jgit.dircache.DirCacheEntry chosen = new org.eclipse.jgit.dircache.DirCacheEntry(path);
+                    chosen.setFileMode(entry.getFileMode());
+                    chosen.setObjectId(entry.getObjectId());
+                    builder.add(chosen);
+                    if (!FileMode.GITLINK.equals(entry.getFileMode())) {
+                        files.add(path);
+                    }
+                }
+            }
+            builder.commit();
+        } finally {
+            cache.unlock();
+        }
+        for (String path : paths) {
+            final File file = new File(m_localRepo.getWorkTree(), path);
+            if (!files.contains(path) && file.isFile() && !file.delete()) {
+                LOGGER.warn("Cannot remove {} while merging", file);
+            }
+        }
+        if (!files.isEmpty()) {
+            // рабочие файлы — из индекса (без маркеров конфликта)
+            m_git.checkout().addPaths(files).call();
+        }
+    }
+
+    private static NLBVCSConflictException uncommittedConflict(final List<String> files, final String message) {
+        final List<String> paths = new ArrayList<>(files);
+        Collections.sort(paths);
+        return new NLBVCSConflictException(message, paths, true);
+    }
+
+    /**
+     * Как `git merge --abort`: вернуть к HEAD до слияния только файлы, которые трогало слияние
+     * (изменённые на сервере с общего предка), и убрать состояние слияния. Остальные файлы не
+     * трогаются (незакоммиченных правок в индексе здесь нет: с ними слияние не начинается — FAILED)
+     */
+    private void abortMerge(final ObjectId before, final ObjectId theirs) throws IOException, GitAPIException {
+        final List<String> touched = new ArrayList<>();
+        try (RevWalk walk = new RevWalk(m_localRepo)) {
+            final RevCommit ours = walk.parseCommit(before);
+            final RevCommit their = walk.parseCommit(theirs);
+            walk.setRevFilter(org.eclipse.jgit.revwalk.filter.RevFilter.MERGE_BASE);
+            walk.markStart(ours);
+            walk.markStart(their);
+            final RevCommit base = walk.next();
+            try (TreeWalk tree = new TreeWalk(m_localRepo)) {
+                tree.setRecursive(true);
+                if (base != null) {
+                    tree.addTree(base.getTree());
+                } else {
+                    tree.addTree(new org.eclipse.jgit.treewalk.EmptyTreeIterator());
+                }
+                tree.addTree(their.getTree());
+                tree.setFilter(org.eclipse.jgit.treewalk.filter.TreeFilter.ANY_DIFF);
+                while (tree.next()) {
+                    touched.add(tree.getPathString());
+                }
+            }
+        }
+        if (!touched.isEmpty()) {
+            // индекс (с ним — стадии конфликта) этих путей — как в HEAD
+            final org.eclipse.jgit.api.ResetCommand reset = m_git.reset().setRef(before.name());
+            touched.forEach(reset::addPath);
+            reset.call();
+            // рабочие файлы: есть в HEAD — оттуда, нет — удалить (их добавил сервер)
+            final List<String> inHead = new ArrayList<>();
+            try (RevWalk walk = new RevWalk(m_localRepo)) {
+                final RevTree head = walk.parseCommit(before).getTree();
+                for (String path : touched) {
+                    try (TreeWalk entry = TreeWalk.forPath(m_localRepo, path, head)) {
+                        if (entry != null) {
+                            if (!FileMode.GITLINK.equals(entry.getFileMode(0))) {
+                                inHead.add(path);
+                            }
+                        } else {
+                            final File file = new File(m_localRepo.getWorkTree(), path);
+                            if (file.isFile() && !file.delete()) {
+                                LOGGER.warn("Cannot remove {} after the failed merge", file);
+                            }
+                        }
+                    }
+                }
+            }
+            if (!inHead.isEmpty()) {
+                m_git.checkout().setStartPoint(before.name()).addPaths(inHead).call();
+            }
+        }
+        m_localRepo.writeMergeHeads(null);
+        m_localRepo.writeMergeCommitMsg(null);
     }
 
     @Override
