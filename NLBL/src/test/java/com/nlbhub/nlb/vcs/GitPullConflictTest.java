@@ -442,6 +442,71 @@ public class GitPullConflictTest {
         assertEquals("L0", read(m_mine, "pages/p1/lnkorder"));
     }
 
+    private void annaCommits(String path, String text, String message) throws Exception {
+        try (Git git = Git.open(m_theirs)) {
+            write(m_theirs, path, text);
+            git.add().addFilepattern(".").call();
+            git.commit().setAuthor("Anna", "anna@example.org").setCommitter("Anna", "anna@example.org")
+                    .setMessage(message).setSign(false).setGpgConfig(new GpgConfig(new Config())).call();
+            git.push().call();
+        }
+    }
+
+    @Test
+    public void serverCheckCountsNewChangesAndTouchesNothing() throws Exception {
+        final GitAdapter adapter = adapter();
+        try {
+            assertEquals(0, adapter.checkServer(null, null, null).getCount());
+            annaCommits("pages/p2/text/en", "The gate is open.", "Gate");
+            annaCommits("pages/p2/text/en", "The gate is wide open.", "Gate again\n\ndetails");
+            myCommit(TEXT, "My text.");
+            final ObjectId head;
+            try (Git git = Git.open(m_mine)) {
+                head = git.getRepository().resolve("HEAD");
+            }
+            final ServerChanges changes = adapter.checkServer(null, null, null);
+            assertEquals(2, changes.getCount());
+            assertEquals(Collections.singletonList("Anna"), changes.getAuthors());
+            assertEquals("Gate again", changes.getLastMessage());
+            assertTrue(changes.getLastTime() > 0);
+            // книга не тронута
+            assertEquals("Gate.", read(m_mine, "pages/p2/text/en"));
+            try (Git git = Git.open(m_mine)) {
+                assertEquals(head, git.getRepository().resolve("HEAD"));
+                assertTrue(git.status().call().isClean());
+            }
+            adapter.pull(null, null, new DummyProgressData());
+            assertEquals("после pull нового нет (коммит слияния не в счёт)", 0, adapter.checkServer(null, null, null).getCount());
+        } finally {
+            adapter.closeAdapter();
+        }
+    }
+
+    @Test
+    public void pushRejectedWhileServerHasNewChanges() throws Exception {
+        annaCommits("pages/p2/text/en", "The gate is open.", "Gate");
+        myCommit(TEXT, "My text.");
+        final GitAdapter adapter = adapter();
+        try {
+            try {
+                adapter.push(null, null, new DummyProgressData());
+                fail("на сервере чужие коммиты");
+            } catch (com.nlbhub.nlb.exception.NLBVCSPushRejectedException e) {
+                assertTrue(e.isOfBook());
+            }
+            adapter.pull(null, null, new DummyProgressData());
+            adapter.push(null, null, new DummyProgressData());
+        } finally {
+            adapter.closeAdapter();
+        }
+        try (Git server = Git.open(m_server)) {
+            assertEquals("My text.", new String(server.getRepository().open(
+                    org.eclipse.jgit.treewalk.TreeWalk.forPath(server.getRepository(), TEXT,
+                            server.getRepository().parseCommit(server.getRepository().resolve("refs/heads/master")).getTree())
+                            .getObjectId(0)).getBytes(), StandardCharsets.UTF_8));
+        }
+    }
+
     private void theirEdits() throws Exception {
         try (Git git = Git.open(m_theirs)) {
             write(m_theirs, TEXT, "Their text.");

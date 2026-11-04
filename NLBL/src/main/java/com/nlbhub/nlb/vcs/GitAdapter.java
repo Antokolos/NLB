@@ -375,7 +375,7 @@ public class GitAdapter implements VCSAdapter {
     }
 
     @Override
-    public void commit(final String message, final Author author) throws NLBVCSException {
+    public synchronized void commit(final String message, final Author author) throws NLBVCSException {
         awaitStatuses();
         try {
             // новые коммиты внешних модулей (подмодулей) — тоже часть commit книги
@@ -465,9 +465,14 @@ public class GitAdapter implements VCSAdapter {
     }
 
     private CredentialsProvider credentialsProvider(final String url, final String userName, final String password) {
+        return credentialsProvider(url, userName, password, m_prompts);
+    }
+
+    private CredentialsProvider credentialsProvider(final String url, final String userName, final String password,
+                                                    final VCSPrompts prompts) {
         if (RemoteCredentials.isSsh(url)) {
             useSshHome();
-            return new SshCredentialsProvider(m_prompts);
+            return new SshCredentialsProvider(prompts);
         }
         return new UsernamePasswordCredentialsProvider(userName == null ? "" : userName, password == null ? "" : password);
     }
@@ -558,6 +563,60 @@ public class GitAdapter implements VCSAdapter {
     }
 
     /**
+     * Фоновая проверка сервера: fetch (только refs/remotes/origin/* и объекты — книга, индекс и
+     * рабочие файлы не меняются) и новые коммиты ветки сервера, которых нет в HEAD. Синхронно с
+     * pull/push/commit этого адаптера (один репозиторий)
+     */
+    @Override
+    public synchronized ServerChanges checkServer(final String userName, final String password, final VCSPrompts prompts)
+            throws NLBVCSException {
+        final String url = getRemoteUrl();
+        if (m_localRepo == null || url == null) {
+            return null;
+        }
+        final CredentialsProvider provider = RemoteCredentials.isSsh(url) || userName != null
+                ? credentialsProvider(url, userName, password, prompts) : null;
+        try {
+            m_git.fetch().setRemote("origin").setCredentialsProvider(provider).call();
+            final String branch = m_localRepo.getBranch();
+            String upstream = m_localRepo.getConfig().getString(ConfigConstants.CONFIG_BRANCH_SECTION, branch,
+                    ConfigConstants.CONFIG_KEY_MERGE);
+            if (upstream == null) {
+                upstream = Constants.R_HEADS + branch;
+            }
+            final Ref theirs = m_localRepo.exactRef(Constants.R_REMOTES + "origin/" + Repository.shortenRefName(upstream));
+            final ObjectId head = m_localRepo.resolve(Constants.HEAD);
+            if (theirs == null) {
+                return new ServerChanges(0, Collections.emptyList(), null, 0);
+            }
+            int count = 0;
+            final java.util.LinkedHashSet<String> authors = new java.util.LinkedHashSet<>();
+            String lastMessage = null;
+            long lastTime = 0;
+            try (RevWalk walk = new RevWalk(m_localRepo)) {
+                walk.markStart(walk.parseCommit(theirs.getObjectId()));
+                if (head != null) {
+                    walk.markUninteresting(walk.parseCommit(head));
+                }
+                for (RevCommit commit : walk) {
+                    // коммиты слияния — не правки, их не считать и не показывать
+                    if (commit.getParentCount() < 2) {
+                        if (count == 0) {
+                            lastMessage = commit.getShortMessage();
+                            lastTime = commit.getAuthorIdent().getWhenAsInstant().toEpochMilli();
+                        }
+                        count++;
+                        authors.add(commit.getAuthorIdent().getName());
+                    }
+                }
+            }
+            return new ServerChanges(count, new ArrayList<>(authors), lastMessage, lastTime);
+        } catch (GitAPIException | IOException e) {
+            throw transferError("checking", e);
+        }
+    }
+
+    /**
      * Ошибка pull/push: если сервер не принял учётные данные — {@link NLBVCSAuthenticationException}
      * (редактор забудет сохранённый токен и спросит снова)
      */
@@ -634,8 +693,8 @@ public class GitAdapter implements VCSAdapter {
         pull(userName, password, progressData, ConflictChoice.NONE, resolutions);
     }
 
-    private void pull(String userName, String password, ProgressData progressData, ConflictChoice choice,
-                      java.util.Map<String, ConflictResolution> resolutions) throws NLBVCSException {
+    private synchronized void pull(String userName, String password, ProgressData progressData, ConflictChoice choice,
+                                   java.util.Map<String, ConflictResolution> resolutions) throws NLBVCSException {
         awaitStatuses();
         m_restored = Collections.emptyList();
         CredentialsProvider provider = credentialsProvider(userName, password);
@@ -1474,7 +1533,7 @@ public class GitAdapter implements VCSAdapter {
     }
 
     @Override
-    public void push(String userName, String password, final ProgressData progressData) throws NLBVCSException {
+    public synchronized void push(String userName, String password, final ProgressData progressData) throws NLBVCSException {
         awaitStatuses();
         CredentialsProvider provider = credentialsProvider(userName, password);
         progressData.setNoteText("Pushing...");
