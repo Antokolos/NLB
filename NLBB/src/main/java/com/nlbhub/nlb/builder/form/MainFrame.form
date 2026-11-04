@@ -169,6 +169,17 @@
                   <text value=""/>
                 </properties>
               </component>
+              <component id="b7e21" class="javax.swing.JButton" binding="m_publishButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/publish.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                  <toolTipText value="publish the book: create a repository on GitHub (or use an empty one on any server) and push the book there"/>
+                </properties>
+              </component>
             </children>
           </toolbar>
           <toolbar id="9a138">

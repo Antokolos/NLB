@@ -387,6 +387,32 @@ public class NonLinearBookFacade implements NLBObservable {
     /**
      * Вопросы к автору при pull/push по ssh (пароль к ключу, незнакомый сервер)
      */
+    /**
+     * Публикация: записать адрес сервера книги (null — убрать)
+     */
+    public void setRemoteUrl(final String url) throws NLBVCSException {
+        getMainFacade().m_vcsAdapter.setRemoteUrl(url);
+    }
+
+    /**
+     * В репозитории книги есть коммиты (иначе публиковать нечего)
+     */
+    public boolean hasCommits() throws NLBVCSException {
+        return getMainFacade().m_vcsAdapter.hasCommits();
+    }
+
+    /**
+     * Книга или её правленые внешние модули сохранены, но не закоммичены
+     */
+    public boolean hasUncommittedChanges() throws NLBVCSException {
+        for (final NonLinearBookFacade facade : getMainFacade().allModuleFacades()) {
+            if (facade.m_externalModuleUncommitted) {
+                return true;
+            }
+        }
+        return getMainFacade().m_vcsAdapter.hasUncommittedChanges();
+    }
+
     public void setVcsPrompts(final com.nlbhub.nlb.vcs.VCSPrompts prompts) {
         getMainFacade().m_vcsAdapter.setPrompts(prompts);
     }

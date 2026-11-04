@@ -498,6 +498,64 @@ public class GitAdapter implements VCSAdapter {
         return m_localRepo == null ? null : m_localRepo.getConfig().getString("remote", "origin", "url");
     }
 
+    @Override
+    public void setRemoteUrl(final String url) throws NLBVCSException {
+        if (m_localRepo == null) {
+            throw new NLBVCSException("The book repository is not open: save the book first");
+        }
+        try {
+            final StoredConfig config = m_localRepo.getConfig();
+            final String branch = m_localRepo.getBranch();
+            if (url == null) {
+                config.unsetSection(ConfigConstants.CONFIG_REMOTE_SECTION, "origin");
+                if (branch != null && "origin".equals(config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, branch,
+                        ConfigConstants.CONFIG_KEY_REMOTE))) {
+                    config.unset(ConfigConstants.CONFIG_BRANCH_SECTION, branch, ConfigConstants.CONFIG_KEY_REMOTE);
+                    config.unset(ConfigConstants.CONFIG_BRANCH_SECTION, branch, ConfigConstants.CONFIG_KEY_MERGE);
+                }
+            } else {
+                // как `git remote add origin <url>` и `git push -u origin <ветка>`
+                config.setString(ConfigConstants.CONFIG_REMOTE_SECTION, "origin", ConfigConstants.CONFIG_KEY_URL, url.trim());
+                config.setString(ConfigConstants.CONFIG_REMOTE_SECTION, "origin", "fetch",
+                        "+refs/heads/*:refs/remotes/origin/*");
+                if (branch != null && !ObjectId.isId(branch)) {
+                    config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, branch, ConfigConstants.CONFIG_KEY_REMOTE, "origin");
+                    config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, branch, ConfigConstants.CONFIG_KEY_MERGE,
+                            Constants.R_HEADS + branch);
+                }
+            }
+            config.save();
+        } catch (IOException e) {
+            throw new NLBVCSException("Cannot save the address of the server in the Git settings of the book", e);
+        }
+    }
+
+    @Override
+    public boolean hasCommits() throws NLBVCSException {
+        if (m_localRepo == null) {
+            return false;
+        }
+        try {
+            return m_localRepo.resolve(Constants.HEAD) != null;
+        } catch (IOException e) {
+            throw new NLBVCSException("Cannot read the Git repository of the book", e);
+        }
+    }
+
+    @Override
+    public boolean hasUncommittedChanges() throws NLBVCSException {
+        if (m_git == null) {
+            return false;
+        }
+        awaitStatuses();
+        try {
+            final org.eclipse.jgit.api.Status status = m_git.status().call();
+            return !status.getAdded().isEmpty() || !status.getChanged().isEmpty() || !status.getRemoved().isEmpty();
+        } catch (GitAPIException e) {
+            throw new NLBVCSException("Cannot read the status of the Git repository of the book", e);
+        }
+    }
+
     /**
      * Ошибка pull/push: если сервер не принял учётные данные — {@link NLBVCSAuthenticationException}
      * (редактор забудет сохранённый токен и спросит снова)

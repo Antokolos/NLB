@@ -47,6 +47,7 @@ import com.nlbhub.nlb.builder.view.TabComponent;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.exception.*;
 import com.nlbhub.nlb.vcs.Author;
+import com.nlbhub.nlb.vcs.GitHubPublisher;
 import com.nlbhub.nlb.vcs.secrets.RemoteCredentials;
 import com.nlbhub.nlb.vcs.secrets.SecretStoreException;
 import com.nlbhub.nlb.util.BareBonesBrowserLaunch;
@@ -138,6 +139,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     private JButton m_exportPNG;
     private JButton m_exportTXT;
     private JButton m_pushButton;
+    private JButton m_publishButton;
     private JButton m_pullButton;
     private JButton m_exportVNSTEAD;
     private JButton m_exportToChoiceScript;
@@ -183,11 +185,13 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         private final boolean m_remember;
         private final PropertyChangeListener m_listener;
         private final boolean m_ssh;
+        private final Publication m_publication;
         private Exception m_error = null;
 
         TransferTask(boolean push, String server, String userName, String password, boolean fromStore, boolean remember,
-                     PropertyChangeListener listener, boolean ssh) {
+                     PropertyChangeListener listener, boolean ssh, Publication publication) {
             m_ssh = ssh;
+            m_publication = publication;
             m_push = push;
             m_server = server;
             m_userName = userName;
@@ -218,8 +222,12 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         public void done() {
             super.done();
             (m_push ? m_pushButton : m_pullButton).setEnabled(true);
+            if (m_publication != null) {
+                m_publishButton.setEnabled(true);
+            }
             final String action = m_push ? "Push" : "Pull";
             if (m_error instanceof NLBVCSAuthenticationException && m_ssh) {
+                publicationFailed(m_publication);
                 // ssh: токен ни при чём — ключ не подошёл или его нет
                 JOptionPane.showMessageDialog(
                         m_mainFramePanel,
@@ -235,7 +243,8 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 }
                 startTransfer(m_push, m_fromStore
                         ? "The server did not accept the saved password or token. Please enter it again."
-                        : "The server did not accept the user name and password or token. Please check them.");
+                        : "The server did not accept the user name and password or token. Please check them.",
+                        m_publication, null, null, false);
                 return;
             }
             if (m_error == null && m_server != null) {
@@ -249,10 +258,20 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 }
             }
             if (m_error != null && !(m_error instanceof NLBVCSAuthenticationException)) {
-                JOptionPane.showMessageDialog(
-                        m_mainFramePanel,
-                        "Error while " + (m_push ? "pushing" : "pulling") + ": " + m_error.toString()
-                );
+                publicationFailed(m_publication);
+                if (m_publication == null) {
+                    JOptionPane.showMessageDialog(
+                            m_mainFramePanel,
+                            "Error while " + (m_push ? "pushing" : "pulling") + ": " + m_error.toString()
+                    );
+                } else {
+                    showPublishError(m_error.getMessage() + "\n\n" + (m_publication.m_created
+                            ? "The repository " + m_publication.m_page + " is created; press Push to try again."
+                            : "The book is not published. Check the address: the repository must exist and be empty."));
+                }
+            }
+            if (m_error == null && m_publication != null) {
+                showPublished(m_publication);
             }
             if (!m_push) {
                 // книга после pull — заново с диска
@@ -402,6 +421,232 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     }
 
     /**
+     * Публикация книги — первый push в новый репозиторий: m_page — страница или адрес
+     * репозитория; m_created — репозиторий создан редактором на GitHub (не удалась отправка —
+     * адрес остаётся, повторить можно кнопкой Push), иначе адрес указал автор (не удалась — адрес
+     * убирается: возможно, в нём ошибка)
+     */
+    static final class Publication {
+        final String m_page;
+        final boolean m_created;
+
+        Publication(String page, boolean created) {
+            m_page = page;
+            m_created = created;
+        }
+    }
+
+    /**
+     * Публикация не удалась или отменена: адрес, который указал автор, — убрать
+     */
+    private void publicationFailed(final Publication publication) {
+        if (publication == null || publication.m_created) {
+            return;
+        }
+        try {
+            getMainPaneInfo().getPaneNlbFacade().setRemoteUrl(null);
+        } catch (Exception ex) {
+            LOGGER.warn("Cannot remove the address of the server", ex);
+        }
+    }
+
+    /**
+     * Ошибка публикации: длинный текст — с переносом строк, а не окном во весь экран
+     */
+    private void showPublishError(final String message) {
+        final JTextArea text = new JTextArea(message);
+        text.setColumns(60);
+        text.setLineWrap(true);
+        text.setWrapStyleWord(true);
+        text.setEditable(false);
+        text.setOpaque(false);
+        text.setBorder(BorderFactory.createEmptyBorder());
+        JOptionPane.showMessageDialog(m_mainFramePanel, text, "Publish book", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void showPublished(final Publication publication) {
+        final JTextField link = new JTextField(publication.m_page, 40);
+        link.setEditable(false);
+        final JPanel panel = new JPanel(new GridLayout(0, 1, 0, 4));
+        panel.add(new JLabel("The book is published:"));
+        panel.add(link);
+        panel.add(new JLabel("<html><small>Co-authors can download it with the Clone button. "
+                + "Later changes: Commit, then Push.</small></html>"));
+        final Object[] options = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)
+                && publication.m_page.startsWith("http")
+                ? new Object[]{"Open in browser", "OK"} : new Object[]{"OK"};
+        final int answer = JOptionPane.showOptionDialog(m_mainFramePanel, panel, "Publish book",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[options.length - 1]);
+        if (options.length > 1 && answer == 0) {
+            try {
+                Desktop.getDesktop().browse(java.net.URI.create(publication.m_page));
+            } catch (Exception ex) {
+                LOGGER.warn("Cannot open the browser", ex);
+            }
+        }
+    }
+
+    /**
+     * Создание репозитория на GitHub (REST API, по токену); затем — адрес в книгу и первый push
+     */
+    class PublishTask extends Task {
+        private final DialogPublish.Result m_target;
+        private final String m_token;
+        private final String m_storedUser;
+        private final boolean m_remember;
+        private final PropertyChangeListener m_listener;
+        private String m_login = null;
+        private GitHubPublisher.Repository m_repository = null;
+        private Exception m_error = null;
+
+        /**
+         * @param storedUser чей токен взят из хранилища; null — токен введён сейчас
+         */
+        PublishTask(DialogPublish.Result target, String token, String storedUser, boolean remember,
+                    PropertyChangeListener listener) {
+            m_target = target;
+            m_token = token;
+            m_storedUser = storedUser;
+            m_remember = remember;
+            m_listener = listener;
+        }
+
+        @Override
+        protected Void doInBackground() throws Exception {
+            setProgress(0);
+            try {
+                final GitHubPublisher publisher = new GitHubPublisher(m_token);
+                setNoteText("Checking the token...");
+                m_login = publisher.login();
+                setProgressValue(30);
+                setNoteText("Creating the repository...");
+                m_repository = publisher.createRepository(
+                        m_target.m_owner, m_target.m_name, m_target.m_description, m_target.m_private
+                );
+                setProgressValue(100);
+            } catch (Exception ex) {
+                m_error = ex;
+            }
+            return null;
+        }
+
+        @Override
+        public void done() {
+            super.done();
+            m_publishButton.setEnabled(true);
+            final String server = GitHubPublisher.server();
+            if (m_error instanceof NLBVCSAuthenticationException) {
+                if (m_storedUser != null) {
+                    credentials().forgetSecret(server, m_storedUser);
+                }
+                startGitHubPublish(m_target, m_storedUser != null
+                        ? "GitHub did not accept the saved token. Please enter it again."
+                        : "GitHub did not accept the token. Please check it.");
+                return;
+            }
+            if (m_error != null) {
+                showPublishError(m_error.getMessage());
+                return;
+            }
+            // токен годен: запомнить сразу — репозиторий уже есть, Push понадобится и при сбое
+            try {
+                credentials().remember(server, m_login, m_remember ? m_token : null);
+            } catch (SecretStoreException ex) {
+                JOptionPane.showMessageDialog(m_mainFramePanel, "The token was not saved: " + ex.getMessage());
+            }
+            try {
+                getMainPaneInfo().getPaneNlbFacade().setRemoteUrl(m_repository.getCloneUrl());
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(m_mainFramePanel, "The repository " + m_repository.getHtmlUrl()
+                        + " is created, but the book cannot be connected to it: " + ex.getMessage());
+                return;
+            }
+            startTransfer(true, null, new Publication(m_repository.getHtmlUrl(), true), m_login, m_token, false);
+        }
+    }
+
+    /**
+     * Создать репозиторий на GitHub: с сохранённым токеном (message == null) или спросить его
+     */
+    private void startGitHubPublish(final DialogPublish.Result target, final String message) {
+        final String server = GitHubPublisher.server();
+        String storedUser = null;
+        String token = null;
+        boolean remember = false;
+        if (message == null) {
+            storedUser = credentials().rememberedUser(server);
+            token = credentials().rememberedSecret(server, storedUser);
+            if (token == null) {
+                storedUser = null;
+            }
+        }
+        if (token == null) {
+            final DialogPublish.Token result = DialogPublish.askToken(
+                    m_mainFramePanel, server, message, credentials().canRememberSecret()
+            );
+            if (result == null) {
+                return;
+            }
+            token = result.token();
+            remember = result.m_remember;
+            result.wipe();
+        }
+        m_progressMonitor = new ProgressMonitor(m_mainFramePanel, "Publishing Non-Linear Book", "Initializing...", 0, 100);
+        m_progressMonitor.setProgress(0);
+        m_progressMonitor.setMillisToDecideToPopup(200);
+        m_progressMonitor.setMillisToPopup(200);
+        m_task = new PublishTask(target, token, storedUser, remember, this);
+        m_task.addPropertyChangeListener(this);
+        m_publishButton.setEnabled(false);
+        m_task.execute();
+    }
+
+    /**
+     * Кнопка Publish: книга сохранена и в git, адреса сервера ещё нет; незакоммиченное —
+     * закоммитить; затем создать репозиторий на GitHub или взять указанный и отправить книгу
+     */
+    private void publish() throws NLBVCSException {
+        final NonLinearBookFacade facade = getMainPaneInfo().getPaneNlbFacade();
+        if (facade.getNlb().getRootDir() == null || facade.hasChanges()) {
+            JOptionPane.showMessageDialog(m_mainFramePanel, "Please save the book first, then press Publish again.");
+            return;
+        }
+        if (!facade.canSetCommitter()) {
+            JOptionPane.showMessageDialog(m_mainFramePanel,
+                    "The editor is started without version control (novcs): publishing is not available.");
+            return;
+        }
+        final String remote = facade.getRemoteUrl();
+        if (remote != null) {
+            JOptionPane.showMessageDialog(m_mainFramePanel, "<html>The book is already published: <b>"
+                    + remote.replace("&", "&amp;").replace("<", "&lt;")
+                    + "</b><br><br>To send new changes there, press Commit and then Push.</html>");
+            return;
+        }
+        final boolean firstCommit = !facade.hasCommits();
+        final String commitMessage = firstCommit ? "First version of the book"
+                : facade.hasUncommittedChanges() ? "Changes before publishing" : null;
+        final DialogPublish.Result target = DialogPublish.ask(
+                m_mainFramePanel, facade.getNlb().getRootDir().getName(), facade.getNlb().getTitle(), commitMessage
+        );
+        if (target == null) {
+            return;
+        }
+        if (target.m_commitMessage != null) {
+            if (facade.getCommitter() == null && !askCommitter(facade)) {
+                return;
+            }
+            facade.commit(target.m_commitMessage);
+        }
+        if (target.m_gitHub) {
+            startGitHubPublish(target, null);
+        } else {
+            facade.setRemoteUrl(target.m_url);
+            startTransfer(true, null, new Publication(target.m_url, false), null, null, false);
+        }
+    }
+
+    /**
      * Хранилище учётных данных git (создаётся при первом pull/push: подгружает системную библиотеку)
      */
     private RemoteCredentials m_credentials = null;
@@ -418,7 +663,16 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
      * null), иначе — спросить
      */
     private void startTransfer(final boolean push, final String message) {
-        final String action = push ? "Push" : "Pull";
+        startTransfer(push, message, null, null, null, false);
+    }
+
+    /**
+     * @param publication публикация книги (первый push) или null
+     * @param presetUser  учётные данные, уже известные (токен GitHub из публикации), или null
+     */
+    private void startTransfer(final boolean push, final String message, final Publication publication,
+                               final String presetUser, final String presetSecret, final boolean presetRemember) {
+        final String action = publication != null ? "Publish" : push ? "Push" : "Pull";
         final String url = getMainPaneInfo().getPaneNlbFacade().getRemoteUrl();
         final boolean ssh = RemoteCredentials.isSsh(url);
         // ssh: ключи из ~/.ssh и ssh-agent; пароль к ключу и незнакомый сервер — вопросами в окнах
@@ -429,13 +683,19 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             user = RemoteCredentials.userFromUrl(url);
         }
         String secret = message == null && !ssh ? credentials().rememberedSecret(server, user) : null;
-        final boolean fromStore = secret != null;
+        boolean fromStore = secret != null;
         boolean remember = false;
-        if (!fromStore && !ssh) {
+        if (presetUser != null && presetSecret != null && message == null) {
+            user = presetUser;
+            secret = presetSecret;
+            fromStore = false;
+            remember = presetRemember;
+        } else if (!fromStore && !ssh) {
             final DialogGitCredentials.Result result = DialogGitCredentials.ask(
                     m_mainFramePanel, action, server, user, message, credentials().canRememberSecret()
             );
             if (result == null) {
+                publicationFailed(publication);
                 return;
             }
             user = result.m_user;
@@ -445,7 +705,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         }
         m_progressMonitor = new ProgressMonitor(
                 m_mainFramePanel,
-                push ? "Pushing Non-Linear Book" : "Pulling Non-Linear Book",
+                publication != null ? "Publishing Non-Linear Book" : push ? "Pushing Non-Linear Book" : "Pulling Non-Linear Book",
                 "Initializing...",
                 0,
                 100
@@ -453,9 +713,12 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_progressMonitor.setProgress(0);
         m_progressMonitor.setMillisToDecideToPopup(200);
         m_progressMonitor.setMillisToPopup(200);
-        m_task = new TransferTask(push, server, user, secret, fromStore, remember, this, ssh);
+        m_task = new TransferTask(push, server, user, secret, fromStore, remember, this, ssh, publication);
         m_task.addPropertyChangeListener(this);
         (push ? m_pushButton : m_pullButton).setEnabled(false);
+        if (publication != null) {
+            m_publishButton.setEnabled(false);
+        }
         m_task.execute();
     }
 
@@ -863,6 +1126,19 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                     JOptionPane.showMessageDialog(
                             m_mainFramePanel,
                             "Error while pushing: " + ex.toString()
+                    );
+                }
+            }
+        });
+        m_publishButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    publish();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(
+                            m_mainFramePanel,
+                            "Error while publishing: " + ex.toString()
                     );
                 }
             }

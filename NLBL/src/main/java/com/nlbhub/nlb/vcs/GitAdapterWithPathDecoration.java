@@ -118,6 +118,21 @@ public class GitAdapterWithPathDecoration implements VCSAdapter {
     }
 
     @Override
+    public void setRemoteUrl(final String url) throws NLBVCSException {
+        m_gitAdapter.setRemoteUrl(url);
+    }
+
+    @Override
+    public boolean hasCommits() throws NLBVCSException {
+        return m_gitAdapter.hasCommits();
+    }
+
+    @Override
+    public boolean hasUncommittedChanges() throws NLBVCSException {
+        return m_gitAdapter.hasUncommittedChanges();
+    }
+
+    @Override
     public void setPrompts(final VCSPrompts prompts) {
         m_gitAdapter.setPrompts(prompts);
     }

@@ -129,6 +129,28 @@ public interface VCSAdapter {
     }
 
     /**
+     * Записать адрес сервера книги (remote origin) и связать с ним текущую ветку (для pull);
+     * null — убрать адрес
+     */
+    public default void setRemoteUrl(String url) throws NLBVCSException {
+        throw new NLBVCSException("The editor is started without version control (novcs): publishing is not available");
+    }
+
+    /**
+     * В репозитории книги есть хотя бы один коммит
+     */
+    public default boolean hasCommits() throws NLBVCSException {
+        return false;
+    }
+
+    /**
+     * Есть сохранённые, но не закоммиченные изменения (в индексе)
+     */
+    public default boolean hasUncommittedChanges() throws NLBVCSException {
+        return false;
+    }
+
+    /**
      * Вопросы к автору при pull/push по ssh (пароль к ключу, незнакомый сервер)
      */
     public default void setPrompts(VCSPrompts prompts) {
