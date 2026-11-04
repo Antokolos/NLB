@@ -1288,9 +1288,73 @@ public class NonLinearBookFacade implements NLBObservable {
             final File nlbFolder,
             final ProgressData progressData
     ) throws NLBVCSException, NLBConsistencyException, NLBFileManipulationException, NLBIOException {
+        final File oldRoot = m_nlb.getRootDir();
         m_nlb.setRootDir(nlbFolder);
+        // то, чего нет в модели книги, — до сохранения (метаданные медиа пишутся, только если
+        // папка images/sound уже есть), в VCS — после (сохранение создаёт репозиторий)
+        final List<String> copied = copyFilesOutsideModel(oldRoot, nlbFolder);
         saveNLB(true, progressData);
+        for (String path : copied) {
+            m_vcsAdapter.add(path);
+        }
         clearUndosAndPools();
+    }
+
+    /**
+     * Save As: файлы книги, которых нет в её модели и которые сохранение само не пишет, — из
+     * прежней папки в новую (#175: копия книги оставалась без картинок и звуков):
+     * <ul>
+     *     <li>картинки и звуки книги (images/, sound/ — только файлы, которые есть в книге; их
+     *     .preset/.flag/.constrid/.redirect запишет сохранение);</li>
+     *     <li>внешние модули (modules/&lt;имя&gt;) — без служебных файлов git: в копии это обычные
+     *     папки книги, не подмодули (подмодули копии — через Clone);</li>
+     *     <li>тема игры __theme__ и .gitignore.</li>
+     * </ul>
+     *
+     * @return пути скопированного относительно новой папки (через «/»), чтобы добавить в VCS
+     */
+    private List<String> copyFilesOutsideModel(final File oldRoot, final File newRoot) throws NLBIOException {
+        final List<String> copied = new ArrayList<>();
+        if (oldRoot == null || newRoot == null) {
+            return copied;
+        }
+        try {
+            if (oldRoot.getCanonicalFile().equals(newRoot.getCanonicalFile()) || !oldRoot.isDirectory()) {
+                return copied;
+            }
+            for (final com.nlbhub.nlb.api.MediaFile image : m_nlb.getImageFiles()) {
+                copyTree(new File(oldRoot, "images/" + image.getFileName()), newRoot, "images/" + image.getFileName(), copied);
+            }
+            for (final com.nlbhub.nlb.api.MediaFile sound : m_nlb.getSoundFiles()) {
+                copyTree(new File(oldRoot, "sound/" + sound.getFileName()), newRoot, "sound/" + sound.getFileName(), copied);
+            }
+            for (final String extra : new String[]{"modules", "__theme__", ".gitignore"}) {
+                copyTree(new File(oldRoot, extra), newRoot, extra, copied);
+            }
+        } catch (IOException e) {
+            throw new NLBIOException("Cannot copy the book files to " + newRoot, e);
+        }
+        return copied;
+    }
+
+    private static void copyTree(final File source, final File newRoot, final String path, final List<String> copied)
+            throws IOException {
+        if (source.getName().equals(".git") || source.getName().equals(".gitmodules")) {
+            return;  // служебное git (у подмодуля .git — файл со ссылкой на прежний репозиторий)
+        }
+        if (source.isDirectory()) {
+            final File[] children = source.listFiles();
+            if (children != null) {
+                for (final File child : children) {
+                    copyTree(child, newRoot, path + "/" + child.getName(), copied);
+                }
+            }
+        } else if (source.isFile()) {
+            final File target = new File(newRoot, path);
+            target.getParentFile().mkdirs();
+            java.nio.file.Files.copy(source.toPath(), target.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            copied.add(path);
+        }
     }
 
     public void load(

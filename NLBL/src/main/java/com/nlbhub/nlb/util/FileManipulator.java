@@ -503,7 +503,7 @@ public class FileManipulator {
                 target.createNewFile();
             }
             writeFile(target, new FileInputStream(source));
-            addToVCS(target, exists);
+            addToVCS(target, !exists);
         } catch (IOException e) {
             throw new NLBIOException(errorMessage, e);
         }
