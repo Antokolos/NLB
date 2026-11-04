@@ -43,6 +43,7 @@ import com.nlbhub.nlb.api.Modification;
 import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.api.Obj;
 import com.nlbhub.nlb.api.Page;
+import com.nlbhub.nlb.api.SpecialVariablesNameHelper;
 import com.nlbhub.nlb.api.Variable;
 
 import java.util.ArrayList;
@@ -1293,12 +1294,16 @@ public class ModificationInterpreter {
         }
         Variable m = (link.isObeyToModuleConstraint() && !PlayerContext.isEmpty(moduleConstrId))
                 ? book.getVariableById(moduleConstrId) : null;
-        if (c == null && m == null) {
+        if (c == null && m == null && !link.isOnce()) {
             return null;  // неограниченная ссылка
         }
+        // createUseBuildingBlocks: (!lvs_<id>) && (модуль) && (условие), «не» — над всем
         boolean value = true;
+        if (link.isOnce()) {
+            value = !m_context.getVar(SpecialVariablesNameHelper.decorateLinkVisitStateVar(link.getId())).isTruthy();
+        }
         if (m != null) {
-            value = evaluate(m.getValue()).isTruthy();
+            value = value && evaluate(m.getValue()).isTruthy();
         }
         if (c != null) {
             value = value && evaluate(c.getValue()).isTruthy();
@@ -1358,6 +1363,9 @@ public class ModificationInterpreter {
             }
             execute(link.getModifications(), new ExecContext(book, sourceInstanceId, ww));
             setVarTrue(book, link.getVarId());
+            if (link.isOnce()) {
+                m_context.setVar(SpecialVariablesNameHelper.decorateLinkVisitStateVar(link.getId()), Value.TRUE);
+            }
         }
         return wasText;
     }
