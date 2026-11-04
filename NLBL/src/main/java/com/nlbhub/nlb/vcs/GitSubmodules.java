@@ -236,8 +236,8 @@ final class GitSubmodules {
                         || status == RemoteRefUpdate.Status.REJECTED_REMOTE_CHANGED) {
                     // на сервере есть чужие коммиты — сначала получить их
                     throw new com.nlbhub.nlb.exception.NLBVCSPushRejectedException(
-                            "The server already has changes to " + what + " that you do not have yet. "
-                                    + "Pull first, then push again.",
+                            "Push of " + what + " was rejected: the server already has changes that you do not have "
+                                    + "yet. Pull first, then push again.",
                             "the book".equals(what)
                     );
                 }

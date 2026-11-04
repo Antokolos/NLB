@@ -126,6 +126,9 @@ public class GitSubmoduleWorkflowTest {
             fail("push поверх чужого коммита должен быть отклонён");
         } catch (NLBVCSException e) {
             assertTrue(e.getMessage(), e.getMessage().contains("rejected"));
+            assertTrue("отказ из-за чужих коммитов — особое исключение (редактор предложит pull и push)",
+                    e instanceof com.nlbhub.nlb.exception.NLBVCSPushRejectedException
+                            && ((com.nlbhub.nlb.exception.NLBVCSPushRejectedException) e).isOfBook());
         }
         behind.closeAdapter();
     }
