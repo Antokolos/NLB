@@ -2131,14 +2131,21 @@ public abstract class ExportManager {
         blocks.setUseSuccessText(expandVariablesForLinks(StringHelper.getTextChunks(link.getText()), obj.getEffectiveTheme()));
         blocks.setUseFailureText(expandVariablesForLinks(StringHelper.getTextChunks(link.getAltText()), obj.getEffectiveTheme()));
         Variable variable = exportData.getNlb().getVariableById(link.getVarId());
+        // «Once» — как у ссылок страниц: применение срабатывает один раз (#302): условие
+        // !lvs_<id>, а после применения (usef — модификации, после текста usep) lvs_<id> = true
+        final String linkVisitStateVariable = link.isOnce()
+                ? SpecialVariablesNameHelper.decorateLinkVisitStateVar(link.getId()) : Constants.EMPTY_STRING;
+        final String visitState = link.isOnce() ? decorateLinkVisitStateVariable(linkVisitStateVariable) : EMPTY_STRING;
         if (variable != null && !variable.isDeleted()) {
-            blocks.setUseVariable(decorateUseVariable(variable.getName()));
+            blocks.setUseVariable(decorateUseVariable(variable.getName()) + visitState);
         } else {
-            blocks.setUseVariable(EMPTY_STRING);
+            blocks.setUseVariable(visitState);
         }
         Variable constraint = exportData.getNlb().getVariableById(link.getConstrId());
+        final String additionalConstraintText = link.isOnce() ? "!" + linkVisitStateVariable : Constants.EMPTY_STRING;
         if (
-                (constraint != null && !constraint.isDeleted())
+                StringHelper.notEmpty(additionalConstraintText)
+                        || (constraint != null && !constraint.isDeleted())
                         || (
                         link.isObeyToModuleConstraint()
                                 && !StringHelper.isEmpty(exportData.getModuleConstraintText())
@@ -2150,7 +2157,7 @@ public abstract class ExportManager {
                             link.isPositiveConstraint(),
                             link.isObeyToModuleConstraint(),
                             exportData.getModuleConstraintText(),
-                            Constants.EMPTY_STRING
+                            additionalConstraintText
                     )
             );
         } else {
