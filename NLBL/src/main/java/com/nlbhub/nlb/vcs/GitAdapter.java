@@ -625,6 +625,17 @@ public class GitAdapter implements VCSAdapter {
     @Override
     public void pull(String userName, String password, ProgressData progressData, ConflictChoice choice)
             throws NLBVCSException {
+        pull(userName, password, progressData, choice, null);
+    }
+
+    @Override
+    public void pull(String userName, String password, ProgressData progressData,
+                     java.util.Map<String, ConflictResolution> resolutions) throws NLBVCSException {
+        pull(userName, password, progressData, ConflictChoice.NONE, resolutions);
+    }
+
+    private void pull(String userName, String password, ProgressData progressData, ConflictChoice choice,
+                      java.util.Map<String, ConflictResolution> resolutions) throws NLBVCSException {
         awaitStatuses();
         m_restored = Collections.emptyList();
         CredentialsProvider provider = credentialsProvider(userName, password);
@@ -637,7 +648,7 @@ public class GitAdapter implements VCSAdapter {
                     .setCredentialsProvider(provider)
                     .setProgressMonitor(monitor)
                     .call();
-            mergeFetched(monitor, choice);
+            mergeFetched(monitor, choice, resolutions);
             // Analogous to `git clean -fd` command. It is needed to remove empty directories that can remain after
             // `git pull` command.
             m_git
@@ -667,7 +678,8 @@ public class GitAdapter implements VCSAdapter {
      * коммитит книгу, без подписи; правки пересеклись — книга возвращается к состоянию до pull
      * и {@link NLBVCSConflictException} называет пересёкшиеся файлы
      */
-    private void mergeFetched(final ProgressMonitor monitor, final ConflictChoice choice)
+    private void mergeFetched(final ProgressMonitor monitor, final ConflictChoice choice,
+                              final java.util.Map<String, ConflictResolution> resolutions)
             throws GitAPIException, IOException, NLBVCSException {
         final String branch = m_localRepo.getBranch();
         String upstream = m_localRepo.getConfig().getString(ConfigConstants.CONFIG_BRANCH_SECTION, branch,
@@ -696,23 +708,25 @@ public class GitAdapter implements VCSAdapter {
                             + "changes. Nothing is changed. Commit your changes first, then pull again.");
         }
         org.eclipse.jgit.api.MergeResult.MergeStatus status = result.getMergeStatus();
-        java.util.Set<String> chosen = Collections.emptySet();
+        // что решил автор: путь -> «kept the local version» и т. п. (для сообщения коммита)
+        final java.util.Map<String, String> decided = new java.util.TreeMap<>();
         if (status == org.eclipse.jgit.api.MergeResult.MergeStatus.CONFLICTING) {
             // механическое (порядок, положение на схеме) — само; остальное — как выбрал автор
             final java.util.Set<String> remaining = autoResolve(result.getConflicts().keySet(), before, theirs.getObjectId());
             if (remaining.isEmpty()) {
                 status = org.eclipse.jgit.api.MergeResult.MergeStatus.MERGED_NOT_COMMITTED;
-            } else if (choice != null && choice != ConflictChoice.NONE) {
-                takeWholeFiles(remaining, choice == ConflictChoice.MINE ? 2 : 3, before, theirs.getObjectId());
-                chosen = remaining;
+            } else if (choice != null && choice != ConflictChoice.NONE
+                    || resolutions != null && resolutions.keySet().containsAll(remaining)) {
+                applyResolutions(remaining, choice, resolutions, before, theirs.getObjectId(), decided);
                 status = org.eclipse.jgit.api.MergeResult.MergeStatus.MERGED_NOT_COMMITTED;
             } else {
                 final List<String> paths = new ArrayList<>(remaining);
+                final List<ConflictField> fields = conflictFields(remaining, before, theirs.getObjectId());
                 abortMerge(before, theirs.getObjectId());
                 throw new NLBVCSConflictException(
                         "Your changes and the changes on the server touch the same parts of the book, so they "
                                 + "cannot be merged automatically. Nothing is changed: the book is as it was before pull.",
-                        paths, false
+                        paths, false, fields
                 );
             }
         }
@@ -720,6 +734,20 @@ public class GitAdapter implements VCSAdapter {
             case MERGED_NOT_COMMITTED:
                 // удалённое на одной стороне, но нужное правкам другой — вернуть целиком
                 m_restored = restoreNeeded(before, theirs.getObjectId());
+                if (!decided.isEmpty()) {
+                    // оставленное по явному решению автора — не «восстановлено», о нём он знает
+                    final List<RestoredElement> reported = new ArrayList<>();
+                    for (RestoredElement element : m_restored) {
+                        boolean chosen = false;
+                        for (String path : decided.keySet()) {
+                            chosen |= path.startsWith(element.getPath() + "/");
+                        }
+                        if (!chosen) {
+                            reported.add(element);
+                        }
+                    }
+                    m_restored = reported;
+                }
                 // списки ссылок и модификаций — ровно по папкам (иначе книга не откроется)
                 reconcileOrders();
                 final Author committer = getCommitter() != null ? getCommitter() : m_author;
@@ -737,10 +765,12 @@ public class GitAdapter implements VCSAdapter {
                     }
                     message += restored;
                 }
-                if (!chosen.isEmpty()) {
-                    message += "\n\nOverlapping changes: " + (choice == ConflictChoice.MINE
-                            ? "kept the local versions" : "took the versions from the server") + " of\n"
-                            + String.join("\n", chosen);
+                if (!decided.isEmpty()) {
+                    final StringBuilder overlapping = new StringBuilder("\n\nOverlapping changes:");
+                    for (java.util.Map.Entry<String, String> entry : decided.entrySet()) {
+                        overlapping.append("\n").append(entry.getKey()).append(": ").append(entry.getValue());
+                    }
+                    message += overlapping;
                 }
                 m_git
                         .commit()
@@ -763,6 +793,126 @@ public class GitAdapter implements VCSAdapter {
                     throw new NLBVCSException("Cannot merge the changes from the server: " + result.getMergeStatus());
                 }
         }
+    }
+
+    /**
+     * Решения автора: «своё» и «с сервера» — целиком (удаление — элементом), свой текст —
+     * записать (поле, удалённое на одной стороне, сначала возвращается элементом с другой)
+     */
+    private void applyResolutions(final java.util.Set<String> remaining, final ConflictChoice choice,
+                                  final java.util.Map<String, ConflictResolution> resolutions, final ObjectId ours,
+                                  final ObjectId theirs, final java.util.Map<String, String> decided)
+            throws IOException, GitAPIException {
+        final java.util.Set<String> mine = new java.util.TreeSet<>();
+        final java.util.Set<String> server = new java.util.TreeSet<>();
+        final java.util.Map<String, String> texts = new java.util.TreeMap<>();
+        for (String path : remaining) {
+            final ConflictResolution resolution = choice == ConflictChoice.MINE ? ConflictResolution.mine()
+                    : choice == ConflictChoice.THEIRS ? ConflictResolution.theirs() : resolutions.get(path);
+            switch (resolution.getKind()) {
+                case MINE:
+                    mine.add(path);
+                    decided.put(path, "kept the local version");
+                    break;
+                case THEIRS:
+                    server.add(path);
+                    decided.put(path, "took the version from the server");
+                    break;
+                default:
+                    texts.put(path, resolution.getText() == null ? "" : resolution.getText());
+                    decided.put(path, "merged by hand");
+            }
+        }
+        if (!texts.isEmpty()) {
+            // удалено на одной стороне — сначала вернуть элемент с той, где он есть
+            final java.util.Map<String, String[]> stages = conflictStages(texts.keySet());
+            for (String path : texts.keySet()) {
+                (stages.get(path)[1] != null ? mine : server).add(path);
+            }
+        }
+        if (!mine.isEmpty()) {
+            takeWholeFiles(mine, 2, ours, theirs);
+        }
+        if (!server.isEmpty()) {
+            takeWholeFiles(server, 3, ours, theirs);
+        }
+        for (java.util.Map.Entry<String, String> text : texts.entrySet()) {
+            writeResolved(text.getKey(), text.getValue());
+        }
+    }
+
+    /**
+     * Версии пересёкшихся полей для окна сравнения: предок, своя, с сервера, и кто изменил поле
+     * на сервере (последний коммит сервера с этим файлом после общего предка)
+     */
+    private List<ConflictField> conflictFields(final java.util.Set<String> paths, final ObjectId ours,
+                                               final ObjectId theirs) throws IOException {
+        final List<ConflictField> result = new ArrayList<>();
+        final java.util.Map<String, byte[][]> stages = new java.util.HashMap<>();
+        for (String path : paths) {
+            stages.put(path, new byte[3][]);
+        }
+        final org.eclipse.jgit.dircache.DirCache cache = m_localRepo.readDirCache();
+        for (int i = 0; i < cache.getEntryCount(); i++) {
+            final org.eclipse.jgit.dircache.DirCacheEntry entry = cache.getEntry(i);
+            final byte[][] versions = stages.get(entry.getPathString());
+            if (versions != null && entry.getStage() >= 1 && entry.getStage() <= 3
+                    && !FileMode.GITLINK.equals(entry.getFileMode())) {
+                versions[entry.getStage() - 1] = m_localRepo.open(entry.getObjectId()).getBytes();
+            }
+        }
+        RevCommit base = null;
+        try (RevWalk walk = new RevWalk(m_localRepo)) {
+            walk.setRevFilter(org.eclipse.jgit.revwalk.filter.RevFilter.MERGE_BASE);
+            walk.markStart(walk.parseCommit(ours));
+            walk.markStart(walk.parseCommit(theirs));
+            base = walk.next();
+        }
+        for (String path : new java.util.TreeSet<>(paths)) {
+            final byte[][] versions = stages.get(path);
+            boolean binary = false;
+            for (byte[] version : versions) {
+                binary |= version != null && isBinary(version);
+            }
+            String author = null;
+            long time = 0;
+            String message = null;
+            try (RevWalk walk = new RevWalk(m_localRepo)) {
+                walk.setTreeFilter(org.eclipse.jgit.treewalk.filter.AndTreeFilter.create(
+                        org.eclipse.jgit.treewalk.filter.PathFilter.create(path),
+                        org.eclipse.jgit.treewalk.filter.TreeFilter.ANY_DIFF));
+                walk.markStart(walk.parseCommit(theirs));
+                if (base != null) {
+                    walk.markUninteresting(walk.parseCommit(base));
+                }
+                final RevCommit commit = walk.next();
+                if (commit != null) {
+                    author = commit.getAuthorIdent().getName();
+                    time = commit.getAuthorIdent().getWhenAsInstant().toEpochMilli();
+                    message = commit.getShortMessage();
+                }
+            }
+            result.add(new ConflictField(path, text(versions[0], binary), text(versions[1], binary),
+                    text(versions[2], binary), versions[1] != null, versions[2] != null, binary,
+                    author, time, message));
+        }
+        return result;
+    }
+
+    private static boolean isBinary(final byte[] content) {
+        if (content.length > 256 * 1024) {
+            return true;
+        }
+        for (byte b : content) {
+            if (b == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String text(final byte[] content, final boolean binary) {
+        return content == null || binary ? null : new String(content, java.nio.charset.StandardCharsets.UTF_8);
     }
 
     /**
@@ -998,24 +1148,26 @@ public class GitAdapter implements VCSAdapter {
     }
 
     /**
-     * Элемент целиком из версии tree — в индекс и рабочую копию
+     * Элемент целиком из версии tree — в индекс и рабочую копию: недостающие файлы; имеющиеся
+     * (решение автора, добавленное другой стороной) не трогаются
      */
     private void restoreElement(final String dir, final RevTree tree) throws IOException, GitAPIException {
         final List<String> files = new ArrayList<>();
+        final java.util.Set<String> present = indexFiles().keySet();
         final org.eclipse.jgit.dircache.DirCache cache = m_localRepo.lockDirCache();
         try {
             final org.eclipse.jgit.dircache.DirCacheBuilder builder = cache.builder();
             for (int i = 0; i < cache.getEntryCount(); i++) {
-                final org.eclipse.jgit.dircache.DirCacheEntry entry = cache.getEntry(i);
-                if (!under(entry.getPathString(), Collections.singleton(dir))) {
-                    builder.add(entry);
-                }
+                builder.add(cache.getEntry(i));
             }
             try (TreeWalk walk = new TreeWalk(m_localRepo)) {
                 walk.addTree(tree);
                 walk.setRecursive(true);
                 walk.setFilter(org.eclipse.jgit.treewalk.filter.PathFilter.create(dir));
                 while (walk.next()) {
+                    if (present.contains(walk.getPathString())) {
+                        continue;
+                    }
                     final org.eclipse.jgit.dircache.DirCacheEntry entry =
                             new org.eclipse.jgit.dircache.DirCacheEntry(walk.getPathString());
                     entry.setFileMode(walk.getFileMode(0));
