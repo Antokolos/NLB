@@ -430,6 +430,14 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     /**
+     * Pull с решением для каждого пересёкшегося поля
+     */
+    public void pull(final String userName, final String password, final ProgressData progressData,
+                     final Map<String, com.nlbhub.nlb.vcs.ConflictResolution> resolutions) throws NLBVCSException {
+        m_vcsAdapter.pull(userName, password, progressData, resolutions);
+    }
+
+    /**
      * Pull с выбором для пересёкшихся правок (см. {@link com.nlbhub.nlb.vcs.VCSAdapter.ConflictChoice})
      */
     public void pull(final String userName, final String password, final ProgressData progressData,

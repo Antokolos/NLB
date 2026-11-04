@@ -145,6 +145,16 @@ public interface VCSAdapter {
     }
 
     /**
+     * Pull с решением автора для каждого пересёкшегося поля (путь файла -> решение). Поля, для
+     * которого решения нет (на сервере появились новые правки), — снова
+     * {@link com.nlbhub.nlb.exception.NLBVCSConflictException}, книга как была
+     */
+    public default void pull(String userName, String password, ProgressData progressData,
+                             java.util.Map<String, ConflictResolution> resolutions) throws NLBVCSException {
+        pull(userName, password, progressData);
+    }
+
+    /**
      * Что последний pull восстановил, чтобы книга осталась целой (см. {@link RestoredElement});
      * пусто — ничего
      */

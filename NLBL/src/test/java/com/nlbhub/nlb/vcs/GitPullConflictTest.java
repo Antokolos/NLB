@@ -341,6 +341,107 @@ public class GitPullConflictTest {
         assertFalse("страница удалена — подвинуть её не повод спрашивать", new File(m_mine, "pages/p2").exists());
     }
 
+    private NLBVCSConflictException conflictOnPull(java.util.Map<String, ConflictResolution> resolutions) throws Exception {
+        final GitAdapter adapter = adapter();
+        try {
+            if (resolutions == null) {
+                adapter.pull(null, null, new DummyProgressData());
+            } else {
+                adapter.pull(null, null, new DummyProgressData(), resolutions);
+            }
+            fail("правки пересекаются");
+            return null;
+        } catch (NLBVCSConflictException e) {
+            return e;
+        } finally {
+            adapter.closeAdapter();
+        }
+    }
+
+    @Test
+    public void conflictCarriesBothVersionsAndTheirAuthor() throws Exception {
+        try (Git git = Git.open(m_theirs)) {
+            write(m_theirs, TEXT, "Their text.");
+            git.add().addFilepattern(".").call();
+            git.commit().setAuthor("Anna", "anna@example.org").setCommitter("Anna", "anna@example.org")
+                    .setMessage("Chapter 3\n\ndetails").setSign(false).setGpgConfig(new GpgConfig(new Config())).call();
+            git.push().call();
+        }
+        myCommit(TEXT, "My text.");
+        final NLBVCSConflictException e = conflictOnPull(null);
+        assertEquals(1, e.getFields().size());
+        final ConflictField field = e.getFields().get(0);
+        assertEquals(TEXT, field.getPath());
+        assertEquals("The shelves are empty.", field.getBase());
+        assertEquals("My text.", field.getMine());
+        assertEquals("Their text.", field.getTheirs());
+        assertFalse(field.isDeletion());
+        assertFalse(field.isBinary());
+        assertEquals("Anna", field.getTheirAuthor());
+        assertEquals("Chapter 3", field.getTheirMessage());
+        assertTrue(field.getTheirTime() > 0);
+    }
+
+    @Test
+    public void eachFieldResolvedSeparately() throws Exception {
+        edit(m_theirs, "their", TEXT, "Their text.", "pages/p2/text/en", "Their gate.");
+        edit(m_mine, "mine", TEXT, "My text.", "pages/p2/text/en", "My gate.");
+        assertEquals(2, conflictOnPull(null).getFields().size());
+        final java.util.Map<String, ConflictResolution> resolutions = new java.util.HashMap<>();
+        resolutions.put(TEXT, ConflictResolution.text("My text. Their text."));
+        resolutions.put("pages/p2/text/en", ConflictResolution.theirs());
+        final GitAdapter adapter = adapter();
+        try {
+            adapter.pull(null, null, new DummyProgressData(), resolutions);
+        } finally {
+            adapter.closeAdapter();
+        }
+        assertEquals("My text. Their text.", read(m_mine, TEXT));
+        assertEquals("Their gate.", read(m_mine, "pages/p2/text/en"));
+        try (Git git = Git.open(m_mine)) {
+            assertTrue(git.status().call().isClean());
+            final String message = git.log().setMaxCount(1).call().iterator().next().getFullMessage();
+            assertTrue(message, message.contains(TEXT + ": merged by hand"));
+            assertTrue(message, message.contains("pages/p2/text/en: took the version from the server"));
+        }
+    }
+
+    @Test
+    public void newConflictWithoutDecisionStopsAgain() throws Exception {
+        edit(m_theirs, "their", TEXT, "Their text.", "pages/p2/text/en", "Their gate.");
+        edit(m_mine, "mine", TEXT, "My text.", "pages/p2/text/en", "My gate.");
+        // решение только для одного поля (второе появилось на сервере, пока автор думал)
+        final NLBVCSConflictException e = conflictOnPull(java.util.Collections.singletonMap(TEXT, ConflictResolution.mine()));
+        assertEquals(2, e.getFields().size());
+        assertEquals("My text.", read(m_mine, TEXT));
+        assertEquals("My gate.", read(m_mine, "pages/p2/text/en"));
+        try (Git git = Git.open(m_mine)) {
+            assertTrue(git.status().call().isClean());
+        }
+    }
+
+    @Test
+    public void deletionFieldAndTextResolution() throws Exception {
+        edit(m_theirs, "delete link", LINK, null, "pages/p1/lnkorder", null);
+        edit(m_mine, "edit link", LINK + "/text/en", "To the open gate");
+        final ConflictField field = conflictOnPull(null).getFields().get(0);
+        assertTrue(field.isDeletion());
+        assertTrue(field.isMineExists());
+        assertFalse(field.isTheirsExists());
+        // свой текст для удалённого на сервере — элемент возвращается целиком, текст — свой
+        final GitAdapter adapter = adapter();
+        try {
+            adapter.pull(null, null, new DummyProgressData(),
+                    java.util.Collections.singletonMap(LINK + "/text/en", ConflictResolution.text("To the gate, again")));
+            assertTrue("оставлено по решению автора — не «восстановлено»", adapter.getRestoredByLastPull().isEmpty());
+        } finally {
+            adapter.closeAdapter();
+        }
+        assertEquals("To the gate, again", read(m_mine, LINK + "/text/en"));
+        assertEquals("p2", read(m_mine, LINK + "/target"));
+        assertEquals("L0", read(m_mine, "pages/p1/lnkorder"));
+    }
+
     private void theirEdits() throws Exception {
         try (Git git = Git.open(m_theirs)) {
             write(m_theirs, TEXT, "Their text.");
