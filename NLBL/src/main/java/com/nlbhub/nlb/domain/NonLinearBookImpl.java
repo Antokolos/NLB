@@ -1973,7 +1973,16 @@ public class NonLinearBookImpl implements NonLinearBook {
     class PasteCommand extends NotifyingCommand {
         private CommandChainCommand m_commandChain = new CommandChainCommand();
 
-        PasteCommand(NonLinearBookImpl currentNLB, NonLinearBookImpl nlbToPaste) {
+        /**
+         * @param parentIdsMapping для вставки содержимого модуля — соответствие старых и новых id
+         *                         страниц книги, куда вставлен сам модуль: страница возврата
+         *                         (returnPageId) указывает в неё (#3). Для обычной вставки — пусто
+         */
+        PasteCommand(
+                NonLinearBookImpl currentNLB,
+                NonLinearBookImpl nlbToPaste,
+                Map<String, String> parentIdsMapping
+        ) {
             Map<String, String> idsMapping = new HashMap<>();
             Map<String, PageImpl> newPages = new HashMap<>();
             Map<String, ObjImpl> newObjs = new HashMap<>();
@@ -1985,9 +1994,15 @@ public class NonLinearBookImpl implements NonLinearBook {
                 newPages.put(newPage.getId(), newPage);
                 AddPageCommand command = createAddPageCommand(newPage);
                 m_commandChain.addCommand(command);
+            }
+            // Содержимое модулей — когда известны новые id всех вставляемых страниц: страницы
+            // возврата внутри модуля указывают на страницы этой книги (#3)
+            for (Map.Entry<String, PageImpl> entry : nlbToPaste.m_pages.entrySet()) {
+                final PageImpl page = entry.getValue();
                 if (!page.getModule().isEmpty()) {
+                    PageImpl newPage = newPages.get(idsMapping.get(entry.getKey()));
                     PasteCommand pasteCommand = (
-                            newPage.getModuleImpl().createPasteCommand(page.getModuleImpl())
+                            newPage.getModuleImpl().createPasteCommand(page.getModuleImpl(), idsMapping)
                     );
                     m_commandChain.addCommand(pasteCommand);
                 }
@@ -2031,8 +2046,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                         page.isAutoTraverse(),
                         page.isAutoReturn(),
                         page.getReturnTexts(),
-                        page.getReturnPageId(),
-                        (modConstraint != null) ? modConstraint.getName() : Constants.EMPTY_STRING,
+                        translateReturnPageId(page.getReturnPageId(), parentIdsMapping),
+                        // Тело ограничения — значение переменной; имя у него всегда N/A (#1)
+                        (modConstraint != null) ? modConstraint.getValue() : Constants.EMPTY_STRING,
                         page.isAutowire(),
                         page.getAutowireInTexts(),
                         page.getAutowireOutTexts(),
@@ -2111,6 +2127,35 @@ public class NonLinearBookImpl implements NonLinearBook {
                 copyModifications(currentNLB, nlbToPaste, obj, newObj);
                 addLinks(currentNLB, nlbToPaste, idsMapping, obj, newObj);
             }
+            // Вложенность объектов (#4): содержимое страниц и объектов — копиями, в том же порядке.
+            // Объекты, чей контейнер не копировали, ни в чём не лежат (буфер уже без них)
+            for (Map.Entry<String, PageImpl> entry : nlbToPaste.m_pages.entrySet()) {
+                addContainedObjs(entry.getValue(), newPages.get(idsMapping.get(entry.getKey())), idsMapping, newObjs);
+            }
+            for (Map.Entry<String, ObjImpl> entry : nlbToPaste.m_objs.entrySet()) {
+                addContainedObjs(entry.getValue(), newObjs.get(idsMapping.get(entry.getKey())), idsMapping, newObjs);
+            }
+        }
+
+        private void addContainedObjs(
+                final AbstractNodeItem container,
+                final AbstractNodeItem newContainer,
+                final Map<String, String> idsMapping,
+                final Map<String, ObjImpl> newObjs
+        ) {
+            for (String containedObjId : container.getContainedObjIds()) {
+                ObjImpl newObj = newObjs.get(idsMapping.get(containedObjId));
+                if (newObj != null) {
+                    m_commandChain.addCommand(new ChangeContainerCommand(null, newContainer, newObj));
+                }
+            }
+        }
+
+        private String translateReturnPageId(final String returnPageId, final Map<String, String> parentIdsMapping) {
+            // Страница возврата вне копии остаётся прежней: вставка в ту же книгу её находит,
+            // иначе на неё укажет проверка книги
+            final String translated = parentIdsMapping.get(returnPageId);
+            return (translated != null) ? translated : returnPageId;
         }
 
         private void resizeNode(AbstractNodeItem nodeItem, Coords coords, Coords newCoords) {
@@ -2179,6 +2224,11 @@ public class NonLinearBookImpl implements NonLinearBook {
         ) {
             for (LinkImpl link : node.getLinkImpls()) {
                 LinkImpl newLink = new LinkImpl(newNode, idsMapping.get(link.getTarget()));
+                // Сдвиг подписи ссылки (#2); ссылка новая, отменяется вместе с её добавлением
+                newLink.getCoords().setLeft(link.getCoords().getLeft());
+                newLink.getCoords().setTop(link.getCoords().getTop());
+                newLink.getCoords().setWidth(link.getCoords().getWidth());
+                newLink.getCoords().setHeight(link.getCoords().getHeight());
                 AbstractNodeItem.AddLinkCommand command = newNode.createAddLinkCommand(newLink);
                 m_commandChain.addCommand(command);
                 final Variable linkVariable = nlbToPaste.getVariableById(link.getVarId());
@@ -2228,10 +2278,10 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_prevClipboardData = Clipboard.singleton().getNonLinearBook();
             m_newClipboardData = new NonLinearBookImpl();
             processPages(pageIds, objIds);
-            processObjs(objIds);
+            processObjs(pageIds, objIds);
         }
 
-        private void processObjs(Collection<String> objIds) {
+        private void processObjs(Collection<String> pageIds, Collection<String> objIds) {
             for (String objId : objIds) {
                 ObjImpl existingObj = getObjImplById(objId);
                 if (existingObj != null && !existingObj.isDeleted()) {
@@ -2265,7 +2315,8 @@ public class NonLinearBookImpl implements NonLinearBook {
 
                     checkContainedObjects(obj, objIds);
                     copyLinks(obj, objIds, m_newClipboardData);
-                    if (!objIds.contains(obj.getContainerId())) {
+                    // Контейнером может быть и копируемая страница (#4)
+                    if (!objIds.contains(obj.getContainerId()) && !pageIds.contains(obj.getContainerId())) {
                         obj.setContainerId(Obj.DEFAULT_CONTAINER_ID);
                     }
                 }
@@ -2278,6 +2329,10 @@ public class NonLinearBookImpl implements NonLinearBook {
                 if (existingPage != null && !existingPage.isDeleted()) {
                     PageImpl page = new PageImpl(existingPage, m_newClipboardData, false);
                     m_newClipboardData.addPage(page);
+                    // Флажок «autowire» — это список книги, а не поле страницы (#75)
+                    if (isAutowired(pageId)) {
+                        m_newClipboardData.addAutowiredPageId(page.getId());
+                    }
                     copyModificationVariables(page, m_newClipboardData);
                     // also we should move all related variables to the new NLB
                     VariableImpl autowireInConstraint = getVariableImplById(page.getAutowireInConstrId());
@@ -2742,7 +2797,14 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     PasteCommand createPasteCommand(final NonLinearBookImpl nlbToPaste) {
-        return new PasteCommand(this, nlbToPaste);
+        return new PasteCommand(this, nlbToPaste, Collections.emptyMap());
+    }
+
+    private PasteCommand createPasteCommand(
+            final NonLinearBookImpl nlbToPaste,
+            final Map<String, String> parentIdsMapping
+    ) {
+        return new PasteCommand(this, nlbToPaste, parentIdsMapping);
     }
 
     /**
