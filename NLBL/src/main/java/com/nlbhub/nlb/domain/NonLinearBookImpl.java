@@ -2146,8 +2146,17 @@ public class NonLinearBookImpl implements NonLinearBook {
                 // Please note, that we should copy from last column to the first, because
                 // in other case type column will not be changed properly
                 // (just like when editing manually)
-                for (int col = maxCol - 1; col > 0; col--) {
+                // Столбец 0 — флаг «external»: раньше цикл шёл до col > 0 и пропускал его, у
+                // вставленной копии флаг сбрасывался (#283). Столбец 1 — id, не меняется
+                for (int col = maxCol - 1; col >= 0; col--) {
+                    if (col == 1) {
+                        continue;
+                    }
                     final Object value = existingModel.getValueAt(row, col);
+                    if (col == 0) {
+                        model.setValueAt(value, row, col);
+                        continue;
+                    }
                     String text;
                     if (value instanceof Enum) {
                         text = ((Enum) value).name();
@@ -3754,6 +3763,33 @@ public class NonLinearBookImpl implements NonLinearBook {
                     }
                 }
             }
+            removeOrphanSidecars(mediaFiles, fileManipulator, mediaDir);
+        }
+    }
+
+    /**
+     * Сопутствующие файлы (.preset, .flag, .constrid, .redirect) ресурса, которого в книге уже
+     * нет, — удалить. Раньше удаление картинки или звука оставляло .preset и .flag (#208), и в
+     * книгах они накопились; книга их не читает, но они лежат в репозитории
+     */
+    private void removeOrphanSidecars(
+            final Set<MediaFileImpl> mediaFiles,
+            final @NotNull FileManipulator fileManipulator,
+            final File mediaDir
+    ) throws NLBIOException, NLBFileManipulationException {
+        final Set<String> names = new HashSet<>();
+        for (MediaFile mediaFile : mediaFiles) {
+            names.add(mediaFile.getFileName());
+        }
+        final File[] sidecars = mediaDir.listFiles((dir, name) -> !NON_SPECIAL_FILTER.accept(dir, name));
+        if (sidecars == null) {
+            return;
+        }
+        for (File sidecar : sidecars) {
+            final String base = sidecar.getName().substring(0, sidecar.getName().lastIndexOf('.'));
+            if (!names.contains(base) && !new File(mediaDir, base).exists()) {
+                fileManipulator.deleteFileOrDir(sidecar);
+            }
         }
     }
 
@@ -5238,6 +5274,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                 fileManipulator.deleteFileOrDir(new File(imagesDir, imageFileName));
                 fileManipulator.deleteFileOrDir(new File(imagesDir, imageFileName + REDIRECT_EXT));
                 fileManipulator.deleteFileOrDir(new File(imagesDir, imageFileName + CONSTRID_EXT));
+                // и остальные сопутствующие файлы (#208: .preset оставался в книге)
+                fileManipulator.deleteFileOrDir(new File(imagesDir, imageFileName + PRESET_EXT));
+                fileManipulator.deleteFileOrDir(new File(imagesDir, imageFileName + FLAG_EXT));
                 imageFileIterator.remove();
                 return;
             }
@@ -5261,6 +5300,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                 fileManipulator.deleteFileOrDir(new File(soundDir, soundFileName));
                 fileManipulator.deleteFileOrDir(new File(soundDir, soundFileName + REDIRECT_EXT));
                 fileManipulator.deleteFileOrDir(new File(soundDir, soundFileName + CONSTRID_EXT));
+                // и остальные сопутствующие файлы (#208: .preset оставался в книге)
+                fileManipulator.deleteFileOrDir(new File(soundDir, soundFileName + PRESET_EXT));
+                fileManipulator.deleteFileOrDir(new File(soundDir, soundFileName + FLAG_EXT));
                 soundFileIterator.remove();
                 return;
             }
