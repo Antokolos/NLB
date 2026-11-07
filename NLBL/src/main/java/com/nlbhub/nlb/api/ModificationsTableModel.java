@@ -151,7 +151,7 @@ public class ModificationsTableModel {
         final String cellValue = aValue.toString();  // will work for boolean values of externalFlag too
         switch (columnIndex) {
             case 0:
-                final boolean externalFlag = (Boolean) aValue;
+                final boolean externalFlag = (aValue instanceof Boolean) ? (Boolean) aValue : "true".equals(cellValue);
                 modification.setExternal(externalFlag);
                 break;
             // case 1: it is UNID, not changeable
