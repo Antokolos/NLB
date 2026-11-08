@@ -1288,15 +1288,78 @@ public class NonLinearBookFacade implements NLBObservable {
             final ProgressData progressData
     ) throws NLBVCSException, NLBConsistencyException, NLBFileManipulationException, NLBIOException {
         final File oldRoot = m_nlb.getRootDir();
+        checkSaveAsFolder(oldRoot, nlbFolder);
         m_nlb.setRootDir(nlbFolder);
-        // то, чего нет в модели книги, — до сохранения (метаданные медиа пишутся, только если
-        // папка images/sound уже есть), в VCS — после (сохранение создаёт репозиторий)
-        final List<String> copied = copyFilesOutsideModel(oldRoot, nlbFolder);
-        saveNLB(true, progressData);
-        for (String path : copied) {
-            m_vcsAdapter.add(path);
+        try {
+            // то, чего нет в модели книги, — до сохранения (метаданные медиа пишутся, только если
+            // папка images/sound уже есть), в VCS — после (сохранение создаёт репозиторий)
+            final List<String> copied = copyFilesOutsideModel(oldRoot, nlbFolder);
+            saveNLB(true, progressData);
+            for (String path : copied) {
+                m_vcsAdapter.add(path);
+            }
+        } catch (NLBVCSException | NLBConsistencyException | NLBFileManipulationException | NLBIOException e) {
+            restoreRootAfterFailedSaveAs(oldRoot);
+            throw e;
+        } catch (RuntimeException e) {
+            // раньше такое исключение (#163: IllegalStateException от JGit) пропадало в окне
+            // редактора без следа, а книга оставалась привязанной к недосохранённой папке
+            restoreRootAfterFailedSaveAs(oldRoot);
+            throw new NLBIOException("Cannot save the book to " + nlbFolder + ": " + e, e);
         }
         clearUndosAndPools();
+    }
+
+    /**
+     * Папка для «Сохранить как»: новая, пустая или репозиторий без книги (клон пустого репозитория
+     * с сервера: .git, README, LICENSE, .gitignore, .gitattributes). Иначе файлы другой книги
+     * смешались бы с этой (#163)
+     */
+    private static void checkSaveAsFolder(final File oldRoot, final File nlbFolder) throws NLBIOException {
+        try {
+            if (oldRoot != null && oldRoot.getCanonicalFile().equals(nlbFolder.getCanonicalFile())) {
+                throw new NLBIOException(
+                        "The book is already in " + nlbFolder + ". Use Save, or choose another folder for Save As"
+                );
+            }
+        } catch (IOException e) {
+            throw new NLBIOException("Cannot check the folder " + nlbFolder, e);
+        }
+        final String[] children = nlbFolder.list();
+        if (children == null) {
+            return;
+        }
+        final List<String> foreign = new ArrayList<>();
+        for (String child : children) {
+            if (!isRepositoryStarterFile(child)) {
+                foreign.add(child);
+            }
+        }
+        if (!foreign.isEmpty()) {
+            Collections.sort(foreign);
+            throw new NLBIOException(
+                    "The folder " + nlbFolder + " is not empty (" + String.join(", ", foreign.subList(0, Math.min(5, foreign.size())))
+                            + (foreign.size() > 5 ? ", ..." : "")
+                            + "). Choose an empty folder or a clone of an empty repository"
+            );
+        }
+    }
+
+    private static boolean isRepositoryStarterFile(final String name) {
+        final String lower = name.toLowerCase(Locale.ROOT);
+        return lower.equals(".git") || lower.equals(".gitignore") || lower.equals(".gitattributes")
+                || lower.startsWith("readme") || lower.startsWith("license") || lower.startsWith("licence");
+    }
+
+    private void restoreRootAfterFailedSaveAs(final File oldRoot) {
+        m_nlb.setRootDir(oldRoot);
+        if (oldRoot != null && oldRoot.isDirectory()) {
+            try {
+                m_vcsAdapter.openRepo(oldRoot.getCanonicalPath());
+            } catch (NLBVCSException | IOException | RuntimeException e) {
+                LOGGER.warn("Cannot reopen the repository of " + oldRoot + " after failed Save As", e);
+            }
+        }
     }
 
     /**

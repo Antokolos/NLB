@@ -104,6 +104,13 @@ public class GitAdapter implements VCSAdapter {
 
     @Override
     public void initRepo(String path) throws NLBVCSException {
+        if (new File(path, ".git").exists()) {
+            // Репозиторий уже есть — например, пустой клон с сервера, куда книгу сохраняют
+            // «Сохранить как», чтобы опубликовать: открыть его (история и remote остаются).
+            // JGit на create() бросал IllegalStateException «Repository already exists» (#163)
+            openRepo(path);
+            return;
+        }
         finishStatusesQuietly();
         try {
             m_localRepo = FileRepositoryBuilder.create(new File(path, ".git"));
