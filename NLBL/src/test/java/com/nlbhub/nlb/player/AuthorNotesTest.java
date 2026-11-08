@@ -104,6 +104,19 @@ public class AuthorNotesTest {
     }
 
     @Test
+    public void schemeLabelPrefersBookLanguageThenAnyLanguage() {
+        final MultiLangString notes = MultiLangString.createEmptyText();
+        assertEquals("заметок нет — пусто (на схеме будет заголовок)", "", notes.getNonEmpty("ru"));
+        notes.put("ru", "");
+        notes.put("zh", "备注");
+        notes.put("en", "Note");
+        assertEquals("на языке книги пусто — первый другой язык по алфавиту", "Note", notes.getNonEmpty("ru"));
+        notes.put("ru", "Заметка");
+        assertEquals("на языке книги есть — она", "Заметка", notes.getNonEmpty("ru"));
+        assertEquals("Note", notes.getNonEmpty("en"));
+    }
+
+    @Test
     public void notesArePastedWithPage() throws Exception {
         // как редактор: копировать и вставить через фасад
         final NonLinearBookFacade facade = new NonLinearBookFacade(new Author("t", "t@e"), new DummyVCSAdapter());

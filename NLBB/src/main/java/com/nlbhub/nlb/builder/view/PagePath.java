@@ -91,10 +91,10 @@ public class PagePath extends NodePath {
         final NonLinearBook nonLinearBook = (NonLinearBook) getAttribute(Constants.NLB_MODULE_ATTR);
         final Variable variable = nonLinearBook.getVariableById(page.getVarId());
         final StringBuilder text = new StringBuilder();
-        // Заметки автора, если есть, — вместо заголовка (#187)
-        final String label = (
-                StringHelper.notEmpty(page.getAuthorNotes()) ? page.getAuthorNotes() : page.getCaption()
-        );
+        // Заметки автора — вместо заголовка (#187): на языке книги, если на нём их нет — на другом
+        // языке, где есть; заголовок — только если заметок нет ни на одном языке
+        final String notes = page.getAuthorNotesTexts().getNonEmpty(nonLinearBook.getLanguage());
+        final String label = StringHelper.notEmpty(notes) ? notes : page.getCaption();
         if (!StringHelper.isEmpty(label)) {
             int labelSize = label.length();
             if (labelSize > MAX_CAPTION_CHARS_IN_PAGE_TEXT) {
