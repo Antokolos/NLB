@@ -1,0 +1,48 @@
+# Сборка и тесты на каждый PR и push в master. Тесты, которым нужны книги (сверка Java-плеера с
+# NLBNavigator и др.), идут на тестовых книгах из tools/player-reference/books.txt на
+# зафиксированных коммитах — с картинками и звуком: от них зависит модель экрана.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# Новый push в PR отменяет прежний прогон этого PR; прогоны master доходят до конца
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Fetch test books
+        run: |
+          echo "NLB_TEST_BOOKS=$RUNNER_TEMP/nlb-test-books" >> "$GITHUB_ENV"
+          NLB_TEST_BOOKS="$RUNNER_TEMP/nlb-test-books" sh tools/player-reference/fetch-books.sh --with-media
+
+      - name: Build and test
+        run: mvn -B -ntp package
+
+      - name: Test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: '**/target/surefire-reports/'
+          retention-days: 14
