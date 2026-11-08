@@ -101,10 +101,10 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private boolean m_soundSFX = DEFAULT_SOUND_SFX;
     private String m_varId = DEFAULT_VARID;
     private String m_timerVarId = DEFAULT_TVARID;
-    private MultiLangString m_caption = DEFAULT_CAPTION;
+    private MultiLangString m_caption = MultiLangString.createCopy(DEFAULT_CAPTION);
     private boolean m_useCaption = DEFAULT_USE_CAPTION;
     private boolean m_useMPL = DEFAULT_USE_MPL;
-    private MultiLangString m_text = DEFAULT_TEXT;
+    private MultiLangString m_text = MultiLangString.createCopy(DEFAULT_TEXT);
     private Theme m_theme = DEFAULT_THEME;
     private String m_moduleName;
     private boolean m_moduleExternal = DEFAULT_MODULE_EXTERNAL;
@@ -112,14 +112,14 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private MultiLangString m_traverseText;
     private boolean m_autoTraverse = DEFAULT_AUTO_TRAVERSE;
     private boolean m_autoReturn = DEFAULT_AUTO_RETURN;
-    private MultiLangString m_returnText = DEFAULT_RETURN_TEXT;
+    private MultiLangString m_returnText = MultiLangString.createCopy(DEFAULT_RETURN_TEXT);
     private String m_returnPageId = DEFAULT_RETURN_PAGE_ID;
     private String m_moduleConstrId = DEFAULT_MODULE_CONSTR_ID;
 
     private NonLinearBookImpl m_module;
 
-    private MultiLangString m_autowireInText = DEFAULT_AUTOWIRE_IN_TEXT;
-    private MultiLangString m_autowireOutText = DEFAULT_AUTOWIRE_OUT_TEXT;
+    private MultiLangString m_autowireInText = MultiLangString.createCopy(DEFAULT_AUTOWIRE_IN_TEXT);
+    private MultiLangString m_autowireOutText = MultiLangString.createCopy(DEFAULT_AUTOWIRE_OUT_TEXT);
 
     private boolean m_autoIn = DEFAULT_AUTO_IN;
     private boolean m_needsAction = DEFAULT_NEEDS_ACTION;
@@ -303,7 +303,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     public void setTexts(final MultiLangString text) {
-        m_text = text;
+        m_text = copyOf(text);
     }
 
     @Override
@@ -357,7 +357,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     public void setCaptions(final MultiLangString caption) {
-        m_caption = caption;
+        m_caption = copyOf(caption);
     }
 
     public void setCaption(String caption) {
@@ -400,7 +400,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     public void setTraverseTexts(final MultiLangString traverseText) {
-        m_traverseText = traverseText;
+        m_traverseText = copyOf(traverseText);
     }
 
     @Override
@@ -434,7 +434,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     public void setReturnTexts(final MultiLangString returnText) {
-        m_returnText = returnText;
+        m_returnText = copyOf(returnText);
     }
 
     @Override
@@ -550,7 +550,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     public void setAutowireInTexts(MultiLangString autowireInText) {
-        m_autowireInText = autowireInText;
+        m_autowireInText = copyOf(autowireInText);
     }
 
     @Override
@@ -568,7 +568,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     }
 
     public void setAutowireOutTexts(MultiLangString autowireOutText) {
-        m_autowireOutText = autowireOutText;
+        m_autowireOutText = copyOf(autowireOutText);
     }
 
     @Override
@@ -1039,4 +1039,14 @@ public class PageImpl extends AbstractNodeItem implements Page {
             );
         }
     }
+
+    /**
+     * Своя копия текстов: элемент не делит объект ни с текстом по умолчанию (общей константой), ни с
+     * тем, кто передал тексты. Иначе одноязычный сеттер (setText и т. п.) менял бы чужой объект — а
+     * текст, совпавший с изменённым «текстом по умолчанию», сохранение удаляет (#7)
+     */
+    private static MultiLangString copyOf(final MultiLangString texts) {
+        return (texts != null) ? MultiLangString.createCopy(texts) : null;
+    }
+
 }

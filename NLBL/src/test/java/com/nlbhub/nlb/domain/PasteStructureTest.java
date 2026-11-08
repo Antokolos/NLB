@@ -4,7 +4,6 @@ import com.nlbhub.nlb.api.Link;
 import com.nlbhub.nlb.api.Obj;
 import com.nlbhub.nlb.api.Page;
 import com.nlbhub.nlb.api.Variable;
-import com.nlbhub.nlb.util.MultiLangString;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -70,10 +69,7 @@ public class PasteStructureTest {
 
     private static PageImpl page(NonLinearBookImpl nlb, String text) {
         final PageImpl page = new PageImpl(nlb);
-        // setText() меняет общий DEFAULT_TEXT новой страницы — задаём свой объект текста
-        final MultiLangString texts = MultiLangString.createEmptyText();
-        texts.put(nlb.getLanguage(), text);
-        page.setTexts(texts);
+        page.setText(text);
         nlb.addPage(page);
         return page;
     }
