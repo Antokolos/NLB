@@ -1040,6 +1040,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             if (m_afterOpen != null) {
                 m_afterOpen.run();
             }
+            warnIfBookIsNewer();
             // книга открыта (или заново после pull) — что нового на сервере
             checkServer();
         }
@@ -2090,6 +2091,24 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             }
         });
         paneEditorInfo.getPaneNlbFacade().addObserver(this);
+    }
+
+    /**
+     * Книгу уже сохраняли более новым NLBB (#166): совет обновиться — этот редактор может не знать
+     * того, что записал новый, и потерять это при сохранении
+     */
+    private void warnIfBookIsNewer() {
+        final String newer = getMainPaneInfo().getPaneNlbFacade().getNewerNlbVersion();
+        if (newer != null) {
+            JOptionPane.showMessageDialog(
+                    m_mainFramePanel,
+                    "This book was saved by NLBB " + newer + ", and you are using NLBB " + NLBVersion.current() + ".\n"
+                            + "Please update NLBB: an older version may not know everything the newer one saved\n"
+                            + "and can lose it when saving the book.",
+                    "Newer NLBB version",
+                    JOptionPane.WARNING_MESSAGE
+            );
+        }
     }
 
     private File chooseSaveDir() {

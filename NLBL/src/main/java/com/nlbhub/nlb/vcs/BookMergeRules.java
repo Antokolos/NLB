@@ -16,7 +16,8 @@ import java.util.TreeSet;
  *     обе строки дописаны в конец, git видит пересечение. Слияние списков: наш порядок без
  *     удалённого на сервере, затем добавленное на сервере (в его порядке);</li>
  *     <li>положение и размер на схеме (coords/left, top, width, height): на игру не влияют —
- *     остаётся наше.</li>
+ *     остаётся наше;</li>
+ *     <li>nlbversion (версия редактора, сохранявшего книгу, #166) — бо́льшая из двух.</li>
  * </ul>
  * И сверка после любого слияния: lnkorder и modorder должны перечислять ровно те ссылки и
  * модификации, папки которых есть (иначе книга не открывается — createSortedDirList); git
@@ -35,6 +36,17 @@ public final class BookMergeRules {
      */
     public static boolean isList(final String path) {
         return LISTS.contains(lastSegment(path));
+    }
+
+    /**
+     * Файл — версия редактора, сохранявшего книгу (сливается выбором бо́льшей)
+     */
+    public static boolean isNlbVersion(final String path) {
+        return "nlbversion".equals(lastSegment(path));
+    }
+
+    public static String mergeNlbVersion(final String ours, final String theirs) {
+        return com.nlbhub.nlb.api.NLBVersion.max(ours, theirs);
     }
 
     /**

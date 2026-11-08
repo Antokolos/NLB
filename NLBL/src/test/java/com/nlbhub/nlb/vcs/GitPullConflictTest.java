@@ -303,6 +303,15 @@ public class GitPullConflictTest {
     }
 
     @Test
+    public void nlbVersionSavedByBothMergesToNewer() throws Exception {
+        // #166: соавторы сохранили книгу разными NLBB — пересечение решается бо́льшей версией
+        edit(m_theirs, "their save", "nlbversion", "1.0.7-SNAPSHOT");
+        edit(m_mine, "my save", "nlbversion", "1.0.6");
+        pullQuietly();
+        assertEquals("1.0.7-SNAPSHOT", read(m_mine, "nlbversion"));
+    }
+
+    @Test
     public void linkDeletedOnServerAndEditedHere() throws Exception {
         edit(m_theirs, "delete link", LINK, null, "pages/p1/lnkorder", null);
         edit(m_mine, "edit link", LINK + "/text/en", "To the open gate");

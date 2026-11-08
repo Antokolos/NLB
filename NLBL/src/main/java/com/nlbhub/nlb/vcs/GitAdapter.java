@@ -1016,6 +1016,10 @@ public class GitAdapter implements VCSAdapter {
                 final String[] versions = stages.get(path);
                 final String merged = BookMergeRules.mergeList(versions[0], versions[1], versions[2]);
                 writeResolved(path, merged.isEmpty() ? null : merged);
+            } else if (BookMergeRules.isNlbVersion(path)) {
+                final String[] versions = stages.get(path);
+                final String merged = BookMergeRules.mergeNlbVersion(versions[1], versions[2]);
+                writeResolved(path, merged.isEmpty() ? null : merged);
             } else {
                 remaining.add(path);
             }
