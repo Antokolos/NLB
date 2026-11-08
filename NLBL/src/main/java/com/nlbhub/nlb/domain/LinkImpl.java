@@ -78,11 +78,11 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     /**
      * Link text.
      */
-    private MultiLangString m_text = DEFAULT_TEXT;
+    private MultiLangString m_text = MultiLangString.createCopy(DEFAULT_TEXT);
     /**
      * Link alt text (when link is inaccessible).
      */
-    private MultiLangString m_altText = DEFAULT_ALT_TEXT;
+    private MultiLangString m_altText = MultiLangString.createCopy(DEFAULT_ALT_TEXT);
     /**
      * Link constraint Id.
      */
@@ -207,7 +207,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     }
 
     public void setTexts(final MultiLangString text) {
-        m_text = text;
+        m_text = copyOf(text);
     }
 
     public void setText(String text) {
@@ -215,7 +215,7 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     }
 
     public void setAltTexts(final MultiLangString altText) {
-        m_altText = altText;
+        m_altText = copyOf(altText);
     }
 
     public void setAltText(String altText) {
@@ -486,4 +486,14 @@ public class LinkImpl extends AbstractModifyingItem implements Link {
     public void notifyObservers() {
         m_observerHandler.notifyObservers();
     }
+
+    /**
+     * Своя копия текстов: элемент не делит объект ни с текстом по умолчанию (общей константой), ни с
+     * тем, кто передал тексты. Иначе одноязычный сеттер (setText и т. п.) менял бы чужой объект — а
+     * текст, совпавший с изменённым «текстом по умолчанию», сохранение удаляет (#7)
+     */
+    private static MultiLangString copyOf(final MultiLangString texts) {
+        return (texts != null) ? MultiLangString.createCopy(texts) : null;
+    }
+
 }

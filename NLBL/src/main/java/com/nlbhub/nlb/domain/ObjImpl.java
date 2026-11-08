@@ -109,10 +109,10 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     private String m_constrId = DEFAULT_CONSTRID;
     private String m_commonToId = DEFAULT_COMMON_TO_ID;
     private String m_name = DEFAULT_NAME;
-    private MultiLangString m_disp = DEFAULT_DISP;
-    private MultiLangString m_text = DEFAULT_TEXT;
-    private MultiLangString m_actText = DEFAULT_ACT_TEXT;
-    private MultiLangString m_nouseText = DEFAULT_NOUSE_TEXT;
+    private MultiLangString m_disp = MultiLangString.createCopy(DEFAULT_DISP);
+    private MultiLangString m_text = MultiLangString.createCopy(DEFAULT_TEXT);
+    private MultiLangString m_actText = MultiLangString.createCopy(DEFAULT_ACT_TEXT);
+    private MultiLangString m_nouseText = MultiLangString.createCopy(DEFAULT_NOUSE_TEXT);
     private boolean m_graphical = DEFAULT_GRAPHICAL;
     private boolean m_showOnCursor = DEFAULT_SHOW_ON_CURSOR;
     private boolean m_preserved = DEFAULT_PRESERVED;
@@ -258,7 +258,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     }
 
     public void setTexts(final MultiLangString text) {
-        m_text = text;
+        m_text = copyOf(text);
     }
 
     public MultiLangString getActTexts() {
@@ -266,7 +266,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     }
 
     public void setActTexts(MultiLangString actText) {
-        m_actText = actText;
+        m_actText = copyOf(actText);
     }
 
     @Override
@@ -275,7 +275,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     }
 
     public void setNouseTexts(MultiLangString nouseText) {
-        m_nouseText = nouseText;
+        m_nouseText = copyOf(nouseText);
     }
 
     @Override
@@ -638,7 +638,7 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
     }
 
     public void setDisps(final MultiLangString disp) {
-        m_disp = disp;
+        m_disp = copyOf(disp);
     }
 
     public void setDisp(String disp) {
@@ -1292,4 +1292,14 @@ public class ObjImpl extends AbstractNodeItem implements Obj {
         }
         return result.toString();
     }
+
+    /**
+     * Своя копия текстов: элемент не делит объект ни с текстом по умолчанию (общей константой), ни с
+     * тем, кто передал тексты. Иначе одноязычный сеттер (setText и т. п.) менял бы чужой объект — а
+     * текст, совпавший с изменённым «текстом по умолчанию», сохранение удаляет (#7)
+     */
+    private static MultiLangString copyOf(final MultiLangString texts) {
+        return (texts != null) ? MultiLangString.createCopy(texts) : null;
+    }
+
 }
