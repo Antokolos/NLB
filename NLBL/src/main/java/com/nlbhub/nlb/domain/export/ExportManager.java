@@ -1257,6 +1257,11 @@ public abstract class ExportManager {
             }
 
             @Override
+            public MultiLangString getAuthorNotesTexts() {
+                return MultiLangString.createEmptyText();
+            }
+
+            @Override
             public MultiLangString getCaptions() {
                 return escapeMultiLang(page.getCaptions());
             }

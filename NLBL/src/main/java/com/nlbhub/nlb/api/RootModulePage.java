@@ -126,6 +126,11 @@ public class RootModulePage implements Page {
     }
 
     @Override
+    public MultiLangString getAuthorNotesTexts() {
+        return MultiLangString.createEmptyText();
+    }
+
+    @Override
     public String getNotes() {
         return Constants.EMPTY_STRING;
     }

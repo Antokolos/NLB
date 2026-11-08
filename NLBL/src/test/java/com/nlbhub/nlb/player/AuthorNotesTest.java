@@ -6,6 +6,7 @@ import com.nlbhub.nlb.api.PropertyManager;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.PageImpl;
+import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.vcs.Author;
 import com.nlbhub.nlb.vcs.DummyVCSAdapter;
 import org.junit.BeforeClass;
@@ -57,7 +58,8 @@ public class AuthorNotesTest {
             final File book = dir.resolve("book").toFile();
             facade.saveAs(book, new DummyProgressData());
 
-            assertEquals(NOTES, Files.readString(new File(book, "pages/" + page.getId() + "/notes").toPath(),
+            assertEquals(NOTES, Files.readString(
+                    new File(book, "pages/" + page.getId() + "/notes/" + nlb.getLanguage()).toPath(),
                     StandardCharsets.UTF_8));
             assertFalse("без заметок — без файла", new File(book, "pages/" + plain.getId() + "/notes").exists());
 
@@ -65,6 +67,37 @@ public class AuthorNotesTest {
             loaded.load(book.getPath(), new DummyProgressData());
             assertEquals(NOTES, loaded.getPageById(page.getId()).getAuthorNotes());
             assertEquals("", loaded.getPageById(plain.getId()).getAuthorNotes());
+        } finally {
+            deleteTree(dir);
+        }
+    }
+
+    @Test
+    public void notesAreKeptPerLanguage() throws Exception {
+        final Path dir = Files.createTempDirectory("author-notes-lang");
+        try {
+            final NonLinearBookFacade facade = new NonLinearBookFacade(new Author("t", "t@e"), new DummyVCSAdapter());
+            facade.createNewBook();
+            final NonLinearBookImpl nlb = (NonLinearBookImpl) facade.getNlb();
+            final PageImpl page = new PageImpl(nlb);
+            page.setText("Текст");
+            final MultiLangString notes = MultiLangString.createEmptyText();
+            notes.put("ru", "Заметка по-русски");
+            notes.put("en", "Note in English");
+            page.setAuthorNotesTexts(notes);
+            nlb.addPage(page);
+            final File book = dir.resolve("book").toFile();
+            facade.saveAs(book, new DummyProgressData());
+            assertEquals("Note in English", Files.readString(
+                    new File(book, "pages/" + page.getId() + "/notes/en").toPath(), StandardCharsets.UTF_8));
+
+            final NonLinearBookImpl loaded = new NonLinearBookImpl();
+            loaded.load(book.getPath(), new DummyProgressData());
+            final Page loadedPage = loaded.getPageById(page.getId());
+            assertEquals("Заметка по-русски", loadedPage.getAuthorNotesTexts().get("ru"));
+            assertEquals("Note in English", loadedPage.getAuthorNotesTexts().get("en"));
+            assertEquals("на языке книги", loadedPage.getAuthorNotesTexts().get(loaded.getLanguage()),
+                    loadedPage.getAuthorNotes());
         } finally {
             deleteTree(dir);
         }

@@ -68,9 +68,9 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String SOUND_FILE_NAME = "sound";
     private static final String SOUND_SFX_FILE_NAME = "soundsfx";
     private static final String THEME_FILE_NAME = "theme";
-    /** Заметки автора (#187) */
-    private static final String AUTHOR_NOTES_FILE_NAME = "notes";
-    private static final String DEFAULT_AUTHOR_NOTES = Constants.EMPTY_STRING;
+    /** Заметки автора (#187): каталог notes, файл на каждый язык — как caption */
+    private static final String AUTHOR_NOTES_SUBDIR_NAME = "notes";
+    private static final MultiLangString DEFAULT_AUTHOR_NOTES = MultiLangString.createEmptyText();
     private static final String VARID_FILE_NAME = "varid";
     private static final String TVARID_FILE_NAME = "tvarid";
     private static final String CAPTION_SUBDIR_NAME = "caption";
@@ -108,7 +108,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private boolean m_useCaption = DEFAULT_USE_CAPTION;
     private boolean m_useMPL = DEFAULT_USE_MPL;
     private MultiLangString m_text = MultiLangString.createCopy(DEFAULT_TEXT);
-    private String m_authorNotes = DEFAULT_AUTHOR_NOTES;
+    private MultiLangString m_authorNotes = MultiLangString.createCopy(DEFAULT_AUTHOR_NOTES);
     private Theme m_theme = DEFAULT_THEME;
     private String m_moduleName;
     private boolean m_moduleExternal = DEFAULT_MODULE_EXTERNAL;
@@ -163,7 +163,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         setUseCaption(source.isUseCaption());
         setUseMPL(source.isUseMPL());
         setTexts(source.getTexts());
-        setAuthorNotes(source.getAuthorNotes());
+        setAuthorNotesTexts(source.getAuthorNotesTexts());
         setTheme(source.getTheme());
         setModuleName(source.getModuleName());
         setModuleExternal(source.isModuleExternal());
@@ -350,11 +350,23 @@ public class PageImpl extends AbstractNodeItem implements Page {
 
     @Override
     public String getAuthorNotes() {
-        return m_authorNotes;
+        return m_authorNotes.get(getCurrentNLB().getLanguage());
     }
 
+    @Override
+    public MultiLangString getAuthorNotesTexts() {
+        return MultiLangString.createCopy(m_authorNotes);
+    }
+
+    /** Заметки на языке книги */
     public void setAuthorNotes(final String authorNotes) {
-        m_authorNotes = (authorNotes != null) ? authorNotes : DEFAULT_AUTHOR_NOTES;
+        m_authorNotes.put(getCurrentNLB().getLanguage(), authorNotes);
+    }
+
+    public void setAuthorNotesTexts(final MultiLangString authorNotes) {
+        m_authorNotes = (
+                (authorNotes != null) ? MultiLangString.createCopy(authorNotes) : MultiLangString.createCopy(DEFAULT_AUTHOR_NOTES)
+        );
     }
 
     @Override
@@ -712,9 +724,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     m_text,
                     DEFAULT_TEXT
             );
-            fileManipulator.writeOptionalString(
-                    pageDir,
-                    AUTHOR_NOTES_FILE_NAME,
+            fileManipulator.writeOptionalMultiLangString(
+                    new File(pageDir, AUTHOR_NOTES_SUBDIR_NAME),
                     m_authorNotes,
                     DEFAULT_AUTHOR_NOTES
             );
@@ -916,9 +927,8 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     )
             );
             m_authorNotes = (
-                    FileManipulator.getOptionalFileAsString(
-                            pageDir,
-                            AUTHOR_NOTES_FILE_NAME,
+                    FileManipulator.readOptionalMultiLangString(
+                            new File(pageDir, AUTHOR_NOTES_SUBDIR_NAME),
                             DEFAULT_AUTHOR_NOTES
                     )
             );

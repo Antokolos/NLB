@@ -671,7 +671,7 @@ public class NonLinearBookFacade implements NLBObservable {
             final boolean globalAutowire,
             final boolean noSave,
             final boolean autosFirst,
-            final String authorNotes,
+            final MultiLangString authorNotes,
             final LinksTableModel linksTableModel
     ) {
         if (refuseChange(true)) {

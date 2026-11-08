@@ -68,6 +68,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private MultiLangString m_returnTexts;
     private MultiLangString m_autowireInTexts;
     private MultiLangString m_autowireOutTexts;
+    private MultiLangString m_authorNotesTexts;
     private String m_selectedLanguage;
     private String m_imageFileName;
     private String m_soundFileName;
@@ -270,6 +271,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 m_returnTextTextField.setText(m_returnTexts.get(selectedLanguage));
                 m_autowireInTextTextField.setText(m_autowireInTexts.get(selectedLanguage));
                 m_autowireOutTextTextField.setText(m_autowireOutTexts.get(selectedLanguage));
+                m_authorNotesTextArea.setText(m_authorNotesTexts.get(selectedLanguage));
                 m_selectedLanguage = selectedLanguage;
             }
         });
@@ -341,6 +343,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_autowireInTexts.put(m_selectedLanguage, m_autowireInTextTextField.getText());
         m_autowireOutTexts.put(m_selectedLanguage, m_autowireOutTextTextField.getText());
         m_returnTexts.put(m_selectedLanguage, m_returnTextTextField.getText());
+        m_authorNotesTexts.put(m_selectedLanguage, m_authorNotesTextArea.getText());
     }
 
     public void showDialog() {
@@ -379,6 +382,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
 
         m_pageCaptionTexts = page.getCaptions();
         m_pageTexts = page.getTexts();
+        m_authorNotesTexts = page.getAuthorNotesTexts();
         m_traverseTexts = page.getTraverseTexts();
         m_returnTexts = page.getReturnTexts();
         m_selectedLanguage = (String) m_languageComboBox.getSelectedItem();
@@ -505,7 +509,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 m_globalAutowireCheckBox.isSelected(),
                 m_noSaveCheckBox.isSelected(),
                 m_autosFirstCheckBox.isSelected(),
-                m_authorNotesTextArea.getText(),
+                m_authorNotesTexts,
                 ((LinksTableModelSwing) m_linksTable.getModel()).getTableModel()
         );
         m_nlbFacade.removeObserver(m_observerId);

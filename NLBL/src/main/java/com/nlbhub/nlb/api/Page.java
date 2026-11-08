@@ -114,6 +114,9 @@ public interface Page extends NodeItem {
      */
     public String getAuthorNotes();
 
+    /** Заметки автора на всех языках книги (как {@link #getCaptions()}) */
+    public MultiLangString getAuthorNotesTexts();
+
     public MultiLangString getCaptions();
 
     public boolean isUseCaption();
