@@ -104,4 +104,13 @@
             <version>4.0.5</version>
         </dependency>
     </dependencies>
+    <build>
+        <resources>
+            <!-- nlbversion.properties: версия проекта для книги (nlbversion, #166) -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
 </project>

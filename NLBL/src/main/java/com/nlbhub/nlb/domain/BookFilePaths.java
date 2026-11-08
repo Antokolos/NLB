@@ -49,6 +49,7 @@ public final class BookFilePaths {
         FIELDS.put("language", "language");
         FIELDS.put("author", "author");
         FIELDS.put("version", "version");
+        FIELDS.put("nlbversion", "NLBB version that saved the book");
     }
 
     private BookFilePaths() {

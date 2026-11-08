@@ -101,6 +101,11 @@ public class NonLinearBookImpl implements NonLinearBook {
     private static final String TITLE_FILE_NAME = "title";
     private static final String AUTHOR_FILE_NAME = "author";
     private static final String VERSION_FILE_NAME = "version";
+    /**
+     * Наибольшая версия редактора NLBB, сохранявшего книгу (#166): старый редактор по ней советует
+     * обновиться. Только у главной книги
+     */
+    public static final String NLB_VERSION_FILE_NAME = "nlbversion";
     private static final String PERFECT_GAME_ACHIEVEMENT_FILE_NAME = "perfgame";
     private static final String PAGES_DIR_NAME = "pages";
     private static final String OBJS_DIR_NAME = "objs";
@@ -125,6 +130,8 @@ public class NonLinearBookImpl implements NonLinearBook {
     private String m_title;
     private String m_author;
     private String m_version;
+    /** Версия редактора из файла nlbversion (или записанная последним сохранением) */
+    private String m_nlbVersion = NLBVersion.UNKNOWN;
     private String m_perfectGameAchievementName;
     private boolean m_fullAutowire;
     private boolean m_suppressMedia;
@@ -2954,6 +2961,7 @@ public class NonLinearBookImpl implements NonLinearBook {
     }
 
     public void clear() throws NLBVCSException {
+        m_nlbVersion = NLBVersion.UNKNOWN;
         m_pages.clear();
         m_objs.clear();
         m_variables.clear();
@@ -3673,6 +3681,27 @@ public class NonLinearBookImpl implements NonLinearBook {
                         DEFAULT_PERFECT_GAME_ACHIEVEMENT_NAME
                 )
         );
+        m_nlbVersion = (
+                isMainBook()
+                        ? FileManipulator.getOptionalFileAsString(rootDir, NLB_VERSION_FILE_NAME, NLBVersion.UNKNOWN).trim()
+                        : NLBVersion.UNKNOWN
+        );
+    }
+
+    /**
+     * Версия редактора, сохранявшего книгу последним из самых новых (пусто — неизвестна: книга
+     * сохранялась только редактором до #166)
+     */
+    public String getNlbVersion() {
+        return m_nlbVersion;
+    }
+
+    /**
+     * Главная книга, а не модуль: родитель главной — заглушка DummyNLB (страница-родитель у неё
+     * тоже есть — RootModulePage), у модуля — книга, где лежит страница модуля
+     */
+    private boolean isMainBook() {
+        return m_parentNLB == null || m_parentNLB instanceof DummyNLB;
     }
 
     private void readPages(
@@ -4371,6 +4400,11 @@ public class NonLinearBookImpl implements NonLinearBook {
             fileManipulator.writeOptionalString(rootDir, TITLE_FILE_NAME, m_title, DEFAULT_TITLE);
             fileManipulator.writeOptionalString(rootDir, AUTHOR_FILE_NAME, m_author, DEFAULT_AUTHOR);
             fileManipulator.writeOptionalString(rootDir, VERSION_FILE_NAME, m_version, DEFAULT_VERSION);
+        }
+        // Не понижать: книгу, сохранённую более новым редактором, старый не делает «своей»
+        if (isMainBook()) {
+            m_nlbVersion = NLBVersion.max(m_nlbVersion, NLBVersion.current());
+            fileManipulator.writeOptionalString(rootDir, NLB_VERSION_FILE_NAME, m_nlbVersion, NLBVersion.UNKNOWN);
         }
     }
 

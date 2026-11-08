@@ -301,6 +301,20 @@ public class NonLinearBookFacade implements NLBObservable {
         return m_nlb;
     }
 
+    /**
+     * Версия редактора, которым книгу уже сохраняли, если она новее этого (#166): тогда автору
+     * стоит обновить NLBB — старый редактор может потерять то, чего не знает. Иначе null
+     */
+    public String getNewerNlbVersion() {
+        final String bookVersion = m_nlb.getNlbVersion();
+        final String current = NLBVersion.current();
+        if (NLBVersion.isKnown(bookVersion) && NLBVersion.isKnown(current)
+                && NLBVersion.compare(bookVersion, current) > 0) {
+            return bookVersion;
+        }
+        return null;
+    }
+
     public void clear() throws NLBVCSException {
         m_nlb.clear();
         if (m_rootFacade) {
