@@ -5,6 +5,17 @@ Java-плеер проверяется так: тот же ввод, что по
 `NLBL/src/test/resources/player-reference/<книга>/walk-N.{input,log}`, манифест —
 `manifest.properties` (коммиты NLBNavigator и книг).
 
+## Только скачать книги (для тестов)
+
+```bash
+tools/player-reference/fetch-books.sh --with-media
+```
+
+Книги из `books.txt` на зафиксированных коммитах, с подмодулями, — в `NLB_TEST_BOOKS`; без
+сборки NLBNavigator. Так их скачивает CI (`.github/workflows/ci.yml`). Без `--with-media` —
+без каталогов `images/` и `sound/` (несколько мегабайт вместо ~2,3 ГБ), но тогда тесты,
+которым нужны медиафайлы (сверка экрана и прохождений, «Сохранить как»), не проходят.
+
 ## Пересобрать эталоны
 
 ```bash
