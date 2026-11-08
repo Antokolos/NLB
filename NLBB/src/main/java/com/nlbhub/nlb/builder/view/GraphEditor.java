@@ -667,10 +667,19 @@ public class GraphEditor extends PCanvas {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (isAddPageMode()) {
-                    addNode(e.getPoint());
-                } else if (isAddObjMode()) {
-                    addObjNode(e.getPoint());
+                if (isAddPageMode() || isAddObjMode()) {
+                    // Новая страница или объект — только одиночным щелчком по пустому месту схемы.
+                    // Этот обработчик холста получает все щелчки: раньше двойной щелчок по странице
+                    // (открыть её свойства) добавлял поверх неё две новые, а двойной щелчок по
+                    // пустому месту — две вместо одной: второй щелчок попадал на только что
+                    // добавленную (#17)
+                    if (e.getClickCount() == 1 && !isOverGraphItem(e.getPoint())) {
+                        if (isAddPageMode()) {
+                            addNode(e.getPoint());
+                        } else {
+                            addObjNode(e.getPoint());
+                        }
+                    }
                 } else if (isSelectionMode()) {
                     if (m_selectionStart == null) {
                         m_selectionStart = new Point2D.Double();
@@ -764,6 +773,14 @@ public class GraphEditor extends PCanvas {
         m_dragEventHandler.deselect();
         m_dragEventHandlerObjs.deselect();
         m_dragEventHandlerLinks.deselect();
+    }
+
+    /**
+     * Под точкой холста — элемент схемы (страница, объект, ссылка или их подписи), а не пустое место
+     */
+    private boolean isOverGraphItem(final Point2D point) {
+        final PNode picked = getCamera().pick(point.getX(), point.getY(), 1).getPickedNode();
+        return picked != null && picked != getCamera() && !(picked instanceof PLayer);
     }
 
     public void addNode(Point2D point) {
