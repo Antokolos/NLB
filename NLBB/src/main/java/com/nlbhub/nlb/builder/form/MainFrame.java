@@ -1062,6 +1062,13 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                         m_mainFramePanel,
                         "Error while saving: " + ex.toString()
                 );
+            } catch (RuntimeException ex) {
+                // иначе исключение пропадает в SwingWorker без следа (#163)
+                LOGGER.error("Error while saving to " + m_saveDir, ex);
+                JOptionPane.showMessageDialog(
+                        m_mainFramePanel,
+                        "Error while saving: " + ex.toString()
+                );
             }
             return null;
         }
@@ -1081,6 +1088,13 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 PaneEditorInfo editorInfo = getMainPaneInfo();
                 editorInfo.getPaneGraphEditor().save(this);
             } catch (NLBVCSException | NLBConsistencyException | NLBIOException | NLBFileManipulationException ex) {
+                JOptionPane.showMessageDialog(
+                        m_mainFramePanel,
+                        "Error while saving: " + ex.toString()
+                );
+            } catch (RuntimeException ex) {
+                // иначе исключение пропадает в SwingWorker без следа (#163)
+                LOGGER.error("Error while saving", ex);
                 JOptionPane.showMessageDialog(
                         m_mainFramePanel,
                         "Error while saving: " + ex.toString()
