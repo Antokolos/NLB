@@ -806,6 +806,8 @@ public class NonLinearBookImpl implements NonLinearBook {
      * @version 1.0 1/23/14
      */
     class UpdateObjCommand implements NLBCommand {
+        /** Изменённые ссылки на объект по имени: {id переменной, прежнее имя, прежнее значение} */
+        private final List<String[]> m_objRefChanges = new ArrayList<>();
         private final ObjImpl m_obj;
         private VariableTracker m_variableTracker;
         private VariableTracker m_deftagTracker;
@@ -1143,6 +1145,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setMorphOverId(m_morphOverTracker.execute());
             m_obj.setMorphOutId(m_morphOutTracker.execute());
             m_obj.setName(m_newObjName);
+            updateObjRefs();
             m_obj.setImageFileName(m_newImageFileName);
             m_obj.setSoundFileName(m_newSoundFileName);
             m_obj.setSoundSFX(m_newSoundSFX);
@@ -1186,6 +1189,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setMorphOverId(m_morphOverTracker.revert());
             m_obj.setMorphOutId(m_morphOutTracker.revert());
             m_obj.setName(m_existingObjName);
+            revertObjRefs();
             m_obj.setImageFileName(m_existingImageFileName);
             m_obj.setSoundFileName(m_existingSoundFileName);
             m_obj.setSoundSFX(m_existingSoundSFX);
@@ -1219,6 +1223,54 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_obj.setImageInInventory(m_existingImageInInventory);
             m_obj.notifyObservers();
         }
+
+        /**
+         * Ссылки на объект по имени (OBJREF: morphover, morphout, commonTo) хранят имя и id объекта,
+         * найденного по имени при правке. Объект, получивший имя позже ссылки, раньше не находился —
+         * в id оставалось N/A, и экспорт и плееры ссылку теряли (#164). Теперь объект с новым именем
+         * подхватывает ссылки с этим именем, ещё не нашедшие живой объект, а ссылки на него при
+         * переименовании получают новое имя. Отменяется вместе с правкой объекта
+         */
+        private void updateObjRefs() {
+            m_objRefChanges.clear();
+            final String newName = m_newObjName;
+            if (StringHelper.isEmpty(newName)) {
+                return;
+            }
+            for (VariableImpl variable : m_variables) {
+                if (variable.isDeleted() || variable.getType() != Variable.Type.OBJREF) {
+                    continue;
+                }
+                final String value = variable.getValue();
+                final boolean refersToThis = m_obj.getId().equals(value);
+                if (
+                        (refersToThis && !newName.equals(variable.getName()))
+                                || (!refersToThis && newName.equals(variable.getName()) && !isLiveObjId(value))
+                ) {
+                    m_objRefChanges.add(new String[]{variable.getId(), variable.getName(), value});
+                    variable.setName(newName);
+                    variable.setValue(m_obj.getId());
+                }
+            }
+        }
+
+        private void revertObjRefs() {
+            for (int i = m_objRefChanges.size() - 1; i >= 0; i--) {
+                final String[] change = m_objRefChanges.get(i);
+                final VariableImpl variable = getVariableImplById(change[0]);
+                if (variable != null) {
+                    variable.setName(change[1]);
+                    variable.setValue(change[2]);
+                }
+            }
+            m_objRefChanges.clear();
+        }
+    }
+
+    /** id живого (не удалённого) объекта этой книги */
+    private boolean isLiveObjId(final String objId) {
+        final ObjImpl obj = StringHelper.isEmpty(objId) ? null : m_objs.get(objId);
+        return obj != null && !obj.isDeleted();
     }
 
     /**
@@ -2926,7 +2978,8 @@ public class NonLinearBookImpl implements NonLinearBook {
             return NullObj.create();
         }
         for (ObjImpl obj : m_objs.values()) {
-            if (objName.equals(obj.getName())) {
+            // удалённый объект с тем же именем не в счёт: иначе ссылка указывала бы на него
+            if (!obj.isDeleted() && objName.equals(obj.getName())) {
                 return obj;
             }
         }
@@ -4741,6 +4794,25 @@ public class NonLinearBookImpl implements NonLinearBook {
                 default:
                     // Do nothing
             }
+        }
+        for (VariableImpl variable : m_variables) {
+            if (variable.isDeleted() || variable.getType() != Variable.Type.OBJREF || isLiveObjId(variable.getValue())) {
+                continue;
+            }
+            final ObjImpl owner = m_objs.get(variable.getTarget());
+            if (owner == null || owner.isDeleted()) {
+                continue;
+            }
+            SearchResult searchResult = new SearchResult();
+            searchResult.setModulePageId(modulePageId);
+            searchResult.setId(owner.getId());
+            searchResult.addInformation("Object reference");
+            searchResult.addInformation(variable.getName());
+            searchResult.addInformation(
+                    "Referenced object not found: no object named '" + variable.getName()
+                            + "' (morph over / morph out / common to)"
+            );
+            result.addSearchResult(searchResult);
         }
         for (ObjImpl obj : getObjsInContainerLoop()) {
             SearchResult searchResult = new SearchResult();
