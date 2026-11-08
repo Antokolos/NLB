@@ -132,6 +132,8 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JComboBox m_themeComboBox;
     private JCheckBox m_noSaveCheckBox;
     private JCheckBox m_autosFirstCheckBox;
+    /** Заметки автора (#187) — вкладка Notes */
+    private JTextArea m_authorNotesTextArea;
     private JCheckBox m_needsActionCheckBox;
 
     public DialogPageProperties(final MainFrame mainFrame, final NonLinearBookFacade nlbFacade, final Page page) {
@@ -408,6 +410,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_noSaveCheckBox.setSelected(m_page.isNoSave());
         m_autosFirstCheckBox.setSelected(m_page.isAutosFirst());
         m_pageText.setText(page.getText());
+        m_authorNotesTextArea.setText(page.getAuthorNotes());
 
         m_moduleNameTextField.setText(page.getModuleName());
         m_externalCheckBox.setSelected(page.isModuleExternal());
@@ -502,6 +505,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 m_globalAutowireCheckBox.isSelected(),
                 m_noSaveCheckBox.isSelected(),
                 m_autosFirstCheckBox.isSelected(),
+                m_authorNotesTextArea.getText(),
                 ((LinksTableModelSwing) m_linksTable.getModel()).getTableModel()
         );
         m_nlbFacade.removeObserver(m_observerId);

@@ -68,6 +68,9 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private static final String SOUND_FILE_NAME = "sound";
     private static final String SOUND_SFX_FILE_NAME = "soundsfx";
     private static final String THEME_FILE_NAME = "theme";
+    /** Заметки автора (#187) */
+    private static final String AUTHOR_NOTES_FILE_NAME = "notes";
+    private static final String DEFAULT_AUTHOR_NOTES = Constants.EMPTY_STRING;
     private static final String VARID_FILE_NAME = "varid";
     private static final String TVARID_FILE_NAME = "tvarid";
     private static final String CAPTION_SUBDIR_NAME = "caption";
@@ -105,6 +108,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
     private boolean m_useCaption = DEFAULT_USE_CAPTION;
     private boolean m_useMPL = DEFAULT_USE_MPL;
     private MultiLangString m_text = MultiLangString.createCopy(DEFAULT_TEXT);
+    private String m_authorNotes = DEFAULT_AUTHOR_NOTES;
     private Theme m_theme = DEFAULT_THEME;
     private String m_moduleName;
     private boolean m_moduleExternal = DEFAULT_MODULE_EXTERNAL;
@@ -159,6 +163,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         setUseCaption(source.isUseCaption());
         setUseMPL(source.isUseMPL());
         setTexts(source.getTexts());
+        setAuthorNotes(source.getAuthorNotes());
         setTheme(source.getTheme());
         setModuleName(source.getModuleName());
         setModuleExternal(source.isModuleExternal());
@@ -203,6 +208,7 @@ public class PageImpl extends AbstractNodeItem implements Page {
         } else if (
                 textMatches(m_text, contract)
                         || textMatches(m_caption, contract)
+                        || textMatches(m_authorNotes, contract)
                         || textMatches(m_returnText, contract)
                         || textMatches(m_traverseText, contract)
                         || textMatches(m_autowireInText, contract)
@@ -340,6 +346,15 @@ public class PageImpl extends AbstractNodeItem implements Page {
     @XmlElement(name = "caption")
     public String getCaption() {
         return m_caption.get(getCurrentNLB().getLanguage());
+    }
+
+    @Override
+    public String getAuthorNotes() {
+        return m_authorNotes;
+    }
+
+    public void setAuthorNotes(final String authorNotes) {
+        m_authorNotes = (authorNotes != null) ? authorNotes : DEFAULT_AUTHOR_NOTES;
     }
 
     @Override
@@ -699,6 +714,12 @@ public class PageImpl extends AbstractNodeItem implements Page {
             );
             fileManipulator.writeOptionalString(
                     pageDir,
+                    AUTHOR_NOTES_FILE_NAME,
+                    m_authorNotes,
+                    DEFAULT_AUTHOR_NOTES
+            );
+            fileManipulator.writeOptionalString(
+                    pageDir,
                     THEME_FILE_NAME,
                     m_theme.name(),
                     DEFAULT_THEME.name()
@@ -892,6 +913,13 @@ public class PageImpl extends AbstractNodeItem implements Page {
                     FileManipulator.readOptionalMultiLangString(
                             new File(pageDir, TEXT_SUBDIR_NAME),
                             DEFAULT_TEXT
+                    )
+            );
+            m_authorNotes = (
+                    FileManipulator.getOptionalFileAsString(
+                            pageDir,
+                            AUTHOR_NOTES_FILE_NAME,
+                            DEFAULT_AUTHOR_NOTES
                     )
             );
             m_theme = m_theme.fromString(

@@ -1152,6 +1152,36 @@
                               </grid>
                             </children>
                           </grid>
+                          <grid id="f187a" layout-manager="BorderLayout" hgap="0" vgap="0">
+                            <constraints>
+                              <tabbedpane title="Notes"/>
+                            </constraints>
+                            <properties/>
+                            <border type="none"/>
+                            <children>
+                              <component id="f187b" class="javax.swing.JLabel">
+                                <constraints border-constraint="North"/>
+                                <properties>
+                                  <text value="Author's notes: shown on the scheme instead of the caption, not exported to the game"/>
+                                </properties>
+                              </component>
+                              <scrollpane id="f187c">
+                                <constraints border-constraint="Center"/>
+                                <properties/>
+                                <border type="none"/>
+                                <children>
+                                  <component id="f187d" class="javax.swing.JTextArea" binding="m_authorNotesTextArea">
+                                    <constraints/>
+                                    <properties>
+                                      <lineWrap value="true"/>
+                                      <rows value="5"/>
+                                      <wrapStyleWord value="true"/>
+                                    </properties>
+                                  </component>
+                                </children>
+                              </scrollpane>
+                            </children>
+                          </grid>
                         </children>
                       </tabbedpane>
                     </children>

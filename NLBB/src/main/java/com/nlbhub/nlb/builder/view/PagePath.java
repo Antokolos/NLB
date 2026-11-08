@@ -91,13 +91,17 @@ public class PagePath extends NodePath {
         final NonLinearBook nonLinearBook = (NonLinearBook) getAttribute(Constants.NLB_MODULE_ATTR);
         final Variable variable = nonLinearBook.getVariableById(page.getVarId());
         final StringBuilder text = new StringBuilder();
-        if (!StringHelper.isEmpty(page.getCaption())) {
-            int captionSize = page.getCaption().length();
-            if (captionSize > MAX_CAPTION_CHARS_IN_PAGE_TEXT) {
-                text.append(page.getCaption().substring(0, MAX_CAPTION_CHARS_IN_PAGE_TEXT));
+        // Заметки автора, если есть, — вместо заголовка (#187)
+        final String label = (
+                StringHelper.notEmpty(page.getAuthorNotes()) ? page.getAuthorNotes() : page.getCaption()
+        );
+        if (!StringHelper.isEmpty(label)) {
+            int labelSize = label.length();
+            if (labelSize > MAX_CAPTION_CHARS_IN_PAGE_TEXT) {
+                text.append(label, 0, MAX_CAPTION_CHARS_IN_PAGE_TEXT);
                 text.append("...");
             } else {
-                text.append(page.getCaption());
+                text.append(label);
             }
             if (variable != null) {
                 text.append(": ");

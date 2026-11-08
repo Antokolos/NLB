@@ -107,6 +107,13 @@ public interface Page extends NodeItem {
 
     public String getNotes();
 
+    /**
+     * Заметки автора о странице (#187): видны на схеме редактора вместо заголовка, в игру и в
+     * экспорт не попадают. Не путать с {@link #getNotes()} — это подпись локации для экспорта
+     * в INSTEAD (vn.lua рисует её в игре), она берётся из заголовка
+     */
+    public String getAuthorNotes();
+
     public MultiLangString getCaptions();
 
     public boolean isUseCaption();
