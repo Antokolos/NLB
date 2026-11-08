@@ -1,0 +1,225 @@
+# Выпуск NLB: Actions -> Release -> Run workflow.
+#
+# 1. Версия выпуска — версия из pom.xml без -SNAPSHOT (1.1.0-SNAPSHOT -> 1.1.0); полная сборка с
+#    тестами на тестовых книгах. Тег v1.1.0 ещё не должен существовать.
+# 2. Дистрибутивы со встроенной Java (build.sh / build.bat) на Windows x64, Linux x64, macOS arm64
+#    и macOS Intel. Встроенная Java собирается под ту ОС, на которой идёт сборка, поэтому — на
+#    каждой своей машине. Версия 1.1.0 подставляется только в сборке, в master не коммитится.
+# 3. Черновик выпуска v1.1.0 с архивами и списком изменений (заголовки PR с прошлого выпуска).
+#    Тег v1.1.0 появится, когда черновик опубликуют, — на коммите, из которого собран выпуск.
+# 4. PR со следующей версией разработки (bump-version.sh patch|minor|major) — сливает владелец:
+#    master защищён правилами, всё в него — через PR.
+#
+# На PR, меняющих этот файл или сборку дистрибутива, — пробный прогон: только сборка архивов на
+# всех ОС (артефакты прогона), без черновика выпуска и без PR.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      next:
+        description: 'Следующая версия разработки после выпуска: patch (1.1.0 -> 1.1.1-SNAPSHOT), minor (-> 1.2.0-SNAPSHOT), major (-> 2.0.0-SNAPSHOT)'
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+  pull_request:
+    paths:
+      - '.github/workflows/release.yml'
+      - 'build.sh'
+      - 'build.bat'
+      - 'NLBB/script/**'
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  DRY_RUN: ${{ github.event_name != 'workflow_dispatch' }}
+
+jobs:
+  prepare:
+    name: Version and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Release version
+        id: version
+        run: |
+          current=$(sed -n 's:^    <version>\(.*\)</version>.*:\1:p' pom.xml | head -n 1)
+          version=${current%-SNAPSHOT}
+          echo "pom.xml: $current, release: $version"
+          if ! echo "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Unexpected project version '$current' in pom.xml (expected X.Y.Z-SNAPSHOT)"
+            exit 1
+          fi
+          if [ "$DRY_RUN" != true ] && git rev-parse -q --verify "refs/tags/v$version" >/dev/null; then
+            echo "::error::Tag v$version already exists. Bump the version (bump-version.sh) before releasing."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Fetch test books
+        run: |
+          echo "NLB_TEST_BOOKS=$RUNNER_TEMP/nlb-test-books" >> "$GITHUB_ENV"
+          NLB_TEST_BOOKS="$RUNNER_TEMP/nlb-test-books" sh tools/player-reference/fetch-books.sh --with-media
+
+      - name: Build and test
+        run: mvn -B -ntp package
+
+  build:
+    name: Distribution ${{ matrix.name }}
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows-x64
+            os: windows-latest
+          - name: linux-x64
+            os: ubuntu-latest
+          - name: macos-arm64
+            os: macos-15
+          - name: macos-x64
+            os: macos-15-intel
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      # тесты уже прошли в prepare; здесь — только сборка (MAVEN_ARGS добавляется к каждому mvn)
+      MAVEN_ARGS: -B -ntp -DskipTests
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Set release version
+        shell: bash
+        run: mvn versions:set -DnewVersion="$VERSION"
+
+      - name: Build distribution (Linux, macOS)
+        if: runner.os != 'Windows'
+        run: sh build.sh
+
+      - name: Build distribution (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: call build.bat
+
+      - name: Check distribution
+        shell: bash
+        run: |
+          test -f dist/lib/NLBB-$VERSION.jar
+          # версия, которую NLBB запишет в книги (nlbversion)
+          py=$(command -v python3 || command -v python)
+          "$py" -c "import sys, zipfile; v = zipfile.ZipFile(sys.argv[1]).read('com/nlbhub/nlb/nlbversion.properties').decode(); assert 'version=' + sys.argv[2] in v.split(), v" \
+            "dist/lib/NLBL-$VERSION.jar" "$VERSION"
+          if [ "$RUNNER_OS" = Windows ]; then java=dist/runtime/bin/java.exe; else java=dist/runtime/bin/java; fi
+          "$java" -version
+
+      - name: Pack
+        shell: bash
+        run: |
+          name="NLB-$VERSION-${{ matrix.name }}"
+          mv dist "$name"
+          if [ "$RUNNER_OS" = Windows ]; then
+            7z a -tzip -mx=9 "$name.zip" "$name" > /dev/null
+            echo "ASSET=$name.zip" >> "$GITHUB_ENV"
+          else
+            # tar сохраняет права на запуск (run.sh, runtime/bin/java)
+            tar -czf "$name.tar.gz" "$name"
+            echo "ASSET=$name.tar.gz" >> "$GITHUB_ENV"
+          fi
+          ls -l "$name".*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: ${{ env.ASSET }}
+          compression-level: 0
+          retention-days: ${{ github.event_name == 'workflow_dispatch' && 30 || 3 }}
+
+  release:
+    name: Draft release
+    needs: [prepare, build]
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: assets
+          merge-multiple: true
+
+      - name: Draft release v${{ env.VERSION }}
+        run: |
+          cat > notes.md <<'NOTES'
+          ## Скачать
+
+          | Система | Архив |
+          |---|---|
+          | Windows (64-bit) | `NLB-VERSION-windows-x64.zip` |
+          | Linux (64-bit) | `NLB-VERSION-linux-x64.tar.gz` |
+          | macOS, Apple Silicon (M1 и новее) | `NLB-VERSION-macos-arm64.tar.gz` |
+          | macOS, Intel | `NLB-VERSION-macos-x64.tar.gz` |
+
+          Java устанавливать не нужно — она внутри архива. Распаковать и запустить `run.bat`
+          (Windows) или `run.sh` (Linux, macOS).
+
+          **macOS:** программа не подписана Apple, и при первом запуске macOS её блокирует. Один раз
+          выполните в Терминале в папке с распакованным архивом:
+          `xattr -dr com.apple.quarantine .` — затем `./run.sh`.
+
+          NOTES
+          sed -i "s/^          //; s/VERSION/$VERSION/g" notes.md
+          gh release create "v$VERSION" assets/* \
+            --draft \
+            --target "$GITHUB_SHA" \
+            --title "NLB $VERSION" \
+            --notes-file notes.md \
+            --generate-notes
+          echo "Draft: $(gh release view "v$VERSION" --json url -q .url)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: PR with the next development version
+        # не мешает выпуску: если Actions запрещено создавать PR (Settings -> Actions -> General ->
+        # Allow GitHub Actions to create and approve pull requests), версия повышается вручную
+        continue-on-error: true
+        run: |
+          next=${{ inputs.next }}
+          branch="release/next-after-$VERSION"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          out=$(sh bump-version.sh "$next" | grep '^Version:')
+          new=${out##* }
+          git commit -am "Версия разработки $new после выпуска $VERSION"
+          git push -u origin "$branch"
+          gh pr create --base master --head "$branch" \
+            --title "Версия разработки $new после выпуска $VERSION" \
+            --body "Выпуск $VERSION собран (черновик v$VERSION). Следующая версия разработки — $new ($next)."

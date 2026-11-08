@@ -26,6 +26,10 @@ Java — `build.sh` / `build.bat` (папка `dist`). Версия проект
 CI — `.github/workflows/ci.yml`: `mvn package` с тестами на каждый PR и push в `master`; тестовые
 книги для него (и локально) — `tools/player-reference/fetch-books.sh --with-media` в `NLB_TEST_BOOKS`
 (без книг тесты, которым они нужны, пропускаются).
+Выпуск — `.github/workflows/release.yml` (Actions -> Release -> Run workflow): версия из `pom.xml`
+без `-SNAPSHOT`, тесты, дистрибутивы на Windows x64, Linux x64, macOS arm64 и Intel, черновик
+выпуска `vX.Y.Z` с архивами и PR со следующей версией разработки. `master` защищён правилами
+(только через PR, CI «Build and test» обязателен).
 
 ### Сборка в облачной сессии Claude
 NLBB зависит от библиотек форм IntelliJ (`java-gui-forms-rt`, `java-compiler-ant-tasks`), которые
