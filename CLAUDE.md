@@ -21,7 +21,8 @@
 
 Сборка: `mvn -q -DskipTests package` (из корня). Тесты — `mvn test`. Дистрибутив со встроенной
 Java — `build.sh` / `build.bat` (папка `dist`). Версия проекта при сборке не меняется; повысить —
-`bump-version.sh` / `bump-version.bat`.
+`bump-version.sh` / `bump-version.bat` (без параметра — последний номер, `minor` — 1.0.6 -> 1.1.0,
+`major` — 1.0.6 -> 2.0.0, или версия явно: `bump-version.sh 1.2.3-SNAPSHOT`).
 
 ### Сборка в облачной сессии Claude
 NLBB зависит от библиотек форм IntelliJ (`java-gui-forms-rt`, `java-compiler-ant-tasks`), которые

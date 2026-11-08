@@ -24,9 +24,10 @@
                 <artifactId>versions-maven-plugin</artifactId>
                 <version>2.17.1</version>
                 <!-- The version is not incremented during the build anymore, run bump-version.sh / bump-version.bat
-                     (i.e. mvn versions:set) when the next version is needed -->
+                     when the next version is needed: they compute it (patch, minor, major or explicit) and call
+                     mvn versions:set -DnewVersion=...; nextSnapshot is not configured here, otherwise
+                     versions:set silently ignores -DnewVersion -->
                 <configuration>
-                    <nextSnapshot>true</nextSnapshot>
                     <generateBackupPoms>false</generateBackupPoms>
                 </configuration>
             </plugin>
