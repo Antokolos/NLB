@@ -319,14 +319,16 @@ public class GraphEditor extends PCanvas {
                 super.drag(e);
                 final PNode pickedNode = e.getPickedNode();
                 final Dimension2D delta = e.getDeltaRelativeTo(pickedNode);
-                Set<String> alreadyMovedObjsIds = (
-                        offsetContainedObjects(pickedNode, (float) delta.getWidth(), (float) delta.getHeight())
-                );
-
                 NodeItem nodeItem = (NodeItem) pickedNode.getAttribute(Constants.NLB_PAGE_ATTR);
                 if (nodeItem == null) {
                     nodeItem = (NodeItem) pickedNode.getAttribute(Constants.NLB_OBJ_ATTR);
                 }
+                // Сам узел уже сдвинут super.drag(); каждый узел сдвигается один раз
+                Set<String> alreadyMovedObjsIds = new HashSet<>();
+                alreadyMovedObjsIds.add(nodeItem.getId());
+                offsetContainedObjects(
+                        pickedNode, (float) delta.getWidth(), (float) delta.getHeight(), alreadyMovedObjsIds
+                );
                 m_nlbFacade.invalidateAssociatedLinks(nodeItem);
                 m_additionallyMovedNodes = (
                         offsetSelectedObjects(
@@ -340,21 +342,44 @@ public class GraphEditor extends PCanvas {
             }
         }
 
-        private Set<String> offsetContainedObjects(PNode container, float deltaX, float deltaY) {
-            Set<String> movedObjsIds = new HashSet<>();
+        /**
+         * Сдвигает содержимое контейнера на всю глубину. movedObjsIds — уже сдвинутые узлы, их
+         * (и их содержимое) не трогает: выделенный контейнер перетаскиваемого объекта не сдвигает
+         * его второй раз, кольцо вложенности из старой книги не зацикливает (#174). Так же
+         * сдвигает и модель (NonLinearBookFacade.updateNodeCoords)
+         */
+        private void offsetContainedObjects(PNode container, float deltaX, float deltaY, Set<String> movedObjsIds) {
             List<PNode> containedObjsNodes = m_graphItemsMapper.getContainedObjsNodes(container);
             for (PNode node : containedObjsNodes) {
-                node.raiseAbove(container);
-                node.offset(deltaX, deltaY);
+                if (node == null) {
+                    continue;
+                }
                 NodeItem nodeItem = (NodeItem) node.getAttribute(Constants.NLB_PAGE_ATTR);
                 if (nodeItem == null) {
                     nodeItem = (NodeItem) node.getAttribute(Constants.NLB_OBJ_ATTR);
                 }
-                movedObjsIds.add(nodeItem.getId());
+                if (!movedObjsIds.add(nodeItem.getId())) {
+                    continue;
+                }
+                node.raiseAbove(container);
+                node.offset(deltaX, deltaY);
                 m_nlbFacade.invalidateAssociatedLinks(nodeItem);
-                movedObjsIds.addAll(offsetContainedObjects(node, deltaX, deltaY));
+                offsetContainedObjects(node, deltaX, deltaY, movedObjsIds);
             }
-            return movedObjsIds;
+        }
+
+        /** true, если узел pNode — объект obj или лежит в нём на любой глубине */
+        private boolean isInsideObj(PNode pNode, Obj obj) {
+            final Set<PNode> visited = new HashSet<>();
+            PNode current = pNode;
+            while (current != null && visited.add(current)) {
+                final Obj currentObj = (Obj) current.getAttribute(Constants.NLB_OBJ_ATTR);
+                if (currentObj != null && currentObj.getId().equals(obj.getId())) {
+                    return true;
+                }
+                current = m_graphItemsMapper.getContainer(current);
+            }
+            return false;
         }
 
         private Set<NodeItem> offsetSelectedObjects(
@@ -363,27 +388,26 @@ public class GraphEditor extends PCanvas {
                 float deltaX,
                 float deltaY
         ) {
-            Set<String> allAlreadyMovedObjsIds = new HashSet<>();
-            Set<String> additionalAlreadyMovedObjsIds = new HashSet<>();
-            allAlreadyMovedObjsIds.addAll(alreadyMovedObjsIds);
-            Set<NodeItem> changedNodes = new HashSet<>();
+            // alreadyMovedObjsIds — перетаскиваемый узел и его содержимое; дополняется по ходу
+            Set<String> allAlreadyMovedObjsIds = alreadyMovedObjsIds;
+            Set<NodeItem> changedNodes = new LinkedHashSet<>();
             Set<String> selectedPagesIds = m_bulkSelectionHandler.getSelectedPagesIds();
             for (String pageId : selectedPagesIds) {
                 if (!pageId.equals(originator.getId())) {
                     PagePath pagePath = m_graphItemsMapper.getPageById(pageId);
                     pagePath.offset(deltaX, deltaY);
-                    allAlreadyMovedObjsIds.addAll(offsetContainedObjects(pagePath, deltaX, deltaY));
+                    offsetContainedObjects(pagePath, deltaX, deltaY, allAlreadyMovedObjsIds);
                     NodeItem nodeItem = (NodeItem) pagePath.getAttribute(Constants.NLB_PAGE_ATTR);
                     changedNodes.add(nodeItem);
                     m_nlbFacade.invalidateAssociatedLinks(nodeItem);
                 }
             }
-            Set<String> selectedObjsIds = m_bulkSelectionHandler.getSelectedObjsIds(allAlreadyMovedObjsIds);
+            Set<String> selectedObjsIds = m_bulkSelectionHandler.getSelectedObjsIds(new HashSet<>(allAlreadyMovedObjsIds));
             for (String objId : selectedObjsIds) {
-                if (!objId.equals(originator.getId()) && !additionalAlreadyMovedObjsIds.contains(objId)) {
+                if (allAlreadyMovedObjsIds.add(objId)) {
                     ObjPath objPath = m_graphItemsMapper.getObjById(objId);
                     objPath.offset(deltaX, deltaY);
-                    additionalAlreadyMovedObjsIds.addAll(offsetContainedObjects(objPath, deltaX, deltaY));
+                    offsetContainedObjects(objPath, deltaX, deltaY, allAlreadyMovedObjsIds);
                     NodeItem nodeItem = (NodeItem) objPath.getAttribute(Constants.NLB_OBJ_ATTR);
                     changedNodes.add(nodeItem);
                     m_nlbFacade.invalidateAssociatedLinks(nodeItem);
@@ -427,18 +451,11 @@ public class GraphEditor extends PCanvas {
                         PNodeFilter nodeFilter = new PNodeFilter() {
                             @Override
                             public boolean accept(PNode pNode) {
-                                PNode containerNode = m_graphItemsMapper.getContainer(pNode);
-                                if (containerNode != null) {
-                                    NodeItem nodeItem = (
-                                            (NodeItem) containerNode.getAttribute(Constants.NLB_PAGE_ATTR)
-                                    );
-                                    if (nodeItem == null) {
-                                        nodeItem = (NodeItem) containerNode.getAttribute(Constants.NLB_OBJ_ATTR);
-                                    }
-                                    if (nodeItem.getId().equals(obj.getId())) {
-                                        // Do not select nodes that has pickedNode as their container
-                                        return false;
-                                    }
+                                // Не сам объект и не то, что лежит в нём на любой глубине: раньше
+                                // исключались только прямые дети, и объект клался во «внука» —
+                                // вложенность замыкалась в кольцо (#174)
+                                if (isInsideObj(pNode, obj)) {
+                                    return false;
                                 }
                                 return pNode.getGlobalFullBounds().intersects(pickedNodeBounds);
                             }
