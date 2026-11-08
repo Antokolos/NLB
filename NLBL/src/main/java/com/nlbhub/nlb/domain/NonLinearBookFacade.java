@@ -975,9 +975,12 @@ public class NonLinearBookFacade implements NLBObservable {
             return;
         }
         final CommandChainCommand commandChain = new CommandChainCommand();
-        updateNodeCoords(commandChain, nodeItem, deltaX, deltaY);
+        // Каждый узел сдвигается один раз: выделенный контейнер перетаскиваемого объекта не
+        // сдвигает его повторно (как и GraphEditor на экране), кольцо вложенности не зацикливает
+        final Set<String> movedIds = new HashSet<>();
+        updateNodeCoords(commandChain, nodeItem, deltaX, deltaY, movedIds);
         for (NodeItem additionalNodeItem : additionallyMovedItems) {
-            updateNodeCoords(commandChain, additionalNodeItem, deltaX, deltaY);
+            updateNodeCoords(commandChain, additionalNodeItem, deltaX, deltaY, movedIds);
         }
         m_undoManager.executeAndStore(commandChain);
         notifyObservers();
@@ -987,30 +990,21 @@ public class NonLinearBookFacade implements NLBObservable {
             final CommandChainCommand commandChain,
             final NodeItem nodeItem,
             final float deltaX,
-            final float deltaY
+            final float deltaY,
+            final Set<String> movedIds
     ) {
+        if (!movedIds.add(nodeItem.getId())) {
+            return;
+        }
         final NLBCommand command = new UpdateNodeCoordsCommand(m_nlb, nodeItem, deltaX, deltaY);
         commandChain.addCommand(command);
-        offsetContainedObjects(commandChain, nodeItem, deltaX, deltaY);
-    }
-
-    private void offsetContainedObjects(
-            final CommandChainCommand commandChain,
-            NodeItem container,
-            float deltaX,
-            float deltaY
-    ) {
-        for (String nodeId : container.getContainedObjIds()) {
+        // Содержимое — вместе с контейнером, на всю глубину (вложенные объекты сдвигает
+        // рекурсивный вызов; раньше их сдвигало ещё и отдельным обходом — дважды)
+        for (String nodeId : nodeItem.getContainedObjIds()) {
             NodeItem node = m_nlb.getObjById(nodeId);
-            Coords nodeCoords = node.getCoords();
-            updateNodeCoords(
-                    commandChain,
-                    node,
-                    deltaX,
-                    deltaY
-            );
-
-            offsetContainedObjects(commandChain, node, deltaX, deltaY);
+            if (node != null) {
+                updateNodeCoords(commandChain, node, deltaX, deltaY, movedIds);
+            }
         }
     }
 
@@ -1035,6 +1029,11 @@ public class NonLinearBookFacade implements NLBObservable {
             if (newContainer == null) {
                 newContainer = m_nlb.getObjImplById(newContainerId);
             }
+        }
+        if (newContainer != null && m_nlb.isObjContainedIn(newContainerId, objId)) {
+            // Объект нельзя положить в себя или в то, что лежит в нём: вложенность замкнулась
+            // бы в кольцо, и всё, что обходит содержимое, уходило бы в бесконечность (#174)
+            return;
         }
         if (
                 (prevContainer == null && newContainer != null)           // from nowhere to something

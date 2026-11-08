@@ -3394,6 +3394,37 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
+    /**
+     * true, если узел nodeId — это объект objId или лежит в нём на любой глубине (по цепочке
+     * контейнеров). Цепочку, уже замкнутую в кольцо, обходит один раз
+     */
+    public boolean isObjContainedIn(final String nodeId, final String objId) {
+        final Set<String> visited = new HashSet<>();
+        String currentId = nodeId;
+        while (!StringHelper.isEmpty(currentId) && visited.add(currentId)) {
+            if (currentId.equals(objId)) {
+                return true;
+            }
+            final ObjImpl obj = m_objs.get(currentId);
+            if (obj == null) {
+                return false;
+            }
+            currentId = obj.getContainerId();
+        }
+        return false;
+    }
+
+    /** Объекты, чья цепочка контейнеров замкнута в кольцо (#174) */
+    public List<ObjImpl> getObjsInContainerLoop() {
+        final List<ObjImpl> result = new ArrayList<>();
+        for (ObjImpl obj : m_objs.values()) {
+            if (!obj.isDeleted() && isObjContainedIn(obj.getContainerId(), obj.getId())) {
+                result.add(obj);
+            }
+        }
+        return result;
+    }
+
     public ObjImpl getObjImplById(String objId) {
         return m_objs.get(objId);
     }
@@ -4710,6 +4741,17 @@ public class NonLinearBookImpl implements NonLinearBook {
                 default:
                     // Do nothing
             }
+        }
+        for (ObjImpl obj : getObjsInContainerLoop()) {
+            SearchResult searchResult = new SearchResult();
+            searchResult.setModulePageId(modulePageId);
+            searchResult.setId(obj.getId());
+            searchResult.addInformation("Object");
+            searchResult.addInformation(obj.getName());
+            searchResult.addInformation(
+                    "Container loop: the object lies inside itself through other objects; move it out of its container"
+            );
+            result.addSearchResult(searchResult);
         }
         for (Map.Entry<String, PageImpl> entry : m_pages.entrySet()) {
             final NonLinearBookImpl moduleImpl = entry.getValue().getModuleImpl();
