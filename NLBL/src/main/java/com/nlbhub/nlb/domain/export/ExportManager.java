@@ -330,6 +330,22 @@ public abstract class ExportManager {
     }
 
     /**
+     * Подпись объекта в инвентаре (disp) по его id, как в ADDINV/RMINV; null — объект не найден
+     */
+    protected String getObjDisp(final String objId) {
+        if (objId == null) {
+            return null;
+        }
+        for (ExportData exportData : m_exportDataMap.values()) {
+            Obj obj = exportData.getNlb().getObjById(objId);
+            if (obj != null) {
+                return obj.getDisp();
+            }
+        }
+        return null;
+    }
+
+    /**
      * Номер страницы в экспорте (с 1) или {@link #NONEXISTING_PAGE}
      */
     protected int getExportPageNumber(final String pageId) {

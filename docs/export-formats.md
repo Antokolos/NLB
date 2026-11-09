@@ -30,13 +30,12 @@ jsIQ2 — ещё и запуском настоящего плеера.
 - модификация ASSIGN (присвоение).
 
 Кроме того:
-- условия и циклы в модификациях (IF/ELSEIF/ELSE/WHILE/END), GOTO и RND — QSP, AXMA, jsIQ2
-  (раздел «Условия, циклы, GOTO и RND»);
+- условия и циклы в модификациях (IF/ELSEIF/ELSE/WHILE/END, IFHAVE), GOTO и RND — QSP, AXMA,
+  jsIQ2, URQ, ChoiceScript (раздел «Условия, циклы, GOTO и RND»);
 - добавить/убрать предмет инвентаря — QSP, URQ, jsIQ2, HTML/PDF;
 - картинка страницы — QSP, URQ, ChoiceScript (только первая, без условий).
 
 Не реализовано нигде, кроме INSTEAD:
-- условия, циклы, GOTO и RND в URQ и ChoiceScript (нужны метки и переходы вместо блоков);
 - RETURN, снимки (SNAPSHOT);
 - объекты на странице, «применить предмет», контейнеры, теги;
 - списки (PUSH/POP/INJECT/EJECT/SHUFFLE/SIZE…);
@@ -66,9 +65,9 @@ jsIQ2 — ещё и запуском настоящего плеера.
 - **TXT/HTML/PDF** — бумажная книга-игра: модификации можно передать только подсказкой
   читателю («отметьте…»).
 
-Порядок работ: автоссылки в URQ и AXMA (сделано); IF/ELSE/WHILE, GOTO и RND в QSP, AXMA и
-jsIQ2, модификации jsIQ2 в `preload` (сделано); то же для URQ и ChoiceScript; затем объекты и
-«применить предмет» — начиная с QSP.
+Порядок работ: автоссылки в URQ и AXMA (сделано); IF/ELSE/WHILE, GOTO и RND во всех пяти
+форматах, модификации jsIQ2 в `preload` (сделано); затем объекты и «применить предмет» —
+начиная с QSP.
 
 ## Условия, циклы, GOTO и RND
 
@@ -80,8 +79,31 @@ GOTO уводит на страницу и прерывает оставшиес
 |---|---|---|---|
 | IF / ELSEIF / ELSE / END | `IF у:` / `ELSEIF у:` / `ELSE` / `END` | `<<if у>>` / `<<elseif у>>` / `<<else>>` / `<<endif>>` | `if (у) {` / `} else if (у) {` / `} else {` / `}` |
 | WHILE … END | `LOOP WHILE у:` … `END` (QSP 5.8+) | `<<loop 1000000000>><<if not (у)>><<break>><<endif>>` … `<<endloop>>`: в AXMA только цикл со счётчиком | `while (у) {` … `}` |
+| IFHAVE предмет | `IF OBJ 'подпись':` | `<<if false>>` — инвентаря в экспорте AXMA нет | `if (checkItem({'name': …})) {` |
 | GOTO | `GOTO 'страница'` — прерывает текущий код | `<<goto 'страница'>>` — прерывает абзац | `nlbGoto({to: 'N'}); return;` |
 | RND n | `x = RAND(1, n)` | `<<set $x = Math.floor(Math.random() * (n)) + 1>>` | `vars.x = Math.floor(Math.random() * (n)) + 1;` |
+
+В URQ и ChoiceScript блоков нет (в URQ условие — только в одну строку, в ChoiceScript блок —
+это отступ, а модификации собираются плоским списком), поэтому блоки собираются из меток и
+переходов:
+
+| | URQ (UrqW) | ChoiceScript |
+|---|---|---|
+| IF у … ELSEIF у2 … ELSE … END | `if not (у) then goto nlb_if_N_1`, конец ветки — `goto nlb_if_N_end`, `:nlb_if_N_1`, `if not (у2) then goto nlb_if_N_2`, …, `:nlb_if_N_end` | `*if у` / `*elseif у2` / `*else` с отступом тела; в начале файла `*create implicit_control_flow true`, иначе выйти из ветки в `*else` без `*goto` нельзя. Пустое тело — `*comment` |
+| WHILE у … END | `:nlb_while_N`, `if not (у) then goto nlb_while_N_end`, …, `goto nlb_while_N`, `:nlb_while_N_end` | `*label nlb_while_N`, `*if у`, …, `*goto nlb_while_N` в конце тела |
+| IFHAVE предмет | флаг `nlb_inv_<id>`: его ставят `Inv+`/`Inv-` экспорта (предмет UrqW хранит в переменной с его подписью, а подпись с пробелом в выражении не прочитать) | `*if false` — инвентаря в экспорте ChoiceScript нет |
+| GOTO | `goto страница` | `*goto страница` |
+| RND n | `x=rnd#n$` — UrqW вычисляет `#выражение$` и получает `rndN` (целое от 1 до N) | `*rand x 1 n` (выражение — в скобках) |
+
+Метки внутри кода страницы UrqW при выполнении пропускает (`parser.js`), выполнение идёт дальше;
+сохранение игры запоминает позицию строки, так что метки ему не мешают. Перед меткой UrqW
+обрезает пробелы.
+
+Объект, заданный переменной (а не именем), экспорт в инвентарь не кладёт, поэтому IFHAVE для него
+в QSP и URQ ложно; в jsIQ2 ключом служит значение переменной.
+
+IFHAVE открывает блок, который закрывает END. Пока IFHAVE не был реализован, а END уже выводил
+закрывающую скобку (QSP, AXMA, jsIQ2), код страницы ломался — например, в «Слуге Ра».
 
 В AXMA END закрывает разные макросы (`<<endif>>` или `<<endloop>>`), поэтому экспорт помнит,
 какой блок открыт последним.

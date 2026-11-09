@@ -527,8 +527,9 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateIfHave(String objId, String objVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // Инвентаря в экспорте AXMA нет (ADDINV не поддерживается): предмета у игрока не бывает
+        m_openBlocks.push(Boolean.FALSE);
+        return "<<if false>>" + LINE_SEPARATOR;
     }
 
     @Override

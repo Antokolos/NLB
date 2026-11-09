@@ -45,6 +45,8 @@ import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 
 /**
@@ -56,6 +58,42 @@ import java.util.List;
 public class URQExportManager extends TextExportManager {
     // Windows line separator should be used for URQ format
     private static final String LINE_SEPARATOR = "\r\n";
+
+    /**
+     * Блок модификаций (IF … END или WHILE … END). В URQ условие пишется только в одну строку,
+     * поэтому блоки собираются из меток и переходов: ложное условие ветки — переход к метке
+     * следующей ветки, конец ветки — переход к метке конца блока, цикл — переход к его началу.
+     * Метки внутри кода страницы UrqW при выполнении пропускает.
+     */
+    private final class Block {
+        private final int m_id = ++m_blockCount;
+        private final boolean m_loop;
+        private int m_branch = 1;
+
+        private Block(boolean loop) {
+            m_loop = loop;
+        }
+
+        private String branchLabel() {
+            return "nlb_if_" + m_id + "_" + m_branch;
+        }
+
+        private String endLabel() {
+            return (m_loop ? "nlb_while_" : "nlb_if_") + m_id + "_end";
+        }
+
+        private String loopLabel() {
+            return "nlb_while_" + m_id;
+        }
+    }
+
+    private int m_blockCount = 0;
+
+    /** Флаг «предмет в инвентаре» для IFHAVE: имя переменной без дефисов */
+    private static String inventoryFlag(String objId) {
+        return "nlb_inv_" + objId.replace('-', '_');
+    }
+    private final Deque<Block> m_openBlocks = new ArrayDeque<>();
 
     public URQExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
         super(nlb, encoding);
@@ -458,38 +496,61 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateWhile(final String constraint) {
-        // TODO: implement
-        return EMPTY_STRING;
+        Block block = new Block(true);
+        m_openBlocks.push(block);
+        return ":" + block.loopLabel() + LINE_SEPARATOR
+                + "if not (" + constraint + ") then goto " + block.endLabel() + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateIf(final String constraint) {
-        // TODO: implement
-        return EMPTY_STRING;
+        Block block = new Block(false);
+        m_openBlocks.push(block);
+        return "if not (" + constraint + ") then goto " + block.branchLabel() + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateIfHave(String objId, String objVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // Предмет UrqW хранит в переменной с его подписью, а подпись с пробелом в выражении не
+        // прочитать. Поэтому ADDINV/RMINV ведут ещё и флаг nlb_inv_<id> (см. inventoryFlag)
+        Block block = new Block(false);
+        m_openBlocks.push(block);
+        return "if not (" + (objId != null ? inventoryFlag(objId) : "0") + ") then goto " + block.branchLabel() + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateElse() {
-        // TODO: implement
-        return EMPTY_STRING;
+        Block block = m_openBlocks.peek();
+        if (block == null) {
+            return EMPTY_STRING;
+        }
+        String result = "goto " + block.endLabel() + LINE_SEPARATOR + ":" + block.branchLabel() + LINE_SEPARATOR;
+        block.m_branch++;
+        return result;
     }
 
     @Override
     protected String decorateElseIf(final String constraint) {
-        // TODO: implement
-        return EMPTY_STRING;
+        Block block = m_openBlocks.peek();
+        if (block == null) {
+            return EMPTY_STRING;
+        }
+        String result = "goto " + block.endLabel() + LINE_SEPARATOR + ":" + block.branchLabel() + LINE_SEPARATOR;
+        block.m_branch++;
+        return result + "if not (" + constraint + ") then goto " + block.branchLabel() + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateEnd() {
-        // TODO: implement
-        return EMPTY_STRING;
+        Block block = m_openBlocks.poll();
+        if (block == null) {
+            return EMPTY_STRING;
+        }
+        if (block.m_loop) {
+            return "goto " + block.loopLabel() + LINE_SEPARATOR + ":" + block.endLabel() + LINE_SEPARATOR;
+        }
+        // метка последней ветки нужна, если ELSE не было (на неё переходит ложное условие)
+        return ":" + block.branchLabel() + LINE_SEPARATOR + ":" + block.endLabel() + LINE_SEPARATOR;
     }
 
     @Override
@@ -530,7 +591,8 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateDelInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        return "Inv- " + objectDisplayName + LINE_SEPARATOR;
+        return "Inv- " + objectDisplayName + LINE_SEPARATOR
+                + (objectId != null ? inventoryFlag(objectId) + "=0" + LINE_SEPARATOR : EMPTY_STRING);
     }
 
     @Override
@@ -541,7 +603,8 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        return "Inv+ " + objectDisplayName + LINE_SEPARATOR;
+        return "Inv+ " + objectDisplayName + LINE_SEPARATOR
+                + (objectId != null ? inventoryFlag(objectId) + "=1" + LINE_SEPARATOR : EMPTY_STRING);
     }
 
     @Override
@@ -636,8 +699,8 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateRndOperation(String variableName, String maxValue) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // rndN в UrqW — целое от 1 до N; #выражение$ UrqW вычисляет и подставляет в строку
+        return variableName + "=rnd#" + maxValue + "$" + LINE_SEPARATOR;
     }
 
     @Override
@@ -660,8 +723,9 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateGoToOperation(String locationId) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // goto уводит на страницу, оставшиеся модификации не выполняются: переход из модификаций
+        // ссылки важнее цели ссылки (как в INSTEAD)
+        return "goto " + locationId + LINE_SEPARATOR;
     }
 
     @Override
