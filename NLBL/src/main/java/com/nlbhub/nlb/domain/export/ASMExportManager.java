@@ -39,12 +39,15 @@
 package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.Constants;
+import com.nlbhub.nlb.api.TextChunk;
 import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The ASMExportManager class
@@ -54,6 +57,19 @@ import java.util.List;
  */
 public class ASMExportManager extends TextExportManager {
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    /**
+     * Знаки, удвоение которых AXMA Story Maker считает разметкой или кодом: '' жирный, // курсив,
+     * __ подчёркнутый, ~~ и ^^ индексы, === и @@@ выравнивание, %%% заголовок, {{{ }}} моноширинный,
+     * [[ ]] ссылка, << >> макрос
+     */
+    private static final String DOUBLED_MARKUP_CHARS = "'/_~^=@%{}[]<>";
+    /** Начало строки, которое AXMA считает комментарием (#), пунктом списка или разделителем (*) */
+    private static final Pattern LINE_START_MARKUP = Pattern.compile("(?m)^(\\s*)([#*])");
+    /**
+     * Строка из одних дефисов (----) — горизонтальная линия; дефисы экранируются все, иначе
+     * AXMA заменит оставшиеся «--» на тире (в обычном тексте эта замена желательна: «Я -- монстр»)
+     */
+    private static final Pattern HR_LINE = Pattern.compile("(?m)^(\\s*)(-{4,})(?=\\s*$)");
 
     public ASMExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
         super(nlb, encoding);
@@ -61,7 +77,131 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String generatePreambleText(NLBBuildingBlocks nlbBuildingBlocks) {
-        return "128[::]0[::]0" + LINE_SEPARATOR;
+        StringBuilder preamble = new StringBuilder("128[::]0[::]0").append(LINE_SEPARATOR);
+        // Служебные абзацы AXMA: название и автор игры (показываются на титульном экране,
+        // без них редактор не даёт опубликовать игру)
+        appendSystemPassage(preamble, "StoryTitle", nlbBuildingBlocks.getTitle());
+        appendSystemPassage(preamble, "StoryAuthor", nlbBuildingBlocks.getAuthor());
+        return preamble.toString();
+    }
+
+    private static void appendSystemPassage(StringBuilder builder, String title, String text) {
+        if (StringHelper.notEmpty(text) && !text.trim().isEmpty()) {
+            builder.append(":: ").append(title).append("[::]10-10-0").append(LINE_SEPARATOR);
+            builder.append(escapeMarkup(text.trim())).append(LINE_SEPARATOR).append(LINE_SEPARATOR);
+        }
+    }
+
+    /**
+     * Текст книги для AXMA — как есть: всё, что движок принял бы за разметку, комментарий или
+     * макрос, заменяется числовыми HTML-сущностями (движок их сохраняет, браузер показывает знак).
+     * Одиночные знаки не трогаются: разметкой они не считаются, а &lt; и &gt; AXMA экранирует сама.
+     *
+     * @param text текст книги
+     * @return текст, который AXMA покажет без изменений
+     */
+    static String escapeMarkup(final String text) {
+        if (StringHelper.isEmpty(text)) {
+            return Constants.EMPTY_STRING;
+        }
+        StringBuilder result = new StringBuilder(text.length());
+        int i = 0;
+        while (i < text.length()) {
+            char c = text.charAt(i);
+            int end = i + 1;
+            if (DOUBLED_MARKUP_CHARS.indexOf(c) >= 0) {
+                while (end < text.length() && text.charAt(end) == c) {
+                    end++;
+                }
+            }
+            if (end - i > 1) {
+                for (int j = i; j < end; j++) {
+                    result.append(entity(c));
+                }
+            } else {
+                result.append(c);
+            }
+            i = end;
+        }
+        String escaped = replaceFirstChar(LINE_START_MARKUP, result.toString());
+        Matcher hr = HR_LINE.matcher(escaped);
+        StringBuilder withoutHr = new StringBuilder();
+        while (hr.find()) {
+            hr.appendReplacement(withoutHr, Matcher.quoteReplacement(
+                    hr.group(1) + hr.group(2).replace("-", entity('-'))));
+        }
+        hr.appendTail(withoutHr);
+        return withoutHr.toString();
+    }
+
+    private static String entity(char c) {
+        return "&#" + (int) c + ";";
+    }
+
+    /** Заменяет знак после отступа (группа 1) в каждом совпадении на HTML-сущность */
+    private static String replaceFirstChar(Pattern pattern, String text) {
+        Matcher matcher = pattern.matcher(text);
+        StringBuilder result = new StringBuilder();
+        while (matcher.find()) {
+            String indent = matcher.group(1);
+            char c = text.charAt(matcher.start() + indent.length());
+            matcher.appendReplacement(result, Matcher.quoteReplacement(indent + entity(c)));
+        }
+        matcher.appendTail(result);
+        return result.toString();
+    }
+
+    /**
+     * Текст страницы: разметка AXMA экранируется, переменная выводится макросом
+     * &lt;&lt;print $var&gt;&gt; (в AXMA подстановки $var$ нет)
+     */
+    @Override
+    protected String expandVariables(List<TextChunk> textChunks) {
+        StringBuilder result = new StringBuilder();
+        for (final TextChunk textChunk : textChunks) {
+            switch (textChunk.getType()) {
+                case TEXT:
+                    result.append(escapeMarkup(textChunk.getText()));
+                    break;
+                case ACTION_TEXT:
+                case VARIABLE:
+                    result.append("<<print $").append(textChunk.getText()).append(">>");
+                    break;
+                case NEWLINE:
+                    result.append(getLineSeparator());
+                    break;
+            }
+        }
+        return result.toString();
+    }
+
+    /**
+     * Текст ссылки: AXMA превращает [[текст|абзац]] в макрос link, внутри которого макросы не
+     * работают, поэтому переменная остаётся именем ($var$, как раньше). Первый знак *, + или -
+     * задаёт вид ссылки (всплывающая, вставка, без возврата), поэтому тоже экранируется.
+     */
+    @Override
+    protected String expandVariablesForLinks(List<TextChunk> textChunks, Theme theme) {
+        StringBuilder result = new StringBuilder();
+        for (final TextChunk textChunk : textChunks) {
+            switch (textChunk.getType()) {
+                case TEXT:
+                    result.append(escapeMarkup(textChunk.getText()));
+                    break;
+                case ACTION_TEXT:
+                case VARIABLE:
+                    result.append("$").append(textChunk.getText()).append("$");
+                    break;
+                case NEWLINE:
+                    result.append(" ");
+                    break;
+            }
+        }
+        String text = result.toString();
+        if (!text.isEmpty() && "*+-".indexOf(text.charAt(0)) >= 0) {
+            text = entity(text.charAt(0)) + text.substring(1);
+        }
+        return text;
     }
 
     @Override
@@ -232,7 +372,7 @@ public class ASMExportManager extends TextExportManager {
 
     protected String decoratePageCaption(String caption, boolean useCaption, String moduleTitle, boolean noSave) {
         if (StringHelper.notEmpty(caption) && useCaption) {
-            return "''" + caption.toUpperCase() + "''" + LINE_SEPARATOR;
+            return "''" + escapeMarkup(caption.toUpperCase()).replace("'", "&#39;") + "''" + LINE_SEPARATOR;
         } else {
             return Constants.EMPTY_STRING;
         }
