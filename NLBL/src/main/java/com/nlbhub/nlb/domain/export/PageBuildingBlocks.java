@@ -88,6 +88,17 @@ public class PageBuildingBlocks {
         m_linksBuildingBlocks = new ArrayList<>();
     }
 
+    /** Id страницы — как в книге */
+    private String m_pageId = "";
+
+    public String getPageId() {
+        return m_pageId;
+    }
+
+    public void setPageId(String pageId) {
+        m_pageId = pageId;
+    }
+
     public String getPageName() {
         return m_pageName;
     }
