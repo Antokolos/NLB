@@ -87,7 +87,14 @@ public class URQExportManager extends TextExportManager {
             if (!StringHelper.isEmpty(linkBlocks.getLinkConstraint())) {
                 stringBuilder.append("if ").append(linkBlocks.getLinkConstraint()).append(" then ");
             }
-            stringBuilder.append(linkBlocks.getLinkStart());
+            if (linkBlocks.hasShownAltText()) {
+                // альтернативный текст недоступной ссылки (#135): «if … then btn … else pln …» —
+                // одной строкой, else в UrqW — до конца строки
+                stringBuilder.append(linkBlocks.getLinkStart().stripTrailing());
+                stringBuilder.append(" else pln ").append(linkBlocks.getLinkAltText()).append(LINE_SEPARATOR);
+            } else {
+                stringBuilder.append(linkBlocks.getLinkStart());
+            }
         }
         stringBuilder.append(pageBlocks.getPageEnd());
         return stringBuilder.toString();
@@ -328,6 +335,31 @@ public class URQExportManager extends TextExportManager {
     @Override
     protected String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX, Theme theme) {
         return Constants.EMPTY_STRING;
+    }
+
+    /**
+     * Подпись кнопки и альтернативный текст ссылки — одной строкой и без «pln »: раньше подпись
+     * шла через expandVariables текста страницы, и кнопка называлась «pln Открыть дверь» (UrqW
+     * берёт подписью всё после первой запятой btn)
+     */
+    @Override
+    protected String expandVariablesForLinks(List<TextChunk> textChunks, Theme theme) {
+        StringBuilder result = new StringBuilder();
+        for (final TextChunk textChunk : textChunks) {
+            switch (textChunk.getType()) {
+                case TEXT:
+                    result.append(textChunk.getText());
+                    break;
+                case ACTION_TEXT:
+                case VARIABLE:
+                    result.append("$").append(textChunk.getText()).append("$");
+                    break;
+                case NEWLINE:
+                    result.append(" ");
+                    break;
+            }
+        }
+        return result.toString();
     }
 
     protected String expandVariables(List<TextChunk> textChunks, Theme theme) {

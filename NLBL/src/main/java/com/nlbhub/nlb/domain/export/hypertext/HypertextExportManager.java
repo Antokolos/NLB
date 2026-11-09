@@ -163,6 +163,11 @@ public abstract class HypertextExportManager
             A linkAnchor = createHTAnchor(hasConstraint, linkBlocks.getLinkStart(), linkFont);
             linkAnchor.setReference(getLinkReference(linkBlocks));
             page.add(linkAnchor);
+            if (linkBlocks.hasShownAltText()) {
+                // альтернативный текст недоступной ссылки (#135)
+                page.add(", иначе: ");
+                page.add(linkBlocks.getLinkAltText());
+            }
             page.add(linkBlocks.getLinkModifications());
             page.add(linkBlocks.getLinkVariable());
             page.add(linkBlocks.getLinkVisitStateVariable());

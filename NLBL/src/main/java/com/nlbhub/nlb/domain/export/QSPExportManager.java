@@ -102,6 +102,12 @@ public class QSPExportManager extends TextExportManager {
                 stringBuilder.append(linkBlocks.getLinkEnd());
             }
             if (hasConstraint) {
+                if (linkBlocks.hasShownAltText()) {
+                    // альтернативный текст недоступной ссылки (#135) — строкой в основном окне
+                    stringBuilder.append("ELSE").append(LINE_SEPARATOR);
+                    stringBuilder.append("  '").append(linkBlocks.getLinkAltText().replace("'", "''")).append("'");
+                    stringBuilder.append(LINE_SEPARATOR);
+                }
                 stringBuilder.append("END").append(LINE_SEPARATOR);
             }
         }

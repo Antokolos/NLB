@@ -168,6 +168,13 @@ public class JSIQ2ExportManager extends XMLExportManager {
                     );
                     article.addScript(actionConditionScript);
                     action.setIf("condition_" + i);
+                    if (linkBlocks.hasShownAltText()) {
+                        // альтернативный текст недоступной ссылки (#135): текст статьи, который
+                        // плеер показывает, когда то же условие ложно (jsIQ.createText, ifnot)
+                        Text altText = new Text(linkBlocks.getLinkAltText());
+                        altText.setIfnot("condition_" + i);
+                        article.addText(altText);
+                    }
                 }
                 action.setGoto(linkBlocks.getLinkGoTo());
                 action.setValue(linkBlocks.getLinkStart());

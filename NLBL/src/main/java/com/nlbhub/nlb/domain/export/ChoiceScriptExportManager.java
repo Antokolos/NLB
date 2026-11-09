@@ -95,6 +95,13 @@ public class ChoiceScriptExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageModifications());
         stringBuilder.append(pageBlocks.getPageVariable());
         List<LinkBuildingBlocks> allLinksBlocks = pageBlocks.getLinksBuildingBlocks();
+        // альтернативные тексты недоступных ссылок (#135) — после текста страницы, до вариантов
+        for (final LinkBuildingBlocks linkBlocks : allLinksBlocks) {
+            if (linkBlocks.hasShownAltText()) {
+                stringBuilder.append("*if not(").append(linkBlocks.getLinkConstraint()).append(")").append(LINE_SEPARATOR);
+                stringBuilder.append("    ").append(linkBlocks.getLinkAltText()).append(LINE_SEPARATOR);
+            }
+        }
         List<LinkBuildingBlocks> linksBlocks = new ArrayList<>();
         for (final LinkBuildingBlocks linkBlocks : allLinksBlocks) {
             if (linkBlocks.isAuto()) {

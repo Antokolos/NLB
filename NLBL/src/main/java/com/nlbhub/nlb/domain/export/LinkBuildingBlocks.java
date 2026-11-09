@@ -101,6 +101,16 @@ public class LinkBuildingBlocks {
         m_linkText = linkText;
     }
 
+    /**
+     * Альтернативный текст показывается, когда условие ссылки не выполнено (#135): как в экспорте в
+     * INSTEAD (nlb:alts_txt) и в плеере — только у обычной (не автоматической) ссылки с условием
+     */
+    public boolean hasShownAltText() {
+        return !m_auto
+                && m_linkConstraint != null && !m_linkConstraint.trim().isEmpty()
+                && m_linkAltText != null && !m_linkAltText.trim().isEmpty();
+    }
+
     public String getLinkAltText() {
         return m_linkAltText;
     }
