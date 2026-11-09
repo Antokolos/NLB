@@ -128,10 +128,16 @@ public class URQExportManager extends TextExportManager {
         boolean unconditionalAuto = false;
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             if (linkBlocks.isAuto()) {
-                if (StringHelper.isEmpty(linkBlocks.getLinkConstraint())) {
+                String constraint = linkBlocks.getLinkConstraint();
+                if (linkBlocks.isNeedsAction()) {
+                    // has_action(): автоссылка ждёт, пока игрок сделает нужное число действий
+                    String hasAction = "(" + ACTION_COUNT_VAR + ">=" + getNeedsActionCount() + ")";
+                    constraint = StringHelper.isEmpty(constraint) ? hasAction : "(" + constraint + ") and " + hasAction;
+                }
+                if (StringHelper.isEmpty(constraint)) {
                     unconditionalAuto = true;
                 } else {
-                    stringBuilder.append("if ").append(linkBlocks.getLinkConstraint()).append(" then ");
+                    stringBuilder.append("if ").append(constraint).append(" then ");
                 }
                 stringBuilder.append("goto ").append(linkBlocks.getLinkId()).append(LINE_SEPARATOR);
                 if (unconditionalAuto) {
@@ -166,6 +172,12 @@ public class URQExportManager extends TextExportManager {
         for (final LinkBuildingBlocks linkBlocks : pageBlocks.getLinksBuildingBlocks()) {
             postPage.append(linkBlocks.getLinkComment());
             postPage.append(linkBlocks.getLinkLabel());
+            if (!linkBlocks.isTechnical()) {
+                // переход по обычной ссылке — действие игрока (для автоссылок «needs action»)
+                postPage.append(ACTION_COUNT_VAR).append("=").append(ACTION_COUNT_VAR).append("+1").append(LINE_SEPARATOR);
+            } else if (linkBlocks.isAuto() && linkBlocks.isNeedsAction()) {
+                postPage.append(ACTION_COUNT_VAR).append("=0").append(LINE_SEPARATOR);
+            }
             postPage.append(linkBlocks.getLinkModifications());
             postPage.append(linkBlocks.getLinkVariable());
             postPage.append(linkBlocks.getLinkVisitStateVariable());

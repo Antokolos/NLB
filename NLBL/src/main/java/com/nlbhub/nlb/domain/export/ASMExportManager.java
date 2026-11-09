@@ -240,10 +240,16 @@ public class ASMExportManager extends TextExportManager {
             if (!linkBlocks.isAuto()) {
                 continue;
             }
-            final boolean hasConstraint = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
+            String constraint = linkBlocks.getLinkConstraint();
+            if (linkBlocks.isNeedsAction()) {
+                // has_action(): автоссылка ждёт, пока игрок сделает нужное число действий
+                String hasAction = "($" + ACTION_COUNT_VAR + " >= " + getNeedsActionCount() + ")";
+                constraint = StringHelper.isEmpty(constraint) ? hasAction : "(" + constraint + ") and " + hasAction;
+            }
+            final boolean hasConstraint = !StringHelper.isEmpty(constraint);
             if (hasConstraint) {
                 stringBuilder.append(openIfs == 0 ? "<<if " : "<<elseif ")
-                        .append(linkBlocks.getLinkConstraint()).append(">>").append(LINE_SEPARATOR);
+                        .append(constraint).append(">>").append(LINE_SEPARATOR);
                 openIfs = 1;
             } else if (openIfs > 0) {
                 stringBuilder.append("<<else>>").append(LINE_SEPARATOR);
@@ -381,6 +387,13 @@ public class ASMExportManager extends TextExportManager {
         for (final LinkBuildingBlocks linkBlocks : pageBlocks.getLinksBuildingBlocks()) {
             postPage.append(linkBlocks.getLinkComment());
             postPage.append(linkBlocks.getLinkLabel());
+            if (!linkBlocks.isTechnical()) {
+                // переход по обычной ссылке — действие игрока (для автоссылок «needs action»)
+                postPage.append("<<set $").append(ACTION_COUNT_VAR).append(" = $").append(ACTION_COUNT_VAR)
+                        .append(" + 1>>").append(LINE_SEPARATOR);
+            } else if (linkBlocks.isAuto() && linkBlocks.isNeedsAction()) {
+                postPage.append("<<set $").append(ACTION_COUNT_VAR).append(" = 0>>").append(LINE_SEPARATOR);
+            }
             postPage.append(linkBlocks.getLinkModifications());
             postPage.append(linkBlocks.getLinkVariable());
             postPage.append(linkBlocks.getLinkVisitStateVariable());
@@ -473,6 +486,8 @@ public class ASMExportManager extends TextExportManager {
         if (pageNumber == 1) {
             return (
                     ":: Start[::]0-0-0" + LINE_SEPARATOR
+                            // счётчик действий: необъявленная переменная в JavaScript — ошибка
+                            + "<<set $" + ACTION_COUNT_VAR + " = 0>>" + LINE_SEPARATOR
                             + "<<goto '" + labelText + "'>>" + LINE_SEPARATOR + LINE_SEPARATOR
                             + ":: " + labelText + "[::]" + (pageNumber % 10) * 150 + "-" + (pageNumber / 10) * 150 + "-0" + LINE_SEPARATOR
             );

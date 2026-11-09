@@ -85,14 +85,27 @@ public class QSPExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageVariable());
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
-            final boolean hasConstraint = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
+            final boolean waitsAction = linkBlocks.isAuto() && linkBlocks.isNeedsAction();
+            String constraint = linkBlocks.getLinkConstraint();
+            if (waitsAction) {
+                // has_action(): автоссылка ждёт, пока игрок сделает нужное число действий
+                String hasAction = "(" + ACTION_COUNT_VAR + " >= " + getNeedsActionCount() + ")";
+                constraint = StringHelper.isEmpty(constraint) ? hasAction : "(" + constraint + ") AND " + hasAction;
+            }
+            final boolean hasConstraint = !StringHelper.isEmpty(constraint);
             stringBuilder.append(linkBlocks.getLinkComment());
             if (hasConstraint) {
-                stringBuilder.append("IF ").append(linkBlocks.getLinkConstraint()).append(":");
+                stringBuilder.append("IF ").append(constraint).append(":");
                 stringBuilder.append(LINE_SEPARATOR);
             }
             if (!linkBlocks.isAuto()) {
                 stringBuilder.append(linkBlocks.getLinkStart());
+            }
+            if (!linkBlocks.isTechnical()) {
+                // переход по обычной ссылке — действие игрока (для автоссылок «needs action»)
+                stringBuilder.append("    ").append(ACTION_COUNT_VAR).append(" = ").append(ACTION_COUNT_VAR).append(" + 1").append(LINE_SEPARATOR);
+            } else if (waitsAction) {
+                stringBuilder.append("    ").append(ACTION_COUNT_VAR).append(" = 0").append(LINE_SEPARATOR);
             }
             stringBuilder.append(linkBlocks.getLinkModifications());
             stringBuilder.append(linkBlocks.getLinkVariable());

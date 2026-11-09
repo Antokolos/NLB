@@ -63,6 +63,8 @@ public class LinkBuildingBlocks {
     private String m_linkEnd;
     private boolean m_auto;
     private boolean m_needsAction;
+    /** Служебная ссылка (auto, autowired): переход по ней — не действие игрока (has_action) */
+    private boolean m_technical;
     /** Link is considered trivial if it has default text and has no constraints. */
     private boolean m_isTrivial;
     private boolean m_inline;
@@ -207,6 +209,14 @@ public class LinkBuildingBlocks {
 
     public void setAuto(boolean auto) {
         m_auto = auto;
+    }
+
+    public boolean isTechnical() {
+        return m_technical;
+    }
+
+    public void setTechnical(boolean technical) {
+        m_technical = technical;
     }
 
     public boolean isNeedsAction() {

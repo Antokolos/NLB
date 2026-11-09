@@ -330,6 +330,20 @@ public abstract class ExportManager {
     }
 
     /**
+     * Переменная-счётчик действий игрока для автоссылок с флагом «needs action» (has_action() в
+     * nlb.lua): каждый переход по обычной (не служебной) ссылке увеличивает её на 1, такая
+     * автоссылка срабатывает, только когда набралось {@link #getNeedsActionCount()} действий, и
+     * обнуляет её. Без этого автоссылка срабатывала сразу и могла зациклиться («Слуга Ра»: холл —
+     * боль — холл)
+     */
+    protected static final String ACTION_COUNT_VAR = "nlb_action_count";
+
+    /** Сколько действий нужно автоссылке с флагом «needs action» (настройки экспорта) */
+    protected int getNeedsActionCount() {
+        return PropertyManager.getSettings().getDefaultConfig().getExport().getNeedsActionCount();
+    }
+
+    /**
      * Подпись объекта в инвентаре (disp) по его id, как в ADDINV/RMINV; null — объект не найден
      */
     protected String getObjDisp(final String objId) {
@@ -2070,6 +2084,7 @@ public abstract class ExportManager {
         final boolean trivial = determineTrivialStatus(link);
         blocks.setAuto(link.isAuto());
         blocks.setNeedsAction(link.isNeedsAction());
+        blocks.setTechnical(link.isTechnical() || link.isAuto());
         blocks.setInline(isInlineLink(page, link));
         String expandedLinkText = expandVariablesForLinks(StringHelper.getTextChunks(link.getText()), theme);
         blocks.setLinkText(expandedLinkText);
