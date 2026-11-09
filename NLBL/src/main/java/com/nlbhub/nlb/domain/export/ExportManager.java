@@ -1251,6 +1251,17 @@ public abstract class ExportManager {
             }
 
             @Override
+            public String getAuthorNotes() {
+                // заметки автора — только для редактора, в экспорт не попадают (#187)
+                return Constants.EMPTY_STRING;
+            }
+
+            @Override
+            public MultiLangString getAuthorNotesTexts() {
+                return MultiLangString.createEmptyText();
+            }
+
+            @Override
             public MultiLangString getCaptions() {
                 return escapeMultiLang(page.getCaptions());
             }

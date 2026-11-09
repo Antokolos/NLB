@@ -105,6 +105,26 @@ public class MultiLangString {
         return result != null ? result : Constants.EMPTY_STRING;
     }
 
+    /**
+     * Первый непустой текст: на языке preferred, затем на основных языках — en, затем ru, затем на
+     * остальных по алфавиту (чтобы выбор не зависел от порядка в памяти); если нет ни на одном —
+     * пустая строка. Для книги на en — en, ru, …; на ru — ru, en, …; на другом языке — он, en, ru, …
+     */
+    public String getNonEmpty(final String preferred) {
+        final Set<String> order = new java.util.LinkedHashSet<>();
+        order.add(preferred);
+        order.add(Constants.EN);
+        order.add(Constants.RU);
+        order.addAll(new java.util.TreeSet<>(m_content.keySet()));
+        for (String langKey : order) {
+            final String text = m_content.get(langKey);
+            if (!StringHelper.isEmpty(text)) {
+                return text;
+            }
+        }
+        return Constants.EMPTY_STRING;
+    }
+
     public boolean equalsAs(final String langKey, final MultiLangString mlsToCompare) {
         String contentText = m_content.get(langKey);
         String contentTextToCompare = mlsToCompare.m_content.get(langKey);

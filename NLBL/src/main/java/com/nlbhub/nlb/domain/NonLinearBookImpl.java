@@ -438,6 +438,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_existingGlobalAutowired;
         private final boolean m_existingNoSave;
         private final boolean m_existingAutosFirst;
+        private final MultiLangString m_existingAuthorNotes;
         private final boolean m_existingAutoIn;
         private final boolean m_existingNeedsAction;
         private final boolean m_existingAutoOut;
@@ -467,6 +468,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         private final boolean m_newGlobalAutowired;
         private final boolean m_newNoSave;
         private final boolean m_newAutosFirst;
+        private final MultiLangString m_newAuthorNotes;
         private AbstractNodeItem.SortLinksCommand m_sortLinkCommand;
         private List<AbstractNodeItem.DeleteLinkCommand> m_deleteLinkCommands = new ArrayList<>();
 
@@ -505,6 +507,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final boolean globalAutowire,
                 final boolean noSave,
                 final boolean autosFirst,
+                final MultiLangString authorNotes,
                 final LinksTableModel linksTableModel
         ) {
             this(
@@ -542,6 +545,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                     globalAutowire,
                     noSave,
                     autosFirst,
+                    authorNotes,
                     linksTableModel
             );
         }
@@ -581,6 +585,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                 final boolean globalAutowire,
                 final boolean noSave,
                 final boolean autosFirst,
+                final MultiLangString authorNotes,
                 final LinksTableModel linksTableModel
         ) {
             m_page = page;
@@ -667,6 +672,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_existingGlobalAutowired = m_page.isGlobalAutowire();
             m_existingNoSave = m_page.isNoSave();
             m_existingAutosFirst = m_page.isAutosFirst();
+            m_existingAuthorNotes = m_page.getAuthorNotesTexts();
             m_existingAutoIn = m_page.isAutoIn();
             m_existingNeedsAction = m_page.isNeedsAction();
             m_existingAutoOut = m_page.isAutoOut();
@@ -693,6 +699,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_newGlobalAutowired = globalAutowire;
             m_newNoSave = noSave;
             m_newAutosFirst = autosFirst;
+            m_newAuthorNotes = authorNotes;
             m_newAutoIn = autoIn;
             m_newNeedsAction = needsAction;
             m_newAutoOut = autoOut;
@@ -754,6 +761,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setGlobalAutoWired(m_newGlobalAutowired);
             m_page.setNoSave(m_newNoSave);
             m_page.setAutosFirst(m_newAutosFirst);
+            m_page.setAuthorNotesTexts(m_newAuthorNotes);
             m_page.notifyObservers();
         }
 
@@ -800,6 +808,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             m_page.setGlobalAutoWired(m_existingGlobalAutowired);
             m_page.setNoSave(m_existingNoSave);
             m_page.setAutosFirst(m_existingAutosFirst);
+            m_page.setAuthorNotesTexts(m_existingAuthorNotes);
             m_page.notifyObservers();
         }
     }
@@ -2119,6 +2128,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         page.isGlobalAutowire(),
                         page.isNoSave(),
                         page.isAutosFirst(),
+                        page.getAuthorNotesTexts(),
                         new LinksTableModel(new ArrayList<Link>())
                 );
                 m_commandChain.addCommand(updatePageCommand);
@@ -2644,6 +2654,7 @@ public class NonLinearBookImpl implements NonLinearBook {
             final boolean globalAutowire,
             final boolean noSave,
             final boolean autosFirst,
+            final MultiLangString authorNotes,
             final LinksTableModel linksTableModel
     ) {
         return (
@@ -2682,6 +2693,7 @@ public class NonLinearBookImpl implements NonLinearBook {
                         globalAutowire,
                         noSave,
                         autosFirst,
+                        authorNotes,
                         linksTableModel
                 )
         );
