@@ -46,6 +46,8 @@ import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,6 +74,8 @@ public class ASMExportManager extends TextExportManager {
      */
     private static final Pattern HR_LINE = Pattern.compile("(?m)^(\\s*)(-{4,})(?=\\s*$)");
 
+    /** Открытые блоки модификаций: true — WHILE (<<loop>>), false — IF; END закрывает последний */
+    private final Deque<Boolean> m_openBlocks = new ArrayDeque<>();
     /** Язык книги — для подписи кнопки автоссылки без текста */
     private String m_language = "en";
 
@@ -507,14 +511,18 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateWhile(final String constraint) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // В AXMA только цикл со счётчиком (<<loop N>> -> for); условие проверяется в начале тела
+        m_openBlocks.push(Boolean.TRUE);
+        return "<<loop 1000000000>>" + LINE_SEPARATOR
+                + "<<if not (" + constraint + ")>>" + LINE_SEPARATOR
+                + "<<break>>" + LINE_SEPARATOR
+                + "<<endif>>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateIf(final String constraint) {
-        // TODO: implement
-        return EMPTY_STRING;
+        m_openBlocks.push(Boolean.FALSE);
+        return "<<if " + constraint + ">>" + LINE_SEPARATOR;
     }
 
     @Override
@@ -525,20 +533,19 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateElse() {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "<<else>>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateElseIf(final String constraint) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "<<elseif " + constraint + ">>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateEnd() {
-        // TODO: implement
-        return EMPTY_STRING;
+        // END в NLB закрывает и IF, и WHILE, а в AXMA для них разные макросы
+        boolean loop = !m_openBlocks.isEmpty() && m_openBlocks.pop();
+        return (loop ? "<<endloop>>" : "<<endif>>") + LINE_SEPARATOR;
     }
 
     @Override
@@ -687,8 +694,8 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateRndOperation(String variableName, String maxValue) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // rnd(n) в NLB — целое от 1 до n; <<set>> компилируется в JavaScript как есть
+        return "<<set " + variableName + " = Math.floor(Math.random() * (" + maxValue + ")) + 1>>" + LINE_SEPARATOR;
     }
 
     @Override
@@ -711,8 +718,8 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateGoToOperation(String locationId) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // <<goto>> прерывает выполнение абзаца: переход из модификаций ссылки важнее цели ссылки
+        return "<<goto '" + locationId + "'>>" + LINE_SEPARATOR;
     }
 
     @Override

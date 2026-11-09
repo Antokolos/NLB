@@ -329,6 +329,13 @@ public abstract class ExportManager {
         return NONEXISTING_PAGE;
     }
 
+    /**
+     * Номер страницы в экспорте (с 1) или {@link #NONEXISTING_PAGE}
+     */
+    protected int getExportPageNumber(final String pageId) {
+        return getPageNumber(pageId);
+    }
+
     private int checkedGetPageNumber(final String pageId) throws NLBConsistencyException {
         int pageNumber = getPageNumber(pageId);
         if (pageNumber != NONEXISTING_PAGE) {
