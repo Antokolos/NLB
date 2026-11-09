@@ -280,7 +280,7 @@ public class ControlFlowExportTest {
         File qspFile = new File(m_temp.getRoot(), "book.txt");
         ifHaveBook().exportToQSPTextFile(qspFile);
         assertInOrder(read(qspFile, StandardCharsets.UTF_16LE),
-                "ADDOBJ 'Ключ от двери'\n", "IF OBJ 'Ключ от двери':\n", "x = ", "ELSE\n", "x = ", "END\n");
+                "GOSUB 'nlb_place', '", "', 'nlb_inv'\n", "IF $nlb_in['", "'] = 'nlb_inv':\n", "x = ", "ELSE\n", "x = ", "END\n");
         File smFile = new File(m_temp.getRoot(), "book.sm");
         ifHaveBook().exportToASMFile(smFile);
         assertInOrder(read(smFile, StandardCharsets.UTF_8), "<<if false>>\n", "<<else>>\n", "<<endif>>\n");

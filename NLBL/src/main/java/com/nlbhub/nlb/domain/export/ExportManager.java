@@ -338,6 +338,11 @@ public abstract class ExportManager {
      */
     protected static final String ACTION_COUNT_VAR = "nlb_action_count";
 
+    /** Тип переменной книги по имени (null — неизвестна) */
+    protected Variable.DataType getVariableDataType(final String name) {
+        return m_dataTypeMap == null ? null : m_dataTypeMap.get(name);
+    }
+
     /** Сколько действий нужно автоссылке с флагом «needs action» (настройки экспорта) */
     protected int getNeedsActionCount() {
         return PropertyManager.getSettings().getDefaultConfig().getExport().getNeedsActionCount();
@@ -521,6 +526,7 @@ public abstract class ExportManager {
         blocks.setAutowired(page.isAutowire());
         final String pageName = decoratePageName(page.getId(), pageNumber);
         blocks.setPageName(pageName);
+        blocks.setPageId(page.getId());
         blocks.setPageLabel(decoratePageLabel(page.getId(), pageNumber, theme));
         blocks.setPageNumber(decoratePageNumber(pageNumber));
         blocks.setPageComment(decoratePageComment(page.getCaption()));
@@ -957,9 +963,13 @@ public abstract class ExportManager {
         blocks.setObjDisp(decorateObjDisp(expandVariables(StringHelper.getTextChunks(obj.getDisp())), hasImage && obj.isImageInInventory(), obj.isGraphical()));
         blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), expandVariables(StringHelper.getTextChunks(obj.getText())), hasImage && obj.isImageInScene(), obj.isGraphical()));
         blocks.setGraphical(obj.isGraphical());
+        blocks.setObjId(obj.getId());
+        blocks.setContainerId(Obj.DEFAULT_CONTAINER_ID.equals(obj.getContainerId()) || obj.getContainerId() == null
+                ? Constants.EMPTY_STRING : obj.getContainerId());
         blocks.setTakable(obj.isTakable());
         blocks.setCallback(obj.isCallback());
         String commonObjId = commonToObj != null ? commonToObj.getId() : Constants.EMPTY_STRING;
+        blocks.setCommonObjId(commonObjId);
         blocks.setObjTak(decorateObjTak(obj.getName(), commonObjId));
         blocks.setObjInv(decorateObjInv(objType));
         blocks.setObjActStart(decorateObjActStart(expandVariables(StringHelper.getTextChunks(obj.getActText())), commonObjId));

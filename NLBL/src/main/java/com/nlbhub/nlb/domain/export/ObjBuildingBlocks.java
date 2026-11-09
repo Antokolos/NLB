@@ -48,6 +48,10 @@ import java.util.List;
  * @version 1.0 12/19/13
  */
 public class ObjBuildingBlocks {
+    /** Id объекта, его места (страницы или объекта; пусто — нигде) и общего объекта — как в книге */
+    private String m_objId = "";
+    private String m_containerId = "";
+    private String m_commonObjId = "";
     private String m_objLabel;
     private String m_objComment;
     private String m_objStart;
@@ -87,6 +91,30 @@ public class ObjBuildingBlocks {
     public ObjBuildingBlocks() {
         m_useBuildingBlocks = new ArrayList<>();
         m_containedObjIds = new ArrayList<>();
+    }
+
+    public String getObjId() {
+        return m_objId;
+    }
+
+    public void setObjId(String objId) {
+        m_objId = objId;
+    }
+
+    public String getContainerId() {
+        return m_containerId;
+    }
+
+    public void setContainerId(String containerId) {
+        m_containerId = containerId;
+    }
+
+    public String getCommonObjId() {
+        return m_commonObjId;
+    }
+
+    public void setCommonObjId(String commonObjId) {
+        m_commonObjId = commonObjId;
     }
 
     public String getObjLabel() {

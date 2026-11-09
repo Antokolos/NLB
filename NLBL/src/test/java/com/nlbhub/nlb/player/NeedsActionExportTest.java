@@ -77,7 +77,7 @@ public class NeedsActionExportTest {
     @Test
     public void qsp() throws Exception {
         String qsp = export("book.txt", StandardCharsets.UTF_16LE, NonLinearBookImpl::exportToQSPTextFile);
-        assertTrue(qsp, qsp.contains("ACT 'Шаг':\n    nlb_action_count = nlb_action_count + 1\n"));
+        assertTrue(qsp, qsp.contains("ACT 'Шаг':\n    $nlb_sel = ''\n    UNSEL\n    nlb_action_count = nlb_action_count + 1\n"));
         assertTrue(qsp, qsp.contains("IF (nlb_action_count >= 3):\n    nlb_action_count = 0\n"));
     }
 
