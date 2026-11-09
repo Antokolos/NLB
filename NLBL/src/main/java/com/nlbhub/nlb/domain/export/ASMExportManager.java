@@ -87,6 +87,11 @@ public class ASMExportManager extends TextExportManager {
             }
             stringBuilder.append(linkBlocks.getLinkStart());
             if (hasConstraint) {
+                if (linkBlocks.hasShownAltText()) {
+                    // альтернативный текст недоступной ссылки (#135)
+                    stringBuilder.append("<<else>>").append(LINE_SEPARATOR);
+                    stringBuilder.append(linkBlocks.getLinkAltText()).append(LINE_SEPARATOR);
+                }
                 stringBuilder.append("<<endif>>").append(LINE_SEPARATOR);
             }
         }

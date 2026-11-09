@@ -50,7 +50,8 @@ public class Article {
     private Metadata m_metadata;
     private List<Script> m_scripts = new ArrayList<>();
     private List<Action> m_actions = new ArrayList<>();
-    private String text;
+    /** Тексты статьи: основной и условные (if/ifnot — имя скрипта-условия, как у action) */
+    private List<Text> m_texts = new ArrayList<>();
 
     /**
      * Default contructor. It is needed for JAXB conversion, do not remove!
@@ -103,11 +104,24 @@ public class Article {
     }
 
     @XmlElement(name = "text")
+    public List<Text> getTexts() {
+        return m_texts;
+    }
+
+    /** Основной текст статьи (первый элемент text) */
     public String getText() {
-        return text;
+        return m_texts.isEmpty() ? null : m_texts.get(0).getValue();
     }
 
     public void setText(String text) {
-        this.text = text;
+        if (m_texts.isEmpty()) {
+            m_texts.add(new Text(text));
+        } else {
+            m_texts.get(0).setValue(text);
+        }
+    }
+
+    public void addText(Text text) {
+        m_texts.add(text);
     }
 }
