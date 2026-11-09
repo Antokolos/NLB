@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.Constants;
+import com.nlbhub.nlb.api.Link;
 import com.nlbhub.nlb.api.TextChunk;
 import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
@@ -46,8 +47,11 @@ import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.StringHelper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The ChoiceScriptExportManager class
@@ -66,6 +70,11 @@ public class ChoiceScriptExportManager extends TextExportManager {
      */
     private static final String BLOCK_MARK = "*nlb_block ";
     private static final String INDENT = "    ";
+    private static final int LOOP_LIMIT = 100000;
+    /** Строка варианта *choice: отступ, #, текст */
+    private static final Pattern OPTION_LINE = Pattern.compile("(?m)^(\\s*#)([^\\r\\n]*)");
+    /** Язык книги — для подписи варианта у ссылки без текста */
+    private String m_language = "en";
     /** Счётчик меток циклов (WHILE): *label nlb_while_N */
     private int m_loopCount = 0;
 
@@ -148,6 +157,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
 
     @Override
     protected String generatePreambleText(NLBBuildingBlocks nlbBuildingBlocks) {
+        m_language = StringHelper.isEmpty(nlbBuildingBlocks.getLang()) ? "en" : nlbBuildingBlocks.getLang();
         return "*comment Generated with Non-Linear Book Builder, http://nlbhub.com" + LINE_SEPARATOR;
     }
 
@@ -156,9 +166,15 @@ public class ChoiceScriptExportManager extends TextExportManager {
         StringBuilder result = new StringBuilder();
         // ветка *if может заканчиваться без *goto перед *elseif/*else (блоки модификаций)
         result.append("*create implicit_control_flow true").append(LINE_SEPARATOR);
+        result.append("*create ").append(ACTION_COUNT_VAR).append(" 0").append(LINE_SEPARATOR);
         for (Map.Entry<String, String> entry : initValuesMap.entrySet()) {
             result.append("*create ").append(entry.getKey()).append(" ").append(entry.getValue()).append(LINE_SEPARATOR);
         }
+        // Вся книга — одна сцена, а ChoiceScript по умолчанию останавливает игру, когда строка
+        // сцены выполнена 1000 раз («visited this line too many times»). В книге с возвратами в
+        // хаб (или на страницу «Поражение» и обратно) это обычная игра, поэтому предел выше;
+        // настоящий вечный цикл автопереходов он по-прежнему остановит
+        result.append("*looplimit ").append(LOOP_LIMIT).append(LINE_SEPARATOR);
         return result.toString();
     }
 
@@ -183,7 +199,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
         // альтернативные тексты недоступных ссылок (#135) — после текста страницы, до вариантов
         for (final LinkBuildingBlocks linkBlocks : allLinksBlocks) {
             if (linkBlocks.hasShownAltText()) {
-                stringBuilder.append("*if not(").append(linkBlocks.getLinkConstraint()).append(")").append(LINE_SEPARATOR);
+                stringBuilder.append("*if not(").append(cs(linkBlocks.getLinkConstraint())).append(")").append(LINE_SEPARATOR);
                 stringBuilder.append("    ").append(linkBlocks.getLinkAltText()).append(LINE_SEPARATOR);
             }
         }
@@ -204,20 +220,71 @@ public class ChoiceScriptExportManager extends TextExportManager {
             stringBuilder.append(pageBlocks.getPageEnd());
         }
 
+        Map<String, Integer> optionNames = new HashMap<>();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
-            stringBuilder.append(getLinkRedirectText(linkBlocks, false));
+            stringBuilder.append(uniqueOption(getLinkRedirectText(linkBlocks, false), optionNames));
         }
         return stringBuilder.toString();
+    }
+
+    /** Выражение в виде, который понимает ChoiceScript (см. {@link ChoiceScriptExpression}) */
+    private static String cs(String expression) {
+        return ChoiceScriptExpression.normalize(expression);
+    }
+
+    /**
+     * ChoiceScript не допускает в одном *choice двух видимых вариантов с одинаковым текстом
+     * («Invalid option; conflicts with option»), а в книге NLB это бывает (несколько «Закрыть» —
+     * выходы из модуля, bookU). Повтор получает невидимый суффикс из символов нулевой ширины:
+     * ChoiceScript их не обрезает, игрок их не видит.
+     */
+    private static String uniqueOption(String optionText, Map<String, Integer> optionNames) {
+        Matcher matcher = OPTION_LINE.matcher(optionText);
+        if (!matcher.find()) {
+            return optionText;
+        }
+        String name = matcher.group(2).trim();
+        int count = optionNames.merge(name, 1, Integer::sum);
+        if (count == 1) {
+            return optionText;
+        }
+        return optionText.substring(0, matcher.end(2)) + "\u200B".repeat(count - 1) + optionText.substring(matcher.end(2));
+    }
+
+    /**
+     * Вариант *choice. Тривиальная ссылка (с текстом по умолчанию, «Далее») попадает в список
+     * вариантов, если на странице есть и другие варианты; decorateLinkStart выдаёт для неё только
+     * *goto, а внутри *choice нужен вариант #текст — иначе её *if оставался без тела и игрок
+     * ссылку не видел (wild-island-quest, «Шапочка»).
+     */
+    private String choiceOption(final LinkBuildingBlocks linkBlocks) {
+        if (!linkBlocks.isTrivial() || linkBlocks.isAuto()) {
+            return linkBlocks.getLinkStart();
+        }
+        String text = linkBlocks.getLinkText();
+        if (StringHelper.isEmpty(text) || text.trim().isEmpty()) {
+            text = Link.DEFAULT_TEXT.get(m_language);
+            if (StringHelper.isEmpty(text)) {
+                text = Link.DEFAULT_TEXT.get("en");
+            }
+        }
+        return decorateLinkStart(linkBlocks.getLinkId(), text, false, false, false, 0, linkBlocks.getTheme());
     }
 
     protected String getLinkRedirectText(final LinkBuildingBlocks linkBlocks, final boolean isAutoOrTrivial) {
         final String padding = "    ";
         StringBuilder stringBuilder = new StringBuilder();
-        if (!StringHelper.isEmpty(linkBlocks.getLinkConstraint())) {
-            stringBuilder.append(isAutoOrTrivial ? Constants.EMPTY_STRING : padding).append("*if ").append(linkBlocks.getLinkConstraint()).append(LINE_SEPARATOR);
+        String constraint = linkBlocks.getLinkConstraint();
+        if (linkBlocks.isAuto() && linkBlocks.isNeedsAction()) {
+            // has_action(): автоссылка ждёт, пока игрок сделает нужное число действий
+            String hasAction = "(" + ACTION_COUNT_VAR + " >= " + getNeedsActionCount() + ")";
+            constraint = StringHelper.isEmpty(constraint) ? hasAction : "(" + constraint + ") and " + hasAction;
+        }
+        if (!StringHelper.isEmpty(constraint)) {
+            stringBuilder.append(isAutoOrTrivial ? Constants.EMPTY_STRING : padding).append("*if ").append(cs(constraint)).append(LINE_SEPARATOR);
             stringBuilder.append(padding);
         }
-        stringBuilder.append(linkBlocks.getLinkStart());
+        stringBuilder.append(isAutoOrTrivial ? linkBlocks.getLinkStart() : choiceOption(linkBlocks));
         return stringBuilder.toString();
     }
 
@@ -232,6 +299,11 @@ public class ChoiceScriptExportManager extends TextExportManager {
         for (final LinkBuildingBlocks linkBlocks : pageBlocks.getLinksBuildingBlocks()) {
             postPage.append(linkBlocks.getLinkComment());
             postPage.append(linkBlocks.getLinkLabel());
+            if (!linkBlocks.isTechnical()) {
+                postPage.append("*set ").append(ACTION_COUNT_VAR).append(" +1").append(LINE_SEPARATOR);
+            } else if (linkBlocks.isAuto() && linkBlocks.isNeedsAction()) {
+                postPage.append("*set ").append(ACTION_COUNT_VAR).append(" 0").append(LINE_SEPARATOR);
+            }
             postPage.append(linkBlocks.getLinkModifications());
             postPage.append(linkBlocks.getLinkVariable());
             postPage.append(linkBlocks.getLinkVisitStateVariable());
@@ -554,7 +626,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
      */
     @Override
     protected String decorateAssignment(String variableName, String variableValue) {
-        return "*set " + variableName + " " + variableValue + LINE_SEPARATOR;
+        return "*set " + variableName + " " + cs(variableValue) + LINE_SEPARATOR;
     }
 
     @Override
@@ -571,12 +643,12 @@ public class ChoiceScriptExportManager extends TextExportManager {
 
     @Override
     protected String decorateWhile(final String constraint) {
-        return BLOCK_MARK + "while " + constraint + LINE_SEPARATOR;
+        return BLOCK_MARK + "while " + cs(constraint) + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateIf(final String constraint) {
-        return BLOCK_MARK + "if " + constraint + LINE_SEPARATOR;
+        return BLOCK_MARK + "if " + cs(constraint) + LINE_SEPARATOR;
     }
 
     @Override
@@ -592,7 +664,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
 
     @Override
     protected String decorateElseIf(final String constraint) {
-        return BLOCK_MARK + "elseif " + constraint + LINE_SEPARATOR;
+        return BLOCK_MARK + "elseif " + cs(constraint) + LINE_SEPARATOR;
     }
 
     @Override
@@ -747,7 +819,8 @@ public class ChoiceScriptExportManager extends TextExportManager {
     @Override
     protected String decorateRndOperation(String variableName, String maxValue) {
         // *rand переменная минимум максимум — целое от 1 до n; выражение — в скобках
-        String max = maxValue.trim().matches("[\\w.]+") ? maxValue.trim() : "(" + maxValue + ")";
+        String normalized = cs(maxValue).trim();
+        String max = normalized.matches("[\\w.]+") || normalized.startsWith("(") ? normalized : "(" + normalized + ")";
         return "*rand " + variableName + " 1 " + max + LINE_SEPARATOR;
     }
 

@@ -299,4 +299,25 @@ public class ControlFlowExportTest {
         assertInOrder(read(csFile, StandardCharsets.UTF_8).replace("\r\n", "\n"),
                 "*if false\n    *set x ", "*else\n    *set x ");
     }
+
+    /**
+     * ChoiceScript: «Далее» (текст по умолчанию) рядом с другими вариантами — вариант #Далее, а не
+     * голый *goto внутри *choice; одинаковые видимые варианты различаются невидимым суффиксом
+     */
+    @Test
+    public void choiceScriptTrivialAndDuplicateOptions() throws Exception {
+        TestBook b = new TestBook();
+        PageImpl start = b.page("Начало.");
+        PageImpl a = b.page("А.");
+        PageImpl c = b.page("Б.");
+        b.link(start, a, "Налево");
+        LinkImpl next = b.link(start, c, "");
+        next.setTexts(b.text("Далее"));
+        b.link(start, a, "Закрыть");
+        b.link(start, c, "Закрыть");
+        File file = new File(m_temp.getRoot(), "startup.txt");
+        b.nlb.exportToChoiceScript(file);
+        String cs = read(file, StandardCharsets.UTF_8).replace("\r\n", "\n");
+        assertInOrder(cs, "*choice\n", "    #Налево\n", "    #Далее\n", "    #Закрыть\n", "    #Закрыть\u200B\n");
+    }
 }

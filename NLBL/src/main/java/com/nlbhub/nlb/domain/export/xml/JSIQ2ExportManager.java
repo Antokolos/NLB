@@ -148,18 +148,38 @@ public class JSIQ2ExportManager extends XMLExportManager {
         for (int i = 0; i < linksBlocks.size(); i++) {
             final LinkBuildingBlocks linkBlocks = linksBlocks.get(i);
             final boolean hasConstraint = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
+            // Модификации и переменные ссылки — отдельными скриптами; их вызывает и действие (do),
+            // и автоссылка (раньше автоссылка сразу показывала цель и их не выполняла, поэтому,
+            // например, не ставилась отметка vl_…, по которой работает возврат из модуля)
+            StringBuilder linkCalls = new StringBuilder();
+            addLinkScript(article, "mod_" + i, linkBlocks.getLinkModifications(), linkCalls);
+            addLinkScript(article, "var_" + i, linkBlocks.getLinkVariable(), linkCalls);
+            addLinkScript(article, "lvs_var_" + i, linkBlocks.getLinkVisitStateVariable(), linkCalls);
             if (linkBlocks.isAuto()) {
                 hasAutoLinks = true;
-                if (hasConstraint) {
-                    autosStringBuilder.append("if (").append(linkBlocks.getLinkConstraint()).append(") {");
+                String condition = hasConstraint ? "(" + linkBlocks.getLinkConstraint() + ")" : Constants.EMPTY_STRING;
+                if (linkBlocks.isNeedsAction()) {
+                    // has_action(): автоссылка ждёт, пока игрок сделает нужное число действий
+                    String hasAction = "((vars." + ACTION_COUNT_VAR + " || 0) >= " + getNeedsActionCount() + ")";
+                    condition = condition.isEmpty() ? hasAction : condition + " && " + hasAction;
+                }
+                if (!condition.isEmpty()) {
+                    autosStringBuilder.append("if (").append(condition).append(") { ");
+                }
+                if (linkBlocks.isNeedsAction()) {
+                    autosStringBuilder.append("vars.").append(ACTION_COUNT_VAR).append(" = 0; ");
                 }
                 // See decorateLinkGoTo() to understand why -1 is needed.
                 // Функции go() в окружении скриптов jsIQ нет: переход — jsIQ.showArticle, после
-                // того как плеер закончит показ текущей статьи; return — первая подходящая
-                // автоссылка уводит со страницы
-                autosStringBuilder.append(showArticleLater("'" + (linkBlocks.getTargetPageNumber() - 1) + "'"))
+                // того как плеер закончит показ текущей статьи; GOTO в модификациях ссылки важнее
+                // её цели; return — первая подходящая автоссылка уводит со страницы
+                autosStringBuilder.append(linkCalls)
+                        .append("var to = (vars.").append(GOTO_VAR).append(" != null) ? vars.").append(GOTO_VAR)
+                        .append(" : '").append(linkBlocks.getTargetPageNumber() - 1).append("'; vars.")
+                        .append(GOTO_VAR).append(" = null; ")
+                        .append(showArticleLater("to"))
                         .append("return; ");
-                if (hasConstraint) {
+                if (!condition.isEmpty()) {
                     autosStringBuilder.append("} ");
                 }
             } else {
@@ -183,45 +203,14 @@ public class JSIQ2ExportManager extends XMLExportManager {
                 }
                 action.setGoto(linkBlocks.getLinkGoTo());
                 action.setValue(linkBlocks.getLinkStart());
-                boolean hasLinkModifications = !StringHelper.isEmpty(linkBlocks.getLinkModifications());
-                if (hasLinkModifications) {
-                    Script actionModificationScript = new Script();
-                    actionModificationScript.setType("mod_" + i);
-                    actionModificationScript.setValue(
-                            //"<![CDATA[" + linkBlocks.getLinkModifications() + "]]>"
-                            linkBlocks.getLinkModifications()
-                    );
-                    article.addScript(actionModificationScript);
+                if (!linkBlocks.isTechnical()) {
+                    // переход по обычной ссылке — действие игрока (для автоссылок «needs action»)
+                    linkCalls.insert(0, "vars." + ACTION_COUNT_VAR + " = (vars." + ACTION_COUNT_VAR + " || 0) + 1; ");
                 }
-                boolean hasLinkVariable = !StringHelper.isEmpty(linkBlocks.getLinkVariable());
-                if (hasLinkVariable) {
-                    Script actionVariableScript = new Script();
-                    actionVariableScript.setType("var_" + i);
-                    actionVariableScript.setValue(
-                            //"<![CDATA[" + linkBlocks.getLinkVariable() + "]]>"
-                            linkBlocks.getLinkVariable()
-                    );
-                    article.addScript(actionVariableScript);
-                }
-                boolean hasLinkVisitStateVariable = !StringHelper.isEmpty(linkBlocks.getLinkVisitStateVariable());
-                if (hasLinkVisitStateVariable) {
-                    Script actionVisitStateVariableScript = new Script();
-                    actionVisitStateVariableScript.setType("lvs_var_" + i);
-                    actionVisitStateVariableScript.setValue(
-                            //"<![CDATA[" + linkBlocks.getLinkVisitStateVariable() + "]]>"
-                            linkBlocks.getLinkVisitStateVariable()
-                    );
-                    article.addScript(actionVisitStateVariableScript);
-                }
-                if (hasLinkVariable || hasLinkModifications || hasLinkVisitStateVariable) {
+                if (linkCalls.length() > 0) {
                     Script actionDoScript = new Script();
                     actionDoScript.setType("do_" + i);
-                    actionDoScript.setValue(
-                            //"<![CDATA[" + "var_" + i + "(); " + "mod_" + i + "(); ]]>"
-                            (hasLinkModifications ? "mod_" + i + "(); " : Constants.EMPTY_STRING)
-                                    + (hasLinkVariable ? "var_" + i + "(); " : Constants.EMPTY_STRING)
-                                    + (hasLinkVisitStateVariable ? "lvs_var_" + i + "(); " : Constants.EMPTY_STRING)
-                    );
+                    actionDoScript.setValue(linkCalls.toString());
                     article.addScript(actionDoScript);
                     action.setDo("do_" + i);
                 }
@@ -269,6 +258,17 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     /** Переменная jsIQ, в которой модификации страницы оставляют статью для перехода (GOTO) */
     private static final String GOTO_VAR = "nlb_goto";
+
+    /** Скрипт статьи с кодом ссылки (если код есть) и его вызов в calls */
+    private static void addLinkScript(Article article, String type, String code, StringBuilder calls) {
+        if (!StringHelper.isEmpty(code)) {
+            Script script = new Script();
+            script.setType(type);
+            script.setValue(code);
+            article.addScript(script);
+            calls.append(type).append("(); ");
+        }
+    }
 
     /** Показ статьи после того, как плеер закончит показ текущей */
     private static String showArticleLater(String articleIdExpression) {

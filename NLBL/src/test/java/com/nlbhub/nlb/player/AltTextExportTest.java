@@ -94,7 +94,7 @@ public class AltTextExportTest {
     public void jsiq2() throws Exception {
         book().exportToJSIQFile(file("book.xml"));
         String xml = read(file("book.xml"), StandardCharsets.UTF_8);
-        assertTrue(xml, xml.matches("(?s).*<action goto=\"\\d+\" if=\"condition_0\"><!\\[CDATA\\[Открыть дверь\\]\\]></action>.*"));
+        assertTrue(xml, xml.matches("(?s).*<action (do=\"do_0\" )?goto=\"\\d+\" if=\"condition_0\"><!\\[CDATA\\[Открыть дверь\\]\\]></action>.*"));
         assertTrue("текст, видимый при ложном условии: " + xml,
                 xml.contains("<text ifnot=\"condition_0\"><![CDATA[" + ALT + "]]></text>"));
         assertTrue("основной текст статьи — как был", xml.contains("<text><![CDATA[Вы в зале. Впереди дверь.]]></text>"));
@@ -105,7 +105,7 @@ public class AltTextExportTest {
     public void choiceScript() throws Exception {
         book().exportToChoiceScript(file("startup.txt"));
         String cs = read(file("startup.txt"), StandardCharsets.UTF_8);
-        int alt = cs.indexOf("*if not(((has_key)))\n    " + ALT + "\n");
+        int alt = cs.indexOf("*if not(has_key)\n    " + ALT + "\n");
         assertTrue(cs, alt > 0);
         assertTrue("до вариантов", alt < cs.indexOf("*choice"));
         assertFalse(cs.contains("Без условия"));
