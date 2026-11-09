@@ -10,6 +10,7 @@ import java.io.File;
 import java.nio.file.Files;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Статусы файлов книги считаются в фоне после openRepo, а операции адаптера их дожидаются:
@@ -42,6 +43,16 @@ public class GitAdapterStatusTest {
         assertEquals(VCSAdapter.Status.Unknown, adapter.getStatus("fresh"));
         adapter.add("fresh");
         assertEquals(VCSAdapter.Status.Added, adapter.getStatus("fresh"));
+
+        // путь в виде Windows («\\», так его передаёт FileManipulator) — тот же файл, что через «/»
+        new File(book, "pages/p1/coords").mkdirs();
+        write(new File(book, "pages/p1/coords"), "left", "1.0");
+        adapter.add("pages\\p1\\coords\\left");
+        assertEquals(VCSAdapter.Status.Added, adapter.getStatus("pages/p1/coords/left"));
+        assertEquals(VCSAdapter.Status.Added, adapter.getStatus("pages\\p1\\coords\\left"));
+        try (Git git = Git.open(book)) {
+            assertTrue("файл в индексе Git", git.status().call().getAdded().contains("pages/p1/coords/left"));
+        }
         adapter.closeAdapter();
 
         // закрытие сразу после открытия дожидается фонового подсчёта, а не рвёт его

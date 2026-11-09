@@ -23,7 +23,9 @@
 Java — `build.sh` / `build.bat` (папка `dist`). Версия проекта при сборке не меняется; повысить —
 `bump-version.sh` / `bump-version.bat` (без параметра — последний номер, `minor` — 1.0.6 -> 1.1.0,
 `major` — 1.0.6 -> 2.0.0, или версия явно: `bump-version.sh 1.2.3-SNAPSHOT`).
-CI — `.github/workflows/ci.yml`: `mvn package` с тестами на каждый PR и push в `master`; тестовые
+CI — `.github/workflows/ci.yml`: `mvn package` с тестами на каждый PR и push в `master` (Linux — обязательная
+проверка «Build and test», и Windows: пути через «\» — `GitAdapter.gitPath`; проверки путей в
+тестах — без расчёта на «/»); тестовые
 книги для него (и локально) — `tools/player-reference/fetch-books.sh --with-media` в `NLB_TEST_BOOKS`
 (без книг тесты, которым они нужны, пропускаются).
 Выпуск — `.github/workflows/release.yml` (Actions -> Release -> Run workflow): версия из `pom.xml`

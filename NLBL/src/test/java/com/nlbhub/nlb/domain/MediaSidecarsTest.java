@@ -52,7 +52,7 @@ public class MediaSidecarsTest {
         final File book = m_dir.toFile();
         try (Stream<Path> walk = Files.walk(bookU.toPath())) {
             for (Path p : (Iterable<Path>) walk::iterator) {
-                if (p.toString().contains("/.git")) {
+                if (p.toString().replace('\\', '/').contains("/.git")) {  // и в Windows
                     continue;
                 }
                 final Path t = book.toPath().resolve(bookU.toPath().relativize(p).toString());
