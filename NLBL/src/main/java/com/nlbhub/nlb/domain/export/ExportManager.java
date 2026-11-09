@@ -2052,6 +2052,7 @@ public abstract class ExportManager {
         blocks.setLinkText(expandedLinkText);
         blocks.setLinkAltText(decorateLinkAltText(expandVariablesForLinks(StringHelper.getTextChunks(link.getAltText()), theme)));
         blocks.setTrivial(trivial);
+        blocks.setLinkId(link.getId());
         blocks.setLinkLabel(decorateLinkLabel(link.getId(), expandedLinkText, theme));
         blocks.setLinkComment(decorateLinkComment(link.getText()));
         // TODO: exportData.getIdToPageNumberMap().get(link.getTarget()) can produce NPE for return links
