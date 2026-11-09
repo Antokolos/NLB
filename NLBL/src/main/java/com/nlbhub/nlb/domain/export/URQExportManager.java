@@ -83,7 +83,29 @@ public class URQExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageModifications());
         stringBuilder.append(pageBlocks.getPageVariable());
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
+        // Автоссылки — до кнопок: переход срабатывает сам, как в INSTEAD, и кнопки этой страницы
+        // уже не выводятся. goto в UrqW не очищает экран, поэтому текст страницы остаётся виден
+        // перед текстом следующей (как в плеере). Первая автоссылка с выполненным условием
+        // уводит со страницы.
+        boolean unconditionalAuto = false;
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
+            if (linkBlocks.isAuto()) {
+                if (StringHelper.isEmpty(linkBlocks.getLinkConstraint())) {
+                    unconditionalAuto = true;
+                } else {
+                    stringBuilder.append("if ").append(linkBlocks.getLinkConstraint()).append(" then ");
+                }
+                stringBuilder.append("goto ").append(linkBlocks.getLinkId()).append(LINE_SEPARATOR);
+                if (unconditionalAuto) {
+                    // дальше ничего не выполнится: остальные ссылки не нужны
+                    break;
+                }
+            }
+        }
+        for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
+            if (linkBlocks.isAuto() || unconditionalAuto) {
+                continue;
+            }
             if (!StringHelper.isEmpty(linkBlocks.getLinkConstraint())) {
                 stringBuilder.append("if ").append(linkBlocks.getLinkConstraint()).append(" then ");
             }

@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.domain.export;
 
 import com.nlbhub.nlb.api.Constants;
+import com.nlbhub.nlb.api.Link;
 import com.nlbhub.nlb.api.TextChunk;
 import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
@@ -71,12 +72,16 @@ public class ASMExportManager extends TextExportManager {
      */
     private static final Pattern HR_LINE = Pattern.compile("(?m)^(\\s*)(-{4,})(?=\\s*$)");
 
+    /** Язык книги — для подписи кнопки автоссылки без текста */
+    private String m_language = "en";
+
     public ASMExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
         super(nlb, encoding);
     }
 
     @Override
     protected String generatePreambleText(NLBBuildingBlocks nlbBuildingBlocks) {
+        m_language = StringHelper.isEmpty(nlbBuildingBlocks.getLang()) ? "en" : nlbBuildingBlocks.getLang();
         StringBuilder preamble = new StringBuilder("128[::]0[::]0").append(LINE_SEPARATOR);
         // Служебные абзацы AXMA: название и автор игры (показываются на титульном экране,
         // без них редактор не даёт опубликовать игру)
@@ -220,7 +225,62 @@ public class ASMExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageModifications());
         stringBuilder.append(pageBlocks.getPageVariable());
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
+        // Автоссылки — до обычных ссылок и вместо них: первая автоссылка с выполненным условием
+        // уводит со страницы, как в INSTEAD. <<goto>> в AXMA очищает экран, поэтому на странице с
+        // текстом переход — единственной кнопкой (текст страницы, которую сразу покидают, должен
+        // быть виден, как в плеере), а на странице без текста — сразу <<goto>>.
+        // Получается <<if а1>>…<<elseif а2>>…<<else>>обычные ссылки<<endif>>.
+        int openIfs = 0;
+        boolean unconditionalAuto = false;
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
+            if (!linkBlocks.isAuto()) {
+                continue;
+            }
+            final boolean hasConstraint = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
+            if (hasConstraint) {
+                stringBuilder.append(openIfs == 0 ? "<<if " : "<<elseif ")
+                        .append(linkBlocks.getLinkConstraint()).append(">>").append(LINE_SEPARATOR);
+                openIfs = 1;
+            } else if (openIfs > 0) {
+                stringBuilder.append("<<else>>").append(LINE_SEPARATOR);
+            }
+            stringBuilder.append(autoTransition(pageBlocks, linkBlocks));
+            if (!hasConstraint) {
+                // дальше ничего не выполнится: остальные ссылки не нужны
+                unconditionalAuto = true;
+                break;
+            }
+        }
+        if (!unconditionalAuto) {
+            if (openIfs > 0) {
+                stringBuilder.append("<<else>>").append(LINE_SEPARATOR);
+            }
+            appendOrdinaryLinks(stringBuilder, linksBlocks);
+        }
+        if (openIfs > 0) {
+            stringBuilder.append("<<endif>>").append(LINE_SEPARATOR);
+        }
+        stringBuilder.append(pageBlocks.getPageEnd());
+        return stringBuilder.toString();
+    }
+
+    private String autoTransition(PageBuildingBlocks pageBlocks, LinkBuildingBlocks linkBlocks) {
+        if (!pageBlocks.isHasPageText()) {
+            return "<<goto '" + linkBlocks.getLinkId() + "'>>" + LINE_SEPARATOR;
+        }
+        String text = linkBlocks.getLinkText();
+        if (StringHelper.isEmpty(text) || text.trim().isEmpty()) {
+            String defaultText = Link.DEFAULT_TEXT.get(m_language);
+            text = StringHelper.isEmpty(defaultText) ? Link.DEFAULT_TEXT.get("en") : defaultText;
+        }
+        return decorateLinkStart(linkBlocks.getLinkId(), text, true, true, false, 0, linkBlocks.getTheme());
+    }
+
+    private void appendOrdinaryLinks(StringBuilder stringBuilder, List<LinkBuildingBlocks> linksBlocks) {
+        for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
+            if (linkBlocks.isAuto()) {
+                continue;
+            }
             final boolean hasConstraint = !StringHelper.isEmpty(linkBlocks.getLinkConstraint());
             if (hasConstraint) {
                 stringBuilder.append("<<if ").append(linkBlocks.getLinkConstraint()).append(">>").append(LINE_SEPARATOR);
@@ -235,8 +295,6 @@ public class ASMExportManager extends TextExportManager {
                 stringBuilder.append("<<endif>>").append(LINE_SEPARATOR);
             }
         }
-        stringBuilder.append(pageBlocks.getPageEnd());
-        return stringBuilder.toString();
     }
 
     @Override

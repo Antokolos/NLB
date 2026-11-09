@@ -47,6 +47,8 @@ import com.nlbhub.nlb.api.Theme;
  * @version 1.0 12/5/13
  */
 public class LinkBuildingBlocks {
+    /** Идентификатор ссылки — имя её метки (абзаца) в текстовых экспортах */
+    private String m_linkId;
     private String m_linkLabel;
     private String m_linkText;
     private String m_linkAltText;
@@ -83,6 +85,14 @@ public class LinkBuildingBlocks {
 
     public void setInline(boolean inline) {
         m_inline = inline;
+    }
+
+    public String getLinkId() {
+        return m_linkId;
+    }
+
+    public void setLinkId(String linkId) {
+        m_linkId = linkId;
     }
 
     public String getLinkLabel() {
