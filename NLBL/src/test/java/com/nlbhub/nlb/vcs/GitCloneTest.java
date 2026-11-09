@@ -16,8 +16,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -39,9 +37,7 @@ public class GitCloneTest {
 
     @After
     public void tearDown() throws IOException {
-        try (Stream<Path> walk = Files.walk(m_dir)) {
-            walk.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-        }
+        TestDirs.delete(m_dir);
     }
 
     private File repo(String name, String file) throws Exception {

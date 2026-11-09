@@ -126,6 +126,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
             for (Script script : inventoryScripts) {
                 article.addScript(script);
             }
+            article.addScript(createNlbGotoScript());
         }
         boolean hasPageModifications = !StringHelper.isEmpty(pageBlocks.getPageModifications());
         if (hasPageModifications) {
@@ -152,10 +153,14 @@ public class JSIQ2ExportManager extends XMLExportManager {
                 if (hasConstraint) {
                     autosStringBuilder.append("if (").append(linkBlocks.getLinkConstraint()).append(") {");
                 }
-                // See decorateLinkGoTo() to understand why -1 is needed
-                autosStringBuilder.append("go(").append(linkBlocks.getTargetPageNumber() - 1).append("); ");
+                // See decorateLinkGoTo() to understand why -1 is needed.
+                // Функции go() в окружении скриптов jsIQ нет: переход — jsIQ.showArticle, после
+                // того как плеер закончит показ текущей статьи; return — первая подходящая
+                // автоссылка уводит со страницы
+                autosStringBuilder.append(showArticleLater("'" + (linkBlocks.getTargetPageNumber() - 1) + "'"))
+                        .append("return; ");
                 if (hasConstraint) {
-                    autosStringBuilder.append("}; ");
+                    autosStringBuilder.append("} ");
                 }
             } else {
                 Action action = new Action();
@@ -229,18 +234,82 @@ public class JSIQ2ExportManager extends XMLExportManager {
             autoLinkScript.setValue(autosStringBuilder.toString());
             article.addScript(autoLinkScript);
         }
-        if (hasPageVariable || hasPageModifications || hasAutoLinks) {
+        // Модификации страницы — в preload: плеер выполняет его до вывода текста и действий,
+        // поэтому условия ссылок и текстов видят уже изменённые переменные (как в INSTEAD).
+        // Переход (GOTO в модификациях, автоссылки) — в onload, после показа статьи: так текст
+        // страницы, которую сразу покидают, успевает появиться, и не начинается показ новой
+        // статьи посреди показа текущей.
+        if (hasPageModifications || hasPageVariable) {
+            String preloadValue = (
+                    (hasPageModifications ? "pmod(); " : Constants.EMPTY_STRING)
+                            + (hasPageVariable ? "pvar(); " : Constants.EMPTY_STRING)
+            );
+            Script preload = findScript(article, "preload");
+            if (preload == null) {
+                preload = new Script();
+                preload.setType("preload");
+                preload.setValue(preloadValue);
+                article.addScript(preload);
+            } else {
+                preload.setValue(preload.getValue() + LINE_SEPARATOR + preloadValue);
+            }
+        }
+        if (hasPageModifications || hasAutoLinks) {
             Script onLoadScript = new Script();
             onLoadScript.setType("onload");
             onLoadScript.setValue(
-                    //"<![CDATA[pvar(); pmod(); ]]>"
-                    (hasPageModifications ? "pmod(); " : Constants.EMPTY_STRING)
-                            + (hasPageVariable ? "pvar(); " : Constants.EMPTY_STRING)
+                    "if (vars." + GOTO_VAR + " != null) { var to = vars." + GOTO_VAR + "; vars." + GOTO_VAR
+                            + " = null; " + showArticleLater("to") + "return; } "
                             + (hasAutoLinks ? "autos(); " : Constants.EMPTY_STRING)
             );
             article.addScript(onLoadScript);
         }
         return article;
+    }
+
+    /** Переменная jsIQ, в которой модификации страницы оставляют статью для перехода (GOTO) */
+    private static final String GOTO_VAR = "nlb_goto";
+
+    /** Показ статьи после того, как плеер закончит показ текущей */
+    private static String showArticleLater(String articleIdExpression) {
+        return "setTimeout(function() { jsIQ.showArticle(" + articleIdExpression + "); }, 0); ";
+    }
+
+    private static Script findScript(Article article, String type) {
+        for (Script script : article.getScripts()) {
+            if (type.equals(script.getType())) {
+                return script;
+            }
+        }
+        return null;
+    }
+
+    /** Номер статьи jsIQ для страницы: статьи нумеруются с 0 (см. decoratePageNumber) */
+    private String getJsiqArticleId(String pageId) {
+        int pageNumber = getExportPageNumber(pageId);
+        return pageNumber > 0 ? Integer.toString(pageNumber - 1) : pageId;
+    }
+
+    /**
+     * Глобальный скрипт nlbGoto({to: 'N'}) — GOTO из модификаций. В действии (ссылке) он меняет
+     * цель самого действия (env.from — нажатое действие, плеер переходит по его goto после
+     * скрипта do), поэтому GOTO важнее цели ссылки, как в INSTEAD. В модификациях страницы
+     * (preload) он запоминает статью, а переходит onload, после показа текущей.
+     */
+    private static Script createNlbGotoScript() {
+        Script nlbGoto = new Script();
+        nlbGoto.setInfo("GOTO from NLB modifications");
+        nlbGoto.setType("nlbGoto");
+        nlbGoto.setIsGlobal("true");
+        nlbGoto.setValue(
+                "var to = String(arg.to);" + LINE_SEPARATOR +
+                        "if (env.from && env.from.goto !== undefined) {" + LINE_SEPARATOR +
+                        "    env.from.goto = to;" + LINE_SEPARATOR +
+                        "} else {" + LINE_SEPARATOR +
+                        "    vars." + GOTO_VAR + " = to;" + LINE_SEPARATOR +
+                        "}"
+        );
+        return nlbGoto;
     }
 
     private Article createCharsheetArticle(String lastSaveString) {
@@ -383,14 +452,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateWhile(final String constraint) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "while (" + constraint + ") { ";
     }
 
     @Override
     protected String decorateIf(final String constraint) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "if (" + constraint + ") { ";
     }
 
     @Override
@@ -401,20 +468,17 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateElse() {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "} else { ";
     }
 
     @Override
     protected String decorateElseIf(final String constraint) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "} else if (" + constraint + ") { ";
     }
 
     @Override
     protected String decorateEnd() {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "} ";
     }
 
     @Override
@@ -563,8 +627,8 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateRndOperation(String variableName, String maxValue) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // rnd(n) в NLB — целое от 1 до n
+        return variableName + " = Math.floor(Math.random() * (" + maxValue + ")) + 1; ";
     }
 
     @Override
@@ -587,8 +651,9 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateGoToOperation(String locationId) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // Переход — через глобальный скрипт nlbGoto (см. createNlbGotoScript); return прерывает
+        // остальные модификации, как в INSTEAD
+        return "nlbGoto({to: '" + getJsiqArticleId(locationId) + "'}); return; ";
     }
 
     @Override

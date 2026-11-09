@@ -21,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -66,9 +65,7 @@ public class MergeIntegrityTest {
     @After
     public void tearDown() throws IOException {
         if (m_dir != null) {
-            try (Stream<Path> walk = Files.walk(m_dir)) {
-                walk.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-            }
+            TestDirs.delete(m_dir);
         }
     }
 

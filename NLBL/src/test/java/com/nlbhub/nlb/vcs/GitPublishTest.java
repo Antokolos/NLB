@@ -26,9 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -70,9 +68,7 @@ public class GitPublishTest {
     @After
     public void tearDown() throws IOException {
         m_server.close();
-        try (Stream<Path> walk = Files.walk(m_dir)) {
-            walk.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-        }
+        TestDirs.delete(m_dir);
     }
 
     private String api() {

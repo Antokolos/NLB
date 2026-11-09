@@ -97,8 +97,12 @@ public class QSPExportManager extends TextExportManager {
             stringBuilder.append(linkBlocks.getLinkModifications());
             stringBuilder.append(linkBlocks.getLinkVariable());
             stringBuilder.append(linkBlocks.getLinkVisitStateVariable());
-            stringBuilder.append(linkBlocks.getLinkGoTo());
-            if (!linkBlocks.isAuto()) {
+            if (linkBlocks.isAuto()) {
+                // XGOTO не очищает основное окно: текст страницы, которую сразу покидают по
+                // автоссылке, остаётся виден перед текстом следующей (как в плеере)
+                stringBuilder.append(linkBlocks.getLinkGoTo().replaceFirst("GOTO '", "XGOTO '"));
+            } else {
+                stringBuilder.append(linkBlocks.getLinkGoTo());
                 stringBuilder.append(linkBlocks.getLinkEnd());
             }
             if (hasConstraint) {
@@ -375,14 +379,13 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateWhile(final String constraint) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // QSP 5.8+: многострочный цикл LOOP WHILE …: … END
+        return "LOOP WHILE " + constraint + ":" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateIf(final String constraint) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "IF " + constraint + ":" + LINE_SEPARATOR;
     }
 
     @Override
@@ -393,20 +396,18 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateElse() {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "ELSE" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateElseIf(final String constraint) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "ELSEIF " + constraint + ":" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateEnd() {
-        // TODO: implement
-        return EMPTY_STRING;
+        // END закрывает и IF, и LOOP
+        return "END" + LINE_SEPARATOR;
     }
 
     @Override
@@ -553,8 +554,8 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateRndOperation(String variableName, String maxValue) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // rnd(n) в NLB — целое от 1 до n
+        return variableName + " = RAND(1, " + maxValue + ")" + LINE_SEPARATOR;
     }
 
     @Override
@@ -577,8 +578,9 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateGoToOperation(String locationId) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // GOTO прерывает выполнение текущего кода, поэтому переход из модификаций ссылки важнее
+        // цели ссылки (как в INSTEAD)
+        return "GOTO '" + locationId + "'" + LINE_SEPARATOR;
     }
 
     @Override
