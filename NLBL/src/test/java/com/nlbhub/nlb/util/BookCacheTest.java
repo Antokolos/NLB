@@ -61,6 +61,11 @@ public class BookCacheTest {
 
     @Test
     public void frontier() throws Exception {
+        // Логика кэша от ОС не зависит, а особенности Windows (пути, разделители, время файлов)
+        // проверяет bookU. Большая книга — только не в Windows: проверка 7 раз сохраняет её целиком
+        // в новую папку (~26 тысяч файлов), а создание мелкого файла там (в CI — ещё и под
+        // антивирусом) на порядок дороже — 9 минут против 40 секунд в Linux
+        Assume.assumeFalse("Frontier — только не в Windows (долго)", File.separatorChar == '\\');
         check("Frontier");
     }
 
