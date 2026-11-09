@@ -190,7 +190,7 @@ public class MergeIntegrityTest {
     private static void copy(Path from, Path to) throws IOException {
         try (Stream<Path> walk = Files.walk(from)) {
             for (Path source : (Iterable<Path>) walk::iterator) {
-                if (source.toString().contains("/.git")) {
+                if (source.toString().replace('\\', '/').contains("/.git")) {  // и в Windows
                     continue;
                 }
                 final Path target = to.resolve(from.relativize(source).toString());

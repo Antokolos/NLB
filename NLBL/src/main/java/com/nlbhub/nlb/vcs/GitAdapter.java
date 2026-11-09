@@ -310,8 +310,19 @@ public class GitAdapter implements VCSAdapter {
         }
     }
 
+    /**
+     * Путь файла книги — так, как его ждёт Git: через «/». FileManipulator передаёт путь в виде ОС
+     * (в Windows — «pages\id\coords\left»), и JGit такие пути не находит: файлы во вложенных
+     * каталогах не добавлялись бы. Раньше это делал только GitAdapterWithPathDecoration (редактор),
+     * а адаптер без обёртки (тесты, другие места) в Windows терял файлы. В путях книги «\» не бывает
+     */
+    static String gitPath(final String path) {
+        return (path != null) ? path.replace('\\', '/') : null;
+    }
+
     @Override
-    public Status getStatus(String path) throws NLBVCSException {
+    public Status getStatus(String bookPath) throws NLBVCSException {
+        final String path = gitPath(bookPath);
         awaitStatuses();
         Status status = m_statuses.get(path);
         if (status == null) {
@@ -321,7 +332,8 @@ public class GitAdapter implements VCSAdapter {
     }
 
     @Override
-    public void add(String path) throws NLBVCSException {
+    public void add(String bookPath) throws NLBVCSException {
+        final String path = gitPath(bookPath);
         try {
             Status prevStatus = getStatus(path);
             m_git.add().addFilepattern(path).call();
@@ -335,7 +347,8 @@ public class GitAdapter implements VCSAdapter {
     }
 
     @Override
-    public boolean remove(String path) throws NLBVCSException {
+    public boolean remove(String bookPath) throws NLBVCSException {
+        final String path = gitPath(bookPath);
         awaitStatuses();
         try {
             // cached - true if files should only be removed from index, false if files should also
@@ -349,7 +362,8 @@ public class GitAdapter implements VCSAdapter {
     }
 
     @Override
-    public void reset(String path) throws NLBVCSException {
+    public void reset(String bookPath) throws NLBVCSException {
+        final String path = gitPath(bookPath);
         try {
             Status status = getStatus(path);
             m_git.reset().addPath(path).setRef(Constants.HEAD).call();
