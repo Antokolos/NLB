@@ -41,7 +41,8 @@ public class SaveAsGitTest {
         PropertyManager.init(new File("../NLBW/cfg/config.xml"));
         m_dir = Files.createTempDirectory("saveas-git");
         final Author author = new Author("t", "t@e");
-        m_facade = new NonLinearBookFacade(author, new GitAdapter(author));
+        // как редактор (NLBBMain): пути книги в Windows — через «\», Git их ждёт через «/»
+        m_facade = new NonLinearBookFacade(author, new GitAdapterWithPathDecoration(author));
         m_facade.createNewBook();
         m_facade.addPage(m_facade.createPage(10, 10));
         m_original = m_dir.resolve("original").toFile();

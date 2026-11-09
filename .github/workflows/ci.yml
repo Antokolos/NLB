@@ -46,3 +46,38 @@ jobs:
           name: test-reports
           path: '**/target/surefire-reports/'
           retention-days: 14
+
+  # То же на Windows: пути (разделитель «\»), кодировки и Git там ведут себя иначе, а редактор
+  # чаще всего запускают именно там. Отдельная проверка рядом с обязательной «Build and test»
+  build-windows:
+    name: Build and test (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      # длинные пути каталогов книг (страницы, ссылки, модули) — больше 260 символов
+      - run: git config --global core.longpaths true
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Fetch test books
+        shell: bash
+        run: |
+          echo "NLB_TEST_BOOKS=$RUNNER_TEMP/nlb-test-books" >> "$GITHUB_ENV"
+          NLB_TEST_BOOKS="$RUNNER_TEMP/nlb-test-books" sh tools/player-reference/fetch-books.sh --with-media
+
+      - name: Build and test
+        run: mvn -B -ntp package
+
+      - name: Test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-windows
+          path: '**/target/surefire-reports/'
+          retention-days: 14

@@ -123,7 +123,11 @@ public class MergeIntegrityTest {
      * Автор: удалить Hall в редакторе, сохранить, закоммитить; затем pull
      */
     private List<RestoredElement> deleteHallAndPull() throws Exception {
-        final NonLinearBookFacade facade = new NonLinearBookFacade(new Author("t", "t@e"), new GitAdapter(new Author("t", "t@e")));
+        final NonLinearBookFacade facade = new NonLinearBookFacade(
+                new Author("t", "t@e"),
+                // как редактор (NLBBMain): пути книги в Windows — через «\», Git их ждёт через «/»
+                new GitAdapterWithPathDecoration(new Author("t", "t@e"))
+        );
         facade.createNewBook();
         facade.load(m_mine.getPath(), new DummyProgressData());
         facade.deleteNode(facade.getNlb().getPageById(HALL_ID));
