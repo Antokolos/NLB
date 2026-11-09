@@ -24,7 +24,8 @@ import java.util.regex.Pattern;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Условия, циклы, GOTO и RND в модификациях — в экспортах QSP, AXMA Story Maker и jsIQ2
+ * Условия, циклы, GOTO и RND в модификациях — в экспортах QSP, AXMA Story Maker, jsIQ2, URQ и
+ * ChoiceScript
  */
 public class ControlFlowExportTest {
     @Rule
@@ -162,5 +163,140 @@ public class ControlFlowExportTest {
         assertTrue("GOTO в модификации ссылки: " + xml, xml.contains(secret));
         assertTrue("модификации страницы — до показа: " + xml, xml.contains("<script type=\"preload\"><![CDATA[") );
         assertTrue("глобальный nlbGoto: " + xml, xml.contains("type=\"nlbGoto\""));
+    }
+
+    @Test
+    public void urq() throws Exception {
+        File file = new File(m_temp.getRoot(), "book.qst");
+        book().exportToURQTextFile(file);
+        String urq = read(file, Charset.forName("windows-1251")).replace("\r\n", "\n");
+        assertInOrder(urq,
+                "counter=0\n",
+                ":nlb_while_1\n", "if not (", "counter", "<", "3", ") then goto nlb_while_1_end\n",
+                "counter=", "counter", "+", "1", "\n",
+                "goto nlb_while_1\n:nlb_while_1_end\n",
+                "dice=rnd#6$\n",
+                "if not (", "dice", ">", "3", ") then goto nlb_if_2_1\n",
+                "lucky=",
+                "goto nlb_if_2_end\n:nlb_if_2_1\n",
+                "if not (", "dice", ">", "1", ") then goto nlb_if_2_2\n",
+                "goto nlb_if_2_end\n:nlb_if_2_2\n",
+                "goto " + m_bad.getId() + "\n",
+                ":nlb_if_2_3\n:nlb_if_2_end\n");
+        assertInOrder(urq, ":", "goto " + m_secret.getId() + "\n", "goto ");
+    }
+
+    @Test
+    public void choiceScript() throws Exception {
+        File file = new File(m_temp.getRoot(), "startup.txt");
+        book().exportToChoiceScript(file);
+        String cs = read(file, StandardCharsets.UTF_8).replace("\r\n", "\n");
+        assertInOrder(cs,
+                "*create implicit_control_flow true\n",
+                "*set counter 0\n",
+                "*label nlb_while_1\n*if ", "counter", "<", "3", "\n",
+                "    *set counter ", "counter", "+", "1", "\n",
+                "    *goto nlb_while_1\n",
+                "*rand dice 1 6\n",
+                "*if ", "dice", ">", "3", "\n",
+                "    *set lucky ",
+                "*elseif ", "dice", ">", "1", "\n",
+                "    *set lucky ",
+                "*else\n",
+                "    *goto " + m_bad.getId() + "\n");
+        assertInOrder(cs, "*goto " + m_secret.getId() + "\n");
+    }
+
+    /** WHILE i &lt; 3: IF i = 1: x = x + 10 ELSE (пусто) END; i = i + 1 END — вложенные блоки */
+    NonLinearBookImpl nestedBook() {
+        TestBook b = new TestBook();
+        PageImpl start = b.page("Начало.");
+        String t = start.getId();
+        Variable.DataType num = Variable.DataType.NUMBER;
+        Variable.DataType bool = Variable.DataType.BOOLEAN;
+        mod(b, start, t, Modification.Type.ASSIGN, "i", num, "0");
+        mod(b, start, t, Modification.Type.ASSIGN, "x", num, "0");
+        mod(b, start, t, Modification.Type.WHILE, null, bool, "i < 3");
+        mod(b, start, t, Modification.Type.IF, null, bool, "i == 1");
+        mod(b, start, t, Modification.Type.ASSIGN, "x", num, "x + 10");
+        mod(b, start, t, Modification.Type.ELSE, null, null, null);
+        mod(b, start, t, Modification.Type.END, null, null, null);
+        mod(b, start, t, Modification.Type.ASSIGN, "i", num, "i + 1");
+        mod(b, start, t, Modification.Type.END, null, null, null);
+        return b.nlb;
+    }
+
+    @Test
+    public void nestedChoiceScript() throws Exception {
+        File file = new File(m_temp.getRoot(), "startup.txt");
+        nestedBook().exportToChoiceScript(file);
+        String cs = read(file, StandardCharsets.UTF_8).replace("\r\n", "\n");
+        assertInOrder(cs,
+                "*label nlb_while_1\n*if ", "\n",
+                "    *if ", "\n",
+                "        *set x ", "\n",
+                "    *else\n        *comment\n",
+                "    *set i ", "\n",
+                "    *goto nlb_while_1\n");
+    }
+
+    @Test
+    public void nestedUrq() throws Exception {
+        File file = new File(m_temp.getRoot(), "book.qst");
+        nestedBook().exportToURQTextFile(file);
+        String urq = read(file, Charset.forName("windows-1251")).replace("\r\n", "\n");
+        assertInOrder(urq,
+                ":nlb_while_1\n", ") then goto nlb_while_1_end\n",
+                ") then goto nlb_if_2_1\n",
+                "x=", "\n",
+                "goto nlb_if_2_end\n:nlb_if_2_1\n",
+                ":nlb_if_2_2\n:nlb_if_2_end\n",
+                "i=", "\n",
+                "goto nlb_while_1\n:nlb_while_1_end\n");
+    }
+
+    /** ADDINV key; IFHAVE key: x = 1 ELSE x = 2 END — блок «если есть предмет» */
+    NonLinearBookImpl ifHaveBook() {
+        TestBook b = new TestBook();
+        PageImpl start = b.page("Начало.");
+        b.obj(start, "key", "Ключ", "Ключ от двери", true);
+        String t = start.getId();
+        Variable.DataType num = Variable.DataType.NUMBER;
+        mod(b, start, t, Modification.Type.ADDINV, null, Variable.DataType.STRING, "key");
+        mod(b, start, t, Modification.Type.IFHAVE, "has", Variable.DataType.BOOLEAN, "key");
+        mod(b, start, t, Modification.Type.ASSIGN, "x", num, "1");
+        mod(b, start, t, Modification.Type.ELSE, null, null, null);
+        mod(b, start, t, Modification.Type.ASSIGN, "x", num, "2");
+        mod(b, start, t, Modification.Type.END, null, null, null);
+        return b.nlb;
+    }
+
+    /**
+     * IFHAVE открывает блок, который закрывает END: без него END оставался без пары и ломал
+     * код страницы (лишняя «}» в jsIQ2, END в QSP, <<endif>> в AXMA)
+     */
+    @Test
+    public void ifHave() throws Exception {
+        File qspFile = new File(m_temp.getRoot(), "book.txt");
+        ifHaveBook().exportToQSPTextFile(qspFile);
+        assertInOrder(read(qspFile, StandardCharsets.UTF_16LE),
+                "ADDOBJ 'Ключ от двери'\n", "IF OBJ 'Ключ от двери':\n", "x = ", "ELSE\n", "x = ", "END\n");
+        File smFile = new File(m_temp.getRoot(), "book.sm");
+        ifHaveBook().exportToASMFile(smFile);
+        assertInOrder(read(smFile, StandardCharsets.UTF_8), "<<if false>>\n", "<<else>>\n", "<<endif>>\n");
+        File xmlFile = new File(m_temp.getRoot(), "book.xml");
+        ifHaveBook().exportToJSIQFile(xmlFile);
+        assertInOrder(read(xmlFile, StandardCharsets.UTF_8),
+                "addItem({'name': '", "if (checkItem({'name': '", "})) { ", "} else { ", "} ");
+        File qstFile = new File(m_temp.getRoot(), "book.qst");
+        ifHaveBook().exportToURQTextFile(qstFile);
+        String urq = read(qstFile, Charset.forName("windows-1251")).replace("\r\n", "\n");
+        assertInOrder(urq, "Inv+ Ключ от двери\nnlb_inv_", "=1\n",
+                "if not (nlb_inv_", ") then goto nlb_if_1_1\n", "goto nlb_if_1_end\n:nlb_if_1_1\n",
+                ":nlb_if_1_2\n:nlb_if_1_end\n");
+        File csFile = new File(m_temp.getRoot(), "startup.txt");
+        ifHaveBook().exportToChoiceScript(csFile);
+        assertInOrder(read(csFile, StandardCharsets.UTF_8).replace("\r\n", "\n"),
+                "*if false\n    *set x ", "*else\n    *set x ");
     }
 }

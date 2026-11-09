@@ -390,8 +390,10 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateIfHave(String objId, String objVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // OBJ 'подпись' — есть ли предмет в инвентаре (ADDOBJ кладёт его по подписи). Объект из
+        // переменной экспорт в инвентарь не кладёт (ADDINV), поэтому его нет
+        String disp = getObjDisp(objId);
+        return "IF " + (disp != null ? "OBJ '" + disp.replace("'", "''") + "'" : "0") + ":" + LINE_SEPARATOR;
     }
 
     @Override

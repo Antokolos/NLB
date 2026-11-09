@@ -59,8 +59,91 @@ public class ChoiceScriptExportManager extends TextExportManager {
     // Windows line separator should be used for URQ format
     private static final String LINE_SEPARATOR = "\r\n";
 
+    /**
+     * Начало строки-заготовки блока модификаций (if, elseif, else, while, end). Блоки ChoiceScript
+     * задаются отступами, а модификации собираются плоским списком, поэтому сначала пишутся
+     * заготовки, а {@link #indentBlocks(String)} превращает их в *if/*elseif/*else с отступами.
+     */
+    private static final String BLOCK_MARK = "*nlb_block ";
+    private static final String INDENT = "    ";
+    /** Счётчик меток циклов (WHILE): *label nlb_while_N */
+    private int m_loopCount = 0;
+
     public ChoiceScriptExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
         super(nlb, encoding);
+    }
+
+    /**
+     * Заготовки блоков — в ChoiceScript: IF/ELSEIF/ELSE — *if/*elseif/*else с отступом тела,
+     * WHILE — *label и *if, в конце тела которого *goto на эту метку. Выход из ветки в *else
+     * разрешает *create implicit_control_flow true (см. generateVariableInitializationText).
+     * Пустое тело ChoiceScript не принимает — в него пишется *comment.
+     */
+    private String indentBlocks(String modificationsText) {
+        if (!modificationsText.contains(BLOCK_MARK)) {
+            return modificationsText;
+        }
+        StringBuilder result = new StringBuilder();
+        java.util.Deque<String> loops = new java.util.ArrayDeque<>();
+        int depth = 0;
+        boolean emptyBody = false;
+        for (String line : modificationsText.split(LINE_SEPARATOR, -1)) {
+            String trimmed = line.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            if (!trimmed.startsWith(BLOCK_MARK)) {
+                result.append(INDENT.repeat(depth)).append(trimmed).append(LINE_SEPARATOR);
+                emptyBody = false;
+                continue;
+            }
+            String block = trimmed.substring(BLOCK_MARK.length());
+            String command = block.split(" ", 2)[0];
+            String condition = block.substring(command.length()).trim();
+            if (emptyBody && !"if".equals(command) && !"while".equals(command)) {
+                result.append(INDENT.repeat(depth)).append("*comment").append(LINE_SEPARATOR);
+            }
+            switch (command) {
+                case "if":
+                    result.append(INDENT.repeat(depth)).append("*if ").append(condition).append(LINE_SEPARATOR);
+                    loops.push(EMPTY_STRING);
+                    depth++;
+                    emptyBody = true;
+                    break;
+                case "while":
+                    String label = "nlb_while_" + (++m_loopCount);
+                    result.append(INDENT.repeat(depth)).append("*label ").append(label).append(LINE_SEPARATOR);
+                    result.append(INDENT.repeat(depth)).append("*if ").append(condition).append(LINE_SEPARATOR);
+                    loops.push(label);
+                    depth++;
+                    emptyBody = true;
+                    break;
+                case "elseif":
+                case "else":
+                    if (depth > 0) {
+                        result.append(INDENT.repeat(depth - 1)).append("*").append(command);
+                        if (!condition.isEmpty()) {
+                            result.append(" ").append(condition);
+                        }
+                        result.append(LINE_SEPARATOR);
+                        emptyBody = true;
+                    }
+                    break;
+                case "end":
+                    if (depth > 0) {
+                        String loop = loops.pop();
+                        if (!loop.isEmpty()) {
+                            result.append(INDENT.repeat(depth)).append("*goto ").append(loop).append(LINE_SEPARATOR);
+                        }
+                        depth--;
+                        emptyBody = false;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        return result.toString();
     }
 
     @Override
@@ -71,6 +154,8 @@ public class ChoiceScriptExportManager extends TextExportManager {
     @Override
     protected String generateVariableInitializationText(Map<String, String> initValuesMap) {
         StringBuilder result = new StringBuilder();
+        // ветка *if может заканчиваться без *goto перед *elseif/*else (блоки модификаций)
+        result.append("*create implicit_control_flow true").append(LINE_SEPARATOR);
         for (Map.Entry<String, String> entry : initValuesMap.entrySet()) {
             result.append("*create ").append(entry.getKey()).append(" ").append(entry.getValue()).append(LINE_SEPARATOR);
         }
@@ -336,7 +421,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageModifications(String modificationsText) {
-        return modificationsText;
+        return indentBlocks(modificationsText);
     }
 
     @Override
@@ -347,7 +432,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
 
     @Override
     protected String decorateLinkModifications(String modificationsText) {
-        return modificationsText;
+        return indentBlocks(modificationsText);
     }
 
     @Override
@@ -486,38 +571,33 @@ public class ChoiceScriptExportManager extends TextExportManager {
 
     @Override
     protected String decorateWhile(final String constraint) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return BLOCK_MARK + "while " + constraint + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateIf(final String constraint) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return BLOCK_MARK + "if " + constraint + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateIfHave(String objId, String objVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // Инвентаря в экспорте ChoiceScript нет (ADDINV не поддерживается): предмета у игрока не бывает
+        return BLOCK_MARK + "if false" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateElse() {
-        // TODO: implement
-        return EMPTY_STRING;
+        return BLOCK_MARK + "else" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateElseIf(final String constraint) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return BLOCK_MARK + "elseif " + constraint + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateEnd() {
-        // TODO: implement
-        return EMPTY_STRING;
+        return BLOCK_MARK + "end" + LINE_SEPARATOR;
     }
 
     @Override
@@ -666,8 +746,9 @@ public class ChoiceScriptExportManager extends TextExportManager {
 
     @Override
     protected String decorateRndOperation(String variableName, String maxValue) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // *rand переменная минимум максимум — целое от 1 до n; выражение — в скобках
+        String max = maxValue.trim().matches("[\\w.]+") ? maxValue.trim() : "(" + maxValue + ")";
+        return "*rand " + variableName + " 1 " + max + LINE_SEPARATOR;
     }
 
     @Override
@@ -690,8 +771,9 @@ public class ChoiceScriptExportManager extends TextExportManager {
 
     @Override
     protected String decorateGoToOperation(String locationId) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // *goto уводит на страницу, оставшиеся модификации не выполняются: переход из модификаций
+        // ссылки важнее цели ссылки (как в INSTEAD)
+        return "*goto " + locationId + LINE_SEPARATOR;
     }
 
     @Override

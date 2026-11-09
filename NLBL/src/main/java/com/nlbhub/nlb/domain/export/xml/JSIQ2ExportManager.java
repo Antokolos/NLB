@@ -405,12 +405,25 @@ public class JSIQ2ExportManager extends XMLExportManager {
                 "});";
     }
 
+    /**
+     * Текст внутри строки JavaScript в апострофах. Подпись предмета может быть многострочной и
+     * содержать апострофы — без экранирования скрипт preload не разбирался, и игра не начиналась
+     * («Варвар», «Шапочка»)
+     */
+    private static String jsString(String text) {
+        if (text == null) {
+            return Constants.EMPTY_STRING;
+        }
+        return text.replace("\\", "\\\\").replace("'", "\\'")
+                .replace("\r", "").replace("\n", "\\n");
+    }
+
     private String createObjsMap(List<ObjBuildingBlocks> objsBlocks) {
         StringBuilder builder = new StringBuilder();
         builder.append("vars.itemNames = {").append(LINE_SEPARATOR);
         for (ObjBuildingBlocks objBlocks : objsBlocks) {
             builder.append("'").append(objBlocks.getObjLabel()).append("': ");
-            builder.append("'").append(objBlocks.getObjDisp()).append("',").append(LINE_SEPARATOR);
+            builder.append("'").append(jsString(objBlocks.getObjDisp())).append("',").append(LINE_SEPARATOR);
         }
         builder.append("'dummy': 'dummy'").append(LINE_SEPARATOR).append("}");
         return builder.toString();
@@ -462,8 +475,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateIfHave(String objId, String objVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "if (checkItem({'name': " + inventoryKey(objId, objVar) + "})) { ";
     }
 
     @Override
@@ -517,10 +529,19 @@ public class JSIQ2ExportManager extends XMLExportManager {
         return EMPTY_STRING;
     }
 
+    /**
+     * Ключ предмета в инвентаре (выражение JavaScript): id объекта, а если объект задан переменной
+     * (id при экспорте неизвестен) — значение этой переменной во время игры. Раньше второй случай
+     * ронял экспорт (NullPointerException, например на «Фронтире»).
+     */
+    private String inventoryKey(String objectId, String objectVar) {
+        return (objectId != null) ? "'" + decorateId(objectId) + "'" : "String(" + objectVar + ")";
+    }
+
     @Override
     protected String decorateDelInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        String id = decorateId(objectId);
-        return "if (checkItem({'name': '" + id + "'})) { removeItem({'name': '" + id + "'}); }; ";
+        String id = inventoryKey(objectId, objectVar);
+        return "if (checkItem({'name': " + id + "})) { removeItem({'name': " + id + "}); }; ";
     }
 
     @Override
@@ -531,8 +552,8 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        String id = decorateId(objectId);
-        return "if (!checkItem({'name': '" + id + "'})) { addItem({'name': '" + id + "'}); }; ";
+        String id = inventoryKey(objectId, objectVar);
+        return "if (!checkItem({'name': " + id + "})) { addItem({'name': " + id + "}); }; ";
     }
 
     @Override
