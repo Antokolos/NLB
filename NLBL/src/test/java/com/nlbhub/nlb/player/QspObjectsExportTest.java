@@ -61,18 +61,20 @@ public class QspObjectsExportTest {
         assertTrue("первая локация — начало игры: " + qsp, qsp.startsWith("! Generated with Non-Linear Book Builder"));
         assertTrue(qsp, qsp.contains("#nlb_start\nUSEHTML = 1\n$ONOBJSEL = 'nlb_onobjsel'\n"));
         assertTrue(qsp, qsp.contains("$nlb_in['" + m_key.getId() + "'] = '" + m_hall.getId() + "'\n"));
-        assertTrue(qsp, qsp.contains("$nlb_disp['" + m_key.getId() + "'] = 'Ключ Пети'\n"));
-        assertTrue(qsp, qsp.contains("$nlb_byname['Ключ Пети'] = '" + m_key.getId() + "'\n"));
+        assertTrue("подпись в инвентаре вычисляется при каждом ходе: " + qsp,
+                qsp.contains("#nlb_o_" + m_key.getId() + "_disp\n$RESULT = 'Ключ Пети'\n-\n"));
         assertTrue("затем — стартовая страница: " + qsp, qsp.contains("GOTO '" + m_hall.getId() + "'\n-\n#nlb_show_in\n"));
     }
 
     @Test
     public void sceneObjectIsExecLink() throws Exception {
         String qsp = export();
-        assertTrue(qsp, qsp.contains("#nlb_o_" + m_key.getId() + "_dsc\n'На столе <a href=\"EXEC:GOSUB ''nlb_act'', ''"
-                + m_key.getId() + "''\">ключ</a> Пети.'\nGOSUB 'nlb_show_in', '" + m_key.getId() + "'\n-\n"));
+        assertTrue(qsp, qsp.contains("#nlb_o_" + m_key.getId() + "_text\n'На столе <a href=\"EXEC:GOSUB ''nlb_act'', ''"
+                + m_key.getId() + "''\">ключ</a> Пети.'\n-\n"));
+        assertTrue(qsp, qsp.contains("#nlb_o_" + m_key.getId() + "_dsc\nGOSUB 'nlb_o_" + m_key.getId()
+                + "_text'\nGOSUB 'nlb_show_in', '" + m_key.getId() + "'\n-\n"));
         assertTrue("страница показывает свои объекты: " + qsp,
-                qsp.contains("GOSUB 'nlb_show_in', '" + m_hall.getId() + "'\n-\n#" + m_hall.getId() + "_turn\nCLA\n"));
+                qsp.contains("GOSUB 'nlb_show_in', '" + m_hall.getId() + "'\n-\n#" + m_hall.getId() + "_turn\nCLA\nGOSUB 'nlb_inv_sync'\n"));
     }
 
     @Test

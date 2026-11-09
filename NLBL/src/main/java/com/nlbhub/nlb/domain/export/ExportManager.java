@@ -277,6 +277,9 @@ public abstract class ExportManager {
             );
             m_exportDataMap = mainExportData.init();
             m_dataTypeMap = nlb.getVariableDataTypes();
+            if (shouldInferStringTypes()) {
+                inferStringTypes();
+            }
             m_mediaToConstraintMap = nlb.getMediaToConstraintMap();
             m_mediaRedirectsMap = nlb.getMediaRedirectsMap();
             m_mediaExportParametersMap = nlb.getMediaExportParametersMap();
@@ -337,6 +340,69 @@ public abstract class ExportManager {
      * боль — холл)
      */
     protected static final String ACTION_COUNT_VAR = "nlb_action_count";
+
+    /**
+     * Строковые переменные без явного типа: переменная AUTO, которой присваивают строковую
+     * переменную или строку в кавычках, — строковая (до неподвижной точки). INSTEAD (Lua) типы не
+     * различает, а QSP различает: «hasRadarS = NO» (NO — строковая переменная) записывалось как
+     * присваивание числовой переменной — Type mismatch («Фронтир»)
+     */
+    protected boolean shouldInferStringTypes() {
+        // INSTEAD (Lua) типы не различает; вывод меняет начальное значение (false -> ""), поэтому —
+        // только для форматов, которым он нужен
+        return false;
+    }
+
+    private void inferStringTypes() {
+        List<String[]> assignments = new ArrayList<>();
+        for (ExportData exportData : m_exportDataMap.values()) {
+            NonLinearBook book = exportData.getNlb();
+            List<ModifyingItem> items = new ArrayList<>();
+            for (Page page : book.getPages().values()) {
+                items.add(page);
+                items.addAll(page.getLinks());
+            }
+            for (Obj obj : book.getObjs().values()) {
+                items.add(obj);
+                items.addAll(obj.getLinks());
+            }
+            for (ModifyingItem item : items) {
+                for (Modification modification : item.getModifications()) {
+                    if (modification.isDeleted() || modification.getType() != Modification.Type.ASSIGN) {
+                        continue;
+                    }
+                    Variable variable = StringHelper.isEmpty(modification.getVarId()) ? null : book.getVariableById(modification.getVarId());
+                    Variable expression = StringHelper.isEmpty(modification.getExprId()) ? null : book.getVariableById(modification.getExprId());
+                    if (variable != null && expression != null && StringHelper.notEmpty(expression.getValue())) {
+                        assignments.add(new String[]{variable.getName(), expression.getValue().trim()});
+                    }
+                }
+            }
+        }
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            for (String[] assignment : assignments) {
+                Variable.DataType type = m_dataTypeMap.get(assignment[0]);
+                if (type != null && type != Variable.DataType.AUTO) {
+                    continue;
+                }
+                String value = assignment[1];
+                boolean stringValue = (value.startsWith("\"") && value.endsWith("\"") && value.length() > 1)
+                        || (value.startsWith("'") && value.endsWith("'") && value.length() > 1)
+                        || (isPlainName(value) && m_dataTypeMap.get(value) == Variable.DataType.STRING);
+                if (stringValue) {
+                    m_dataTypeMap.put(assignment[0], Variable.DataType.STRING);
+                    changed = true;
+                }
+            }
+        }
+    }
+
+    /** Оператор остатка от деления в выражениях формата */
+    protected String decorateMod() {
+        return "%";
+    }
 
     /** Тип переменной книги по имени (null — неизвестна) */
     protected Variable.DataType getVariableDataType(final String name) {
@@ -2285,6 +2351,10 @@ public abstract class ExportManager {
         expression = expression.replaceAll(LT_PLACEHOLDER, decorateLt());
         expression = expression.replaceAll(LTE_PLACEHOLDER, decorateLte());
         expression = expression.replaceAll(AND_PLACEHOLDER, decorateAnd());
+        if (!"%".equals(decorateMod())) {
+            // остаток от деления: в QSP — MOD (оператора % там нет)
+            expression = expression.replaceAll("\\s*%\\s*", " " + Matcher.quoteReplacement(decorateMod()) + " ");
+        }
         expression = expression.replaceAll(OR_PLACEHOLDER, decorateOr());
         for (final String expressionVar : expressionVars) {
             String decoratedVariable = decorateVariable(expressionVar);
@@ -2836,10 +2906,13 @@ public abstract class ExportManager {
                         break;
                     case ASSIGN:
                         assert variable != null;
-                        // Left part of assignment should be decorated as ordinary variable, with the exception of String
+                        // Left part of assignment should be decorated as ordinary variable, with the exception of String.
+                        // Тип — общий тип переменной в книге: у этой модификации переменная может быть AUTO,
+                        // хотя в других местах она строковая («Фронтир»: hasBattleScannerS = NO)
                         stringBuilder.append(
                                 decorateAssignment(
-                                        (variable.getDataType() == Variable.DataType.STRING)
+                                        (variable.getDataType() == Variable.DataType.STRING
+                                                || m_dataTypeMap.get(variable.getName()) == Variable.DataType.STRING)
                                                 ? decorateStringVar(variable.getName())
                                                 : decorateAutoVar(variable.getName()),
                                         translateExpressionBody(expression.getValue()).getExpressionPart()

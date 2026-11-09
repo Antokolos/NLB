@@ -63,6 +63,11 @@ public class QSPExportManager extends TextExportManager {
         super(nlb, encoding);
     }
 
+    /** Виды действий игрока (биты 1, 2, 4, 8 — как PlayerContext.COUNT_*) */
+    private static final String[] COUNT_TYPES = {"inv", "act", "use", "walk"};
+    /** Метка PDSC до сборки текста: объект задан именем, его id известен в generateNLBText */
+    private static final String PDSC_MARK = "\u0001nlb_pdsc:";
+
     /** Место «инвентарь» в $nlb_in */
     private static final String INVENTORY = "nlb_inv";
 
@@ -77,7 +82,7 @@ public class QSPExportManager extends TextExportManager {
         m_gameInvText = qspString(nlbBuildingBlocks.getGameInvText());
         m_gameNouseText = qspString(nlbBuildingBlocks.getGameNouseText());
         final List<PageBuildingBlocks> pages = nlbBuildingBlocks.getPagesBuildingBlocks();
-        final List<ObjBuildingBlocks> objs = nlbBuildingBlocks.getObjsBuildingBlocks();
+        final List<ObjBuildingBlocks> objs = orderedObjects(nlbBuildingBlocks);
         StringBuilder sb = new StringBuilder();
         sb.append("! Generated with Non-Linear Book Builder, http://nlbhub.com").append(LINE_SEPARATOR);
         sb.append("! Начало игры: служебные переменные и места объектов, затем стартовая страница").append(LINE_SEPARATOR);
@@ -90,9 +95,6 @@ public class QSPExportManager extends TextExportManager {
             ObjBuildingBlocks obj = objs.get(i);
             sb.append("$nlb_objs[").append(i).append("] = '").append(obj.getObjId()).append("'").append(LINE_SEPARATOR);
             sb.append("$nlb_in['").append(obj.getObjId()).append("'] = '").append(obj.getContainerId()).append("'").append(LINE_SEPARATOR);
-            String disp = StringHelper.isEmpty(obj.getObjDisp()) ? obj.getObjId() : obj.getObjDisp();
-            sb.append("$nlb_disp['").append(obj.getObjId()).append("'] = '").append(disp).append("'").append(LINE_SEPARATOR);
-            sb.append("$nlb_byname['").append(disp).append("'] = '").append(obj.getObjId()).append("'").append(LINE_SEPARATOR);
         }
         if (!pages.isEmpty()) {
             sb.append("GOTO '").append(pages.get(0).getPageId()).append("'").append(LINE_SEPARATOR);
@@ -105,6 +107,43 @@ public class QSPExportManager extends TextExportManager {
     }
 
     /**
+     * Объекты в порядке вывода: страницы по порядку, на каждой — её содержимое (с вложенными
+     * объектами сразу после контейнера), затем остальные объекты. nlb_show_in выводит объекты
+     * места в порядке этого списка, поэтому объекты страницы идут в порядке её содержимого, как в
+     * INSTEAD
+     */
+    private static List<ObjBuildingBlocks> orderedObjects(NLBBuildingBlocks nlbBuildingBlocks) {
+        java.util.Map<String, ObjBuildingBlocks> byId = new java.util.LinkedHashMap<>();
+        for (ObjBuildingBlocks obj : nlbBuildingBlocks.getObjsBuildingBlocks()) {
+            byId.put(obj.getObjId(), obj);
+        }
+        java.util.LinkedHashSet<String> order = new java.util.LinkedHashSet<>();
+        for (PageBuildingBlocks page : nlbBuildingBlocks.getPagesBuildingBlocks()) {
+            for (String id : page.getContainedObjIds()) {
+                addWithContents(id, byId, order);
+            }
+        }
+        for (String id : byId.keySet()) {
+            addWithContents(id, byId, order);
+        }
+        List<ObjBuildingBlocks> result = new java.util.ArrayList<>();
+        for (String id : order) {
+            result.add(byId.get(id));
+        }
+        return result;
+    }
+
+    private static void addWithContents(String id, java.util.Map<String, ObjBuildingBlocks> byId, java.util.Set<String> order) {
+        ObjBuildingBlocks obj = byId.get(id);
+        if (obj == null || !order.add(id)) {
+            return;
+        }
+        for (String contained : obj.getContainedObjIds()) {
+            addWithContents(contained, byId, order);
+        }
+    }
+
+    /**
      * Служебные локации (QSP 5.8+: LOOP, LOCAL). nlb_show_in — объекты в контейнере (порядок —
      * порядок объектов в книге); nlb_act — щелчок по объекту в тексте: действие (act) или, если
      * выбран предмет инвентаря, применение; nlb_refresh — снова показать страницу после действия:
@@ -112,7 +151,9 @@ public class QSPExportManager extends TextExportManager {
      * выбор предмета в инвентаре: первый щелчок — inv (применение к себе или game.inv) и выбор
      * для применения, щелчок по другому предмету — применение, по тому же — отмена выбора;
      * nlb_use — применение ARGS[0] к ARGS[1], без ответа — nouse; nlb_place — перенести объект
-     * ARGS[0] в ARGS[1] (с инвентарём QSP).
+     * ARGS[0] в ARGS[1] (с инвентарём QSP); nlb_inv_sync — подписи предметов с переменными
+     * («Жизнь: 100»): в QSP подпись статична, поэтому в начале каждого хода изменившаяся подпись
+     * заменяется на том же месте списка.
      */
     private static final String SERVICE_LOCATIONS = String.join("\n",
             "#nlb_show_in",
@@ -129,6 +170,7 @@ public class QSPExportManager extends TextExportManager {
             "    GOSUB 'nlb_use', $nlb_sel, $ARGS[0]",
             "ELSE",
             "    %COUNT% = %COUNT% + 1",
+            "    nlb_cnt_act = nlb_cnt_act + 1",
             "    GOSUB 'nlb_o_' + $ARGS[0] + '_act'",
             "END",
             "GOSUB 'nlb_refresh'",
@@ -137,7 +179,7 @@ public class QSPExportManager extends TextExportManager {
             "$nlb_reply = $MAINTXT",
             "*CLR",
             "GOSUB $CURLOC + '_show'",
-            "IF $nlb_reply <> '': *PL $nlb_reply",
+            "IF $nlb_reply <> '': *P $nlb_reply",
             "GOSUB $CURLOC + '_turn'",
             "-",
             "#nlb_onobjsel",
@@ -146,6 +188,7 @@ public class QSPExportManager extends TextExportManager {
             "*CLR",
             "IF $nlb_sel = '':",
             "    %COUNT% = %COUNT% + 1",
+            "    nlb_cnt_inv = nlb_cnt_inv + 1",
             "    nlb_printed = 0",
             "    GOSUB 'nlb_o_' + $nlb_o + '_use', $nlb_o",
             "    IF nlb_printed = 0: '%GAME_INV%'",
@@ -160,6 +203,7 @@ public class QSPExportManager extends TextExportManager {
             "-",
             "#nlb_use",
             "%COUNT% = %COUNT% + 1",
+            "nlb_cnt_use = nlb_cnt_use + 1",
             "nlb_printed = 0",
             "GOSUB 'nlb_o_' + $ARGS[0] + '_use', $ARGS[1]",
             "IF nlb_printed = 0: GOSUB 'nlb_o_' + $ARGS[0] + '_nouse'",
@@ -167,9 +211,32 @@ public class QSPExportManager extends TextExportManager {
             "UNSEL",
             "-",
             "#nlb_place",
-            "IF $nlb_in[$ARGS[0]] = '%NLB_INV%' AND $ARGS[1] <> '%NLB_INV%': DELOBJ $nlb_disp[$ARGS[0]]",
-            "IF $nlb_in[$ARGS[0]] <> '%NLB_INV%' AND $ARGS[1] = '%NLB_INV%': ADDOBJ $nlb_disp[$ARGS[0]]",
+            "IF $nlb_in[$ARGS[0]] = '%NLB_INV%' AND $ARGS[1] <> '%NLB_INV%': DELOBJ $nlb_shown[$ARGS[0]]",
+            "IF $nlb_in[$ARGS[0]] <> '%NLB_INV%' AND $ARGS[1] = '%NLB_INV%':",
+            "    $nlb_shown[$ARGS[0]] = $FUNC('nlb_o_' + $ARGS[0] + '_disp')",
+            "    $nlb_byname[$nlb_shown[$ARGS[0]]] = $ARGS[0]",
+            "    ADDOBJ $nlb_shown[$ARGS[0]]",
+            "END",
             "$nlb_in[$ARGS[0]] = $ARGS[1]",
+            "-",
+            "#nlb_inv_sync",
+            "LOCAL nlb_i, nlb_j, $nlb_n, $nlb_id",
+            "nlb_i = 0",
+            "LOOP WHILE nlb_i < nlb_objs_n:",
+            "    $nlb_id = $nlb_objs[nlb_i]",
+            "    IF $nlb_in[$nlb_id] = '%NLB_INV%':",
+            "        $nlb_n = $FUNC('nlb_o_' + $nlb_id + '_disp')",
+            "        IF $nlb_n <> $nlb_shown[$nlb_id]:",
+            "            nlb_j = 1",
+            "            LOOP WHILE nlb_j <= COUNTOBJ AND $GETOBJ(nlb_j) <> $nlb_shown[$nlb_id]: nlb_j = nlb_j + 1",
+            "            IF nlb_j <= COUNTOBJ: KILLOBJ nlb_j",
+            "            ADDOBJ $nlb_n, '', nlb_j",
+            "            $nlb_byname[$nlb_n] = $nlb_id",
+            "            $nlb_shown[$nlb_id] = $nlb_n",
+            "        END",
+            "    END",
+            "    nlb_i = nlb_i + 1",
+            "END",
             "-",
             "");
 
@@ -206,11 +273,31 @@ public class QSPExportManager extends TextExportManager {
         if (constrained) {
             sb.append("IF ").append(objBlocks.getObjConstraint()).append(":").append(LINE_SEPARATOR);
         }
-        sb.append(objBlocks.getObjText());
+        sb.append("GOSUB 'nlb_o_").append(id).append("_text'").append(LINE_SEPARATOR);
         sb.append("GOSUB 'nlb_show_in', '").append(id).append("'").append(LINE_SEPARATOR);
         if (constrained) {
             sb.append("END").append(LINE_SEPARATOR);
         }
+        sb.append("-").append(LINE_SEPARATOR);
+
+        // описание объекта: _text — вывести (PDSC), _textv — значение (DSC). Графический объект
+        // (VN) без текста щёлкают по картинке, а картинок здесь нет — ссылкой становится его подпись
+        String text = objBlocks.getObjText();
+        if (text.isEmpty() && objBlocks.isGraphical() && StringHelper.notEmpty(objBlocks.getObjDisp())) {
+            text = "'" + objectLink(id, objBlocks.getObjDisp()) + "'" + LINE_SEPARATOR;
+        }
+        sb.append(prefix).append("_text").append(LINE_SEPARATOR);
+        sb.append(text);
+        sb.append("-").append(LINE_SEPARATOR);
+        sb.append(prefix).append("_textv").append(LINE_SEPARATOR);
+        sb.append("$RESULT = ").append(text.isEmpty() ? "''" + LINE_SEPARATOR : text);
+        sb.append("-").append(LINE_SEPARATOR);
+
+        sb.append(prefix).append("_disp").append(LINE_SEPARATOR);
+        // подпись в инвентаре; без неё — имя объекта (как nam в INSTEAD), без имени — id
+        String disp = StringHelper.notEmpty(objBlocks.getObjDisp()) ? objBlocks.getObjDisp()
+                : StringHelper.notEmpty(objBlocks.getObjName()) ? qspString(objBlocks.getObjName()) : id;
+        sb.append("$RESULT = '").append(disp).append("'").append(LINE_SEPARATOR);
         sb.append("-").append(LINE_SEPARATOR);
 
         sb.append(prefix).append("_acttext").append(LINE_SEPARATOR);
@@ -285,10 +372,30 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String generateNLBText(final NLBBuildingBlocks nlbBlocks) throws com.nlbhub.nlb.exception.NLBConsistencyException {
+        java.util.Map<String, String> idByName = new java.util.HashMap<>();
         for (ObjBuildingBlocks obj : nlbBlocks.getObjsBuildingBlocks()) {
             m_takable.put(obj.getObjId(), obj.isTakable());
+            if (StringHelper.notEmpty(obj.getObjName())) {
+                idByName.put(obj.getObjName(), obj.getObjId());
+            }
         }
-        return super.generateNLBText(nlbBlocks);
+        String text = super.generateNLBText(nlbBlocks);
+        // PDSC: имя объекта -> вывод его описания
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(
+                java.util.regex.Pattern.quote(PDSC_MARK) + "(.*?)" + java.util.regex.Pattern.quote(PDSC_MARK)).matcher(text);
+        StringBuilder result = new StringBuilder();
+        while (matcher.find()) {
+            String id = idByName.get(matcher.group(1));
+            matcher.appendReplacement(result, java.util.regex.Matcher.quoteReplacement(
+                    id == null ? "! PDSC: объект " + matcher.group(1) + " не найден" : "GOSUB 'nlb_o_" + id + "_text'"));
+        }
+        matcher.appendTail(result);
+        return result.toString();
+    }
+
+    @Override
+    protected String decorateObjName(String name, String id) {
+        return name == null ? EMPTY_STRING : name;
     }
 
     // --- части объекта (ExportManager.createObjBuildingBlocks)
@@ -317,9 +424,14 @@ public class QSPExportManager extends TextExportManager {
         if (suppressDsc || StringHelper.isEmpty(objText)) {
             return EMPTY_STRING;
         }
-        String link = "<a href=\"EXEC:GOSUB ''nlb_act'', ''" + objId + "''\">";
-        String text = objText.replaceAll("\\{([^}]*)\\}", java.util.regex.Matcher.quoteReplacement(link) + "$1</a>");
+        String text = objText.replaceAll("\\{([^}]*)\\}",
+                java.util.regex.Matcher.quoteReplacement(objectLink(objId, "\u0002")).replace("\u0002", "$1"));
         return "'" + text + "'" + LINE_SEPARATOR;
+    }
+
+    /** Ссылка на объект в строке QSP: щелчок — nlb_act */
+    private static String objectLink(String objId, String label) {
+        return "<a href=\"EXEC:GOSUB ''nlb_act'', ''" + objId + "''\">" + label + "</a>";
     }
 
     @Override
@@ -426,6 +538,7 @@ public class QSPExportManager extends TextExportManager {
         stringBuilder.append("-").append(LINE_SEPARATOR);
         stringBuilder.append("#").append(pageId).append("_turn").append(LINE_SEPARATOR);
         stringBuilder.append("CLA").append(LINE_SEPARATOR);
+        stringBuilder.append("GOSUB 'nlb_inv_sync'").append(LINE_SEPARATOR);
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             final boolean waitsAction = linkBlocks.isAuto() && linkBlocks.isNeedsAction();
@@ -450,6 +563,7 @@ public class QSPExportManager extends TextExportManager {
             if (!linkBlocks.isTechnical()) {
                 // переход по обычной ссылке — действие игрока (для автоссылок «needs action»)
                 stringBuilder.append("    ").append(ACTION_COUNT_VAR).append(" = ").append(ACTION_COUNT_VAR).append(" + 1").append(LINE_SEPARATOR);
+                stringBuilder.append("    nlb_cnt_walk = nlb_cnt_walk + 1").append(LINE_SEPARATOR);
             } else if (waitsAction) {
                 stringBuilder.append("    ").append(ACTION_COUNT_VAR).append(" = 0").append(LINE_SEPARATOR);
             }
@@ -487,6 +601,17 @@ public class QSPExportManager extends TextExportManager {
     @Override
     protected String generateTrailingText() {
         return "";
+    }
+
+    @Override
+    protected boolean shouldInferStringTypes() {
+        // в QSP строковая и числовая переменные — разные ($имя и имя)
+        return true;
+    }
+
+    @Override
+    protected String decorateMod() {
+        return "MOD";
     }
 
     @Override
@@ -557,7 +682,9 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateStringVar(String constraintVar) {
-        return "\\$" + constraintVar;
+        // строковая переменная QSP — с $; выражения подставляются через Matcher.quoteReplacement,
+        // поэтому экранировать $ не нужно (раньше в код попадало «\\$имя» — Type mismatch)
+        return "$" + constraintVar;
     }
 
     @Override
@@ -962,14 +1089,26 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateCountGetOperation(String variableName, int statType) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // счётчики действий игрока по видам (как PlayerContext.countGet): inv 1, act 2, use 4, walk 8
+        StringBuilder sum = new StringBuilder();
+        for (int i = 0; i < COUNT_TYPES.length; i++) {
+            if (statType == 0 || (statType & (1 << i)) != 0) {
+                if (sum.length() > 0) {
+                    sum.append(" + ");
+                }
+                sum.append("(nlb_cnt_").append(COUNT_TYPES[i]).append(" - nlb_cntr_").append(COUNT_TYPES[i]).append(")");
+            }
+        }
+        return variableName + " = " + (sum.length() > 0 ? sum.toString() : "0") + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateCountResetOperation() {
-        // TODO: implement
-        return EMPTY_STRING;
+        StringBuilder result = new StringBuilder();
+        for (String type : COUNT_TYPES) {
+            result.append("nlb_cntr_").append(type).append(" = nlb_cnt_").append(type).append(LINE_SEPARATOR);
+        }
+        return result.toString();
     }
 
     @Override
@@ -1016,20 +1155,25 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateDSCOperation(String resultVariableName, String dscObjVariable, String dscObjId) {
-        // TODO: implement
-        return EMPTY_STRING;
+        if (dscObjId == null) {
+            return EMPTY_STRING;  // объект из переменной — не поддерживается
+        }
+        return resultVariableName + " = $FUNC('nlb_o_" + dscObjId + "_textv')" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decoratePDscOperation(String objVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // объект по имени: id известен только при сборке текста (generateNLBText)
+        return PDSC_MARK + objVariableName + PDSC_MARK + LINE_SEPARATOR;
     }
 
     @Override
     protected String decoratePDscsOperation(String objId, String objVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        if (objId == null) {
+            return EMPTY_STRING;  // объект из переменной — не поддерживается
+        }
+        // описания объектов внутри объекта
+        return "GOSUB 'nlb_show_in', '" + objId + "'" + LINE_SEPARATOR;
     }
 
     @Override
