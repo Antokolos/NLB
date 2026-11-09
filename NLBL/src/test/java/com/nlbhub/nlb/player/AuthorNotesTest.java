@@ -103,17 +103,32 @@ public class AuthorNotesTest {
         }
     }
 
+    private static MultiLangString notes(String... langAndText) {
+        final MultiLangString result = MultiLangString.createEmptyText();
+        for (int i = 0; i < langAndText.length; i += 2) {
+            result.put(langAndText[i], langAndText[i + 1]);
+        }
+        return result;
+    }
+
     @Test
-    public void schemeLabelPrefersBookLanguageThenAnyLanguage() {
-        final MultiLangString notes = MultiLangString.createEmptyText();
-        assertEquals("заметок нет — пусто (на схеме будет заголовок)", "", notes.getNonEmpty("ru"));
-        notes.put("ru", "");
-        notes.put("zh", "备注");
-        notes.put("en", "Note");
-        assertEquals("на языке книги пусто — первый другой язык по алфавиту", "Note", notes.getNonEmpty("ru"));
-        notes.put("ru", "Заметка");
-        assertEquals("на языке книги есть — она", "Заметка", notes.getNonEmpty("ru"));
-        assertEquals("Note", notes.getNonEmpty("en"));
+    public void schemeLabelLanguageOrder() {
+        assertEquals("заметок нет — пусто (на схеме будет заголовок)", "", notes().getNonEmpty("ru"));
+        assertEquals("", notes("ru", "", "en", "").getNonEmpty("en"));
+        final MultiLangString all = notes("ru", "RU", "en", "EN", "de", "DE", "zh", "ZH");
+        // книга на en: en, ru, остальные по алфавиту
+        assertEquals("EN", all.getNonEmpty("en"));
+        assertEquals("RU", notes("ru", "RU", "de", "DE").getNonEmpty("en"));
+        assertEquals("DE", notes("zh", "ZH", "de", "DE").getNonEmpty("en"));
+        // книга на ru: ru, en, остальные по алфавиту
+        assertEquals("RU", all.getNonEmpty("ru"));
+        assertEquals("EN", notes("en", "EN", "de", "DE").getNonEmpty("ru"));
+        assertEquals("DE", notes("zh", "ZH", "de", "DE").getNonEmpty("ru"));
+        // книга на другом языке: он, en, ru, остальные по алфавиту
+        assertEquals("ZH", all.getNonEmpty("zh"));
+        assertEquals("EN", notes("ru", "RU", "en", "EN", "de", "DE").getNonEmpty("zh"));
+        assertEquals("RU", notes("ru", "RU", "de", "DE").getNonEmpty("zh"));
+        assertEquals("DE", notes("fr", "FR", "de", "DE").getNonEmpty("zh"));
     }
 
     @Test
