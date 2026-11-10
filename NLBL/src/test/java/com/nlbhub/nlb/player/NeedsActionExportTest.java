@@ -62,7 +62,8 @@ public class NeedsActionExportTest {
         String urq = export("book.qst", Charset.forName("windows-1251"), NonLinearBookImpl::exportToURQTextFile);
         assertTrue(urq, urq.contains("if (nlb_action_count>=3) then goto " + m_autoId + "\n"));
         assertTrue("шаг — действие: " + urq, urq.contains(":" + m_stepId + "\nnlb_action_count=nlb_action_count+1\n"));
-        assertTrue("автоссылка обнуляет счётчик: " + urq, urq.contains(":" + m_autoId + "\nnlb_action_count=0\n"));
+        assertTrue("автоссылка сбрасывает счётчики, как COUNTRST: " + urq,
+                urq.contains(":" + m_autoId + "\nnlb_action_count=0\nnlb_cntr_inv=nlb_cnt_inv\n"));
     }
 
     @Test
