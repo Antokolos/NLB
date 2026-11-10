@@ -86,9 +86,12 @@ public class NeedsActionExportTest {
     @Test
     public void asm() throws Exception {
         String sm = export("book.sm", StandardCharsets.UTF_8, NonLinearBookImpl::exportToASMFile);
-        assertTrue("счётчик объявлен в Start: " + sm, sm.contains(":: Start[::]0-0-0\n<<set $nlb_action_count = 0>>\n"));
+        assertTrue("начальные значения — в Start: " + sm, sm.contains(":: Start[::]0-0-0\n<<display 'nlb_init'>>\n"));
+        assertTrue("счётчик объявлен: " + sm, sm.contains(":: nlb_init[::]10-10-0\n<<set $nlb_action_count = 0>>"));
         assertTrue(sm, sm.contains("<<if ($nlb_action_count >= 3)>>\n[[Авто|" + m_autoId + "]]\n<<else>>\n"));
-        assertTrue(sm, sm.contains("<<set $nlb_action_count = $nlb_action_count + 1>>"));
+        assertTrue(sm, sm.contains("<<set $nlb_action_count = $nlb_action_count + 1>><<set $nlb_cnt_walk = $nlb_cnt_walk + 1>>"));
+        assertTrue("автоссылка сбрасывает счётчики, как COUNTRST: " + sm,
+                sm.contains("<<set $nlb_action_count = 0>><<set $nlb_cntr_inv = $nlb_cnt_inv>>"));
     }
 
     @Test

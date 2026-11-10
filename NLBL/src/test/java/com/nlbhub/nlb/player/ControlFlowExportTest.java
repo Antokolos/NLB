@@ -284,7 +284,8 @@ public class ControlFlowExportTest {
                 "GOSUB 'nlb_place', '", "', 'nlb_inv'\n", "IF $nlb_in['", "'] = 'nlb_inv':\n", "x = ", "ELSE\n", "x = ", "END\n");
         File smFile = new File(m_temp.getRoot(), "book.sm");
         ifHaveBook().exportToASMFile(smFile);
-        assertInOrder(read(smFile, StandardCharsets.UTF_8), "<<if false>>\n", "<<else>>\n", "<<endif>>\n");
+        assertInOrder(read(smFile, StandardCharsets.UTF_8), "<<set $nlb_in_1 = \"nlb_inv\">>",
+                "<<if $nlb_in_1 eq \"nlb_inv\">>\n", "<<else>>\n", "<<endif>>\n");
         File xmlFile = new File(m_temp.getRoot(), "book.xml");
         ifHaveBook().exportToJSIQFile(xmlFile);
         assertInOrder(read(xmlFile, StandardCharsets.UTF_8),
