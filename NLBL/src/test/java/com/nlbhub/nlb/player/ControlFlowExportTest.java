@@ -291,8 +291,8 @@ public class ControlFlowExportTest {
         File qstFile = new File(m_temp.getRoot(), "book.qst");
         ifHaveBook().exportToURQTextFile(qstFile);
         String urq = read(qstFile, Charset.forName("windows-1251")).replace("\r\n", "\n");
-        assertInOrder(urq, "Inv+ Ключ от двери\nnlb_inv_", "=1\n",
-                "if not (nlb_inv_", ") then goto nlb_if_1_1\n", "goto nlb_if_1_end\n:nlb_if_1_1\n",
+        assertInOrder(urq, "nlb_po=1\nnlb_pd=\"nlb_inv\"\nproc nlb_place\n",
+                "if not (nlb_in_1=\"nlb_inv\") then goto nlb_if_1_1\n", "goto nlb_if_1_end\n:nlb_if_1_1\n",
                 ":nlb_if_1_2\n:nlb_if_1_end\n");
         File csFile = new File(m_temp.getRoot(), "startup.txt");
         ifHaveBook().exportToChoiceScript(csFile);
