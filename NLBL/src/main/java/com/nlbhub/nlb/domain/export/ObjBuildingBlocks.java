@@ -221,6 +221,20 @@ public class ObjBuildingBlocks {
         m_morphOut = morphOut;
     }
 
+    /**
+     * У объекта есть действие или применение: щелчок по нему что-то делает (текст действия,
+     * модификации, переменная, применения, взять, общий объект). Нужно экспортам без картинок:
+     * графический объект (VN) щёлкают по картинке, а там ссылкой становится его текст или подпись
+     */
+    public boolean hasAction() {
+        return !isEmpty(m_objActStart) || !isEmpty(m_objModifications) || !isEmpty(m_objVariable)
+                || !m_useBuildingBlocks.isEmpty() || m_takable || !isEmpty(m_commonObjId);
+    }
+
+    private static boolean isEmpty(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
     public boolean isTakable() {
         return m_takable;
     }

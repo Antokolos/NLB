@@ -107,43 +107,6 @@ public class QSPExportManager extends TextExportManager {
     }
 
     /**
-     * Объекты в порядке вывода: страницы по порядку, на каждой — её содержимое (с вложенными
-     * объектами сразу после контейнера), затем остальные объекты. nlb_show_in выводит объекты
-     * места в порядке этого списка, поэтому объекты страницы идут в порядке её содержимого, как в
-     * INSTEAD
-     */
-    private static List<ObjBuildingBlocks> orderedObjects(NLBBuildingBlocks nlbBuildingBlocks) {
-        java.util.Map<String, ObjBuildingBlocks> byId = new java.util.LinkedHashMap<>();
-        for (ObjBuildingBlocks obj : nlbBuildingBlocks.getObjsBuildingBlocks()) {
-            byId.put(obj.getObjId(), obj);
-        }
-        java.util.LinkedHashSet<String> order = new java.util.LinkedHashSet<>();
-        for (PageBuildingBlocks page : nlbBuildingBlocks.getPagesBuildingBlocks()) {
-            for (String id : page.getContainedObjIds()) {
-                addWithContents(id, byId, order);
-            }
-        }
-        for (String id : byId.keySet()) {
-            addWithContents(id, byId, order);
-        }
-        List<ObjBuildingBlocks> result = new java.util.ArrayList<>();
-        for (String id : order) {
-            result.add(byId.get(id));
-        }
-        return result;
-    }
-
-    private static void addWithContents(String id, java.util.Map<String, ObjBuildingBlocks> byId, java.util.Set<String> order) {
-        ObjBuildingBlocks obj = byId.get(id);
-        if (obj == null || !order.add(id)) {
-            return;
-        }
-        for (String contained : obj.getContainedObjIds()) {
-            addWithContents(contained, byId, order);
-        }
-    }
-
-    /**
      * Служебные локации (QSP 5.8+: LOOP, LOCAL). nlb_show_in — объекты в контейнере (порядок —
      * порядок объектов в книге); nlb_act — щелчок по объекту в тексте: действие (act) или, если
      * выбран предмет инвентаря, применение; nlb_refresh — снова показать страницу после действия:
@@ -281,10 +244,18 @@ public class QSPExportManager extends TextExportManager {
         sb.append("-").append(LINE_SEPARATOR);
 
         // описание объекта: _text — вывести (PDSC), _textv — значение (DSC). Графический объект
-        // (VN) без текста щёлкают по картинке, а картинок здесь нет — ссылкой становится его подпись
+        // (VN) щёлкают по картинке, а картинок здесь нет: если у него есть действие, ссылкой
+        // становится его текст (без ссылки EXEC в нём), а без текста — подпись (выбор навыков в
+        // «Варваре»); подпись без действия — просто текст (надпись-картинка)
         String text = objBlocks.getObjText();
-        if (text.isEmpty() && objBlocks.isGraphical() && StringHelper.notEmpty(objBlocks.getObjDisp())) {
-            text = "'" + objectLink(id, objBlocks.getObjDisp()) + "'" + LINE_SEPARATOR;
+        if (objBlocks.isGraphical()) {
+            String label = text.isEmpty() ? objBlocks.getObjDisp()
+                    : text.substring(1, text.length() - LINE_SEPARATOR.length() - 1);  // без '…'
+            if (objBlocks.hasAction() && !text.contains("EXEC:") && StringHelper.notEmpty(label)) {
+                text = "'" + objectLink(id, label) + "'" + LINE_SEPARATOR;
+            } else if (text.isEmpty() && StringHelper.notEmpty(label)) {
+                text = "'" + label + "'" + LINE_SEPARATOR;
+            }
         }
         sb.append(prefix).append("_text").append(LINE_SEPARATOR);
         sb.append(text);
@@ -565,7 +536,8 @@ public class QSPExportManager extends TextExportManager {
                 stringBuilder.append("    ").append(ACTION_COUNT_VAR).append(" = ").append(ACTION_COUNT_VAR).append(" + 1").append(LINE_SEPARATOR);
                 stringBuilder.append("    nlb_cnt_walk = nlb_cnt_walk + 1").append(LINE_SEPARATOR);
             } else if (waitsAction) {
-                stringBuilder.append("    ").append(ACTION_COUNT_VAR).append(" = 0").append(LINE_SEPARATOR);
+                // has_action() сбрасывает счётчики действий — те же, что COUNTRST (как в плеере)
+                stringBuilder.append(decorateCountResetOperation());
             }
             stringBuilder.append(linkBlocks.getLinkModifications());
             stringBuilder.append(linkBlocks.getLinkVariable());
@@ -1104,7 +1076,10 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateCountResetOperation() {
+        // сброс счётчиков действий — и для автоссылок «needs action»: они ждут действий игрока
+        // с последнего сброса (как в плеере, PlayerEngine.hasAction)
         StringBuilder result = new StringBuilder();
+        result.append(ACTION_COUNT_VAR).append(" = 0").append(LINE_SEPARATOR);
         for (String type : COUNT_TYPES) {
             result.append("nlb_cntr_").append(type).append(" = nlb_cnt_").append(type).append(LINE_SEPARATOR);
         }

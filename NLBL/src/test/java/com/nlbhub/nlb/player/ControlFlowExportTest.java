@@ -152,8 +152,8 @@ public class ControlFlowExportTest {
         File file = new File(m_temp.getRoot(), "book.xml");
         book().exportToJSIQFile(file);
         String xml = read(file, StandardCharsets.UTF_8);
-        String secret = "nlbGoto({to: '" + articleId(xml, "Тайник.") + "'}); return;";
-        String bad = "nlbGoto({to: '" + articleId(xml, "Неудача.") + "'}); return;";
+        String secret = "NLB.go(vars, '" + articleId(xml, "Тайник.") + "'); return;";
+        String bad = "NLB.go(vars, '" + articleId(xml, "Неудача.") + "'); return;";
         assertInOrder(xml,
                 "while (", "vars.counter", "<", "3", ") { ",
                 "} ",
@@ -162,7 +162,8 @@ public class ControlFlowExportTest {
                 "} else if (", "} else { ", bad, "} ");
         assertTrue("GOTO в модификации ссылки: " + xml, xml.contains(secret));
         assertTrue("модификации страницы — до показа: " + xml, xml.contains("<script type=\"preload\"><![CDATA[") );
-        assertTrue("глобальный nlbGoto: " + xml, xml.contains("type=\"nlbGoto\""));
+        assertTrue("GOTO ссылки меняет цель действия: " + xml,
+                xml.contains("if (vars.nlb_goto != null) { env.from.goto = vars.nlb_goto; vars.nlb_goto = null; } "));
     }
 
     @Test
@@ -287,7 +288,7 @@ public class ControlFlowExportTest {
         File xmlFile = new File(m_temp.getRoot(), "book.xml");
         ifHaveBook().exportToJSIQFile(xmlFile);
         assertInOrder(read(xmlFile, StandardCharsets.UTF_8),
-                "addItem({'name': '", "if (checkItem({'name': '", "})) { ", "} else { ", "} ");
+                "NLB.place(vars, '", "', NLB.INV); ", "if (NLB.has(vars, '", "')) { ", "} else { ", "} ");
         File qstFile = new File(m_temp.getRoot(), "book.qst");
         ifHaveBook().exportToURQTextFile(qstFile);
         String urq = read(qstFile, Charset.forName("windows-1251")).replace("\r\n", "\n");
