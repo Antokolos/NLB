@@ -130,6 +130,9 @@ public class AsmObjectsExportTest {
         String sm = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
         assertFalse("AXMA ломает «and not»: " + sm, sm.contains(" not "));
         assertTrue(sm, sm.contains("and !"));
+        assertFalse("«eq» AXMA переводит только в <<if>>, не в <<set>>: " + sm,
+                java.util.regex.Pattern.compile("<<set [^>]* eq ").matcher(sm).find());
+        assertTrue(sm, sm.contains("($a == 1)"));
     }
 
     /**

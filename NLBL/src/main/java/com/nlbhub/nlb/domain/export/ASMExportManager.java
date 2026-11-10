@@ -735,7 +735,9 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateBooleanVar(String constraintVar) {
-        return "($" + constraintVar + " eq 1)";
+        // «==», а не «eq»: AXMA переводит eq в == только в <<if>>, а в <<set>> (присваивание
+        // логического выражения, «Шапочка», «Фронтир») «eq» ломал компиляцию абзаца
+        return "($" + constraintVar + " == 1)";
     }
 
     @Override
