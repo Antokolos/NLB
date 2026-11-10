@@ -393,38 +393,6 @@ public class URQExportManager extends TextExportManager {
         return withMod;
     }
 
-    /** Объекты в порядке вывода: содержимое страниц (с вложенными объектами), затем остальные */
-    private static List<ObjBuildingBlocks> orderedObjects(NLBBuildingBlocks nlbBuildingBlocks) {
-        java.util.Map<String, ObjBuildingBlocks> byId = new java.util.LinkedHashMap<>();
-        for (ObjBuildingBlocks obj : nlbBuildingBlocks.getObjsBuildingBlocks()) {
-            byId.put(obj.getObjId(), obj);
-        }
-        java.util.LinkedHashSet<String> order = new java.util.LinkedHashSet<>();
-        for (PageBuildingBlocks page : nlbBuildingBlocks.getPagesBuildingBlocks()) {
-            for (String id : page.getContainedObjIds()) {
-                addWithContents(id, byId, order);
-            }
-        }
-        for (String id : byId.keySet()) {
-            addWithContents(id, byId, order);
-        }
-        List<ObjBuildingBlocks> result = new java.util.ArrayList<>();
-        for (String id : order) {
-            result.add(byId.get(id));
-        }
-        return result;
-    }
-
-    private static void addWithContents(String id, java.util.Map<String, ObjBuildingBlocks> byId, java.util.Set<String> order) {
-        ObjBuildingBlocks obj = byId.get(id);
-        if (obj == null || !order.add(id)) {
-            return;
-        }
-        for (String contained : obj.getContainedObjIds()) {
-            addWithContents(contained, byId, order);
-        }
-    }
-
     // --- части объекта (ExportManager.createObjBuildingBlocks)
 
     @Override
@@ -580,7 +548,8 @@ public class URQExportManager extends TextExportManager {
                 postPage.append("nlb_cnt_walk=nlb_cnt_walk+1").append(LINE_SEPARATOR);
                 postPage.append("nlb_sel=0").append(LINE_SEPARATOR);
             } else if (linkBlocks.isAuto() && linkBlocks.isNeedsAction()) {
-                postPage.append(ACTION_COUNT_VAR).append("=0").append(LINE_SEPARATOR);
+                // has_action() сбрасывает счётчики действий — те же, что COUNTRST (как в плеере)
+                postPage.append(decorateCountResetOperation());
             }
             postPage.append(linkBlocks.getLinkModifications());
             postPage.append(linkBlocks.getLinkVariable());
@@ -1200,7 +1169,10 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateCountResetOperation() {
+        // сброс счётчиков действий — и для автоссылок «needs action»: они ждут действий игрока
+        // с последнего сброса (как в плеере, PlayerEngine.hasAction)
         StringBuilder result = new StringBuilder();
+        result.append(ACTION_COUNT_VAR).append("=0").append(LINE_SEPARATOR);
         for (String type : COUNT_TYPES) {
             result.append("nlb_cntr_").append(type).append("=nlb_cnt_").append(type).append(LINE_SEPARATOR);
         }

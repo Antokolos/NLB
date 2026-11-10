@@ -62,7 +62,8 @@ public class NeedsActionExportTest {
         String urq = export("book.qst", Charset.forName("windows-1251"), NonLinearBookImpl::exportToURQTextFile);
         assertTrue(urq, urq.contains("if (nlb_action_count>=3) then goto " + m_autoId + "\n"));
         assertTrue("шаг — действие: " + urq, urq.contains(":" + m_stepId + "\nnlb_action_count=nlb_action_count+1\n"));
-        assertTrue("автоссылка обнуляет счётчик: " + urq, urq.contains(":" + m_autoId + "\nnlb_action_count=0\n"));
+        assertTrue("автоссылка сбрасывает счётчики, как COUNTRST: " + urq,
+                urq.contains(":" + m_autoId + "\nnlb_action_count=0\nnlb_cntr_inv=nlb_cnt_inv\n"));
     }
 
     @Test
@@ -78,7 +79,8 @@ public class NeedsActionExportTest {
     public void qsp() throws Exception {
         String qsp = export("book.txt", StandardCharsets.UTF_16LE, NonLinearBookImpl::exportToQSPTextFile);
         assertTrue(qsp, qsp.contains("ACT 'Шаг':\n    $nlb_sel = ''\n    UNSEL\n    nlb_action_count = nlb_action_count + 1\n"));
-        assertTrue(qsp, qsp.contains("IF (nlb_action_count >= 3):\n    nlb_action_count = 0\n"));
+        assertTrue("автоссылка сбрасывает счётчики, как COUNTRST: " + qsp,
+                qsp.contains("IF (nlb_action_count >= 3):\nnlb_action_count = 0\nnlb_cntr_inv = nlb_cnt_inv\n"));
     }
 
     @Test
@@ -92,8 +94,9 @@ public class NeedsActionExportTest {
     @Test
     public void jsiq2() throws Exception {
         String xml = export("book.xml", StandardCharsets.UTF_8, NonLinearBookImpl::exportToJSIQFile);
-        assertTrue(xml, xml.contains("if (((vars.nlb_action_count || 0) >= 3)) { vars.nlb_action_count = 0; "));
-        assertTrue(xml, xml.contains("vars.nlb_action_count = (vars.nlb_action_count || 0) + 1; "));
+        // действия считают те же счётчики, что COUNTGET; автоссылка ждёт их с последнего сброса
+        assertTrue(xml, xml.contains("if ((NLB.countGet(vars, 0) >= 3)) { NLB.countReset(vars); "));
+        assertTrue("шаг — действие: " + xml, xml.contains("NLB.walk(vars, true); "));
         assertFalse("go() в окружении jsIQ нет: " + xml, xml.contains("go("));
     }
 }

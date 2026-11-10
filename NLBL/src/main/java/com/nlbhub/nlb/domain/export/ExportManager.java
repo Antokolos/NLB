@@ -666,6 +666,7 @@ public abstract class ExportManager {
         if (!containedObjIds.isEmpty()) {
             for (String containedObjId : containedObjIds) {
                 Obj obj = nlb.getObjById(containedObjId);
+                blocks.addAllContainedObjId(containedObjId);
                 hasAnim = (hasAnim || obj.isAnimatedImage());
                 if (obj.isGraphical()) {
                     hasGraphicalObjs = true;
@@ -1999,6 +2000,43 @@ public abstract class ExportManager {
                 throw new UnsupportedOperationException("Not supported during export");
             }
         };
+    }
+
+    /**
+     * Объекты в порядке вывода: страницы по порядку, на каждой — её содержимое, и графические
+     * объекты тоже (с вложенными объектами сразу после контейнера), затем остальные объекты. Экспорты QSP, URQ и jsIQ2
+     * выводят объекты места в порядке этого списка, поэтому объекты страницы идут в порядке её содержимого,
+     * как в INSTEAD
+     */
+    protected static List<ObjBuildingBlocks> orderedObjects(NLBBuildingBlocks nlbBuildingBlocks) {
+        java.util.Map<String, ObjBuildingBlocks> byId = new java.util.LinkedHashMap<>();
+        for (ObjBuildingBlocks obj : nlbBuildingBlocks.getObjsBuildingBlocks()) {
+            byId.put(obj.getObjId(), obj);
+        }
+        java.util.LinkedHashSet<String> order = new java.util.LinkedHashSet<>();
+        for (PageBuildingBlocks page : nlbBuildingBlocks.getPagesBuildingBlocks()) {
+            for (String id : page.getAllContainedObjIds()) {
+                addWithContents(id, byId, order);
+            }
+        }
+        for (String id : byId.keySet()) {
+            addWithContents(id, byId, order);
+        }
+        List<ObjBuildingBlocks> result = new java.util.ArrayList<>();
+        for (String id : order) {
+            result.add(byId.get(id));
+        }
+        return result;
+    }
+
+    private static void addWithContents(String id, java.util.Map<String, ObjBuildingBlocks> byId, java.util.Set<String> order) {
+        ObjBuildingBlocks obj = byId.get(id);
+        if (obj == null || !order.add(id)) {
+            return;
+        }
+        for (String contained : obj.getContainedObjIds()) {
+            addWithContents(contained, byId, order);
+        }
     }
 
     protected String decorateObjLabel(String id) {

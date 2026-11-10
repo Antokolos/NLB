@@ -76,6 +76,8 @@ public class PageBuildingBlocks {
     private boolean m_autosFirst;
     private List<String> m_containedObjIds;
     private List<String> m_containedGraphicalObjIds;
+    /** Все объекты страницы (и графические) в порядке её содержимого, id без оформления */
+    private List<String> m_allContainedObjIds = new ArrayList<>();
     private List<LinkBuildingBlocks> m_linksBuildingBlocks;
     /** Page blocks' links are considered trivial if each of them is trivial. */
     private boolean m_hasTrivialLinks;
@@ -313,6 +315,14 @@ public class PageBuildingBlocks {
 
     public void addLinkBuildingBlocks(final LinkBuildingBlocks linksBuildingBlocks) {
         m_linksBuildingBlocks.add(linksBuildingBlocks);
+    }
+
+    public List<String> getAllContainedObjIds() {
+        return m_allContainedObjIds;
+    }
+
+    public void addAllContainedObjId(String containedObjId) {
+        m_allContainedObjIds.add(containedObjId);
     }
 
     public List<String> getContainedObjIds() {

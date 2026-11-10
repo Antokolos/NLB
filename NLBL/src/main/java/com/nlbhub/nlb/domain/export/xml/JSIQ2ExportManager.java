@@ -48,7 +48,6 @@ import com.nlbhub.nlb.exception.NLBExportException;
 import com.nlbhub.nlb.util.JaxbMarshaller;
 import com.nlbhub.nlb.util.StringHelper;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -91,7 +90,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
         boolean first = true;
         for (PageBuildingBlocks pageBuildingBlocks : nlbBlocks.getPagesBuildingBlocks()) {
             book.addArticle(
-                    createArticle(pageBuildingBlocks, lastSaveString, nlbBlocks.getObjsBuildingBlocks(), first)
+                    createArticle(pageBuildingBlocks, lastSaveString, first ? createRuntimeScript(nlbBlocks) : null)
             );
             first = false;
         }
@@ -109,24 +108,19 @@ public class JSIQ2ExportManager extends XMLExportManager {
         return book;
     }
 
-    private Article createArticle(
-            PageBuildingBlocks pageBlocks,
-            String lastSaveString,
-            List<ObjBuildingBlocks> objsBlocks,
-            boolean first
-    ) {
+    /**
+     * Статья страницы. Кроме текста страницы — тексты-места, которые заполняет общий код NLB
+     * (см. RUNTIME): объекты сцены, ответ на действие и инвентарь.
+     */
+    private Article createArticle(PageBuildingBlocks pageBlocks, String lastSaveString, Script runtimeScript) {
         Article article = new Article();
         Metadata metadata = new Metadata();
         metadata.setLastSave(lastSaveString);
         article.setId(pageBlocks.getPageNumber());
         article.setMetadata(metadata);
-        article.setText(pageBlocks.getPageTextStart());
-        if (first) {
-            List<Script> inventoryScripts = createInventoryScripts(objsBlocks);
-            for (Script script : inventoryScripts) {
-                article.addScript(script);
-            }
-            article.addScript(createNlbGotoScript());
+        article.setText(html(pageBlocks.getPageTextStart()));
+        if (runtimeScript != null) {
+            article.addScript(runtimeScript);
         }
         boolean hasPageModifications = !StringHelper.isEmpty(pageBlocks.getPageModifications());
         if (hasPageModifications) {
@@ -159,15 +153,16 @@ public class JSIQ2ExportManager extends XMLExportManager {
                 hasAutoLinks = true;
                 String condition = hasConstraint ? "(" + linkBlocks.getLinkConstraint() + ")" : Constants.EMPTY_STRING;
                 if (linkBlocks.isNeedsAction()) {
-                    // has_action(): автоссылка ждёт, пока игрок сделает нужное число действий
-                    String hasAction = "((vars." + ACTION_COUNT_VAR + " || 0) >= " + getNeedsActionCount() + ")";
+                    // has_action(): автоссылка ждёт, пока игрок сделает нужное число действий с
+                    // последнего сброса счётчиков (COUNTRST или такой же автоссылки), как в плеере
+                    String hasAction = "(NLB.countGet(vars, 0) >= " + getNeedsActionCount() + ")";
                     condition = condition.isEmpty() ? hasAction : condition + " && " + hasAction;
                 }
                 if (!condition.isEmpty()) {
                     autosStringBuilder.append("if (").append(condition).append(") { ");
                 }
                 if (linkBlocks.isNeedsAction()) {
-                    autosStringBuilder.append("vars.").append(ACTION_COUNT_VAR).append(" = 0; ");
+                    autosStringBuilder.append("NLB.countReset(vars); ");
                 }
                 // See decorateLinkGoTo() to understand why -1 is needed.
                 // Функции go() в окружении скриптов jsIQ нет: переход — jsIQ.showArticle, после
@@ -196,24 +191,25 @@ public class JSIQ2ExportManager extends XMLExportManager {
                     if (linkBlocks.hasShownAltText()) {
                         // альтернативный текст недоступной ссылки (#135): текст статьи, который
                         // плеер показывает, когда то же условие ложно (jsIQ.createText, ifnot)
-                        Text altText = new Text(linkBlocks.getLinkAltText());
+                        Text altText = new Text(html(linkBlocks.getLinkAltText()));
                         altText.setIfnot("condition_" + i);
                         article.addText(altText);
                     }
                 }
                 action.setGoto(linkBlocks.getLinkGoTo());
-                action.setValue(linkBlocks.getLinkStart());
-                if (!linkBlocks.isTechnical()) {
-                    // переход по обычной ссылке — действие игрока (для автоссылок «needs action»)
-                    linkCalls.insert(0, "vars." + ACTION_COUNT_VAR + " = (vars." + ACTION_COUNT_VAR + " || 0) + 1; ");
-                }
-                if (linkCalls.length() > 0) {
-                    Script actionDoScript = new Script();
-                    actionDoScript.setType("do_" + i);
-                    actionDoScript.setValue(linkCalls.toString());
-                    article.addScript(actionDoScript);
-                    action.setDo("do_" + i);
-                }
+                action.setValue(html(linkBlocks.getLinkStart()));
+                // Переход по ссылке: ответ на прошлое действие и выбранный предмет сбрасываются;
+                // обычная (не техническая) ссылка — действие игрока (для автоссылок «needs action»
+                // и COUNTGET). GOTO в модификациях ссылки (NLB.go) меняет цель самого действия:
+                // env.from — нажатое действие, плеер переходит по его goto после скрипта do
+                linkCalls.insert(0, "NLB.walk(vars, " + !linkBlocks.isTechnical() + "); ");
+                linkCalls.append("if (vars.").append(GOTO_VAR).append(" != null) { env.from.goto = vars.")
+                        .append(GOTO_VAR).append("; vars.").append(GOTO_VAR).append(" = null; } ");
+                Script actionDoScript = new Script();
+                actionDoScript.setType("do_" + i);
+                actionDoScript.setValue(linkCalls.toString());
+                article.addScript(actionDoScript);
+                action.setDo("do_" + i);
                 article.addAction(action);
             }
         }
@@ -225,39 +221,48 @@ public class JSIQ2ExportManager extends XMLExportManager {
         }
         // Модификации страницы — в preload: плеер выполняет его до вывода текста и действий,
         // поэтому условия ссылок и текстов видят уже изменённые переменные (как в INSTEAD).
+        // Действие с объектом показывает статью заново (NLB.click, vars.nlb_redraw) — уже без
+        // модификаций входа. nlbInit — общий код NLB (глобальный скрипт первой статьи).
+        Script preload = new Script();
+        preload.setType("preload");
+        preload.setValue(
+                "nlbInit(); if (vars." + REDRAW_VAR + ") { vars." + REDRAW_VAR + " = false; } else { "
+                        + (hasPageModifications ? "pmod(); " : Constants.EMPTY_STRING)
+                        + (hasPageVariable ? "pvar(); " : Constants.EMPTY_STRING)
+                        + "}"
+        );
+        article.addScript(preload);
         // Переход (GOTO в модификациях, автоссылки) — в onload, после показа статьи: так текст
         // страницы, которую сразу покидают, успевает появиться, и не начинается показ новой
-        // статьи посреди показа текущей.
-        if (hasPageModifications || hasPageVariable) {
-            String preloadValue = (
-                    (hasPageModifications ? "pmod(); " : Constants.EMPTY_STRING)
-                            + (hasPageVariable ? "pvar(); " : Constants.EMPTY_STRING)
-            );
-            Script preload = findScript(article, "preload");
-            if (preload == null) {
-                preload = new Script();
-                preload.setType("preload");
-                preload.setValue(preloadValue);
-                article.addScript(preload);
-            } else {
-                preload.setValue(preload.getValue() + LINE_SEPARATOR + preloadValue);
-            }
-        }
-        if (hasPageModifications || hasAutoLinks) {
-            Script onLoadScript = new Script();
-            onLoadScript.setType("onload");
-            onLoadScript.setValue(
-                    "if (vars." + GOTO_VAR + " != null) { var to = vars." + GOTO_VAR + "; vars." + GOTO_VAR
-                            + " = null; " + showArticleLater("to") + "return; } "
-                            + (hasAutoLinks ? "autos(); " : Constants.EMPTY_STRING)
-            );
-            article.addScript(onLoadScript);
-        }
+        // статьи посреди показа текущей. Автоссылки проверяются и после действий с объектами.
+        // Перед ними — конец хода (NLB.turn): callback-объекты, если игрок с прошлого хода что-то
+        // сделал (update_action_count в INSTEAD)
+        Script onLoadScript = new Script();
+        onLoadScript.setType("onload");
+        onLoadScript.setValue(
+                "NLB.turn(vars); if (vars." + GOTO_VAR + " != null) { var to = vars." + GOTO_VAR + "; vars." + GOTO_VAR
+                        + " = null; " + showArticleLater("to") + "return; } "
+                        + (hasAutoLinks ? "autos(); " : Constants.EMPTY_STRING)
+        );
+        article.addScript(onLoadScript);
+        article.addText(new Text("<div class=\"nlb_scene\"></div>"));
+        article.addText(new Text("<div class=\"nlb_reply\"></div>"));
+        article.addText(new Text("<div class=\"nlb_inv\"></div>"));
         return article;
     }
 
-    /** Переменная jsIQ, в которой модификации страницы оставляют статью для перехода (GOTO) */
+    /** Переменная jsIQ, в которой модификации оставляют статью для перехода (GOTO) */
     private static final String GOTO_VAR = "nlb_goto";
+    /** Переменная jsIQ: статья показывается заново после действия с объектом (без модификаций входа) */
+    private static final String REDRAW_VAR = "nlb_redraw";
+    /** Пустая метка {} в описании объекта */
+    private static final java.util.regex.Pattern EMPTY_LINK = java.util.regex.Pattern.compile("\\{\\s*\\}");
+    /** Подпись ссылки, которую заменит подпись объекта (createObjCode) */
+    private static final String OBJ_LABEL_MARK = "\u0004";
+    /** Метка переменной в тексте до вывода: в HTML — span, в строке JavaScript — значение */
+    private static final String VAR_MARK = "\u0003";
+    private static final java.util.regex.Pattern VAR_PATTERN =
+            java.util.regex.Pattern.compile(VAR_MARK + "([^" + VAR_MARK + "]*)" + VAR_MARK);
 
     /** Скрипт статьи с кодом ссылки (если код есть) и его вызов в calls */
     private static void addLinkScript(Article article, String type, String code, StringBuilder calls) {
@@ -275,15 +280,6 @@ public class JSIQ2ExportManager extends XMLExportManager {
         return "setTimeout(function() { jsIQ.showArticle(" + articleIdExpression + "); }, 0); ";
     }
 
-    private static Script findScript(Article article, String type) {
-        for (Script script : article.getScripts()) {
-            if (type.equals(script.getType())) {
-                return script;
-            }
-        }
-        return null;
-    }
-
     /** Номер статьи jsIQ для страницы: статьи нумеруются с 0 (см. decoratePageNumber) */
     private String getJsiqArticleId(String pageId) {
         int pageNumber = getExportPageNumber(pageId);
@@ -291,25 +287,19 @@ public class JSIQ2ExportManager extends XMLExportManager {
     }
 
     /**
-     * Глобальный скрипт nlbGoto({to: 'N'}) — GOTO из модификаций. В действии (ссылке) он меняет
-     * цель самого действия (env.from — нажатое действие, плеер переходит по его goto после
-     * скрипта do), поэтому GOTO важнее цели ссылки, как в INSTEAD. В модификациях страницы
-     * (preload) он запоминает статью, а переходит onload, после показа текущей.
+     * Текст для HTML статьи: переменная — span, который общий код NLB заполняет значением при
+     * каждом показе (раньше в тексте оставалось «$имя$»)
      */
-    private static Script createNlbGotoScript() {
-        Script nlbGoto = new Script();
-        nlbGoto.setInfo("GOTO from NLB modifications");
-        nlbGoto.setType("nlbGoto");
-        nlbGoto.setIsGlobal("true");
-        nlbGoto.setValue(
-                "var to = String(arg.to);" + LINE_SEPARATOR +
-                        "if (env.from && env.from.goto !== undefined) {" + LINE_SEPARATOR +
-                        "    env.from.goto = to;" + LINE_SEPARATOR +
-                        "} else {" + LINE_SEPARATOR +
-                        "    vars." + GOTO_VAR + " = to;" + LINE_SEPARATOR +
-                        "}"
-        );
-        return nlbGoto;
+    private static String html(String text) {
+        if (text == null) {
+            return null;
+        }
+        return VAR_PATTERN.matcher(text).replaceAll("<span class=\"nlb_v\" data-v=\"$1\"></span>");
+    }
+
+    /** Текст как выражение JavaScript (строка в апострофах; переменные — значением во время игры) */
+    private static String jsText(String text) {
+        return "'" + VAR_PATTERN.matcher(jsString(text)).replaceAll("' + NLB.v(vars, '$1') + '") + "'";
     }
 
     private Article createCharsheetArticle(String lastSaveString) {
@@ -318,91 +308,320 @@ public class JSIQ2ExportManager extends XMLExportManager {
         metadata.setLastSave(lastSaveString);
         article.setId("charsheet");
         article.setMetadata(metadata);
-        article.setText("CHARACTER SHEET<br/> <span class=\"linked\" name=\"inventory\"></span>");
+        article.setText("CHARACTER SHEET<br/> <div class=\"nlb_inv\"></div>");
         return article;
     }
 
-    private List<Script> createInventoryScripts(List<ObjBuildingBlocks> objsBlocks) {
-        List<Script> result = new ArrayList<>();
-        Script preload = new Script();
-        preload.setType("preload");
-        String preloadValue = (
-                "vars.inventory = {}; " + LINE_SEPARATOR +
-                createObjsMap(objsBlocks) + "; " + LINE_SEPARATOR +
-                createInventoryLinkedVariable()
-        );
-        preload.setValue(preloadValue);
-        result.add(preload);
-        Script getItemList = new Script();
-        getItemList.setInfo("getting the list of items");
-        getItemList.setType("getItemList");
-        getItemList.setIsGlobal("true");
-        getItemList.setValue(
-                "var list = [];" + LINE_SEPARATOR +
-                        "for (var name in vars.inventory){" + LINE_SEPARATOR +
-                        "    if (!vars.inventory.hasOwnProperty(name)){   continue;   }" + LINE_SEPARATOR +
-                        "    " + LINE_SEPARATOR +
-                        "    if (vars.inventory[name] > 0){" + LINE_SEPARATOR +
-                        "        list.push( vars.itemNames[name] );" + LINE_SEPARATOR +
-                        "    }" + LINE_SEPARATOR +
-                        "}" + LINE_SEPARATOR +
-                        "return list;"
-        );
-        result.add(getItemList);
-        Script checkItem = new Script();
-        checkItem.setInfo("checking item existence");
-        checkItem.setType("checkItem");
-        checkItem.setIsGlobal("true");
-        checkItem.setValue(
-                "var name = arg.name;" + LINE_SEPARATOR +
-                        "if (name === undefined && name === '') {" + LINE_SEPARATOR +
-                        "    triggerError('checkItem: название предмета не указано',{});" + LINE_SEPARATOR +
-                        "    return;" + LINE_SEPARATOR +
-                        "}" + LINE_SEPARATOR +
-                        "return (vars.inventory[name] == true);"
-        );
-        result.add(checkItem);
-        Script addItem = new Script();
-        addItem.setInfo("adding item");
-        addItem.setType("addItem");
-        addItem.setIsGlobal("true");
-        addItem.setValue(
-                "var name = arg.name;" + LINE_SEPARATOR +
-                        "if (name === undefined && name === '') {" + LINE_SEPARATOR +
-                        "    triggerError('checkItem: название предмета не указано',{});" + LINE_SEPARATOR +
-                        "    return;" + LINE_SEPARATOR +
-                        "}" + LINE_SEPARATOR +
-                        "vars.inventory[name] = true;"
-        );
-        result.add(addItem);
-        Script removeItem = new Script();
-        removeItem.setInfo("removing item");
-        removeItem.setType("removeItem");
-        removeItem.setIsGlobal("true");
-        removeItem.setValue(
-                "var name = arg.name;" + LINE_SEPARATOR +
-                        "if (name === undefined && name === '') {" + LINE_SEPARATOR +
-                        "    triggerError('removeItem: название предмета не указано',{});" + LINE_SEPARATOR +
-                        "    return;" + LINE_SEPARATOR +
-                        "}" + LINE_SEPARATOR +
-                        "delete vars.inventory[name];"
-        );
-        result.add(removeItem);
-        return result;
+    /**
+     * Общий код NLB — глобальный скрипт nlbInit первой статьи; preload каждой статьи вызывает его,
+     * а он создаёт window.NLB один раз. В jsIQ нет объектов и инвентаря, поэтому они — здесь, как
+     * в экспорте QSP: место каждого объекта — vars.nlb_in[id] (id страницы или объекта-контейнера,
+     * NLB.INV — инвентарь, '' — нигде; в vars — значит, и в сохранениях плеера), объекты сцены —
+     * ссылками в тексте статьи (каждое описание — с новой строки, как в INSTEAD), предметы
+     * инвентаря — ссылками под ним, в порядке, в котором их брали (vars.nlb_inv_order). Щелчок (NLB.click): по
+     * объекту — его действие (act), по предмету — применение к себе (inv) и выбор, затем по
+     * объекту или другому предмету — применение (use), по тому же — отмена выбора. После действия
+     * статья показывается заново (ответ — после текста и объектов), а GOTO уводит на новую. В
+     * конце хода (onload) — callback-объекты: их действие, если игрок с прошлого хода что-то сделал. Тексты
+     * с переменными заполняются при показе (обработчики on_text_render и on_action_render).
+     */
+    private static final String RUNTIME = String.join("\n",
+            "if (window.NLB) { return; }",
+            "var N = window.NLB = {};",
+            "N.INV = 'nlb_inv';",
+            "N.objs = {};",
+            "N.printed = false;",
+            "N.vars = function () { return jsIQ.createEnv('nlb').vars(); };",
+            "N.state = function (vars) {",
+            "    if (!vars.nlb_in) {",
+            "        vars.nlb_in = {};",
+            "        for (var id in N.start) { vars.nlb_in[id] = N.start[id]; if (N.start[id] === N.INV) { N.invOrder(vars).push(id); } }",
+            "    }",
+            "    return vars.nlb_in;",
+            "};",
+            "N.v = function (vars, name) { var v = vars[name]; return (v === undefined || v === null) ? '' : String(v); };",
+            "N.say = function (vars, text) { vars.nlb_reply = (vars.nlb_reply || '') + text; };",
+            "N.sayp = function (vars, text) {",
+            "    if (!text) { return; }",
+            "    if (vars.nlb_reply) { vars.nlb_reply += '<br/>'; }",
+            "    N.say(vars, text);",
+            "};",
+            "N.go = function (vars, to) { vars.nlb_goto = String(to); };",
+            "N.here = function () { var a = jsIQ.current_article; return a ? (N.pages[a.title] || '') : ''; };",
+            "N.place = function (vars, id, where) {",
+            "    if (!N.objs[id]) { return; }",
+            "    var st = N.state(vars), inv = N.invOrder(vars), i = inv.indexOf(id);",
+            "    if (where === N.INV && i < 0) { inv.push(id); }",
+            "    if (where !== N.INV && i >= 0) { inv.splice(i, 1); }",
+            "    st[id] = where;",
+            "};",
+            "N.invOrder = function (vars) { if (!vars.nlb_inv_order) { vars.nlb_inv_order = []; } return vars.nlb_inv_order; };",
+            "N.where = function (vars, id) { return N.state(vars)[id] || ''; };",
+            "N.has = function (vars, id) { return N.where(vars, id) === N.INV; };",
+            "N.text = function (vars, id) { var o = N.objs[id]; return o ? o.text(vars) : ''; };",
+            "N.disp = function (vars, id) { var o = N.objs[id]; return o ? o.disp(vars) : ''; };",
+            "N.dsc = function (vars, id) {",
+            "    var o = N.objs[id];",
+            "    if (!o || (o.visible && !o.visible(vars))) { return ''; }",
+            "    var text = o.text(vars), inner = N.showIn(vars, id);",
+            "    return text + ((text && inner) ? '<br/>' : '') + inner;",
+            "};",
+            "N.showIn = function (vars, where) {",
+            "    var st = N.state(vars), out = [];",
+            "    for (var i = 0; i < N.order.length; i++) {",
+            "        if (st[N.order[i]] === where) { var d = N.dsc(vars, N.order[i]); if (d) { out.push(d); } }",
+            "    }",
+            "    return out.join('<br/>');",
+            "};",
+            "N.inventory = function (vars) {",
+            "    var inv = N.invOrder(vars), out = [];",
+            "    for (var i = 0; i < inv.length; i++) {",
+            "        var id = inv[i];",
+            "        var d = N.disp(vars, id);",
+            "        if (vars.nlb_sel === id) { d = '<b>' + d + '</b>'; }",
+            "        out.push('<a href=\"#\" class=\"nlb_item\" onclick=\"return NLB.click(\\'inv\\', \\'' + id + '\\')\">' + d + '</a>');",
+            "    }",
+            "    return out.length ? '<hr/>' + out.join('<br/>') : '';",
+            "};",
+            "N.count = function (vars, type) { vars['nlb_cnt_' + type] = (vars['nlb_cnt_' + type] || 0) + 1; };",
+            "N.TYPES = ['inv', 'act', 'use', 'walk'];",
+            "N.countGet = function (vars, mask) {",
+            "    var sum = 0;",
+            "    for (var i = 0; i < N.TYPES.length; i++) {",
+            "        var t = N.TYPES[i];",
+            "        if (mask === 0 || (mask & (1 << i))) { sum += (vars['nlb_cnt_' + t] || 0) - (vars['nlb_cntr_' + t] || 0); }",
+            "    }",
+            "    return sum;",
+            "};",
+            "N.countReset = function (vars) {",
+            "    for (var i = 0; i < N.TYPES.length; i++) { var t = N.TYPES[i]; vars['nlb_cntr_' + t] = vars['nlb_cnt_' + t] || 0; }",
+            "};",
+            "N.walk = function (vars, counted) {",
+            "    if (counted) { N.count(vars, 'walk'); }",
+            "    vars.nlb_reply = '';",
+            "    vars.nlb_sel = '';",
+            "};",
+            "N.act = function (vars, id) {",
+            "    N.actA(vars, id);",
+            "    var o = N.objs[id];",
+            "    if (o && o.take && vars.nlb_goto == null) { N.place(vars, o.take, N.INV); }",
+            "};",
+            "N.actA = function (vars, id) {",
+            "    var o = N.objs[id];",
+            "    if (!o) { return; }",
+            "    var c = o.common ? N.objs[o.common] : null;",
+            "    if (o.acttext) { N.sayp(vars, o.acttext(vars)); }",
+            "    else if (c && c.acttext) { N.sayp(vars, c.acttext(vars)); }",
+            "    o.mods(vars);",
+            "    if (vars.nlb_goto != null) { return; }",
+            "    if (c) { c.mods(vars); }",
+            "};",
+            "N.turn = function (vars) {",
+            "    var diff = N.countGet(vars, 0), changed = false;",
+            "    if (diff > (vars.nlb_cnt_prev || 0)) {",
+            "        for (var i = 0; i < N.order.length && vars.nlb_goto == null; i++) {",
+            "            var o = N.objs[N.order[i]];",
+            "            if (o.callback && (!o.visible || o.visible(vars))) { N.actA(vars, o.id); changed = true; }",
+            "        }",
+            "    }",
+            "    vars.nlb_cnt_prev = diff;",
+            "    if (changed) { N.fill(jsIQ.containers.text); }",
+            "};",
+            "N.useOn = function (vars, src, target) {",
+            "    var o = N.objs[src];",
+            "    if (!o) { return false; }",
+            "    N.printed = false;",
+            "    o.use(vars, target);",
+            "    if (!N.printed && o.common && N.objs[o.common]) { N.objs[o.common].use(vars, target); }",
+            "    return N.printed;",
+            "};",
+            "N.use = function (vars, src, target) {",
+            "    N.count(vars, 'use');",
+            "    if (!N.useOn(vars, src, target)) {",
+            "        var o = N.objs[src];",
+            "        N.sayp(vars, (o && o.nouse) ? o.nouse(vars) : N.gameNouse);",
+            "    }",
+            "    vars.nlb_sel = '';",
+            "};",
+            "N.click = function (kind, id) {",
+            "    var vars = N.vars();",
+            "    vars.nlb_reply = '';",
+            "    if (kind === 'inv' && !vars.nlb_sel) {",
+            "        N.count(vars, 'inv');",
+            "        if (!N.useOn(vars, id, id)) { N.sayp(vars, N.gameInv); }",
+            "        vars.nlb_sel = id;",
+            "    } else if (kind === 'inv' && vars.nlb_sel === id) {",
+            "        vars.nlb_sel = '';",
+            "    } else if (vars.nlb_sel) {",
+            "        N.use(vars, vars.nlb_sel, id);",
+            "    } else {",
+            "        N.count(vars, 'act');",
+            "        N.act(vars, id);",
+            "    }",
+            "    var a = jsIQ.current_article;",
+            "    if (vars.nlb_goto != null) {",
+            "        var to = vars.nlb_goto;",
+            "        vars.nlb_goto = null;",
+            "        jsIQ.showArticle(to);",
+            "    } else if (a) {",
+            "        vars.nlb_redraw = true;",
+            "        jsIQ.showArticle(a.title);",
+            "    }",
+            "    return false;",
+            "};",
+            "N.fill = function (c) {",
+            "    if (!c) { return; }",
+            "    var vars = N.vars();",
+            "    c.find('.nlb_scene').each(function () { $(this).html(N.scene(vars)); });",
+            "    c.find('.nlb_reply').each(function () { $(this).html(vars.nlb_reply || ''); });",
+            "    c.find('.nlb_inv').each(function () { $(this).html(N.inventory(vars)); });",
+            "    c.find('.nlb_v').each(function () { $(this).text(N.v(vars, $(this).attr('data-v'))); });",
+            "};",
+            "N.scene = function (vars) { return N.showIn(vars, N.here()); };",
+            "jsIQ.addEventHandler('on_text_render', function (params, vars, process) { N.fill(params.container); process.next(); });",
+            "jsIQ.addEventHandler('on_action_render', function (params, vars, process) { N.fill(params.container); process.next(); });",
+            "");
+
+    private Script createRuntimeScript(NLBBuildingBlocks nlbBlocks) {
+        final List<ObjBuildingBlocks> objs = orderedObjects(nlbBlocks);
+        java.util.Map<String, Boolean> takable = new java.util.HashMap<>();
+        for (ObjBuildingBlocks obj : objs) {
+            takable.put(obj.getObjId(), obj.isTakable());
+        }
+        StringBuilder sb = new StringBuilder(RUNTIME);
+        sb.append("N.gameInv = ").append(jsText(nlbBlocks.getGameInvText())).append(";\n");
+        sb.append("N.gameNouse = ").append(jsText(nlbBlocks.getGameNouseText())).append(";\n");
+        sb.append("N.pages = {");
+        String separator = "";
+        for (PageBuildingBlocks page : nlbBlocks.getPagesBuildingBlocks()) {
+            sb.append(separator).append("'").append(page.getPageNumber()).append("': '").append(page.getPageId()).append("'");
+            separator = ", ";
+        }
+        sb.append("};\n");
+        StringBuilder order = new StringBuilder();
+        StringBuilder start = new StringBuilder();
+        StringBuilder names = new StringBuilder();
+        for (ObjBuildingBlocks obj : objs) {
+            String id = obj.getObjId();
+            String sep = order.length() == 0 ? "" : ", ";
+            order.append(sep).append("'").append(id).append("'");
+            start.append(sep).append("'").append(id).append("': '").append(obj.getContainerId()).append("'");
+            if (StringHelper.notEmpty(obj.getObjName())) {
+                names.append(names.length() == 0 ? "" : ", ").append("'").append(jsString(obj.getObjName()))
+                        .append("': '").append(id).append("'");
+            }
+        }
+        sb.append("N.order = [").append(order).append("];\n");
+        sb.append("N.start = {").append(start).append("};\n");
+        sb.append("N.names = {").append(names).append("};\n");
+        for (ObjBuildingBlocks obj : objs) {
+            sb.append(createObjCode(obj, takable));
+        }
+        Script script = new Script();
+        script.setInfo("NLB: objects, inventory, replies");
+        script.setType("nlbInit");
+        script.setIsGlobal("true");
+        script.setValue(sb.toString());
+        return script;
     }
 
-    private String createInventoryLinkedVariable() {
-        return "jsIQ.linkValue('inventory', function(){" + LINE_SEPARATOR +
-                "   if (!vars.inventory) return '';" + LINE_SEPARATOR +
-                "   var list = $('<ul></ul>');" + LINE_SEPARATOR +
-                "   for (var name in vars.inventory){" + LINE_SEPARATOR +
-                "       if (!vars.inventory.hasOwnProperty(name)){   continue;   }       " + LINE_SEPARATOR +
-                "       if (vars.inventory[name] > 0){" + LINE_SEPARATOR +
-                "           list.append('<li>' + vars.itemNames[name] + '</li>');" + LINE_SEPARATOR +
-                "       }" + LINE_SEPARATOR +
-                "   }" + LINE_SEPARATOR +
-                "   return list.html();" + LINE_SEPARATOR +
-                "});";
+    /**
+     * Объект: подпись (disp), описание в сцене (text, часть в {фигурных скобках} — ссылка),
+     * текст действия, модификации, применения (use: тексты успеха/неудачи и модификации; ответ —
+     * NLB.printed), текст «не применяется», условие видимости, общий объект, что взять
+     */
+    private String createObjCode(ObjBuildingBlocks obj, java.util.Map<String, Boolean> takable) {
+        final String id = obj.getObjId();
+        final String common = obj.getCommonObjId();
+        StringBuilder sb = new StringBuilder();
+        sb.append("// ").append(StringHelper.notEmpty(obj.getObjName()) ? obj.getObjName().replace("\n", " ") : id).append("\n");
+        sb.append("N.objs['").append(id).append("'] = {\n");
+        // подпись в инвентаре; без неё — имя объекта (как nam в INSTEAD), без имени — id
+        String disp = StringHelper.notEmpty(obj.getObjDisp()) ? obj.getObjDisp()
+                : StringHelper.notEmpty(obj.getObjName()) ? obj.getObjName() : id;
+        sb.append("    disp: function (vars) { return ").append(jsText(disp)).append("; },\n");
+        // графический объект (VN) щёлкают по картинке, а картинок здесь нет: если у него есть
+        // действие, ссылкой становится его текст (без {ссылки} в нём), а без текста — подпись
+        // (выбор навыков в «Варваре»); подпись без действия — просто текст (надпись-картинка)
+        String text = obj.getObjText();
+        // подпись для пустой метки {}: disp, иначе первая строка текста действия (карта во
+        // «Фронтире»), иначе имя — как PlayerEngine.sceneLabel
+        String objLabel = StringHelper.notEmpty(obj.getObjDisp()) ? obj.getObjDisp() : firstLine(obj.getObjActStart());
+        if (objLabel.isEmpty()) {
+            objLabel = StringHelper.notEmpty(obj.getObjName()) ? obj.getObjName() : id;
+        }
+        text = text.replace(OBJ_LABEL_MARK, objLabel);
+        if (obj.isGraphical()) {
+            String label = StringHelper.notEmpty(text) ? text : obj.getObjDisp();
+            if (obj.hasAction() && !text.contains("class=\"nlb_obj\"") && StringHelper.notEmpty(label)) {
+                text = objectLink(id, label);
+            } else if (StringHelper.isEmpty(text) && StringHelper.notEmpty(label)) {
+                text = label;
+            }
+        }
+        sb.append("    text: function (vars) { return ").append(jsText(text)).append("; },\n");
+        if (StringHelper.notEmpty(obj.getObjActStart())) {
+            sb.append("    acttext: function (vars) { return ").append(jsText(obj.getObjActStart())).append("; },\n");
+        }
+        sb.append("    mods: function (vars) { ").append(obj.getObjModifications()).append(obj.getObjVariable()).append("},\n");
+        sb.append("    use: function (vars, target) { ");
+        for (UseBuildingBlocks use : obj.getUseBuildingBlocks()) {
+            final boolean hasSuccess = StringHelper.notEmpty(use.getUseSuccessText());
+            final boolean constrained = StringHelper.notEmpty(use.getUseConstraint());
+            sb.append("if (target === '").append(use.getUseTarget()).append("') { ");
+            if (constrained) {
+                sb.append("if (").append(use.getUseConstraint()).append(") { ");
+            }
+            if (hasSuccess) {
+                sb.append("NLB.sayp(vars, ").append(jsText(use.getUseSuccessText())).append("); NLB.printed = true; ");
+            }
+            sb.append(use.getUseModifications()).append(use.getUseVariable());
+            if (constrained) {
+                if (hasSuccess && StringHelper.notEmpty(use.getUseFailureText())) {
+                    sb.append("} else { NLB.sayp(vars, ").append(jsText(use.getUseFailureText())).append("); NLB.printed = true; ");
+                }
+                sb.append("} ");
+            }
+            sb.append("} ");
+        }
+        sb.append("},\n");
+        if (StringHelper.notEmpty(obj.getObjNouse())) {
+            sb.append("    nouse: function (vars) { return ").append(jsText(obj.getObjNouse())).append("; },\n");
+        }
+        if (StringHelper.notEmpty(obj.getObjConstraint())) {
+            sb.append("    visible: function (vars) { return (").append(obj.getObjConstraint()).append("); },\n");
+        }
+        if (StringHelper.notEmpty(common)) {
+            sb.append("    common: '").append(common).append("',\n");
+        }
+        if (obj.isCallback()) {
+            sb.append("    callback: true,\n");
+        }
+        if (obj.isTakable()) {
+            // decorateObjTak: взять общий объект, если он переносимый, иначе этот
+            Boolean commonTakable = StringHelper.notEmpty(common) ? takable.get(common) : null;
+            sb.append("    take: '").append(commonTakable != null && commonTakable ? common : id).append("',\n");
+        }
+        sb.append("    id: '").append(id).append("'\n");
+        sb.append("};\n");
+        return sb.toString();
+    }
+
+    /** Первая непустая строка текста (строки — через <br/>) */
+    private static String firstLine(String text) {
+        if (text != null) {
+            for (String line : text.split("<br/>")) {
+                if (!line.replaceAll("<[^>]*>", "").strip().isEmpty()) {
+                    return line.strip();
+                }
+            }
+        }
+        return EMPTY_STRING;
+    }
+
+    /** Ссылка на объект в тексте: щелчок — NLB.click (действие или применение выбранного предмета) */
+    private static String objectLink(String objId, String label) {
+        return "<a href=\"#\" class=\"nlb_obj\" onclick=\"return NLB.click('act', '" + objId + "')\">" + label + "</a>";
     }
 
     /**
@@ -418,22 +637,89 @@ public class JSIQ2ExportManager extends XMLExportManager {
                 .replace("\r", "").replace("\n", "\\n");
     }
 
-    private String createObjsMap(List<ObjBuildingBlocks> objsBlocks) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("vars.itemNames = {").append(LINE_SEPARATOR);
-        for (ObjBuildingBlocks objBlocks : objsBlocks) {
-            builder.append("'").append(objBlocks.getObjLabel()).append("': ");
-            builder.append("'").append(jsString(objBlocks.getObjDisp())).append("',").append(LINE_SEPARATOR);
+    @Override
+    protected String decorateObjDisp(String dispText, boolean imageEnabled, boolean isGraphicalObj) {
+        // картинок в экспорте нет; переменные — метками (см. jsText)
+        return dispText == null ? EMPTY_STRING : dispText;
+    }
+
+    // --- части объекта (ExportManager.createObjBuildingBlocks): без них ExportManager отдаёт
+    // пустые строки, и раньше у объектов jsIQ2 не было ни описаний, ни действий
+
+    /**
+     * Описание объекта в сцене: часть в {фигурных скобках} — ссылка на объект (как в INSTEAD).
+     * Пустая метка {} в INSTEAD — картинка объекта (флажки настроек «Фронтира»), а картинок здесь
+     * нет: ссылкой становится первая непустая строка рядом, а без неё — подпись объекта (как
+     * подпись объекта в Java-плеере, PlayerEngine.sceneLabel)
+     */
+    @Override
+    protected String decorateObjText(String objId, String objName, boolean suppressDsc, String objText, boolean imageEnabled, boolean isGraphicalObj) {
+        if (suppressDsc || StringHelper.isEmpty(objText)) {
+            return EMPTY_STRING;
         }
-        builder.append("'dummy': 'dummy'").append(LINE_SEPARATOR).append("}");
-        return builder.toString();
+        if (EMPTY_LINK.matcher(objText).find()) {
+            String[] lines = EMPTY_LINK.matcher(objText).replaceAll("").split("<br/>", -1);
+            for (int i = 0; i < lines.length; i++) {
+                String line = lines[i];
+                // strip, а не trim: trim срезал бы и метки переменных (VAR_MARK — управляющий символ)
+                String visible = line.replaceAll("<[^>]*>", "").strip();
+                if (!visible.isEmpty()) {
+                    String label = line.strip();
+                    int start = line.indexOf(label);
+                    lines[i] = line.substring(0, start) + objectLink(objId, label)
+                            + line.substring(start + label.length());
+                    return String.join("<br/>", lines);
+                }
+            }
+            return String.join("<br/>", lines) + objectLink(objId, OBJ_LABEL_MARK);
+        }
+        return objText.replaceAll("\\{([^}]*)\\}",
+                java.util.regex.Matcher.quoteReplacement(objectLink(objId, "\u0002")).replace("\u0002", "$1"));
     }
 
     @Override
-    protected String decorateObjDisp(String dispText, boolean imageEnabled, boolean isGraphicalObj) {
-        // TODO: resolve imageEnabled case
-        // TODO: resolve variables output
-        return dispText;
+    protected String decorateObjActStart(String actTextExpanded, String commonObjId) {
+        return actTextExpanded == null ? EMPTY_STRING : actTextExpanded;
+    }
+
+    @Override
+    protected String decorateObjNouse(String nouseTextExpanded) {
+        return nouseTextExpanded == null ? EMPTY_STRING : nouseTextExpanded;
+    }
+
+    @Override
+    protected String decorateObjConstraint(String constraintValue) {
+        return constraintValue;
+    }
+
+    @Override
+    protected String decorateObjModifications(String modificationsText) {
+        return modificationsText;
+    }
+
+    @Override
+    protected String decorateObjVariable(String variableName) {
+        return "vars." + variableName + " = true; ";
+    }
+
+    @Override
+    protected String decorateContainedObjId(String containedObjId) {
+        return containedObjId;
+    }
+
+    @Override
+    protected String decorateUseTarget(String targetId) {
+        return targetId;
+    }
+
+    @Override
+    protected String decorateUseModifications(String modificationsText) {
+        return modificationsText;
+    }
+
+    @Override
+    protected String decorateUseVariable(String variableName) {
+        return "vars." + variableName + " = true; ";
     }
 
     @Override
@@ -475,7 +761,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateIfHave(String objId, String objVar) {
-        return "if (checkItem({'name': " + inventoryKey(objId, objVar) + "})) { ";
+        return "if (NLB.has(vars, " + objectKey(objId, objVar) + ")) { ";
     }
 
     @Override
@@ -525,35 +811,39 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateDelObj(String destinationId, final String destinationName, String objectId, String objectVar, String objectName, String objectDisplayName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        if (objectId == null || destinationName != null) {
+            return EMPTY_STRING;  // объект или место из переменной — не поддерживается
+        }
+        // без места — из текущей страницы (here() в INSTEAD)
+        String destination = destinationId != null ? "'" + destinationId + "'" : "NLB.here()";
+        return "if (NLB.where(vars, '" + objectId + "') === " + destination + ") { NLB.place(vars, '" + objectId + "', ''); } ";
     }
 
     /**
-     * Ключ предмета в инвентаре (выражение JavaScript): id объекта, а если объект задан переменной
-     * (id при экспорте неизвестен) — значение этой переменной во время игры. Раньше второй случай
-     * ронял экспорт (NullPointerException, например на «Фронтире»).
+     * Объект (выражение JavaScript): id объекта, а если объект задан переменной (id при экспорте
+     * неизвестен) — значение этой переменной во время игры. Раньше второй случай ронял экспорт
+     * (NullPointerException, например на «Фронтире»).
      */
-    private String inventoryKey(String objectId, String objectVar) {
-        return (objectId != null) ? "'" + decorateId(objectId) + "'" : "String(" + objectVar + ")";
+    private static String objectKey(String objectId, String objectVar) {
+        return (objectId != null) ? "'" + objectId + "'" : "String(" + objectVar + ")";
     }
 
     @Override
     protected String decorateDelInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        String id = inventoryKey(objectId, objectVar);
-        return "if (checkItem({'name': " + id + "})) { removeItem({'name': " + id + "}); }; ";
+        String id = objectKey(objectId, objectVar);
+        return "if (NLB.has(vars, " + id + ")) { NLB.place(vars, " + id + ", ''); } ";
     }
 
     @Override
     protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName, boolean unique) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // без места — в текущую страницу (here() в INSTEAD)
+        String destination = destinationId != null ? "'" + destinationId + "'" : "NLB.here()";
+        return "NLB.place(vars, " + objectKey(objectId, objectVar) + ", " + destination + "); ";
     }
 
     @Override
     protected String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        String id = inventoryKey(objectId, objectVar);
-        return "if (!checkItem({'name': " + id + "})) { addItem({'name': " + id + "}); }; ";
+        return "NLB.place(vars, " + objectKey(objectId, objectVar) + ", NLB.INV); ";
     }
 
     @Override
@@ -672,9 +962,10 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateGoToOperation(String locationId) {
-        // Переход — через глобальный скрипт nlbGoto (см. createNlbGotoScript); return прерывает
-        // остальные модификации, как в INSTEAD
-        return "nlbGoto({to: '" + getJsiqArticleId(locationId) + "'}); return; ";
+        // Статья для перехода — в vars.nlb_goto: действие (do_i) делает её своей целью, поэтому GOTO
+        // важнее цели ссылки, как в INSTEAD; после модификаций страницы и действия с объектом на
+        // неё переходят onload и NLB.click. return прерывает остальные модификации
+        return "NLB.go(vars, '" + getJsiqArticleId(locationId) + "'); return; ";
     }
 
     @Override
@@ -685,14 +976,13 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateCountGetOperation(String variableName, int statType) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // счётчики действий игрока по видам (как PlayerContext.countGet): inv 1, act 2, use 4, walk 8
+        return variableName + " = NLB.countGet(vars, " + statType + "); ";
     }
 
     @Override
     protected String decorateCountResetOperation() {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "NLB.countReset(vars); ";
     }
 
     @Override
@@ -733,32 +1023,34 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decoratePRNOperation(String variableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // вывод значения выражения в ответ, без перевода строки
+        return "NLB.say(vars, String(" + variableName + ")); ";
     }
 
     @Override
     protected String decorateDSCOperation(String resultVariableName, String dscObjVariable, String dscObjId) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return resultVariableName + " = NLB.text(vars, " + objectKey(dscObjId, dscObjVariable) + "); ";
     }
 
     @Override
     protected String decoratePDscOperation(String objVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // объект задан именем (vars.имя): его id — в NLB.names
+        String name = objVariableName.startsWith("vars.") ? objVariableName.substring(5) : objVariableName;
+        return "NLB.sayp(vars, NLB.text(vars, NLB.names['" + jsString(name) + "'] || '')); ";
     }
 
     @Override
     protected String decoratePDscsOperation(String objId, String objVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        if (objId == null) {
+            return EMPTY_STRING;  // объект из переменной — не поддерживается
+        }
+        // описания объектов внутри объекта
+        return "NLB.sayp(vars, NLB.showIn(vars, '" + objId + "')); ";
     }
 
     @Override
     protected String decorateActOperation(String actingObjVariable, String actingObjId) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "NLB.act(vars, " + objectKey(actingObjId, actingObjVariable) + "); if (vars." + GOTO_VAR + " != null) { return; } ";
     }
 
     @Override
@@ -775,8 +1067,10 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateUseOperation(String sourceVariable, String sourceId, String targetVariable, String targetId) {
-        // TODO: implement
-        return EMPTY_STRING;
+        if (sourceId == null || targetId == null) {
+            return EMPTY_STRING;  // объект из переменной — не поддерживается
+        }
+        return "NLB.useOn(vars, '" + sourceId + "', '" + targetId + "'); if (vars." + GOTO_VAR + " != null) { return; } ";
     }
 
     @Override
@@ -950,16 +1244,29 @@ public class JSIQ2ExportManager extends XMLExportManager {
         return Constants.EMPTY_STRING;
     }
 
+    @Override
     protected String expandVariables(List<TextChunk> textChunks, Theme theme) {
+        return expandVariables(textChunks);
+    }
+
+    /**
+     * Переменная в тексте — меткой: в тексте статьи она становится span (html), в тексте объекта
+     * — значением во время игры (jsText). Раньше в тексте оставалось «$имя$»
+     */
+    @Override
+    protected String expandVariables(List<TextChunk> textChunks) {
         StringBuilder result = new StringBuilder();
         for (final TextChunk textChunk : textChunks) {
             switch (textChunk.getType()) {
                 case TEXT:
-                    result.append(textChunk.getText());
+                    // '^' — перевод строки INSTEAD: так пишут тексты книг, которые играют в INSTEAD
+                    // («Фронтир»), и так же их показывает Java-плеер
+                    result.append(textChunk.getText().replace("^", " <br/>" + getLineSeparator()));
                     break;
                 case ACTION_TEXT:
+                    break;
                 case VARIABLE:
-                    result.append("$").append(textChunk.getText()).append("$");
+                    result.append(VAR_MARK).append(textChunk.getText()).append(VAR_MARK);
                     break;
                 case NEWLINE:
                     result.append(" <br/>").append(getLineSeparator());

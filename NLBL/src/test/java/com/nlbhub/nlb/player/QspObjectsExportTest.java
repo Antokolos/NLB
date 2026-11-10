@@ -98,4 +98,24 @@ public class QspObjectsExportTest {
         String qsp = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_16LE).replace("\r\n", "\n");
         assertTrue(qsp, qsp.contains("'It''s &lt;b&gt; &amp; ''quoted'''"));
     }
+
+    /**
+     * Графический объект (VN): картинок нет, поэтому если у него есть действие, ссылкой EXEC
+     * становится его текст, а надпись-картинка без действия — просто текст
+     */
+    @Test
+    public void graphicalObjects() throws Exception {
+        TestBook b = new TestBook();
+        PageImpl hall = b.page("Навыки.");
+        ObjImpl skill = b.obj(hall, "skill", "Грамотность – читать надписи.", "Грамотность", true);
+        skill.setGraphical(true);
+        ObjImpl label = b.obj(hall, "label", "", "ВЫБЕРИТЕ НАВЫК", false);
+        label.setGraphical(true);
+        File file = new File(m_temp.getRoot(), "gfx.txt");
+        b.nlb.exportToQSPTextFile(file);
+        String qsp = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_16LE).replace("\r\n", "\n");
+        assertTrue(qsp, qsp.contains("#nlb_o_" + skill.getId() + "_text\n'<a href=\"EXEC:GOSUB ''nlb_act'', ''"
+                + skill.getId() + "''\">Грамотность – читать надписи.</a>'\n-\n"));
+        assertTrue(qsp, qsp.contains("#nlb_o_" + label.getId() + "_text\n'ВЫБЕРИТЕ НАВЫК'\n-\n"));
+    }
 }
