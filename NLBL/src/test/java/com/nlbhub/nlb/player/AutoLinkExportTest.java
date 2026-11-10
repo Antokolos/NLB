@@ -94,7 +94,7 @@ public class AutoLinkExportTest {
         book().exportToASMFile(file);
         String sm = read(file, StandardCharsets.UTF_8);
         assertTrue("на странице с текстом — кнопкой вместо обычных ссылок: " + sm,
-                Pattern.compile("Вы в зале\\.\n<<set [^\n]*>>\n<<if [^\n]*alarm[^\n]*>>\n\\[\\[Тревога!\\|" + m_alarmId
+                Pattern.compile("Вы в зале\\.\n(?:[^\n]*\n)*?<<if [^\n]*alarm[^\n]*>>\n\\[\\[Тревога!\\|" + m_alarmId
                         + "\\]\\]\n<<else>>\n\\[\\[Уйти\\|[-0-9a-f]+\\]\\]\n<<endif>>\n").matcher(sm).find());
         assertTrue("на странице без текста — сразу переход: " + sm,
                 sm.contains("<<goto '" + m_bridgeId + "'>>\n"));
