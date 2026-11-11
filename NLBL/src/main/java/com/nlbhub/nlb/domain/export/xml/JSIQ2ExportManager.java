@@ -173,7 +173,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
                         .append(" : '").append(linkBlocks.getTargetPageNumber() - 1).append("'; vars.")
                         .append(GOTO_VAR).append(" = null; ")
                         .append(showArticleLater("to"))
-                        .append("return; ");
+                        .append("return true; ");
                 if (!condition.isEmpty()) {
                     autosStringBuilder.append("} ");
                 }
@@ -216,19 +216,25 @@ public class JSIQ2ExportManager extends XMLExportManager {
         if (hasAutoLinks) {
             Script autoLinkScript = new Script();
             autoLinkScript.setType("autos");
-            autoLinkScript.setValue(autosStringBuilder.toString());
+            autoLinkScript.setValue(autosStringBuilder.append("return false;").toString());
             article.addScript(autoLinkScript);
         }
         // Модификации страницы — в preload: плеер выполняет его до вывода текста и действий,
         // поэтому условия ссылок и текстов видят уже изменённые переменные (как в INSTEAD).
         // Действие с объектом показывает статью заново (NLB.click, vars.nlb_redraw) — уже без
         // модификаций входа. nlbInit — общий код NLB (глобальный скрипт первой статьи).
+        // Таймер страницы (tvarid): обнуляется при входе после модификаций (initf), +1 за ход
+        // игрока на странице — повторный показ после действия; переход на страницу — не тик
+        boolean hasTimer = pageBlocks.isHasPageTimer();
         Script preload = new Script();
         preload.setType("preload");
         preload.setValue(
-                "nlbInit(); if (vars." + REDRAW_VAR + ") { vars." + REDRAW_VAR + " = false; } else { "
+                "nlbInit(); if (vars." + REDRAW_VAR + ") { vars." + REDRAW_VAR + " = false; "
+                        + (hasTimer ? pageBlocks.getPageTimerVariable() : Constants.EMPTY_STRING)
+                        + "} else { "
                         + (hasPageModifications ? "pmod(); " : Constants.EMPTY_STRING)
                         + (hasPageVariable ? "pvar(); " : Constants.EMPTY_STRING)
+                        + (hasTimer ? pageBlocks.getPageTimerVariableInit() : Constants.EMPTY_STRING)
                         + "}"
         );
         article.addScript(preload);
@@ -242,13 +248,42 @@ public class JSIQ2ExportManager extends XMLExportManager {
         onLoadScript.setValue(
                 "NLB.turn(vars); if (vars." + GOTO_VAR + " != null) { var to = vars." + GOTO_VAR + "; vars." + GOTO_VAR
                         + " = null; " + showArticleLater("to") + "return; } "
-                        + (hasAutoLinks ? "autos(); " : Constants.EMPTY_STRING)
+                        + (hasAutoLinks ? "if (autos()) { return; } " : Constants.EMPTY_STRING)
+                        + timerWait(pageBlocks)
         );
         article.addScript(onLoadScript);
         article.addText(new Text("<div class=\"nlb_scene\"></div>"));
         article.addText(new Text("<div class=\"nlb_reply\"></div>"));
         article.addText(new Text("<div class=\"nlb_inv\"></div>"));
         return article;
+    }
+
+    /**
+     * Выбирать нечего (ни одна обычная ссылка не доступна), а автоссылки ждут таймера — время
+     * проматывается, как в плеере (PlayerEngine.autoWaitTicks): тик за тиком, пока не сработает
+     * автоссылка
+     */
+    private String timerWait(PageBuildingBlocks pageBlocks) {
+        if (!pageBlocks.isHasPageTimer() || pageBlocks.getTimerWaitTicks() <= 0) {
+            return Constants.EMPTY_STRING;
+        }
+        boolean hasAuto = false;
+        StringBuilder any = new StringBuilder();
+        for (LinkBuildingBlocks linkBlocks : pageBlocks.getLinksBuildingBlocks()) {
+            if (linkBlocks.isAuto()) {
+                hasAuto = true;
+            } else if (StringHelper.isEmpty(linkBlocks.getLinkConstraint())) {
+                return Constants.EMPTY_STRING;
+            } else {
+                any.append(any.length() > 0 ? " || " : "").append("(").append(linkBlocks.getLinkConstraint()).append(")");
+            }
+        }
+        if (!hasAuto) {
+            return Constants.EMPTY_STRING;
+        }
+        return (any.length() > 0 ? "if (!(" + any + ")) " : Constants.EMPTY_STRING)
+                + "{ for (var nlb_w = 0; nlb_w < " + pageBlocks.getTimerWaitTicks() + "; nlb_w++) { "
+                + pageBlocks.getPageTimerVariable() + "if (autos()) { return; } } } ";
     }
 
     /** Переменная jsIQ, в которой модификации оставляют статью для перехода (GOTO) */
@@ -1191,14 +1226,13 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decoratePageTimerVariableInit(final String variableName) {
-        // TODO: implement and use
-        return Constants.EMPTY_STRING;
+        return StringHelper.isEmpty(variableName) ? Constants.EMPTY_STRING : decorateNumberVar(variableName) + " = 0; ";
     }
 
     @Override
     protected String decoratePageTimerVariable(final String variableName) {
-        // TODO: implement and use
-        return Constants.EMPTY_STRING;
+        return StringHelper.isEmpty(variableName) ? Constants.EMPTY_STRING
+                : decorateNumberVar(variableName) + " = " + decorateNumberVar(variableName) + " + 1; ";
     }
 
     @Override

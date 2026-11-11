@@ -616,10 +616,17 @@ public class ASMExportManager extends TextExportManager {
         // Модификации страницы — до текста (как enter в INSTEAD: текст показывает уже изменённые
         // переменные; раньше они шли после текста). Действие с объектом показывает страницу заново
         // ($nlb_redraw) — уже без модификаций входа.
-        stringBuilder.append("<<set $nlb_page = \"").append(pageId).append("\">><<if $nlb_redraw eq 1>><<set $nlb_redraw = 0>><<else>>")
+        // Таймер страницы (tvarid): обнуляется при входе после модификаций (initf), +1 за ход
+        // игрока на странице — повторный показ после действия; переход на страницу — не тик
+        final boolean hasTimer = pageBlocks.isHasPageTimer();
+        stringBuilder.append("<<set $nlb_page = \"").append(pageId).append("\">><<if $nlb_redraw eq 1>><<set $nlb_redraw = 0>>")
+                .append(hasTimer ? pageBlocks.getPageTimerVariable() : "").append("<<else>>")
                 .append(LINE_SEPARATOR);
         stringBuilder.append(pageBlocks.getPageModifications());
         stringBuilder.append(pageBlocks.getPageVariable());
+        if (hasTimer) {
+            stringBuilder.append(pageBlocks.getPageTimerVariableInit());
+        }
         stringBuilder.append("<<endif>>").append(LINE_SEPARATOR);
         stringBuilder.append("<<display 'nlb_turn'>>").append(LINE_SEPARATOR);
         stringBuilder.append(pageBlocks.getPageCaption());
@@ -635,18 +642,14 @@ public class ASMExportManager extends TextExportManager {
         // текстом переход — единственной кнопкой (текст страницы, которую сразу покидают, должен
         // быть виден, как в плеере), а на странице без текста — сразу <<goto>>.
         // Получается <<if а1>>…<<elseif а2>>…<<else>>обычные ссылки<<endif>>.
+        stringBuilder.append(timerWait(pageBlocks));
         int openIfs = 0;
         boolean unconditionalAuto = false;
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             if (!linkBlocks.isAuto()) {
                 continue;
             }
-            String constraint = linkBlocks.getLinkConstraint();
-            if (linkBlocks.isNeedsAction()) {
-                // has_action(): автоссылка ждёт, пока игрок сделает нужное число действий
-                String hasAction = "($" + ACTION_COUNT_VAR + " >= " + getNeedsActionCount() + ")";
-                constraint = StringHelper.isEmpty(constraint) ? hasAction : "(" + constraint + ") and " + hasAction;
-            }
+            String constraint = autoConstraint(linkBlocks);
             final boolean hasConstraint = !StringHelper.isEmpty(constraint);
             if (hasConstraint) {
                 stringBuilder.append(openIfs == 0 ? "<<if " : "<<elseif ")
@@ -673,6 +676,48 @@ public class ASMExportManager extends TextExportManager {
         }
         stringBuilder.append(pageBlocks.getPageEnd());
         return stringBuilder.toString();
+    }
+
+    /** Условие автоссылки; у «needs action» — и has_action(): нужное число действий игрока */
+    private String autoConstraint(LinkBuildingBlocks linkBlocks) {
+        String constraint = linkBlocks.getLinkConstraint();
+        if (linkBlocks.isNeedsAction()) {
+            String hasAction = "($" + ACTION_COUNT_VAR + " >= " + getNeedsActionCount() + ")";
+            constraint = StringHelper.isEmpty(constraint) ? hasAction : "(" + constraint + ") and " + hasAction;
+        }
+        return constraint;
+    }
+
+    /**
+     * Выбирать нечего (ни одна обычная ссылка не доступна), а автоссылки ждут таймера — время
+     * проматывается, как в плеере (PlayerEngine.autoWaitTicks): тик за тиком, пока условие
+     * какой-нибудь автоссылки не станет истинным; сам переход — дальше, как обычно
+     */
+    private String timerWait(PageBuildingBlocks pageBlocks) {
+        if (!pageBlocks.isHasPageTimer() || pageBlocks.getTimerWaitTicks() <= 0) {
+            return Constants.EMPTY_STRING;
+        }
+        StringBuilder autos = new StringBuilder();
+        StringBuilder any = new StringBuilder();
+        for (LinkBuildingBlocks linkBlocks : pageBlocks.getLinksBuildingBlocks()) {
+            if (linkBlocks.isAuto()) {
+                String constraint = autoConstraint(linkBlocks);
+                if (StringHelper.isEmpty(constraint)) {
+                    return Constants.EMPTY_STRING;  // безусловная — ждать нечего
+                }
+                autos.append(autos.length() > 0 ? " or " : "").append("(").append(constraint).append(")");
+            } else if (StringHelper.isEmpty(linkBlocks.getLinkConstraint())) {
+                return Constants.EMPTY_STRING;
+            } else {
+                any.append(any.length() > 0 ? " or " : "").append("(").append(linkBlocks.getLinkConstraint()).append(")");
+            }
+        }
+        if (autos.length() == 0) {
+            return Constants.EMPTY_STRING;
+        }
+        String loop = "<<loop " + pageBlocks.getTimerWaitTicks() + ">><<if " + autos + ">><<break>><<endif>>"
+                + pageBlocks.getPageTimerVariable().strip() + "<<endloop>>";
+        return (any.length() > 0 ? "<<if !(" + any + ")>>" + loop + "<<endif>>" : loop) + LINE_SEPARATOR;
     }
 
     private String autoTransition(PageBuildingBlocks pageBlocks, LinkBuildingBlocks linkBlocks) {
@@ -829,14 +874,14 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageTimerVariableInit(final String variableName) {
-        // TODO: implement and use
-        return Constants.EMPTY_STRING;
+        return StringHelper.isEmpty(variableName) ? Constants.EMPTY_STRING
+                : "<<set " + decorateNumberVar(variableName) + " = 0>>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decoratePageTimerVariable(final String variableName) {
-        // TODO: implement and use
-        return Constants.EMPTY_STRING;
+        return StringHelper.isEmpty(variableName) ? Constants.EMPTY_STRING
+                : "<<set " + decorateNumberVar(variableName) + " = " + decorateNumberVar(variableName) + " + 1>>";
     }
 
     @Override
