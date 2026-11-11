@@ -79,7 +79,7 @@ public class ASMExportManager extends TextExportManager {
     /** Язык книги — для подписи кнопки автоссылки без текста */
     private String m_language = "en";
 
-    /** Место «инвентарь» в $nlb_in_N */
+    /** Место «инвентарь» в $nlb_in[N] */
     private static final String INVENTORY = "nlb_inv";
     /** Метка номера объекта до сборки текста: id -> номер (generateNLBText) */
     private static final String KEY_MARK = "\u0001nlb_key:";
@@ -100,6 +100,9 @@ public class ASMExportManager extends TextExportManager {
         return KEY_MARK + objId + END_MARK;
     }
 
+    /** Теги страниц по умолчанию (var { tag = … } в INSTEAD): id страницы -> тег */
+    private final java.util.Map<String, String> m_pageDefaultTags = new java.util.LinkedHashMap<>();
+
     public ASMExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
         super(nlb, encoding);
     }
@@ -114,6 +117,12 @@ public class ASMExportManager extends TextExportManager {
         appendSystemPassage(preamble, "StoryAuthor", nlbBuildingBlocks.getAuthor());
         m_gameInvText = escapeMarkup(nlbBuildingBlocks.getGameInvText());
         m_gameNouseText = escapeMarkup(nlbBuildingBlocks.getGameNouseText());
+        m_pageDefaultTags.clear();
+        for (PageBuildingBlocks page : nlbBuildingBlocks.getPagesBuildingBlocks()) {
+            if (StringHelper.notEmpty(page.getPageDefaultTag())) {
+                m_pageDefaultTags.put(page.getPageId(), page.getPageDefaultTag());
+            }
+        }
         preamble.append(servicePassages());
         return preamble.toString();
     }
@@ -121,7 +130,7 @@ public class ASMExportManager extends TextExportManager {
     /**
      * Служебные абзацы объектов. Объектов в AXMA нет, есть переменные, &lt;&lt;display&gt;&gt; (вывести
      * абзац на месте — подпрограмма) и &lt;&lt;goto&gt;&gt; (перейти, прерывая абзац). Объекты книги
-     * пронумерованы: место объекта N — $nlb_in_N (id страницы или объекта-контейнера, «nlb_inv» —
+     * пронумерованы: место объекта N — $nlb_in[N] (id страницы или объекта-контейнера, «nlb_inv» —
      * инвентарь, "" — нигде), порядок предметов инвентаря — массив $nlb_invo (в каком их брали, как
      * в INSTEAD). На странице после текста — объекты (nlb_show_in), ответ на действие (nlb_reply) и
      * инвентарь (nlb_inv). Щелчок по объекту — ссылка [[текст|nlb_act {$nlb_o = N}]]: действие или
@@ -141,9 +150,19 @@ public class ASMExportManager extends TextExportManager {
         sb.append("<<set $nlb_cnt_prev = 0>><<set $nlb_sel = 0>><<set $nlb_o = 0>><<set $nlb_o2 = 0>><<set $nlb_t = 0>>")
                 .append("<<set $nlb_printed = 0>><<set $nlb_reply = \"\">><<set $nlb_redraw = 0>><<set $nlb_page = \"\">>")
                 .append("<<set $nlb_where = \"\">><<set $nlb_ws = \"\">><<set $nlb_p = \"\">><<set $nlb_d = \"\">>")
-                .append("<<set $nlb_i = 0>><<set $nlb_diff = 0>><<set $nlb_invo = []>>");
+                .append("<<set $nlb_i = 0>><<set $nlb_diff = 0>><<set $nlb_invo = []>><<set $nlb_in = []>>")
+                .append("<<set $nlb_lists = {}>><<set $nlb_tags = {}>><<set $nlb_j = 0>><<set $nlb_v = 0>><<set $nlb_c = \"\">>")
+                .append("<<set $nlb_ln = \"\">><<set $nlb_ln2 = \"\">><<set $nlb_ok = 0>><<set $nlb_k = 0>><<set $nlb_a = []>>");
         for (ObjBuildingBlocks obj : m_orderedObjs) {
-            sb.append("<<set $nlb_in_").append(m_keys.get(obj.getObjId())).append(" = \"").append(obj.getContainerId()).append("\">>");
+            int n = m_keys.get(obj.getObjId());
+            sb.append("<<set $nlb_in[").append(n).append("] = \"").append(obj.getContainerId()).append("\">>");
+            if (StringHelper.notEmpty(obj.getObjDefaultTagVariable())) {
+                sb.append("<<set $nlb_tags[").append(n).append("] = ").append(jsText(obj.getObjDefaultTagVariable())).append(">>");
+            }
+        }
+        // теги по умолчанию страниц (var { tag = … } в INSTEAD)
+        for (java.util.Map.Entry<String, String> deftag : m_pageDefaultTags.entrySet()) {
+            sb.append("<<set $nlb_tags[\"").append(deftag.getKey()).append("\"] = ").append(jsText(deftag.getValue())).append(">>");
         }
         sb.append(ls).append(ls);
         // объекты места $nlb_where — каждый строкой, в порядке книги
@@ -151,7 +170,7 @@ public class ASMExportManager extends TextExportManager {
         sb.append("<<set $nlb_ws = $nlb_where>>").append(ls);
         for (ObjBuildingBlocks obj : m_orderedObjs) {
             int n = m_keys.get(obj.getObjId());
-            sb.append("<<if $nlb_in_").append(n).append(" eq $nlb_where>><<display 'nlb_o_").append(n).append("_dsc'>><<endif>>").append(ls);
+            sb.append("<<if $nlb_in[").append(n).append("] eq $nlb_where>><<display 'nlb_o_").append(n).append("_dsc'>><<endif>>").append(ls);
         }
         sb.append(ls);
         // конец хода: callback-объекты, если игрок с прошлого хода что-то сделал (update_action_count)
@@ -166,6 +185,30 @@ public class ASMExportManager extends TextExportManager {
             }
         }
         sb.append("<<endif>><<set $nlb_cnt_prev = $nlb_diff>>").append(ls).append(ls);
+        // CLEAR, CLRINV: всё содержимое контейнера $nlb_c — никуда
+        sb.append(":: nlb_clear[::]10-10-0").append(ls);
+        sb.append("<<set $nlb_j = 0>><<loop $nlb_in.length>><<if $nlb_in[$nlb_j] eq $nlb_c>>").append(place("$nlb_j", "\"\""))
+                .append("<<endif>><<set $nlb_j = $nlb_j + 1>><<endloop>>").append(ls).append(ls);
+        // OBJS: содержимое контейнера $nlb_c — в начало списка $nlb_ln (push каждого — обратный порядок)
+        sb.append(":: nlb_objs[::]10-10-0").append(ls);
+        sb.append(ensureList("$nlb_ln")).append("<<set $nlb_j = 0>><<loop $nlb_in.length>><<if $nlb_in[$nlb_j] eq $nlb_c>>")
+                .append("<<set $nlb_lists[$nlb_ln].unshift($nlb_j)>><<endif>><<set $nlb_j = $nlb_j + 1>><<endloop>>")
+                .append(dropEmptyList("$nlb_ln")).append(ls).append(ls);
+        // ADDALL: элементы списка $nlb_ln — в начало списка $nlb_ln2 или (объекты) в контейнер $nlb_c
+        sb.append(":: nlb_addall[::]10-10-0").append(ls);
+        sb.append(ensureList("$nlb_ln")).append("<<if $nlb_ln2 neq \"\">>").append(ensureList("$nlb_ln2")).append("<<endif>>")
+                // <<loop>> не принимает индекс в скобках ($ASM is not defined) — массив через $nlb_a
+                .append("<<set $nlb_a = $nlb_lists[$nlb_ln]>><<set $nlb_j = 0>><<loop $nlb_a.length>><<set $nlb_v = $nlb_a[$nlb_j]>>")
+                .append("<<if $nlb_ln2 neq \"\">><<set $nlb_lists[$nlb_ln2].unshift($nlb_v)>><<else>>")
+                .append("<<set $nlb_ok = ($nlb_in[$nlb_v] !== undefined) ? 1 : 0>><<if $nlb_ok eq 1>>").append(place("$nlb_v", "$nlb_c"))
+                .append("<<endif>><<endif>><<set $nlb_j = $nlb_j + 1>><<endloop>>").append(dropEmptyList("$nlb_ln"))
+                .append("<<if $nlb_ln2 neq \"\">>").append(dropEmptyList("$nlb_ln2")).append("<<endif>>").append(ls).append(ls);
+        // SHUFFLE (Фишер — Йейтс) списка $nlb_ln
+        sb.append(":: nlb_shuffle[::]10-10-0").append(ls);
+        sb.append(ensureList("$nlb_ln")).append("<<set $nlb_a = $nlb_lists[$nlb_ln]>><<set $nlb_j = $nlb_a.length - 1>><<loop $nlb_a.length>>")
+                .append("<<if $nlb_j gt 0>><<set $nlb_k = Math.floor(Math.random() * ($nlb_j + 1))>><<set $nlb_v = $nlb_a[$nlb_j]>>")
+                .append("<<set $nlb_a[$nlb_j] = $nlb_a[$nlb_k]>><<set $nlb_a[$nlb_k] = $nlb_v>><<endif>>")
+                .append("<<set $nlb_j = $nlb_j - 1>><<endloop>>").append(dropEmptyList("$nlb_ln")).append(ls).append(ls);
         sb.append(":: nlb_reply[::]10-10-0").append(ls);
         sb.append("<<if $nlb_reply neq \"\">><<print $nlb_reply>><<set $nlb_reply = \"\">><<endif>>").append(ls).append(ls);
         // инвентарь: предметы кнопками, выбранный для применения — с «» »
@@ -250,11 +293,57 @@ public class ASMExportManager extends TextExportManager {
      * $nlb_page), с порядком инвентаря $nlb_invo
      */
     private static String place(String key, String dest) {
-        return "<<if ($nlb_in_" + key + " eq \"" + INVENTORY + "\") and (" + dest + " neq \"" + INVENTORY + "\")>>"
+        return "<<if ($nlb_in[" + key + "] eq \"" + INVENTORY + "\") and (" + dest + " neq \"" + INVENTORY + "\")>>"
                 + "<<set $nlb_invo.splice($nlb_invo.indexOf(" + key + "), 1)>><<endif>>"
-                + "<<if ($nlb_in_" + key + " neq \"" + INVENTORY + "\") and (" + dest + " eq \"" + INVENTORY + "\")>>"
+                + "<<if ($nlb_in[" + key + "] neq \"" + INVENTORY + "\") and (" + dest + " eq \"" + INVENTORY + "\")>>"
                 + "<<set $nlb_invo.push(" + key + ")>><<endif>>"
-                + "<<set $nlb_in_" + key + " = " + dest + ">>";
+                + "<<set $nlb_in[" + key + "] = " + dest + ">>";
+    }
+
+    /**
+     * Списки — массивы в словаре $nlb_lists (nlb.lua: push/pop — начало, inject/eject — конец).
+     * Опустевший список исчезает (undefined: «delete» в &lt;&lt;set&gt;&gt; AXMA не принимает)
+     */
+    private static String ensureList(String nameExpr) {
+        return "<<set $nlb_lists[" + nameExpr + "] = $nlb_lists[" + nameExpr + "] ? $nlb_lists[" + nameExpr + "] : []>>";
+    }
+
+    private static String dropEmptyList(String nameExpr) {
+        String l = "$nlb_lists[" + nameExpr + "]";
+        return "<<set " + l + " = (" + l + " && " + l + ".length) ? " + l + " : undefined>>";
+    }
+
+    /** Имя списка строкой: "$имя" (переменная AXMA) -> "\"имя\"" */
+    private static String listKey(String listVariable) {
+        return "\"" + (listVariable.startsWith("$") ? listVariable.substring(1) : listVariable) + "\"";
+    }
+
+    /**
+     * Объект операции: известный — его номер, из переменной — её значение (номер объекта или id
+     * страницы), без них — сам («s» в INSTEAD: номер объекта или id страницы)
+     */
+    private String objRef(String objId, String objVar) {
+        if (objId != null) {
+            return key(objId);
+        }
+        if (StringHelper.notEmpty(objVar)) {
+            return objVar;
+        }
+        return selfIsObj() ? key(selfId()) : "\"" + selfId() + "\"";
+    }
+
+    /** Переменная AXMA как выражение ($имя) */
+    private static String objVar(String var) {
+        return var.startsWith("$") ? var : "$" + var;
+    }
+
+    private static String inPlace(String ref) {
+        return "$nlb_in[" + ref + "]";
+    }
+
+    /** Переменная из decorateBooleanVar «($имя == 1)» -> «$имя» */
+    private static String plainVar(String decorated) {
+        return decorated.replaceAll("^\\((\\$.*) == 1\\)$", "$1");
     }
 
     private static void appendSystemPassage(StringBuilder builder, String title, String text) {
@@ -421,8 +510,8 @@ public class ASMExportManager extends TextExportManager {
         if (!text.isEmpty()) {
             sb.append(text).append(ls);
         }
-        sb.append("<<set $nlb_where = \"").append(id).append("\">><<display 'nlb_show_in'>><<set $nlb_where = $nlb_in_")
-                .append(n).append(">>").append(ls);
+        sb.append("<<set $nlb_where = \"").append(id).append("\">><<display 'nlb_show_in'>><<set $nlb_where = $nlb_in[")
+                .append(n).append("]>>").append(ls);
         if (constrained) {
             sb.append("<<endif>>").append(ls);
         }
@@ -970,14 +1059,13 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateTag(final String variable, final String objId, final String tag) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "<<set $nlb_tags[" + objRef(objId, variable) + "] = " + jsText(tag) + ">>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateGetTagOperation(String resultingVariable, String objId, String objVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        String t = "$nlb_tags[" + objRef(objId, objVariableName) + "]";
+        return "<<set " + resultingVariable + " = (" + t + " !== undefined) ? " + t + " : \"\">>" + LINE_SEPARATOR;
     }
 
     @Override
@@ -998,9 +1086,9 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateIfHave(String objId, String objVar) {
-        // место объекта — $nlb_in_N (объект из переменной экспорт не отслеживает: его нет)
+        // место объекта — $nlb_in[N] (объект из переменной — его номер в ней)
         m_openBlocks.push(Boolean.FALSE);
-        return "<<if " + (objId != null ? "$nlb_in_" + key(objId) + " eq \"" + INVENTORY + "\"" : "false") + ">>" + LINE_SEPARATOR;
+        return "<<if " + inPlace(objRef(objId, objVar)) + " eq \"" + INVENTORY + "\">>" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1028,8 +1116,7 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateHaveOperation(String variableName, String objId, String objVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "<<set " + plainVar(variableName) + " = (" + inPlace(objRef(objId, objVar)) + " == \"" + INVENTORY + "\") ? 1 : 0>>" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1040,62 +1127,63 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateContainerOperation(String variableName, String objId, String objVar) {
-        // TODO: implement
-        return Constants.EMPTY_STRING;
+        // контейнер объекта (страница или объект); инвентарь и «нигде» — false
+        String in = inPlace(objRef(objId, objVar));
+        return "<<set " + variableName + " = (" + in + " && " + in + " != \"" + INVENTORY + "\") ? " + in + " : false>>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateGetIdOperation(final String variableName, final String objId, final String objVar) {
-        // TODO: implement
-        return Constants.EMPTY_STRING;
+        // прототип: клонов в экспорте нет — сам объект
+        return "<<set " + variableName + " = " + objRef(objId, objVar) + ">>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateDelObj(String destinationId, final String destinationName, String objectId, String objectVar, String objectName, String objectDisplayName) {
-        if (objectId == null || destinationName != null) {
-            return EMPTY_STRING;  // объект или место из переменной — не поддерживается
+        String ref = objRef(objectId, objectVar);
+        if (destinationName != null) {
+            // место — список: nlb:rmv(список, obj), и объект — никуда
+            String key = listKey(destinationName);
+            String l = "$nlb_lists[" + key + "]";
+            return "<<set $nlb_j = " + l + " ? " + l + ".indexOf(" + ref + ") : -1>><<if $nlb_j gt -1>><<set " + l
+                    + ".splice($nlb_j, 1)>><<endif>>" + dropEmptyList(key) + place(ref, "\"\"") + LINE_SEPARATOR;
         }
         // без места — из текущей страницы (here() в INSTEAD)
         String destination = destinationId != null ? "\"" + destinationId + "\"" : "$nlb_page";
-        return "<<if $nlb_in_" + key(objectId) + " eq " + destination + ">>" + place(key(objectId), "\"\"") + "<<endif>>" + LINE_SEPARATOR;
+        return "<<if " + inPlace(ref) + " eq " + destination + ">>" + place(ref, "\"\"") + "<<endif>>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateDelInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        if (objectId == null) {
-            return EMPTY_STRING;  // объект из переменной — не поддерживается
-        }
-        return "<<if $nlb_in_" + key(objectId) + " eq \"" + INVENTORY + "\">>" + place(key(objectId), "\"\"") + "<<endif>>" + LINE_SEPARATOR;
+        String ref = objRef(objectId, objectVar);
+        return "<<if " + inPlace(ref) + " eq \"" + INVENTORY + "\">>" + place(ref, "\"\"") + "<<endif>>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName, boolean unique) {
-        if (objectId == null) {
-            return EMPTY_STRING;  // объект из переменной — не поддерживается
-        }
-        // без места — на текущую страницу (here() в INSTEAD)
-        String destination = destinationId != null ? "\"" + destinationId + "\"" : "$nlb_page";
-        return place(key(objectId), destination) + LINE_SEPARATOR;
+        // без получателя — в себя (страницу или объект-контейнер; s в INSTEAD)
+        String destination = "\"" + (destinationId != null ? destinationId : selfId()) + "\"";
+        return place(objRef(objectId, objectVar), destination) + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        if (objectId == null) {
-            return EMPTY_STRING;  // объект из переменной — не поддерживается
-        }
-        return place(key(objectId), "\"" + INVENTORY + "\"") + LINE_SEPARATOR;
+        return place(objRef(objectId, objectVar), "\"" + INVENTORY + "\"") + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName, boolean unique) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // в контейнер, в список или (без получателя) — в себя
+        String container = destinationId != null ? destinationId : selfId();
+        return "<<set $nlb_ln = " + listKey(sourceListVariableName) + ">><<set $nlb_ln2 = "
+                + (destinationListVariableName != null ? listKey(destinationListVariableName) : "\"\"")
+                + ">><<set $nlb_c = \"" + container + "\">><<display 'nlb_addall'>>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateObjsOperation(String listVariableName, String srcObjId, String objectVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "<<set $nlb_c = " + (srcObjId != null ? "\"" + srcObjId + "\"" : objVar(objectVar)) + ">><<set $nlb_ln = "
+                + listKey(listVariableName) + ">><<display 'nlb_objs'>>" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1118,8 +1206,8 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateSPushOperation(String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        String l = listKey(listVariableName);
+        return ensureList(l) + "<<set $nlb_lists[" + l + "].unshift(" + objRef(null, null) + ")>>" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1130,50 +1218,55 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decoratePushOperation(String listVariableName, String objectId, String objectVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        String l = listKey(listVariableName);
+        return ensureList(l) + "<<set $nlb_lists[" + l + "].unshift(" + (objectId != null ? key(objectId) : objectVar) + ")>>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decoratePopOperation(String variableName, String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        String l = "$nlb_lists[" + listKey(listVariableName) + "]";
+        return "<<set " + variableName + " = (" + l + " && " + l + ".length) ? " + l + ".shift() : false>>"
+                + dropEmptyList(listKey(listVariableName)) + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateSInjectOperation(String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        String l = listKey(listVariableName);
+        return ensureList(l) + "<<set $nlb_lists[" + l + "].push(" + objRef(null, null) + ")>>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateInjectOperation(String listVariableName, String objectId, String objectVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        String l = listKey(listVariableName);
+        return ensureList(l) + "<<set $nlb_lists[" + l + "].push(" + (objectId != null ? key(objectId) : objectVar) + ")>>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateEjectOperation(String variableName, String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        String l = "$nlb_lists[" + listKey(listVariableName) + "]";
+        return "<<set " + variableName + " = (" + l + " && " + l + ".length) ? " + l + ".pop() : false>>"
+                + dropEmptyList(listKey(listVariableName)) + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateClearOperation(String destinationId, String destinationVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        if (destinationId != null) {
+            return "<<set $nlb_c = \"" + destinationId + "\">><<display 'nlb_clear'>>" + LINE_SEPARATOR;
+        } else if (destinationVar != null) {
+            return "<<set $nlb_lists[" + listKey(destinationVar) + "] = undefined>>" + LINE_SEPARATOR;  // nlb:clear(список)
+        }
+        return "<<set $nlb_c = $nlb_page>><<display 'nlb_clear'>>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateClearInvOperation() {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "<<set $nlb_c = \"" + INVENTORY + "\">><<display 'nlb_clear'>>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateSizeOperation(String variableName, String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        String l = "$nlb_lists[" + listKey(listVariableName) + "]";
+        return "<<set " + variableName + " = " + l + " ? " + l + ".length : 0>>" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1261,8 +1354,7 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateShuffleOperation(String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "<<set $nlb_ln = " + listKey(listVariableName) + ">><<display 'nlb_shuffle'>>" + LINE_SEPARATOR;
     }
 
     @Override

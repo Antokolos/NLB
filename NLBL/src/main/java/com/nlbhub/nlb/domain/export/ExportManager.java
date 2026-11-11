@@ -355,6 +355,7 @@ public abstract class ExportManager {
 
     private void inferStringTypes() {
         List<String[]> assignments = new ArrayList<>();
+        inferObjectReferences();
         for (ExportData exportData : m_exportDataMap.values()) {
             NonLinearBook book = exportData.getNlb();
             List<ModifyingItem> items = new ArrayList<>();
@@ -2469,6 +2470,156 @@ public abstract class ExportManager {
         return variable;
     }
 
+    /**
+     * Переменные-ссылки на объект или страницу (QSP различает строки и числа): в них снимают
+     * элемент списка объектов (POP, EJECT), их передают вместо объекта (TAG, ADD, REMOVE, HAVE…),
+     * в них возвращают контейнер и прототип (CNTNR, ID, CLONE). Список — «список объектов», если в
+     * него кладут объект (PUSH/INJECT с именем объекта или ссылкой), себя (SPUSH, WPUSH, SINJECT),
+     * содержимое контейнера (OBJS) или список объектов (ADDALL). До неподвижной точки
+     */
+    private void inferObjectReferences() {
+        List<Object[]> mods = new ArrayList<>();  // {тип, имя переменной, значение выражения, ExportData}
+        for (ExportData exportData : m_exportDataMap.values()) {
+            NonLinearBook book = exportData.getNlb();
+            List<ModifyingItem> items = new ArrayList<>();
+            for (Page page : book.getPages().values()) {
+                items.add(page);
+                items.addAll(page.getLinks());
+            }
+            for (Obj obj : book.getObjs().values()) {
+                items.add(obj);
+                items.addAll(obj.getLinks());
+            }
+            for (ModifyingItem item : items) {
+                for (Modification modification : item.getModifications()) {
+                    if (modification.isDeleted()) {
+                        continue;
+                    }
+                    Variable variable = StringHelper.isEmpty(modification.getVarId()) ? null : book.getVariableById(modification.getVarId());
+                    Variable expression = StringHelper.isEmpty(modification.getExprId()) ? null : book.getVariableById(modification.getExprId());
+                    mods.add(new Object[]{
+                            modification.getType(),
+                            variable != null ? variable.getName() : null,
+                            expression != null && expression.getValue() != null ? expression.getValue().trim() : null,
+                            exportData
+                    });
+                }
+            }
+        }
+        java.util.Set<String> objectLists = new java.util.HashSet<>();
+        java.util.Set<String> objectVars = new java.util.HashSet<>();
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            for (Object[] mod : mods) {
+                Modification.Type type = (Modification.Type) mod[0];
+                String var = (String) mod[1];
+                String expr = (String) mod[2];
+                ExportData exportData = (ExportData) mod[3];
+                boolean exprIsObj = expr != null && isPlainName(expr)
+                        && (exportData.getObjId(expr) != null || objectVars.contains(expr));
+                boolean exprIsRef = expr != null && isPlainName(expr) && exportData.getObjId(expr) == null;
+                boolean varIsRef = var != null && exportData.getObjId(var) == null;
+                switch (type) {
+                    case SPUSH:
+                    case WPUSH:
+                    case SINJECT:
+                        changed |= expr != null && objectLists.add(expr);
+                        break;
+                    case OBJS:
+                        changed |= var != null && objectLists.add(var);
+                        changed |= exprIsRef && objectVars.add(expr);
+                        break;
+                    case PUSH:
+                    case INJECT:
+                        if (exprIsObj) {
+                            changed |= var != null && objectLists.add(var);
+                        }
+                        break;
+                    case ADDALL:
+                    case ADDALLU:
+                        if (expr != null && objectLists.contains(expr) && varIsRef) {
+                            changed |= objectLists.add(var);
+                        }
+                        break;
+                    case POP:
+                    case EJECT:
+                        if (expr != null && objectLists.contains(expr) && var != null) {
+                            changed |= objectVars.add(var);
+                        }
+                        break;
+                    case TAG:
+                        changed |= varIsRef && objectVars.add(var);
+                        break;
+                    case ADD:
+                    case ADDU:
+                    case ADDINV:
+                    case REMOVE:
+                    case RMINV:
+                    case HAVE:
+                    case GETTAG:
+                    case CNTNR:
+                    case ID:
+                    case CLONE:
+                        changed |= exprIsRef && objectVars.add(expr);
+                        if ((type == Modification.Type.CNTNR || type == Modification.Type.ID
+                                || type == Modification.Type.CLONE) && var != null) {
+                            changed |= objectVars.add(var);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        for (String var : objectVars) {
+            Variable.DataType type = m_dataTypeMap.get(var);
+            if (type == null || type == Variable.DataType.AUTO) {
+                m_dataTypeMap.put(var, Variable.DataType.STRING);
+            }
+        }
+        m_objectLists = objectLists;
+    }
+
+    /** Списки объектов (см. inferObjectReferences; заполняется только при shouldInferStringTypes) */
+    private java.util.Set<String> m_objectLists = new java.util.HashSet<>();
+
+    /** Список хранит объекты или страницы (а не числа и строки) */
+    protected boolean isObjectList(String listName) {
+        return m_objectLists.contains(listName);
+    }
+
+    /** Тип переменной книги (после вывода типов); AUTO, если неизвестен */
+    protected Variable.DataType variableDataType(String name) {
+        Variable.DataType type = m_dataTypeMap.get(name);
+        return type != null ? type : Variable.DataType.AUTO;
+    }
+
+    /**
+     * Id того, чьи модификации сейчас собираются («s» в INSTEAD): страница или объект; у ссылки
+     * — страница или объект, которым она принадлежит. Нужен TAG, GETTAG, SPUSH, SINJECT без
+     * объекта и ADD без получателя
+     */
+    protected String selfId() {
+        return m_selfId;
+    }
+
+    private String m_selfId = Constants.EMPTY_STRING;
+    private boolean m_selfIsObj = false;
+
+    /** «Сам» (см. selfId) — объект, а не страница */
+    protected boolean selfIsObj() {
+        return m_selfIsObj;
+    }
+
+    private static String selfIdOf(Modification modification) {
+        IdentifiableItem parent = modification.getParent();
+        if (parent instanceof Link) {
+            parent = parent.getParent();
+        }
+        return parent != null ? parent.getId() : Constants.EMPTY_STRING;
+    }
+
     private String decorateAutoVar(String constraintVar) {
         return decorateNumberVar(constraintVar);
     }
@@ -2478,7 +2629,7 @@ public abstract class ExportManager {
     /**
      * Значение — просто имя переменной (или объекта), а не константа и не выражение
      */
-    private static boolean isPlainName(final String value) {
+    protected static boolean isPlainName(final String value) {
         if (value == null) {
             return false;
         }
@@ -2504,6 +2655,10 @@ public abstract class ExportManager {
         for (final Modification modification : modifications) {
             final boolean shouldUse = !modification.isExternal() || ((modulePage != null) && modulePage.isModuleExternal());
             if (!modification.isDeleted() && shouldUse) {
+                m_selfId = selfIdOf(modification);
+                IdentifiableItem selfItem = modification.getParent() instanceof Link
+                        ? modification.getParent().getParent() : modification.getParent();
+                m_selfIsObj = selfItem instanceof Obj;
                 stringBuilder.append(indentString);
                 Variable variable = (
                         StringHelper.isEmpty(modification.getVarId())

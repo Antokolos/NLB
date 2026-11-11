@@ -114,6 +114,18 @@ public class QSPExportManager extends TextExportManager {
             ObjBuildingBlocks obj = objs.get(i);
             sb.append("$nlb_objs[").append(i).append("] = '").append(obj.getObjId()).append("'").append(LINE_SEPARATOR);
             sb.append("$nlb_in['").append(obj.getObjId()).append("'] = '").append(obj.getContainerId()).append("'").append(LINE_SEPARATOR);
+            sb.append("nlb_isobj['").append(obj.getObjId()).append("'] = 1").append(LINE_SEPARATOR);
+            if (StringHelper.notEmpty(obj.getObjDefaultTagVariable())) {
+                sb.append("$nlb_tag['").append(obj.getObjId()).append("'] = '").append(qspString(obj.getObjDefaultTagVariable()))
+                        .append("'").append(LINE_SEPARATOR);
+            }
+        }
+        // теги по умолчанию (var { tag = … } в INSTEAD): GETTAG без явного TAG возвращает их
+        for (PageBuildingBlocks page : pages) {
+            if (StringHelper.notEmpty(page.getPageDefaultTag())) {
+                sb.append("$nlb_tag['").append(page.getPageId()).append("'] = '").append(qspString(page.getPageDefaultTag()))
+                        .append("'").append(LINE_SEPARATOR);
+            }
         }
         if (!pages.isEmpty()) {
             sb.append("GOTO '").append(pages.get(0).getPageId()).append("'").append(LINE_SEPARATOR);
@@ -220,6 +232,105 @@ public class QSPExportManager extends TextExportManager {
             "END",
             "$nlb_in[$ARGS[0]] = $ARGS[1]",
             LOC_END,
+            // Списки (nlb.lua: push/pop — начало, inject/eject — конец): элементы — строки
+            // $nlb_li['имя,i'] (0 — начало), длина — nlb_ln['имя']; объект или страница — id,
+            // число — строкой ($STR), при снятии в числовую переменную — VAL
+            "#nlb_lpush",
+            "LOCAL nlb_k",
+            "nlb_k = nlb_ln[$ARGS[0]]",
+            "LOOP WHILE nlb_k > 0:",
+            "    $nlb_li[$ARGS[0] + ',' + $STR(nlb_k)] = $nlb_li[$ARGS[0] + ',' + $STR(nlb_k - 1)]",
+            "    nlb_k = nlb_k - 1",
+            "END",
+            "$nlb_li[$ARGS[0] + ',0'] = $ARGS[1]",
+            "nlb_ln[$ARGS[0]] = nlb_ln[$ARGS[0]] + 1",
+            LOC_END,
+            "#nlb_linject",
+            "$nlb_li[$ARGS[0] + ',' + $STR(nlb_ln[$ARGS[0]])] = $ARGS[1]",
+            "nlb_ln[$ARGS[0]] = nlb_ln[$ARGS[0]] + 1",
+            LOC_END,
+            "#nlb_lpop",
+            "LOCAL nlb_k",
+            "$RESULT = ''",
+            "IF nlb_ln[$ARGS[0]] > 0:",
+            "    $RESULT = $nlb_li[$ARGS[0] + ',0']",
+            "    nlb_k = 1",
+            "    LOOP WHILE nlb_k < nlb_ln[$ARGS[0]]:",
+            "        $nlb_li[$ARGS[0] + ',' + $STR(nlb_k - 1)] = $nlb_li[$ARGS[0] + ',' + $STR(nlb_k)]",
+            "        nlb_k = nlb_k + 1",
+            "    END",
+            "    nlb_ln[$ARGS[0]] = nlb_ln[$ARGS[0]] - 1",
+            "END",
+            LOC_END,
+            "#nlb_leject",
+            "$RESULT = ''",
+            "IF nlb_ln[$ARGS[0]] > 0:",
+            "    nlb_ln[$ARGS[0]] = nlb_ln[$ARGS[0]] - 1",
+            "    $RESULT = $nlb_li[$ARGS[0] + ',' + $STR(nlb_ln[$ARGS[0]])]",
+            "END",
+            LOC_END,
+            // nlb:rmv — первое вхождение
+            "#nlb_lrmv",
+            "LOCAL nlb_k, nlb_f",
+            "nlb_k = 0",
+            "nlb_f = -1",
+            "LOOP WHILE nlb_k < nlb_ln[$ARGS[0]] AND nlb_f < 0:",
+            "    IF $nlb_li[$ARGS[0] + ',' + $STR(nlb_k)] = $ARGS[1]: nlb_f = nlb_k",
+            "    nlb_k = nlb_k + 1",
+            "END",
+            "IF nlb_f >= 0:",
+            "    nlb_k = nlb_f + 1",
+            "    LOOP WHILE nlb_k < nlb_ln[$ARGS[0]]:",
+            "        $nlb_li[$ARGS[0] + ',' + $STR(nlb_k - 1)] = $nlb_li[$ARGS[0] + ',' + $STR(nlb_k)]",
+            "        nlb_k = nlb_k + 1",
+            "    END",
+            "    nlb_ln[$ARGS[0]] = nlb_ln[$ARGS[0]] - 1",
+            "END",
+            LOC_END,
+            // Фишер — Йейтс
+            "#nlb_lshuffle",
+            "LOCAL nlb_k, nlb_j, $nlb_v",
+            "nlb_k = nlb_ln[$ARGS[0]] - 1",
+            "LOOP WHILE nlb_k > 0:",
+            "    nlb_j = RAND(0, nlb_k)",
+            "    $nlb_v = $nlb_li[$ARGS[0] + ',' + $STR(nlb_k)]",
+            "    $nlb_li[$ARGS[0] + ',' + $STR(nlb_k)] = $nlb_li[$ARGS[0] + ',' + $STR(nlb_j)]",
+            "    $nlb_li[$ARGS[0] + ',' + $STR(nlb_j)] = $nlb_v",
+            "    nlb_k = nlb_k - 1",
+            "END",
+            LOC_END,
+            // OBJS: содержимое контейнера ARGS[1] — в начало списка ARGS[0] (push каждого — обратный порядок)
+            "#nlb_lobjs",
+            "LOCAL nlb_i",
+            "nlb_i = 0",
+            "LOOP WHILE nlb_i < nlb_objs_n:",
+            "    IF $nlb_in[$nlb_objs[nlb_i]] = $ARGS[1]: GOSUB 'nlb_lpush', $ARGS[0], $nlb_objs[nlb_i]",
+            "    nlb_i = nlb_i + 1",
+            "END",
+            LOC_END,
+            // ADDALL: элементы списка ARGS[0] — в контейнер ARGS[1] или в начало списка ARGS[2]
+            "#nlb_laddall",
+            "LOCAL nlb_k, $nlb_v",
+            "nlb_k = 0",
+            "LOOP WHILE nlb_k < nlb_ln[$ARGS[0]]:",
+            "    $nlb_v = $nlb_li[$ARGS[0] + ',' + $STR(nlb_k)]",
+            "    IF $ARGS[2] <> '':",
+            "        GOSUB 'nlb_lpush', $ARGS[2], $nlb_v",
+            "    ELSEIF nlb_isobj[$nlb_v] = 1:",
+            "        GOSUB 'nlb_place', $nlb_v, $ARGS[1]",
+            "    END",
+            "    nlb_k = nlb_k + 1",
+            "END",
+            LOC_END,
+            // CLEAR, CLRINV: всё содержимое контейнера (страницы, инвентаря) — никуда
+            "#nlb_clear",
+            "LOCAL nlb_i",
+            "nlb_i = 0",
+            "LOOP WHILE nlb_i < nlb_objs_n:",
+            "    IF $nlb_in[$nlb_objs[nlb_i]] = $ARGS[0]: GOSUB 'nlb_place', $nlb_objs[nlb_i], ''",
+            "    nlb_i = nlb_i + 1",
+            "END",
+            LOC_END,
             "#nlb_inv_sync",
             "LOCAL nlb_i, nlb_j, $nlb_n, $nlb_id",
             "nlb_i = 0",
@@ -243,6 +354,44 @@ public class QSPExportManager extends TextExportManager {
 
     private String m_gameInvText = EMPTY_STRING;
     private String m_gameNouseText = EMPTY_STRING;
+
+    /**
+     * Объект операции: известный — 'id', из переменной (ссылка на объект или страницу; строковая,
+     * см. inferObjectReferences) — $имя, без них — сам («s» в INSTEAD)
+     */
+    private String objRef(String objId, String objVar) {
+        if (objId != null) {
+            return "'" + objId + "'";
+        }
+        if (StringHelper.notEmpty(objVar)) {
+            return objVar.startsWith("$") ? objVar : "$" + objVar;
+        }
+        return "'" + selfId() + "'";
+    }
+
+    /** Элемент списка — строка: объект — id, переменная — значение (число — $STR), выражение — $STR(…) */
+    private String listValue(String objectId, String objectVar) {
+        if (objectId != null) {
+            return "'" + objectId + "'";
+        }
+        String value = objectVar.trim();
+        if (isPlainName(value)) {
+            return variableDataType(value) == Variable.DataType.STRING ? "$" + value : "$STR(" + value + ")";
+        }
+        if (value.startsWith("'") || value.startsWith("\"") || value.startsWith("$")) {
+            return value;
+        }
+        return "$STR(" + value + ")";
+    }
+
+    /** POP/EJECT: в строковую переменную — как есть, в числовую — VAL (из пустого списка — '' и 0) */
+    private String listResult(String variableName, String location, String listVariableName) {
+        String call = "$FUNC('" + location + "', '" + listVariableName + "')";
+        if (variableDataType(variableName) == Variable.DataType.STRING) {
+            return "$" + variableName + " = " + call + LINE_SEPARATOR;
+        }
+        return variableName + " = VAL(" + call + ")" + LINE_SEPARATOR;
+    }
 
     /** Текст внутри строки QSP в апострофах (HTML-экранирование — как у текста книги) */
     private static String qspString(String text) {
@@ -935,14 +1084,13 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateTag(final String variable, final String objId, final String tag) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // тег — $nlb_tag[id] (объекта, страницы или ссылки из переменной; без них — свой)
+        return "$nlb_tag[" + objRef(objId, variable) + "] = '" + qspString(tag) + "'" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateGetTagOperation(String resultingVariable, String objId, String objVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return resultingVariable + " = $nlb_tag[" + objRef(objId, objVariableName) + "]" + LINE_SEPARATOR;
     }
 
     @Override
@@ -986,8 +1134,10 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateHaveOperation(String variableName, String objId, String objVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // variableName — «(имя = 1)» (decorateBooleanVar)
+        String name = variableName.replaceAll("^\\((.*) = 1\\)$", "$1");
+        String obj = objRef(objId, objVar);
+        return name + " = 0" + LINE_SEPARATOR + "IF $nlb_in[" + obj + "] = '" + INVENTORY + "': " + name + " = 1" + LINE_SEPARATOR;
     }
 
     @Override
@@ -998,61 +1148,60 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateContainerOperation(String variableName, String objId, String objVar) {
-        // TODO: implement
-        return Constants.EMPTY_STRING;
+        // контейнер объекта (страница или объект); инвентарь и «нигде» — пусто
+        String result = "$" + variableName;
+        return result + " = $nlb_in[" + objRef(objId, objVar) + "]" + LINE_SEPARATOR
+                + "IF " + result + " = '" + INVENTORY + "': " + result + " = ''" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateGetIdOperation(final String variableName, final String objId, final String objVar) {
-        // TODO: implement
-        return Constants.EMPTY_STRING;
+        // прототип объекта: клонов в экспорте нет — сам объект
+        String result = variableName.startsWith("$") ? variableName : "$" + variableName;
+        return result + " = " + objRef(objId, objVar) + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateDelObj(String destinationId, final String destinationName, String objectId, String objectVar, String objectName, String objectDisplayName) {
-        if (objectId == null || destinationName != null) {
-            return EMPTY_STRING;  // объект или место из переменной — не поддерживается
+        String obj = objRef(objectId, objectVar);
+        if (destinationName != null) {
+            // место — список: nlb:rmv(список, obj), и объект — никуда
+            return "GOSUB 'nlb_lrmv', '" + destinationName + "', " + obj + LINE_SEPARATOR
+                    + "GOSUB 'nlb_place', " + obj + ", ''" + LINE_SEPARATOR;
         }
         String destination = destinationId != null ? "'" + destinationId + "'" : "$CURLOC";
-        return "IF $nlb_in['" + objectId + "'] = " + destination + ": GOSUB 'nlb_place', '" + objectId + "', ''" + LINE_SEPARATOR;
+        return "IF $nlb_in[" + obj + "] = " + destination + ": GOSUB 'nlb_place', " + obj + ", ''" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateDelInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        if (objectId == null) {
-            return EMPTY_STRING;  // объект из переменной — не поддерживается
-        }
-        return "IF $nlb_in['" + objectId + "'] = '" + INVENTORY + "': GOSUB 'nlb_place', '" + objectId + "', ''" + LINE_SEPARATOR;
+        String obj = objRef(objectId, objectVar);
+        return "IF $nlb_in[" + obj + "] = '" + INVENTORY + "': GOSUB 'nlb_place', " + obj + ", ''" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName, boolean unique) {
-        if (objectId == null) {
-            return EMPTY_STRING;  // объект из переменной — не поддерживается
-        }
-        // без назначения — в текущую комнату (here() в INSTEAD)
-        String destination = destinationId != null ? "'" + destinationId + "'" : "$CURLOC";
-        return "GOSUB 'nlb_place', '" + objectId + "', " + destination + LINE_SEPARATOR;
+        // без получателя — в себя (страницу или объект-контейнер; s в INSTEAD)
+        String destination = destinationId != null ? "'" + destinationId + "'" : "'" + selfId() + "'";
+        return "GOSUB 'nlb_place', " + objRef(objectId, objectVar) + ", " + destination + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        if (objectId == null) {
-            return EMPTY_STRING;  // объект из переменной — не поддерживается
-        }
-        return "GOSUB 'nlb_place', '" + objectId + "', '" + INVENTORY + "'" + LINE_SEPARATOR;
+        return "GOSUB 'nlb_place', " + objRef(objectId, objectVar) + ", '" + INVENTORY + "'" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName, boolean unique) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // в контейнер, в список или (без получателя) — в себя
+        String container = destinationId != null ? destinationId : (destinationListVariableName == null ? selfId() : "");
+        return "GOSUB 'nlb_laddall', '" + sourceListVariableName + "', '" + container + "', '"
+                + (destinationListVariableName != null ? destinationListVariableName : "") + "'" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateObjsOperation(String listVariableName, String srcObjId, String objectVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "GOSUB 'nlb_lobjs', '" + listVariableName + "', " + objRef(srcObjId, objectVar) + LINE_SEPARATOR;
     }
 
     @Override
@@ -1075,62 +1224,58 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateSPushOperation(String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "GOSUB 'nlb_lpush', '" + listVariableName + "', '" + selfId() + "'" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateWPushOperation(String listVariableName) {
-        // TODO: implement
+        // объект, с которым применяют (ww), в экспорте QSP неизвестен — не поддерживается
         return EMPTY_STRING;
     }
 
     @Override
     protected String decoratePushOperation(String listVariableName, String objectId, String objectVar) {
-        // TODO: implement adding to the arbitrary list
-        return Constants.EMPTY_STRING;
+        return "GOSUB 'nlb_lpush', '" + listVariableName + "', " + listValue(objectId, objectVar) + LINE_SEPARATOR;
     }
 
     @Override
     protected String decoratePopOperation(String variableName, String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return listResult(variableName, "nlb_lpop", listVariableName);
     }
 
     @Override
     protected String decorateSInjectOperation(String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "GOSUB 'nlb_linject', '" + listVariableName + "', '" + selfId() + "'" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateInjectOperation(String listVariableName, String objectId, String objectVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "GOSUB 'nlb_linject', '" + listVariableName + "', " + listValue(objectId, objectVar) + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateEjectOperation(String variableName, String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return listResult(variableName, "nlb_leject", listVariableName);
     }
 
     @Override
     protected String decorateClearOperation(String destinationId, String destinationVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        if (destinationId != null) {
+            return "GOSUB 'nlb_clear', '" + destinationId + "'" + LINE_SEPARATOR;
+        } else if (destinationVar != null) {
+            return "nlb_ln['" + destinationVar + "'] = 0" + LINE_SEPARATOR;  // nlb:clear(список)
+        }
+        return "GOSUB 'nlb_clear', $CURLOC" + LINE_SEPARATOR;  // текущая комната
     }
 
     @Override
     protected String decorateClearInvOperation() {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "GOSUB 'nlb_clear', '" + INVENTORY + "'" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateSizeOperation(String variableName, String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return variableName + " = nlb_ln['" + listVariableName + "']" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1233,8 +1378,7 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateShuffleOperation(String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "GOSUB 'nlb_lshuffle', '" + listVariableName + "'" + LINE_SEPARATOR;
     }
 
     @Override

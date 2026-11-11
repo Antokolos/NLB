@@ -18,7 +18,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Объекты в экспорте AXMA Story Maker: место объекта N — $nlb_in_N, объект сцены — ссылка
+ * Объекты в экспорте AXMA Story Maker: место объекта N — $nlb_in[N], объект сцены — ссылка
  * [[текст|nlb_act {$nlb_o = N}]] в абзаце nlb_o_N_dsc, переносимый — в инвентарь ($nlb_invo),
  * применение предмета к объекту — абзац nlb_o_N_use
  */
@@ -60,10 +60,10 @@ public class AsmObjectsExportTest {
     public void startAndPlaces() throws Exception {
         String sm = export();
         assertTrue(sm, sm.contains(":: Start[::]0-0-0\n<<display 'nlb_init'>>\n<<goto '" + m_hall.getId() + "'>>"));
-        assertTrue("места объектов при старте: " + sm, sm.contains("<<set $nlb_in_1 = \"" + m_hall.getId() + "\">><<set $nlb_in_2 = \""
+        assertTrue("места объектов при старте: " + sm, sm.contains("<<set $nlb_in[1] = \"" + m_hall.getId() + "\">><<set $nlb_in[2] = \""
                 + m_hall.getId() + "\">>"));
         assertTrue("объекты места — по строке: " + sm, sm.contains(":: nlb_show_in[::]10-10-0\n<<set $nlb_ws = $nlb_where>>\n"
-                + "<<if $nlb_in_1 eq $nlb_where>><<display 'nlb_o_1_dsc'>><<endif>>\n"));
+                + "<<if $nlb_in[1] eq $nlb_where>><<display 'nlb_o_1_dsc'>><<endif>>\n"));
     }
 
     @Test
@@ -86,7 +86,7 @@ public class AsmObjectsExportTest {
         String sm = export();
         assertTrue(sm, sm.contains("<<set $nlb_reply = $nlb_reply + \"Вы взяли ключ.\" + \"<br>\">>"));
         assertTrue("переносимый — в инвентарь: " + sm, sm.contains(":: nlb_o_1_act[::]10-10-0\n<<display 'nlb_o_1_acta'>>\n"
-                + "<<if ($nlb_in_1 eq \"nlb_inv\") and (\"nlb_inv\" neq \"nlb_inv\")>>"));
+                + "<<if ($nlb_in[1] eq \"nlb_inv\") and (\"nlb_inv\" neq \"nlb_inv\")>>"));
         assertTrue("применение к двери: " + sm, sm.contains("<<if $nlb_t eq 2>>\n<<set $nlb_reply = $nlb_reply + \"Дверь открылась.\""));
         assertFalse("дверь не переносимая: " + sm, sm.contains(":: nlb_o_2_act[::]10-10-0\n<<display 'nlb_o_2_acta'>>\n<<if"));
         assertTrue("кавычка в подписи — числовой сущностью (именованную AXMA раскрывает): " + sm,

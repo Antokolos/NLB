@@ -390,6 +390,30 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "    if (where !== N.INV && i >= 0) { inv.splice(i, 1); }",
             "    st[id] = where;",
             "};",
+            // Списки (nlb.lua: push/pop — начало, inject/eject — конец; опустевший список исчезает,
+            // pop из пустого — false), теги объектов и страниц (без явного — тег по умолчанию)
+            "N.list = function (vars, name) { if (!vars.nlb_lists) { vars.nlb_lists = {}; } if (!vars.nlb_lists[name]) { vars.nlb_lists[name] = []; } return vars.nlb_lists[name]; };",
+            "N.lend = function (vars, name) { if (vars.nlb_lists && vars.nlb_lists[name] && !vars.nlb_lists[name].length) { delete vars.nlb_lists[name]; } };",
+            "N.push = function (vars, name, v) { N.list(vars, name).unshift(v); };",
+            "N.inject = function (vars, name, v) { N.list(vars, name).push(v); };",
+            "N.pop = function (vars, name) { var l = N.list(vars, name), v = l.length ? l.shift() : false; N.lend(vars, name); return v; };",
+            "N.eject = function (vars, name) { var l = N.list(vars, name), v = l.length ? l.pop() : false; N.lend(vars, name); return v; };",
+            "N.size = function (vars, name) { var v = N.list(vars, name).length; N.lend(vars, name); return v; };",
+            "N.lclear = function (vars, name) { if (vars.nlb_lists) { delete vars.nlb_lists[name]; } };",
+            "N.rmv = function (vars, name, v) { var l = N.list(vars, name), i = l.indexOf(v); if (i >= 0) { l.splice(i, 1); } N.lend(vars, name); };",
+            "N.shuffle = function (vars, name) {",
+            "    var l = N.list(vars, name);",
+            "    for (var i = l.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = l[i]; l[i] = l[j]; l[j] = t; }",
+            "    N.lend(vars, name);",
+            "};",
+            "N.objsTo = function (vars, name, cont) { for (var i = 0; i < N.order.length; i++) { if (N.where(vars, N.order[i]) === cont) { N.push(vars, name, N.order[i]); } } };",
+            "N.addAll = function (vars, src, cont, dst) {",
+            "    var l = N.list(vars, src).slice(); N.lend(vars, src);",
+            "    for (var i = 0; i < l.length; i++) { if (dst) { N.push(vars, dst, l[i]); } else { N.place(vars, String(l[i]), cont); } }",
+            "};",
+            "N.clear = function (vars, cont) { for (var i = 0; i < N.order.length; i++) { if (N.where(vars, N.order[i]) === cont) { N.place(vars, N.order[i], ''); } } };",
+            "N.setTag = function (vars, id, tag) { if (!vars.nlb_tags) { vars.nlb_tags = {}; } vars.nlb_tags[id] = tag; };",
+            "N.tag = function (vars, id) { var t = vars.nlb_tags && vars.nlb_tags[id]; return (t !== undefined && t !== null) ? t : (N.deftag[id] || ''); };",
             "N.invOrder = function (vars) { if (!vars.nlb_inv_order) { vars.nlb_inv_order = []; } return vars.nlb_inv_order; };",
             "N.where = function (vars, id) { return N.state(vars)[id] || ''; };",
             "N.has = function (vars, id) { return N.where(vars, id) === N.INV; };",
@@ -549,6 +573,21 @@ public class JSIQ2ExportManager extends XMLExportManager {
         sb.append("N.order = [").append(order).append("];\n");
         sb.append("N.start = {").append(start).append("};\n");
         sb.append("N.names = {").append(names).append("};\n");
+        // теги по умолчанию (var { tag = … } в INSTEAD)
+        StringBuilder deftags = new StringBuilder();
+        for (ObjBuildingBlocks obj : objs) {
+            if (StringHelper.notEmpty(obj.getObjDefaultTagVariable())) {
+                deftags.append(deftags.length() == 0 ? "" : ", ").append("'").append(obj.getObjId()).append("': ")
+                        .append(jsText(obj.getObjDefaultTagVariable()));
+            }
+        }
+        for (PageBuildingBlocks page : nlbBlocks.getPagesBuildingBlocks()) {
+            if (StringHelper.notEmpty(page.getPageDefaultTag())) {
+                deftags.append(deftags.length() == 0 ? "" : ", ").append("'").append(page.getPageId()).append("': ")
+                        .append(jsText(page.getPageDefaultTag()));
+            }
+        }
+        sb.append("N.deftag = {").append(deftags).append("};\n");
         for (ObjBuildingBlocks obj : objs) {
             sb.append(createObjCode(obj, takable));
         }
@@ -774,14 +813,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateTag(final String variable, final String objId, final String tag) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "NLB.setTag(vars, " + ref(objId, variable) + ", " + jsText(tag) + "); ";
     }
 
     @Override
     protected String decorateGetTagOperation(String resultingVariable, String objId, String objVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return resultingVariable + " = NLB.tag(vars, " + ref(objId, objVariableName) + "); ";
     }
 
     @Override
@@ -822,8 +859,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateHaveOperation(String variableName, String objId, String objVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return variableName + " = NLB.has(vars, " + objectKey(objId, objVar) + "); ";
     }
 
     @Override
@@ -834,24 +870,27 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateContainerOperation(String variableName, String objId, String objVar) {
-        // TODO: implement
-        return Constants.EMPTY_STRING;
+        // контейнер объекта (страница или объект); инвентарь и «нигде» — false
+        String id = objectKey(objId, objVar);
+        return variableName + " = (NLB.where(vars, " + id + ") && NLB.where(vars, " + id + ") !== NLB.INV) ? NLB.where(vars, " + id + ") : false; ";
     }
 
     @Override
     protected String decorateGetIdOperation(final String variableName, final String objId, final String objVar) {
-        // TODO: implement
-        return Constants.EMPTY_STRING;
+        // прототип: клонов в экспорте нет — сам объект
+        return variableName + " = " + objectKey(objId, objVar) + "; ";
     }
 
     @Override
     protected String decorateDelObj(String destinationId, final String destinationName, String objectId, String objectVar, String objectName, String objectDisplayName) {
-        if (objectId == null || destinationName != null) {
-            return EMPTY_STRING;  // объект или место из переменной — не поддерживается
+        String id = objectKey(objectId, objectVar);
+        if (destinationName != null) {
+            // место — список: nlb:rmv(список, obj), и объект — никуда
+            return "NLB.rmv(vars, '" + listName(destinationName) + "', " + id + "); NLB.place(vars, " + id + ", ''); ";
         }
         // без места — из текущей страницы (here() в INSTEAD)
         String destination = destinationId != null ? "'" + destinationId + "'" : "NLB.here()";
-        return "if (NLB.where(vars, '" + objectId + "') === " + destination + ") { NLB.place(vars, '" + objectId + "', ''); } ";
+        return "if (NLB.where(vars, " + id + ") === " + destination + ") { NLB.place(vars, " + id + ", ''); } ";
     }
 
     /**
@@ -859,6 +898,19 @@ public class JSIQ2ExportManager extends XMLExportManager {
      * неизвестен) — значение этой переменной во время игры. Раньше второй случай ронял экспорт
      * (NullPointerException, например на «Фронтире»).
      */
+    /** Имя списка из переменной (vars.имя -> имя): списки хранятся в vars.nlb_lists */
+    private static String listName(String listVariable) {
+        return listVariable.startsWith("vars.") ? listVariable.substring("vars.".length()) : listVariable;
+    }
+
+    /** Объект операции: известный, из переменной или (без них) сам — «s» в INSTEAD */
+    private String ref(String objectId, String objectVar) {
+        if (objectId == null && StringHelper.isEmpty(objectVar)) {
+            return "'" + selfId() + "'";
+        }
+        return objectKey(objectId, objectVar);
+    }
+
     private static String objectKey(String objectId, String objectVar) {
         return (objectId != null) ? "'" + objectId + "'" : "String(" + objectVar + ")";
     }
@@ -871,8 +923,8 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName, boolean unique) {
-        // без места — в текущую страницу (here() в INSTEAD)
-        String destination = destinationId != null ? "'" + destinationId + "'" : "NLB.here()";
+        // без получателя — в себя (страницу или объект-контейнер; s в INSTEAD)
+        String destination = "'" + (destinationId != null ? destinationId : selfId()) + "'";
         return "NLB.place(vars, " + objectKey(objectId, objectVar) + ", " + destination + "); ";
     }
 
@@ -883,14 +935,15 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName, boolean unique) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // в контейнер, в список или (без получателя) — в себя
+        String container = destinationId != null ? destinationId : selfId();
+        return "NLB.addAll(vars, '" + listName(sourceListVariableName) + "', '" + container + "', "
+                + (destinationListVariableName != null ? "'" + listName(destinationListVariableName) + "'" : "null") + "); ";
     }
 
     @Override
     protected String decorateObjsOperation(String listVariableName, String srcObjId, String objectVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "NLB.objsTo(vars, '" + listName(listVariableName) + "', " + ref(srcObjId, objectVar) + "); ";
     }
 
     @Override
@@ -913,8 +966,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateSPushOperation(String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "NLB.push(vars, '" + listName(listVariableName) + "', '" + selfId() + "'); ";
     }
 
     @Override
@@ -925,50 +977,47 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decoratePushOperation(String listVariableName, String objectId, String objectVar) {
-        // TODO: implement adding to the arbitrary list
-        return Constants.EMPTY_STRING;
+        return "NLB.push(vars, '" + listName(listVariableName) + "', " + (objectId != null ? "'" + objectId + "'" : objectVar) + "); ";
     }
 
     @Override
     protected String decoratePopOperation(String variableName, String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return variableName + " = NLB.pop(vars, '" + listName(listVariableName) + "'); ";
     }
 
     @Override
     protected String decorateSInjectOperation(String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "NLB.inject(vars, '" + listName(listVariableName) + "', '" + selfId() + "'); ";
     }
 
     @Override
     protected String decorateInjectOperation(String listVariableName, String objectId, String objectVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "NLB.inject(vars, '" + listName(listVariableName) + "', " + (objectId != null ? "'" + objectId + "'" : objectVar) + "); ";
     }
 
     @Override
     protected String decorateEjectOperation(String variableName, String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return variableName + " = NLB.eject(vars, '" + listName(listVariableName) + "'); ";
     }
 
     @Override
     protected String decorateClearOperation(String destinationId, String destinationVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        if (destinationId != null) {
+            return "NLB.clear(vars, '" + destinationId + "'); ";
+        } else if (destinationVar != null) {
+            return "NLB.lclear(vars, '" + listName(destinationVar) + "'); ";  // nlb:clear(список)
+        }
+        return "NLB.clear(vars, NLB.here()); ";
     }
 
     @Override
     protected String decorateClearInvOperation() {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "NLB.clear(vars, NLB.INV); ";
     }
 
     @Override
     protected String decorateSizeOperation(String variableName, String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return variableName + " = NLB.size(vars, '" + listName(listVariableName) + "'); ";
     }
 
     @Override
@@ -1052,8 +1101,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateShuffleOperation(String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "NLB.shuffle(vars, '" + listName(listVariableName) + "'); ";
     }
 
     @Override

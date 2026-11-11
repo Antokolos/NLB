@@ -143,6 +143,13 @@ public class URQExportManager extends TextExportManager {
         sb.append("nlb_reply=\"\"").append(LINE_SEPARATOR);
         for (int i = 0; i < objs.size(); i++) {
             sb.append("nlb_in_").append(i + 1).append("=\"").append(objs.get(i).getContainerId()).append("\"").append(LINE_SEPARATOR);
+            // номер -> id (контейнер из переменной: OBJS), признак объекта (ADDALL), тег по умолчанию
+            sb.append("nlb_id_").append(i + 1).append("=\"").append(objs.get(i).getObjId()).append("\"").append(LINE_SEPARATOR);
+            sb.append("nlb_isobj_").append(i + 1).append("=1").append(LINE_SEPARATOR);
+            if (StringHelper.notEmpty(objs.get(i).getObjDefaultTagVariable())) {
+                sb.append("nlb_tag_").append(i + 1).append("=\"").append(urqString(objs.get(i).getObjDefaultTagVariable()))
+                        .append("\"").append(LINE_SEPARATOR);
+            }
         }
         if (!pages.isEmpty()) {
             sb.append("goto ").append(pages.get(0).getPageId()).append(LINE_SEPARATOR);
@@ -229,6 +236,126 @@ public class URQExportManager extends TextExportManager {
                 "nlb_reply=\"\"",
                 "goto #%nlb_page$_turn",
                 // перенести объект nlb_po в nlb_pd (с инвентарём UrqW)
+                // Списки (nlb.lua: push/pop — начало, inject/eject — конец): имя — nlb_lname,
+                // длина — nlb_ln_<имя>, элементы — nlb_li_<имя>_<i> (0 — начало); значение — nlb_lval,
+                // снятое — nlb_lres (из пустого — 0). Счётчик nlb_k — у этих подпрограмм, nlb_m — у
+                // тех, что их вызывают
+                ":nlb_lpush",
+                "nlb_k = nlb_ln_#%nlb_lname$",
+                ":nlb_lpush_loop",
+                "if nlb_k<=0 then goto nlb_lpush_set",
+                "nlb_k1 = nlb_k-1",
+                "nlb_li_#%nlb_lname$_#nlb_k$ = nlb_li_#%nlb_lname$_#nlb_k1$",
+                "nlb_k = nlb_k-1",
+                "goto nlb_lpush_loop",
+                ":nlb_lpush_set",
+                "nlb_li_#%nlb_lname$_0 = nlb_lval",
+                "nlb_ln_#%nlb_lname$ = nlb_ln_#%nlb_lname$+1",
+                "end",
+                ":nlb_linject",
+                "nlb_k = nlb_ln_#%nlb_lname$",
+                "nlb_li_#%nlb_lname$_#nlb_k$ = nlb_lval",
+                "nlb_ln_#%nlb_lname$ = nlb_k+1",
+                "end",
+                ":nlb_lpop",
+                "nlb_lres=0",
+                "if nlb_ln_#%nlb_lname$<=0 then goto nlb_lpop_end",
+                "nlb_lres = nlb_li_#%nlb_lname$_0",
+                "nlb_k=1",
+                ":nlb_lpop_loop",
+                "if nlb_k>=nlb_ln_#%nlb_lname$ then goto nlb_lpop_done",
+                "nlb_k1 = nlb_k-1",
+                "nlb_li_#%nlb_lname$_#nlb_k1$ = nlb_li_#%nlb_lname$_#nlb_k$",
+                "nlb_k = nlb_k+1",
+                "goto nlb_lpop_loop",
+                ":nlb_lpop_done",
+                "nlb_ln_#%nlb_lname$ = nlb_ln_#%nlb_lname$-1",
+                ":nlb_lpop_end",
+                "end",
+                ":nlb_leject",
+                "nlb_lres=0",
+                "if nlb_ln_#%nlb_lname$<=0 then goto nlb_leject_end",
+                "nlb_k = nlb_ln_#%nlb_lname$-1",
+                "nlb_lres = nlb_li_#%nlb_lname$_#nlb_k$",
+                "nlb_ln_#%nlb_lname$ = nlb_k",
+                ":nlb_leject_end",
+                "end",
+                // nlb:rmv — первое вхождение nlb_lval
+                ":nlb_lrmv",
+                "nlb_k=0",
+                ":nlb_lrmv_find",
+                "if nlb_k>=nlb_ln_#%nlb_lname$ then goto nlb_lrmv_end",
+                "if nlb_li_#%nlb_lname$_#nlb_k$=nlb_lval then goto nlb_lrmv_shift",
+                "nlb_k = nlb_k+1",
+                "goto nlb_lrmv_find",
+                ":nlb_lrmv_shift",
+                "nlb_k = nlb_k+1",
+                "if nlb_k>=nlb_ln_#%nlb_lname$ then goto nlb_lrmv_cut",
+                "nlb_k1 = nlb_k-1",
+                "nlb_li_#%nlb_lname$_#nlb_k1$ = nlb_li_#%nlb_lname$_#nlb_k$",
+                "goto nlb_lrmv_shift",
+                ":nlb_lrmv_cut",
+                "nlb_ln_#%nlb_lname$ = nlb_ln_#%nlb_lname$-1",
+                ":nlb_lrmv_end",
+                "end",
+                // Фишер — Йейтс
+                ":nlb_lshuffle",
+                "nlb_k = nlb_ln_#%nlb_lname$-1",
+                ":nlb_lshuffle_loop",
+                "if nlb_k<=0 then goto nlb_lshuffle_end",
+                "nlb_k1 = nlb_k+1",
+                "nlb_j = rnd#nlb_k1$-1",
+                "nlb_lres = nlb_li_#%nlb_lname$_#nlb_k$",
+                "nlb_li_#%nlb_lname$_#nlb_k$ = nlb_li_#%nlb_lname$_#nlb_j$",
+                "nlb_li_#%nlb_lname$_#nlb_j$ = nlb_lres",
+                "nlb_k = nlb_k-1",
+                "goto nlb_lshuffle_loop",
+                ":nlb_lshuffle_end",
+                "end",
+                // OBJS: содержимое контейнера nlb_c — в начало списка nlb_lname (обратный порядок)
+                ":nlb_lobjs",
+                "nlb_m=0",
+                ":nlb_lobjs_loop",
+                "nlb_m = nlb_m+1",
+                "if nlb_m>%OBJ_COUNT% then goto nlb_lobjs_end",
+                "if nlb_in_#nlb_m$<>nlb_c then goto nlb_lobjs_loop",
+                "nlb_lval = nlb_m",
+                "proc nlb_lpush",
+                "goto nlb_lobjs_loop",
+                ":nlb_lobjs_end",
+                "end",
+                // ADDALL: элементы списка nlb_lsrc — в начало списка nlb_ldst или (объекты) в контейнер nlb_c
+                ":nlb_laddall",
+                "nlb_m=0",
+                ":nlb_laddall_loop",
+                "if nlb_m>=nlb_ln_#%nlb_lsrc$ then goto nlb_laddall_end",
+                "nlb_lval = nlb_li_#%nlb_lsrc$_#nlb_m$",
+                "nlb_m = nlb_m+1",
+                "if nlb_ldst=\"\" then goto nlb_laddall_place",
+                "nlb_lname = nlb_ldst",
+                "proc nlb_lpush",
+                "goto nlb_laddall_loop",
+                ":nlb_laddall_place",
+                "if nlb_isobj_#nlb_lval$<>1 then goto nlb_laddall_loop",
+                "nlb_po = nlb_lval",
+                "nlb_pd = nlb_c",
+                "proc nlb_place",
+                "goto nlb_laddall_loop",
+                ":nlb_laddall_end",
+                "end",
+                // CLEAR, CLRINV: всё содержимое контейнера nlb_c — никуда
+                ":nlb_clear",
+                "nlb_m=0",
+                ":nlb_clear_loop",
+                "nlb_m = nlb_m+1",
+                "if nlb_m>%OBJ_COUNT% then goto nlb_clear_end",
+                "if nlb_in_#nlb_m$<>nlb_c then goto nlb_clear_loop",
+                "nlb_po = nlb_m",
+                "nlb_pd=\"\"",
+                "proc nlb_place",
+                "goto nlb_clear_loop",
+                ":nlb_clear_end",
+                "end",
                 ":nlb_place",
                 "if nlb_in_#nlb_po$=\"" + INVENTORY + "\" then inv- nlbo_#nlb_po$",
                 "if nlb_pd=\"" + INVENTORY + "\" then goto nlb_place_inv",
@@ -238,7 +365,7 @@ public class URQExportManager extends TextExportManager {
                 "if nlb_in_#nlb_po$<>\"" + INVENTORY + "\" then inv+ nlbo_#nlb_po$",
                 "nlb_in_#nlb_po$=nlb_pd",
                 "end",
-                ""));
+                "").replace("%OBJ_COUNT%", Integer.toString(objs.size())));
         return sb.toString();
     }
 
@@ -250,6 +377,27 @@ public class URQExportManager extends TextExportManager {
     }
 
     /** Текст для строки URQ в кавычках и для pln: & — разделитель команд, " — конец строки */
+    /** Вызов подпрограммы списка: nlb_lname — имя, nlb_lval — значение */
+    private static String listCall(String proc, String listName, String value) {
+        return "nlb_lname=\"" + listName + "\"" + LINE_SEPARATOR + assignment("nlb_lval", value) + "proc " + proc + LINE_SEPARATOR;
+    }
+
+    /** «Сам» как элемент списка: объект — номер, страница — id строкой */
+    private String selfValue() {
+        return selfIsObj() ? key(selfId()) : "\"" + selfId() + "\"";
+    }
+
+    /** Объект в имени переменной (nlb_in_N, nlb_tag_N): известный — номер, из переменной — #имя$, без них — сам */
+    private String nameRef(String objId, String objVar) {
+        if (objId != null) {
+            return key(objId);
+        }
+        if (StringHelper.notEmpty(objVar)) {
+            return "#%" + objVar + "$";
+        }
+        return selfIsObj() ? key(selfId()) : selfId();
+    }
+
     private static String urqString(String text) {
         if (StringHelper.isEmpty(text)) {
             return EMPTY_STRING;
@@ -975,14 +1123,14 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateTag(final String variable, final String objId, final String tag) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // тег — nlb_tag_<номер объекта> (из переменной — её значение; без них — свой)
+        return "nlb_tag_" + nameRef(objId, variable) + "=\"" + urqString(tag) + "\"" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateGetTagOperation(String resultingVariable, String objId, String objVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // тег страницы из переменной не читается: имя с «-» UrqW разбирает как вычитание
+        return assignment(resultingVariable, "nlb_tag_" + nameRef(objId, objVariableName));
     }
 
     @Override
@@ -1002,10 +1150,10 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateIfHave(String objId, String objVar) {
-        // место объекта — nlb_in_N (объект из переменной экспорт не отслеживает: его нет)
+        // место объекта — nlb_in_N (объект из переменной — её значение, номер объекта)
         Block block = new Block(false);
         m_openBlocks.push(block);
-        String condition = objId != null ? "nlb_in_" + key(objId) + "=\"" + INVENTORY + "\"" : "0";
+        String condition = "nlb_in_" + nameRef(objId, objVar) + "=\"" + INVENTORY + "\"";
         return "if not (" + condition + ") then goto " + block.branchLabel() + LINE_SEPARATOR;
     }
 
@@ -1052,8 +1200,8 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateHaveOperation(String variableName, String objId, String objVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        String name = variableName.replaceAll("^\\((.*)\\)$", "$1").replaceAll("\\s*>\\s*0$", "").replaceAll("\\s*=\\s*1$", "").trim();
+        return name + "=0" + LINE_SEPARATOR + "if nlb_in_" + nameRef(objId, objVar) + "=\"" + INVENTORY + "\" then " + name + "=1" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1064,68 +1212,64 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateContainerOperation(String variableName, String objId, String objVar) {
-        // TODO: implement
-        return Constants.EMPTY_STRING;
+        // контейнер объекта (страница или объект); инвентарь и «нигде» — пусто
+        return assignment(variableName, "nlb_in_" + nameRef(objId, objVar))
+                + "if " + variableName + "=\"" + INVENTORY + "\" then " + variableName + "=\"\"" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateGetIdOperation(final String variableName, final String objId, final String objVar) {
-        // TODO: implement
-        return Constants.EMPTY_STRING;
+        // прототип: клонов в экспорте нет — сам объект
+        return assignment(variableName, objId != null ? key(objId) : objVar);
     }
 
     @Override
     protected String decorateDelObj(String destinationId, final String destinationName, String objectId, String objectVar, String objectName, String objectDisplayName) {
-        if (objectId == null || destinationName != null) {
-            return EMPTY_STRING;  // объект или место из переменной — не поддерживается
+        String ref = objectId != null ? key(objectId) : objectVar;
+        if (destinationName != null) {
+            // место — список: nlb:rmv(список, obj), и объект — никуда
+            return listCall("nlb_lrmv", destinationName, ref) + assignment("nlb_po", ref) + "nlb_pd=\"\"" + LINE_SEPARATOR
+                    + "proc nlb_place" + LINE_SEPARATOR;
         }
         String destination = destinationId != null ? "\"" + destinationId + "\"" : "nlb_page";
-        return "nlb_po=" + key(objectId) + LINE_SEPARATOR
-                + "nlb_pd=\"\"" + LINE_SEPARATOR
-                + "if nlb_in_" + key(objectId) + "=" + destination + " then proc nlb_place" + LINE_SEPARATOR;
+        return assignment("nlb_po", ref) + "nlb_pd=\"\"" + LINE_SEPARATOR
+                + "if nlb_in_#nlb_po$=" + destination + " then proc nlb_place" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateDelInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        if (objectId == null) {
-            return EMPTY_STRING;  // объект из переменной — не поддерживается
-        }
-        return "nlb_po=" + key(objectId) + LINE_SEPARATOR
-                + "nlb_pd=\"\"" + LINE_SEPARATOR
-                + "if nlb_in_" + key(objectId) + "=\"" + INVENTORY + "\" then proc nlb_place" + LINE_SEPARATOR;
+        return assignment("nlb_po", objectId != null ? key(objectId) : objectVar) + "nlb_pd=\"\"" + LINE_SEPARATOR
+                + "if nlb_in_#nlb_po$=\"" + INVENTORY + "\" then proc nlb_place" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName, boolean unique) {
-        if (objectId == null) {
-            return EMPTY_STRING;  // объект из переменной — не поддерживается
-        }
-        // без назначения — в текущую комнату (here() в INSTEAD)
-        return "nlb_po=" + key(objectId) + LINE_SEPARATOR
-                + "nlb_pd=" + (destinationId != null ? "\"" + destinationId + "\"" : "nlb_page") + LINE_SEPARATOR
+        // без получателя — в себя (страницу или объект-контейнер; s в INSTEAD)
+        return assignment("nlb_po", objectId != null ? key(objectId) : objectVar)
+                + "nlb_pd=\"" + (destinationId != null ? destinationId : selfId()) + "\"" + LINE_SEPARATOR
                 + "proc nlb_place" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        if (objectId == null) {
-            return EMPTY_STRING;  // объект из переменной — не поддерживается
-        }
-        return "nlb_po=" + key(objectId) + LINE_SEPARATOR
-                + "nlb_pd=\"" + INVENTORY + "\"" + LINE_SEPARATOR
-                + "proc nlb_place" + LINE_SEPARATOR;
+        return assignment("nlb_po", objectId != null ? key(objectId) : objectVar)
+                + "nlb_pd=\"" + INVENTORY + "\"" + LINE_SEPARATOR + "proc nlb_place" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName, boolean unique) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // в контейнер, в список или (без получателя) — в себя
+        String container = destinationId != null ? destinationId : selfId();
+        return "nlb_lsrc=\"" + sourceListVariableName + "\"" + LINE_SEPARATOR
+                + "nlb_ldst=\"" + (destinationListVariableName != null ? destinationListVariableName : "") + "\"" + LINE_SEPARATOR
+                + "nlb_c=\"" + container + "\"" + LINE_SEPARATOR + "proc nlb_laddall" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateObjsOperation(String listVariableName, String srcObjId, String objectVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        String container = srcObjId != null ? "\"" + srcObjId + "\"" : "nlb_id_#" + objectVar + "$";
+        return assignment("nlb_c", container) + "nlb_lname=\"" + listVariableName + "\"" + LINE_SEPARATOR
+                + "proc nlb_lobjs" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1148,8 +1292,7 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateSPushOperation(String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return listCall("nlb_lpush", listVariableName, selfValue());
     }
 
     @Override
@@ -1160,50 +1303,49 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decoratePushOperation(String listVariableName, String objectId, String objectVar) {
-        // TODO: implement adding to the arbitrary list
-        return Constants.EMPTY_STRING;
+        return listCall("nlb_lpush", listVariableName, objectId != null ? key(objectId) : objectVar);
     }
 
     @Override
     protected String decoratePopOperation(String variableName, String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "nlb_lname=\"" + listVariableName + "\"" + LINE_SEPARATOR + "proc nlb_lpop" + LINE_SEPARATOR
+                + assignment(variableName, "nlb_lres");
     }
 
     @Override
     protected String decorateSInjectOperation(String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return listCall("nlb_linject", listVariableName, selfValue());
     }
 
     @Override
     protected String decorateInjectOperation(String listVariableName, String objectId, String objectVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return listCall("nlb_linject", listVariableName, objectId != null ? key(objectId) : objectVar);
     }
 
     @Override
     protected String decorateEjectOperation(String variableName, String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "nlb_lname=\"" + listVariableName + "\"" + LINE_SEPARATOR + "proc nlb_leject" + LINE_SEPARATOR
+                + assignment(variableName, "nlb_lres");
     }
 
     @Override
     protected String decorateClearOperation(String destinationId, String destinationVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        if (destinationId != null) {
+            return "nlb_c=\"" + destinationId + "\"" + LINE_SEPARATOR + "proc nlb_clear" + LINE_SEPARATOR;
+        } else if (destinationVar != null) {
+            return "nlb_ln_" + destinationVar + "=0" + LINE_SEPARATOR;  // nlb:clear(список)
+        }
+        return "nlb_c=nlb_page" + LINE_SEPARATOR + "proc nlb_clear" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateClearInvOperation() {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "nlb_c=\"" + INVENTORY + "\"" + LINE_SEPARATOR + "proc nlb_clear" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateSizeOperation(String variableName, String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return assignment(variableName, "nlb_ln_" + listVariableName);
     }
 
     @Override
@@ -1315,8 +1457,7 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateShuffleOperation(String listVariableName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "nlb_lname=\"" + listVariableName + "\"" + LINE_SEPARATOR + "proc nlb_lshuffle" + LINE_SEPARATOR;
     }
 
     @Override

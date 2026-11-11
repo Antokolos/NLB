@@ -31,6 +31,7 @@ public class UrqObjectsExportTest {
     }
 
     private PageImpl m_hall;
+    private ObjImpl m_key;
 
     /** Зал: ключ (переносимый, «На столе {ключ}»), дверь; ключ применяется к двери; «Счёт: $score$» */
     private String export() throws Exception {
@@ -39,6 +40,7 @@ public class UrqObjectsExportTest {
         PageImpl out = b.page("Улица.");
         b.link(m_hall, out, "Выйти");
         ObjImpl key = b.obj(m_hall, "key", "На столе {ключ}.", "Ключ", true);
+        m_key = key;
         key.setActTexts(b.text("Вы взяли ключ."));
         ObjImpl door = b.obj(m_hall, "door", "Впереди {дверь}.", "Дверь", false);
         LinkImpl use = new LinkImpl(key, door.getId());
@@ -53,7 +55,7 @@ public class UrqObjectsExportTest {
     public void startAndScene() throws Exception {
         String urq = export();
         assertTrue(urq, urq.contains(":nlb_start\n"));
-        assertTrue("места объектов: " + urq, urq.contains("nlb_in_1=\"" + m_hall.getId() + "\"\nnlb_in_2=\"" + m_hall.getId() + "\"\n"));
+        assertTrue("места объектов: " + urq, urq.contains("nlb_in_1=\"" + m_hall.getId() + "\"\nnlb_id_1=\"" + m_key.getId() + "\"\nnlb_isobj_1=1\nnlb_in_2=\"" + m_hall.getId() + "\"\n"));
         assertTrue("& — не разделитель команд: " + urq, urq.contains("pln Зал ##38$ кухня."));
         assertTrue("страница — вход, показ, ход: " + urq, urq.contains("nlb_page = \"" + m_hall.getId() + "\"\nproc "
                 + m_hall.getId() + "_show\ngoto " + m_hall.getId() + "_turn\n:" + m_hall.getId() + "_show\n"));
