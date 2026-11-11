@@ -78,7 +78,7 @@ public class QspObjectsExportTest {
         assertTrue(qsp, qsp.contains("#nlb_o_" + m_key.getId() + "_dsc\nGOSUB 'nlb_o_" + m_key.getId()
                 + "_text'\nGOSUB 'nlb_show_in', '" + m_key.getId() + "'\n" + END + "\n"));
         assertTrue("страница показывает свои объекты: " + qsp,
-                qsp.contains("GOSUB 'nlb_show_in', '" + m_hall.getId() + "'\n" + END + "\n#" + m_hall.getId() + "_turn\nCLA\nGOSUB 'nlb_inv_sync'\n"));
+                qsp.contains("GOSUB 'nlb_show_in', '" + m_hall.getId() + "'\n" + END + "\n#" + m_hall.getId() + "_turn\nCLA\nGOSUB 'nlb_turn'\nGOSUB 'nlb_inv_sync'\n"));
     }
 
     @Test
@@ -91,6 +91,29 @@ public class QspObjectsExportTest {
         assertTrue("без ответа — game.nouse: " + qsp, qsp.contains("#nlb_o_" + m_door.getId() + "_nouse\n'"));
         assertFalse("дверь не переносимая: " + qsp,
                 qsp.contains("GOSUB 'nlb_place', '" + m_door.getId() + "', 'nlb_inv'"));
+    }
+
+    /**
+     * Callback-объект (часы): в конце хода, если игрок с прошлого хода что-то сделал, — его
+     * действие без «взять» (_acta), как update_action_count в INSTEAD; nlb_cnt_prev — до вызова
+     */
+    @Test
+    public void callbackObjects() throws Exception {
+        TestBook b = new TestBook();
+        PageImpl hall = b.page("Зал.");
+        PageImpl out = b.page("Улица.");
+        b.link(hall, out, "Выйти");
+        ObjImpl clock = b.obj(hall, "clock", "{Часы}.", "Часы", true);
+        clock.setActTexts(b.text("Тик."));
+        clock.setCallback(true);
+        File file = new File(m_temp.getRoot(), "cb.txt");
+        b.nlb.exportToQSPTextFile(file);
+        String qsp = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_16LE).replace("\r\n", "\n");
+        String sum = "(nlb_cnt_inv - nlb_cntr_inv) + (nlb_cnt_act - nlb_cntr_act) + (nlb_cnt_use - nlb_cntr_use) + (nlb_cnt_walk - nlb_cntr_walk)";
+        assertTrue(qsp, qsp.contains("#nlb_turn\nnlb_diff = " + sum + "\nIF nlb_diff > nlb_cnt_prev:\n"
+                + "    nlb_cnt_prev = nlb_diff\n    GOSUB 'nlb_o_" + clock.getId() + "_acta'\nEND\nnlb_cnt_prev = nlb_diff\n" + END + "\n"));
+        assertTrue("взять — только по щелчку: " + qsp, qsp.contains("#nlb_o_" + clock.getId() + "_act\nGOSUB 'nlb_o_"
+                + clock.getId() + "_acta'\n"));
     }
 
     @Test

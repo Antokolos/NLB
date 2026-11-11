@@ -122,6 +122,24 @@ public class QSPExportManager extends TextExportManager {
         sb.append(SERVICE_LOCATIONS.replace("\n", LINE_SEPARATOR)
                 .replace("%GAME_INV%", m_gameInvText).replace("%NLB_INV%", INVENTORY)
                 .replace("%COUNT%", ACTION_COUNT_VAR));
+        // Конец хода (из #id_turn): callback-объекты, если игрок с прошлого хода что-то сделал
+        // (update_action_count в INSTEAD, PlayerEngine; как в jsIQ2 и AXMA) — их действие без
+        // «взять». nlb_cnt_prev — сумма счётчиков на прошлом ходу (до callback-ов: их GOTO
+        // уводит со страницы, и следующий ход не должен повторить их ещё раз)
+        sb.append("#nlb_turn").append(LINE_SEPARATOR);
+        sb.append("nlb_diff = ").append(countSum(0)).append(LINE_SEPARATOR);
+        sb.append("IF nlb_diff > nlb_cnt_prev:").append(LINE_SEPARATOR);
+        sb.append("    nlb_cnt_prev = nlb_diff").append(LINE_SEPARATOR);
+        for (ObjBuildingBlocks obj : objs) {
+            if (obj.isCallback()) {
+                boolean constrained = StringHelper.notEmpty(obj.getObjConstraint());
+                sb.append("    ").append(constrained ? "IF " + obj.getObjConstraint() + ": " : "")
+                        .append("GOSUB 'nlb_o_").append(obj.getObjId()).append("_acta'").append(LINE_SEPARATOR);
+            }
+        }
+        sb.append("END").append(LINE_SEPARATOR);
+        sb.append("nlb_cnt_prev = nlb_diff").append(LINE_SEPARATOR);
+        sb.append(LOC_END).append(LINE_SEPARATOR);
         return sb.toString();
     }
 
@@ -299,7 +317,8 @@ public class QSPExportManager extends TextExportManager {
         sb.append(objBlocks.getObjVariable());
         sb.append(LOC_END).append(LINE_SEPARATOR);
 
-        sb.append(prefix).append("_act").append(LINE_SEPARATOR);
+        // _acta — действие без «взять» (так его вызывают и callback-объекты в конце хода)
+        sb.append(prefix).append("_acta").append(LINE_SEPARATOR);
         sb.append("GOSUB 'nlb_o_").append(id).append("_acttext'").append(LINE_SEPARATOR);
         sb.append("GOSUB 'nlb_o_").append(id).append("_mods'").append(LINE_SEPARATOR);
         if (StringHelper.notEmpty(common)) {
@@ -309,6 +328,9 @@ public class QSPExportManager extends TextExportManager {
             }
             sb.append("GOSUB 'nlb_o_").append(common).append("_mods'").append(LINE_SEPARATOR);
         }
+        sb.append(LOC_END).append(LINE_SEPARATOR);
+        sb.append(prefix).append("_act").append(LINE_SEPARATOR);
+        sb.append("GOSUB 'nlb_o_").append(id).append("_acta'").append(LINE_SEPARATOR);
         if (objBlocks.isTakable()) {
             // decorateObjTak: взять общий объект, если он переносимый, иначе этот
             String toTake = StringHelper.notEmpty(common) && isTakable(common) ? common : id;
@@ -528,6 +550,7 @@ public class QSPExportManager extends TextExportManager {
         stringBuilder.append(LOC_END).append(LINE_SEPARATOR);
         stringBuilder.append("#").append(pageId).append("_turn").append(LINE_SEPARATOR);
         stringBuilder.append("CLA").append(LINE_SEPARATOR);
+        stringBuilder.append("GOSUB 'nlb_turn'").append(LINE_SEPARATOR);
         stringBuilder.append("GOSUB 'nlb_inv_sync'").append(LINE_SEPARATOR);
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
@@ -1080,7 +1103,11 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateCountGetOperation(String variableName, int statType) {
-        // счётчики действий игрока по видам (как PlayerContext.countGet): inv 1, act 2, use 4, walk 8
+        return variableName + " = " + countSum(statType) + LINE_SEPARATOR;
+    }
+
+    /** Сумма счётчиков действий игрока с последнего сброса (как PlayerContext.countGet): inv 1, act 2, use 4, walk 8 */
+    private static String countSum(int statType) {
         StringBuilder sum = new StringBuilder();
         for (int i = 0; i < COUNT_TYPES.length; i++) {
             if (statType == 0 || (statType & (1 << i)) != 0) {
@@ -1090,7 +1117,7 @@ public class QSPExportManager extends TextExportManager {
                 sum.append("(nlb_cnt_").append(COUNT_TYPES[i]).append(" - nlb_cntr_").append(COUNT_TYPES[i]).append(")");
             }
         }
-        return variableName + " = " + (sum.length() > 0 ? sum.toString() : "0") + LINE_SEPARATOR;
+        return sum.length() > 0 ? sum.toString() : "0";
     }
 
     @Override

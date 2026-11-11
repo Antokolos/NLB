@@ -139,6 +139,7 @@ public class URQExportManager extends TextExportManager {
         sb.append("; Generated with Non-Linear Book Builder, http://nlbhub.com").append(LINE_SEPARATOR);
         sb.append(":nlb_start").append(LINE_SEPARATOR);
         sb.append("nlb_sel=0").append(LINE_SEPARATOR);
+        sb.append("nlb_cnt_prev=0").append(LINE_SEPARATOR);
         sb.append("nlb_reply=\"\"").append(LINE_SEPARATOR);
         for (int i = 0; i < objs.size(); i++) {
             sb.append("nlb_in_").append(i + 1).append("=\"").append(objs.get(i).getContainerId()).append("\"").append(LINE_SEPARATOR);
@@ -151,6 +152,24 @@ public class URQExportManager extends TextExportManager {
         for (int i = 1; i <= objs.size(); i++) {
             sb.append("if nlb_in_").append(i).append("=nlb_where then proc nlb_o_").append(i).append("_dsc").append(LINE_SEPARATOR);
         }
+        sb.append("end").append(LINE_SEPARATOR);
+        // Конец хода (из :id_turn): callback-объекты, если игрок с прошлого хода что-то сделал
+        // (update_action_count в INSTEAD, PlayerEngine; как в QSP, jsIQ2 и AXMA) — их действие без
+        // «взять»; nlb_cnt_prev ставится до них: их goto уводит со страницы
+        sb.append(":nlb_turn").append(LINE_SEPARATOR);
+        sb.append(assignment("nlb_diff", countSum(0)));
+        sb.append("if nlb_diff<=nlb_cnt_prev then goto nlb_turn_end").append(LINE_SEPARATOR);
+        sb.append("nlb_cnt_prev=nlb_diff").append(LINE_SEPARATOR);
+        for (int i = 1; i <= objs.size(); i++) {
+            ObjBuildingBlocks obj = objs.get(i - 1);
+            if (obj.isCallback()) {
+                boolean constrained = StringHelper.notEmpty(obj.getObjConstraint());
+                sb.append(constrained ? "if " + obj.getObjConstraint() + " then " : "")
+                        .append("proc nlb_o_").append(i).append("_acta").append(LINE_SEPARATOR);
+            }
+        }
+        sb.append(":nlb_turn_end").append(LINE_SEPARATOR);
+        sb.append("nlb_cnt_prev=nlb_diff").append(LINE_SEPARATOR);
         sb.append("end").append(LINE_SEPARATOR);
         // подписи предметов (с переменными — пересчитываются каждый ход)
         sb.append(":nlb_disp_all").append(LINE_SEPARATOR);
@@ -297,7 +316,8 @@ public class URQExportManager extends TextExportManager {
         sb.append(objBlocks.getObjVariable());
         sb.append("end").append(LINE_SEPARATOR);
 
-        sb.append(prefix).append("_act").append(LINE_SEPARATOR);
+        // _acta — действие без «взять» (так его вызывают и callback-объекты в конце хода)
+        sb.append(prefix).append("_acta").append(LINE_SEPARATOR);
         sb.append("proc nlb_o_").append(n).append("_acttext").append(LINE_SEPARATOR);
         sb.append("proc nlb_o_").append(n).append("_mods").append(LINE_SEPARATOR);
         if (StringHelper.notEmpty(common) && m_keys.containsKey(common)) {
@@ -307,6 +327,9 @@ public class URQExportManager extends TextExportManager {
             }
             sb.append("proc nlb_o_").append(c).append("_mods").append(LINE_SEPARATOR);
         }
+        sb.append("end").append(LINE_SEPARATOR);
+        sb.append(prefix).append("_act").append(LINE_SEPARATOR);
+        sb.append("proc nlb_o_").append(n).append("_acta").append(LINE_SEPARATOR);
         if (objBlocks.isTakable()) {
             String toTake = StringHelper.notEmpty(common) && m_keys.containsKey(common) && Boolean.TRUE.equals(m_takable.get(common)) ? common : id;
             sb.append("nlb_po=").append(m_keys.get(toTake)).append(LINE_SEPARATOR);
@@ -488,6 +511,10 @@ public class URQExportManager extends TextExportManager {
         stringBuilder.append("proc nlb_show_in").append(LINE_SEPARATOR);
         stringBuilder.append("end").append(LINE_SEPARATOR);
         stringBuilder.append(":").append(pageId).append("_turn").append(LINE_SEPARATOR);
+        // конец хода (callback-объекты); их текст действия — в ответ, он выводится сразу
+        stringBuilder.append("proc nlb_turn").append(LINE_SEPARATOR);
+        stringBuilder.append("if nlb_reply<>\"\" then pln #%nlb_reply$").append(LINE_SEPARATOR);
+        stringBuilder.append("nlb_reply=\"\"").append(LINE_SEPARATOR);
         stringBuilder.append("proc nlb_disp_all").append(LINE_SEPARATOR);
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         // Автоссылки — до кнопок: переход срабатывает сам, как в INSTEAD, и кнопки этой страницы
@@ -879,7 +906,7 @@ public class URQExportManager extends TextExportManager {
      */
     @Override
     protected String decorateAssignment(String variableName, String variableValue) {
-        return variableName + "=" + variableValue + LINE_SEPARATOR;
+        return assignment(variableName, variableValue);
     }
 
     @Override
@@ -1154,7 +1181,20 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateCountGetOperation(String variableName, int statType) {
-        // счётчики действий игрока по видам (как PlayerContext.countGet): inv 1, act 2, use 4, walk 8
+        return assignment(variableName, countSum(statType));
+    }
+
+    /**
+     * Присваивание выражения — с пробелами вокруг «=»: строку «x=(a-b)» UrqW принимает за вызов
+     * функции (/^\S+\s*\(.*\)$/), вычисляет и отбрасывает — переменная не меняется
+     * («Фронтир»: hjMod=(…), «Шапочка»: newFillingFound=(…), счётчики действий)
+     */
+    private static String assignment(String variableName, String value) {
+        return variableName + " = " + value + LINE_SEPARATOR;
+    }
+
+    /** Сумма счётчиков действий игрока с последнего сброса (как PlayerContext.countGet): inv 1, act 2, use 4, walk 8 */
+    private static String countSum(int statType) {
         StringBuilder sum = new StringBuilder();
         for (int i = 0; i < COUNT_TYPES.length; i++) {
             if (statType == 0 || (statType & (1 << i)) != 0) {
@@ -1164,7 +1204,7 @@ public class URQExportManager extends TextExportManager {
                 sum.append("(nlb_cnt_").append(COUNT_TYPES[i]).append("-nlb_cntr_").append(COUNT_TYPES[i]).append(")");
             }
         }
-        return variableName + "=" + (sum.length() > 0 ? sum.toString() : "0") + LINE_SEPARATOR;
+        return sum.length() > 0 ? sum.toString() : "0";
     }
 
     @Override
