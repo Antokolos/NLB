@@ -71,4 +71,30 @@ public class UrqObjectsExportTest {
         assertFalse("дверь не переносимая: " + urq, urq.contains("nlb_po=2\nnlb_pd=\"nlb_inv\""));
         assertFalse("меток до сборки не осталось: " + urq, urq.contains("\u0001") || urq.contains("\u0003"));
     }
+
+    /**
+     * Callback-объект (часы): в конце хода (:id_turn), если игрок с прошлого хода что-то сделал, —
+     * его действие без «взять» (_acta), ответ выводится сразу; присваивания — с пробелами вокруг
+     * «=»: «x=(a-b)» UrqW принимает за вызов функции и не присваивает
+     */
+    @Test
+    public void callbackObjects() throws Exception {
+        TestBook b = new TestBook();
+        PageImpl hall = b.page("Зал.");
+        PageImpl out = b.page("Улица.");
+        b.link(hall, out, "Выйти");
+        ObjImpl clock = b.obj(hall, "clock", "{Часы}.", "Часы", true);
+        clock.setActTexts(b.text("Тик."));
+        clock.setCallback(true);
+        File file = new File(m_temp.getRoot(), "cb.qst");
+        b.nlb.exportToURQTextFile(file);
+        String urq = new String(Files.readAllBytes(file.toPath()), Charset.forName("windows-1251")).replace("\r\n", "\n");
+        assertTrue(urq, urq.contains(":nlb_turn\nnlb_diff = (nlb_cnt_inv-nlb_cntr_inv)+(nlb_cnt_act-nlb_cntr_act)"
+                + "+(nlb_cnt_use-nlb_cntr_use)+(nlb_cnt_walk-nlb_cntr_walk)\n"
+                + "if nlb_diff<=nlb_cnt_prev then goto nlb_turn_end\nnlb_cnt_prev=nlb_diff\nproc nlb_o_1_acta\n"
+                + ":nlb_turn_end\nnlb_cnt_prev=nlb_diff\nend\n"));
+        assertTrue("конец хода страницы: " + urq, urq.contains(":" + hall.getId() + "_turn\nproc nlb_turn\n"
+                + "if nlb_reply<>\"\" then pln #%nlb_reply$\nnlb_reply=\"\"\n"));
+        assertTrue("взять — только по щелчку: " + urq, urq.contains(":nlb_o_1_act\nproc nlb_o_1_acta\nnlb_po=1\n"));
+    }
 }

@@ -172,13 +172,13 @@ public class ControlFlowExportTest {
         book().exportToURQTextFile(file);
         String urq = read(file, Charset.forName("windows-1251")).replace("\r\n", "\n");
         assertInOrder(urq,
-                "counter=0\n",
+                "counter = 0\n",
                 ":nlb_while_1\n", "if not (", "counter", "<", "3", ") then goto nlb_while_1_end\n",
-                "counter=", "counter", "+", "1", "\n",
+                "counter = ", "counter", "+", "1", "\n",
                 "goto nlb_while_1\n:nlb_while_1_end\n",
                 "dice=rnd#6$\n",
                 "if not (", "dice", ">", "3", ") then goto nlb_if_2_1\n",
-                "lucky=",
+                "lucky = ",
                 "goto nlb_if_2_end\n:nlb_if_2_1\n",
                 "if not (", "dice", ">", "1", ") then goto nlb_if_2_2\n",
                 "goto nlb_if_2_end\n:nlb_if_2_2\n",
@@ -249,10 +249,10 @@ public class ControlFlowExportTest {
         assertInOrder(urq,
                 ":nlb_while_1\n", ") then goto nlb_while_1_end\n",
                 ") then goto nlb_if_2_1\n",
-                "x=", "\n",
+                "x = ", "\n",
                 "goto nlb_if_2_end\n:nlb_if_2_1\n",
                 ":nlb_if_2_2\n:nlb_if_2_end\n",
-                "i=", "\n",
+                "i = ", "\n",
                 "goto nlb_while_1\n:nlb_while_1_end\n");
     }
 
