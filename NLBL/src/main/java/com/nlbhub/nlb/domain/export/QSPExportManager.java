@@ -176,6 +176,7 @@ public class QSPExportManager extends TextExportManager {
             "GOSUB 'nlb_refresh'",
             LOC_END,
             "#nlb_refresh",
+            "nlb_tick = 1",
             "$nlb_reply = $MAINTXT",
             "*CLR",
             "GOSUB $CURLOC + '_show'",
@@ -538,10 +539,24 @@ public class QSPExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageLabel());
         stringBuilder.append(pageBlocks.getPageModifications());
         stringBuilder.append(pageBlocks.getPageVariable());
+        final boolean hasTimer = pageBlocks.isHasPageTimer();
+        if (hasTimer) {
+            // initf(): таймер страницы обнуляется после её модификаций
+            stringBuilder.append(pageBlocks.getPageTimerVariableInit());
+            stringBuilder.append("nlb_tick = 0").append(LINE_SEPARATOR);
+        }
         stringBuilder.append("GOSUB '").append(pageId).append("_show'").append(LINE_SEPARATOR);
         stringBuilder.append("GOSUB '").append(pageId).append("_turn'").append(LINE_SEPARATOR);
         stringBuilder.append(LOC_END).append(LINE_SEPARATOR);
         stringBuilder.append("#").append(pageId).append("_show").append(LINE_SEPARATOR);
+        if (hasTimer) {
+            // тик таймера — ход игрока на странице (действие, nlb_refresh), до показа: текст
+            // страницы видит новое значение; переход на страницу — не тик
+            stringBuilder.append("IF nlb_tick = 1:").append(LINE_SEPARATOR);
+            stringBuilder.append("    nlb_tick = 0").append(LINE_SEPARATOR);
+            stringBuilder.append("    ").append(pageBlocks.getPageTimerVariable());
+            stringBuilder.append("END").append(LINE_SEPARATOR);
+        }
         stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageImage());
         stringBuilder.append(pageBlocks.getPageTextStart());
@@ -554,6 +569,62 @@ public class QSPExportManager extends TextExportManager {
         stringBuilder.append("GOSUB 'nlb_inv_sync'").append(LINE_SEPARATOR);
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
+            appendLink(stringBuilder, linkBlocks);
+        }
+        String noChoices = noChoicesCondition(pageBlocks);
+        if (noChoices != null) {
+            // Выбирать нечего, а автоссылки ждут таймера — время проматывается (как в плеере):
+            // тик за тиком, пока не сработает автоссылка (XGOTO прерывает цикл)
+            if (!noChoices.isEmpty()) {
+                stringBuilder.append("IF ").append(noChoices).append(":").append(LINE_SEPARATOR);
+            }
+            stringBuilder.append("nlb_wait = 0").append(LINE_SEPARATOR);
+            stringBuilder.append("LOOP WHILE nlb_wait < ").append(pageBlocks.getTimerWaitTicks()).append(":").append(LINE_SEPARATOR);
+            stringBuilder.append("    nlb_wait = nlb_wait + 1").append(LINE_SEPARATOR);
+            stringBuilder.append("    ").append(pageBlocks.getPageTimerVariable());
+            for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
+                if (linkBlocks.isAuto()) {
+                    appendLink(stringBuilder, linkBlocks);
+                }
+            }
+            stringBuilder.append("END").append(LINE_SEPARATOR);
+            if (!noChoices.isEmpty()) {
+                stringBuilder.append("END").append(LINE_SEPARATOR);
+            }
+        }
+        stringBuilder.append(pageBlocks.getPageEnd());
+        return stringBuilder.toString();
+    }
+
+    /**
+     * Условие «выбирать нечего» для проматывания таймера (PlayerEngine.autoWaitTicks): ни одна
+     * обычная ссылка не доступна. null — не проматывать (нет таймера или автоссылок, либо есть
+     * ссылка без условия), пустая строка — проматывать всегда (обычных ссылок нет)
+     */
+    private static String noChoicesCondition(PageBuildingBlocks pageBlocks) {
+        if (!pageBlocks.isHasPageTimer() || pageBlocks.getTimerWaitTicks() <= 0) {
+            return null;
+        }
+        boolean hasAuto = false;
+        StringBuilder any = new StringBuilder();
+        for (LinkBuildingBlocks linkBlocks : pageBlocks.getLinksBuildingBlocks()) {
+            if (linkBlocks.isAuto()) {
+                hasAuto = true;
+            } else if (StringHelper.isEmpty(linkBlocks.getLinkConstraint())) {
+                return null;
+            } else {
+                any.append(any.length() > 0 ? " OR " : "").append("(").append(linkBlocks.getLinkConstraint()).append(")");
+            }
+        }
+        if (!hasAuto) {
+            return null;
+        }
+        return any.length() == 0 ? "" : "NO (" + any + ")";
+    }
+
+    /** Ссылка страницы в ходе «#id_turn»: автоссылка — переход при условии, обычная — действие ACT */
+    private void appendLink(StringBuilder stringBuilder, LinkBuildingBlocks linkBlocks) {
+        {
             final boolean waitsAction = linkBlocks.isAuto() && linkBlocks.isNeedsAction();
             String constraint = linkBlocks.getLinkConstraint();
             if (waitsAction) {
@@ -603,8 +674,6 @@ public class QSPExportManager extends TextExportManager {
                 stringBuilder.append("END").append(LINE_SEPARATOR);
             }
         }
-        stringBuilder.append(pageBlocks.getPageEnd());
-        return stringBuilder.toString();
     }
 
     @Override
@@ -761,14 +830,14 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageTimerVariableInit(final String variableName) {
-        // TODO: implement and use
-        return Constants.EMPTY_STRING;
+        // таймер страницы (tvarid): обнуляется при входе, +1 за ход игрока на странице
+        return StringHelper.isEmpty(variableName) ? Constants.EMPTY_STRING : variableName + " = 0" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decoratePageTimerVariable(final String variableName) {
-        // TODO: implement and use
-        return Constants.EMPTY_STRING;
+        return StringHelper.isEmpty(variableName) ? Constants.EMPTY_STRING
+                : variableName + " = " + variableName + " + 1" + LINE_SEPARATOR;
     }
 
     @Override

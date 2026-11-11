@@ -189,12 +189,22 @@ public class ChoiceScriptExportManager extends TextExportManager {
         StringBuilder trivialLinksBuilder = new StringBuilder();
         stringBuilder.append(pageBlocks.getPageComment());
         stringBuilder.append(pageBlocks.getPageLabel());
+        // Таймер страницы (tvarid) обнуляется при входе (initf) — здесь до текста: модификации
+        // ChoiceScript выполняет после вывода текста, а текст должен видеть уже 0. Действий на
+        // месте (объектов) в ChoiceScript нет, поэтому сам он не тикает — только проматывается
+        if (pageBlocks.isHasPageTimer()) {
+            stringBuilder.append(pageBlocks.getPageTimerVariableInit());
+        }
         stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageImage());
         stringBuilder.append(pageBlocks.getPageTextStart());
         stringBuilder.append(pageBlocks.getPageTextEnd());
         stringBuilder.append(pageBlocks.getPageModifications());
         stringBuilder.append(pageBlocks.getPageVariable());
+        String wait = timerWait(pageBlocks);
+        if (wait != null) {
+            stringBuilder.append("*label ").append(pageBlocks.getPageId()).append("_wait").append(LINE_SEPARATOR);
+        }
         List<LinkBuildingBlocks> allLinksBlocks = pageBlocks.getLinksBuildingBlocks();
         // альтернативные тексты недоступных ссылок (#135) — после текста страницы, до вариантов
         for (final LinkBuildingBlocks linkBlocks : allLinksBlocks) {
@@ -213,6 +223,9 @@ public class ChoiceScriptExportManager extends TextExportManager {
                 linksBlocks.add(linkBlocks);
             }
         }
+        if (wait != null) {
+            stringBuilder.append(wait);
+        }
         if (pageBlocks.isHasTrivialLinks()) {
             stringBuilder.append("*page_break").append(LINE_SEPARATOR);
             stringBuilder.append(trivialLinksBuilder.toString());
@@ -225,6 +238,46 @@ public class ChoiceScriptExportManager extends TextExportManager {
             stringBuilder.append(uniqueOption(getLinkRedirectText(linkBlocks, false), optionNames));
         }
         return stringBuilder.toString();
+    }
+
+    /**
+     * Выбирать нечего (ни одна обычная ссылка не доступна), а автоссылки ждут таймера — время
+     * проматывается, как в плеере (PlayerEngine.autoWaitTicks): тик и снова проверка автоссылок
+     * (метка id_wait перед ними). Щёлкнуть, пока идёт время, в ChoiceScript не по чему, поэтому
+     * ждать — сколько потребуется, но меньше *looplimit (он считает и эти строки). null — не ждать
+     */
+    private String timerWait(PageBuildingBlocks pageBlocks) {
+        if (!pageBlocks.isHasPageTimer() || pageBlocks.getTimerWaitTicks() <= 0) {
+            return null;
+        }
+        boolean hasAuto = false;
+        String any = null;
+        for (LinkBuildingBlocks linkBlocks : pageBlocks.getLinksBuildingBlocks()) {
+            if (linkBlocks.isAuto()) {
+                hasAuto = true;
+            } else if (StringHelper.isEmpty(linkBlocks.getLinkConstraint())) {
+                return null;
+            } else {
+                // ChoiceScript: у and/or ровно два операнда в скобках
+                String c = "(" + linkBlocks.getLinkConstraint() + ")";
+                any = (any == null) ? c : "(" + any + " or " + c + ")";
+            }
+        }
+        if (!hasAuto) {
+            return null;
+        }
+        String timer = pageBlocks.getPageTimerVariable();
+        String indent = (any == null) ? "" : INDENT;
+        StringBuilder result = new StringBuilder();
+        if (any != null) {
+            result.append("*if not(").append(cs(any)).append(")").append(LINE_SEPARATOR);
+        }
+        // счётчик ожидания — сам таймер: при входе он 0, а тиков на месте здесь не бывает
+        String var = timer.substring("*set ".length(), timer.indexOf(' ', "*set ".length()));
+        result.append(indent).append("*if ").append(var).append(" < ").append(LOOP_LIMIT / 10).append(LINE_SEPARATOR);
+        result.append(indent).append(INDENT).append(timer);
+        result.append(indent).append(INDENT).append("*goto ").append(pageBlocks.getPageId()).append("_wait").append(LINE_SEPARATOR);
+        return result.toString();
     }
 
     /** Выражение в виде, который понимает ChoiceScript (см. {@link ChoiceScriptExpression}) */
@@ -481,14 +534,12 @@ public class ChoiceScriptExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageTimerVariableInit(final String variableName) {
-        // TODO: implement and use
-        return Constants.EMPTY_STRING;
+        return StringHelper.isEmpty(variableName) ? Constants.EMPTY_STRING : "*set " + variableName + " 0" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decoratePageTimerVariable(final String variableName) {
-        // TODO: implement and use
-        return Constants.EMPTY_STRING;
+        return StringHelper.isEmpty(variableName) ? Constants.EMPTY_STRING : "*set " + variableName + " +1" + LINE_SEPARATOR;
     }
 
     @Override

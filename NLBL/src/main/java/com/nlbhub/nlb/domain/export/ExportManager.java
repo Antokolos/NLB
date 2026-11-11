@@ -639,6 +639,10 @@ public abstract class ExportManager {
             // TODO: Add cases with deleted pages/links/variables etc. to the unit test
             if (!timerVariable.isDeleted()) {
                 blocks.setHasPageTimer(true);
+                // Пошаговые движки (QSP, URQ, jsIQ2, AXMA): если выбирать нечего, а автоссылки
+                // ждут таймера, время проматывается, как в плеере: на странице с объектами
+                // игрок мог бы щёлкнуть, поэтому только короткая пауза
+                blocks.setTimerWaitTicks(page.getContainedObjIds().isEmpty() ? TIMER_WAIT_TICKS : TIMER_SHORT_WAIT_TICKS);
                 blocks.setPageTimerVariableInit(decoratePageTimerVariableInit(timerVariable.getName()));
                 blocks.setPageTimerVariable(decoratePageTimerVariable(timerVariable.getName()));
             } else {
@@ -3260,6 +3264,10 @@ public abstract class ExportManager {
     protected abstract String decorateLinkVisitStateVariable(String linkVisitStateVariable);
 
     protected abstract String decoratePageVariable(final String variableName);
+
+    /** Проматывание таймера, если выбирать нечего: как MAX_TIMER_TICKS и SHORT_WAIT_TICKS в PlayerEngine */
+    protected static final int TIMER_WAIT_TICKS = 100000;
+    protected static final int TIMER_SHORT_WAIT_TICKS = 50;
 
     protected abstract String decoratePageTimerVariableInit(final String variableName);
 

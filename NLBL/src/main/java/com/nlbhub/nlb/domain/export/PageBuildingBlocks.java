@@ -72,6 +72,8 @@ public class PageBuildingBlocks {
     private boolean m_hasAnimatedPageImage;
     private boolean m_imageBackground;
     private boolean m_hasPageTimer;
+    /** Сколько тиков таймера проматывать, если выбирать нечего (PlayerEngine.autoWaitTicks); 0 — без таймера */
+    private int m_timerWaitTicks;
     private boolean m_hasPageText;
     private boolean m_autosFirst;
     private List<String> m_containedObjIds;
@@ -235,6 +237,14 @@ public class PageBuildingBlocks {
 
     public void setHasPageTimer(boolean hasPageTimer) {
         m_hasPageTimer = hasPageTimer;
+    }
+
+    public int getTimerWaitTicks() {
+        return m_timerWaitTicks;
+    }
+
+    public void setTimerWaitTicks(int timerWaitTicks) {
+        m_timerWaitTicks = timerWaitTicks;
     }
 
     public boolean isDirectMode() {

@@ -221,6 +221,8 @@ public class URQExportManager extends TextExportManager {
                 "goto nlb_redraw",
                 // показать страницу заново: сцена, ответ, кнопки
                 ":nlb_redraw",
+                // ход игрока на странице — тик её таймера (в начале показа)
+                "nlb_tick=1",
                 "cls",
                 "proc #%nlb_page$_show",
                 "if nlb_reply<>\"\" then pln #%nlb_reply$",
@@ -499,10 +501,21 @@ public class URQExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageLabel());
         stringBuilder.append(pageBlocks.getPageModifications());
         stringBuilder.append(pageBlocks.getPageVariable());
+        final boolean hasTimer = pageBlocks.isHasPageTimer();
+        if (hasTimer) {
+            // initf(): таймер страницы обнуляется после её модификаций; переход — не тик
+            stringBuilder.append(pageBlocks.getPageTimerVariableInit());
+            stringBuilder.append("nlb_tick=0").append(LINE_SEPARATOR);
+        }
         stringBuilder.append("nlb_page = \"").append(pageId).append("\"").append(LINE_SEPARATOR);
         stringBuilder.append("proc ").append(pageId).append("_show").append(LINE_SEPARATOR);
         stringBuilder.append("goto ").append(pageId).append("_turn").append(LINE_SEPARATOR);
         stringBuilder.append(":").append(pageId).append("_show").append(LINE_SEPARATOR);
+        if (hasTimer) {
+            // тик таймера — ход игрока на странице (nlb_redraw), до показа: текст видит новое значение
+            stringBuilder.append("if nlb_tick=1 then ").append(pageBlocks.getPageTimerVariable());
+            stringBuilder.append("nlb_tick=0").append(LINE_SEPARATOR);
+        }
         stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageImage());
         stringBuilder.append(pageBlocks.getPageTextStart());
@@ -521,27 +534,7 @@ public class URQExportManager extends TextExportManager {
         // уже не выводятся. goto в UrqW не очищает экран, поэтому текст страницы остаётся виден
         // перед текстом следующей (как в плеере). Первая автоссылка с выполненным условием
         // уводит со страницы.
-        boolean unconditionalAuto = false;
-        for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
-            if (linkBlocks.isAuto()) {
-                String constraint = linkBlocks.getLinkConstraint();
-                if (linkBlocks.isNeedsAction()) {
-                    // has_action(): автоссылка ждёт, пока игрок сделает нужное число действий
-                    String hasAction = "(" + ACTION_COUNT_VAR + ">=" + getNeedsActionCount() + ")";
-                    constraint = StringHelper.isEmpty(constraint) ? hasAction : "(" + constraint + ") and " + hasAction;
-                }
-                if (StringHelper.isEmpty(constraint)) {
-                    unconditionalAuto = true;
-                } else {
-                    stringBuilder.append("if ").append(constraint).append(" then ");
-                }
-                stringBuilder.append("goto ").append(linkBlocks.getLinkId()).append(LINE_SEPARATOR);
-                if (unconditionalAuto) {
-                    // дальше ничего не выполнится: остальные ссылки не нужны
-                    break;
-                }
-            }
-        }
+        boolean unconditionalAuto = appendAutoLinks(stringBuilder, linksBlocks);
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             if (linkBlocks.isAuto() || unconditionalAuto) {
                 continue;
@@ -558,8 +551,79 @@ public class URQExportManager extends TextExportManager {
                 stringBuilder.append(linkBlocks.getLinkStart());
             }
         }
+        String noChoices = unconditionalAuto ? null : noChoicesCondition(pageBlocks);
+        if (noChoices != null) {
+            // Выбирать нечего, а автоссылки ждут таймера — время проматывается (как в плеере):
+            // тик за тиком, пока не сработает автоссылка
+            String wait = pageId + "_wait";
+            if (!noChoices.isEmpty()) {
+                stringBuilder.append("if not ").append(noChoices).append(" then goto ").append(wait).append(LINE_SEPARATOR);
+                stringBuilder.append("goto ").append(wait).append("_end").append(LINE_SEPARATOR);
+            }
+            stringBuilder.append(":").append(wait).append(LINE_SEPARATOR);
+            stringBuilder.append("nlb_wait=0").append(LINE_SEPARATOR);
+            stringBuilder.append(":").append(wait).append("_loop").append(LINE_SEPARATOR);
+            stringBuilder.append("if nlb_wait>=").append(pageBlocks.getTimerWaitTicks()).append(" then goto ")
+                    .append(wait).append("_end").append(LINE_SEPARATOR);
+            stringBuilder.append("nlb_wait=nlb_wait+1").append(LINE_SEPARATOR);
+            stringBuilder.append(pageBlocks.getPageTimerVariable());
+            appendAutoLinks(stringBuilder, linksBlocks);
+            stringBuilder.append("goto ").append(wait).append("_loop").append(LINE_SEPARATOR);
+            stringBuilder.append(":").append(wait).append("_end").append(LINE_SEPARATOR);
+        }
         stringBuilder.append(pageBlocks.getPageEnd());
         return stringBuilder.toString();
+    }
+
+    /**
+     * Автоссылки страницы: первая с выполненным условием уводит со страницы. true — есть
+     * безусловная (после неё ничего не выполнится)
+     */
+    private boolean appendAutoLinks(StringBuilder stringBuilder, List<LinkBuildingBlocks> linksBlocks) {
+        for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
+            if (linkBlocks.isAuto()) {
+                String constraint = linkBlocks.getLinkConstraint();
+                if (linkBlocks.isNeedsAction()) {
+                    // has_action(): автоссылка ждёт, пока игрок сделает нужное число действий
+                    String hasAction = "(" + ACTION_COUNT_VAR + ">=" + getNeedsActionCount() + ")";
+                    constraint = StringHelper.isEmpty(constraint) ? hasAction : "(" + constraint + ") and " + hasAction;
+                }
+                if (StringHelper.isEmpty(constraint)) {
+                    stringBuilder.append("goto ").append(linkBlocks.getLinkId()).append(LINE_SEPARATOR);
+                    // дальше ничего не выполнится: остальные ссылки не нужны
+                    return true;
+                }
+                stringBuilder.append("if ").append(constraint).append(" then ");
+                stringBuilder.append("goto ").append(linkBlocks.getLinkId()).append(LINE_SEPARATOR);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Условие «выбирать нечего» для проматывания таймера (PlayerEngine.autoWaitTicks): ни одна
+     * обычная ссылка не доступна — его отрицание. null — не проматывать (нет таймера или
+     * автоссылок, либо есть ссылка без условия), пустая строка — обычных ссылок нет
+     */
+    private static String noChoicesCondition(PageBuildingBlocks pageBlocks) {
+        if (!pageBlocks.isHasPageTimer() || pageBlocks.getTimerWaitTicks() <= 0) {
+            return null;
+        }
+        boolean hasAuto = false;
+        StringBuilder any = new StringBuilder();
+        for (LinkBuildingBlocks linkBlocks : pageBlocks.getLinksBuildingBlocks()) {
+            if (linkBlocks.isAuto()) {
+                hasAuto = true;
+            } else if (StringHelper.isEmpty(linkBlocks.getLinkConstraint())) {
+                return null;
+            } else {
+                any.append(any.length() > 0 ? " or " : "").append("(").append(linkBlocks.getLinkConstraint()).append(")");
+            }
+        }
+        if (!hasAuto) {
+            return null;
+        }
+        return any.length() == 0 ? "" : "(" + any + ")";
     }
 
     @Override
@@ -742,14 +806,14 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageTimerVariableInit(final String variableName) {
-        // TODO: implement and use
-        return Constants.EMPTY_STRING;
+        // таймер страницы (tvarid): обнуляется при входе, +1 за ход игрока на странице
+        return StringHelper.isEmpty(variableName) ? Constants.EMPTY_STRING : variableName + "=0" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decoratePageTimerVariable(final String variableName) {
-        // TODO: implement and use
-        return Constants.EMPTY_STRING;
+        return StringHelper.isEmpty(variableName) ? Constants.EMPTY_STRING
+                : variableName + "=" + variableName + "+1" + LINE_SEPARATOR;
     }
 
     @Override
