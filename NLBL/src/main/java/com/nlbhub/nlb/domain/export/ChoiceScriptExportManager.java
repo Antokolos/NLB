@@ -158,6 +158,12 @@ public class ChoiceScriptExportManager extends TextExportManager {
     @Override
     protected String generatePreambleText(NLBBuildingBlocks nlbBuildingBlocks) {
         m_language = StringHelper.isEmpty(nlbBuildingBlocks.getLang()) ? "en" : nlbBuildingBlocks.getLang();
+        m_achNames.addAll(nlbBuildingBlocks.getAchievements());
+        m_perfectGame = StringHelper.notEmpty(nlbBuildingBlocks.getAchievementNamePerfectGame())
+                ? nlbBuildingBlocks.getAchievementNamePerfectGame() : "";
+        if (!m_perfectGame.isEmpty()) {
+            m_achNames.add(m_perfectGame);
+        }
         return "*comment Generated with Non-Linear Book Builder, http://nlbhub.com" + LINE_SEPARATOR;
     }
 
@@ -174,6 +180,7 @@ public class ChoiceScriptExportManager extends TextExportManager {
         // сцены выполнена 1000 раз («visited this line too many times»). В книге с возвратами в
         // хаб (или на страницу «Поражение» и обратно) это обычная игра, поэтому предел выше;
         // настоящий вечный цикл автопереходов он по-прежнему остановит
+        result.append(achievementDeclarations());
         result.append("*looplimit ").append(LOOP_LIMIT).append(LINE_SEPARATOR);
         return result.toString();
     }
@@ -367,7 +374,89 @@ public class ChoiceScriptExportManager extends TextExportManager {
 
     @Override
     protected String generateTrailingText() {
-        return "";
+        return achievementPerfectSubroutine();
+    }
+
+    // ------------------------------------------------------------------ достижения
+
+    /** Все достижения книги (и те, что встретились в модификациях), perfect game, места ACHIEVE */
+    private final java.util.Set<String> m_achNames = new java.util.TreeSet<>();
+    private String m_perfectGame = "";
+    private final Map<String, Integer> m_achieveSites = new HashMap<>();
+
+    /** Имя переменной ChoiceScript для достижения: строчные буквы, цифры и «_» */
+    private static String achVar(String name) {
+        return name.toLowerCase().replaceAll("[^a-z0-9_]", "_");
+    }
+
+    /** Имя *achievement: ChoiceScript принимает только ^[a-z][a-z0-9_]+$ */
+    private static boolean validAchievementName(String name) {
+        return name.toLowerCase().matches("[a-z][a-z0-9_]+");
+    }
+
+    /**
+     * Счётчики достижений (*create) и *achievement для каждого достижения книги: очки — поровну,
+     * от 1 до 100 и не больше 1000 в сумме (ограничения ChoiceScript), название и описание — имя
+     * достижения. Сами «полученные» достижения ChoiceScript хранит между играми (*achieve), а
+     * счётчики мест (nlb_ach_…, ACHIEVED) — только на эту игру
+     */
+    private String achievementDeclarations() {
+        StringBuilder result = new StringBuilder();
+        for (String name : m_achNames) {
+            String v = achVar(name);
+            result.append("*create nlb_ach_").append(v).append(" 0").append(LINE_SEPARATOR);
+            result.append("*create nlb_achmax_").append(v).append(" 0").append(LINE_SEPARATOR);
+            result.append("*create nlb_achgot_").append(v).append(" false").append(LINE_SEPARATOR);
+        }
+        for (Integer site : new java.util.TreeSet<>(m_achieveSites.values())) {
+            result.append("*create nlb_achid_").append(site).append(" false").append(LINE_SEPARATOR);
+        }
+        if (!m_achNames.isEmpty()) {
+            result.append("*create nlb_perf false").append(LINE_SEPARATOR);
+        }
+        long valid = m_achNames.stream().filter(ChoiceScriptExportManager::validAchievementName).count();
+        int points = valid == 0 ? 1 : (int) Math.max(1, Math.min(100, 1000 / valid));
+        for (String name : m_achNames) {
+            if (validAchievementName(name)) {
+                String title = name.length() > 50 ? name.substring(0, 50) : name;
+                result.append("*achievement ").append(name.toLowerCase()).append(" visible ").append(points).append(" ")
+                        .append(title).append(LINE_SEPARATOR);
+                result.append(INDENT).append(title).append(LINE_SEPARATOR);
+            }
+        }
+        return result.toString();
+    }
+
+    /**
+     * Perfect game (PlayerContext.achieve): после каждого ACHIEVE — *gosub nlb_ach_perfect: все
+     * прочие достижения книги набрали свой порог (без ACHMAX — 1). Мест у perfect game ChoiceScript
+     * не различает (имени переменной из строки нет) — его счётчик 1, когда оно получено
+     */
+    private String achievementPerfectSubroutine() {
+        StringBuilder result = new StringBuilder();
+        result.append("*finish").append(LINE_SEPARATOR);
+        result.append("*label nlb_ach_perfect").append(LINE_SEPARATOR);
+        if (!m_perfectGame.isEmpty()) {
+            String p = achVar(m_perfectGame);
+            result.append("*set nlb_perf true").append(LINE_SEPARATOR);
+            for (String name : m_achNames) {
+                if (!name.equals(m_perfectGame)) {
+                    String v = achVar(name);
+                    result.append("*if (nlb_ach_").append(v).append(" < 1) or (nlb_ach_").append(v).append(" < nlb_achmax_").append(v)
+                            .append(")").append(LINE_SEPARATOR);
+                    result.append(INDENT).append("*set nlb_perf false").append(LINE_SEPARATOR);
+                }
+            }
+            result.append("*if nlb_perf and not(nlb_achgot_").append(p).append(")").append(LINE_SEPARATOR);
+            result.append(INDENT).append("*set nlb_achgot_").append(p).append(" true").append(LINE_SEPARATOR);
+            result.append(INDENT).append("*set nlb_ach_").append(p).append(" 1").append(LINE_SEPARATOR);
+            if (validAchievementName(m_perfectGame)) {
+                result.append(INDENT).append("*achieve ").append(m_perfectGame.toLowerCase()).append(LINE_SEPARATOR);
+            }
+            result.append(INDENT).append(achievementAnnouncement(m_language)).append(m_perfectGame).append(LINE_SEPARATOR);
+        }
+        result.append("*return").append(LINE_SEPARATOR);
+        return result.toString();
     }
 
     @Override
@@ -877,20 +966,38 @@ public class ChoiceScriptExportManager extends TextExportManager {
 
     @Override
     protected String decorateAchMaxOperation(String achievementName, int max) {
-        // TODO: implement
-        return EMPTY_STRING;
+        m_achNames.add(achievementName);
+        return "*set nlb_achmax_" + achVar(achievementName) + " " + max + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAchieveOperation(String achievementName, String modificationId) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // место засчитывается один раз; набран порог (ACHMAX, без него — первое место) — *achieve и
+        // объявление строкой; затем perfect game (*gosub). Блоки — заготовками (indentBlocks)
+        m_achNames.add(achievementName);
+        int site = m_achieveSites.computeIfAbsent(modificationId, k -> m_achieveSites.size() + 1);
+        String v = achVar(achievementName);
+        StringBuilder result = new StringBuilder();
+        result.append(BLOCK_MARK).append("if not(nlb_achid_").append(site).append(")").append(LINE_SEPARATOR);
+        result.append("*set nlb_achid_").append(site).append(" true").append(LINE_SEPARATOR);
+        result.append("*set nlb_ach_").append(v).append(" +1").append(LINE_SEPARATOR);
+        result.append(BLOCK_MARK).append("end").append(LINE_SEPARATOR);
+        result.append(BLOCK_MARK).append("if (not(nlb_achgot_").append(v).append(")) and ((nlb_achmax_").append(v)
+                .append(" = 0) or (nlb_ach_").append(v).append(" >= nlb_achmax_").append(v).append("))").append(LINE_SEPARATOR);
+        result.append("*set nlb_achgot_").append(v).append(" true").append(LINE_SEPARATOR);
+        if (validAchievementName(achievementName)) {
+            result.append("*achieve ").append(achievementName.toLowerCase()).append(LINE_SEPARATOR);
+        }
+        result.append(achievementAnnouncement(bookLanguage())).append(achievementName).append(LINE_SEPARATOR);
+        result.append(BLOCK_MARK).append("end").append(LINE_SEPARATOR);
+        result.append("*gosub nlb_ach_perfect").append(LINE_SEPARATOR);
+        return result.toString();
     }
 
     @Override
     protected String decorateAchievedOperation(String variableName, String achievementName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        m_achNames.add(achievementName);
+        return "*set " + variableName + " nlb_ach_" + achVar(achievementName) + LINE_SEPARATOR;
     }
 
     @Override
