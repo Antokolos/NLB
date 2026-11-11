@@ -57,6 +57,7 @@ import com.nlbhub.nlb.vcs.secrets.SecretStoreException;
 import com.nlbhub.nlb.util.BareBonesBrowserLaunch;
 import com.nlbhub.nlb.web.Launcher;
 import com.nlbhub.nlb.web.player.BookLibrary;
+import com.nlbhub.nlb.web.preview.ExportPreview;
 import org.jdesktop.swingx.JXStatusBar;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -135,6 +136,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     private JButton m_commitButton;
     private JButton m_startServerButton;
     private JButton m_stopServerButton;
+    private JButton m_previewExportButton;
     private JTextArea m_bookInformationArea;
     private JTabbedPane m_graphEditorsPane;
     private JButton m_editModuleButton;
@@ -1868,28 +1870,49 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             public void actionPerformed(ActionEvent e) {
                 try {
                     if (!m_launcher.isRunning()) {
-                        PaneEditorInfo editorInfo = getMainPaneInfo();
-                        NonLinearBook mainNLB = editorInfo.getPaneNlbFacade().getNlb();
-                        final File rootDir = mainNLB.getRootDir();
-                        String bookId = (rootDir != null) ? rootDir.getName() : DEFAULT_BOOK_ID;
-                        m_launcher.clearNLBCache();
-                        // Always prefer in-memory data
-                        m_launcher.putNLBInMemoryToCache(bookId, mainNLB);
-                        Thread thread = new Thread(m_launcher);
-                        thread.start();
-                        Thread.sleep(START_SERVER_TIMEOUT);
+                        NonLinearBook mainNLB = getMainPaneInfo().getPaneNlbFacade().getNlb();
+                        String bookId = startServer();
                         // веб-плеер: в списке книг сервера редактора — только эта книга
                         BareBonesBrowserLaunch.openURL(
                                 "http://localhost:8111/play/?book=" + URLEncoder.encode(bookId, StandardCharsets.UTF_8)
                                         + "&mode=" + BookLibrary.defaultMode(mainNLB)
                         );
-                        m_startServerButton.setEnabled(false);
-                        m_stopServerButton.setEnabled(true);
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(
                             m_mainFramePanel,
                             "Error while starting the server: " + ex.toString()
+                    );
+                }
+            }
+        });
+        // Проверка экспортов в браузере: открытая книга экспортируется в ChoiceScript и jsIQ2 в
+        // каталог export-preview, сервер редактора (если ещё не запущен) запускается, и в браузере
+        // открывается /preview/ — игры в настоящих движках (их сервер скачивает при первом запуске)
+        m_previewExportButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    if (getMainPaneInfo().getPaneNlbFacade().getNlb().getRootDir() == null) {
+                        // экспорт берёт картинки из каталога книги
+                        JOptionPane.showMessageDialog(m_mainFramePanel,
+                                "Save the book first: the export preview needs the book directory");
+                        return;
+                    }
+                    ExportPreview preview = ExportPreview.defaultPreview();
+                    preview.createDirs();
+                    ExportPreview.clear(preview.getChoiceScriptDir());
+                    ExportPreview.clear(preview.getJsiqDir());
+                    getMainPaneInfo().getPaneNlbFacade().exportToChoiceScript(preview.getChoiceScriptDir());
+                    getMainPaneInfo().getPaneNlbFacade().exportToJSIQFile(preview.getJsiqDir());
+                    if (!m_launcher.isRunning()) {
+                        startServer();
+                    }
+                    BareBonesBrowserLaunch.openURL("http://localhost:8111/preview/");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(
+                            m_mainFramePanel,
+                            "Error while preparing the export preview: " + ex.toString()
                     );
                 }
             }
@@ -2283,5 +2306,26 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
 
     private PaneEditorInfo getMainPaneInfo() {
         return m_paneEditorInfoMap.get(MAIN_PANE_KEY);
+    }
+
+    /**
+     * Запустить сервер редактора (веб-плеер и проверку экспортов) с открытой книгой; кнопки
+     * запуска и остановки меняются местами
+     *
+     * @return id книги в плеере
+     */
+    private String startServer() throws InterruptedException {
+        NonLinearBook mainNLB = getMainPaneInfo().getPaneNlbFacade().getNlb();
+        final File rootDir = mainNLB.getRootDir();
+        String bookId = (rootDir != null) ? rootDir.getName() : DEFAULT_BOOK_ID;
+        m_launcher.clearNLBCache();
+        // Always prefer in-memory data
+        m_launcher.putNLBInMemoryToCache(bookId, mainNLB);
+        Thread thread = new Thread(m_launcher);
+        thread.start();
+        Thread.sleep(START_SERVER_TIMEOUT);
+        m_startServerButton.setEnabled(false);
+        m_stopServerButton.setEnabled(true);
+        return bookId;
     }
 }

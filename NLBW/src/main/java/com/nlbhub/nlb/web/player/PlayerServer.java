@@ -73,6 +73,8 @@ public final class PlayerServer {
      */
     public static void addTo(ServletContextHandler context, BookLibrary library, Export export) {
         context.addServlet(new ServletHolder(new PlayerServlet(library, export)), PATH);
+        // проверка экспортов ChoiceScript и jsIQ2 в браузере (/preview/, каталог export-preview)
+        com.nlbhub.nlb.web.preview.ExportPreviewServer.addTo(context, com.nlbhub.nlb.web.preview.ExportPreview.defaultPreview());
     }
 
     /**

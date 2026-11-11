@@ -435,6 +435,17 @@
                   <text value=""/>
                 </properties>
               </component>
+              <component id="e7p01" class="javax.swing.JButton" binding="m_previewExportButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/export_preview.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                  <toolTipText value="check the ChoiceScript and jsIQ2 exports in the browser: export the book to export-preview and open http://localhost:8111/preview/"/>
+                </properties>
+              </component>
               <component id="d614b" class="javax.swing.JButton" binding="m_findButton">
                 <constraints/>
                 <properties>
