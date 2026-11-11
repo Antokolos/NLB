@@ -1,5 +1,6 @@
 module NLBW {
     requires java.logging;
+    requires java.net.http;
 
     requires transitive java.scripting;
     requires transitive java.xml;
@@ -14,5 +15,6 @@ module NLBW {
     exports com.nlbhub.nlb.web;
     exports com.nlbhub.nlb.web.exception;
     exports com.nlbhub.nlb.web.player;
+    exports com.nlbhub.nlb.web.preview;
 
 }

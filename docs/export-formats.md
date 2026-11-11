@@ -422,6 +422,39 @@ NLB поверх этого по образцу Java-плеера (`PlayerEngine
 
 ## Как проверять экспорт в настоящих движках
 
+### Проверка в браузере из дистрибутива: ChoiceScript и jsIQ2
+
+Чтобы посмотреть экспорт в ChoiceScript или jsIQ2 в браузере, ничего ставить не нужно:
+
+- **Из редактора** — кнопка «Проверить экспорт в браузере» на панели (рядом с кнопками сервера).
+  Она экспортирует открытую книгу (книга должна быть сохранена: картинки берутся из её каталога)
+  в `export-preview/choicescript` и `export-preview/jsiq`, запускает сервер редактора, если он не
+  запущен, и открывает `http://localhost:8111/preview/` — там ссылки на обе игры.
+- **Без редактора** — положить файлы экспорта в `export-preview/choicescript` (`startup.txt` и
+  `images`) и `export-preview/jsiq` (`.xml`) рядом со скриптами дистрибутива и запустить
+  `export-preview.sh` (`export-preview.bat`); страница — `http://localhost:8112/preview/`. Каталог
+  и порт можно указать: `export-preview.sh <каталог> --port 8112`.
+
+Устройство — `NLBW/src/main/java/com/nlbhub/nlb/web/preview`: сервлет `/preview/*` подключён и к
+серверу плеера (редактор, `play-web.sh`), и к отдельному `ExportPreviewServer`.
+- ChoiceScript играет своя страница игры (`web/mygame/index.html` из ChoiceScript): интерпретатор
+  она берёт из каталога выше (`/preview/ui.js`…), сцены — из `scenes/` (`startup.txt` экспорта),
+  список сцен — `mygame.js` (`startup` и остальные `.txt` каталога игры).
+- jsIQ2 — страница с плеером `jsiqapi212.js` (кодировка windows-1251) и jQuery 1.10.2, игра
+  начинается со статьи `0`.
+- **Движков в NLB нет**: ChoiceScript — под лицензией ChoiceScript (только некоммерческое
+  использование), у плеера jsIQ лицензии нет вовсе. Сервер скачивает их при первом запуске в
+  `export-preview/runtime`: ChoiceScript — файлы закреплённого коммита с
+  `raw.githubusercontent.com` (`ExportPreview.CHOICESCRIPT_COMMIT`), jsIQ — с quest-book.ru,
+  jQuery — с code.jquery.com (запасные адреса — ajax.googleapis.com, cdnjs). Нужен интернет
+  только в первый раз; без него страница `/preview/` скажет, какой адрес недоступен.
+- На localhost страница ChoiceScript ищет свои тестовые страницы (`quicktest.html`) и пишет в
+  консоль браузера ошибку 404 — на игру это не влияет.
+
+Проверено (Chromium, Playwright): «Слуга Ра», экспортированный кнопкой редактора (редактор под
+Xvfb), играется в обоих движках через `localhost:8111/preview/` — выбор вариантов в ChoiceScript,
+действия и объекты в jsIQ2; то же — через `export-preview.sh` (порт 8112).
+
 - **ChoiceScript:** `node randomtest.js num=20 game=<имя>` из репозитория ChoiceScript, экспорт —
   в `web/<имя>/scenes/startup.txt`; `showText=true` показывает прохождение. В книгах, где после
   поражения есть только «Далее» по кругу («Слуга Ра», «Шапочка», «Фронтир»), случайный игрок из
