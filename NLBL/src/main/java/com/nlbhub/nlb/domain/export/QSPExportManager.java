@@ -58,6 +58,25 @@ public class QSPExportManager extends TextExportManager {
     // Windows line separator should be used for QSP text format,
     // not System.getProperty("line.separator"), otherwise txt2gam utility processing fails
     private static final String LINE_SEPARATOR = "\r\n";
+    /**
+     * Конец локации. txt2gam (QSPFoundation) и редакторы QSP ищут конец по префиксу «--» (вне
+     * кавычек) — стандартная запись «--- имя ---------». Раньше экспорт писал «-», и txt2gam
+     * не находил ни одного конца: вся игра становилась одной локацией. @qsp/converters понимает
+     * оба варианта.
+     */
+    private static final String LOC_END = "---------------------------------";
+
+    /**
+     * Комментарий QSP. Кавычки и фигурные скобки внутри «!» QSP (и txt2gam) читает как начало строки
+     * или блока, и они тянутся через переводы строк: апостроф в названии страницы или ссылки
+     * («Beobras' room») проглатывал следующие локации (в «Острове» txt2gam терял 10 из 422). В
+     * комментарии они заменяются похожими знаками, перевод строки — пробелом.
+     */
+    private static String comment(String text) {
+        String safe = text == null ? EMPTY_STRING : text.replace("'", "’").replace("\"", "”")
+                .replace("{", "(").replace("}", ")").replace("\r", " ").replace("\n", " ");
+        return "! " + safe + LINE_SEPARATOR;
+    }
 
     public QSPExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
         super(nlb, encoding);
@@ -99,7 +118,7 @@ public class QSPExportManager extends TextExportManager {
         if (!pages.isEmpty()) {
             sb.append("GOTO '").append(pages.get(0).getPageId()).append("'").append(LINE_SEPARATOR);
         }
-        sb.append("-").append(LINE_SEPARATOR);
+        sb.append(LOC_END).append(LINE_SEPARATOR);
         sb.append(SERVICE_LOCATIONS.replace("\n", LINE_SEPARATOR)
                 .replace("%GAME_INV%", m_gameInvText).replace("%NLB_INV%", INVENTORY)
                 .replace("%COUNT%", ACTION_COUNT_VAR));
@@ -126,7 +145,7 @@ public class QSPExportManager extends TextExportManager {
             "    IF $nlb_in[$nlb_objs[nlb_i]] = $ARGS[0]: GOSUB 'nlb_o_' + $nlb_objs[nlb_i] + '_dsc'",
             "    nlb_i = nlb_i + 1",
             "END",
-            "-",
+            LOC_END,
             "#nlb_act",
             "*CLR",
             "IF $nlb_sel <> '':",
@@ -137,14 +156,14 @@ public class QSPExportManager extends TextExportManager {
             "    GOSUB 'nlb_o_' + $ARGS[0] + '_act'",
             "END",
             "GOSUB 'nlb_refresh'",
-            "-",
+            LOC_END,
             "#nlb_refresh",
             "$nlb_reply = $MAINTXT",
             "*CLR",
             "GOSUB $CURLOC + '_show'",
             "IF $nlb_reply <> '': *P $nlb_reply",
             "GOSUB $CURLOC + '_turn'",
-            "-",
+            LOC_END,
             "#nlb_onobjsel",
             "$nlb_o = $nlb_byname[$SELOBJ]",
             "IF $nlb_o = '': EXIT",
@@ -163,7 +182,7 @@ public class QSPExportManager extends TextExportManager {
             "    GOSUB 'nlb_use', $nlb_sel, $nlb_o",
             "END",
             "GOSUB 'nlb_refresh'",
-            "-",
+            LOC_END,
             "#nlb_use",
             "%COUNT% = %COUNT% + 1",
             "nlb_cnt_use = nlb_cnt_use + 1",
@@ -172,7 +191,7 @@ public class QSPExportManager extends TextExportManager {
             "IF nlb_printed = 0: GOSUB 'nlb_o_' + $ARGS[0] + '_nouse'",
             "$nlb_sel = ''",
             "UNSEL",
-            "-",
+            LOC_END,
             "#nlb_place",
             "IF $nlb_in[$ARGS[0]] = '%NLB_INV%' AND $ARGS[1] <> '%NLB_INV%': DELOBJ $nlb_shown[$ARGS[0]]",
             "IF $nlb_in[$ARGS[0]] <> '%NLB_INV%' AND $ARGS[1] = '%NLB_INV%':",
@@ -181,7 +200,7 @@ public class QSPExportManager extends TextExportManager {
             "    ADDOBJ $nlb_shown[$ARGS[0]]",
             "END",
             "$nlb_in[$ARGS[0]] = $ARGS[1]",
-            "-",
+            LOC_END,
             "#nlb_inv_sync",
             "LOCAL nlb_i, nlb_j, $nlb_n, $nlb_id",
             "nlb_i = 0",
@@ -200,7 +219,7 @@ public class QSPExportManager extends TextExportManager {
             "    END",
             "    nlb_i = nlb_i + 1",
             "END",
-            "-",
+            LOC_END,
             "");
 
     private String m_gameInvText = EMPTY_STRING;
@@ -241,7 +260,7 @@ public class QSPExportManager extends TextExportManager {
         if (constrained) {
             sb.append("END").append(LINE_SEPARATOR);
         }
-        sb.append("-").append(LINE_SEPARATOR);
+        sb.append(LOC_END).append(LINE_SEPARATOR);
 
         // описание объекта: _text — вывести (PDSC), _textv — значение (DSC). Графический объект
         // (VN) щёлкают по картинке, а картинок здесь нет: если у него есть действие, ссылкой
@@ -259,26 +278,26 @@ public class QSPExportManager extends TextExportManager {
         }
         sb.append(prefix).append("_text").append(LINE_SEPARATOR);
         sb.append(text);
-        sb.append("-").append(LINE_SEPARATOR);
+        sb.append(LOC_END).append(LINE_SEPARATOR);
         sb.append(prefix).append("_textv").append(LINE_SEPARATOR);
         sb.append("$RESULT = ").append(text.isEmpty() ? "''" + LINE_SEPARATOR : text);
-        sb.append("-").append(LINE_SEPARATOR);
+        sb.append(LOC_END).append(LINE_SEPARATOR);
 
         sb.append(prefix).append("_disp").append(LINE_SEPARATOR);
         // подпись в инвентаре; без неё — имя объекта (как nam в INSTEAD), без имени — id
         String disp = StringHelper.notEmpty(objBlocks.getObjDisp()) ? objBlocks.getObjDisp()
                 : StringHelper.notEmpty(objBlocks.getObjName()) ? qspString(objBlocks.getObjName()) : id;
         sb.append("$RESULT = '").append(disp).append("'").append(LINE_SEPARATOR);
-        sb.append("-").append(LINE_SEPARATOR);
+        sb.append(LOC_END).append(LINE_SEPARATOR);
 
         sb.append(prefix).append("_acttext").append(LINE_SEPARATOR);
         sb.append(objBlocks.getObjActStart());
-        sb.append("-").append(LINE_SEPARATOR);
+        sb.append(LOC_END).append(LINE_SEPARATOR);
 
         sb.append(prefix).append("_mods").append(LINE_SEPARATOR);
         sb.append(objBlocks.getObjModifications());
         sb.append(objBlocks.getObjVariable());
-        sb.append("-").append(LINE_SEPARATOR);
+        sb.append(LOC_END).append(LINE_SEPARATOR);
 
         sb.append(prefix).append("_act").append(LINE_SEPARATOR);
         sb.append("GOSUB 'nlb_o_").append(id).append("_acttext'").append(LINE_SEPARATOR);
@@ -295,7 +314,7 @@ public class QSPExportManager extends TextExportManager {
             String toTake = StringHelper.notEmpty(common) && isTakable(common) ? common : id;
             sb.append("GOSUB 'nlb_place', '").append(toTake).append("', '").append(INVENTORY).append("'").append(LINE_SEPARATOR);
         }
-        sb.append("-").append(LINE_SEPARATOR);
+        sb.append(LOC_END).append(LINE_SEPARATOR);
 
         sb.append(prefix).append("_use").append(LINE_SEPARATOR);
         for (UseBuildingBlocks use : objBlocks.getUseBuildingBlocks()) {
@@ -324,12 +343,12 @@ public class QSPExportManager extends TextExportManager {
         if (StringHelper.notEmpty(common)) {
             sb.append("IF nlb_printed = 0: GOSUB 'nlb_o_").append(common).append("_use', $ARGS[0]").append(LINE_SEPARATOR);
         }
-        sb.append("-").append(LINE_SEPARATOR);
+        sb.append(LOC_END).append(LINE_SEPARATOR);
 
         sb.append(prefix).append("_nouse").append(LINE_SEPARATOR);
         String nouse = objBlocks.getObjNouse();
         sb.append("'").append(StringHelper.notEmpty(nouse) ? nouse : m_gameNouseText).append("'").append(LINE_SEPARATOR);
-        sb.append("-").append(LINE_SEPARATOR);
+        sb.append(LOC_END).append(LINE_SEPARATOR);
         return sb.toString();
     }
 
@@ -358,7 +377,7 @@ public class QSPExportManager extends TextExportManager {
         while (matcher.find()) {
             String id = idByName.get(matcher.group(1));
             matcher.appendReplacement(result, java.util.regex.Matcher.quoteReplacement(
-                    id == null ? "! PDSC: объект " + matcher.group(1) + " не найден" : "GOSUB 'nlb_o_" + id + "_text'"));
+                    id == null ? comment("PDSC: объект " + matcher.group(1) + " не найден").trim() : "GOSUB 'nlb_o_" + id + "_text'"));
         }
         matcher.appendTail(result);
         return result.toString();
@@ -378,7 +397,7 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateObjComment(String name) {
-        return "! Object -- " + (name == null ? EMPTY_STRING : name) + LINE_SEPARATOR;
+        return comment("Object -- " + (name == null ? EMPTY_STRING : name));
     }
 
     @Override
@@ -499,14 +518,14 @@ public class QSPExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageVariable());
         stringBuilder.append("GOSUB '").append(pageId).append("_show'").append(LINE_SEPARATOR);
         stringBuilder.append("GOSUB '").append(pageId).append("_turn'").append(LINE_SEPARATOR);
-        stringBuilder.append("-").append(LINE_SEPARATOR);
+        stringBuilder.append(LOC_END).append(LINE_SEPARATOR);
         stringBuilder.append("#").append(pageId).append("_show").append(LINE_SEPARATOR);
         stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageImage());
         stringBuilder.append(pageBlocks.getPageTextStart());
         stringBuilder.append(pageBlocks.getPageTextEnd());
         stringBuilder.append("GOSUB 'nlb_show_in', '").append(pageId).append("'").append(LINE_SEPARATOR);
-        stringBuilder.append("-").append(LINE_SEPARATOR);
+        stringBuilder.append(LOC_END).append(LINE_SEPARATOR);
         stringBuilder.append("#").append(pageId).append("_turn").append(LINE_SEPARATOR);
         stringBuilder.append("CLA").append(LINE_SEPARATOR);
         stringBuilder.append("GOSUB 'nlb_inv_sync'").append(LINE_SEPARATOR);
@@ -671,7 +690,7 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateLinkComment(String comment) {
-        return "! Link -- " + comment + LINE_SEPARATOR;
+        return comment("Link -- " + comment);
     }
 
     @Override
@@ -699,7 +718,7 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageEnd(boolean isFinish) {
-        return "-" + LINE_SEPARATOR;
+        return LOC_END + LINE_SEPARATOR;
     }
 
     @Override
@@ -814,7 +833,7 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageComment(String comment) {
-        return "! Page -- " + comment + LINE_SEPARATOR;
+        return comment("Page -- " + comment);
     }
 
     @Override

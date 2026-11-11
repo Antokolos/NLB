@@ -6,9 +6,12 @@
 //   npm pack @qsp/converters@2.0.0 && mkdir conv && tar xzf qsp-converters-2.0.0.tgz -C conv
 //                                                                                     -> <пакеты>/conv/package
 // Запуск:
-//   node qsp-run.js <абсолютный путь к пакетам> <book.txt (UTF-16LE)> "<шаги через ;;>"
+//   node qsp-run.js <абсолютный путь к пакетам> <book.txt (UTF-16LE) или game.qsp> "<шаги через ;;>"
+// Файл .qsp (.gam) играется как есть — так проверяется результат txt2gam:
+//   txt2gam book.txt game.qsp && node qsp-run.js <пакеты> game.qsp "random:300"
+// (txt2gam — github.com/QSPFoundation/txt2gam, сборка cmake; число локаций он печатает в конце)
 // Шаги: подпись действия; obj:<подпись предмета> — выбрать предмет инвентаря; link:<N> — N-я
-// ссылка на объект в тексте; exec:<код> — выполнить код QSP; random:<N> — N случайных шагов
+// ссылка на объект в тексте; o:<подпись> — ссылка на объект по подписи; exec:<код> — выполнить код QSP; random:<N> — N случайных шагов
 // (действия, ссылки, предметы) с подсчётом ошибок движка. TAIL=1 — показывать конец текста,
 // VARS=a,b — в конце вывести значения переменных.
 // restartGame движка первую локацию не выполняет, поэтому игра начинается с GOTO первой локации.
@@ -18,8 +21,9 @@ const { readQsps, writeQsp } = require(path.join(P, 'conv/package/dist/index.cjs
 
 (async () => {
   const { initQspEngine } = await import('file://' + path.join(P, 'package/dist/wasm-engine.modern.js'));
-  const text = fs.readFileSync(file).toString('utf16le').replace(/^﻿/, '');
-  const game = writeQsp(readQsps(text));
+  // готовый .qsp (например, от txt2gam) — как есть; текст — через @qsp/converters, как qSpider
+  const game = /\.(qsp|gam)$/i.test(file) ? new Uint8Array(fs.readFileSync(file))
+    : writeQsp(readQsps(fs.readFileSync(file).toString('utf16le').replace(/^\uFEFF/, '')));
   const wasm = fs.readFileSync(path.join(P, 'package/dist/qsp-engine.wasm'));
   const api = await initQspEngine(wasm.buffer.slice(wasm.byteOffset, wasm.byteOffset + wasm.byteLength));
   let main = '', actions = [], objects = [], errors = [];
@@ -37,6 +41,7 @@ const { readQsps, writeQsp } = require(path.join(P, 'conv/package/dist/index.cjs
   };
   const tick = () => new Promise(r => setTimeout(r, 50));
   api.openGame(game, true);
+  console.log('LOCATIONS: ' + api.getLocationsList().length);
   api.execCode("GOTO '" + api.getLocationsList()[0] + "'");
   await tick();
   show();
@@ -64,6 +69,11 @@ const { readQsps, writeQsp } = require(path.join(P, 'conv/package/dist/index.cjs
       const i = objects.findIndex(o => o.name === step.slice(4));
       if (i < 0) { console.log('нет предмета ' + step); break; }
       api.selectObject(i);
+    } else if (step.startsWith('o:')) {
+      // ссылка на объект в тексте по подписи
+      const m = [...main.matchAll(/<a href="EXEC:([^"]*)">([^<]*)<\/a>/g)].find(x => x[2] === step.slice(2));
+      if (!m) { console.log('нет ссылки ' + step); break; }
+      api.execCode(m[1].replace(/''/g, "'"));
     } else if (step.startsWith('link:')) {
       const links = [...main.matchAll(/EXEC:([^"]*)"/g)].map(m => m[1]);
       api.execCode(links[parseInt(step.slice(5)) - 1]);
