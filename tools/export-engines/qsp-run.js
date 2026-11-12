@@ -13,7 +13,8 @@
 // Шаги: подпись действия; obj:<подпись предмета> — выбрать предмет инвентаря; link:<N> — N-я
 // ссылка на объект в тексте; o:<подпись> — ссылка на объект по подписи; exec:<код> — выполнить код QSP; random:<N> — N случайных шагов
 // (действия, ссылки, предметы) с подсчётом ошибок движка. TAIL=1 — показывать конец текста,
-// VARS=a,b — в конце вывести значения переменных.
+// VARS=a,b — в конце вывести значения переменных; MEDIA=1 — картинки в тексте (IMG), звуки
+// с прошлого шага (SND: PLAY/CLOSE) и картинки предметов инвентаря.
 // restartGame движка первую локацию не выполняет, поэтому игра начинается с GOTO первой локации.
 const fs = require('fs'), path = require('path');
 const P = process.argv[2], file = process.argv[3], script = (process.argv[4] || '').split(';;').filter(x => x);
@@ -33,11 +34,17 @@ const { readQsps, writeQsp } = require(path.join(P, 'conv/package/dist/index.cjs
   api.on('error', e => { errors.push(JSON.stringify(e)); });
   api.on('wait', (ms, done) => done());
   api.on('system_cmd', () => {});
+  let sounds = [];
+  api.on('play_file', (file, volume, done) => { sounds.push('PLAY ' + file); done(); });
+  api.on('close_file', (file, done) => { sounds.push('CLOSE ' + (file || '*')); done(); });
+  api.on('is_play', (file, done) => done(false));
   const show = (label) => {
     console.log((label ? '> ' + label + '\n' : '') + 'TEXT: ' + (process.env.TAIL ? '…' + main.replace(/<[^>]+>/g, '').replace(/\r?\n/g, '|').slice(-120) : main.replace(/\r?\n/g, '|').replace(/<(?!a )[^>]+>/g, '')) +
       '\nACTIONS: ' + JSON.stringify(actions.map(a => a.name)) + '\nINV: ' + JSON.stringify(objects.map(o => o.name)) +
+      (process.env.MEDIA ? '\nIMG: ' + JSON.stringify([...main.matchAll(/<img src="([^"]*)"/g)].map(m => m[1]))
+        + '\nSND: ' + JSON.stringify(sounds) + '\nINVIMG: ' + JSON.stringify(objects.map(o => o.image || '')) : '') +
       (errors.length ? '\nERRORS: ' + errors.join(' | ') : ''));
-    errors = [];
+    errors = []; sounds = [];
   };
   const tick = () => new Promise(r => setTimeout(r, 50));
   api.openGame(game, true);
@@ -71,7 +78,8 @@ const { readQsps, writeQsp } = require(path.join(P, 'conv/package/dist/index.cjs
       api.selectObject(i);
     } else if (step.startsWith('o:')) {
       // ссылка на объект в тексте по подписи
-      const m = [...main.matchAll(/<a href="EXEC:([^"]*)">([^<]*)<\/a>/g)].find(x => x[2] === step.slice(2));
+      // подпись — без разметки (в ссылке может быть картинка объекта)
+      const m = [...main.matchAll(/<a href="EXEC:([^"]*)">(.*?)<\/a>/g)].find(x => x[2].replace(/<[^>]*>/g, '') === step.slice(2));
       if (!m) { console.log('нет ссылки ' + step); break; }
       api.execCode(m[1].replace(/''/g, "'"));
     } else if (step.startsWith('link:')) {

@@ -150,6 +150,19 @@ public class URQExportManager extends TextExportManager {
                 sb.append("nlb_tag_").append(i + 1).append("=\"").append(urqString(objs.get(i).getObjDefaultTagVariable()))
                         .append("\"").append(LINE_SEPARATOR);
             }
+            if (!objs.get(i).getObjSounds().isEmpty()) {
+                sb.append("nlb_hassnd_").append(i + 1).append("=1").append(LINE_SEPARATOR);
+            }
+        }
+        // страницы: тег по умолчанию и признак звука — по ссылке «pN» (pageRef)
+        for (PageBuildingBlocks page : pages) {
+            String ref = pageRef(page.getPageId());
+            if (StringHelper.notEmpty(page.getPageDefaultTag())) {
+                sb.append("nlb_tag_").append(ref).append("=\"").append(urqString(page.getPageDefaultTag())).append("\"").append(LINE_SEPARATOR);
+            }
+            if (!page.getPageSounds().isEmpty()) {
+                sb.append("nlb_hassnd_").append(ref).append("=1").append(LINE_SEPARATOR);
+            }
         }
         if (!pages.isEmpty()) {
             sb.append("goto ").append(pages.get(0).getPageId()).append(LINE_SEPARATOR);
@@ -430,9 +443,19 @@ public class URQExportManager extends TextExportManager {
         return "nlb_lname=\"" + listName + "\"" + LINE_SEPARATOR + assignment("nlb_lval", value) + "proc " + proc + LINE_SEPARATOR;
     }
 
-    /** «Сам» как элемент списка: объект — номер, страница — id строкой */
+    /** «Сам» как элемент списка: объект — номер, страница — ссылка «pN» строкой (pageRef) */
     private String selfValue() {
-        return selfIsObj() ? key(selfId()) : "\"" + selfId() + "\"";
+        return selfIsObj() ? key(selfId()) : "\"" + pageRef(selfId()) + "\"";
+    }
+
+    /**
+     * Ссылка на страницу (элемент списка SPUSH/SINJECT, «сам» в TAG/GETTAG): «p» и номер страницы.
+     * Имя переменной из id страницы (nlb_tag_<id>) UrqW не читает: подстановка #%…$ разбирает
+     * его как выражение, и дефисы UUID становятся вычитанием; nlb_tag_p17 читается, как
+     * nlb_tag_N объекта — так выбирается картинка страницы по тегу (TAG $room …)
+     */
+    private String pageRef(String pageId) {
+        return "p" + getExportPageNumber(pageId);
     }
 
     /** Объект в имени переменной (nlb_in_N, nlb_tag_N): известный — номер, из переменной — #имя$, без них — сам */
@@ -443,7 +466,7 @@ public class URQExportManager extends TextExportManager {
         if (StringHelper.notEmpty(objVar)) {
             return "#%" + objVar + "$";
         }
-        return selfIsObj() ? key(selfId()) : selfId();
+        return selfIsObj() ? key(selfId()) : pageRef(selfId());
     }
 
     private static String urqString(String text) {
@@ -481,8 +504,16 @@ public class URQExportManager extends TextExportManager {
         final String label = StringHelper.notEmpty(objBlocks.getObjDisp()) ? objBlocks.getObjDisp()
                 : StringHelper.notEmpty(objBlocks.getObjName()) ? urqString(objBlocks.getObjName()) : "…";
         final String text = objBlocks.getObjText().replace("[[|nlb_act_", "[[" + label + "|nlb_act_");
+        if (objBlocks.isImageInScene() && !objBlocks.isGraphical() && !text.isEmpty()) {
+            // картинка объекта в сцене — перед его описанием (в INSTEAD — в начале ссылки; ссылка
+            // UrqW — только текст)
+            sb.append(showImage(String.valueOf(n), objBlocks.getObjImages()));
+        }
         if (!text.isEmpty()) {
             sb.append("pln ").append(text).append(LINE_SEPARATOR);
+        } else if (objBlocks.isImageInScene() && !objBlocks.isGraphical()) {
+            // объект без описания, но с картинкой (фон боя во «Фронтире») — одна картинка, как в плеере
+            sb.append(showImage(String.valueOf(n), objBlocks.getObjImages()));
         } else if (objBlocks.isGraphical() && StringHelper.notEmpty(objBlocks.getObjDisp())) {
             // графический объект (VN) без текста щёлкают по картинке, а картинок здесь нет
             sb.append("pln [[").append(objBlocks.getObjDisp()).append("|nlb_act_").append(n).append("]]").append(LINE_SEPARATOR);
@@ -497,6 +528,10 @@ public class URQExportManager extends TextExportManager {
             sb.append(reply(text));
         }
         sb.append("end").append(LINE_SEPARATOR);
+        if (!objBlocks.isGraphical()) {
+            sb.append(imageProc(String.valueOf(n), objBlocks.getObjImages()));
+        }
+        sb.append(soundProc(String.valueOf(n), objBlocks.getObjSounds(), false));
 
         sb.append(":nlb_act_").append(n).append(LINE_SEPARATOR);
         sb.append("nlb_o=").append(n).append(LINE_SEPARATOR);
@@ -704,6 +739,11 @@ public class URQExportManager extends TextExportManager {
             stringBuilder.append("nlb_tick=0").append(LINE_SEPARATOR);
         }
         stringBuilder.append("nlb_page = \"").append(pageId).append("\"").append(LINE_SEPARATOR);
+        final String ref = pageRef(pageId);
+        if (!pageBlocks.getPageSounds().isEmpty()) {
+            // initf(): звук страницы — при входе, после модификаций
+            stringBuilder.append("proc nlb_snd_").append(ref).append(LINE_SEPARATOR);
+        }
         stringBuilder.append("proc ").append(pageId).append("_show").append(LINE_SEPARATOR);
         stringBuilder.append("goto ").append(pageId).append("_turn").append(LINE_SEPARATOR);
         stringBuilder.append(":").append(pageId).append("_show").append(LINE_SEPARATOR);
@@ -713,7 +753,18 @@ public class URQExportManager extends TextExportManager {
             stringBuilder.append("nlb_tick=0").append(LINE_SEPARATOR);
         }
         stringBuilder.append(pageBlocks.getPageCaption());
-        stringBuilder.append(pageBlocks.getPageImage());
+        // Картинка — при каждом показе: тег мог измениться. Служебная страница — без текста, её
+        // сразу покидают по автоссылке — картинок (своей и объектов) не показывает, как в плеере
+        // (PlayerEngine.followLink); goto UrqW экран не очищает, и убрать картинку потом нельзя —
+        // поэтому условие автоссылки проверяется до показа (nlb_leave)
+        stringBuilder.append("nlb_leave=0").append(LINE_SEPARATOR);
+        if (!pageBlocks.isHasPageText()) {
+            String leave = leaveCondition(linksBlocksOf(pageBlocks));
+            if (leave != null) {
+                stringBuilder.append(leave.isEmpty() ? "nlb_leave=1" + LINE_SEPARATOR : leave);
+            }
+        }
+        stringBuilder.append(showImage(ref, pageBlocks.getPageImages()));
         stringBuilder.append(pageBlocks.getPageTextStart());
         stringBuilder.append(pageBlocks.getPageTextEnd());
         stringBuilder.append("nlb_where = \"").append(pageId).append("\"").append(LINE_SEPARATOR);
@@ -768,6 +819,10 @@ public class URQExportManager extends TextExportManager {
             stringBuilder.append(":").append(wait).append("_end").append(LINE_SEPARATOR);
         }
         stringBuilder.append(pageBlocks.getPageEnd());
+        if (needsImageProc(pageBlocks.getPageImages())) {
+            stringBuilder.append(imageProc(ref, pageBlocks.getPageImages()));
+        }
+        stringBuilder.append(soundProc(ref, pageBlocks.getPageSounds(), true));
         return stringBuilder.toString();
     }
 
@@ -775,6 +830,34 @@ public class URQExportManager extends TextExportManager {
      * Автоссылки страницы: первая с выполненным условием уводит со страницы. true — есть
      * безусловная (после неё ничего не выполнится)
      */
+    private static List<LinkBuildingBlocks> linksBlocksOf(PageBuildingBlocks pageBlocks) {
+        return pageBlocks.getLinksBuildingBlocks();
+    }
+
+    /**
+     * Строки, которые ставят nlb_leave=1, если сработает автоссылка (условия — как в
+     * appendAutoLinks); null — автоссылок нет, "" — есть автоссылка без условия
+     */
+    private String leaveCondition(List<LinkBuildingBlocks> linksBlocks) {
+        StringBuilder sb = new StringBuilder();
+        boolean hasAuto = false;
+        for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
+            if (linkBlocks.isAuto()) {
+                hasAuto = true;
+                String constraint = linkBlocks.getLinkConstraint();
+                if (linkBlocks.isNeedsAction()) {
+                    String hasAction = "(" + ACTION_COUNT_VAR + ">=" + getNeedsActionCount() + ")";
+                    constraint = StringHelper.isEmpty(constraint) ? hasAction : "(" + constraint + ") and " + hasAction;
+                }
+                if (StringHelper.isEmpty(constraint)) {
+                    return EMPTY_STRING;
+                }
+                sb.append("if ").append(constraint).append(" then nlb_leave=1").append(LINE_SEPARATOR);
+            }
+        }
+        return hasAuto ? sb.toString() : null;
+    }
+
     private boolean appendAutoLinks(StringBuilder stringBuilder, List<LinkBuildingBlocks> linksBlocks) {
         for (final LinkBuildingBlocks linkBlocks : linksBlocks) {
             if (linkBlocks.isAuto()) {
@@ -1049,19 +1132,8 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground, Theme theme) {
-        // TODO: support image constraints
-        ImagePathData pageImagePathData = pageImagePathDatas.get(0);
-        if (pageImagePathData.getMaxFrameNumber() == 0) {
-            String pageImagePath = pageImagePathData.getImagePath();
-            if (!StringHelper.isEmpty(pageImagePath)) {
-                return "image " + pageImagePath + LINE_SEPARATOR;
-            } else {
-                return Constants.EMPTY_STRING;
-            }
-        } else {
-            // TODO: support animated images
-            return Constants.EMPTY_STRING;
-        }
+        // картинка выбирается при показе страницы (generatePageText, showImage)
+        return Constants.EMPTY_STRING;
     }
 
     @Override
@@ -1322,20 +1394,114 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateSSndOperation() {
-        // TODO: implement
-        return EMPTY_STRING;
+        return playSoundOf(nameRef(null, null));
     }
 
     @Override
     protected String decorateWSndOperation() {
-        // TODO: implement
-        return EMPTY_STRING;
+        // ww — объект, к которому применяют: в nlb_o_N_use это nlb_t (номер); вне применения — ничего
+        return inUseLink() ? playSoundOf("#nlb_t$") : EMPTY_STRING;
     }
 
     @Override
     protected String decorateSndOperation(String objectId, String objectVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return playSoundOf(nameRef(objectId, objectVar));
+    }
+
+    /** SND/SSND/WSND: звук объекта (страницы), если он есть; ref — номер, «pN» или подстановка */
+    private static String playSoundOf(String ref) {
+        return "if nlb_hassnd_" + ref + "=1 then proc nlb_snd_" + ref + LINE_SEPARATOR;
+    }
+
+    private static boolean needsImageProc(List<MediaChoice> images) {
+        return images.size() > 1 || (images.size() == 1 && images.get(0).hasConstraint());
+    }
+
+    /**
+     * Показать картинку (оператор image UrqW): одна без условия — сразу, иначе — выбор по тегу;
+     * служебная страница, которую сейчас покинут (nlb_leave), картинок не показывает
+     */
+    private static String showImage(String ref, List<MediaChoice> images) {
+        if (images.isEmpty()) {
+            return EMPTY_STRING;
+        }
+        if (!needsImageProc(images)) {
+            return "if nlb_leave=0 then image " + images.get(0).getPath() + LINE_SEPARATOR;
+        }
+        return "proc nlb_img_" + ref + LINE_SEPARATOR + "if nlb_leave=0 and nlb_img<>\"\" then image #%nlb_img$" + LINE_SEPARATOR;
+    }
+
+    /**
+     * Картинка страницы или объекта (ModificationInterpreter.selectImage, pic в INSTEAD):
+     * nlb_img_<ссылка> кладёт в nlb_img путь первой картинки, чьё условие совпало с тегом
+     * nlb_tag_<ссылка> (без условия — подходит всегда), или ""
+     */
+    private static String imageProc(String ref, List<MediaChoice> images) {
+        if (images.isEmpty()) {
+            return EMPTY_STRING;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(":nlb_img_").append(ref).append(LINE_SEPARATOR);
+        sb.append("nlb_img=\"\"").append(LINE_SEPARATOR);
+        for (MediaChoice image : images) {
+            sb.append("if nlb_img=\"\"");
+            if (image.hasConstraint()) {
+                sb.append(" and nlb_tag_").append(ref).append("=\"").append(urqString(image.getConstraint())).append("\"");
+            }
+            sb.append(" then nlb_img=\"").append(urqString(image.getPath())).append("\"").append(LINE_SEPARATOR);
+        }
+        sb.append("end").append(LINE_SEPARATOR);
+        return sb.toString();
+    }
+
+    /**
+     * Звук страницы или объекта (ModificationInterpreter.playSound, snd в INSTEAD): nlb_snd_<ссылка>.
+     * Без условия — всегда, подряд идущие с условием — цепочка по тегу (nlb_sm — сработавший).
+     * Музыка — переменная music UrqW (повторяется, тот же файл не перезапускается; "" — стоп),
+     * эффект — play; у страницы эффект — фраза озвучки: при входе звучит одна, первая (nlb_voice)
+     */
+    private static String soundProc(String ref, List<MediaChoice> sounds, boolean page) {
+        if (sounds.isEmpty()) {
+            return EMPTY_STRING;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(":nlb_snd_").append(ref).append(LINE_SEPARATOR);
+        if (page && sounds.stream().anyMatch(MediaChoice::isSfx)) {
+            sb.append("nlb_voice=0").append(LINE_SEPARATOR);
+        }
+        for (List<MediaChoice> step : MediaChoice.soundSteps(sounds)) {
+            if (step.size() == 1 && !step.get(0).hasConstraint()) {
+                sb.append(soundStatement(step.get(0), page)).append(LINE_SEPARATOR);
+                continue;
+            }
+            sb.append("nlb_sm=0").append(LINE_SEPARATOR);
+            for (MediaChoice sound : step) {
+                String condition = "nlb_sm=0 and nlb_tag_" + ref + "=\"" + urqString(sound.getConstraint()) + "\"";
+                if (page && sound.isSfx() && !sound.isStop()) {
+                    // вложенного if в однострочном if UrqW нет: фраза — отдельной строкой по nlb_pv
+                    sb.append("if ").append(condition).append(" then nlb_sm=1 & nlb_pv=1").append(LINE_SEPARATOR);
+                    sb.append("if nlb_pv=1 and nlb_voice=0 then nlb_voice=1 & play ").append(sound.getPath()).append(LINE_SEPARATOR);
+                    sb.append("nlb_pv=0").append(LINE_SEPARATOR);
+                } else {
+                    sb.append("if ").append(condition).append(" then nlb_sm=1 & ").append(soundStatement(sound, page)).append(LINE_SEPARATOR);
+                }
+            }
+        }
+        sb.append("end").append(LINE_SEPARATOR);
+        return sb.toString();
+    }
+
+    private static String soundStatement(MediaChoice sound, boolean page) {
+        if (sound.isStop()) {
+            return "music = \"\"";
+        }
+        if (!sound.isSfx()) {
+            return "music = \"" + urqString(sound.getPath()) + "\"";
+        }
+        if (page) {
+            return "if nlb_voice=0 then nlb_voice=1 & play " + sound.getPath();
+        }
+        return "play " + sound.getPath();
     }
 
     @Override

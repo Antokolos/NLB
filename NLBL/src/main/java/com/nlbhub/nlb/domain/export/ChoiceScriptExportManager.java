@@ -164,6 +164,10 @@ public class ChoiceScriptExportManager extends TextExportManager {
         if (!m_perfectGame.isEmpty()) {
             m_achNames.add(m_perfectGame);
         }
+        m_hasMusic = false;
+        for (PageBuildingBlocks page : nlbBuildingBlocks.getPagesBuildingBlocks()) {
+            m_hasMusic = m_hasMusic || page.getPageSounds().stream().anyMatch(sound -> !sound.isSfx());
+        }
         return "*comment Generated with Non-Linear Book Builder, http://nlbhub.com" + LINE_SEPARATOR;
     }
 
@@ -181,8 +185,44 @@ public class ChoiceScriptExportManager extends TextExportManager {
         // хаб (или на страницу «Поражение» и обратно) это обычная игра, поэтому предел выше;
         // настоящий вечный цикл автопереходов он по-прежнему остановит
         result.append(achievementDeclarations());
+        if (m_hasMusic) {
+            result.append("*create nlb_music \"\"").append(LINE_SEPARATOR);
+        }
         result.append("*looplimit ").append(LOOP_LIMIT).append(LINE_SEPARATOR);
         return result.toString();
+    }
+
+    /** В книге есть музыка: переменная nlb_music — что играет сейчас */
+    private boolean m_hasMusic = false;
+
+    /**
+     * Звук страницы (playSound, snd в INSTEAD) по тегу по умолчанию: *sound играет файл один раз
+     * (повторять и останавливать ChoiceScript не умеет). Музыка — если играет другая (nlb_music:
+     * та же при переходе не перезапускается), void — только забыть её; из фраз озвучки — первая
+     */
+    private String pageSound(List<MediaChoice> sounds, String tag) {
+        StringBuilder sb = new StringBuilder();
+        boolean voice = false;
+        for (List<MediaChoice> step : MediaChoice.soundSteps(sounds)) {
+            for (MediaChoice sound : step) {
+                if (sound.hasConstraint() && !sound.getConstraint().equals(tag)) {
+                    continue;
+                }
+                if (sound.isStop()) {
+                    sb.append("*set nlb_music \"\"").append(LINE_SEPARATOR);
+                } else if (!sound.isSfx()) {
+                    String path = sound.getPath().replace("\"", "\\\"");
+                    sb.append("*if nlb_music != \"").append(path).append("\"").append(LINE_SEPARATOR);
+                    sb.append("    *set nlb_music \"").append(path).append("\"").append(LINE_SEPARATOR);
+                    sb.append("    *sound scenes/").append(sound.getPath()).append(LINE_SEPARATOR);
+                } else if (!voice) {
+                    voice = true;
+                    sb.append("*sound scenes/").append(sound.getPath()).append(LINE_SEPARATOR);
+                }
+                break;
+            }
+        }
+        return sb.toString();
     }
 
     @Override
@@ -203,7 +243,16 @@ public class ChoiceScriptExportManager extends TextExportManager {
             stringBuilder.append(pageBlocks.getPageTimerVariableInit());
         }
         stringBuilder.append(pageBlocks.getPageCaption());
-        stringBuilder.append(pageBlocks.getPageImage());
+        // Картинка и звук: тегов в ChoiceScript нет (TAG не переносится), поэтому тег страницы —
+        // всегда тег по умолчанию, и выбор по нему делается при экспорте
+        String tag = StringHelper.notEmpty(pageBlocks.getPageDefaultTag()) ? pageBlocks.getPageDefaultTag() : "";
+        for (MediaChoice image : pageBlocks.getPageImages()) {
+            if (!image.hasConstraint() || image.getConstraint().equals(tag)) {
+                stringBuilder.append("*image scenes/").append(image.getPath()).append(LINE_SEPARATOR);
+                break;
+            }
+        }
+        stringBuilder.append(pageSound(pageBlocks.getPageSounds(), tag));
         stringBuilder.append(pageBlocks.getPageTextStart());
         stringBuilder.append(pageBlocks.getPageTextEnd());
         stringBuilder.append(pageBlocks.getPageModifications());
@@ -668,19 +717,8 @@ public class ChoiceScriptExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground, Theme theme) {
-        // TODO: support image constraints
-        ImagePathData pageImagePathData = pageImagePathDatas.get(0);
-        if (pageImagePathData.getMaxFrameNumber() == 0) {
-            String pageImagePath = pageImagePathData.getImagePath();
-            if (StringHelper.isEmpty(pageImagePath)) {
-                return Constants.EMPTY_STRING;
-            } else {
-                return "*image scenes/" + pageImagePath + LINE_SEPARATOR;
-            }
-        } else {
-            // TODO: support animated images
-            return Constants.EMPTY_STRING;
-        }
+        // картинка выбирается в generatePageText (по тегу по умолчанию)
+        return Constants.EMPTY_STRING;
     }
 
     @Override

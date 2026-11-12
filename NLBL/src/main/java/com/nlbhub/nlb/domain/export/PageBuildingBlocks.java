@@ -73,6 +73,9 @@ public class PageBuildingBlocks {
     private boolean m_imageBackground;
     private boolean m_hasPageTimer;
     /** Сколько тиков таймера проматывать, если выбирать нечего (PlayerEngine.autoWaitTicks); 0 — без таймера */
+    /** Картинки и звуки страницы для пошаговых экспортов (MediaChoice) */
+    private java.util.List<MediaChoice> m_pageImages = new java.util.ArrayList<>();
+    private java.util.List<MediaChoice> m_pageSounds = new java.util.ArrayList<>();
     private int m_timerWaitTicks;
     private boolean m_hasPageText;
     private boolean m_autosFirst;
@@ -377,5 +380,21 @@ public class PageBuildingBlocks {
 
     public void setModuleTitle(String moduleTitle) {
         m_moduleTitle = moduleTitle;
+    }
+
+    public java.util.List<MediaChoice> getPageImages() {
+        return m_pageImages;
+    }
+
+    public void setPageImages(java.util.List<MediaChoice> pageImages) {
+        m_pageImages = pageImages;
+    }
+
+    public java.util.List<MediaChoice> getPageSounds() {
+        return m_pageSounds;
+    }
+
+    public void setPageSounds(java.util.List<MediaChoice> pageSounds) {
+        m_pageSounds = pageSounds;
     }
 }
