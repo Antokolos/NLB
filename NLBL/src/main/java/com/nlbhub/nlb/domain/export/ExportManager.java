@@ -1047,6 +1047,11 @@ public abstract class ExportManager {
         blocks.setObjImages(MediaChoice.images(imagePaths));
         blocks.setImageInScene(hasImage && obj.isImageInScene());
         blocks.setImageInInventory(hasImage && obj.isImageInInventory());
+        // Предмет виден в инвентаре, если у него есть подпись или картинка для инвентаря
+        // (PlayerEngine.isVisibleInInventory; в INSTEAD пустой disp — false, предмета не видно):
+        // служебные предметы («menuObjsSyncObj» во «Фронтире») лежат в инвентаре невидимыми
+        blocks.setVisibleInInventory(StringHelper.notEmpty(obj.getDisp()) && !obj.getDisp().isBlank()
+                || (hasImage && obj.isImageInInventory() && !obj.isGraphical()));
         blocks.setObjDisp(decorateObjDisp(expandVariables(StringHelper.getTextChunks(obj.getDisp())), hasImage && obj.isImageInInventory(), obj.isGraphical()));
         blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), expandVariables(StringHelper.getTextChunks(obj.getText())), hasImage && obj.isImageInScene(), obj.isGraphical()));
         blocks.setGraphical(obj.isGraphical());

@@ -642,6 +642,12 @@ public class ASMExportManager extends TextExportManager {
         sb.append(reply(StringHelper.notEmpty(nouse) ? nouse : m_gameNouseText)).append(ls).append(ls);
 
         sb.append(prefix).append("_item[::]10-10-0").append(ls);
+        if (!objBlocks.isVisibleInInventory()) {
+            // предмет без подписи и картинки лежит в инвентаре невидимым (как в плеере и INSTEAD)
+            sb.append("<<set $nlb_d = $nlb_d>>").append(ls).append(ls);
+            sb.append(soundPassage(String.valueOf(n), "nlb_snd_" + n, objBlocks.getObjSounds()));
+            return sb.toString();
+        }
         if (objBlocks.isImageInInventory() && !objBlocks.isGraphical()) {
             sb.append(imageChain(String.valueOf(n), objBlocks.getObjImages(), ASMExportManager::fileImage, null));
         }

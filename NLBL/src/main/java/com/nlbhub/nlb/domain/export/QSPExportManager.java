@@ -122,6 +122,10 @@ public class QSPExportManager extends TextExportManager {
             if (!obj.getObjSounds().isEmpty()) {
                 sb.append("nlb_hassnd['").append(obj.getObjId()).append("'] = 1").append(LINE_SEPARATOR);
             }
+            if (!obj.isVisibleInInventory()) {
+                // предмет без подписи и картинки лежит в инвентаре невидимым (как в плеере и INSTEAD)
+                sb.append("nlb_invhide['").append(obj.getObjId()).append("'] = 1").append(LINE_SEPARATOR);
+            }
             if (hasInventoryImage(obj)) {
                 sb.append("nlb_invimg['").append(obj.getObjId()).append("'] = 1").append(LINE_SEPARATOR);
             }
@@ -278,8 +282,8 @@ public class QSPExportManager extends TextExportManager {
             "UNSEL",
             LOC_END,
             "#nlb_place",
-            "IF $nlb_in[$ARGS[0]] = '%NLB_INV%' AND $ARGS[1] <> '%NLB_INV%': DELOBJ $nlb_shown[$ARGS[0]]",
-            "IF $nlb_in[$ARGS[0]] <> '%NLB_INV%' AND $ARGS[1] = '%NLB_INV%':",
+            "IF $nlb_in[$ARGS[0]] = '%NLB_INV%' AND $ARGS[1] <> '%NLB_INV%' AND nlb_invhide[$ARGS[0]] = 0: DELOBJ $nlb_shown[$ARGS[0]]",
+            "IF $nlb_in[$ARGS[0]] <> '%NLB_INV%' AND $ARGS[1] = '%NLB_INV%' AND nlb_invhide[$ARGS[0]] = 0:",
             "    $nlb_shown[$ARGS[0]] = $FUNC('nlb_o_' + $ARGS[0] + '_disp')",
             "    $nlb_byname[$nlb_shown[$ARGS[0]]] = $ARGS[0]",
             "    IF nlb_invimg[$ARGS[0]] = 1:",
@@ -407,7 +411,7 @@ public class QSPExportManager extends TextExportManager {
             "nlb_i = 0",
             "LOOP WHILE nlb_i < nlb_objs_n:",
             "    $nlb_id = $nlb_objs[nlb_i]",
-            "    IF $nlb_in[$nlb_id] = '%NLB_INV%':",
+            "    IF $nlb_in[$nlb_id] = '%NLB_INV%' AND nlb_invhide[$nlb_id] = 0:",
             "        $nlb_n = $FUNC('nlb_o_' + $nlb_id + '_disp')",
             "        IF $nlb_n <> $nlb_shown[$nlb_id]:",
             "            nlb_j = 1",
