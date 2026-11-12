@@ -39,7 +39,7 @@ public class ExportObjectNamesAcrossModulesTest {
         File file = new File(m_temp.getRoot(), "book.txt");
         book.exportToQSPTextFile(file);
         String qsp = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_16LE);
-        assertFalse("имя объекта не стало переменной", qsp.contains("GOSUB 'nlb_place', $cardPlaceholderObj"));
-        assertTrue("объект модуля — по id", qsp.contains("GOSUB 'nlb_place', '" + CARD_PLACEHOLDER + "', "));
+        assertFalse("имя объекта не стало переменной", qsp.contains("GOSUB 'nlb_add', $cardPlaceholderObj"));
+        assertTrue("объект модуля — по id", qsp.contains("GOSUB 'nlb_add', '" + CARD_PLACEHOLDER + "', "));
     }
 }

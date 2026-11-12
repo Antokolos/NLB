@@ -60,6 +60,9 @@ public class ObjBuildingBlocks {
     private String m_objImage;
     private String m_objDisp;
     private String m_objText;
+    /** Описание для PDSC (выводится и у объекта с suppressDsc, как objDscF в плеере) */
+    private String m_objTextF;
+    private boolean m_suppressDsc;
     private String m_objActText;
     private String m_objEffect;
     private boolean m_graphical;
@@ -79,6 +82,8 @@ public class ObjBuildingBlocks {
     private boolean m_imageInScene;
     /** Предмет виден в инвентаре: есть подпись или картинка (PlayerEngine.isVisibleInInventory) */
     private boolean m_visibleInInventory = true;
+    /** Вид объекта (ExportManager.getObjType): MENU — щелчок в инвентаре — действие, STAT — только подпись */
+    private ObjType m_objType = ObjType.OBJ;
     private boolean m_imageInInventory;
     private String m_objDefaultTagVariable;
     private String m_objConstraint;
@@ -465,5 +470,29 @@ public class ObjBuildingBlocks {
 
     public void setImageInInventory(boolean imageInInventory) {
         m_imageInInventory = imageInInventory;
+    }
+
+    public ObjType getObjType() {
+        return m_objType;
+    }
+
+    public void setObjType(ObjType objType) {
+        m_objType = objType;
+    }
+
+    public String getObjTextF() {
+        return m_objTextF;
+    }
+
+    public void setObjTextF(String objTextF) {
+        m_objTextF = objTextF;
+    }
+
+    public boolean isSuppressDsc() {
+        return m_suppressDsc;
+    }
+
+    public void setSuppressDsc(boolean suppressDsc) {
+        m_suppressDsc = suppressDsc;
     }
 }

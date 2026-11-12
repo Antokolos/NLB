@@ -281,20 +281,20 @@ public class ControlFlowExportTest {
         File qspFile = new File(m_temp.getRoot(), "book.txt");
         ifHaveBook().exportToQSPTextFile(qspFile);
         assertInOrder(read(qspFile, StandardCharsets.UTF_16LE),
-                "GOSUB 'nlb_place', '", "', 'nlb_inv'\n", "IF $nlb_in['", "'] = 'nlb_inv':\n", "x = ", "ELSE\n", "x = ", "END\n");
+                "IF nlb_at['", "|nlb_inv'] = 0: GOSUB 'nlb_take', '", "', 0\n", "IF nlb_at['", "|nlb_inv'] = 1:\n", "x = ", "ELSE\n", "x = ", "END\n");
         File smFile = new File(m_temp.getRoot(), "book.sm");
         ifHaveBook().exportToASMFile(smFile);
-        assertInOrder(read(smFile, StandardCharsets.UTF_8), "<<set $nlb_in[1] = \"nlb_inv\">>",
-                "<<if $nlb_in[1] eq \"nlb_inv\">>\n", "<<else>>\n", "<<endif>>\n");
+        assertInOrder(read(smFile, StandardCharsets.UTF_8), "<<set $nlb_po = 1>><<set $nlb_tk = 0>>", "<<display 'nlb_take'>>",
+                "<<if (($nlb_cs[\"nlb_inv\"] && $nlb_cs[\"nlb_inv\"].indexOf(1) != -1) ? 1 : 0) eq 1>>\n", "<<else>>\n", "<<endif>>\n");
         File xmlFile = new File(m_temp.getRoot(), "book.xml");
         ifHaveBook().exportToJSIQFile(xmlFile);
         assertInOrder(read(xmlFile, StandardCharsets.UTF_8),
-                "NLB.place(vars, '", "', NLB.INV); ", "if (NLB.has(vars, '", "')) { ", "} else { ", "} ");
+                "NLB.take(vars, '", "', false); ", "if (NLB.has(vars, '", "')) { ", "} else { ", "} ");
         File qstFile = new File(m_temp.getRoot(), "book.qst");
         ifHaveBook().exportToURQTextFile(qstFile);
         String urq = read(qstFile, Charset.forName("windows-1251")).replace("\r\n", "\n");
-        assertInOrder(urq, "nlb_po=1\nnlb_pd=\"nlb_inv\"\nproc nlb_place\n",
-                "if not (nlb_in_1=\"nlb_inv\") then goto nlb_if_1_1\n", "goto nlb_if_1_end\n:nlb_if_1_1\n",
+        assertInOrder(urq, "nlb_po = 1\nnlb_tk=0\nif nlb_at_#nlb_po$_inv=0 then proc nlb_take\n",
+                "if not (nlb_at_1_inv=1) then goto nlb_if_1_1\n", "goto nlb_if_1_end\n:nlb_if_1_1\n",
                 ":nlb_if_1_2\n:nlb_if_1_end\n");
         File csFile = new File(m_temp.getRoot(), "startup.txt");
         ifHaveBook().exportToChoiceScript(csFile);

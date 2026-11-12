@@ -93,6 +93,8 @@ public class ASMExportManager extends TextExportManager {
     private final java.util.Map<String, Integer> m_keys = new java.util.HashMap<>();
     private final java.util.Map<String, Boolean> m_takable = new java.util.HashMap<>();
     private List<ObjBuildingBlocks> m_orderedObjs = new java.util.ArrayList<>();
+    /** Начальное содержимое контейнеров (ExportManager.initialContents) */
+    private java.util.Map<String, List<String>> m_initialContents = new java.util.LinkedHashMap<>();
     private String m_gameInvText = EMPTY_STRING;
     private String m_gameNouseText = EMPTY_STRING;
 
@@ -149,9 +151,10 @@ public class ASMExportManager extends TextExportManager {
     /**
      * Служебные абзацы объектов. Объектов в AXMA нет, есть переменные, &lt;&lt;display&gt;&gt; (вывести
      * абзац на месте — подпрограмма) и &lt;&lt;goto&gt;&gt; (перейти, прерывая абзац). Объекты книги
-     * пронумерованы: место объекта N — $nlb_in[N] (id страницы или объекта-контейнера, «nlb_inv» —
-     * инвентарь, "" — нигде), порядок предметов инвентаря — массив $nlb_invo (в каком их брали, как
-     * в INSTEAD). На странице после текста — объекты (nlb_show_in), ответ на действие (nlb_reply) и
+     * пронумерованы. Содержимое контейнера — массив номеров $nlb_cs[id] (id страницы или объекта,
+     * «nlb_inv» — инвентарь; в порядке, в каком клали). Объект может лежать в нескольких
+     * контейнерах сразу — ADD не убирает его из прежнего места (objs():add в INSTEAD,
+     * PlayerContext.containerAdd); $nlb_in[N] — последний владелец (CNTNR). На странице после текста — объекты (nlb_show_in), ответ на действие (nlb_reply) и
      * инвентарь (nlb_inv). Щелчок по объекту — ссылка [[текст|nlb_act {$nlb_o = N}]]: действие или
      * применение выбранного предмета, затем страница показывается заново (без модификаций входа);
      * GOTO из действия уводит на свою страницу. Абзац и переход по переменной AXMA понимает, только
@@ -169,7 +172,10 @@ public class ASMExportManager extends TextExportManager {
         sb.append("<<set $nlb_cnt_prev = 0>><<set $nlb_sel = 0>><<set $nlb_o = 0>><<set $nlb_o2 = 0>><<set $nlb_t = 0>>")
                 .append("<<set $nlb_printed = 0>><<set $nlb_reply = \"\">><<set $nlb_redraw = 0>><<set $nlb_page = \"\">>")
                 .append("<<set $nlb_where = \"\">><<set $nlb_ws = \"\">><<set $nlb_p = \"\">><<set $nlb_d = \"\">>")
-                .append("<<set $nlb_i = 0>><<set $nlb_diff = 0>><<set $nlb_invo = []>><<set $nlb_in = []>>")
+                .append("<<set $nlb_i = 0>><<set $nlb_diff = 0>><<set $nlb_in = []>>")
+                .append("<<set $nlb_cs = {}>><<set $nlb_po = 0>><<set $nlb_pd = \"\">><<set $nlb_j2 = -1>><<set $nlb_sd = 0>><<set $nlb_sw = []>>")
+                .append("<<set $nlb_si = []>><<set $nlb_w2 = \"\">><<set $nlb_k2 = 0>><<set $nlb_seen = []>><<set $nlb_gen = 0>><<set $nlb_on = 1>>")
+                .append("<<set $nlb_ivseen = []>><<set $nlb_ivn = 0>><<set $nlb_tk = 0>><<set $nlb_menu = []>>")
                 .append("<<set $nlb_lists = {}>><<set $nlb_tags = {}>><<set $nlb_music = \"\">><<set $nlb_hassnd = {}>><<set $nlb_j = 0>><<set $nlb_v = 0>><<set $nlb_c = \"\">>")
                 .append("<<set $nlb_ln = \"\">><<set $nlb_ln2 = \"\">><<set $nlb_ok = 0>><<set $nlb_k = 0>><<set $nlb_a = []>><<set $nlb_achs = {}>><<set $nlb_an = \"\">><<set $nlb_ak = \"\">><<set $nlb_ok = 0>>");
         for (ObjBuildingBlocks obj : m_orderedObjs) {
@@ -178,23 +184,59 @@ public class ASMExportManager extends TextExportManager {
             if (StringHelper.notEmpty(obj.getObjDefaultTagVariable())) {
                 sb.append("<<set $nlb_tags[").append(n).append("] = ").append(jsText(obj.getObjDefaultTagVariable())).append(">>");
             }
+            if (obj.getObjType() == ObjType.MENU || obj.getObjType() == ObjType.GMENU) {
+                sb.append("<<set $nlb_menu[").append(n).append("] = 1>>");  // щелчок в инвентаре — действие
+            } else if (obj.getObjType() == ObjType.STAT) {
+                sb.append("<<set $nlb_menu[").append(n).append("] = 2>>");  // только подпись
+            }
         }
         for (String ref : m_soundRefs) {
             sb.append("<<set $nlb_hassnd[").append(ref).append("] = 1>>");
+        }
+        // начальное содержимое контейнеров (порядок книги, content)
+        for (java.util.Map.Entry<String, List<String>> entry : m_initialContents.entrySet()) {
+            StringBuilder items = new StringBuilder();
+            for (String item : entry.getValue()) {
+                items.append(items.length() == 0 ? "" : ", ").append(m_keys.get(item));
+            }
+            sb.append("<<set $nlb_cs[\"").append(entry.getKey()).append("\"] = [").append(items).append("]>>");
         }
         // теги по умолчанию страниц (var { tag = … } в INSTEAD)
         for (java.util.Map.Entry<String, String> deftag : m_pageDefaultTags.entrySet()) {
             sb.append("<<set $nlb_tags[\"").append(deftag.getKey()).append("\"] = ").append(jsText(deftag.getValue())).append(">>");
         }
         sb.append(ls).append(ls);
-        // объекты места $nlb_where — каждый строкой, в порядке книги
+        // объекты контейнера $nlb_where по порядку; вложенные — рекурсивно (display), поэтому
+        // контейнер и счётчик — по глубине $nlb_sd. Условие <<loop>> AXMA вычисляет заново на
+        // каждом шаге, а вложенный вызов меняет $nlb_a — после него $nlb_a восстанавливается
         sb.append(":: nlb_show_in[::]10-10-0").append(ls);
-        sb.append("<<set $nlb_ws = $nlb_where>>").append(ls);
-        for (ObjBuildingBlocks obj : m_orderedObjs) {
-            int n = m_keys.get(obj.getObjId());
-            sb.append("<<if $nlb_in[").append(n).append("] eq $nlb_where>><<display 'nlb_o_").append(n).append("_dsc'>><<endif>>").append(ls);
-        }
-        sb.append(ls);
+        sb.append(walk("_dsc")).append(ls).append(ls);
+        // PDSCS: описания объектов с suppressDsc в контейнере $nlb_where, вложенные — раньше своего
+        // контейнера (ModificationInterpreter.pdscs)
+        sb.append(":: nlb_pdscs[::]10-10-0").append(ls);
+        sb.append(walk("_pdscs")).append(ls).append(ls);
+        // инвентарь: предметы по взятию, за каждым — содержимое (PlayerEngine.inventoryObjects);
+        // выключенный скрывает и содержимое, невидимый — только себя (его _item пуст)
+        sb.append(":: nlb_inv_in[::]10-10-0").append(ls);
+        sb.append(walk("_inv")).append(ls).append(ls);
+        // объект $nlb_po — в контейнер $nlb_pd, не убирая из прежних мест (objs():add)
+        sb.append(":: nlb_add[::]10-10-0").append(ls);
+        sb.append("<<set $nlb_cs[$nlb_pd] = $nlb_cs[$nlb_pd] ? $nlb_cs[$nlb_pd] : []>><<if $nlb_cs[$nlb_pd].indexOf($nlb_po) eq -1>>")
+                .append("<<set $nlb_cs[$nlb_pd].push($nlb_po)>><<endif>><<if $nlb_pd neq \"").append(INVENTORY)
+                .append("\">><<set $nlb_in[$nlb_po] = $nlb_pd>><<endif>>").append(ls).append(ls);
+        // объект $nlb_po — из контейнера $nlb_pd (владелец сбрасывается, container = nil)
+        sb.append(":: nlb_del[::]10-10-0").append(ls);
+        sb.append("<<set $nlb_j2 = $nlb_cs[$nlb_pd] ? $nlb_cs[$nlb_pd].indexOf($nlb_po) : -1>><<if $nlb_j2 gt -1>>")
+                .append("<<set $nlb_cs[$nlb_pd].splice($nlb_j2, 1)>><<endif>><<if $nlb_pd neq \"").append(INVENTORY)
+                .append("\">><<set $nlb_in[$nlb_po] = \"\">><<endif>>").append(ls).append(ls);
+        // взять (take в INSTEAD): из текущей страницы, при $nlb_tk = 1 (щелчок по переносимому
+        // объекту) — и от последнего владельца, если на странице его нет
+        sb.append(":: nlb_take[::]10-10-0").append(ls);
+        sb.append("<<set $nlb_pd = $nlb_page>><<set $nlb_j2 = $nlb_cs[$nlb_pd] ? $nlb_cs[$nlb_pd].indexOf($nlb_po) : -1>>")
+                .append("<<if ($nlb_j2 eq -1) and ($nlb_tk eq 1)>><<set $nlb_pd = $nlb_in[$nlb_po]>>")
+                .append("<<set $nlb_j2 = ($nlb_pd && $nlb_cs[$nlb_pd]) ? $nlb_cs[$nlb_pd].indexOf($nlb_po) : -1>><<endif>>")
+                .append("<<if $nlb_j2 gt -1>><<display 'nlb_del'>><<endif>><<set $nlb_pd = \"").append(INVENTORY)
+                .append("\">><<display 'nlb_add'>>").append(ls).append(ls);
         // конец хода: callback-объекты, если игрок с прошлого хода что-то сделал (update_action_count)
         sb.append(":: nlb_turn[::]10-10-0").append(ls);
         sb.append("<<set $nlb_diff = ").append(countSum(0)).append(">><<if $nlb_diff gt $nlb_cnt_prev>><<set $nlb_cnt_prev = $nlb_diff>>");
@@ -209,12 +251,14 @@ public class ASMExportManager extends TextExportManager {
         sb.append("<<endif>><<set $nlb_cnt_prev = $nlb_diff>>").append(ls).append(ls);
         // CLEAR, CLRINV: всё содержимое контейнера $nlb_c — никуда
         sb.append(":: nlb_clear[::]10-10-0").append(ls);
-        sb.append("<<set $nlb_j = 0>><<loop $nlb_in.length>><<if $nlb_in[$nlb_j] eq $nlb_c>>").append(place("$nlb_j", "\"\""))
-                .append("<<endif>><<set $nlb_j = $nlb_j + 1>><<endloop>>").append(ls).append(ls);
+        // (владелец сбрасывается у тех, чей последний владелец — он: PlayerContext.containerClear)
+        sb.append("<<set $nlb_a = $nlb_cs[$nlb_c] ? $nlb_cs[$nlb_c] : []>><<set $nlb_j = 0>><<loop $nlb_a.length>>")
+                .append("<<set $nlb_v = $nlb_a[$nlb_j]>><<if $nlb_in[$nlb_v] eq $nlb_c>><<set $nlb_in[$nlb_v] = \"\">><<endif>>")
+                .append("<<set $nlb_j = $nlb_j + 1>><<endloop>><<set $nlb_cs[$nlb_c] = []>>").append(ls).append(ls);
         // OBJS: содержимое контейнера $nlb_c — в начало списка $nlb_ln (push каждого — обратный порядок)
         sb.append(":: nlb_objs[::]10-10-0").append(ls);
-        sb.append(ensureList("$nlb_ln")).append("<<set $nlb_j = 0>><<loop $nlb_in.length>><<if $nlb_in[$nlb_j] eq $nlb_c>>")
-                .append("<<set $nlb_lists[$nlb_ln].unshift($nlb_j)>><<endif>><<set $nlb_j = $nlb_j + 1>><<endloop>>")
+        sb.append(ensureList("$nlb_ln")).append("<<set $nlb_a = $nlb_cs[$nlb_c] ? $nlb_cs[$nlb_c].slice() : []>><<set $nlb_j = 0>><<loop $nlb_a.length>>")
+                .append("<<set $nlb_lists[$nlb_ln].unshift($nlb_a[$nlb_j])>><<set $nlb_j = $nlb_j + 1>><<endloop>>")
                 .append(dropEmptyList("$nlb_ln")).append(ls).append(ls);
         // ADDALL: элементы списка $nlb_ln — в начало списка $nlb_ln2 или (объекты) в контейнер $nlb_c
         sb.append(":: nlb_addall[::]10-10-0").append(ls);
@@ -222,7 +266,7 @@ public class ASMExportManager extends TextExportManager {
                 // <<loop>> не принимает индекс в скобках ($ASM is not defined) — массив через $nlb_a
                 .append("<<set $nlb_a = $nlb_lists[$nlb_ln]>><<set $nlb_j = 0>><<loop $nlb_a.length>><<set $nlb_v = $nlb_a[$nlb_j]>>")
                 .append("<<if $nlb_ln2 neq \"\">><<set $nlb_lists[$nlb_ln2].unshift($nlb_v)>><<else>>")
-                .append("<<set $nlb_ok = ($nlb_in[$nlb_v] !== undefined) ? 1 : 0>><<if $nlb_ok eq 1>>").append(place("$nlb_v", "$nlb_c"))
+                .append("<<set $nlb_ok = ($nlb_in[$nlb_v] !== undefined) ? 1 : 0>><<if $nlb_ok eq 1>><<set $nlb_po = $nlb_v>><<set $nlb_pd = $nlb_c>><<display 'nlb_add'>>")
                 .append("<<endif>><<endif>><<set $nlb_j = $nlb_j + 1>><<endloop>>").append(dropEmptyList("$nlb_ln"))
                 .append("<<if $nlb_ln2 neq \"\">>").append(dropEmptyList("$nlb_ln2")).append("<<endif>>").append(ls).append(ls);
         // SHUFFLE (Фишер — Йейтс) списка $nlb_ln
@@ -265,9 +309,9 @@ public class ASMExportManager extends TextExportManager {
         sb.append("<<if $nlb_reply neq \"\">><<print $nlb_reply>><<set $nlb_reply = \"\">><<endif>>").append(ls).append(ls);
         // инвентарь: предметы кнопками, выбранный для применения — с «» »
         sb.append(":: nlb_inv[::]10-10-0").append(ls);
-        sb.append("<<if $nlb_invo.length gt 0>>").append(ls).append("* * *").append(ls).append("<<endif>>").append(ls);
-        sb.append("<<set $nlb_i = 0>><<loop $nlb_invo.length>><<set $nlb_p = \"nlb_o_\" + $nlb_invo[$nlb_i] + \"_item\">>")
-                .append("<<display $nlb_p>><<set $nlb_i = $nlb_i + 1>><<endloop>>").append(ls).append(ls);
+        sb.append("<<if $nlb_cs[\"").append(INVENTORY).append("\"] and $nlb_cs[\"").append(INVENTORY).append("\"].length gt 0>>").append(ls)
+                .append("* * *").append(ls).append("<<endif>>").append(ls);
+        sb.append("<<set $nlb_ivn = $nlb_ivn + 1>><<set $nlb_where = \"").append(INVENTORY).append("\">><<display 'nlb_inv_in'>>").append(ls).append(ls);
         // щелчок по объекту в тексте: действие или (выбран предмет) применение
         sb.append(":: nlb_act[::]10-10-0").append(ls);
         sb.append("<<if $nlb_sel neq 0>><<set $nlb_t = $nlb_o>><<set $nlb_o = $nlb_sel>><<display 'nlb_use'>><<else>>")
@@ -282,7 +326,11 @@ public class ASMExportManager extends TextExportManager {
         // щелчок по предмету: первый — применение к себе (inv) или game-inv и выбор, другой предмет
         // — применение, тот же — отмена выбора
         sb.append(":: nlb_invclick[::]10-10-0").append(ls);
-        sb.append("<<if $nlb_sel eq 0>>").append(count("inv"))
+        // предмет-меню (карты в бою «Фронтира»): щелчок — действие, показатель — ничего; не
+        // выбираются (PlayerEngine.clickInventory)
+        sb.append("<<if ($nlb_sel eq 0) and ($nlb_menu[$nlb_o2] gt 0)>>").append(count("inv"))
+                .append("<<if $nlb_menu[$nlb_o2] eq 1>><<set $nlb_p = \"nlb_o_\" + $nlb_o2 + \"_acta\">><<display $nlb_p>><<endif>>")
+                .append("<<elseif $nlb_sel eq 0>>").append(count("inv"))
                 .append("<<set $nlb_printed = 0>><<set $nlb_o = $nlb_o2>><<set $nlb_t = $nlb_o2>><<set $nlb_sel = $nlb_o2>>")
                 .append("<<set $nlb_p = \"nlb_o_\" + $nlb_o + \"_use\">><<display $nlb_p>>")
                 .append("<<if $nlb_printed eq 0>>").append(reply(m_gameInvText)).append("<<endif>>")
@@ -290,6 +338,16 @@ public class ASMExportManager extends TextExportManager {
                 .append("<<else>><<set $nlb_o = $nlb_sel>><<set $nlb_t = $nlb_o2>><<display 'nlb_use'>><<endif>>")
                 .append("<<set $nlb_redraw = 1>><<goto $nlb_page>>").append(ls).append(ls);
         return sb.toString();
+    }
+
+    /** Обход содержимого $nlb_where: для каждого объекта N — абзац nlb_o_N<suffix> (см. nlb_show_in) */
+    private static String walk(String suffix) {
+        return "<<set $nlb_sd = $nlb_sd + 1>><<set $nlb_sw[$nlb_sd] = $nlb_where>><<set $nlb_si[$nlb_sd] = 0>>"
+                + "<<set $nlb_a = $nlb_cs[$nlb_where] ? $nlb_cs[$nlb_where] : []>><<loop $nlb_a.length>>"
+                + "<<set $nlb_k2 = $nlb_si[$nlb_sd]>><<set $nlb_p = \"nlb_o_\" + $nlb_a[$nlb_k2] + \"" + suffix + "\">>"
+                + "<<set $nlb_si[$nlb_sd] = $nlb_k2 + 1>><<display $nlb_p>>"
+                + "<<set $nlb_w2 = $nlb_sw[$nlb_sd]>><<set $nlb_a = $nlb_cs[$nlb_w2] ? $nlb_cs[$nlb_w2] : []>><<endloop>>"
+                + "<<set $nlb_sd = $nlb_sd - 1>>";
     }
 
     /** Действие игрока вида type: счётчик для «needs action» и для COUNTGET */
@@ -340,16 +398,10 @@ public class ASMExportManager extends TextExportManager {
         return "<<set $nlb_reply = $nlb_reply + " + jsText(text) + " + \"<br>\">>";
     }
 
-    /**
-     * Перенести объект с номером key (метка) в место dest (выражение AXMA: "id", "nlb_inv", "" или
-     * $nlb_page), с порядком инвентаря $nlb_invo
-     */
-    private static String place(String key, String dest) {
-        return "<<if ($nlb_in[" + key + "] eq \"" + INVENTORY + "\") and (" + dest + " neq \"" + INVENTORY + "\")>>"
-                + "<<set $nlb_invo.splice($nlb_invo.indexOf(" + key + "), 1)>><<endif>>"
-                + "<<if ($nlb_in[" + key + "] neq \"" + INVENTORY + "\") and (" + dest + " eq \"" + INVENTORY + "\")>>"
-                + "<<set $nlb_invo.push(" + key + ")>><<endif>>"
-                + "<<set $nlb_in[" + key + "] = " + dest + ">>";
+    /** 1, если объект (номер, выражение AXMA) в инвентаре, иначе 0 */
+    private static String inInventory(String key) {
+        String inv = "$nlb_cs[\"" + INVENTORY + "\"]";
+        return "((" + inv + " && " + inv + ".indexOf(" + key + ") != -1) ? 1 : 0)";
     }
 
     /**
@@ -566,6 +618,12 @@ public class ASMExportManager extends TextExportManager {
         if (constrained) {
             sb.append("<<if ").append(objBlocks.getObjConstraint()).append(">>").append(ls);
         }
+        final boolean pic = objBlocks.isGraphical() || objBlocks.isImageInScene();
+        if (pic) {
+            // объект с картинкой в нескольких контейнерах (держатели карт «Фронтира») — на экране
+            // один раз, вместе с содержимым, как сцена плеера (PlayerEngine.sceneObjects)
+            sb.append("<<if $nlb_seen[").append(n).append("] neq $nlb_gen>><<set $nlb_seen[").append(n).append("] = $nlb_gen>>").append(ls);
+        }
         if (objBlocks.isImageInScene() && !objBlocks.isGraphical()) {
             // картинка объекта в сцене — перед его описанием ([[File: …]] — картинка в тексте; в
             // ссылку AXMA её не вставить)
@@ -574,15 +632,33 @@ public class ASMExportManager extends TextExportManager {
         if (!text.isEmpty()) {
             sb.append(text).append(ls);
         }
-        sb.append("<<set $nlb_where = \"").append(id).append("\">><<display 'nlb_show_in'>><<set $nlb_where = $nlb_in[")
-                .append(n).append("]>>").append(ls);
+        sb.append("<<set $nlb_where = \"").append(id).append("\">><<display 'nlb_show_in'>>").append(ls);
+        if (pic) {
+            sb.append("<<endif>>").append(ls);
+        }
         if (constrained) {
             sb.append("<<endif>>").append(ls);
         }
         sb.append(ls);
 
+        // _text — для PDSC: текст объекта и у объекта с suppressDsc (objDscF в плеере)
+        final String textF = objBlocks.getObjTextF().replace(EMPTY_LINK_LABEL, disp);
         sb.append(prefix).append("_text[::]10-10-0").append(ls);
-        sb.append(text.isEmpty() ? "<<set $nlb_d = $nlb_d>>" : text).append(ls).append(ls);
+        sb.append(textF.isEmpty() ? "<<set $nlb_d = $nlb_d>>" : textF).append(ls).append(ls);
+        // _on — объект включён (условие объекта)
+        sb.append(prefix).append("_on[::]10-10-0").append(ls);
+        sb.append(constrained ? "<<set $nlb_on = 0>><<if " + objBlocks.getObjConstraint() + ">><<set $nlb_on = 1>><<endif>>" : "<<set $nlb_on = 1>>")
+                .append(ls).append(ls);
+        // _pdscs — шаг PDSCS: объект с suppressDsc — его содержимое, затем он сам
+        sb.append(prefix).append("_pdscs[::]10-10-0").append(ls);
+        sb.append(objBlocks.isSuppressDsc()
+                ? "<<set $nlb_where = \"" + id + "\">><<display 'nlb_pdscs'>><<display 'nlb_o_" + n + "_on'>><<if $nlb_on eq 1>><<display 'nlb_o_" + n + "_text'>><<endif>>"
+                : "<<set $nlb_d = $nlb_d>>").append(ls).append(ls);
+        // _inv — шаг инвентаря: предмет (один раз за показ), затем его содержимое
+        sb.append(prefix).append("_inv[::]10-10-0").append(ls);
+        sb.append("<<display 'nlb_o_").append(n).append("_on'>><<if ($nlb_on eq 1) and ($nlb_ivseen[").append(n).append("] neq $nlb_ivn)>>")
+                .append("<<set $nlb_ivseen[").append(n).append("] = $nlb_ivn>><<display 'nlb_o_").append(n).append("_item'>>")
+                .append("<<set $nlb_where = \"").append(id).append("\">><<display 'nlb_inv_in'>><<endif>>").append(ls).append(ls);
 
         sb.append(prefix).append("_acta[::]10-10-0").append(ls);
         sb.append(objBlocks.getObjActStart());
@@ -606,7 +682,7 @@ public class ASMExportManager extends TextExportManager {
         if (objBlocks.isTakable()) {
             // decorateObjTak: взять общий объект, если он переносимый, иначе этот
             String toTake = hasCommon && Boolean.TRUE.equals(m_takable.get(common)) ? common : id;
-            sb.append(place(String.valueOf(m_keys.get(toTake)), "\"" + INVENTORY + "\"")).append(ls);
+            sb.append("<<set $nlb_po = ").append(m_keys.get(toTake)).append(">><<set $nlb_tk = 1>><<display 'nlb_take'>>").append(ls);
         }
         sb.append(ls);
 
@@ -771,6 +847,7 @@ public class ASMExportManager extends TextExportManager {
     @Override
     protected String generateNLBText(final NLBBuildingBlocks nlbBlocks) throws com.nlbhub.nlb.exception.NLBConsistencyException {
         m_orderedObjs = orderedObjects(nlbBlocks);
+        m_initialContents = initialContents(nlbBlocks);
         java.util.Map<String, String> idByName = new java.util.HashMap<>();
         for (int i = 0; i < m_orderedObjs.size(); i++) {
             ObjBuildingBlocks obj = m_orderedObjs.get(i);
@@ -903,7 +980,7 @@ public class ASMExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageTextStart());
         stringBuilder.append(pageBlocks.getPageTextEnd());
         // объекты страницы, ответ на действие, инвентарь
-        stringBuilder.append("<<set $nlb_where = \"").append(pageId).append("\">><<display 'nlb_show_in'>>").append(LINE_SEPARATOR);
+        stringBuilder.append("<<set $nlb_gen = $nlb_gen + 1>><<set $nlb_where = \"").append(pageId).append("\">><<display 'nlb_show_in'>>").append(LINE_SEPARATOR);
         stringBuilder.append("<<display 'nlb_reply'>>").append(LINE_SEPARATOR);
         stringBuilder.append("<<display 'nlb_inv'>>").append(LINE_SEPARATOR);
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
@@ -1268,9 +1345,9 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateIfHave(String objId, String objVar) {
-        // место объекта — $nlb_in[N] (объект из переменной — его номер в ней)
+        // в инвентаре — в $nlb_cs["nlb_inv"] (объект из переменной — его номер в ней)
         m_openBlocks.push(Boolean.FALSE);
-        return "<<if " + inPlace(objRef(objId, objVar)) + " eq \"" + INVENTORY + "\">>" + LINE_SEPARATOR;
+        return "<<if " + inInventory(objRef(objId, objVar)) + " eq 1>>" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1298,7 +1375,7 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateHaveOperation(String variableName, String objId, String objVar) {
-        return "<<set " + plainVar(variableName) + " = (" + inPlace(objRef(objId, objVar)) + " == \"" + INVENTORY + "\") ? 1 : 0>>" + LINE_SEPARATOR;
+        return "<<set " + plainVar(variableName) + " = " + inInventory(objRef(objId, objVar)) + ">>" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1309,9 +1386,9 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateContainerOperation(String variableName, String objId, String objVar) {
-        // контейнер объекта (страница или объект); инвентарь и «нигде» — false
+        // последний владелец объекта (страница или объект); нигде — false
         String in = inPlace(objRef(objId, objVar));
-        return "<<set " + variableName + " = (" + in + " && " + in + " != \"" + INVENTORY + "\") ? " + in + " : false>>" + LINE_SEPARATOR;
+        return "<<set " + variableName + " = " + in + " ? " + in + " : false>>" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1324,33 +1401,37 @@ public class ASMExportManager extends TextExportManager {
     protected String decorateDelObj(String destinationId, final String destinationName, String objectId, String objectVar, String objectName, String objectDisplayName) {
         String ref = objRef(objectId, objectVar);
         if (destinationName != null) {
-            // место — список: nlb:rmv(список, obj), и объект — никуда
+            // место — список: nlb:rmv(список, obj) и obj.container = nil (из контейнеров не убирается)
             String key = listKey(destinationName);
             String l = "$nlb_lists[" + key + "]";
             return "<<set $nlb_j = " + l + " ? " + l + ".indexOf(" + ref + ") : -1>><<if $nlb_j gt -1>><<set " + l
-                    + ".splice($nlb_j, 1)>><<endif>>" + dropEmptyList(key) + place(ref, "\"\"") + LINE_SEPARATOR;
+                    + ".splice($nlb_j, 1)>><<endif>>" + dropEmptyList(key) + "<<set " + inPlace(ref) + " = \"\">>" + LINE_SEPARATOR;
         }
-        // без места — из текущей страницы (here() в INSTEAD)
+        // из получателя, без него — из текущей страницы (here() в INSTEAD); в других контейнерах
+        // объект остаётся
         String destination = destinationId != null ? "\"" + destinationId + "\"" : "$nlb_page";
-        return "<<if " + inPlace(ref) + " eq " + destination + ">>" + place(ref, "\"\"") + "<<endif>>" + LINE_SEPARATOR;
+        return "<<set $nlb_po = " + ref + ">><<set $nlb_pd = " + destination + ">><<display 'nlb_del'>>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateDelInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
         String ref = objRef(objectId, objectVar);
-        return "<<if " + inPlace(ref) + " eq \"" + INVENTORY + "\">>" + place(ref, "\"\"") + "<<endif>>" + LINE_SEPARATOR;
+        return "<<set $nlb_po = " + ref + ">><<set $nlb_pd = \"" + INVENTORY + "\">><<display 'nlb_del'>>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName, boolean unique) {
         // без получателя — в себя (страницу или объект-контейнер; s в INSTEAD)
         String destination = "\"" + (destinationId != null ? destinationId : selfId()) + "\"";
-        return place(objRef(objectId, objectVar), destination) + LINE_SEPARATOR;
+        // из прежних мест не убирается (objs():add); дубль (клон в INSTEAD) — не поддерживается
+        return "<<set $nlb_po = " + objRef(objectId, objectVar) + ">><<set $nlb_pd = " + destination + ">><<display 'nlb_add'>>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        return place(objRef(objectId, objectVar), "\"" + INVENTORY + "\"") + LINE_SEPARATOR;
+        // take: из текущей страницы — в инвентарь; уже в инвентаре — ничего (клонов нет)
+        return "<<set $nlb_po = " + objRef(objectId, objectVar) + ">><<set $nlb_tk = 0>><<set $nlb_j2 = " + inInventory("$nlb_po")
+                + ">><<if $nlb_j2 eq 0>><<display 'nlb_take'>><<endif>>" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1551,7 +1632,8 @@ public class ASMExportManager extends TextExportManager {
     protected String decoratePDscOperation(String objVariableName) {
         // объект задан именем ($имя): номер известен только при сборке текста (generateNLBText)
         String name = objVariableName.startsWith("$") ? objVariableName.substring(1) : objVariableName;
-        return "<<display 'nlb_o_" + NAME_MARK + name + END_MARK + "_text'>>" + LINE_SEPARATOR;
+        String n = NAME_MARK + name + END_MARK;
+        return "<<display 'nlb_o_" + n + "_on'>><<if $nlb_on eq 1>><<display 'nlb_o_" + n + "_text'>><<endif>>" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1559,8 +1641,8 @@ public class ASMExportManager extends TextExportManager {
         if (objId == null) {
             return EMPTY_STRING;  // объект из переменной — не поддерживается
         }
-        // описания объектов внутри объекта
-        return "<<set $nlb_ws = $nlb_where>><<set $nlb_where = \"" + objId + "\">><<display 'nlb_show_in'>><<set $nlb_where = $nlb_ws>>" + LINE_SEPARATOR;
+        // описания объектов с suppressDsc внутри объекта (ModificationInterpreter.pdscs)
+        return "<<set $nlb_ws = $nlb_where>><<set $nlb_where = \"" + objId + "\">><<display 'nlb_pdscs'>><<set $nlb_where = $nlb_ws>>" + LINE_SEPARATOR;
     }
 
     @Override

@@ -96,12 +96,14 @@ public class URQExportManager extends TextExportManager {
         super(nlb, encoding);
     }
 
-    /** Место «инвентарь» в nlb_in_N */
-    private static final String INVENTORY = "nlb_inv";
     /** Метка ключа объекта (номер) до сборки текста: id -> номер (generateNLBText) */
     private static final String KEY_MARK = "\u0001nlb_key:";
     /** Метка объекта по имени (PDSC) до сборки текста */
     private static final String NAME_MARK = "\u0001nlb_name:";
+    /** Метка ключа контейнера до сборки текста: id объекта -> oN, страницы -> pN (ckey) */
+    private static final String CKEY_MARK = "\u0001nlb_ckey:";
+    /** Ключ контейнера «инвентарь» */
+    private static final String INV_KEY = "inv";
     private static final String END_MARK = "\u0002";
     /** Остаток от деления до сборки текста (в UrqW оператора нет: a-b*int(a/b)) */
     private static final String MOD_MARK = "\u0003";
@@ -122,11 +124,22 @@ public class URQExportManager extends TextExportManager {
     }
 
     /**
+     * Ключ контейнера — часть имени переменной (в именах UrqW нельзя «-»): объект N — oN,
+     * страница — pN (pageRef), инвентарь — inv. Объект это или страница, известно при сборке текста
+     */
+    private static String ckey(String containerId) {
+        return CKEY_MARK + containerId + END_MARK;
+    }
+
+    /**
      * Начало игры и служебные метки объектов. Объектов в URQ нет, есть инвентарь (inv+/inv-,
-     * действия предмета — метки use_…), поэтому объекты книги пронумерованы: место объекта N —
-     * строковая переменная nlb_in_N (id страницы или объекта-контейнера, «nlb_inv» — инвентарь,
-     * "" — нигде), в инвентаре он — предмет nlbo_N с подписью display_use_nlbo_N, в тексте
-     * страницы — ссылка [[текст|nlb_act_N]]. Ответ на действие копится в nlb_reply и выводится
+     * действия предмета — метки use_…), поэтому объекты книги пронумерованы. Контейнер (страница
+     * pN, объект oN, инвентарь inv — ckey) хранит содержимое списком c<ключ> (nlb_ln_c…,
+     * nlb_li_c…_i: сначала порядок книги, затем — по мере добавления), принадлежность —
+     * nlb_at_N_<ключ>. Объект может лежать в нескольких контейнерах сразу — ADD не убирает его
+     * из прежнего места (objs():add в INSTEAD, PlayerContext.containerAdd); nlb_in_N — последний
+     * владелец (CNTNR). В инвентаре объект — предмет nlbo_N с подписью display_use_nlbo_N, в
+     * тексте страницы — ссылка [[текст|nlb_act_N]]. Ответ на действие копится в nlb_reply и выводится
      * после повторного показа страницы (как в INSTEAD: сцена, затем ответ).
      */
     @Override
@@ -142,7 +155,9 @@ public class URQExportManager extends TextExportManager {
         sb.append("nlb_cnt_prev=0").append(LINE_SEPARATOR);
         sb.append("nlb_reply=\"\"").append(LINE_SEPARATOR);
         for (int i = 0; i < objs.size(); i++) {
-            sb.append("nlb_in_").append(i + 1).append("=\"").append(objs.get(i).getContainerId()).append("\"").append(LINE_SEPARATOR);
+            sb.append("nlb_in_").append(i + 1).append("=\"")
+                    .append(StringHelper.notEmpty(objs.get(i).getContainerId()) ? containerKey(objs.get(i).getContainerId()) : "")
+                    .append("\"").append(LINE_SEPARATOR);
             // номер -> id (контейнер из переменной: OBJS), признак объекта (ADDALL), тег по умолчанию
             sb.append("nlb_id_").append(i + 1).append("=\"").append(objs.get(i).getObjId()).append("\"").append(LINE_SEPARATOR);
             sb.append("nlb_isobj_").append(i + 1).append("=1").append(LINE_SEPARATOR);
@@ -157,6 +172,27 @@ public class URQExportManager extends TextExportManager {
             if (!objs.get(i).getObjSounds().isEmpty()) {
                 sb.append("nlb_hassnd_").append(i + 1).append("=1").append(LINE_SEPARATOR);
             }
+            ObjType type = objs.get(i).getObjType();
+            if (type == ObjType.MENU || type == ObjType.GMENU) {
+                // щелчок в инвентаре — действие, без выбора для применения (decorateObjInv: menu)
+                sb.append("nlb_menu_").append(i + 1).append("=1").append(LINE_SEPARATOR);
+            } else if (type == ObjType.STAT) {
+                sb.append("nlb_menu_").append(i + 1).append("=2").append(LINE_SEPARATOR);  // только подпись
+            }
+            if (objs.get(i).isSuppressDsc()) {
+                sb.append("nlb_supp_").append(i + 1).append("=1").append(LINE_SEPARATOR);
+            }
+        }
+        // содержимое контейнеров (порядок книги, content)
+        for (java.util.Map.Entry<String, List<String>> entry : initialContents(nlbBuildingBlocks).entrySet()) {
+            final String c = containerKey(entry.getKey());
+            final List<String> items = entry.getValue();
+            for (int i = 0; i < items.size(); i++) {
+                final int n = m_keys.get(items.get(i));
+                sb.append("nlb_at_").append(n).append("_").append(c).append("=1").append(LINE_SEPARATOR);
+                sb.append("nlb_li_c").append(c).append("_").append(i).append("=").append(n).append(LINE_SEPARATOR);
+            }
+            sb.append("nlb_ln_c").append(c).append("=").append(items.size()).append(LINE_SEPARATOR);
         }
         // страницы: тег по умолчанию и признак звука — по ссылке «pN» (pageRef)
         for (PageBuildingBlocks page : pages) {
@@ -171,12 +207,48 @@ public class URQExportManager extends TextExportManager {
         if (!pages.isEmpty()) {
             sb.append("goto ").append(pages.get(0).getPageId()).append(LINE_SEPARATOR);
         }
-        // объекты места nlb_where (порядок — порядок объектов, как в QSP-экспорте)
-        sb.append(":nlb_show_in").append(LINE_SEPARATOR);
-        for (int i = 1; i <= objs.size(); i++) {
-            sb.append("if nlb_in_").append(i).append("=nlb_where then proc nlb_o_").append(i).append("_dsc").append(LINE_SEPARATOR);
-        }
-        sb.append("end").append(LINE_SEPARATOR);
+        // объекты контейнера nlb_where (ключ) по порядку; вложенные — рекурсивно (proc), поэтому
+        // счётчик и контейнер — по глубине nlb_sd
+        sb.append(String.join(LINE_SEPARATOR,
+                ":nlb_show_in",
+                "nlb_sd=nlb_sd+1",
+                "nlb_si_#nlb_sd$=0",
+                "nlb_sw_#nlb_sd$=nlb_where",
+                ":nlb_show_in_loop",
+                "nlb_where=nlb_sw_#nlb_sd$",
+                "nlb_k2=nlb_si_#nlb_sd$",
+                "if nlb_k2>=nlb_ln_c#%nlb_where$ then goto nlb_show_in_end",
+                "nlb_so=nlb_li_c#%nlb_where$_#nlb_k2$",
+                "nlb_si_#nlb_sd$=nlb_k2+1",
+                "proc nlb_o_#nlb_so$_dsc",
+                "goto nlb_show_in_loop",
+                ":nlb_show_in_end",
+                "nlb_sd=nlb_sd-1",
+                "end",
+                // PDSCS: описания объектов с suppressDsc в контейнере nlb_where (вложенные — раньше
+                // своего контейнера), как ModificationInterpreter.pdscs
+                ":nlb_pdscs",
+                "nlb_sd=nlb_sd+1",
+                "nlb_si_#nlb_sd$=0",
+                "nlb_sw_#nlb_sd$=nlb_where",
+                ":nlb_pdscs_loop",
+                "nlb_where=nlb_sw_#nlb_sd$",
+                "nlb_k2=nlb_si_#nlb_sd$",
+                "if nlb_k2>=nlb_ln_c#%nlb_where$ then goto nlb_pdscs_end",
+                "nlb_so=nlb_li_c#%nlb_where$_#nlb_k2$",
+                "nlb_si_#nlb_sd$=nlb_k2+1",
+                "if nlb_supp_#nlb_so$<>1 then goto nlb_pdscs_loop",
+                "nlb_sd_o_#nlb_sd$=nlb_so",
+                "nlb_where=\"o\"+nlb_so",
+                "proc nlb_pdscs",
+                "nlb_so=nlb_sd_o_#nlb_sd$",
+                "proc nlb_o_#nlb_so$_on",
+                "if nlb_on=1 then proc nlb_o_#nlb_so$_text",
+                "goto nlb_pdscs_loop",
+                ":nlb_pdscs_end",
+                "nlb_sd=nlb_sd-1",
+                "end",
+                "")).append(LINE_SEPARATOR);
         // Конец хода (из :id_turn): callback-объекты, если игрок с прошлого хода что-то сделал
         // (update_action_count в INSTEAD, PlayerEngine; как в QSP, jsIQ2 и AXMA) — их действие без
         // «взять»; nlb_cnt_prev ставится до них: их goto уводит со страницы
@@ -225,6 +297,7 @@ public class URQExportManager extends TextExportManager {
                 // щелчок по предмету: первый — inv (применение к себе) и выбор для применения,
                 // другой предмет — применение, тот же — отмена выбора
                 ":nlb_invclick",
+                "if nlb_sel=0 and nlb_menu_#nlb_o2$>0 then goto nlb_invmenu",
                 "if nlb_sel=0 then goto nlb_invfirst",
                 "if nlb_sel=nlb_o2 then goto nlb_invcancel",
                 "nlb_o=nlb_sel",
@@ -232,6 +305,13 @@ public class URQExportManager extends TextExportManager {
                 "goto nlb_use",
                 ":nlb_invcancel",
                 "nlb_sel=0",
+                "goto nlb_redraw",
+                // предмет-меню (карты в бою «Фронтира»): щелчок — действие, показатель — ничего; не
+                // выбираются (PlayerEngine.clickInventory)
+                ":nlb_invmenu",
+                ACTION_COUNT_VAR + "=" + ACTION_COUNT_VAR + "+1",
+                "nlb_cnt_inv=nlb_cnt_inv+1",
+                "if nlb_menu_#nlb_o2$=1 then proc nlb_o_#nlb_o2$_acta",
                 "goto nlb_redraw",
                 ":nlb_invfirst",
                 ACTION_COUNT_VAR + "=" + ACTION_COUNT_VAR + "+1",
@@ -252,7 +332,6 @@ public class URQExportManager extends TextExportManager {
                 "if nlb_reply<>\"\" then pln #%nlb_reply$",
                 "nlb_reply=\"\"",
                 "goto #%nlb_page$_turn",
-                // перенести объект nlb_po в nlb_pd (с инвентарём UrqW)
                 // Списки (nlb.lua: push/pop — начало, inject/eject — конец): имя — nlb_lname,
                 // длина — nlb_ln_<имя>, элементы — nlb_li_<имя>_<i> (0 — начало); значение — nlb_lval,
                 // снятое — nlb_lres (из пустого — 0). Счётчик nlb_k — у этих подпрограмм, nlb_m — у
@@ -332,11 +411,11 @@ public class URQExportManager extends TextExportManager {
                 // OBJS: содержимое контейнера nlb_c — в начало списка nlb_lname (обратный порядок)
                 ":nlb_lobjs",
                 "nlb_m=0",
+                "nlb_lc=\"c\"+nlb_c",
                 ":nlb_lobjs_loop",
+                "if nlb_m>=nlb_ln_#%nlb_lc$ then goto nlb_lobjs_end",
+                "nlb_lval = nlb_li_#%nlb_lc$_#nlb_m$",
                 "nlb_m = nlb_m+1",
-                "if nlb_m>%OBJ_COUNT% then goto nlb_lobjs_end",
-                "if nlb_in_#nlb_m$<>nlb_c then goto nlb_lobjs_loop",
-                "nlb_lval = nlb_m",
                 "proc nlb_lpush",
                 "goto nlb_lobjs_loop",
                 ":nlb_lobjs_end",
@@ -356,33 +435,111 @@ public class URQExportManager extends TextExportManager {
                 "if nlb_isobj_#nlb_lval$<>1 then goto nlb_laddall_loop",
                 "nlb_po = nlb_lval",
                 "nlb_pd = nlb_c",
-                "proc nlb_place",
+                "proc nlb_add",
                 "goto nlb_laddall_loop",
                 ":nlb_laddall_end",
                 "end",
-                // CLEAR, CLRINV: всё содержимое контейнера nlb_c — никуда
+                // CLEAR, CLRINV: всё содержимое контейнера nlb_c (ключ) — вон из него; владелец
+                // сбрасывается у тех, чей последний владелец — он (PlayerContext.containerClear)
                 ":nlb_clear",
                 "nlb_m=0",
+                "nlb_lc=\"c\"+nlb_c",
                 ":nlb_clear_loop",
-                "nlb_m = nlb_m+1",
-                "if nlb_m>%OBJ_COUNT% then goto nlb_clear_end",
-                "if nlb_in_#nlb_m$<>nlb_c then goto nlb_clear_loop",
-                "nlb_po = nlb_m",
-                "nlb_pd=\"\"",
-                "proc nlb_place",
+                "if nlb_m>=nlb_ln_#%nlb_lc$ then goto nlb_clear_end",
+                "nlb_po=nlb_li_#%nlb_lc$_#nlb_m$",
+                "nlb_at_#nlb_po$_#%nlb_c$=0",
+                "if nlb_in_#nlb_po$=nlb_c then nlb_in_#nlb_po$=\"\"",
+                "nlb_m=nlb_m+1",
                 "goto nlb_clear_loop",
                 ":nlb_clear_end",
+                "nlb_ln_#%nlb_lc$=0",
                 "end",
-                ":nlb_place",
-                "if nlb_in_#nlb_po$=\"" + INVENTORY + "\" and nlb_invhide_#nlb_po$=0 then inv- nlbo_#nlb_po$",
-                "if nlb_pd=\"" + INVENTORY + "\" then goto nlb_place_inv",
-                "nlb_in_#nlb_po$=nlb_pd",
+                // nlb_add — объект nlb_po в контейнер nlb_pd (ключ), не убирая из прежних мест
+                // (objs():add); nlb_del — убрать из nlb_pd (владелец сбрасывается, container = nil);
+                // nlb_take — взять (take в INSTEAD): из текущей комнаты, при nlb_tk=1 (щелчок по
+                // переносимому объекту) — и от последнего владельца, если в комнате его нет
+                ":nlb_add",
+                "if nlb_at_#nlb_po$_#%nlb_pd$=1 then goto nlb_add_owner",
+                "nlb_at_#nlb_po$_#%nlb_pd$=1",
+                "nlb_lname=\"c\"+nlb_pd",
+                "nlb_lval=nlb_po",
+                "proc nlb_linject",
+                ":nlb_add_owner",
+                "if nlb_pd<>\"" + INV_KEY + "\" then nlb_in_#nlb_po$=nlb_pd",
                 "end",
-                ":nlb_place_inv",
-                "if nlb_in_#nlb_po$<>\"" + INVENTORY + "\" and nlb_invhide_#nlb_po$=0 then inv+ nlbo_#nlb_po$",
-                "nlb_in_#nlb_po$=nlb_pd",
+                ":nlb_del",
+                "if nlb_at_#nlb_po$_#%nlb_pd$<>1 then goto nlb_del_owner",
+                "nlb_at_#nlb_po$_#%nlb_pd$=0",
+                "nlb_lname=\"c\"+nlb_pd",
+                "nlb_lval=nlb_po",
+                "proc nlb_lrmv",
+                ":nlb_del_owner",
+                "if nlb_pd<>\"" + INV_KEY + "\" then nlb_in_#nlb_po$=\"\"",
                 "end",
-                "").replace("%OBJ_COUNT%", Integer.toString(objs.size())));
+                ":nlb_take",
+                "nlb_pd=nlb_pkey",
+                "if nlb_at_#nlb_po$_#%nlb_pd$=1 then goto nlb_take_del",
+                "if nlb_tk<>1 then goto nlb_take_inv",
+                "nlb_pd=nlb_in_#nlb_po$",
+                "if nlb_pd=\"\" then goto nlb_take_inv",
+                "if nlb_at_#nlb_po$_#%nlb_pd$<>1 then goto nlb_take_inv",
+                ":nlb_take_del",
+                "proc nlb_del",
+                ":nlb_take_inv",
+                "nlb_pd=\"" + INV_KEY + "\"",
+                "proc nlb_add",
+                "end",
+                // Инвентарь UrqW: предметы по взятию, за каждым — содержимое (вложенные объекты, как
+                // PlayerEngine.inventoryObjects: панель боя «Фронтира» с картами); выключенный объект
+                // скрывает и содержимое, невидимый (nlb_invhide) — только себя. Список показа cinvs
+                // собирается каждый ход; отличается от показанного (cinvd) — инвентарь заново
+                ":nlb_inv_sync",
+                "nlb_ln_cinvs=0",
+                "nlb_ig=nlb_ig+1",
+                "nlb_iw=\"" + INV_KEY + "\"",
+                "proc nlb_inv_in",
+                "nlb_m=0",
+                "if nlb_ln_cinvs<>nlb_ln_cinvd then goto nlb_inv_redo",
+                ":nlb_inv_cmp",
+                "if nlb_m>=nlb_ln_cinvs then end",
+                "if nlb_li_cinvs_#nlb_m$<>nlb_li_cinvd_#nlb_m$ then goto nlb_inv_redo",
+                "nlb_m=nlb_m+1",
+                "goto nlb_inv_cmp",
+                ":nlb_inv_redo",
+                "invkill",
+                "nlb_m=0",
+                ":nlb_inv_redo_loop",
+                "if nlb_m>=nlb_ln_cinvs then goto nlb_inv_redo_end",
+                "nlb_po=nlb_li_cinvs_#nlb_m$",
+                "nlb_li_cinvd_#nlb_m$=nlb_po",
+                "inv+ nlbo_#nlb_po$",
+                "nlb_m=nlb_m+1",
+                "goto nlb_inv_redo_loop",
+                ":nlb_inv_redo_end",
+                "nlb_ln_cinvd=nlb_ln_cinvs",
+                "end",
+                ":nlb_inv_in",
+                "nlb_id=nlb_id+1",
+                "nlb_ix_#nlb_id$=0",
+                "nlb_iws_#nlb_id$=nlb_iw",
+                ":nlb_inv_in_loop",
+                "nlb_iw=nlb_iws_#nlb_id$",
+                "nlb_k2=nlb_ix_#nlb_id$",
+                "if nlb_k2>=nlb_ln_c#%nlb_iw$ then goto nlb_inv_in_end",
+                "nlb_iv=nlb_li_c#%nlb_iw$_#nlb_k2$",
+                "nlb_ix_#nlb_id$=nlb_k2+1",
+                "if nlb_iseen_#nlb_iv$=nlb_ig or nlb_id>32 then goto nlb_inv_in_loop",
+                "proc nlb_o_#nlb_iv$_on",
+                "if nlb_on=0 then goto nlb_inv_in_loop",
+                "nlb_iseen_#nlb_iv$=nlb_ig",
+                "if nlb_invhide_#nlb_iv$=0 then nlb_li_cinvs_#nlb_ln_cinvs$=nlb_iv & nlb_ln_cinvs=nlb_ln_cinvs+1",
+                "nlb_iw=\"o\"+nlb_iv",
+                "proc nlb_inv_in",
+                "goto nlb_inv_in_loop",
+                ":nlb_inv_in_end",
+                "nlb_id=nlb_id-1",
+                "end",
+                ""));
         sb.append(achievementProc(nlbBuildingBlocks));
         return sb.toString();
     }
@@ -504,6 +661,12 @@ public class URQExportManager extends TextExportManager {
         if (StringHelper.notEmpty(objBlocks.getObjConstraint())) {
             sb.append("if not (").append(objBlocks.getObjConstraint()).append(") then end").append(LINE_SEPARATOR);
         }
+        if (objBlocks.isGraphical() || objBlocks.isImageInScene()) {
+            // объект с картинкой в нескольких контейнерах (держатели карт «Фронтира») — на экране
+            // один раз, вместе с содержимым, как сцена плеера (PlayerEngine.sceneObjects)
+            sb.append("if nlb_seen_").append(n).append("=nlb_gen then end").append(LINE_SEPARATOR);
+            sb.append("nlb_seen_").append(n).append("=nlb_gen").append(LINE_SEPARATOR);
+        }
         // ссылка без текста ({} у графического объекта) — подписью объекта: «[[|метка]]» UrqW
         // ссылкой не считает
         final String label = StringHelper.notEmpty(objBlocks.getObjDisp()) ? objBlocks.getObjDisp()
@@ -523,14 +686,24 @@ public class URQExportManager extends TextExportManager {
             // графический объект (VN) без текста щёлкают по картинке, а картинок здесь нет
             sb.append("pln [[").append(objBlocks.getObjDisp()).append("|nlb_act_").append(n).append("]]").append(LINE_SEPARATOR);
         }
-        sb.append("nlb_where=\"").append(id).append("\"").append(LINE_SEPARATOR);
+        sb.append("nlb_where=\"o").append(n).append("\"").append(LINE_SEPARATOR);
         sb.append("proc nlb_show_in").append(LINE_SEPARATOR);
-        sb.append("nlb_where=nlb_in_").append(n).append(LINE_SEPARATOR);
         sb.append("end").append(LINE_SEPARATOR);
 
+        // _text — описание в ответ (PDSC): и у объекта с suppressDsc (objDscF в плеере)
+        final String textF = objBlocks.getObjTextF().replace("[[|nlb_act_", "[[" + label + "|nlb_act_");
         sb.append(prefix).append("_text").append(LINE_SEPARATOR);
-        if (!text.isEmpty()) {
-            sb.append(reply(text));
+        if (!textF.isEmpty()) {
+            sb.append(reply(textF));
+        }
+        sb.append("end").append(LINE_SEPARATOR);
+        // _on — объект включён (условие объекта): выключенный не виден и в инвентаре
+        sb.append(prefix).append("_on").append(LINE_SEPARATOR);
+        if (StringHelper.notEmpty(objBlocks.getObjConstraint())) {
+            sb.append("nlb_on=0").append(LINE_SEPARATOR);
+            sb.append("if ").append(objBlocks.getObjConstraint()).append(" then nlb_on=1").append(LINE_SEPARATOR);
+        } else {
+            sb.append("nlb_on=1").append(LINE_SEPARATOR);
         }
         sb.append("end").append(LINE_SEPARATOR);
         if (!objBlocks.isGraphical()) {
@@ -571,8 +744,8 @@ public class URQExportManager extends TextExportManager {
         if (objBlocks.isTakable()) {
             String toTake = StringHelper.notEmpty(common) && m_keys.containsKey(common) && Boolean.TRUE.equals(m_takable.get(common)) ? common : id;
             sb.append("nlb_po=").append(m_keys.get(toTake)).append(LINE_SEPARATOR);
-            sb.append("nlb_pd=\"").append(INVENTORY).append("\"").append(LINE_SEPARATOR);
-            sb.append("proc nlb_place").append(LINE_SEPARATOR);
+            sb.append("nlb_tk=1").append(LINE_SEPARATOR);
+            sb.append("proc nlb_take").append(LINE_SEPARATOR);
         }
         sb.append("end").append(LINE_SEPARATOR);
 
@@ -633,6 +806,14 @@ public class URQExportManager extends TextExportManager {
             }
         }
         String text = super.generateNLBText(nlbBlocks);
+        java.util.regex.Matcher ckeys = java.util.regex.Pattern.compile(
+                java.util.regex.Pattern.quote(CKEY_MARK) + "(.*?)" + java.util.regex.Pattern.quote(END_MARK)).matcher(text);
+        StringBuilder withKeys = new StringBuilder();
+        while (ckeys.find()) {
+            ckeys.appendReplacement(withKeys, java.util.regex.Matcher.quoteReplacement(containerKey(ckeys.group(1))));
+        }
+        ckeys.appendTail(withKeys);
+        text = withKeys.toString();
         // метки, известные только теперь: id объекта -> номер, имя объекта -> номер
         java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(
                 "(" + java.util.regex.Pattern.quote(KEY_MARK) + "|" + java.util.regex.Pattern.quote(NAME_MARK) + ")(.*?)"
@@ -654,6 +835,12 @@ public class URQExportManager extends TextExportManager {
         return withMod;
     }
 
+    /** Ключ контейнера (см. ckey): объект N — oN, страница — pN */
+    private String containerKey(String containerId) {
+        Integer n = m_keys.get(containerId);
+        return n != null ? "o" + n : pageRef(containerId);
+    }
+
     // --- части объекта (ExportManager.createObjBuildingBlocks)
 
     @Override
@@ -663,7 +850,7 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateObjDisp(String dispText, boolean imageEnabled, boolean isGraphicalObj) {
-        return dispText == null ? EMPTY_STRING : dispText.replace(LINE_SEPARATOR, " ").replace("pln ", EMPTY_STRING);
+        return dispText == null ? EMPTY_STRING : dispText.replaceAll("(?m)^pln ?", EMPTY_STRING).replace(LINE_SEPARATOR, " ").strip();
     }
 
     /** Описание объекта: часть в {фигурных скобках} — ссылка на nlb_act_N */
@@ -672,7 +859,8 @@ public class URQExportManager extends TextExportManager {
         if (suppressDsc || StringHelper.isEmpty(objText)) {
             return EMPTY_STRING;
         }
-        String text = objText.replace(LINE_SEPARATOR, " ").replace("pln ", EMPTY_STRING);
+        // строки текста — «pln …» (пустая — «pln»): в описании объекта — одной строкой
+        String text = objText.replaceAll("(?m)^pln ?", EMPTY_STRING).replace(LINE_SEPARATOR, " ").strip();
         return text.replaceAll("\\{([^}]*)\\}",
                 java.util.regex.Matcher.quoteReplacement("[[") + "$1" + java.util.regex.Matcher.quoteReplacement("|nlb_act_" + key(objId) + "]]"));
     }
@@ -745,6 +933,7 @@ public class URQExportManager extends TextExportManager {
         }
         stringBuilder.append("nlb_page = \"").append(pageId).append("\"").append(LINE_SEPARATOR);
         final String ref = pageRef(pageId);
+        stringBuilder.append("nlb_pkey = \"").append(ref).append("\"").append(LINE_SEPARATOR);
         if (!pageBlocks.getPageSounds().isEmpty()) {
             // initf(): звук страницы — при входе, после модификаций
             stringBuilder.append("proc nlb_snd_").append(ref).append(LINE_SEPARATOR);
@@ -752,6 +941,7 @@ public class URQExportManager extends TextExportManager {
         stringBuilder.append("proc ").append(pageId).append("_show").append(LINE_SEPARATOR);
         stringBuilder.append("goto ").append(pageId).append("_turn").append(LINE_SEPARATOR);
         stringBuilder.append(":").append(pageId).append("_show").append(LINE_SEPARATOR);
+        stringBuilder.append("nlb_gen=nlb_gen+1").append(LINE_SEPARATOR);  // объекты с картинкой — один раз за показ
         if (hasTimer) {
             // тик таймера — ход игрока на странице (nlb_redraw), до показа: текст видит новое значение
             stringBuilder.append("if nlb_tick=1 then ").append(pageBlocks.getPageTimerVariable());
@@ -761,19 +951,23 @@ public class URQExportManager extends TextExportManager {
         // Картинка — при каждом показе: тег мог измениться. Служебная страница — без текста, её
         // сразу покидают по автоссылке — картинок (своей и объектов) не показывает, как в плеере
         // (PlayerEngine.followLink); goto UrqW экран не очищает, и убрать картинку потом нельзя —
-        // поэтому условие автоссылки проверяется до показа (nlb_leave)
+        // поэтому условие автоссылки проверяется до показа (nlb_leave). Объекты страницы, которую
+        // сейчас покинут, не показываются и при тексте (nlb_gone): сцена плеера — только у
+        // страницы, где остановились (ход боя «Фронтира» идёт через несколько страниц)
         stringBuilder.append("nlb_leave=0").append(LINE_SEPARATOR);
-        if (!pageBlocks.isHasPageText()) {
-            String leave = leaveCondition(linksBlocksOf(pageBlocks));
-            if (leave != null) {
-                stringBuilder.append(leave.isEmpty() ? "nlb_leave=1" + LINE_SEPARATOR : leave);
+        final String leave = leaveCondition(linksBlocksOf(pageBlocks));
+        if (leave != null) {
+            stringBuilder.append(leave.isEmpty() ? "nlb_leave=1" + LINE_SEPARATOR : leave);
+            stringBuilder.append("nlb_gone=nlb_leave").append(LINE_SEPARATOR);
+            if (pageBlocks.isHasPageText()) {
+                stringBuilder.append("nlb_leave=0").append(LINE_SEPARATOR);
             }
         }
         stringBuilder.append(showImage(ref, pageBlocks.getPageImages()));
         stringBuilder.append(pageBlocks.getPageTextStart());
         stringBuilder.append(pageBlocks.getPageTextEnd());
-        stringBuilder.append("nlb_where = \"").append(pageId).append("\"").append(LINE_SEPARATOR);
-        stringBuilder.append("proc nlb_show_in").append(LINE_SEPARATOR);
+        stringBuilder.append("nlb_where = \"").append(ref).append("\"").append(LINE_SEPARATOR);
+        stringBuilder.append(leave != null ? "if nlb_gone=0 then " : "").append("proc nlb_show_in").append(LINE_SEPARATOR);
         stringBuilder.append("end").append(LINE_SEPARATOR);
         stringBuilder.append(":").append(pageId).append("_turn").append(LINE_SEPARATOR);
         // конец хода (callback-объекты); их текст действия — в ответ, он выводится сразу
@@ -781,6 +975,7 @@ public class URQExportManager extends TextExportManager {
         stringBuilder.append("if nlb_reply<>\"\" then pln #%nlb_reply$").append(LINE_SEPARATOR);
         stringBuilder.append("nlb_reply=\"\"").append(LINE_SEPARATOR);
         stringBuilder.append("proc nlb_disp_all").append(LINE_SEPARATOR);
+        stringBuilder.append("proc nlb_inv_sync").append(LINE_SEPARATOR);
         List<LinkBuildingBlocks> linksBlocks = pageBlocks.getLinksBuildingBlocks();
         // Автоссылки — до кнопок: переход срабатывает сам, как в INSTEAD, и кнопки этой страницы
         // уже не выводятся. goto в UrqW не очищает экран, поэтому текст страницы остаётся виден
@@ -1282,10 +1477,10 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateIfHave(String objId, String objVar) {
-        // место объекта — nlb_in_N (объект из переменной — её значение, номер объекта)
+        // в инвентаре — nlb_at_N_inv (объект из переменной — её значение, номер объекта)
         Block block = new Block(false);
         m_openBlocks.push(block);
-        String condition = "nlb_in_" + nameRef(objId, objVar) + "=\"" + INVENTORY + "\"";
+        String condition = "nlb_at_" + nameRef(objId, objVar) + "_" + INV_KEY + "=1";
         return "if not (" + condition + ") then goto " + block.branchLabel() + LINE_SEPARATOR;
     }
 
@@ -1333,7 +1528,7 @@ public class URQExportManager extends TextExportManager {
     @Override
     protected String decorateHaveOperation(String variableName, String objId, String objVar) {
         String name = variableName.replaceAll("^\\((.*)\\)$", "$1").replaceAll("\\s*>\\s*0$", "").replaceAll("\\s*=\\s*1$", "").trim();
-        return name + "=0" + LINE_SEPARATOR + "if nlb_in_" + nameRef(objId, objVar) + "=\"" + INVENTORY + "\" then " + name + "=1" + LINE_SEPARATOR;
+        return name + "=0" + LINE_SEPARATOR + "if nlb_at_" + nameRef(objId, objVar) + "_" + INV_KEY + "=1 then " + name + "=1" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1344,9 +1539,8 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateContainerOperation(String variableName, String objId, String objVar) {
-        // контейнер объекта (страница или объект); инвентарь и «нигде» — пусто
-        return assignment(variableName, "nlb_in_" + nameRef(objId, objVar))
-                + "if " + variableName + "=\"" + INVENTORY + "\" then " + variableName + "=\"\"" + LINE_SEPARATOR;
+        // последний владелец объекта — ключ контейнера (pN, oN); нигде — пусто
+        return assignment(variableName, "nlb_in_" + nameRef(objId, objVar));
     }
 
     @Override
@@ -1359,39 +1553,42 @@ public class URQExportManager extends TextExportManager {
     protected String decorateDelObj(String destinationId, final String destinationName, String objectId, String objectVar, String objectName, String objectDisplayName) {
         String ref = objectId != null ? key(objectId) : objectVar;
         if (destinationName != null) {
-            // место — список: nlb:rmv(список, obj), и объект — никуда
-            return listCall("nlb_lrmv", destinationName, ref) + assignment("nlb_po", ref) + "nlb_pd=\"\"" + LINE_SEPARATOR
-                    + "proc nlb_place" + LINE_SEPARATOR;
+            // место — список: nlb:rmv(список, obj) и obj.container = nil (из контейнеров не убирается)
+            return listCall("nlb_lrmv", destinationName, ref) + assignment("nlb_po", ref)
+                    + "nlb_in_#nlb_po$=\"\"" + LINE_SEPARATOR;
         }
-        String destination = destinationId != null ? "\"" + destinationId + "\"" : "nlb_page";
-        return assignment("nlb_po", ref) + "nlb_pd=\"\"" + LINE_SEPARATOR
-                + "if nlb_in_#nlb_po$=" + destination + " then proc nlb_place" + LINE_SEPARATOR;
+        // из получателя, без него — из текущей комнаты; в других контейнерах объект остаётся
+        String destination = destinationId != null ? "\"" + ckey(destinationId) + "\"" : "nlb_pkey";
+        return assignment("nlb_po", ref) + "nlb_pd=" + destination + LINE_SEPARATOR + "proc nlb_del" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateDelInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        return assignment("nlb_po", objectId != null ? key(objectId) : objectVar) + "nlb_pd=\"\"" + LINE_SEPARATOR
-                + "if nlb_in_#nlb_po$=\"" + INVENTORY + "\" then proc nlb_place" + LINE_SEPARATOR;
+        return assignment("nlb_po", objectId != null ? key(objectId) : objectVar) + "nlb_pd=\"" + INV_KEY + "\"" + LINE_SEPARATOR
+                + "proc nlb_del" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName, boolean unique) {
-        // без получателя — в себя (страницу или объект-контейнер; s в INSTEAD)
+        // без получателя — в себя (страницу или объект-контейнер; s в INSTEAD); из прежних мест
+        // не убирается (objs():add); дубль (клон в INSTEAD) — не поддерживается
         return assignment("nlb_po", objectId != null ? key(objectId) : objectVar)
-                + "nlb_pd=\"" + (destinationId != null ? destinationId : selfId()) + "\"" + LINE_SEPARATOR
-                + "proc nlb_place" + LINE_SEPARATOR;
+                + "nlb_pd=\"" + ckey(destinationId != null ? destinationId : selfId()) + "\"" + LINE_SEPARATOR
+                + "proc nlb_add" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
+        // take: из текущей комнаты — в инвентарь; уже в инвентаре — ничего (клонов нет)
         return assignment("nlb_po", objectId != null ? key(objectId) : objectVar)
-                + "nlb_pd=\"" + INVENTORY + "\"" + LINE_SEPARATOR + "proc nlb_place" + LINE_SEPARATOR;
+                + "nlb_tk=0" + LINE_SEPARATOR
+                + "if nlb_at_#nlb_po$_" + INV_KEY + "=0 then proc nlb_take" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName, boolean unique) {
         // в контейнер, в список или (без получателя) — в себя
-        String container = destinationId != null ? destinationId : selfId();
+        String container = ckey(destinationId != null ? destinationId : selfId());
         return "nlb_lsrc=\"" + sourceListVariableName + "\"" + LINE_SEPARATOR
                 + "nlb_ldst=\"" + (destinationListVariableName != null ? destinationListVariableName : "") + "\"" + LINE_SEPARATOR
                 + "nlb_c=\"" + container + "\"" + LINE_SEPARATOR + "proc nlb_laddall" + LINE_SEPARATOR;
@@ -1557,16 +1754,16 @@ public class URQExportManager extends TextExportManager {
     @Override
     protected String decorateClearOperation(String destinationId, String destinationVar) {
         if (destinationId != null) {
-            return "nlb_c=\"" + destinationId + "\"" + LINE_SEPARATOR + "proc nlb_clear" + LINE_SEPARATOR;
+            return "nlb_c=\"" + ckey(destinationId) + "\"" + LINE_SEPARATOR + "proc nlb_clear" + LINE_SEPARATOR;
         } else if (destinationVar != null) {
             return "nlb_ln_" + destinationVar + "=0" + LINE_SEPARATOR;  // nlb:clear(список)
         }
-        return "nlb_c=nlb_page" + LINE_SEPARATOR + "proc nlb_clear" + LINE_SEPARATOR;
+        return "nlb_c=nlb_pkey" + LINE_SEPARATOR + "proc nlb_clear" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateClearInvOperation() {
-        return "nlb_c=\"" + INVENTORY + "\"" + LINE_SEPARATOR + "proc nlb_clear" + LINE_SEPARATOR;
+        return "nlb_c=\"" + INV_KEY + "\"" + LINE_SEPARATOR + "proc nlb_clear" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1699,14 +1896,18 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decoratePDscOperation(String objVariableName) {
-        // описание объекта — в ответ; объект по имени, номер известен при сборке текста
-        return "proc nlb_o_" + NAME_MARK + objVariableName + END_MARK + "_text" + LINE_SEPARATOR;
+        // описание объекта — в ответ (включённого); объект по имени, номер известен при сборке текста
+        String n = NAME_MARK + objVariableName + END_MARK;
+        return "proc nlb_o_" + n + "_on" + LINE_SEPARATOR + "if nlb_on=1 then proc nlb_o_" + n + "_text" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decoratePDscsOperation(String objId, String objVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        if (objId == null) {
+            return EMPTY_STRING;  // объект из переменной — не поддерживается
+        }
+        // описания объектов с suppressDsc внутри объекта (ModificationInterpreter.pdscs)
+        return "nlb_where=\"o" + key(objId) + "\"" + LINE_SEPARATOR + "proc nlb_pdscs" + LINE_SEPARATOR;
     }
 
     @Override
