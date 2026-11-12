@@ -80,14 +80,14 @@ public class MediaExportTest {
         String qsp = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_16LE).replace("\r\n", "\n");
         String room = m_room.getId();
         String lamp = m_lamp.getId();
-        assertTrue("выбор картинки по тегу: " + qsp, qsp.contains("#nlb_img_" + room + "\nIF $nlb_tag['" + room + "'] = 'night':\n"
+        assertTrue("выбор картинки по тегу: " + qsp, qsp.contains("#nlb_img_" + room + "\n" + "LOCAL $nlb_me\n$nlb_me = $ARGS[0]\nIF $nlb_me = '': $nlb_me = '" + room + "'\n" + "IF $nlb_tag[$nlb_me] = 'night':\n"
                 + "    $RESULT = 'images/a.jpg'\nELSE\n    $RESULT = 'images/b.jpg'\nEND\n"));
         assertTrue("звук — при входе: " + qsp, qsp.contains("GOSUB 'nlb_snd_" + room + "'\nGOSUB '" + room + "_show'\n"));
         assertTrue(qsp, qsp.contains("#nlb_snd_" + room + "\nnlb_voice = 0\nGOSUB 'nlb_music', 'sound/m.mp3'\n"
                 + "IF nlb_voice = 0: PLAY 'sound/s.ogg' & nlb_voice = 1\n"));
         assertTrue("эффект объекта: " + qsp, qsp.contains("#nlb_snd_" + lamp + "\nPLAY 'sound/click.ogg'\n"));
-        assertTrue("SND: " + qsp, qsp.contains("IF nlb_hassnd['" + lamp + "'] = 1: GOSUB 'nlb_snd_' + '" + lamp + "'\n"));
-        assertTrue("картинка объекта — в ссылке: " + qsp, qsp.contains("''" + lamp + "''\"><<$FUNC(''nlb_imgtag'', $FUNC(''nlb_img_" + lamp + "''))>>Лампа</a>"));
+        assertTrue("SND: " + qsp, qsp.contains("IF nlb_hassnd['" + lamp + "'] = 1: GOSUB 'nlb_snd_' + '" + lamp + "', '" + lamp + "'\n"));
+        assertTrue("картинка объекта — в ссылке: " + qsp, qsp.contains("''' + $nlb_me + '''\"><<$FUNC(''nlb_imgtag'', $FUNC(''nlb_img_" + lamp + "'', $nlb_me))>>Лампа</a>"));
         assertTrue("музыка: тот же файл не перезапускается: " + qsp, qsp.contains("#nlb_music\nIF $ARGS[0] <> $nlb_music:\n"));
     }
 

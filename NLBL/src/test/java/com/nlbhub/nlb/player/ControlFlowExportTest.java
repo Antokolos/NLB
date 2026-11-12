@@ -281,7 +281,8 @@ public class ControlFlowExportTest {
         File qspFile = new File(m_temp.getRoot(), "book.txt");
         ifHaveBook().exportToQSPTextFile(qspFile);
         assertInOrder(read(qspFile, StandardCharsets.UTF_16LE),
-                "IF nlb_at['", "|nlb_inv'] = 0: GOSUB 'nlb_take', '", "', 0\n", "IF nlb_at['", "|nlb_inv'] = 1:\n", "x = ", "ELSE\n", "x = ", "END\n");
+                "IF nlb_at['", "|nlb_inv'] = 0:\nGOSUB 'nlb_take', '", "', 0\nELSE\nGOSUB 'nlb_take', $FUNC('nlb_clone', '", "IF nlb_at['",
+                "|nlb_inv'] = 1:\n", "x = ", "ELSE\n", "x = ", "END\n");
         File smFile = new File(m_temp.getRoot(), "book.sm");
         ifHaveBook().exportToASMFile(smFile);
         assertInOrder(read(smFile, StandardCharsets.UTF_8), "<<set $nlb_po = 1>><<set $nlb_tk = 0>>", "<<display 'nlb_take'>>",
@@ -289,11 +290,11 @@ public class ControlFlowExportTest {
         File xmlFile = new File(m_temp.getRoot(), "book.xml");
         ifHaveBook().exportToJSIQFile(xmlFile);
         assertInOrder(read(xmlFile, StandardCharsets.UTF_8),
-                "NLB.take(vars, '", "', false); ", "if (NLB.has(vars, '", "')) { ", "} else { ", "} ");
+                "NLB.take(vars, NLB.has(vars, '", "', false); ", "if (NLB.has(vars, '", "')) { ", "} else { ", "} ");
         File qstFile = new File(m_temp.getRoot(), "book.qst");
         ifHaveBook().exportToURQTextFile(qstFile);
         String urq = read(qstFile, Charset.forName("windows-1251")).replace("\r\n", "\n");
-        assertInOrder(urq, "nlb_po = 1\nnlb_tk=0\nif nlb_at_#nlb_po$_inv=0 then proc nlb_take\n",
+        assertInOrder(urq, "nlb_po = 1\nnlb_tk=0\nnlb_cs=nlb_po\nif nlb_at_#nlb_po$_inv=1 then proc nlb_clone\n",
                 "if not (nlb_at_1_inv=1) then goto nlb_if_1_1\n", "goto nlb_if_1_end\n:nlb_if_1_1\n",
                 ":nlb_if_1_2\n:nlb_if_1_end\n");
         File csFile = new File(m_temp.getRoot(), "startup.txt");

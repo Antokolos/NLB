@@ -75,8 +75,8 @@ public class JsiqObjectsExportTest {
     @Test
     public void sceneObjectIsLink() throws Exception {
         String xml = export();
-        assertTrue(xml, xml.contains("text: function (vars) { return 'На столе <a href=\"#\" class=\"nlb_obj\" "
-                + "onclick=\"return NLB.click(\\'act\\', \\'" + m_key.getId() + "\\')\">ключ</a> Пети.'; },"));
+        assertTrue(xml, xml.contains("text: function (vars, me) { me = me || '" + m_key.getId() + "'; return 'На столе <a href=\"#\" class=\"nlb_obj\" "
+                + "onclick=\"return NLB.click(\\'act\\', \\'' + me + '\\')\">ключ</a> Пети.'; },"));
     }
 
     @Test
@@ -84,7 +84,7 @@ public class JsiqObjectsExportTest {
         String xml = export();
         assertTrue(xml, xml.contains("acttext: function (vars) { return 'Вы взяли ключ.'; },"));
         assertTrue("переносимый — в инвентарь: " + xml, xml.contains("take: '" + m_key.getId() + "',"));
-        assertTrue("применение к двери: " + xml, xml.contains("use: function (vars, target) { if (target === '"
+        assertTrue("применение к двери: " + xml, xml.contains("use: function (vars, target, me) { me = me || '" + m_key.getId() + "'; if (NLB.p(target) === '"
                 + m_door.getId() + "') { NLB.sayp(vars, 'Дверь открылась.'); NLB.printed = true; } },"));
         assertFalse("дверь не переносимая: " + xml, xml.contains("take: '" + m_door.getId() + "'"));
     }
@@ -112,7 +112,7 @@ public class JsiqObjectsExportTest {
         File file = new File(m_temp.getRoot(), "mods.xml");
         b.nlb.exportToJSIQFile(file);
         String xml = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
-        assertTrue(xml, xml.contains("if (!NLB.has(vars, '" + key.getId() + "')) { NLB.take(vars, '" + key.getId() + "', false); } "));
+        assertTrue(xml, xml.contains("NLB.take(vars, NLB.has(vars, '" + key.getId() + "') ? NLB.clone(vars, '" + key.getId() + "') : '" + key.getId() + "', false); "));
         assertTrue(xml, xml.contains("NLB.del(vars, '" + key.getId() + "', NLB.INV); "));
         assertTrue(xml, xml.contains("NLB.countReset(vars); "));
     }
@@ -135,12 +135,11 @@ public class JsiqObjectsExportTest {
         File file = new File(m_temp.getRoot(), "markup.xml");
         b.nlb.exportToJSIQFile(file);
         String xml = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8).replace("\r\n", "\n");
-        assertTrue("{} — ссылкой первая строка, ^ — <br/>: " + xml, xml.contains("text: function (vars) { return ' <br/>\\n "
-                + "<a href=\"#\" class=\"nlb_obj\" onclick=\"return NLB.click(\\'act\\', \\'" + flag.getId()
-                + "\\')\">Карточные бои</a> <br/>\\n'; },"));
+        assertTrue("{} — ссылкой первая строка, ^ — <br/>: " + xml, xml.contains("text: function (vars, me) { me = me || '" + flag.getId() + "'; return ' <br/>\\n "
+                + "<a href=\"#\" class=\"nlb_obj\" onclick=\"return NLB.click(\\'act\\', \\'' + me + '\\')\">Карточные бои</a> <br/>\\n'; },"));
         assertTrue("графический объект с действием — весь текст ссылкой: " + xml, xml.contains(
-                "onclick=\"return NLB.click(\\'act\\', \\'" + skill.getId() + "\\')\">Грамотность – читать надписи.</a>'; },"));
+                "onclick=\"return NLB.click(\\'act\\', \\'' + me + '\\')\">Грамотность – читать надписи.</a>'; },"));
         assertTrue("надпись-картинка без действия — просто текст: " + xml,
-                xml.contains("text: function (vars) { return 'ВЫБЕРИТЕ НАВЫК'; },"));
+                xml.contains("'; return 'ВЫБЕРИТЕ НАВЫК'; },"));
     }
 }

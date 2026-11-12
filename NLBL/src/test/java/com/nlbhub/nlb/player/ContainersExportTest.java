@@ -86,15 +86,15 @@ public class ContainersExportTest {
         File file = new File(m_temp.getRoot(), "book.txt");
         book().exportToQSPTextFile(file);
         String qsp = read(file, StandardCharsets.UTF_16LE);
-        assertTrue("ADD — в оба держателя: " + qsp, qsp.contains("GOSUB 'nlb_add', '" + m_hand.getId() + "', '" + m_holder1.getId() + "'\n")
-                && qsp.contains("GOSUB 'nlb_add', '" + m_hand.getId() + "', '" + m_holder2.getId() + "'\n"));
+        assertTrue("ADD — в оба держателя: " + qsp, qsp.contains("GOSUB 'nlb_add', '" + m_hand.getId() + "', '" + m_holder1.getId() + "', 1\n")
+                && qsp.contains("GOSUB 'nlb_add', '" + m_hand.getId() + "', '" + m_holder2.getId() + "', 1\n"));
         String add = qsp.substring(qsp.indexOf("#nlb_add\n"), qsp.indexOf("#nlb_del\n"));
         assertFalse("ADD не убирает из прежнего места: " + add, add.contains("nlb_lrmv") || add.contains("nlb_del"));
         assertTrue("содержимое панели — список: " + qsp, qsp.contains("$nlb_li['<" + m_panel.getId() + ",0'] = '" + m_card.getId() + "'\n"));
         assertTrue("инвентарь — с содержимым предметов: " + qsp,
                 qsp.contains("#nlb_inv_item\n") && qsp.contains("GOSUB 'nlb_inv_item', $nlb_li['<' + $ARGS[0] + ',' + $STR(nlb_i)], ARGS[1] + 1"));
         assertTrue("карта — предмет-меню: " + qsp, qsp.contains("nlb_menu['" + m_card.getId() + "'] = 1\n"));
-        assertTrue("щелчок по меню — действие: " + qsp, qsp.contains("IF nlb_menu[$nlb_o] = 1: GOSUB 'nlb_o_' + $nlb_o + '_acta'"));
+        assertTrue("щелчок по меню — действие: " + qsp, qsp.contains("IF nlb_menu[$FUNC('nlb_p', $nlb_o)] = 1: GOSUB 'nlb_o_' + $FUNC('nlb_p', $nlb_o) + '_acta', $nlb_o"));
     }
 
     @Test
@@ -102,8 +102,8 @@ public class ContainersExportTest {
         File file = new File(m_temp.getRoot(), "book.qst");
         book().exportToURQTextFile(file);
         String urq = read(file, Charset.forName("windows-1251"));
-        assertTrue("ADD — в оба держателя (ключи oN): " + urq, urq.contains("nlb_pd=\"o1\"\nproc nlb_add\n") && urq.contains("nlb_pd=\"o2\"\nproc nlb_add\n"));
-        String add = urq.substring(urq.indexOf(":nlb_add\n"), urq.indexOf(":nlb_del\n"));
+        assertTrue("ADD — в оба держателя (ключи oN): " + urq, urq.contains("nlb_pd=\"o1\"\nnlb_pu=1\nproc nlb_add\n") && urq.contains("nlb_pd=\"o2\"\nnlb_pu=1\nproc nlb_add\n"));
+        String add = urq.substring(urq.indexOf(":nlb_add\n"), urq.indexOf(":nlb_clone\n"));
         assertFalse("ADD не убирает из прежнего места: " + add, add.contains("nlb_lrmv"));
         assertTrue("содержимое панели — список: " + urq, urq.contains("nlb_at_5_o4=1\nnlb_li_co4_0=5\nnlb_ln_co4=1\n"));
         assertTrue("инвентарь — с содержимым предметов: " + urq, urq.contains(":nlb_inv_in\n") && urq.contains("invkill\n"));
@@ -116,8 +116,8 @@ public class ContainersExportTest {
         File file = new File(m_temp.getRoot(), "book.xml");
         book().exportToJSIQFile(file);
         String xml = read(file, StandardCharsets.UTF_8);
-        assertTrue(xml, xml.contains("NLB.add(vars, '" + m_hand.getId() + "', '" + m_holder1.getId() + "'); ")
-                && xml.contains("NLB.add(vars, '" + m_hand.getId() + "', '" + m_holder2.getId() + "'); "));
+        assertTrue(xml, xml.contains("NLB.add(vars, '" + m_hand.getId() + "', '" + m_holder1.getId() + "', true); ")
+                && xml.contains("NLB.add(vars, '" + m_hand.getId() + "', '" + m_holder2.getId() + "', true); "));
         assertTrue("содержимое панели: " + xml, xml.contains("'" + m_panel.getId() + "': ['" + m_card.getId() + "']"));
         assertTrue("инвентарь — с содержимым предметов: " + xml, xml.contains("for (var i = 0; i < l.length; i++) { walk(l[i], depth + 1); }"));
         String card = xml.substring(xml.indexOf("N.objs['" + m_card.getId() + "']"));

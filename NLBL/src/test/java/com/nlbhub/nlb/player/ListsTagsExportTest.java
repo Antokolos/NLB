@@ -147,6 +147,7 @@ public class ListsTagsExportTest {
         assertTrue(urq, urq.contains("nlb_lname=\"listA\"\nproc nlb_lpop\ngot = nlb_lres\n"));
         assertTrue("тег по ссылке — имя с подстановкой: " + urq, urq.contains("nlb_tag_#%got$=\"red\"\n"));
         assertTrue("контейнер — ключ oN: " + urq, java.util.regex.Pattern.compile("nlb_c=\"o\\d+\"\nproc nlb_clear\n").matcher(urq).find());
+        assertTrue("OBJS — тоже по ключу контейнера: " + urq, java.util.regex.Pattern.compile("nlb_c = \"o\\d+\"\nnlb_lname=\"lb\"\nproc nlb_lobjs\n").matcher(urq).find());
         assertTrue(urq, urq.contains("h=0\nif nlb_at_1_inv=1 then h=1\n"));
         assertTrue("CLEAR — по списку контейнера: " + urq, urq.contains("if nlb_m>=nlb_ln_#%nlb_lc$ then goto nlb_clear_end\n"));
     }
