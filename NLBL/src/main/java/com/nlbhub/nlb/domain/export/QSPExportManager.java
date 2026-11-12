@@ -510,6 +510,15 @@ public class QSPExportManager extends TextExportManager {
         // становится его текст (без ссылки EXEC в нём), а без текста — подпись (выбор навыков в
         // «Варваре»); подпись без действия — просто текст (надпись-картинка)
         String text = objBlocks.getObjText();
+        if (text.contains(OBJ_LABEL_MARK)) {
+            // подпись для пустой метки {}: disp, иначе первая строка текста действия (карта во
+            // «Фронтире»), иначе имя — как PlayerEngine.sceneLabel
+            String objLabel = StringHelper.notEmpty(objBlocks.getObjDisp()) ? objBlocks.getObjDisp() : firstLine(objBlocks.getObjActStart());
+            if (objLabel.isEmpty()) {
+                objLabel = StringHelper.notEmpty(objBlocks.getObjName()) ? qspString(objBlocks.getObjName()) : id;
+            }
+            text = text.replace(OBJ_LABEL_MARK, objLabel);
+        }
         if (objBlocks.isGraphical()) {
             String label = text.isEmpty() ? objBlocks.getObjDisp()
                     : text.substring(1, text.length() - LINE_SEPARATOR.length() - 1);  // без '…'
@@ -767,9 +776,74 @@ public class QSPExportManager extends TextExportManager {
         }
         // картинка объекта в сцене — в начале ссылки, как imgv в INSTEAD ({картинка метка})
         String image = imageEnabled && !isGraphicalObj ? "<<$FUNC(''nlb_imgtag'', $FUNC(''nlb_img_" + objId + "''))>>" : EMPTY_STRING;
+        if (EMPTY_LINK.matcher(objText).find()) {
+            return "'" + expandEmptyLink(objId, objText, image) + "'" + LINE_SEPARATOR;
+        }
         String text = objText.replaceAll("\\{([^}]*)\\}",
                 java.util.regex.Matcher.quoteReplacement(objectLink(objId, image + "\u0002")).replace("\u0002", "$1"));
         return "'" + text + "'" + LINE_SEPARATOR;
+    }
+
+    /** Перевод строки в тексте QSP (USEHTML) — '^' INSTEAD */
+    private static final String BR = "<br>";
+    /** Пустая метка {} в описании объекта */
+    private static final java.util.regex.Pattern EMPTY_LINK = java.util.regex.Pattern.compile("\\{\\s*\\}");
+    /** Подпись ссылки, которую заменит подпись объекта (generateObjText) */
+    private static final String OBJ_LABEL_MARK = "\u0004";
+
+    private static String trimTrailingBreaks(String text) {
+        String result = text;
+        while (true) {
+            String stripped = result.stripTrailing();
+            if (stripped.endsWith(BR)) {
+                result = stripped.substring(0, stripped.length() - BR.length());
+            } else {
+                return result;
+            }
+        }
+    }
+
+    /** Видимый текст строки QSP: без разметки HTML; подстановка <<…>> видима */
+    private static boolean hasVisibleText(String line) {
+        return !line.replaceAll("<<[^>]*>>", "x").replaceAll("<[^>]*>", "").replace("&nbsp;", " ").isBlank();
+    }
+
+    /**
+     * Пустая метка {} (в INSTEAD — картинка, например флажки настроек «Фронтира»): ссылкой
+     * становится первая непустая строка рядом, а без неё — подпись объекта (OBJ_LABEL_MARK), как
+     * PlayerEngine.sceneLabel и экспорт jsIQ2
+     */
+    private static String expandEmptyLink(String objId, String objText, String image) {
+        String rest = EMPTY_LINK.matcher(objText).replaceAll("");
+        // строки — через перевод строки или <br> ('^'); разделители сохраняются
+        String[] parts = rest.split("(?<=\r\n|<br>)", -1);
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
+            String body = part.endsWith(BR) ? part.substring(0, part.length() - BR.length())
+                    : part.endsWith(LINE_SEPARATOR) ? part.substring(0, part.length() - LINE_SEPARATOR.length()) : part;
+            if (hasVisibleText(body)) {
+                String label = body.strip();
+                int start = body.indexOf(label);
+                parts[i] = body.substring(0, start) + objectLink(objId, image + label) + body.substring(start + label.length())
+                        + part.substring(body.length());
+                return String.join("", parts);
+            }
+        }
+        return rest + objectLink(objId, image + OBJ_LABEL_MARK);
+    }
+
+    /** Первая непустая строка текста действия ('…' — оператор вывода) */
+    private static String firstLine(String actStart) {
+        String text = actStart.strip();
+        if (text.startsWith("'") && text.endsWith("'") && text.length() >= 2) {
+            text = text.substring(1, text.length() - 1);
+        }
+        for (String line : text.split("\r\n|<br>")) {
+            if (hasVisibleText(line)) {
+                return line.strip();
+            }
+        }
+        return EMPTY_STRING;
     }
 
     /** Ссылка на объект в строке QSP: щелчок — nlb_act */
@@ -832,7 +906,9 @@ public class QSPExportManager extends TextExportManager {
         for (final TextChunk textChunk : textChunks) {
             switch (textChunk.getType()) {
                 case TEXT:
-                    result.append(qspString(textChunk.getText()));
+                    // '^' — перевод строки INSTEAD (так пишут тексты книг, которые играют в
+                    // INSTEAD; так его понимает и Java-плеер): <br> — USEHTML
+                    result.append(qspString(textChunk.getText()).replace("^", BR));
                     break;
                 case VARIABLE:
                     Variable.DataType type = getVariableDataType(textChunk.getText());
@@ -846,13 +922,15 @@ public class QSPExportManager extends TextExportManager {
                     break;
             }
         }
-        return result.toString();
+        // хвостовые '^' не дают пустой строки: плеер обрезает текст справа
+        return trimTrailingBreaks(result.toString());
     }
 
     @Override
     protected String expandVariablesForLinks(List<TextChunk> textChunks, Theme theme) {
-        // подпись действия и текст применения — одна строка
-        return expandVariables(textChunks).replace(LINE_SEPARATOR, " ");
+        // подпись действия и текст применения — одна строка ('^' — пробел, по краям — ничего,
+        // как подпись ссылки в плеере)
+        return expandVariables(textChunks).replace(LINE_SEPARATOR, " ").replace(BR, " ").strip();
     }
 
     /**
