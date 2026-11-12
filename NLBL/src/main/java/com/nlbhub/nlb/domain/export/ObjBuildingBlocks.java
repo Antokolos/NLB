@@ -77,6 +77,8 @@ public class ObjBuildingBlocks {
     private java.util.List<MediaChoice> m_objSounds = new java.util.ArrayList<>();
     /** Картинка в описании объекта на странице (imageInScene) и у предмета инвентаря (imageInInventory) */
     private boolean m_imageInScene;
+    /** Предмет виден в инвентаре: есть подпись или картинка (PlayerEngine.isVisibleInInventory) */
+    private boolean m_visibleInInventory = true;
     private boolean m_imageInInventory;
     private String m_objDefaultTagVariable;
     private String m_objConstraint;
@@ -439,6 +441,14 @@ public class ObjBuildingBlocks {
 
     public void setObjSounds(java.util.List<MediaChoice> objSounds) {
         m_objSounds = objSounds;
+    }
+
+    public boolean isVisibleInInventory() {
+        return m_visibleInInventory;
+    }
+
+    public void setVisibleInInventory(boolean visibleInInventory) {
+        m_visibleInInventory = visibleInInventory;
     }
 
     public boolean isImageInScene() {

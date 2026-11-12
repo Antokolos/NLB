@@ -150,6 +150,10 @@ public class URQExportManager extends TextExportManager {
                 sb.append("nlb_tag_").append(i + 1).append("=\"").append(urqString(objs.get(i).getObjDefaultTagVariable()))
                         .append("\"").append(LINE_SEPARATOR);
             }
+            if (!objs.get(i).isVisibleInInventory()) {
+                // предмет без подписи и картинки лежит в инвентаре невидимым (как в плеере и INSTEAD)
+                sb.append("nlb_invhide_").append(i + 1).append("=1").append(LINE_SEPARATOR);
+            }
             if (!objs.get(i).getObjSounds().isEmpty()) {
                 sb.append("nlb_hassnd_").append(i + 1).append("=1").append(LINE_SEPARATOR);
             }
@@ -370,12 +374,12 @@ public class URQExportManager extends TextExportManager {
                 ":nlb_clear_end",
                 "end",
                 ":nlb_place",
-                "if nlb_in_#nlb_po$=\"" + INVENTORY + "\" then inv- nlbo_#nlb_po$",
+                "if nlb_in_#nlb_po$=\"" + INVENTORY + "\" and nlb_invhide_#nlb_po$=0 then inv- nlbo_#nlb_po$",
                 "if nlb_pd=\"" + INVENTORY + "\" then goto nlb_place_inv",
                 "nlb_in_#nlb_po$=nlb_pd",
                 "end",
                 ":nlb_place_inv",
-                "if nlb_in_#nlb_po$<>\"" + INVENTORY + "\" then inv+ nlbo_#nlb_po$",
+                "if nlb_in_#nlb_po$<>\"" + INVENTORY + "\" and nlb_invhide_#nlb_po$=0 then inv+ nlbo_#nlb_po$",
                 "nlb_in_#nlb_po$=nlb_pd",
                 "end",
                 "").replace("%OBJ_COUNT%", Integer.toString(objs.size())));
@@ -385,7 +389,8 @@ public class URQExportManager extends TextExportManager {
 
     private String objDisp(ObjBuildingBlocks obj) {
         if (StringHelper.notEmpty(obj.getObjDisp())) {
-            return obj.getObjDisp();
+            // подпись предмета — одна строка: '^' (перевод строки INSTEAD) — пробел
+            return obj.getObjDisp().replace(BR, " ").replaceAll(" {2,}", " ").strip();
         }
         return StringHelper.notEmpty(obj.getObjName()) ? urqString(obj.getObjName()) : obj.getObjId();
     }
@@ -1157,7 +1162,8 @@ public class URQExportManager extends TextExportManager {
         for (final TextChunk textChunk : textChunks) {
             switch (textChunk.getType()) {
                 case TEXT:
-                    result.append(urqString(textChunk.getText()));
+                    // подпись кнопки — одна строка: '^' — пробел
+                    result.append(urqString(textChunk.getText()).replace("^", " "));
                     break;
                 case VARIABLE:
                     result.append(urqVariable(textChunk.getText()));
@@ -1169,7 +1175,7 @@ public class URQExportManager extends TextExportManager {
                     break;
             }
         }
-        return result.toString();
+        return result.toString().strip();
     }
 
     /** Тексты объектов (общий код вызывает эту версию) — так же, как текст страницы */
@@ -1178,6 +1184,10 @@ public class URQExportManager extends TextExportManager {
         return expandVariables(textChunks, null);
     }
 
+    /** Перевод строки в тексте UrqW — '^' INSTEAD */
+    private static final String BR = "<br>";
+    private static final java.util.regex.Pattern TRAILING_BR = java.util.regex.Pattern.compile("(\\s*<br>)+\\s*(?=\\r\\n|$)");
+
     /** Текст страницы: каждая строка — pln (раньше pln ставился перед каждым куском текста) */
     @Override
     protected String expandVariables(List<TextChunk> textChunks, Theme theme) {
@@ -1185,7 +1195,8 @@ public class URQExportManager extends TextExportManager {
         for (final TextChunk textChunk : textChunks) {
             switch (textChunk.getType()) {
                 case TEXT:
-                    result.append(urqString(textChunk.getText()));
+                    // '^' — перевод строки INSTEAD (как в Java-плеере): <br> в строке pln
+                    result.append(urqString(textChunk.getText()).replace("^", BR));
                     break;
                 case VARIABLE:
                     result.append(urqVariable(textChunk.getText()));
@@ -1197,7 +1208,8 @@ public class URQExportManager extends TextExportManager {
                     break;
             }
         }
-        return result.toString();
+        // хвостовые '^' пустой строки не дают (плеер обрезает текст справа)
+        return TRAILING_BR.matcher(result.toString()).replaceAll("");
     }
 
     @Override

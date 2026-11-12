@@ -509,6 +509,8 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "    var inv = N.invOrder(vars), out = [];",
             "    for (var i = 0; i < inv.length; i++) {",
             "        var id = inv[i];",
+            // предмет без подписи и картинки лежит в инвентаре невидимым (как в плеере и INSTEAD)
+            "        if (N.objs[id] && N.objs[id].hidden) { continue; }",
             "        var d = N.disp(vars, id);",
             "        if (N.objs[id] && N.objs[id].imgInv) { d = N.imgTag(N.img(vars, id)) + d; }",
             "        if (vars.nlb_sel === id) { d = '<b>' + d + '</b>'; }",
@@ -798,6 +800,9 @@ public class JSIQ2ExportManager extends XMLExportManager {
         }
         if (obj.isImageInInventory() && !obj.isGraphical()) {
             sb.append("    imgInv: true,\n");
+        }
+        if (!obj.isVisibleInInventory()) {
+            sb.append("    hidden: true,\n");
         }
         if (obj.isTakable()) {
             // decorateObjTak: взять общий объект, если он переносимый, иначе этот
