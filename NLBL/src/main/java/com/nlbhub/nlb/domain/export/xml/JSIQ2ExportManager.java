@@ -118,7 +118,8 @@ public class JSIQ2ExportManager extends XMLExportManager {
         metadata.setLastSave(lastSaveString);
         article.setId(pageBlocks.getPageNumber());
         article.setMetadata(metadata);
-        article.setText(html(pageBlocks.getPageTextStart()));
+        // картинка страницы — место, которое заполняет общий код NLB при показе (тег мог измениться)
+        article.setText((pageBlocks.getPageImages().isEmpty() ? "" : "<div class=\"nlb_pic\"></div>") + html(pageBlocks.getPageTextStart()));
         if (runtimeScript != null) {
             article.addScript(runtimeScript);
         }
@@ -235,6 +236,8 @@ public class JSIQ2ExportManager extends XMLExportManager {
                         + (hasPageModifications ? "pmod(); " : Constants.EMPTY_STRING)
                         + (hasPageVariable ? "pvar(); " : Constants.EMPTY_STRING)
                         + (hasTimer ? pageBlocks.getPageTimerVariableInit() : Constants.EMPTY_STRING)
+                        // initf(): звук страницы — при входе, после модификаций
+                        + (pageBlocks.getPageSounds().isEmpty() ? Constants.EMPTY_STRING : "NLB.snd(vars, '" + pageBlocks.getPageId() + "'); ")
                         + "}"
         );
         article.addScript(preload);
@@ -440,6 +443,42 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "    }",
             "    N.achSave();",
             "};",
+            // Картинки (ModificationInterpreter.selectImage, pic в INSTEAD): N.imgs[id] — [условие,
+            // путь]; первая, чьё условие совпало с тегом (без условия — всегда). Звук (playSound,
+            // snd): N.snds[id] — [условие, путь, вид]: без условия — всегда, подряд идущие с
+            // условием — цепочка по тегу; вид: m — музыка (повторяется, тот же файл не
+            // перезапускается), x — стоп музыки (void), s — эффект, v — фраза озвучки страницы
+            // (фразы звучат по очереди, в порядке поля; новая страница со звуком прерывает очередь)
+            "N.img = function (vars, id) {",
+            "    var l = N.imgs[id] || [], t = N.tag(vars, id);",
+            "    for (var i = 0; i < l.length; i++) { if (!l[i][0] || l[i][0] === t) { return l[i][1]; } }",
+            "    return '';",
+            "};",
+            "N.imgTag = function (path) { return path ? '<img src=\"' + path + '\"/>' : ''; };",
+            "N.play = function (path) { try { var a = new Audio(path); var p = a.play(); if (p && p.catch) { p.catch(function () {}); } return a; } catch (e) { return null; } };",
+            "N.musicPlay = function (path) {",
+            "    if (N.musicPath === path) { return; }",
+            "    if (N.music) { N.music.pause(); N.music = null; }",
+            "    N.musicPath = path;",
+            "    if (path) { N.music = N.play(path); if (N.music) { N.music.loop = true; } }",
+            "};",
+            "N.voiceStop = function () { N.voiceQueue = []; if (N.voice) { N.voice.pause(); N.voice = null; } };",
+            "N.voiceNext = function () {",
+            "    N.voice = null;",
+            "    var path = N.voiceQueue && N.voiceQueue.shift();",
+            "    if (path) { N.voice = N.play(path); if (N.voice) { N.voice.onended = N.voiceNext; } else { N.voiceNext(); } }",
+            "};",
+            "N.snd = function (vars, id) {",
+            "    var l = N.snds[id] || [], t = N.tag(vars, id), chain = false, voices = [];",
+            "    for (var i = 0; i < l.length; i++) {",
+            "        var c = l[i][0];",
+            "        if (c) { if (chain || c !== t) { continue; } chain = true; } else { chain = false; }",
+            "        var kind = l[i][2], path = l[i][1];",
+            "        if (kind === 'x') { N.musicPlay(''); } else if (kind === 'm') { N.musicPlay(path); }",
+            "        else if (kind === 'v') { voices.push(path); } else { N.play(path); }",
+            "    }",
+            "    if (voices.length) { N.voiceStop(); N.voiceQueue = voices; N.voiceNext(); }",
+            "};",
             "N.invOrder = function (vars) { if (!vars.nlb_inv_order) { vars.nlb_inv_order = []; } return vars.nlb_inv_order; };",
             "N.where = function (vars, id) { return N.state(vars)[id] || ''; };",
             "N.has = function (vars, id) { return N.where(vars, id) === N.INV; };",
@@ -449,6 +488,14 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "    var o = N.objs[id];",
             "    if (!o || (o.visible && !o.visible(vars))) { return ''; }",
             "    var text = o.text(vars), inner = N.showIn(vars, id);",
+            // картинка в сцене — в начале ссылки на объект, как imgv в INSTEAD; объект без
+            // описания — одна картинка (с действием — ссылкой)
+            "    if (o.imgScene) {",
+            "        var im = N.imgTag(N.img(vars, id));",
+            "        if (!text) { text = (im && o.act) ? '<a href=\"#\" class=\"nlb_obj\" onclick=\"return NLB.click(\\'act\\', \\'' + id + '\\')\">' + im + '</a>' : im; }",
+            "        else if (text.indexOf('class=\"nlb_obj\"') >= 0) { text = text.replace(/(<a [^>]*class=\"nlb_obj\"[^>]*>)/, function (m) { return m + im; }); }",
+            "        else { text = im + text; }",
+            "    }",
             "    return text + ((text && inner) ? '<br/>' : '') + inner;",
             "};",
             "N.showIn = function (vars, where) {",
@@ -463,6 +510,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "    for (var i = 0; i < inv.length; i++) {",
             "        var id = inv[i];",
             "        var d = N.disp(vars, id);",
+            "        if (N.objs[id] && N.objs[id].imgInv) { d = N.imgTag(N.img(vars, id)) + d; }",
             "        if (vars.nlb_sel === id) { d = '<b>' + d + '</b>'; }",
             "        out.push('<a href=\"#\" class=\"nlb_item\" onclick=\"return NLB.click(\\'inv\\', \\'' + id + '\\')\">' + d + '</a>');",
             "    }",
@@ -557,6 +605,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "N.fill = function (c) {",
             "    if (!c) { return; }",
             "    var vars = N.vars();",
+            "    c.find('.nlb_pic').each(function () { $(this).html(N.imgTag(N.img(vars, N.here()))); });",
             "    c.find('.nlb_scene').each(function () { $(this).html(N.scene(vars)); });",
             "    c.find('.nlb_reply').each(function () { $(this).html(vars.nlb_reply || ''); });",
             "    c.find('.nlb_inv').each(function () { $(this).html(N.inventory(vars)); });",
@@ -624,6 +673,18 @@ public class JSIQ2ExportManager extends XMLExportManager {
             }
         }
         sb.append("N.deftag = {").append(deftags).append("};\n");
+        // картинки и звуки страниц и объектов (MediaChoice)
+        StringBuilder imgs = new StringBuilder();
+        StringBuilder snds = new StringBuilder();
+        for (PageBuildingBlocks page : nlbBlocks.getPagesBuildingBlocks()) {
+            appendMedia(imgs, snds, page.getPageId(), page.getPageImages(), page.getPageSounds(), true);
+        }
+        for (ObjBuildingBlocks obj : objs) {
+            appendMedia(imgs, snds, obj.getObjId(), obj.isGraphical() ? java.util.Collections.emptyList() : obj.getObjImages(),
+                    obj.getObjSounds(), false);
+        }
+        sb.append("N.imgs = {").append(imgs).append("};\n");
+        sb.append("N.snds = {").append(snds).append("};\n");
         for (ObjBuildingBlocks obj : objs) {
             sb.append(createObjCode(obj, takable));
         }
@@ -633,6 +694,28 @@ public class JSIQ2ExportManager extends XMLExportManager {
         script.setIsGlobal("true");
         script.setValue(sb.toString());
         return script;
+    }
+
+    private static void appendMedia(StringBuilder imgs, StringBuilder snds, String id, List<MediaChoice> images,
+                                    List<MediaChoice> sounds, boolean page) {
+        if (!images.isEmpty()) {
+            imgs.append(imgs.length() == 0 ? "" : ",\n").append("'").append(id).append("': [");
+            for (int i = 0; i < images.size(); i++) {
+                imgs.append(i == 0 ? "" : ", ").append("[").append(jsText(images.get(i).getConstraint())).append(", ")
+                        .append(jsText(images.get(i).getPath())).append("]");
+            }
+            imgs.append("]");
+        }
+        if (!sounds.isEmpty()) {
+            snds.append(snds.length() == 0 ? "" : ",\n").append("'").append(id).append("': [");
+            for (int i = 0; i < sounds.size(); i++) {
+                MediaChoice sound = sounds.get(i);
+                String kind = sound.isStop() ? "x" : !sound.isSfx() ? "m" : page ? "v" : "s";
+                snds.append(i == 0 ? "" : ", ").append("[").append(jsText(sound.getConstraint())).append(", ")
+                        .append(jsText(sound.getPath())).append(", '").append(kind).append("']");
+            }
+            snds.append("]");
+        }
     }
 
     /**
@@ -706,6 +789,15 @@ public class JSIQ2ExportManager extends XMLExportManager {
         }
         if (obj.isCallback()) {
             sb.append("    callback: true,\n");
+        }
+        if (obj.isImageInScene() && !obj.isGraphical()) {
+            sb.append("    imgScene: true,\n");
+            if (obj.hasAction()) {
+                sb.append("    act: true,\n");
+            }
+        }
+        if (obj.isImageInInventory() && !obj.isGraphical()) {
+            sb.append("    imgInv: true,\n");
         }
         if (obj.isTakable()) {
             // decorateObjTak: взять общий объект, если он переносимый, иначе этот
@@ -984,20 +1076,18 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateSSndOperation() {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "NLB.snd(vars, '" + selfId() + "'); ";
     }
 
     @Override
     protected String decorateWSndOperation() {
-        // TODO: implement
-        return EMPTY_STRING;
+        // ww — объект, к которому применяют: в use объекта это target; вне применения — ничего
+        return inUseLink() ? "NLB.snd(vars, target); " : EMPTY_STRING;
     }
 
     @Override
     protected String decorateSndOperation(String objectId, String objectVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "NLB.snd(vars, " + ref(objectId, objectVar) + "); ";
     }
 
     @Override

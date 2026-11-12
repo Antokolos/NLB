@@ -474,18 +474,17 @@ public class NonLinearBookFacade implements NLBObservable {
 
     public void exportToChoiceScript(File exportDir) throws NLBExportException {
         m_nlb.exportToChoiceScript(new File(exportDir, "startup.txt"));
-        File imagesExportDir = new File(exportDir, NonLinearBook.IMAGES_DIR_NAME);
-        m_nlb.exportImages(true, imagesExportDir);
+        exportMedia(exportDir);
     }
 
     public void exportToQSPTextFile(File exportDir) throws NLBExportException {
         m_nlb.exportToQSPTextFile(new File(exportDir, "book.txt"));
-        File imagesExportDir = new File(exportDir, NonLinearBook.IMAGES_DIR_NAME);
-        m_nlb.exportImages(true, imagesExportDir);
+        exportMedia(exportDir);
     }
 
     public void exportToURQTextFile(File exportDir) throws NLBExportException {
         m_nlb.exportToURQTextFile(new File(exportDir, "book.qst"));
+        exportMedia(exportDir);
     }
 
     public void exportToPDFFile(File exportFile) throws NLBExportException {
@@ -504,6 +503,7 @@ public class NonLinearBookFacade implements NLBObservable {
 
     public void exportToJSIQFile(File exportDir) throws NLBExportException {
         m_nlb.exportToJSIQFile(new File(exportDir, "example.xml"));
+        exportMedia(exportDir);
     }
 
     public void exportToSTEADFile(File exportDir) throws NLBExportException, NLBIOException {
@@ -522,6 +522,10 @@ public class NonLinearBookFacade implements NLBObservable {
         ResourceManager.exportBundledFiles(exportDir);
     }
 
+    /**
+     * Картинки и звуки книги — в каталоги images и sound рядом с файлом экспорта: на них
+     * ссылаются и экспорт INSTEAD, и пошаговые экспорты (QSP, URQ, jsIQ2, AXMA, ChoiceScript)
+     */
     private void exportMedia(File exportDir) throws NLBExportException {
         File imagesExportDir = new File(exportDir, NonLinearBook.IMAGES_DIR_NAME);
         m_nlb.exportImages(true, imagesExportDir);
@@ -531,6 +535,7 @@ public class NonLinearBookFacade implements NLBObservable {
 
     public void exportToASMFile(File exportDir) throws NLBExportException {
         m_nlb.exportToASMFile(new File(exportDir, "book.sm"));
+        exportMedia(exportDir);
     }
 
     public void updateModifications(

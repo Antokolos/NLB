@@ -119,12 +119,21 @@ public class QSPExportManager extends TextExportManager {
                 sb.append("$nlb_tag['").append(obj.getObjId()).append("'] = '").append(qspString(obj.getObjDefaultTagVariable()))
                         .append("'").append(LINE_SEPARATOR);
             }
+            if (!obj.getObjSounds().isEmpty()) {
+                sb.append("nlb_hassnd['").append(obj.getObjId()).append("'] = 1").append(LINE_SEPARATOR);
+            }
+            if (hasInventoryImage(obj)) {
+                sb.append("nlb_invimg['").append(obj.getObjId()).append("'] = 1").append(LINE_SEPARATOR);
+            }
         }
         // теги по умолчанию (var { tag = … } в INSTEAD): GETTAG без явного TAG возвращает их
         for (PageBuildingBlocks page : pages) {
             if (StringHelper.notEmpty(page.getPageDefaultTag())) {
                 sb.append("$nlb_tag['").append(page.getPageId()).append("'] = '").append(qspString(page.getPageDefaultTag()))
                         .append("'").append(LINE_SEPARATOR);
+            }
+            if (!page.getPageSounds().isEmpty()) {
+                sb.append("nlb_hassnd['").append(page.getPageId()).append("'] = 1").append(LINE_SEPARATOR);
             }
         }
         if (!pages.isEmpty()) {
@@ -273,7 +282,11 @@ public class QSPExportManager extends TextExportManager {
             "IF $nlb_in[$ARGS[0]] <> '%NLB_INV%' AND $ARGS[1] = '%NLB_INV%':",
             "    $nlb_shown[$ARGS[0]] = $FUNC('nlb_o_' + $ARGS[0] + '_disp')",
             "    $nlb_byname[$nlb_shown[$ARGS[0]]] = $ARGS[0]",
-            "    ADDOBJ $nlb_shown[$ARGS[0]]",
+            "    IF nlb_invimg[$ARGS[0]] = 1:",
+            "        ADDOBJ $nlb_shown[$ARGS[0]], $FUNC('nlb_img_' + $ARGS[0])",
+            "    ELSE",
+            "        ADDOBJ $nlb_shown[$ARGS[0]]",
+            "    END",
             "END",
             "$nlb_in[$ARGS[0]] = $ARGS[1]",
             LOC_END,
@@ -376,6 +389,19 @@ public class QSPExportManager extends TextExportManager {
             "    nlb_i = nlb_i + 1",
             "END",
             LOC_END,
+            // Музыка (set_music в INSTEAD): тот же файл не перезапускается, '' — остановить (void)
+            "#nlb_music",
+            "IF $ARGS[0] <> $nlb_music:",
+            "    IF $nlb_music <> '': CLOSE $nlb_music",
+            "    $nlb_music = $ARGS[0]",
+            "    IF $nlb_music <> '': PLAY $nlb_music",
+            "END",
+            LOC_END,
+            // картинка в тексте: путь -> <img> (пустой путь — ничего)
+            // (служебная страница, которую сейчас покинут, — nlb_leave — картинок не показывает)
+            "#nlb_imgtag",
+            "IF $ARGS[0] <> '' AND nlb_leave = 0: $RESULT = '<img src=\"' + $ARGS[0] + '\">'",
+            LOC_END,
             "#nlb_inv_sync",
             "LOCAL nlb_i, nlb_j, $nlb_n, $nlb_id",
             "nlb_i = 0",
@@ -387,7 +413,11 @@ public class QSPExportManager extends TextExportManager {
             "            nlb_j = 1",
             "            LOOP WHILE nlb_j <= COUNTOBJ AND $GETOBJ(nlb_j) <> $nlb_shown[$nlb_id]: nlb_j = nlb_j + 1",
             "            IF nlb_j <= COUNTOBJ: KILLOBJ nlb_j",
-            "            ADDOBJ $nlb_n, '', nlb_j",
+            "            IF nlb_invimg[$nlb_id] = 1:",
+            "                ADDOBJ $nlb_n, $FUNC('nlb_img_' + $nlb_id), nlb_j",
+            "            ELSE",
+            "                ADDOBJ $nlb_n, '', nlb_j",
+            "            END",
             "            $nlb_byname[$nlb_n] = $nlb_id",
             "            $nlb_shown[$nlb_id] = $nlb_n",
             "        END",
@@ -489,6 +519,12 @@ public class QSPExportManager extends TextExportManager {
                 text = "'" + label + "'" + LINE_SEPARATOR;
             }
         }
+        if (text.isEmpty() && objBlocks.isImageInScene() && !objBlocks.isGraphical()) {
+            // объект без описания, но с картинкой (фон боя, рамка карты во «Фронтире») — одна
+            // картинка, как в плеере; с действием — ссылкой
+            String image = "<<$FUNC(''nlb_imgtag'', $FUNC(''nlb_img_" + id + "''))>>";
+            text = "'" + (objBlocks.hasAction() ? objectLink(id, image) : image) + "'" + LINE_SEPARATOR;
+        }
         sb.append(prefix).append("_text").append(LINE_SEPARATOR);
         sb.append(text);
         sb.append(LOC_END).append(LINE_SEPARATOR);
@@ -566,7 +602,105 @@ public class QSPExportManager extends TextExportManager {
         String nouse = objBlocks.getObjNouse();
         sb.append("'").append(StringHelper.notEmpty(nouse) ? nouse : m_gameNouseText).append("'").append(LINE_SEPARATOR);
         sb.append(LOC_END).append(LINE_SEPARATOR);
+        if (!objBlocks.isGraphical()) {
+            sb.append(imageLocation(id, objBlocks.getObjImages()));
+        }
+        sb.append(soundLocation(id, objBlocks.getObjSounds(), false));
         return sb.toString();
+    }
+
+    /** Картинка предмета в инвентаре (ADDOBJ с картинкой) */
+    private static boolean hasInventoryImage(ObjBuildingBlocks obj) {
+        return obj.isImageInInventory() && !obj.isGraphical() && !obj.getObjImages().isEmpty();
+    }
+
+    private static String qspLiteral(String text) {
+        return "'" + text.replace("'", "''") + "'";
+    }
+
+    /**
+     * Картинка страницы или объекта (ModificationInterpreter.selectImage, pic в INSTEAD):
+     * #nlb_img_id возвращает путь первой картинки, чьё условие совпало с тегом (без условия —
+     * подходит всегда), или ''
+     */
+    private String imageLocation(String id, List<MediaChoice> images) {
+        if (images.isEmpty()) {
+            return EMPTY_STRING;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("#nlb_img_").append(id).append(LINE_SEPARATOR);
+        boolean first = true;
+        boolean chain = false;
+        for (MediaChoice image : images) {
+            if (image.hasConstraint()) {
+                sb.append(first ? "IF " : "ELSEIF ").append("$nlb_tag['").append(id).append("'] = ")
+                        .append(qspLiteral(image.getConstraint())).append(":").append(LINE_SEPARATOR);
+                sb.append("    $RESULT = ").append(qspLiteral(image.getPath())).append(LINE_SEPARATOR);
+                chain = true;
+            } else if (chain) {
+                sb.append("ELSE").append(LINE_SEPARATOR);
+                sb.append("    $RESULT = ").append(qspLiteral(image.getPath())).append(LINE_SEPARATOR);
+            } else {
+                sb.append("$RESULT = ").append(qspLiteral(image.getPath())).append(LINE_SEPARATOR);
+            }
+            first = false;
+        }
+        if (chain) {
+            sb.append("END").append(LINE_SEPARATOR);
+        }
+        sb.append(LOC_END).append(LINE_SEPARATOR);
+        return sb.toString();
+    }
+
+    /**
+     * Звук страницы или объекта (ModificationInterpreter.playSound, snd в INSTEAD): #nlb_snd_id.
+     * Без условия — всегда, подряд идущие с условием — цепочка по тегу. Музыка — nlb_music,
+     * эффект — PLAY; у страницы эффект — фраза озвучки: в STANDARD при входе звучит одна, первая
+     * подходящая (nlb_voice). Вызов — при входе на страницу (после её модификаций) и из SND/SSND/WSND
+     */
+    private String soundLocation(String id, List<MediaChoice> sounds, boolean page) {
+        if (sounds.isEmpty()) {
+            return EMPTY_STRING;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("#nlb_snd_").append(id).append(LINE_SEPARATOR);
+        if (page && sounds.stream().anyMatch(MediaChoice::isSfx)) {
+            sb.append("nlb_voice = 0").append(LINE_SEPARATOR);
+        }
+        for (List<MediaChoice> step : MediaChoice.soundSteps(sounds)) {
+            if (step.size() == 1 && !step.get(0).hasConstraint()) {
+                sb.append(soundStatement(step.get(0), page));
+                continue;
+            }
+            boolean first = true;
+            for (MediaChoice sound : step) {
+                sb.append(first ? "IF " : "ELSEIF ").append("$nlb_tag['").append(id).append("'] = ")
+                        .append(qspLiteral(sound.getConstraint())).append(":").append(LINE_SEPARATOR);
+                sb.append("    ").append(soundStatement(sound, page));
+                first = false;
+            }
+            sb.append("END").append(LINE_SEPARATOR);
+        }
+        sb.append(LOC_END).append(LINE_SEPARATOR);
+        return sb.toString();
+    }
+
+    private static String soundStatement(MediaChoice sound, boolean page) {
+        if (sound.isStop()) {
+            return "GOSUB 'nlb_music', ''" + LINE_SEPARATOR;
+        }
+        if (!sound.isSfx()) {
+            return "GOSUB 'nlb_music', " + qspLiteral(sound.getPath()) + LINE_SEPARATOR;
+        }
+        if (page) {
+            return "IF nlb_voice = 0: PLAY " + qspLiteral(sound.getPath()) + " & nlb_voice = 1" + LINE_SEPARATOR;
+        }
+        return "PLAY " + qspLiteral(sound.getPath()) + LINE_SEPARATOR;
+    }
+
+    /** SND/SSND/WSND: звук объекта (страницы), если он у неё есть */
+    private static String playSoundOf(String idExpression) {
+        return "IF nlb_hassnd[" + idExpression + "] = 1: GOSUB 'nlb_snd_' + " + idExpression + LINE_SEPARATOR;
     }
 
     private boolean isTakable(String objId) {
@@ -631,8 +765,10 @@ public class QSPExportManager extends TextExportManager {
         if (suppressDsc || StringHelper.isEmpty(objText)) {
             return EMPTY_STRING;
         }
+        // картинка объекта в сцене — в начале ссылки, как imgv в INSTEAD ({картинка метка})
+        String image = imageEnabled && !isGraphicalObj ? "<<$FUNC(''nlb_imgtag'', $FUNC(''nlb_img_" + objId + "''))>>" : EMPTY_STRING;
         String text = objText.replaceAll("\\{([^}]*)\\}",
-                java.util.regex.Matcher.quoteReplacement(objectLink(objId, "\u0002")).replace("\u0002", "$1"));
+                java.util.regex.Matcher.quoteReplacement(objectLink(objId, image + "\u0002")).replace("\u0002", "$1"));
         return "'" + text + "'" + LINE_SEPARATOR;
     }
 
@@ -739,6 +875,10 @@ public class QSPExportManager extends TextExportManager {
             stringBuilder.append(pageBlocks.getPageTimerVariableInit());
             stringBuilder.append("nlb_tick = 0").append(LINE_SEPARATOR);
         }
+        if (!pageBlocks.getPageSounds().isEmpty()) {
+            // initf(): звук страницы — при входе, после модификаций (повторный показ его не повторяет)
+            stringBuilder.append("GOSUB 'nlb_snd_").append(pageId).append("'").append(LINE_SEPARATOR);
+        }
         stringBuilder.append("GOSUB '").append(pageId).append("_show'").append(LINE_SEPARATOR);
         stringBuilder.append("GOSUB '").append(pageId).append("_turn'").append(LINE_SEPARATOR);
         stringBuilder.append(LOC_END).append(LINE_SEPARATOR);
@@ -752,7 +892,20 @@ public class QSPExportManager extends TextExportManager {
             stringBuilder.append("END").append(LINE_SEPARATOR);
         }
         stringBuilder.append(pageBlocks.getPageCaption());
-        stringBuilder.append(pageBlocks.getPageImage());
+        // Картинка — при каждом показе (тег мог измениться). Служебная страница — без текста,
+        // её сразу покидают по автоссылке — картинок (своей и объектов) не показывает, как в
+        // плеере (PlayerEngine.followLink): условие автоссылки проверяется до показа (nlb_leave)
+        List<MediaChoice> images = pageBlocks.getPageImages();
+        stringBuilder.append("nlb_leave = 0").append(LINE_SEPARATOR);
+        if (!pageBlocks.isHasPageText()) {
+            stringBuilder.append(leaveCheck(pageBlocks.getLinksBuildingBlocks()));
+        }
+        if (images.size() == 1 && !images.get(0).hasConstraint()) {
+            stringBuilder.append("IF nlb_leave = 0: '<img src=\"").append(images.get(0).getPath().replace("'", "''")).append("\">'").append(LINE_SEPARATOR);
+        } else if (!images.isEmpty()) {
+            stringBuilder.append("$nlb_img = $FUNC('nlb_imgtag', $FUNC('nlb_img_").append(pageId).append("'))").append(LINE_SEPARATOR);
+            stringBuilder.append("IF $nlb_img <> '': $nlb_img").append(LINE_SEPARATOR);
+        }
         stringBuilder.append(pageBlocks.getPageTextStart());
         stringBuilder.append(pageBlocks.getPageTextEnd());
         stringBuilder.append("GOSUB 'nlb_show_in', '").append(pageId).append("'").append(LINE_SEPARATOR);
@@ -787,6 +940,10 @@ public class QSPExportManager extends TextExportManager {
             }
         }
         stringBuilder.append(pageBlocks.getPageEnd());
+        if (images.size() > 1 || (images.size() == 1 && images.get(0).hasConstraint())) {
+            stringBuilder.append(imageLocation(pageId, images));
+        }
+        stringBuilder.append(soundLocation(pageId, pageBlocks.getPageSounds(), true));
         return stringBuilder.toString();
     }
 
@@ -817,6 +974,26 @@ public class QSPExportManager extends TextExportManager {
     }
 
     /** Ссылка страницы в ходе «#id_turn»: автоссылка — переход при условии, обычная — действие ACT */
+    /** nlb_leave = 1, если сработает автоссылка (условия — как в appendLink) */
+    private String leaveCheck(List<LinkBuildingBlocks> linksBlocks) {
+        StringBuilder sb = new StringBuilder();
+        for (LinkBuildingBlocks linkBlocks : linksBlocks) {
+            if (!linkBlocks.isAuto()) {
+                continue;
+            }
+            String constraint = linkBlocks.getLinkConstraint();
+            if (linkBlocks.isNeedsAction()) {
+                String hasAction = "(" + ACTION_COUNT_VAR + " >= " + getNeedsActionCount() + ")";
+                constraint = StringHelper.isEmpty(constraint) ? hasAction : "(" + constraint + ") AND " + hasAction;
+            }
+            if (StringHelper.isEmpty(constraint)) {
+                return sb.append("nlb_leave = 1").append(LINE_SEPARATOR).toString();
+            }
+            sb.append("IF ").append(constraint).append(": nlb_leave = 1").append(LINE_SEPARATOR);
+        }
+        return sb.toString();
+    }
+
     private void appendLink(StringBuilder stringBuilder, LinkBuildingBlocks linkBlocks) {
         {
             final boolean waitsAction = linkBlocks.isAuto() && linkBlocks.isNeedsAction();
@@ -1070,25 +1247,13 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decoratePageImage(List<ImagePathData> pageImagePathDatas, final boolean imageBackground, Theme theme) {
-        // TODO: support image constraints
-        ImagePathData pageImagePathData = pageImagePathDatas.get(0);
-        if (pageImagePathData.getMaxFrameNumber() == 0) {
-            String pageImagePath = pageImagePathData.getImagePath();
-            if (StringHelper.isEmpty(pageImagePath)) {
-                return Constants.EMPTY_STRING;
-            } else {
-                // USEHTML включает начало игры (nlb_start)
-                return "'<img src=\"" + pageImagePath + "\">'" + LINE_SEPARATOR;
-            }
-        } else {
-            // TODO: support animated images
-            return Constants.EMPTY_STRING;
-        }
+        // картинка выбирается при показе страницы (generatePageText, nlb_img_id)
+        return Constants.EMPTY_STRING;
     }
 
     @Override
     protected String decoratePageSound(String pageName, List<SoundPathData> pageSoundPathDatas, boolean soundSFX, Theme theme) {
-        // TODO: implement and use
+        // звук — в #nlb_snd_id (soundLocation)
         return Constants.EMPTY_STRING;
     }
 
@@ -1251,20 +1416,18 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateSSndOperation() {
-        // TODO: implement
-        return EMPTY_STRING;
+        return playSoundOf("'" + selfId() + "'");
     }
 
     @Override
     protected String decorateWSndOperation() {
-        // TODO: implement
-        return EMPTY_STRING;
+        // ww — объект, к которому применяют: в nlb_o_id_use это $ARGS[0]; вне применения — ничего
+        return inUseLink() ? playSoundOf("$ARGS[0]") : EMPTY_STRING;
     }
 
     @Override
     protected String decorateSndOperation(String objectId, String objectVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return playSoundOf(objRef(objectId, objectVar));
     }
 
     @Override

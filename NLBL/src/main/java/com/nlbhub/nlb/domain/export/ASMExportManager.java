@@ -126,9 +126,20 @@ public class ASMExportManager extends TextExportManager {
         m_perfectGame = StringHelper.notEmpty(nlbBuildingBlocks.getAchievementNamePerfectGame())
                 ? nlbBuildingBlocks.getAchievementNamePerfectGame() : "";
         m_pageDefaultTags.clear();
+        m_hasPageImages = false;
+        m_soundRefs.clear();
         for (PageBuildingBlocks page : nlbBuildingBlocks.getPagesBuildingBlocks()) {
             if (StringHelper.notEmpty(page.getPageDefaultTag())) {
                 m_pageDefaultTags.put(page.getPageId(), page.getPageDefaultTag());
+            }
+            m_hasPageImages = m_hasPageImages || !page.getPageImages().isEmpty();
+            if (hasPlayableSound(page.getPageSounds())) {
+                m_soundRefs.add("\"" + page.getPageId() + "\"");
+            }
+        }
+        for (ObjBuildingBlocks obj : m_orderedObjs) {
+            if (hasPlayableSound(obj.getObjSounds())) {
+                m_soundRefs.add(String.valueOf(m_keys.get(obj.getObjId())));
             }
         }
         preamble.append(servicePassages());
@@ -159,7 +170,7 @@ public class ASMExportManager extends TextExportManager {
                 .append("<<set $nlb_printed = 0>><<set $nlb_reply = \"\">><<set $nlb_redraw = 0>><<set $nlb_page = \"\">>")
                 .append("<<set $nlb_where = \"\">><<set $nlb_ws = \"\">><<set $nlb_p = \"\">><<set $nlb_d = \"\">>")
                 .append("<<set $nlb_i = 0>><<set $nlb_diff = 0>><<set $nlb_invo = []>><<set $nlb_in = []>>")
-                .append("<<set $nlb_lists = {}>><<set $nlb_tags = {}>><<set $nlb_j = 0>><<set $nlb_v = 0>><<set $nlb_c = \"\">>")
+                .append("<<set $nlb_lists = {}>><<set $nlb_tags = {}>><<set $nlb_music = \"\">><<set $nlb_hassnd = {}>><<set $nlb_j = 0>><<set $nlb_v = 0>><<set $nlb_c = \"\">>")
                 .append("<<set $nlb_ln = \"\">><<set $nlb_ln2 = \"\">><<set $nlb_ok = 0>><<set $nlb_k = 0>><<set $nlb_a = []>><<set $nlb_achs = {}>><<set $nlb_an = \"\">><<set $nlb_ak = \"\">><<set $nlb_ok = 0>>");
         for (ObjBuildingBlocks obj : m_orderedObjs) {
             int n = m_keys.get(obj.getObjId());
@@ -167,6 +178,9 @@ public class ASMExportManager extends TextExportManager {
             if (StringHelper.notEmpty(obj.getObjDefaultTagVariable())) {
                 sb.append("<<set $nlb_tags[").append(n).append("] = ").append(jsText(obj.getObjDefaultTagVariable())).append(">>");
             }
+        }
+        for (String ref : m_soundRefs) {
+            sb.append("<<set $nlb_hassnd[").append(ref).append("] = 1>>");
         }
         // теги по умолчанию страниц (var { tag = … } в INSTEAD)
         for (java.util.Map.Entry<String, String> deftag : m_pageDefaultTags.entrySet()) {
@@ -552,6 +566,11 @@ public class ASMExportManager extends TextExportManager {
         if (constrained) {
             sb.append("<<if ").append(objBlocks.getObjConstraint()).append(">>").append(ls);
         }
+        if (objBlocks.isImageInScene() && !objBlocks.isGraphical()) {
+            // картинка объекта в сцене — перед его описанием ([[File: …]] — картинка в тексте; в
+            // ссылку AXMA её не вставить)
+            sb.append(imageChain(String.valueOf(n), objBlocks.getObjImages(), ASMExportManager::fileImage, null));
+        }
         if (!text.isEmpty()) {
             sb.append(text).append(ls);
         }
@@ -623,10 +642,113 @@ public class ASMExportManager extends TextExportManager {
         sb.append(reply(StringHelper.notEmpty(nouse) ? nouse : m_gameNouseText)).append(ls).append(ls);
 
         sb.append(prefix).append("_item[::]10-10-0").append(ls);
+        if (objBlocks.isImageInInventory() && !objBlocks.isGraphical()) {
+            sb.append(imageChain(String.valueOf(n), objBlocks.getObjImages(), ASMExportManager::fileImage, null));
+        }
         sb.append("<<set $nlb_d = ").append(jsText(disp)).append(">><<if $nlb_sel eq ").append(n)
                 .append(">><<set $nlb_d = \"» \" + $nlb_d>><<endif>>").append(ls);
         sb.append("[[$nlb_d|nlb_invclick {$nlb_o2 = ").append(n).append("}]]").append(ls).append(ls);
+        sb.append(soundPassage(String.valueOf(n), "nlb_snd_" + n, objBlocks.getObjSounds()));
         return sb.toString();
+    }
+
+    /** Есть ли картинки страниц: тогда каждая страница ставит свою главную картинку или сбрасывает её */
+    private boolean m_hasPageImages = false;
+    /** Ссылки (номер объекта, "id" страницы) на тех, у кого есть звук, который AXMA может сыграть */
+    private final List<String> m_soundRefs = new java.util.ArrayList<>();
+
+    /** Картинка в тексте: [[File: путь]] (AXMA превращает в &lt;img&gt;) */
+    private static String fileImage(String path) {
+        return "[[File: " + path + "]]";
+    }
+
+    /** Главная картинка страницы: &lt;&lt;pic 'путь'&gt;&gt;; '' — картинка по умолчанию */
+    private static String pic(String path) {
+        return "<<pic '" + path + "'>>";
+    }
+
+    /**
+     * Выбор картинки по тегу (ModificationInterpreter.selectImage, pic в INSTEAD): первая, чьё
+     * условие совпало с тегом $nlb_tags[ref] (без условия — всегда); none — если не подошла ни одна
+     */
+    private static String imageChain(String ref, List<MediaChoice> images, java.util.function.Function<String, String> show, String none) {
+        if (images.isEmpty()) {
+            return none == null ? EMPTY_STRING : none + LINE_SEPARATOR;
+        }
+        StringBuilder sb = new StringBuilder();
+        boolean open = false;
+        for (MediaChoice image : images) {
+            if (image.hasConstraint()) {
+                sb.append(open ? "<<elseif " : "<<if ").append("$nlb_tags[").append(ref).append("] eq ")
+                        .append(jsText(image.getConstraint())).append(">>").append(show.apply(image.getPath()));
+                open = true;
+            } else {
+                sb.append(open ? "<<else>>" : "").append(show.apply(image.getPath()));
+                if (open) {
+                    sb.append("<<endif>>");
+                }
+                return sb.append(LINE_SEPARATOR).toString();
+            }
+        }
+        if (none != null) {
+            sb.append("<<else>>").append(none);
+        }
+        return sb.append("<<endif>>").append(LINE_SEPARATOR).toString();
+    }
+
+    /**
+     * Музыку AXMA играет только из mp3 ([[File: путь.mp3]] — макрос audio; &lt;&lt;audio&gt;&gt;
+     * напрямую редактор не принимает), эффекты (&lt;&lt;sound&gt;&gt;) — только из файлов,
+     * вложенных в историю; поэтому из звуков книги остаются музыка mp3 и стоп музыки (void)
+     */
+    private static boolean playable(MediaChoice sound) {
+        return sound.isStop() || (!sound.isSfx() && sound.getPath().toLowerCase(java.util.Locale.ROOT).endsWith(".mp3"));
+    }
+
+    private static boolean hasPlayableSound(List<MediaChoice> sounds) {
+        return sounds.stream().anyMatch(ASMExportManager::playable);
+    }
+
+    private static String soundStatement(MediaChoice sound) {
+        if (sound.isStop()) {
+            return "<<noaudio>><<set $nlb_music = \"\">>";
+        }
+        // тот же файл не перезапускается (set_music в INSTEAD)
+        return "<<if $nlb_music neq " + jsText(sound.getPath()) + ">><<set $nlb_music = " + jsText(sound.getPath()) + ">>"
+                + fileImage(sound.getPath()) + "<<endif>>";
+    }
+
+    /**
+     * Звук страницы или объекта (playSound, snd в INSTEAD) — абзац nlb_snd_…: без условия —
+     * всегда, подряд идущие с условием — цепочка по тегу $nlb_tags[ref]
+     */
+    private static String soundPassage(String ref, String name, List<MediaChoice> sounds) {
+        if (!hasPlayableSound(sounds)) {
+            return EMPTY_STRING;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(":: ").append(name).append("[::]10-10-0").append(LINE_SEPARATOR);
+        for (List<MediaChoice> step : MediaChoice.soundSteps(sounds)) {
+            if (step.size() == 1 && !step.get(0).hasConstraint()) {
+                if (playable(step.get(0))) {
+                    sb.append(soundStatement(step.get(0)));
+                }
+                continue;
+            }
+            boolean open = false;
+            for (MediaChoice sound : step) {
+                sb.append(open ? "<<elseif " : "<<if ").append("$nlb_tags[").append(ref).append("] eq ")
+                        .append(jsText(sound.getConstraint())).append(">>").append(playable(sound) ? soundStatement(sound) : "");
+                open = true;
+            }
+            sb.append("<<endif>>");
+        }
+        return sb.append(LINE_SEPARATOR).append(LINE_SEPARATOR).toString();
+    }
+
+    /** SND/SSND/WSND: звук объекта (страницы), если он есть ($nlb_hassnd) */
+    private static String playSoundOf(String ref) {
+        return "<<if $nlb_hassnd[" + ref + "] eq 1>><<set $nlb_p = \"nlb_snd_\" + " + ref + ">><<display $nlb_p>><<endif>>" + LINE_SEPARATOR;
     }
 
     /** Подпись объекта: disp, без неё — имя (как nam в INSTEAD), без имени — id */
@@ -761,7 +883,15 @@ public class ASMExportManager extends TextExportManager {
         if (hasTimer) {
             stringBuilder.append(pageBlocks.getPageTimerVariableInit());
         }
+        if (hasPlayableSound(pageBlocks.getPageSounds())) {
+            // initf(): звук страницы — при входе, после модификаций
+            stringBuilder.append("<<display 'nlb_snd_").append(pageId).append("'>>").append(LINE_SEPARATOR);
+        }
         stringBuilder.append("<<endif>>").append(LINE_SEPARATOR);
+        // главная картинка — при каждом показе (тег мог измениться); без картинки — сброс
+        if (m_hasPageImages) {
+            stringBuilder.append(imageChain("\"" + pageId + "\"", pageBlocks.getPageImages(), ASMExportManager::pic, pic("")));
+        }
         stringBuilder.append("<<display 'nlb_turn'>>").append(LINE_SEPARATOR);
         stringBuilder.append(pageBlocks.getPageCaption());
         stringBuilder.append(pageBlocks.getPageTextStart());
@@ -809,6 +939,7 @@ public class ASMExportManager extends TextExportManager {
             stringBuilder.append("<<endif>>").append(LINE_SEPARATOR);
         }
         stringBuilder.append(pageBlocks.getPageEnd());
+        stringBuilder.append(soundPassage("\"" + pageId + "\"", "nlb_snd_" + pageId, pageBlocks.getPageSounds()));
         return stringBuilder.toString();
     }
 
@@ -1233,20 +1364,18 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateSSndOperation() {
-        // TODO: implement
-        return EMPTY_STRING;
+        return playSoundOf(objRef(null, null));
     }
 
     @Override
     protected String decorateWSndOperation() {
-        // TODO: implement
-        return EMPTY_STRING;
+        // ww — объект, к которому применяют: в nlb_o_N_use это $nlb_t; вне применения — ничего
+        return inUseLink() ? playSoundOf("$nlb_t") : EMPTY_STRING;
     }
 
     @Override
     protected String decorateSndOperation(String objectId, String objectVar) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return playSoundOf(objRef(objectId, objectVar));
     }
 
     @Override

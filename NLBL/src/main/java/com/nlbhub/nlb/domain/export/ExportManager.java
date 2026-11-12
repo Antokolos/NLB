@@ -614,9 +614,13 @@ public abstract class ExportManager {
         boolean isAnimatedImage = page.isImageAnimated();
         blocks.setHasAnimatedPageImage(isAnimatedImage);
         blocks.setImageBackground(page.isImageBackground());
-        blocks.setPageImage(decoratePageImage(getImagePaths(page.getExternalHierarchy(), imageFileName, isAnimatedImage, false), page.isImageBackground(), theme));
+        List<ImagePathData> pageImagePaths = getImagePaths(page.getExternalHierarchy(), imageFileName, isAnimatedImage, false);
+        blocks.setPageImages(MediaChoice.images(pageImagePaths));
+        blocks.setPageImage(decoratePageImage(pageImagePaths, page.isImageBackground(), theme));
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Page.DEFAULT_SOUND_FILE_NAME : page.getSoundFileName());
-        blocks.setPageSound(decoratePageSound(pageName, getSoundPaths(page.getExternalHierarchy(), soundFileName), page.isSoundSFX(), theme));
+        List<SoundPathData> pageSoundPaths = getSoundPaths(page.getExternalHierarchy(), soundFileName);
+        blocks.setPageSounds(MediaChoice.sounds(pageSoundPaths, page.isSoundSFX()));
+        blocks.setPageSound(decoratePageSound(pageName, pageSoundPaths, page.isSoundSFX(), theme));
         blocks.setPageTextStart(decoratePageTextStart(page.getId(), pageNumber, StringHelper.getTextChunks(page.getText()), theme));
         boolean hasChoicesOrLeaf = hasChoicesOrLeaf(page);
         blocks.setPageTextEnd(decoratePageTextEnd(page.getId(), pageNumber, theme, hasChoicesOrLeaf));
@@ -1040,6 +1044,9 @@ public abstract class ExportManager {
         blocks.setMorphOut(decorateMorphOut((morphOutObj != null) ? morphOutObj.getId() : EMPTY_STRING, obj.isGraphical()));
         final boolean hasImage = StringHelper.notEmpty(imageFileName);
         blocks.setObjImage(objImage);
+        blocks.setObjImages(MediaChoice.images(imagePaths));
+        blocks.setImageInScene(hasImage && obj.isImageInScene());
+        blocks.setImageInInventory(hasImage && obj.isImageInInventory());
         blocks.setObjDisp(decorateObjDisp(expandVariables(StringHelper.getTextChunks(obj.getDisp())), hasImage && obj.isImageInInventory(), obj.isGraphical()));
         blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), expandVariables(StringHelper.getTextChunks(obj.getText())), hasImage && obj.isImageInScene(), obj.isGraphical()));
         blocks.setGraphical(obj.isGraphical());
@@ -1065,7 +1072,9 @@ public abstract class ExportManager {
         }
         blocks.setObjObjEnd(decorateObjObjEnd());
         String soundFileName = ((nlb.isSuppressMedia() || nlb.isSuppressSound()) ? Obj.DEFAULT_SOUND_FILE_NAME : obj.getSoundFileName());
-        blocks.setObjSound(decorateObjSound(getSoundPaths(obj.getExternalHierarchy(), soundFileName), obj.isSoundSFX()));
+        List<SoundPathData> objSoundPaths = getSoundPaths(obj.getExternalHierarchy(), soundFileName);
+        blocks.setObjSounds(MediaChoice.sounds(objSoundPaths, obj.isSoundSFX()));
+        blocks.setObjSound(decorateObjSound(objSoundPaths, obj.isSoundSFX()));
         List<Link> links = obj.getLinks();
         for (final Link link : links) {
             if (!link.isDeleted()) {
@@ -2628,6 +2637,16 @@ public abstract class ExportManager {
         return m_selfIsObj;
     }
 
+    /**
+     * Модификация use-ссылки объекта («применить к…»): в ней известен ww — объект, к которому
+     * применяют (nlb.lua usea(s, w, ww), PlayerEngine ExecContext.m_ww). Нужен WSND
+     */
+    protected boolean inUseLink() {
+        return m_inUseLink;
+    }
+
+    private boolean m_inUseLink = false;
+
     private static String selfIdOf(Modification modification) {
         IdentifiableItem parent = modification.getParent();
         if (parent instanceof Link) {
@@ -2675,6 +2694,7 @@ public abstract class ExportManager {
                 IdentifiableItem selfItem = modification.getParent() instanceof Link
                         ? modification.getParent().getParent() : modification.getParent();
                 m_selfIsObj = selfItem instanceof Obj;
+                m_inUseLink = modification.getParent() instanceof Link && selfItem instanceof Obj;
                 stringBuilder.append(indentString);
                 Variable variable = (
                         StringHelper.isEmpty(modification.getVarId())
@@ -3675,8 +3695,11 @@ public abstract class ExportManager {
 
                 // Please note that here we use initial file name, not redirected.
                 // Thus we can use constraint for this initial file name.
-                if (m_mediaToConstraintMap.containsKey(soundFileName)) {
-                    result.setConstraint(m_mediaToConstraintMap.get(soundFileName));
+                // Ключ — с каталогом внешнего модуля, как у картинок и у флага SFX ниже
+                // (getMediaToConstraintMap: «модуль/файл»; раньше звук модуля условия не находил)
+                String constraintKey = getMediaMapKeyWithRespectToHierarchy(externalHierarchy, soundFileName);
+                if (m_mediaToConstraintMap.containsKey(constraintKey)) {
+                    result.setConstraint(m_mediaToConstraintMap.get(constraintKey));
                 } else {
                     result.setConstraint(Constants.EMPTY_STRING);
                 }

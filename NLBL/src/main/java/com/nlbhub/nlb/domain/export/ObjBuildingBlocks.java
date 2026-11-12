@@ -72,6 +72,12 @@ public class ObjBuildingBlocks {
     private String m_objActStart;
     private String m_objNouse;
     private String m_objVariable;
+    /** Картинки и звуки объекта для пошаговых экспортов (MediaChoice) */
+    private java.util.List<MediaChoice> m_objImages = new java.util.ArrayList<>();
+    private java.util.List<MediaChoice> m_objSounds = new java.util.ArrayList<>();
+    /** Картинка в описании объекта на странице (imageInScene) и у предмета инвентаря (imageInInventory) */
+    private boolean m_imageInScene;
+    private boolean m_imageInInventory;
     private String m_objDefaultTagVariable;
     private String m_objConstraint;
     private String m_objModifications;
@@ -417,5 +423,37 @@ public class ObjBuildingBlocks {
 
     public String getObjPreload() {
         return m_objPreload;
+    }
+
+    public java.util.List<MediaChoice> getObjImages() {
+        return m_objImages;
+    }
+
+    public void setObjImages(java.util.List<MediaChoice> objImages) {
+        m_objImages = objImages;
+    }
+
+    public java.util.List<MediaChoice> getObjSounds() {
+        return m_objSounds;
+    }
+
+    public void setObjSounds(java.util.List<MediaChoice> objSounds) {
+        m_objSounds = objSounds;
+    }
+
+    public boolean isImageInScene() {
+        return m_imageInScene;
+    }
+
+    public void setImageInScene(boolean imageInScene) {
+        m_imageInScene = imageInScene;
+    }
+
+    public boolean isImageInInventory() {
+        return m_imageInInventory;
+    }
+
+    public void setImageInInventory(boolean imageInInventory) {
+        m_imageInInventory = imageInInventory;
     }
 }
