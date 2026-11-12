@@ -247,11 +247,22 @@ public abstract class ExportManager {
 
 
         private String getObjId(final String objName) {
+            String id = getObjIdInScope(objName);
+            // Имена объектов в INSTEAD — глобальные (как и в Java-плеере: ModificationInterpreter
+            // ищет объект по имени во всей книге): модификация корневой книги может назвать объект
+            // вложенного модуля. Раньше такой объект искался только у себя и у родителей, имя
+            // становилось переменной, и объект никуда не клался (во «Фронтире» syncDataObj кладёт
+            // cardPlaceholderObj из модуля боя — экран боя оставался пустым)
+            return id != null ? id : getObjIdInBook(objName);
+        }
+
+        /** Объект по имени в этом модуле и его родителях (свои имена важнее) */
+        private String getObjIdInScope(final String objName) {
             if (m_objNamToIdMap.containsKey(objName)) {
                 return m_objNamToIdMap.get(objName);
             } else {
                 if (m_parentED != null) {
-                    return m_parentED.getObjId(objName);
+                    return m_parentED.getObjIdInScope(objName);
                 } else {
                     return null;
                 }
@@ -261,6 +272,23 @@ public abstract class ExportManager {
         private Map<String, String> getObjNamToIdMap() {
             return m_objNamToIdMap;
         }
+    }
+
+    /**
+     * Объект по имени в любом модуле книги; null — такого нет. При одинаковых именах в разных
+     * модулях — первый по id модуля (порядок не зависит от HashMap: экспорт воспроизводим)
+     */
+    private String getObjIdInBook(final String objName) {
+        if (objName == null || m_exportDataMap == null) {
+            return null;
+        }
+        for (ExportData exportData : new java.util.TreeMap<>(m_exportDataMap).values()) {
+            String id = exportData.getObjNamToIdMap().get(objName);
+            if (id != null) {
+                return id;
+            }
+        }
+        return null;
     }
 
     /** Язык книги (нужен декораторам, которые вызываются раньше преамбулы) */
@@ -2879,7 +2907,7 @@ public abstract class ExportManager {
                                         expression.getValue(),
                                         (objIdToAdd == null)
                                                 ? null
-                                                : exportData.getNlb().getObjById(objIdToAdd).getDisp(),
+                                                : getObjDisp(objIdToAdd),
                                         unique
                                 )
                         );
@@ -2893,7 +2921,7 @@ public abstract class ExportManager {
                                         expression.getValue(),
                                         (objIdToAddInv == null)
                                                 ? null
-                                                : exportData.getNlb().getObjById(objIdToAddInv).getDisp()
+                                                : getObjDisp(objIdToAddInv)
                                 )
                         );
                         break;
@@ -2936,7 +2964,7 @@ public abstract class ExportManager {
                                         decorateAutoVar(expression.getValue()),
                                         expression.getValue(),
                                         (objIdToRemove != null)
-                                                ? exportData.getNlb().getObjById(objIdToRemove).getDisp()
+                                                ? getObjDisp(objIdToRemove)
                                                 : null)
                         );
                         break;
@@ -2948,7 +2976,7 @@ public abstract class ExportManager {
                                         decorateAutoVar(expression.getValue()),
                                         expression.getValue(),
                                         (objIdToRmInv != null)
-                                                ? exportData.getNlb().getObjById(objIdToRmInv).getDisp()
+                                                ? getObjDisp(objIdToRmInv)
                                                 : null
                                 )
                         );
