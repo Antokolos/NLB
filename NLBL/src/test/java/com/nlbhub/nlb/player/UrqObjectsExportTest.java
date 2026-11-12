@@ -64,7 +64,7 @@ public class UrqObjectsExportTest {
         assertTrue("& — не разделитель команд: " + urq, urq.contains("pln Зал ##38$ кухня."));
         assertTrue("страница — вход, показ, ход: " + urq, urq.contains("nlb_page = \"" + m_hall.getId() + "\"\nnlb_pkey = \"" + hall + "\"\nproc "
                 + m_hall.getId() + "_show\ngoto " + m_hall.getId() + "_turn\n:" + m_hall.getId() + "_show\n"));
-        assertTrue("объект — ссылка: " + urq, urq.contains(":nlb_o_1_dsc\npln На столе [[ключ|nlb_act_1]].\n"));
+        assertTrue("объект — ссылка: " + urq, urq.contains("pln На столе [[ключ|nlb_act_#nlb_me$]].\n"));
         assertTrue("подпись предмета: " + urq, urq.contains("display_use_nlbo_1=\"Ключ\"\n"));
     }
 
@@ -72,8 +72,8 @@ public class UrqObjectsExportTest {
     public void takeAndUse() throws Exception {
         String urq = export();
         assertTrue(urq, urq.contains(":nlb_o_1_acttext\nnlb_reply=nlb_reply+\"Вы взяли ключ.<br>\"\nend\n"));
-        assertTrue("переносимый — в инвентарь: " + urq, urq.contains("nlb_po=1\nnlb_tk=1\nproc nlb_take\nend\n:nlb_o_1_use\n"));
-        assertTrue("применение к двери: " + urq, urq.contains("if nlb_t<>2 then goto nlb_o_1_use_2\nnlb_reply=nlb_reply+\"Дверь открылась.<br>\"\nnlb_printed=1\n"));
+        assertTrue("переносимый — в инвентарь: " + urq, urq.contains("nlb_po=nlb_me\nnlb_tk=1\nproc nlb_take\nnlb_me=nlb_mv_#nlb_ms$\nnlb_ms=nlb_ms-1\nend\n:nlb_o_1_use\n"));
+        assertTrue("применение к двери: " + urq, urq.contains("if nlb_tp_#nlb_ms$<>2 then goto nlb_o_1_use_2\nnlb_reply=nlb_reply+\"Дверь открылась.<br>\"\nnlb_printed=1\n"));
         assertTrue("щелчок по предмету: " + urq, urq.contains(":use_nlbo_1\nnlb_o2=1\ngoto nlb_invclick\n"));
         assertFalse("дверь не переносимая: " + urq, urq.contains("nlb_po=2\nnlb_tk=1"));
         assertFalse("меток до сборки не осталось: " + urq, urq.contains("\u0001") || urq.contains("\u0003"));
@@ -102,6 +102,6 @@ public class UrqObjectsExportTest {
                 + ":nlb_turn_end\nnlb_cnt_prev=nlb_diff\nend\n"));
         assertTrue("конец хода страницы: " + urq, urq.contains(":" + hall.getId() + "_turn\nproc nlb_turn\n"
                 + "if nlb_reply<>\"\" then pln #%nlb_reply$\nnlb_reply=\"\"\n"));
-        assertTrue("взять — только по щелчку: " + urq, urq.contains(":nlb_o_1_act\nproc nlb_o_1_acta\nnlb_po=1\n"));
+        assertTrue("взять — только по щелчку: " + urq, urq.contains("nlb_a=nlb_me\nproc nlb_o_1_acta\nnlb_po=nlb_me\n"));
     }
 }

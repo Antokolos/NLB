@@ -10,6 +10,7 @@
 // DETERMINISTIC=1 — случайность как --deterministic Java-плеера (PlayerContext): RANDOM — счётчик
 // (0, 1, 2… по модулю, +1), SHUFFLE — разворот списка; так прогоны со случайностью (колода в бою
 // «Фронтира») сравнимы с плеером.
+// VARS=a,b — в конце вывести значения этих переменных.
 // MEDIA=1 — картинки в тексте (IMG) и звуки с прошлого шага (SND: MUSIC — музыка, PLAY — эффект,
 // STOP — музыка остановлена)
 const fs = require('fs'), vm = require('vm'), path = require('path');
@@ -110,11 +111,14 @@ for (const choice of script) {
   console.log('> ' + choice); show();
 }
 const vars = vm.runInContext('Game.vars', ctx);
-console.log('VARS: ' + JSON.stringify(Object.fromEntries(Object.entries(vars).filter(([k]) => /^(counter|dice|lucky|i|x|nlb_)/.test(k)))));
+// VARS=a,b — только эти переменные (имена в UrqW — в нижнем регистре), иначе служебные
+const wanted = (process.env.VARS || '').split(',').filter(x => x).map(x => x.toLowerCase());
+console.log('VARS: ' + JSON.stringify(Object.fromEntries(Object.entries(vars).filter(([k]) => wanted.length ? wanted.includes(k.toLowerCase())
+  : /^(counter|dice|lucky|i|x|nlb_)/.test(k)))));
 
 function deterministic(text) {
   const nl = text.includes('\r\n') ? '\r\n' : '\n';
-  text = text.replace(/^(\w+)=rnd#(.+)\$$/gm, (m, v, max) => ['nlb_dmax=' + max, 'proc nlb_detrnd', v + '=nlb_dres'].join(nl));
+  text = text.replace(/^([ \t]*)(\w+)=rnd#(.+)\$$/gm, (m, ind, v, max) => [ind + 'nlb_dmax=' + max, ind + 'proc nlb_detrnd', ind + v + '=nlb_dres'].join(nl));
   const start = text.indexOf(':nlb_lshuffle' + nl), endMark = ':nlb_lshuffle_end' + nl + 'end';
   const end = text.indexOf(endMark, start);
   if (start < 0 || end < 0) throw new Error('DETERMINISTIC: нет метки nlb_lshuffle');

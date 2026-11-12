@@ -53,10 +53,8 @@ public class QspMarkupExportTest {
         String qsp = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_16LE).replace("\r\n", "\n");
         assertTrue("'^' — перевод строки, хвостовой — без пустой строки: " + qsp, qsp.contains("'Первая строка<br>Вторая строка'\n"));
         assertTrue("подпись ссылки — без '^': " + qsp, qsp.contains("ACT 'Дальше':"));
-        assertTrue("{} — ссылкой строка рядом: " + qsp, qsp.contains("'<br><a href=\"EXEC:GOSUB ''nlb_act'', ''" + m_flag.getId()
-                + "''\">Показывать эту страницу</a>'\n"));
-        assertTrue("{} без строк рядом — подпись объекта: " + qsp, qsp.contains("'<a href=\"EXEC:GOSUB ''nlb_act'', ''" + m_card.getId()
-                + "''\">Карта</a>'\n"));
+        assertTrue("{} — ссылкой строка рядом: " + qsp, qsp.contains("'<br><a href=\"EXEC:GOSUB ''nlb_act'', ''' + $nlb_me + '''\">Показывать эту страницу</a>'\n"));
+        assertTrue("{} без строк рядом — подпись объекта: " + qsp, qsp.contains("'<a href=\"EXEC:GOSUB ''nlb_act'', ''' + $nlb_me + '''\">Карта</a>'\n"));
         assertTrue("подпись предмета — строками: " + qsp, qsp.contains("$RESULT = 'Слава: 0<br>Боеспособность: 45'\n"));
         assertTrue(qsp, qsp.contains("'Статус'\n"));
         assertFalse("'^' не остаётся в тексте: " + qsp, qsp.replaceAll("(?m)^!.*$", "").contains("^"));

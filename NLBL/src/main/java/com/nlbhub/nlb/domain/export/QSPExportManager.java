@@ -250,10 +250,11 @@ public class QSPExportManager extends TextExportManager {
      */
     private static final String SERVICE_LOCATIONS = String.join("\n",
             "#nlb_show_in",
-            "LOCAL nlb_i",
+            "LOCAL nlb_i, $nlb_v",
             "nlb_i = 0",
             "LOOP WHILE nlb_i < nlb_ln['<' + $ARGS[0]]:",
-            "    GOSUB 'nlb_o_' + $nlb_li['<' + $ARGS[0] + ',' + $STR(nlb_i)] + '_dsc'",
+            "    $nlb_v = $nlb_li['<' + $ARGS[0] + ',' + $STR(nlb_i)]",
+            "    GOSUB 'nlb_o_' + $FUNC('nlb_p', $nlb_v) + '_dsc', $nlb_v",
             "    nlb_i = nlb_i + 1",
             "END",
             LOC_END,
@@ -262,9 +263,9 @@ public class QSPExportManager extends TextExportManager {
             "nlb_i = 0",
             "LOOP WHILE nlb_i < nlb_ln['<' + $ARGS[0]]:",
             "    $nlb_v = $nlb_li['<' + $ARGS[0] + ',' + $STR(nlb_i)]",
-            "    IF nlb_supp[$nlb_v] = 1:",
+            "    IF nlb_supp[$FUNC('nlb_p', $nlb_v)] = 1:",
             "        GOSUB 'nlb_pdscs', $nlb_v",
-            "        IF FUNC('nlb_o_' + $nlb_v + '_on') = 1: GOSUB 'nlb_o_' + $nlb_v + '_textf'",
+            "        IF FUNC('nlb_o_' + $FUNC('nlb_p', $nlb_v) + '_on') = 1: GOSUB 'nlb_o_' + $FUNC('nlb_p', $nlb_v) + '_textf', $nlb_v",
             "    END",
             "    nlb_i = nlb_i + 1",
             "END",
@@ -276,7 +277,7 @@ public class QSPExportManager extends TextExportManager {
             "ELSE",
             "    %COUNT% = %COUNT% + 1",
             "    nlb_cnt_act = nlb_cnt_act + 1",
-            "    GOSUB 'nlb_o_' + $ARGS[0] + '_act'",
+            "    GOSUB 'nlb_o_' + $FUNC('nlb_p', $ARGS[0]) + '_act', $ARGS[0]",
             "END",
             "GOSUB 'nlb_refresh'",
             LOC_END,
@@ -292,16 +293,16 @@ public class QSPExportManager extends TextExportManager {
             "$nlb_o = $nlb_byname[$SELOBJ]",
             "IF $nlb_o = '': EXIT",
             "*CLR",
-            "IF $nlb_sel = '' AND nlb_menu[$nlb_o] > 0:",
+            "IF $nlb_sel = '' AND nlb_menu[$FUNC('nlb_p', $nlb_o)] > 0:",
             "    %COUNT% = %COUNT% + 1",
             "    nlb_cnt_inv = nlb_cnt_inv + 1",
-            "    IF nlb_menu[$nlb_o] = 1: GOSUB 'nlb_o_' + $nlb_o + '_acta'",
+            "    IF nlb_menu[$FUNC('nlb_p', $nlb_o)] = 1: GOSUB 'nlb_o_' + $FUNC('nlb_p', $nlb_o) + '_acta', $nlb_o",
             "    UNSEL",
             "ELSEIF $nlb_sel = '':",
             "    %COUNT% = %COUNT% + 1",
             "    nlb_cnt_inv = nlb_cnt_inv + 1",
             "    nlb_printed = 0",
-            "    GOSUB 'nlb_o_' + $nlb_o + '_use', $nlb_o",
+            "    GOSUB 'nlb_o_' + $FUNC('nlb_p', $nlb_o) + '_use', $nlb_o, $nlb_o",
             "    IF nlb_printed = 0: '%GAME_INV%'",
             "    $nlb_sel = $nlb_o",
             "ELSEIF $nlb_sel = $nlb_o:",
@@ -316,8 +317,8 @@ public class QSPExportManager extends TextExportManager {
             "%COUNT% = %COUNT% + 1",
             "nlb_cnt_use = nlb_cnt_use + 1",
             "nlb_printed = 0",
-            "GOSUB 'nlb_o_' + $ARGS[0] + '_use', $ARGS[1]",
-            "IF nlb_printed = 0: GOSUB 'nlb_o_' + $ARGS[0] + '_nouse'",
+            "GOSUB 'nlb_o_' + $FUNC('nlb_p', $ARGS[0]) + '_use', $ARGS[1], $ARGS[0]",
+            "IF nlb_printed = 0: GOSUB 'nlb_o_' + $FUNC('nlb_p', $ARGS[0]) + '_nouse', $ARGS[0]",
             "$nlb_sel = ''",
             "UNSEL",
             LOC_END,
@@ -326,11 +327,48 @@ public class QSPExportManager extends TextExportManager {
             // nlb_take — взять (take в INSTEAD): убрать из текущей комнаты, при ARGS[1] = 1 (щелчок
             // по переносимому объекту) — и от последнего владельца, если не нашёлся в комнате
             "#nlb_add",
+            "LOCAL $nlb_c",
+            "$nlb_c = ''",
             "IF nlb_at[$ARGS[0] + '|' + $ARGS[1]] = 0:",
-            "    nlb_at[$ARGS[0] + '|' + $ARGS[1]] = 1",
-            "    GOSUB 'nlb_linject', '<' + $ARGS[1], $ARGS[0]",
+            "    $nlb_c = $ARGS[0]",
+            "ELSEIF ARGS[2] = 1:",
+            "    $nlb_c = $FUNC('nlb_clone', $ARGS[0])",
             "END",
-            "IF $ARGS[1] <> '%NLB_INV%': $nlb_in[$ARGS[0]] = $ARGS[1]",
+            "IF $nlb_c <> '':",
+            "    nlb_at[$nlb_c + '|' + $ARGS[1]] = 1",
+            "    GOSUB 'nlb_linject', '<' + $ARGS[1], $nlb_c",
+            "    IF $ARGS[1] <> '%NLB_INV%': $nlb_in[$nlb_c] = $ARGS[1]",
+            "END",
+            LOC_END,
+            // Клоны (PlayerContext.cloneInstance): экземпляр — «прототип#N», тег копируется;
+            // описание, действие и применения — у прототипа (nlb_p), «s» в его коде — экземпляр
+            "#nlb_p",
+            "$RESULT = $nlb_proto[$ARGS[0]]",
+            "IF $RESULT = '': $RESULT = $ARGS[0]",
+            LOC_END,
+            "#nlb_clone",
+            "LOCAL $nlb_q",
+            "$nlb_q = $FUNC('nlb_p', $ARGS[0])",
+            "nlb_cc[$nlb_q] = nlb_cc[$nlb_q] + 1",
+            "$RESULT = $nlb_q + '#' + $STR(nlb_cc[$nlb_q])",
+            "$nlb_proto[$RESULT] = $nlb_q",
+            "nlb_isobj[$RESULT] = 1",
+            "$nlb_tag[$RESULT] = $nlb_tag[$ARGS[0]]",
+            LOC_END,
+            // USE (nlb:usea): объект ARGS[0] применяется к объекту ARGS[1], а если его нет — к
+            // каждому элементу списка ARGS[2] (ww — элемент)
+            "#nlb_useon",
+            "LOCAL nlb_i, $nlb_t",
+            "IF $ARGS[1] <> '':",
+            "    GOSUB 'nlb_o_' + $FUNC('nlb_p', $ARGS[0]) + '_use', $ARGS[1], $ARGS[0]",
+            "ELSE",
+            "    nlb_i = 0",
+            "    LOOP WHILE nlb_i < nlb_ln[$ARGS[2]]:",
+            "        $nlb_t = $nlb_li[$ARGS[2] + ',' + $STR(nlb_i)]",
+            "        GOSUB 'nlb_o_' + $FUNC('nlb_p', $ARGS[0]) + '_use', $nlb_t, $ARGS[0]",
+            "        nlb_i = nlb_i + 1",
+            "    END",
+            "END",
             LOC_END,
             "#nlb_del",
             "IF nlb_at[$ARGS[0] + '|' + $ARGS[1]] = 1:",
@@ -402,6 +440,18 @@ public class QSPExportManager extends TextExportManager {
             "    nlb_ln[$ARGS[0]] = nlb_ln[$ARGS[0]] - 1",
             "END",
             LOC_END,
+            // REMOVE из списка: первый элемент того же прототипа (PlayerContext.listRemoveSameObj)
+            "#nlb_lrmvp",
+            "LOCAL nlb_k",
+            "nlb_k = 0",
+            "LOOP WHILE nlb_k < nlb_ln[$ARGS[0]]:",
+            "    IF $FUNC('nlb_p', $nlb_li[$ARGS[0] + ',' + $STR(nlb_k)]) = $FUNC('nlb_p', $ARGS[1]):",
+            "        GOSUB 'nlb_lrmv', $ARGS[0], $nlb_li[$ARGS[0] + ',' + $STR(nlb_k)]",
+            "        EXIT",
+            "    END",
+            "    nlb_k = nlb_k + 1",
+            "END",
+            LOC_END,
             // Фишер — Йейтс
             "#nlb_lshuffle",
             "LOCAL nlb_k, nlb_j, $nlb_v",
@@ -432,7 +482,7 @@ public class QSPExportManager extends TextExportManager {
             "    IF $ARGS[2] <> '':",
             "        GOSUB 'nlb_lpush', $ARGS[2], $nlb_v",
             "    ELSEIF nlb_isobj[$nlb_v] = 1:",
-            "        GOSUB 'nlb_add', $nlb_v, $ARGS[1]",
+            "        GOSUB 'nlb_add', $nlb_v, $ARGS[1], ARGS[3]",
             "    END",
             "    nlb_k = nlb_k + 1",
             "END",
@@ -481,7 +531,8 @@ public class QSPExportManager extends TextExportManager {
             "IF COUNTOBJ <> nlb_ln[' invs']: nlb_d = 1",
             "nlb_k = 0",
             "LOOP WHILE nlb_d = 0 AND nlb_k < nlb_ln[' invs']:",
-            "    IF $GETOBJ(nlb_k + 1) <> $FUNC('nlb_o_' + $nlb_li[' invs,' + $STR(nlb_k)] + '_disp'): nlb_d = 1",
+            "    $nlb_v = $nlb_li[' invs,' + $STR(nlb_k)]",
+            "    IF $GETOBJ(nlb_k + 1) <> $FUNC('nlb_o_' + $FUNC('nlb_p', $nlb_v) + '_disp', $nlb_v): nlb_d = 1",
             "    nlb_k = nlb_k + 1",
             "END",
             "IF nlb_d = 1:",
@@ -489,10 +540,10 @@ public class QSPExportManager extends TextExportManager {
             "    nlb_k = 0",
             "    LOOP WHILE nlb_k < nlb_ln[' invs']:",
             "        $nlb_v = $nlb_li[' invs,' + $STR(nlb_k)]",
-            "        $nlb_n = $FUNC('nlb_o_' + $nlb_v + '_disp')",
+            "        $nlb_n = $FUNC('nlb_o_' + $FUNC('nlb_p', $nlb_v) + '_disp', $nlb_v)",
             "        $nlb_byname[$nlb_n] = $nlb_v",
-            "        IF nlb_invimg[$nlb_v] = 1:",
-            "            ADDOBJ $nlb_n, $FUNC('nlb_img_' + $nlb_v)",
+            "        IF nlb_invimg[$FUNC('nlb_p', $nlb_v)] = 1:",
+            "            ADDOBJ $nlb_n, $FUNC('nlb_img_' + $FUNC('nlb_p', $nlb_v), $nlb_v)",
             "        ELSE",
             "            ADDOBJ $nlb_n",
             "        END",
@@ -502,9 +553,9 @@ public class QSPExportManager extends TextExportManager {
             LOC_END,
             "#nlb_inv_item",
             "LOCAL nlb_i",
-            "IF nlb_invseen[$ARGS[0]] = 1 OR ARGS[1] > 32 OR FUNC('nlb_o_' + $ARGS[0] + '_on') = 0: EXIT",
+            "IF nlb_invseen[$ARGS[0]] = 1 OR ARGS[1] > 32 OR FUNC('nlb_o_' + $FUNC('nlb_p', $ARGS[0]) + '_on') = 0: EXIT",
             "nlb_invseen[$ARGS[0]] = 1",
-            "IF nlb_invhide[$ARGS[0]] = 0: GOSUB 'nlb_linject', ' invs', $ARGS[0]",
+            "IF nlb_invhide[$FUNC('nlb_p', $ARGS[0])] = 0: GOSUB 'nlb_linject', ' invs', $ARGS[0]",
             "nlb_i = 0",
             "LOOP WHILE nlb_i < nlb_ln['<' + $ARGS[0]]:",
             "    GOSUB 'nlb_inv_item', $nlb_li['<' + $ARGS[0] + ',' + $STR(nlb_i)], ARGS[1] + 1",
@@ -527,7 +578,24 @@ public class QSPExportManager extends TextExportManager {
         if (StringHelper.notEmpty(objVar)) {
             return objVar.startsWith("$") ? objVar : "$" + objVar;
         }
-        return "'" + selfId() + "'";
+        return self();
+    }
+
+    /** «s» в INSTEAD: у объекта — его экземпляр ($nlb_me, клон или сам объект), у страницы — её id */
+    private String self() {
+        return selfIsObj() ? "$nlb_me" : "'" + selfId() + "'";
+    }
+
+    /** Начало локации объекта: экземпляр — аргумент номер arg (без него — сам объект) */
+    private static String meHeader(String id, int arg) {
+        return "LOCAL $nlb_me" + LINE_SEPARATOR + "$nlb_me = $ARGS[" + arg + "]" + LINE_SEPARATOR
+                + "IF $nlb_me = '': $nlb_me = '" + id + "'" + LINE_SEPARATOR;
+    }
+
+    /** Текст объекта для экземпляра $nlb_me: ссылка и картинка — его, а не прототипа */
+    private static String withMe(String text, String id) {
+        return text.replace("''nlb_act'', ''" + id + "''", "''nlb_act'', ''' + $nlb_me + '''")
+                .replace("$FUNC(''nlb_img_" + id + "'')", "$FUNC(''nlb_img_" + id + "'', $nlb_me)");
     }
 
     /** Элемент списка — строка: объект — id, переменная — значение (число — $STR), выражение — $STR(…) */
@@ -613,6 +681,7 @@ public class QSPExportManager extends TextExportManager {
         StringBuilder sb = new StringBuilder();
         sb.append(objBlocks.getObjComment());
         sb.append(prefix).append("_dsc").append(LINE_SEPARATOR);
+        sb.append(meHeader(id, 0));
         final boolean constrained = StringHelper.notEmpty(objBlocks.getObjConstraint());
         if (constrained) {
             sb.append("IF ").append(objBlocks.getObjConstraint()).append(":").append(LINE_SEPARATOR);
@@ -620,14 +689,14 @@ public class QSPExportManager extends TextExportManager {
         if (objBlocks.isGraphical() || objBlocks.isImageInScene()) {
             // объект с картинкой в нескольких контейнерах (держатели карт «Фронтира») — на экране
             // один раз, вместе с содержимым, как сцена плеера (PlayerEngine.sceneObjects)
-            sb.append("IF nlb_seen['").append(id).append("'] = 0:").append(LINE_SEPARATOR);
-            sb.append("nlb_seen['").append(id).append("'] = 1").append(LINE_SEPARATOR);
-            sb.append("GOSUB 'nlb_o_").append(id).append("_text'").append(LINE_SEPARATOR);
-            sb.append("GOSUB 'nlb_show_in', '").append(id).append("'").append(LINE_SEPARATOR);
+            sb.append("IF nlb_seen[$nlb_me] = 0:").append(LINE_SEPARATOR);
+            sb.append("nlb_seen[$nlb_me] = 1").append(LINE_SEPARATOR);
+            sb.append("GOSUB 'nlb_o_").append(id).append("_text', $nlb_me").append(LINE_SEPARATOR);
+            sb.append("GOSUB 'nlb_show_in', $nlb_me").append(LINE_SEPARATOR);
             sb.append("END").append(LINE_SEPARATOR);
         } else {
-            sb.append("GOSUB 'nlb_o_").append(id).append("_text'").append(LINE_SEPARATOR);
-            sb.append("GOSUB 'nlb_show_in', '").append(id).append("'").append(LINE_SEPARATOR);
+            sb.append("GOSUB 'nlb_o_").append(id).append("_text', $nlb_me").append(LINE_SEPARATOR);
+            sb.append("GOSUB 'nlb_show_in', $nlb_me").append(LINE_SEPARATOR);
         }
         if (constrained) {
             sb.append("END").append(LINE_SEPARATOR);
@@ -647,16 +716,23 @@ public class QSPExportManager extends TextExportManager {
         // (VN) щёлкают по картинке, а картинок здесь нет: если у него есть действие, ссылкой
         // становится его текст (без ссылки EXEC в нём), а без текста — подпись (выбор навыков в
         // «Варваре»); подпись без действия — просто текст (надпись-картинка)
-        String text = sceneText(objBlocks, objBlocks.getObjText());
+        String text = withMe(sceneText(objBlocks, objBlocks.getObjText()), id);
         sb.append(prefix).append("_text").append(LINE_SEPARATOR);
+        if (!text.isEmpty()) {
+            sb.append(meHeader(id, 0));
+        }
         sb.append(text);
         sb.append(LOC_END).append(LINE_SEPARATOR);
         // _textf — для PDSC: и у объекта с suppressDsc (objDscF в плеере)
         sb.append(prefix).append("_textf").append(LINE_SEPARATOR);
-        sb.append(objBlocks.getObjTextF().isEmpty() ? EMPTY_STRING : objBlocks.isSuppressDsc() ? sceneText(objBlocks, objBlocks.getObjTextF())
-                : "GOSUB 'nlb_o_" + id + "_text'" + LINE_SEPARATOR);
+        sb.append(objBlocks.getObjTextF().isEmpty() ? EMPTY_STRING : objBlocks.isSuppressDsc()
+                ? meHeader(id, 0) + withMe(sceneText(objBlocks, objBlocks.getObjTextF()), id)
+                : "GOSUB 'nlb_o_" + id + "_text', $ARGS[0]" + LINE_SEPARATOR);
         sb.append(LOC_END).append(LINE_SEPARATOR);
         sb.append(prefix).append("_textv").append(LINE_SEPARATOR);
+        if (!text.isEmpty()) {
+            sb.append(meHeader(id, 0));
+        }
         sb.append("$RESULT = ").append(text.isEmpty() ? "''" + LINE_SEPARATOR : text);
         sb.append(LOC_END).append(LINE_SEPARATOR);
 
@@ -673,36 +749,42 @@ public class QSPExportManager extends TextExportManager {
         sb.append(LOC_END).append(LINE_SEPARATOR);
 
         sb.append(prefix).append("_mods").append(LINE_SEPARATOR);
+        sb.append(meHeader(id, 0));
         sb.append(objBlocks.getObjModifications());
         sb.append(objBlocks.getObjVariable());
         sb.append(LOC_END).append(LINE_SEPARATOR);
 
         // _acta — действие без «взять» (так его вызывают и callback-объекты в конце хода)
         sb.append(prefix).append("_acta").append(LINE_SEPARATOR);
+        sb.append(meHeader(id, 0));
         sb.append("GOSUB 'nlb_o_").append(id).append("_acttext'").append(LINE_SEPARATOR);
-        sb.append("GOSUB 'nlb_o_").append(id).append("_mods'").append(LINE_SEPARATOR);
+        sb.append("GOSUB 'nlb_o_").append(id).append("_mods', $nlb_me").append(LINE_SEPARATOR);
         if (StringHelper.notEmpty(common)) {
             // общий объект (objActA): его текст — если у объекта своего нет, затем его модификации
+            // («s» в них — этот экземпляр, как runObjModifications(common, instanceId) в плеере)
             if (StringHelper.isEmpty(objBlocks.getObjActStart())) {
                 sb.append("GOSUB 'nlb_o_").append(common).append("_acttext'").append(LINE_SEPARATOR);
             }
-            sb.append("GOSUB 'nlb_o_").append(common).append("_mods'").append(LINE_SEPARATOR);
+            sb.append("GOSUB 'nlb_o_").append(common).append("_mods', $nlb_me").append(LINE_SEPARATOR);
         }
         sb.append(LOC_END).append(LINE_SEPARATOR);
         sb.append(prefix).append("_act").append(LINE_SEPARATOR);
-        sb.append("GOSUB 'nlb_o_").append(id).append("_acta'").append(LINE_SEPARATOR);
+        sb.append(meHeader(id, 0));
+        sb.append("GOSUB 'nlb_o_").append(id).append("_acta', $nlb_me").append(LINE_SEPARATOR);
         if (objBlocks.isTakable()) {
-            // decorateObjTak: взять общий объект, если он переносимый, иначе этот
-            String toTake = StringHelper.notEmpty(common) && isTakable(common) ? common : id;
-            sb.append("GOSUB 'nlb_take', '").append(toTake).append("', 1").append(LINE_SEPARATOR);
+            // decorateObjTak: взять общий объект, если он переносимый, иначе этот экземпляр
+            String toTake = StringHelper.notEmpty(common) && isTakable(common) ? "'" + common + "'" : "$nlb_me";
+            sb.append("GOSUB 'nlb_take', ").append(toTake).append(", 1").append(LINE_SEPARATOR);
         }
         sb.append(LOC_END).append(LINE_SEPARATOR);
 
+        // _use: ARGS[0] — цель, ARGS[1] — применяемый экземпляр; цель сверяется по прототипу
         sb.append(prefix).append("_use").append(LINE_SEPARATOR);
+        sb.append(meHeader(id, 1));
         for (UseBuildingBlocks use : objBlocks.getUseBuildingBlocks()) {
             final boolean hasSuccess = StringHelper.notEmpty(use.getUseSuccessText());
             final boolean useConstrained = StringHelper.notEmpty(use.getUseConstraint());
-            sb.append("IF $ARGS[0] = '").append(use.getUseTarget()).append("':").append(LINE_SEPARATOR);
+            sb.append("IF $FUNC('nlb_p', $ARGS[0]) = '").append(use.getUseTarget()).append("':").append(LINE_SEPARATOR);
             if (useConstrained) {
                 sb.append("IF ").append(use.getUseConstraint()).append(":").append(LINE_SEPARATOR);
             }
@@ -723,7 +805,7 @@ public class QSPExportManager extends TextExportManager {
             sb.append("END").append(LINE_SEPARATOR);
         }
         if (StringHelper.notEmpty(common)) {
-            sb.append("IF nlb_printed = 0: GOSUB 'nlb_o_").append(common).append("_use', $ARGS[0]").append(LINE_SEPARATOR);
+            sb.append("IF nlb_printed = 0: GOSUB 'nlb_o_").append(common).append("_use', $ARGS[0], $nlb_me").append(LINE_SEPARATOR);
         }
         sb.append(LOC_END).append(LINE_SEPARATOR);
 
@@ -758,11 +840,14 @@ public class QSPExportManager extends TextExportManager {
         }
         StringBuilder sb = new StringBuilder();
         sb.append("#nlb_img_").append(id).append(LINE_SEPARATOR);
+        if (images.stream().anyMatch(MediaChoice::hasConstraint)) {
+            sb.append(meHeader(id, 0));  // тег — экземпляра (клон копирует тег, его можно сменить)
+        }
         boolean first = true;
         boolean chain = false;
         for (MediaChoice image : images) {
             if (image.hasConstraint()) {
-                sb.append(first ? "IF " : "ELSEIF ").append("$nlb_tag['").append(id).append("'] = ")
+                sb.append(first ? "IF " : "ELSEIF ").append("$nlb_tag[$nlb_me] = ")
                         .append(qspLiteral(image.getConstraint())).append(":").append(LINE_SEPARATOR);
                 sb.append("    $RESULT = ").append(qspLiteral(image.getPath())).append(LINE_SEPARATOR);
                 chain = true;
@@ -793,6 +878,9 @@ public class QSPExportManager extends TextExportManager {
         }
         StringBuilder sb = new StringBuilder();
         sb.append("#nlb_snd_").append(id).append(LINE_SEPARATOR);
+        if (sounds.stream().anyMatch(MediaChoice::hasConstraint)) {
+            sb.append(meHeader(id, 0));
+        }
         if (page && sounds.stream().anyMatch(MediaChoice::isSfx)) {
             sb.append("nlb_voice = 0").append(LINE_SEPARATOR);
         }
@@ -803,7 +891,7 @@ public class QSPExportManager extends TextExportManager {
             }
             boolean first = true;
             for (MediaChoice sound : step) {
-                sb.append(first ? "IF " : "ELSEIF ").append("$nlb_tag['").append(id).append("'] = ")
+                sb.append(first ? "IF " : "ELSEIF ").append("$nlb_tag[$nlb_me] = ")
                         .append(qspLiteral(sound.getConstraint())).append(":").append(LINE_SEPARATOR);
                 sb.append("    ").append(soundStatement(sound, page));
                 first = false;
@@ -829,7 +917,8 @@ public class QSPExportManager extends TextExportManager {
 
     /** SND/SSND/WSND: звук объекта (страницы), если он у неё есть */
     private static String playSoundOf(String idExpression) {
-        return "IF nlb_hassnd[" + idExpression + "] = 1: GOSUB 'nlb_snd_' + " + idExpression + LINE_SEPARATOR;
+        String proto = idExpression.startsWith("'") ? idExpression : "$FUNC('nlb_p', " + idExpression + ")";
+        return "IF nlb_hassnd[" + proto + "] = 1: GOSUB 'nlb_snd_' + " + proto + ", " + idExpression + LINE_SEPARATOR;
     }
 
     private boolean isTakable(String objId) {
@@ -856,9 +945,16 @@ public class QSPExportManager extends TextExportManager {
         StringBuilder result = new StringBuilder();
         while (matcher.find()) {
             String id = idByName.get(matcher.group(1));
+            // не имя объекта — переменная с объектом (экземпляром), как objOperand в плеере:
+            // спецспособность карты «Фронтира» (PDSC gcoa)
+            String name = matcher.group(1);
+            String ls = LINE_SEPARATOR;
             matcher.appendReplacement(result, java.util.regex.Matcher.quoteReplacement(
-                    id == null ? comment("PDSC: объект " + matcher.group(1) + " не найден").trim()
-                            : "IF FUNC('nlb_o_" + id + "_on') = 1: GOSUB 'nlb_o_" + id + "_textf'"));
+                    id != null ? "IF FUNC('nlb_o_" + id + "_on') = 1: GOSUB 'nlb_o_" + id + "_textf'"
+                            : isPlainName(name) ? "IF $" + name + " <> '':" + ls
+                            + "    IF FUNC('nlb_o_' + $FUNC('nlb_p', $" + name + ") + '_on') = 1: GOSUB 'nlb_o_' + $FUNC('nlb_p', $"
+                            + name + ") + '_textf', $" + name + ls + "END"
+                            : comment("PDSC: объект " + name + " не найден").trim()));
         }
         matcher.appendTail(result);
         return result.toString();
@@ -1116,6 +1212,12 @@ public class QSPExportManager extends TextExportManager {
         stringBuilder.append(leave);
         if (!leave.isEmpty()) {
             stringBuilder.append("nlb_gone = nlb_leave").append(LINE_SEPARATOR);
+            final String noChoicesNow = noChoicesCondition(pageBlocks);
+            if (noChoicesNow != null && pageBlocks.getAllContainedObjIds().isEmpty()) {
+                // выбирать нечего и своих объектов нет — время проматывается до автоссылки
+                // (TIMER_WAIT_TICKS), страницу сразу покинут: ход боя «Фронтира»
+                stringBuilder.append(noChoicesNow.isEmpty() ? "" : "IF " + noChoicesNow + ": ").append("nlb_gone = 1").append(LINE_SEPARATOR);
+            }
             if (pageBlocks.isHasPageText()) {
                 stringBuilder.append("nlb_leave = 0").append(LINE_SEPARATOR);
             }
@@ -1573,8 +1675,9 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateCloneOperation(final String variableName, final String objId, final String objVar) {
-        // TODO: implement
-        return Constants.EMPTY_STRING;
+        // новый экземпляр (PlayerContext.cloneInstance); без объекта — сам («s»)
+        String result = variableName.startsWith("$") ? variableName : "$" + variableName;
+        return result + " = $FUNC('nlb_clone', " + objRef(objId, objVar) + ")" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1585,17 +1688,18 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateGetIdOperation(final String variableName, final String objId, final String objVar) {
-        // прототип объекта: клонов в экспорте нет — сам объект
+        // прототип экземпляра (у клона — исходный объект)
         String result = variableName.startsWith("$") ? variableName : "$" + variableName;
-        return result + " = " + objRef(objId, objVar) + LINE_SEPARATOR;
+        return result + " = $FUNC('nlb_p', " + objRef(objId, objVar) + ")" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateDelObj(String destinationId, final String destinationName, String objectId, String objectVar, String objectName, String objectDisplayName) {
         String obj = objRef(objectId, objectVar);
         if (destinationName != null) {
-            // место — список: nlb:rmv(список, obj) и obj.container = nil (из контейнеров не убирается)
-            return "GOSUB 'nlb_lrmv', '" + destinationName + "', " + obj + LINE_SEPARATOR
+            // место — список: nlb:rmv(список, obj) — первый того же прототипа — и obj.container = nil
+            // (из контейнеров не убирается)
+            return "GOSUB 'nlb_lrmvp', '" + destinationName + "', " + obj + LINE_SEPARATOR
                     + "$nlb_in[" + obj + "] = ''" + LINE_SEPARATOR;
         }
         // из получателя, без него — из текущей комнаты; в других контейнерах объект остаётся
@@ -1612,24 +1716,26 @@ public class QSPExportManager extends TextExportManager {
     @Override
     protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName, boolean unique) {
         // без получателя — в себя (страницу или объект-контейнер; s в INSTEAD)
-        String destination = destinationId != null ? "'" + destinationId + "'" : "'" + selfId() + "'";
-        // из прежних мест не убирается (как objs():add); дубль (клон в INSTEAD) — не поддерживается
-        return "GOSUB 'nlb_add', " + objRef(objectId, objectVar) + ", " + destination + LINE_SEPARATOR;
+        String destination = destinationId != null ? "'" + destinationId + "'" : self();
+        // из прежних мест не убирается (как objs():add); уже лежащий там без unique — клоном (addf)
+        return "GOSUB 'nlb_add', " + objRef(objectId, objectVar) + ", " + destination + (unique ? "" : ", 1") + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        // take: из текущей комнаты — в инвентарь; уже в инвентаре — ничего (клонов нет)
+        // take: из текущей комнаты — в инвентарь; уже в инвентаре — его клон (addf без unique)
         String obj = objRef(objectId, objectVar);
-        return "IF nlb_at[" + obj + " + '|" + INVENTORY + "'] = 0: GOSUB 'nlb_take', " + obj + ", 0" + LINE_SEPARATOR;
+        return "IF nlb_at[" + obj + " + '|" + INVENTORY + "'] = 0:" + LINE_SEPARATOR
+                + "GOSUB 'nlb_take', " + obj + ", 0" + LINE_SEPARATOR + "ELSE" + LINE_SEPARATOR
+                + "GOSUB 'nlb_take', $FUNC('nlb_clone', " + obj + "), 0" + LINE_SEPARATOR + "END" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName, boolean unique) {
         // в контейнер, в список или (без получателя) — в себя
-        String container = destinationId != null ? destinationId : (destinationListVariableName == null ? selfId() : "");
-        return "GOSUB 'nlb_laddall', '" + sourceListVariableName + "', '" + container + "', '"
-                + (destinationListVariableName != null ? destinationListVariableName : "") + "'" + LINE_SEPARATOR;
+        String container = destinationId != null ? "'" + destinationId + "'" : (destinationListVariableName == null ? self() : "''");
+        return "GOSUB 'nlb_laddall', '" + sourceListVariableName + "', " + container + ", '"
+                + (destinationListVariableName != null ? destinationListVariableName : "") + "', " + (unique ? 0 : 1) + LINE_SEPARATOR;
     }
 
     @Override
@@ -1639,7 +1745,7 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateSSndOperation() {
-        return playSoundOf("'" + selfId() + "'");
+        return playSoundOf(self());
     }
 
     @Override
@@ -1655,7 +1761,7 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateSPushOperation(String listVariableName) {
-        return "GOSUB 'nlb_lpush', '" + listVariableName + "', '" + selfId() + "'" + LINE_SEPARATOR;
+        return "GOSUB 'nlb_lpush', '" + listVariableName + "', " + self() + LINE_SEPARATOR;
     }
 
     @Override
@@ -1676,7 +1782,7 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateSInjectOperation(String listVariableName) {
-        return "GOSUB 'nlb_linject', '" + listVariableName + "', '" + selfId() + "'" + LINE_SEPARATOR;
+        return "GOSUB 'nlb_linject', '" + listVariableName + "', " + self() + LINE_SEPARATOR;
     }
 
     @Override
@@ -1872,7 +1978,13 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateUseOperation(String sourceVariable, String sourceId, String targetVariable, String targetId) {
-        // TODO: implement
-        return EMPTY_STRING;
+        // nlb:usea(источник, цель): цель — объект или переменная с объектом, а если в ней пусто —
+        // список с тем же именем (каждый элемент). Источник из переменной — не поддерживается
+        if (sourceId == null) {
+            return EMPTY_STRING;
+        }
+        String target = targetId != null ? "'" + targetId + "'" : objRef(null, targetVariable);
+        String list = targetId != null ? "''" : "'" + targetVariable.replaceFirst("^\\$", "") + "'";
+        return "GOSUB 'nlb_useon', '" + sourceId + "', " + target + ", " + list + LINE_SEPARATOR;
     }
 }

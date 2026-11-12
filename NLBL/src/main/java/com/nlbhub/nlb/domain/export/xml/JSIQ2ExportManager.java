@@ -371,6 +371,18 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "var N = window.NLB = {};",
             "N.INV = 'nlb_inv';",
             "N.objs = {};",
+            // экземпляр: объект книги или его клон «id#N» (PlayerContext.cloneInstance); описание,
+            // действие и применения — у прототипа (N.p), «s» в его коде — экземпляр (me)
+            "N.p = function (id) { id = String(id); var i = id.indexOf('#'); return i < 0 ? id : id.substring(0, i); };",
+            "N.O = function (id) { return id ? N.objs[N.p(id)] : undefined; };",
+            "N.clone = function (vars, id) {",
+            "    var p = N.p(id);",
+            "    if (!vars.nlb_cc) { vars.nlb_cc = {}; }",
+            "    vars.nlb_cc[p] = (vars.nlb_cc[p] || 0) + 1;",
+            "    var c = p + '#' + vars.nlb_cc[p];",
+            "    if (vars.nlb_tags && vars.nlb_tags[id] !== undefined) { N.setTag(vars, c, vars.nlb_tags[id]); }",
+            "    return c;",
+            "};",
             "N.printed = false;",
             "N.vars = function () { return jsIQ.createEnv('nlb').vars(); };",
             "N.state = function (vars) {",
@@ -396,10 +408,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
             // add — в контейнер, не убирая из прежних мест; del — из контейнера (владелец
             // сбрасывается, как decorateDelObj: container = nil); take — взять (take в INSTEAD): из
             // текущей статьи, при щелчке по переносимому объекту — и от последнего владельца
-            "N.add = function (vars, id, c) {",
-            "    if (!N.objs[id]) { return; }",
+            // dup — ADD без unique: уже лежащий там — клоном (addf)
+            "N.add = function (vars, id, c, dup) {",
+            "    if (!N.O(id)) { return; }",
             "    var l = N.cont(vars, c);",
-            "    if (l.indexOf(id) < 0) { l.push(id); }",
+            "    if (l.indexOf(id) >= 0) { if (!dup) { return; } id = N.clone(vars, id); }",
+            "    l.push(id);",
             "    if (c !== N.INV) { N.state(vars)[id] = c; }",
             "};",
             "N.del = function (vars, id, c) {",
@@ -423,6 +437,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "N.eject = function (vars, name) { var l = N.list(vars, name), v = l.length ? l.pop() : false; N.lend(vars, name); return v; };",
             "N.size = function (vars, name) { var v = N.list(vars, name).length; N.lend(vars, name); return v; };",
             "N.lclear = function (vars, name) { if (vars.nlb_lists) { delete vars.nlb_lists[name]; } };",
+            "N.rmvp = function (vars, name, v) { var l = N.list(vars, name); for (var i = 0; i < l.length; i++) { if (N.p(l[i]) === N.p(v)) { l.splice(i, 1); break; } } N.lend(vars, name); };",
             "N.rmv = function (vars, name, v) { var l = N.list(vars, name), i = l.indexOf(v); if (i >= 0) { l.splice(i, 1); } N.lend(vars, name); };",
             "N.shuffle = function (vars, name) {",
             "    var l = N.list(vars, name);",
@@ -430,9 +445,9 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "    N.lend(vars, name);",
             "};",
             "N.objsTo = function (vars, name, cont) { var l = N.cont(vars, cont).slice(); for (var i = 0; i < l.length; i++) { N.push(vars, name, l[i]); } };",
-            "N.addAll = function (vars, src, cont, dst) {",
+            "N.addAll = function (vars, src, cont, dst, dup) {",
             "    var l = N.list(vars, src).slice(); N.lend(vars, src);",
-            "    for (var i = 0; i < l.length; i++) { if (dst) { N.push(vars, dst, l[i]); } else { N.add(vars, String(l[i]), cont); } }",
+            "    for (var i = 0; i < l.length; i++) { if (dst) { N.push(vars, dst, l[i]); } else { N.add(vars, String(l[i]), cont, dup); } }",
             "};",
             "N.clear = function (vars, cont) {",
             "    var st = N.state(vars), l = N.cont(vars, cont);",
@@ -440,7 +455,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "    vars.nlb_c[cont] = [];",
             "};",
             "N.setTag = function (vars, id, tag) { if (!vars.nlb_tags) { vars.nlb_tags = {}; } vars.nlb_tags[id] = tag; };",
-            "N.tag = function (vars, id) { var t = vars.nlb_tags && vars.nlb_tags[id]; return (t !== undefined && t !== null) ? t : (N.deftag[id] || ''); };",
+            "N.tag = function (vars, id) { var t = vars.nlb_tags && vars.nlb_tags[id]; return (t !== undefined && t !== null) ? t : (N.deftag[N.p(id)] || ''); };",
             // Достижения (PlayerContext.achieve, nlb.lua setAchievement) — в localStorage под ключом
             // книги, между прохождениями сохраняются (как prefs в INSTEAD): «id:имя|место» — место
             // ACHIEVE засчитано, «n:имя» — число мест (ACHIEVED), «max:имя» — порог (ACHMAX), «got:имя»
@@ -474,7 +489,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
             // перезапускается), x — стоп музыки (void), s — эффект, v — фраза озвучки страницы
             // (фразы звучат по очереди, в порядке поля; новая страница со звуком прерывает очередь)
             "N.img = function (vars, id) {",
-            "    var l = N.imgs[id] || [], t = N.tag(vars, id);",
+            "    var l = N.imgs[N.p(id)] || [], t = N.tag(vars, id);",
             "    for (var i = 0; i < l.length; i++) { if (!l[i][0] || l[i][0] === t) { return l[i][1]; } }",
             "    return '';",
             "};",
@@ -493,7 +508,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "    if (path) { N.voice = N.play(path); if (N.voice) { N.voice.onended = N.voiceNext; } else { N.voiceNext(); } }",
             "};",
             "N.snd = function (vars, id) {",
-            "    var l = N.snds[id] || [], t = N.tag(vars, id), chain = false, voices = [];",
+            "    var l = N.snds[N.p(id)] || [], t = N.tag(vars, id), chain = false, voices = [];",
             "    for (var i = 0; i < l.length; i++) {",
             "        var c = l[i][0];",
             "        if (c) { if (chain || c !== t) { continue; } chain = true; } else { chain = false; }",
@@ -505,32 +520,34 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "};",
             "N.where = function (vars, id) { return N.state(vars)[id] || ''; };",
             "N.has = function (vars, id) { return N.inC(vars, id, N.INV); };",
-            "N.text = function (vars, id) { var o = N.objs[id]; return o ? o.text(vars) : ''; };",
+            "N.text = function (vars, id) { var o = N.O(id); return o ? o.text(vars, id) : ''; };",
             // PDSC — текст объекта (и с suppressDsc; objDscF в плеере), PDSCS — описания объектов с
             // suppressDsc в контейнере, вложенные — раньше своего контейнера (pdscs)
-            "N.on = function (vars, id) { var o = N.objs[id]; return !!o && (!o.visible || !!o.visible(vars)); };",
-            "N.pdsc = function (vars, id) { var o = N.objs[id]; if (N.on(vars, id)) { N.sayp(vars, o.textf ? o.textf(vars) : o.text(vars)); } };",
+            "N.on = function (vars, id) { var o = N.O(id); return !!o && (!o.visible || !!o.visible(vars)); };",
+            "N.pdsc = function (vars, id) { var o = N.O(id); if (N.on(vars, id)) { N.sayp(vars, N.pic(vars, o, id, o.textf ? o.textf(vars, id) : o.text(vars, id), false)); } };",
             "N.pdscs = function (vars, where) {",
             "    var l = N.cont(vars, where).slice();",
             "    for (var i = 0; i < l.length; i++) { var o = N.objs[l[i]]; if (o && o.supp) { N.pdscs(vars, l[i]); N.pdsc(vars, l[i]); } }",
             "};",
-            "N.disp = function (vars, id) { var o = N.objs[id]; return o ? o.disp(vars) : ''; };",
+            "N.disp = function (vars, id) { var o = N.O(id); return o ? o.disp(vars) : ''; };",
             "N.dsc = function (vars, id) {",
-            "    var o = N.objs[id];",
+            "    var o = N.O(id);",
             "    if (!o || (o.visible && !o.visible(vars))) { return ''; }",
             // объект с картинкой в нескольких контейнерах (держатели карт «Фронтира») — в сцене один
             // раз, вместе с содержимым (PlayerEngine.sceneObjects)
             "    if (o.pic && N.seen) { if (N.seen[id]) { return ''; } N.seen[id] = 1; }",
-            "    var text = o.text(vars), inner = N.showIn(vars, id);",
-            // картинка в сцене — в начале ссылки на объект, как imgv в INSTEAD; объект без
-            // описания — одна картинка (с действием — ссылкой)
-            "    if (o.imgScene) {",
-            "        var im = N.imgTag(N.img(vars, id));",
-            "        if (!text) { text = (im && o.act) ? '<a href=\"#\" class=\"nlb_obj\" onclick=\"return NLB.click(\\'act\\', \\'' + id + '\\')\">' + im + '</a>' : im; }",
-            "        else if (text.indexOf('class=\"nlb_obj\"') >= 0) { text = text.replace(/(<a [^>]*class=\"nlb_obj\"[^>]*>)/, function (m) { return m + im; }); }",
-            "        else { text = im + text; }",
-            "    }",
+            "    var text = N.pic(vars, o, id, o.text(vars, id), true), inner = N.showIn(vars, id);",
             "    return text + ((text && inner) ? '<br/>' : '') + inner;",
+            "};",
+            // картинка в сцене — в начале ссылки на объект, как imgv в INSTEAD; объект без
+            // описания — одна картинка (с действием — ссылкой); в тексте PDSC — тоже (ссылка на
+            // объект в ответе плеера показывается с его картинкой: карты боя «Фронтира»)
+            "N.pic = function (vars, o, id, text, scene) {",
+            "    if (!o.imgScene) { return text; }",
+            "    var im = N.imgTag(N.img(vars, id));",
+            "    if (!text) { return !scene ? '' : (im && o.act) ? '<a href=\"#\" class=\"nlb_obj\" onclick=\"return NLB.click(\\'act\\', \\'' + id + '\\')\">' + im + '</a>' : im; }",
+            "    if (text.indexOf('class=\"nlb_obj\"') >= 0) { return text.replace(/(<a [^>]*class=\"nlb_obj\"[^>]*>)/, function (m) { return m + im; }); }",
+            "    return scene ? im + text : text;",
             "};",
             "N.showIn = function (vars, where) {",
             "    var l = N.cont(vars, where).slice(), out = [];",
@@ -542,7 +559,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "N.inventory = function (vars) {",
             "    var out = [], seen = {};",
             "    var walk = function (id, depth) {",
-            "        var o = N.objs[id];",
+            "        var o = N.O(id);",
             "        if (!o || seen[id] || depth > 32 || !N.on(vars, id)) { return; }",
             "        seen[id] = 1;",
             "        if (!o.hidden) {",
@@ -578,18 +595,18 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "};",
             "N.act = function (vars, id) {",
             "    N.actA(vars, id);",
-            "    var o = N.objs[id];",
-            "    if (o && o.take && vars.nlb_goto == null) { N.take(vars, o.take, true); }",
+            "    var o = N.O(id);",
+            "    if (o && o.take && vars.nlb_goto == null) { N.take(vars, o.take === o.id ? id : o.take, true); }",
             "};",
             "N.actA = function (vars, id) {",
-            "    var o = N.objs[id];",
+            "    var o = N.O(id);",
             "    if (!o) { return; }",
-            "    var c = o.common ? N.objs[o.common] : null;",
+            "    var c = o.common ? N.O(o.common) : null;",
             "    if (o.acttext) { N.sayp(vars, o.acttext(vars)); }",
             "    else if (c && c.acttext) { N.sayp(vars, c.acttext(vars)); }",
-            "    o.mods(vars);",
+            "    o.mods(vars, id);",
             "    if (vars.nlb_goto != null) { return; }",
-            "    if (c) { c.mods(vars); }",
+            "    if (c) { c.mods(vars, id); }",
             "};",
             "N.turn = function (vars) {",
             "    var diff = N.countGet(vars, 0), changed = false;",
@@ -603,17 +620,23 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "    if (changed) { N.fill(jsIQ.containers.text); }",
             "};",
             "N.useOn = function (vars, src, target) {",
-            "    var o = N.objs[src];",
+            "    var o = N.O(src);",
             "    if (!o) { return false; }",
             "    N.printed = false;",
-            "    o.use(vars, target);",
-            "    if (!N.printed && o.common && N.objs[o.common]) { N.objs[o.common].use(vars, target); }",
+            "    o.use(vars, target, src);",
+            "    if (!N.printed && o.common && N.O(o.common)) { N.O(o.common).use(vars, target, src); }",
             "    return N.printed;",
+            "};",
+            // USE (nlb:usea): цель — объект, а если его нет — каждый элемент списка
+            "N.useAny = function (vars, src, target, list) {",
+            "    if (target) { N.useOn(vars, src, String(target)); return; }",
+            "    var l = N.list(vars, list).slice(); N.lend(vars, list);",
+            "    for (var i = 0; i < l.length && vars.nlb_goto == null; i++) { N.useOn(vars, src, String(l[i])); }",
             "};",
             "N.use = function (vars, src, target) {",
             "    N.count(vars, 'use');",
             "    if (!N.useOn(vars, src, target)) {",
-            "        var o = N.objs[src];",
+            "        var o = N.O(src);",
             "        N.sayp(vars, (o && o.nouse) ? o.nouse(vars) : N.gameNouse);",
             "    }",
             "    vars.nlb_sel = '';",
@@ -623,9 +646,9 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "    vars.nlb_reply = '';",
             // предмет-меню (карты в бою «Фронтира»): щелчок — действие, показатель — ничего; не
             // выбираются (PlayerEngine.clickInventory)
-            "    if (kind === 'inv' && !vars.nlb_sel && N.objs[id] && N.objs[id].menu) {",
+            "    if (kind === 'inv' && !vars.nlb_sel && N.O(id) && N.O(id).menu) {",
             "        N.count(vars, 'inv');",
-            "        if (N.objs[id].menu === 1) { N.actA(vars, id); }",
+            "        if (N.O(id).menu === 1) { N.actA(vars, id); }",
             "    } else if (kind === 'inv' && !vars.nlb_sel) {",
             "        N.count(vars, 'inv');",
             "        if (!N.useOn(vars, id, id)) { N.sayp(vars, N.gameInv); }",
@@ -794,16 +817,16 @@ public class JSIQ2ExportManager extends XMLExportManager {
         // действие, ссылкой становится его текст (без {ссылки} в нём), а без текста — подпись
         // (выбор навыков в «Варваре»); подпись без действия — просто текст (надпись-картинка)
         String text = sceneText(obj, obj.getObjText());
-        sb.append("    text: function (vars) { return ").append(jsText(text)).append("; },\n");
+        sb.append("    text: function (vars, me) { me = me || '").append(id).append("'; return ").append(withMe(jsText(text), id)).append("; },\n");
         if (StringHelper.notEmpty(obj.getObjActStart())) {
             sb.append("    acttext: function (vars) { return ").append(jsText(obj.getObjActStart())).append("; },\n");
         }
-        sb.append("    mods: function (vars) { ").append(obj.getObjModifications()).append(obj.getObjVariable()).append("},\n");
-        sb.append("    use: function (vars, target) { ");
+        sb.append("    mods: function (vars, me) { me = me || '").append(id).append("'; ").append(obj.getObjModifications()).append(obj.getObjVariable()).append("},\n");
+        sb.append("    use: function (vars, target, me) { me = me || '").append(id).append("'; ");
         for (UseBuildingBlocks use : obj.getUseBuildingBlocks()) {
             final boolean hasSuccess = StringHelper.notEmpty(use.getUseSuccessText());
             final boolean constrained = StringHelper.notEmpty(use.getUseConstraint());
-            sb.append("if (target === '").append(use.getUseTarget()).append("') { ");
+            sb.append("if (NLB.p(target) === '").append(use.getUseTarget()).append("') { ");
             if (constrained) {
                 sb.append("if (").append(use.getUseConstraint()).append(") { ");
             }
@@ -853,7 +876,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
         if (obj.getObjTextF().isEmpty()) {
             sb.append("    textf: function (vars) { return ''; },\n");
         } else if (obj.isSuppressDsc()) {
-            sb.append("    textf: function (vars) { return ").append(jsText(sceneText(obj, obj.getObjTextF()))).append("; },\n");
+            sb.append("    textf: function (vars, me) { me = me || '").append(id).append("'; return ").append(withMe(jsText(sceneText(obj, obj.getObjTextF())), id)).append("; },\n");
         }
         if (obj.getObjType() == ObjType.MENU || obj.getObjType() == ObjType.GMENU) {
             sb.append("    menu: 1,\n");  // щелчок в инвентаре — действие (decorateObjInv: menu)
@@ -868,6 +891,11 @@ public class JSIQ2ExportManager extends XMLExportManager {
         sb.append("    id: '").append(id).append("'\n");
         sb.append("};\n");
         return sb.toString();
+    }
+
+    /** Ссылка на объект в тексте (литерал JS) — на экземпляр me, а не на прототип */
+    private static String withMe(String jsLiteral, String id) {
+        return jsLiteral.replace("\\'" + id + "\\'", "\\'' + me + '\\'");
     }
 
     /** Описание объекта в сцене: метка {}, графический объект */
@@ -1075,8 +1103,8 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateCloneOperation(final String variableName, final String objId, final String objVar) {
-        // TODO: implement
-        return Constants.EMPTY_STRING;
+        // новый экземпляр (PlayerContext.cloneInstance); без объекта — сам («s»)
+        return variableName + " = NLB.clone(vars, " + ref(objId, objVar) + "); ";
     }
 
     @Override
@@ -1087,8 +1115,8 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateGetIdOperation(final String variableName, final String objId, final String objVar) {
-        // прототип: клонов в экспорте нет — сам объект
-        return variableName + " = " + objectKey(objId, objVar) + "; ";
+        // прототип экземпляра (у клона — исходный объект)
+        return variableName + " = NLB.p(" + ref(objId, objVar) + "); ";
     }
 
     @Override
@@ -1096,7 +1124,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
         String id = objectKey(objectId, objectVar);
         if (destinationName != null) {
             // место — список: nlb:rmv(список, obj) и obj.container = nil (из контейнеров не убирается)
-            return "NLB.rmv(vars, '" + listName(destinationName) + "', " + id + "); NLB.state(vars)[" + id + "] = ''; ";
+            return "NLB.rmvp(vars, '" + listName(destinationName) + "', " + id + "); NLB.state(vars)[" + id + "] = ''; ";
         }
         // из получателя, без него — из текущей страницы (here() в INSTEAD); в других контейнерах
         // объект остаётся
@@ -1117,9 +1145,14 @@ public class JSIQ2ExportManager extends XMLExportManager {
     /** Объект операции: известный, из переменной или (без них) сам — «s» в INSTEAD */
     private String ref(String objectId, String objectVar) {
         if (objectId == null && StringHelper.isEmpty(objectVar)) {
-            return "'" + selfId() + "'";
+            return self();
         }
         return objectKey(objectId, objectVar);
+    }
+
+    /** «s» в INSTEAD: у объекта — экземпляр me (клон или сам объект), у страницы — её id */
+    private String self() {
+        return selfIsObj() ? "me" : "'" + selfId() + "'";
     }
 
     private static String objectKey(String objectId, String objectVar) {
@@ -1135,24 +1168,24 @@ public class JSIQ2ExportManager extends XMLExportManager {
     @Override
     protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName, boolean unique) {
         // без получателя — в себя (страницу или объект-контейнер; s в INSTEAD)
-        String destination = "'" + (destinationId != null ? destinationId : selfId()) + "'";
-        // из прежних мест не убирается (objs():add); дубль (клон в INSTEAD) — не поддерживается
-        return "NLB.add(vars, " + objectKey(objectId, objectVar) + ", " + destination + "); ";
+        String destination = destinationId != null ? "'" + destinationId + "'" : self();
+        // из прежних мест не убирается (objs():add); уже лежащий там без unique — клоном (addf)
+        return "NLB.add(vars, " + objectKey(objectId, objectVar) + ", " + destination + (unique ? "" : ", true") + "); ";
     }
 
     @Override
     protected String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        // take: из текущей статьи — в инвентарь; уже в инвентаре — ничего (клонов нет)
+        // take: из текущей статьи — в инвентарь; уже в инвентаре — его клон (addf без unique)
         String id = objectKey(objectId, objectVar);
-        return "if (!NLB.has(vars, " + id + ")) { NLB.take(vars, " + id + ", false); } ";
+        return "NLB.take(vars, NLB.has(vars, " + id + ") ? NLB.clone(vars, " + id + ") : " + id + ", false); ";
     }
 
     @Override
     protected String decorateAddAllOperation(String destinationId, String destinationListVariableName, String sourceListVariableName, boolean unique) {
         // в контейнер, в список или (без получателя) — в себя
-        String container = destinationId != null ? destinationId : selfId();
-        return "NLB.addAll(vars, '" + listName(sourceListVariableName) + "', '" + container + "', "
-                + (destinationListVariableName != null ? "'" + listName(destinationListVariableName) + "'" : "null") + "); ";
+        String container = destinationId != null ? "'" + destinationId + "'" : self();
+        return "NLB.addAll(vars, '" + listName(sourceListVariableName) + "', " + container + ", "
+                + (destinationListVariableName != null ? "'" + listName(destinationListVariableName) + "'" : "null") + (unique ? "" : ", true") + "); ";
     }
 
     @Override
@@ -1162,7 +1195,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateSSndOperation() {
-        return "NLB.snd(vars, '" + selfId() + "'); ";
+        return "NLB.snd(vars, " + self() + "); ";
     }
 
     @Override
@@ -1178,7 +1211,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateSPushOperation(String listVariableName) {
-        return "NLB.push(vars, '" + listName(listVariableName) + "', '" + selfId() + "'); ";
+        return "NLB.push(vars, '" + listName(listVariableName) + "', " + self() + "); ";
     }
 
     @Override
@@ -1199,7 +1232,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateSInjectOperation(String listVariableName) {
-        return "NLB.inject(vars, '" + listName(listVariableName) + "', '" + selfId() + "'); ";
+        return "NLB.inject(vars, '" + listName(listVariableName) + "', " + self() + "); ";
     }
 
     @Override
@@ -1328,7 +1361,8 @@ public class JSIQ2ExportManager extends XMLExportManager {
     protected String decoratePDscOperation(String objVariableName) {
         // объект задан именем (vars.имя): его id — в NLB.names
         String name = objVariableName.startsWith("vars.") ? objVariableName.substring(5) : objVariableName;
-        return "NLB.pdsc(vars, NLB.names['" + jsString(name) + "'] || ''); ";
+        // не имя объекта — переменная с экземпляром (objOperand в плеере: PDSC gcoa во «Фронтире»)
+        return "NLB.pdsc(vars, NLB.names['" + jsString(name) + "'] || " + (isPlainName(name) ? "vars." + name + " || " : "") + "''); ";
     }
 
     @Override
@@ -1359,10 +1393,14 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateUseOperation(String sourceVariable, String sourceId, String targetVariable, String targetId) {
-        if (sourceId == null || targetId == null) {
-            return EMPTY_STRING;  // объект из переменной — не поддерживается
+        // цель — объект или переменная с объектом, а если в ней пусто — список с тем же именем
+        // (каждый элемент); источник из переменной — не поддерживается
+        if (sourceId == null) {
+            return EMPTY_STRING;
         }
-        return "NLB.useOn(vars, '" + sourceId + "', '" + targetId + "'); if (vars." + GOTO_VAR + " != null) { return; } ";
+        String target = targetId != null ? "'" + targetId + "'" : targetVariable;
+        String list = targetId != null ? "''" : "'" + listName(targetVariable) + "'";
+        return "NLB.useAny(vars, '" + sourceId + "', " + target + ", " + list + "); if (vars." + GOTO_VAR + " != null) { return; } ";
     }
 
     @Override

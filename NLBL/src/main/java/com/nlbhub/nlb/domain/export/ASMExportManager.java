@@ -175,7 +175,7 @@ public class ASMExportManager extends TextExportManager {
                 .append("<<set $nlb_i = 0>><<set $nlb_diff = 0>><<set $nlb_in = []>>")
                 .append("<<set $nlb_cs = {}>><<set $nlb_po = 0>><<set $nlb_pd = \"\">><<set $nlb_j2 = -1>><<set $nlb_sd = 0>><<set $nlb_sw = []>>")
                 .append("<<set $nlb_si = []>><<set $nlb_w2 = \"\">><<set $nlb_k2 = 0>><<set $nlb_seen = []>><<set $nlb_gen = 0>><<set $nlb_on = 1>>")
-                .append("<<set $nlb_ivseen = []>><<set $nlb_ivn = 0>><<set $nlb_tk = 0>><<set $nlb_menu = []>>")
+                .append("<<set $nlb_ivseen = []>><<set $nlb_ivn = 0>><<set $nlb_tk = 0>><<set $nlb_menu = []>><<set $nlb_ua = []>><<set $nlb_uj = 0>>")
                 .append("<<set $nlb_lists = {}>><<set $nlb_tags = {}>><<set $nlb_music = \"\">><<set $nlb_hassnd = {}>><<set $nlb_j = 0>><<set $nlb_v = 0>><<set $nlb_c = \"\">>")
                 .append("<<set $nlb_ln = \"\">><<set $nlb_ln2 = \"\">><<set $nlb_ok = 0>><<set $nlb_k = 0>><<set $nlb_a = []>><<set $nlb_achs = {}>><<set $nlb_an = \"\">><<set $nlb_ak = \"\">><<set $nlb_ok = 0>>");
         for (ObjBuildingBlocks obj : m_orderedObjs) {
@@ -1667,11 +1667,20 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateUseOperation(String sourceVariable, String sourceId, String targetVariable, String targetId) {
-        if (sourceId == null || targetId == null) {
-            return EMPTY_STRING;  // объект из переменной — не поддерживается
+        if (sourceId == null) {
+            return EMPTY_STRING;  // источник из переменной — не поддерживается
         }
-        return "<<set $nlb_o = " + key(sourceId) + ">><<set $nlb_t = " + key(targetId) + ">><<set $nlb_printed = 0>>"
-                + "<<display 'nlb_o_" + key(sourceId) + "_use'>>" + LINE_SEPARATOR;
+        String use = "<<set $nlb_o = " + key(sourceId) + ">><<set $nlb_printed = 0>><<display 'nlb_o_" + key(sourceId) + "_use'>>";
+        if (targetId != null) {
+            return "<<set $nlb_t = " + key(targetId) + ">>" + use + LINE_SEPARATOR;
+        }
+        // цель — список с этим именем (каждый элемент), иначе — объект в переменной (nlb:usea).
+        // Список проверяется первым: к необъявленной переменной AXMA обратиться нельзя
+        String list = listKey(targetVariable);
+        return "<<if $nlb_lists.hasOwnProperty(" + list + ")>><<set $nlb_ua = $nlb_lists[" + list + "] ? $nlb_lists[" + list
+                + "].slice() : []>><<set $nlb_uj = 0>><<loop $nlb_ua.length>><<set $nlb_t = $nlb_ua[$nlb_uj]>>" + use
+                + "<<set $nlb_uj = $nlb_uj + 1>><<endloop>><<else>><<set $nlb_t = " + objVar(targetVariable) + ">>" + use + "<<endif>>"
+                + LINE_SEPARATOR;
     }
 
     @Override

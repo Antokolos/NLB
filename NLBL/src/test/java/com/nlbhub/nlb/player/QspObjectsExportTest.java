@@ -73,10 +73,9 @@ public class QspObjectsExportTest {
     @Test
     public void sceneObjectIsExecLink() throws Exception {
         String qsp = export();
-        assertTrue(qsp, qsp.contains("#nlb_o_" + m_key.getId() + "_text\n'На столе <a href=\"EXEC:GOSUB ''nlb_act'', ''"
-                + m_key.getId() + "''\">ключ</a> Пети.'\n" + END + "\n"));
-        assertTrue(qsp, qsp.contains("#nlb_o_" + m_key.getId() + "_dsc\nGOSUB 'nlb_o_" + m_key.getId()
-                + "_text'\nGOSUB 'nlb_show_in', '" + m_key.getId() + "'\n" + END + "\n"));
+        assertTrue(qsp, qsp.contains("#nlb_o_" + m_key.getId() + "_text\n" + "LOCAL $nlb_me\n$nlb_me = $ARGS[0]\nIF $nlb_me = '': $nlb_me = '" + m_key.getId() + "'\n" + "'На столе <a href=\"EXEC:GOSUB ''nlb_act'', ''' + $nlb_me + '''\">ключ</a> Пети.'\n" + END + "\n"));
+        assertTrue(qsp, qsp.contains("#nlb_o_" + m_key.getId() + "_dsc\n" + "LOCAL $nlb_me\n$nlb_me = $ARGS[0]\nIF $nlb_me = '': $nlb_me = '" + m_key.getId() + "'\n" + "GOSUB 'nlb_o_" + m_key.getId()
+                + "_text', $nlb_me\nGOSUB 'nlb_show_in', $nlb_me\n" + END + "\n"));
         assertTrue("страница показывает свои объекты: " + qsp,
                 qsp.contains("GOSUB 'nlb_show_in', '" + m_hall.getId() + "'\n" + END + "\n#" + m_hall.getId() + "_turn\nCLA\nGOSUB 'nlb_turn'\nGOSUB 'nlb_inv_sync'\n"));
     }
@@ -86,8 +85,8 @@ public class QspObjectsExportTest {
         String qsp = export();
         assertTrue(qsp, qsp.contains("#nlb_o_" + m_key.getId() + "_acttext\n'Вы взяли ключ.'\n" + END + "\n"));
         assertTrue("переносимый — в инвентарь: " + qsp,
-                qsp.contains("GOSUB 'nlb_take', '" + m_key.getId() + "', 1\n" + END + "\n#nlb_o_" + m_key.getId() + "_use\n"));
-        assertTrue("применение к двери: " + qsp, qsp.contains("IF $ARGS[0] = '" + m_door.getId() + "':\n'Дверь открылась.'\nnlb_printed = 1\nEND\n"));
+                qsp.contains("GOSUB 'nlb_take', $nlb_me, 1\n" + END + "\n#nlb_o_" + m_key.getId() + "_use\n"));
+        assertTrue("применение к двери: " + qsp, qsp.contains("IF $FUNC('nlb_p', $ARGS[0]) = '" + m_door.getId() + "':\n'Дверь открылась.'\nnlb_printed = 1\nEND\n"));
         assertTrue("без ответа — game.nouse: " + qsp, qsp.contains("#nlb_o_" + m_door.getId() + "_nouse\n'"));
         assertFalse("дверь не переносимая: " + qsp,
                 qsp.contains("GOSUB 'nlb_take', '" + m_door.getId() + "'"));
@@ -112,8 +111,8 @@ public class QspObjectsExportTest {
         String sum = "(nlb_cnt_inv - nlb_cntr_inv) + (nlb_cnt_act - nlb_cntr_act) + (nlb_cnt_use - nlb_cntr_use) + (nlb_cnt_walk - nlb_cntr_walk)";
         assertTrue(qsp, qsp.contains("#nlb_turn\nnlb_diff = " + sum + "\nIF nlb_diff > nlb_cnt_prev:\n"
                 + "    nlb_cnt_prev = nlb_diff\n    GOSUB 'nlb_o_" + clock.getId() + "_acta'\nEND\nnlb_cnt_prev = nlb_diff\n" + END + "\n"));
-        assertTrue("взять — только по щелчку: " + qsp, qsp.contains("#nlb_o_" + clock.getId() + "_act\nGOSUB 'nlb_o_"
-                + clock.getId() + "_acta'\n"));
+        assertTrue("взять — только по щелчку: " + qsp, qsp.contains("#nlb_o_" + clock.getId() + "_act\n" + "LOCAL $nlb_me\n$nlb_me = $ARGS[0]\nIF $nlb_me = '': $nlb_me = '" + clock.getId() + "'\n" + "GOSUB 'nlb_o_"
+                + clock.getId() + "_acta', $nlb_me\n"));
     }
 
     @Test
@@ -141,9 +140,8 @@ public class QspObjectsExportTest {
         File file = new File(m_temp.getRoot(), "gfx.txt");
         b.nlb.exportToQSPTextFile(file);
         String qsp = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_16LE).replace("\r\n", "\n");
-        assertTrue(qsp, qsp.contains("#nlb_o_" + skill.getId() + "_text\n'<a href=\"EXEC:GOSUB ''nlb_act'', ''"
-                + skill.getId() + "''\">Грамотность – читать надписи.</a>'\n" + END + "\n"));
-        assertTrue(qsp, qsp.contains("#nlb_o_" + label.getId() + "_text\n'ВЫБЕРИТЕ НАВЫК'\n" + END + "\n"));
+        assertTrue(qsp, qsp.contains("#nlb_o_" + skill.getId() + "_text\n" + "LOCAL $nlb_me\n$nlb_me = $ARGS[0]\nIF $nlb_me = '': $nlb_me = '" + skill.getId() + "'\n" + "'<a href=\"EXEC:GOSUB ''nlb_act'', ''' + $nlb_me + '''\">Грамотность – читать надписи.</a>'\n" + END + "\n"));
+        assertTrue(qsp, qsp.contains("#nlb_o_" + label.getId() + "_text\n" + "LOCAL $nlb_me\n$nlb_me = $ARGS[0]\nIF $nlb_me = '': $nlb_me = '" + label.getId() + "'\n" + "'ВЫБЕРИТЕ НАВЫК'\n" + END + "\n"));
     }
 
     /**
