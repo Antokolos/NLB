@@ -152,6 +152,51 @@ public class QSPExportManager extends TextExportManager {
         sb.append("END").append(LINE_SEPARATOR);
         sb.append("nlb_cnt_prev = nlb_diff").append(LINE_SEPARATOR);
         sb.append(LOC_END).append(LINE_SEPARATOR);
+        sb.append(achievementLocation(nlbBuildingBlocks));
+        return sb.toString();
+    }
+
+    /**
+     * Достижения (PlayerContext.achieve, nlb.lua setAchievement): ACHIEVE — GOSUB 'nlb_achieve',
+     * имя, id модификации. Каждое место ACHIEVE засчитывается один раз (nlb_achid['имя|id']),
+     * число мест — nlb_ach['имя'] (его возвращает ACHIEVED), порог — nlb_achmax['имя'] (ACHMAX;
+     * без него — первое же место). Набран порог — объявление строкой (один раз, nlb_achgot);
+     * затем perfect game: все прочие достижения книги набрали свой порог (без ACHMAX — 1). Между
+     * прохождениями QSP ничего не сохраняет — достижения живут, пока идёт игра
+     */
+    private String achievementLocation(NLBBuildingBlocks nlbBuildingBlocks) {
+        final String ls = LINE_SEPARATOR;
+        final String announce = qspString(achievementAnnouncement(nlbBuildingBlocks.getLang()));
+        StringBuilder sb = new StringBuilder();
+        sb.append("#nlb_achieve").append(ls);
+        sb.append("IF nlb_achid[$ARGS[0] + '|' + $ARGS[1]] = 0:").append(ls);
+        sb.append("    nlb_achid[$ARGS[0] + '|' + $ARGS[1]] = 1").append(ls);
+        sb.append("    nlb_ach[$ARGS[0]] = nlb_ach[$ARGS[0]] + 1").append(ls);
+        sb.append("END").append(ls);
+        sb.append("IF nlb_achgot[$ARGS[0]] = 0 AND (nlb_achmax[$ARGS[0]] = 0 OR nlb_ach[$ARGS[0]] >= nlb_achmax[$ARGS[0]]):").append(ls);
+        sb.append("    nlb_achgot[$ARGS[0]] = 1").append(ls);
+        sb.append("    '").append(announce).append("' + $ARGS[0]").append(ls);
+        sb.append("END").append(ls);
+        String perfect = nlbBuildingBlocks.getAchievementNamePerfectGame();
+        if (StringHelper.notEmpty(perfect)) {
+            sb.append("nlb_perf = 1").append(ls);
+            for (String name : nlbBuildingBlocks.getAchievements()) {
+                if (!name.equals(perfect)) {
+                    sb.append("IF nlb_ach['").append(name).append("'] < MAX(nlb_achmax['").append(name).append("'], 1): nlb_perf = 0").append(ls);
+                }
+            }
+            sb.append("IF nlb_perf = 1:").append(ls);
+            sb.append("    IF nlb_achid['").append(perfect).append("|' + $ARGS[1]] = 0:").append(ls);
+            sb.append("        nlb_achid['").append(perfect).append("|' + $ARGS[1]] = 1").append(ls);
+            sb.append("        nlb_ach['").append(perfect).append("'] = nlb_ach['").append(perfect).append("'] + 1").append(ls);
+            sb.append("    END").append(ls);
+            sb.append("    IF nlb_achgot['").append(perfect).append("'] = 0:").append(ls);
+            sb.append("        nlb_achgot['").append(perfect).append("'] = 1").append(ls);
+            sb.append("        '").append(announce).append(perfect).append("'").append(ls);
+            sb.append("    END").append(ls);
+            sb.append("END").append(ls);
+        }
+        sb.append(LOC_END).append(ls);
         return sb.toString();
     }
 
@@ -1286,20 +1331,17 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateAchMaxOperation(String achievementName, int max) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "nlb_achmax['" + achievementName + "'] = " + max + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAchieveOperation(String achievementName, String modificationId) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "GOSUB 'nlb_achieve', '" + achievementName + "', '" + modificationId + "'" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAchievedOperation(String variableName, String achievementName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return variableName + " = nlb_ach['" + achievementName + "']" + LINE_SEPARATOR;
     }
 
     @Override

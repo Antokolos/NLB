@@ -366,6 +366,7 @@ public class URQExportManager extends TextExportManager {
                 "nlb_in_#nlb_po$=nlb_pd",
                 "end",
                 "").replace("%OBJ_COUNT%", Integer.toString(objs.size())));
+        sb.append(achievementProc(nlbBuildingBlocks));
         return sb.toString();
     }
 
@@ -377,6 +378,53 @@ public class URQExportManager extends TextExportManager {
     }
 
     /** Текст для строки URQ в кавычках и для pln: & — разделитель команд, " — конец строки */
+    /** Места ACHIEVE: номер места (в имени переменной nlb_achid_<имя>_<номер>) — по id модификации */
+    private final java.util.Map<String, Integer> m_achieveSites = new java.util.HashMap<>();
+
+    /**
+     * Достижения (PlayerContext.achieve, nlb.lua setAchievement): ACHIEVE — nlb_an (имя), nlb_ak
+     * (номер места) и proc nlb_achieve. Место засчитывается один раз (nlb_achid_<имя>_<место>),
+     * число мест — nlb_ach_<имя> (ACHIEVED), порог — nlb_achmax_<имя> (ACHMAX, без него — первое
+     * же место); набран порог — объявление в ответ (один раз, nlb_achgot_<имя>), затем perfect
+     * game. UrqW между играми ничего не сохраняет — достижения живут, пока идёт игра
+     */
+    private String achievementProc(NLBBuildingBlocks nlbBuildingBlocks) {
+        final String ls = LINE_SEPARATOR;
+        StringBuilder sb = new StringBuilder();
+        sb.append(":nlb_achieve").append(ls);
+        sb.append("if nlb_achid_#%nlb_an$_#nlb_ak$=1 then goto nlb_achieve_got").append(ls);
+        sb.append("nlb_achid_#%nlb_an$_#nlb_ak$=1").append(ls);
+        sb.append("nlb_ach_#%nlb_an$ = nlb_ach_#%nlb_an$+1").append(ls);
+        sb.append(":nlb_achieve_got").append(ls);
+        sb.append("if nlb_achgot_#%nlb_an$=1 then goto nlb_achieve_perf").append(ls);
+        sb.append("if nlb_achmax_#%nlb_an$>0 and nlb_ach_#%nlb_an$<nlb_achmax_#%nlb_an$ then goto nlb_achieve_perf").append(ls);
+        sb.append("nlb_achgot_#%nlb_an$=1").append(ls);
+        sb.append("nlb_reply=nlb_reply+\"").append(urqString(achievementAnnouncement(nlbBuildingBlocks.getLang())))
+                .append("#%nlb_an$<br>\"").append(ls);
+        sb.append(":nlb_achieve_perf").append(ls);
+        String perfect = nlbBuildingBlocks.getAchievementNamePerfectGame();
+        if (StringHelper.notEmpty(perfect)) {
+            // все прочие достижения книги набрали свой порог (без ACHMAX — 1)
+            for (String name : nlbBuildingBlocks.getAchievements()) {
+                if (!name.equals(perfect)) {
+                    sb.append("if nlb_ach_").append(name).append("<1 then goto nlb_achieve_end").append(ls);
+                    sb.append("if nlb_ach_").append(name).append("<nlb_achmax_").append(name).append(" then goto nlb_achieve_end").append(ls);
+                }
+            }
+            sb.append("if nlb_achid_").append(perfect).append("_#nlb_ak$=1 then goto nlb_achieve_pgot").append(ls);
+            sb.append("nlb_achid_").append(perfect).append("_#nlb_ak$=1").append(ls);
+            sb.append("nlb_ach_").append(perfect).append(" = nlb_ach_").append(perfect).append("+1").append(ls);
+            sb.append(":nlb_achieve_pgot").append(ls);
+            sb.append("if nlb_achgot_").append(perfect).append("=1 then goto nlb_achieve_end").append(ls);
+            sb.append("nlb_achgot_").append(perfect).append("=1").append(ls);
+            sb.append("nlb_reply=nlb_reply+\"").append(urqString(achievementAnnouncement(nlbBuildingBlocks.getLang())))
+                    .append(urqString(perfect)).append("<br>\"").append(ls);
+        }
+        sb.append(":nlb_achieve_end").append(ls);
+        sb.append("end").append(ls);
+        return sb.toString();
+    }
+
     /** Вызов подпрограммы списка: nlb_lname — имя, nlb_lval — значение */
     private static String listCall(String proc, String listName, String value) {
         return "nlb_lname=\"" + listName + "\"" + LINE_SEPARATOR + assignment("nlb_lval", value) + "proc " + proc + LINE_SEPARATOR;
@@ -1356,20 +1404,19 @@ public class URQExportManager extends TextExportManager {
 
     @Override
     protected String decorateAchMaxOperation(String achievementName, int max) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "nlb_achmax_" + achievementName + "=" + max + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAchieveOperation(String achievementName, String modificationId) {
-        // TODO: implement
-        return EMPTY_STRING;
+        Integer site = m_achieveSites.computeIfAbsent(modificationId, k -> m_achieveSites.size() + 1);
+        return "nlb_an=\"" + achievementName + "\"" + LINE_SEPARATOR + "nlb_ak=" + site + LINE_SEPARATOR
+                + "proc nlb_achieve" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAchievedOperation(String variableName, String achievementName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return assignment(variableName, "nlb_ach_" + achievementName);
     }
 
     @Override

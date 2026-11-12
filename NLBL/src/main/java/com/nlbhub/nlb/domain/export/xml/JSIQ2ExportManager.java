@@ -414,6 +414,32 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "N.clear = function (vars, cont) { for (var i = 0; i < N.order.length; i++) { if (N.where(vars, N.order[i]) === cont) { N.place(vars, N.order[i], ''); } } };",
             "N.setTag = function (vars, id, tag) { if (!vars.nlb_tags) { vars.nlb_tags = {}; } vars.nlb_tags[id] = tag; };",
             "N.tag = function (vars, id) { var t = vars.nlb_tags && vars.nlb_tags[id]; return (t !== undefined && t !== null) ? t : (N.deftag[id] || ''); };",
+            // Достижения (PlayerContext.achieve, nlb.lua setAchievement) — в localStorage под ключом
+            // книги, между прохождениями сохраняются (как prefs в INSTEAD): «id:имя|место» — место
+            // ACHIEVE засчитано, «n:имя» — число мест (ACHIEVED), «max:имя» — порог (ACHMAX), «got:имя»
+            // — объявлено. Без localStorage (запрет браузера) — только на эту игру
+            "N.achLoad = function () {",
+            "    if (!N.achs) { try { N.achs = JSON.parse(window.localStorage.getItem(N.achKey) || '{}') || {}; } catch (e) { N.achs = {}; } }",
+            "    return N.achs;",
+            "};",
+            "N.achSave = function () { try { window.localStorage.setItem(N.achKey, JSON.stringify(N.achs)); } catch (e) { } };",
+            "N.achMax = function (name, max) { N.achLoad()['max:' + name] = max; N.achSave(); };",
+            "N.ach = function (name) { return N.achLoad()['n:' + name] || 0; };",
+            "N.achMark = function (a, name, id) { if (!a['id:' + name + '|' + id]) { a['id:' + name + '|' + id] = 1; a['n:' + name] = (a['n:' + name] || 0) + 1; } };",
+            "N.achieve = function (vars, name, id) {",
+            "    var a = N.achLoad(), m = a['max:' + name];",
+            "    N.achMark(a, name, id);",
+            "    if (!a['got:' + name] && (!m || a['n:' + name] >= m)) { a['got:' + name] = 1; N.sayp(vars, N.achText + name); }",
+            "    if (N.perfect) {",
+            "        var ok = true;",
+            "        for (var i = 0; i < N.achNames.length; i++) {",
+            "            var k = N.achNames[i];",
+            "            if (k !== N.perfect && (a['n:' + k] || 0) < Math.max(a['max:' + k] || 0, 1)) { ok = false; }",
+            "        }",
+            "        if (ok) { N.achMark(a, N.perfect, id); if (!a['got:' + N.perfect]) { a['got:' + N.perfect] = 1; N.sayp(vars, N.achText + N.perfect); } }",
+            "    }",
+            "    N.achSave();",
+            "};",
             "N.invOrder = function (vars) { if (!vars.nlb_inv_order) { vars.nlb_inv_order = []; } return vars.nlb_inv_order; };",
             "N.where = function (vars, id) { return N.state(vars)[id] || ''; };",
             "N.has = function (vars, id) { return N.where(vars, id) === N.INV; };",
@@ -550,6 +576,16 @@ public class JSIQ2ExportManager extends XMLExportManager {
         StringBuilder sb = new StringBuilder(RUNTIME);
         sb.append("N.gameInv = ").append(jsText(nlbBlocks.getGameInvText())).append(";\n");
         sb.append("N.gameNouse = ").append(jsText(nlbBlocks.getGameNouseText())).append(";\n");
+        // достижения: ключ книги в localStorage, объявление, все достижения книги и perfect game
+        sb.append("N.achKey = ").append(jsText("nlb_ach:" + (StringHelper.notEmpty(nlbBlocks.getTitle()) ? nlbBlocks.getTitle() : "book"))).append(";\n");
+        sb.append("N.achText = ").append(jsText(achievementAnnouncement(nlbBlocks.getLang()))).append(";\n");
+        StringBuilder achNames = new StringBuilder();
+        for (String name : nlbBlocks.getAchievements()) {
+            achNames.append(achNames.length() == 0 ? "" : ", ").append(jsText(name));
+        }
+        sb.append("N.achNames = [").append(achNames).append("];\n");
+        sb.append("N.perfect = ").append(jsText(StringHelper.notEmpty(nlbBlocks.getAchievementNamePerfectGame())
+                ? nlbBlocks.getAchievementNamePerfectGame() : "")).append(";\n");
         sb.append("N.pages = {");
         String separator = "";
         for (PageBuildingBlocks page : nlbBlocks.getPagesBuildingBlocks()) {
@@ -1028,20 +1064,17 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateAchMaxOperation(String achievementName, int max) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "NLB.achMax(" + jsText(achievementName) + ", " + max + "); ";
     }
 
     @Override
     protected String decorateAchieveOperation(String achievementName, String modificationId) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "NLB.achieve(vars, " + jsText(achievementName) + ", '" + modificationId + "'); ";
     }
 
     @Override
     protected String decorateAchievedOperation(String variableName, String achievementName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return variableName + " = NLB.ach(" + jsText(achievementName) + "); ";
     }
 
     @Override

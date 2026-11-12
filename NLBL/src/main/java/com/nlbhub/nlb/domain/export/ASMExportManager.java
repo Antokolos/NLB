@@ -100,6 +100,10 @@ public class ASMExportManager extends TextExportManager {
         return KEY_MARK + objId + END_MARK;
     }
 
+    /** Все достижения книги и perfect game (для nlb_achieve) */
+    private final List<String> m_achievementNames = new java.util.ArrayList<>();
+    private String m_perfectGame = "";
+
     /** Теги страниц по умолчанию (var { tag = … } в INSTEAD): id страницы -> тег */
     private final java.util.Map<String, String> m_pageDefaultTags = new java.util.LinkedHashMap<>();
 
@@ -117,6 +121,10 @@ public class ASMExportManager extends TextExportManager {
         appendSystemPassage(preamble, "StoryAuthor", nlbBuildingBlocks.getAuthor());
         m_gameInvText = escapeMarkup(nlbBuildingBlocks.getGameInvText());
         m_gameNouseText = escapeMarkup(nlbBuildingBlocks.getGameNouseText());
+        m_achievementNames.clear();
+        m_achievementNames.addAll(nlbBuildingBlocks.getAchievements());
+        m_perfectGame = StringHelper.notEmpty(nlbBuildingBlocks.getAchievementNamePerfectGame())
+                ? nlbBuildingBlocks.getAchievementNamePerfectGame() : "";
         m_pageDefaultTags.clear();
         for (PageBuildingBlocks page : nlbBuildingBlocks.getPagesBuildingBlocks()) {
             if (StringHelper.notEmpty(page.getPageDefaultTag())) {
@@ -152,7 +160,7 @@ public class ASMExportManager extends TextExportManager {
                 .append("<<set $nlb_where = \"\">><<set $nlb_ws = \"\">><<set $nlb_p = \"\">><<set $nlb_d = \"\">>")
                 .append("<<set $nlb_i = 0>><<set $nlb_diff = 0>><<set $nlb_invo = []>><<set $nlb_in = []>>")
                 .append("<<set $nlb_lists = {}>><<set $nlb_tags = {}>><<set $nlb_j = 0>><<set $nlb_v = 0>><<set $nlb_c = \"\">>")
-                .append("<<set $nlb_ln = \"\">><<set $nlb_ln2 = \"\">><<set $nlb_ok = 0>><<set $nlb_k = 0>><<set $nlb_a = []>>");
+                .append("<<set $nlb_ln = \"\">><<set $nlb_ln2 = \"\">><<set $nlb_ok = 0>><<set $nlb_k = 0>><<set $nlb_a = []>><<set $nlb_achs = {}>><<set $nlb_an = \"\">><<set $nlb_ak = \"\">><<set $nlb_ok = 0>>");
         for (ObjBuildingBlocks obj : m_orderedObjs) {
             int n = m_keys.get(obj.getObjId());
             sb.append("<<set $nlb_in[").append(n).append("] = \"").append(obj.getContainerId()).append("\">>");
@@ -209,6 +217,36 @@ public class ASMExportManager extends TextExportManager {
                 .append("<<if $nlb_j gt 0>><<set $nlb_k = Math.floor(Math.random() * ($nlb_j + 1))>><<set $nlb_v = $nlb_a[$nlb_j]>>")
                 .append("<<set $nlb_a[$nlb_j] = $nlb_a[$nlb_k]>><<set $nlb_a[$nlb_k] = $nlb_v>><<endif>>")
                 .append("<<set $nlb_j = $nlb_j - 1>><<endloop>>").append(dropEmptyList("$nlb_ln")).append(ls).append(ls);
+        // Достижения (PlayerContext.achieve, nlb.lua setAchievement) — $nlb_achs: «id:имя|место» —
+        // место ACHIEVE засчитано, «n:имя» — число мест (ACHIEVED), «max:имя» — порог (ACHMAX),
+        // «got:имя» — объявлено. Из кода истории AXMA хранилище браузера недоступно (window,
+        // localStorage и функции игры в выражениях не видны), поэтому — только на эту игру
+        String announce = jsText(achievementAnnouncement(m_language));
+        sb.append(":: nlb_achieve[::]10-10-0").append(ls);
+        // «||» AXMA портит, а «>» и «<» внутри <<set>> принимает за конец макроса — порог
+        // проверяется тернарным оператором и Math.min(n, max) == max (n >= max)
+        sb.append(achMark("$nlb_an")).append("<<set $nlb_ok = ($nlb_achs[\"got:\" + $nlb_an] === 1) ? 0 : (!$nlb_achs[\"max:\" + $nlb_an] ")
+                .append("? 1 : (Math.min($nlb_achs[\"n:\" + $nlb_an], $nlb_achs[\"max:\" + $nlb_an]) == $nlb_achs[\"max:\" + $nlb_an] ? 1 : 0))>>")
+                .append("<<if $nlb_ok eq 1>><<set $nlb_achs[\"got:\" + $nlb_an] = 1>><<set $nlb_reply = $nlb_reply + ").append(announce)
+                .append(" + $nlb_an + \"<br>\">><<endif>>");
+        if (!m_perfectGame.isEmpty()) {
+            sb.append("<<set $nlb_ok = 1>>");
+            for (String name : m_achievementNames) {
+                if (!name.equals(m_perfectGame)) {
+                    String n = "$nlb_achs[\"n:" + name + "\"]", m = "$nlb_achs[\"max:" + name + "\"]";
+                    // n >= max(порог, 1): Math.min(n, need) == need
+                    String need = "Math.max(" + m + " ? " + m + " : 0, 1)";
+                    sb.append("<<set $nlb_ok = (Math.min(").append(n).append(" ? ").append(n).append(" : 0, ").append(need).append(") == ")
+                            .append(need).append(") ? $nlb_ok : 0>>");
+                }
+            }
+            String perfect = "\"" + m_perfectGame + "\"";
+            sb.append("<<if $nlb_ok eq 1>>").append(achMark(perfect)).append("<<set $nlb_ok = ($nlb_achs[\"got:").append(m_perfectGame)
+                    .append("\"] !== 1) ? 1 : 0>><<if $nlb_ok eq 1>><<set $nlb_achs[\"got:").append(m_perfectGame)
+                    .append("\"] = 1>><<set $nlb_reply = $nlb_reply + ").append(announce).append(" + ").append(perfect)
+                    .append(" + \"<br>\">><<endif>><<endif>>");
+        }
+        sb.append(ls).append(ls);
         sb.append(":: nlb_reply[::]10-10-0").append(ls);
         sb.append("<<if $nlb_reply neq \"\">><<print $nlb_reply>><<set $nlb_reply = \"\">><<endif>>").append(ls).append(ls);
         // инвентарь: предметы кнопками, выбранный для применения — с «» »
@@ -311,6 +349,13 @@ public class ASMExportManager extends TextExportManager {
     private static String dropEmptyList(String nameExpr) {
         String l = "$nlb_lists[" + nameExpr + "]";
         return "<<set " + l + " = (" + l + " && " + l + ".length) ? " + l + " : undefined>>";
+    }
+
+    /** Засчитать место $nlb_ak достижения name (выражение AXMA) один раз */
+    private static String achMark(String name) {
+        String id = "$nlb_achs[\"id:\" + " + name + " + \"|\" + $nlb_ak]", n = "$nlb_achs[\"n:\" + " + name + "]";
+        return "<<set $nlb_ok = (" + id + " !== 1) ? 1 : 0>><<if $nlb_ok eq 1>><<set " + id + " = 1>><<set " + n + " = (" + n
+                + " ? " + n + " : 0) + 1>><<endif>>";
     }
 
     /** Имя списка строкой: "$имя" (переменная AXMA) -> "\"имя\"" */
@@ -1277,20 +1322,18 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateAchMaxOperation(String achievementName, int max) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "<<set $nlb_achs[\"max:" + achievementName + "\"] = " + max + ">>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAchieveOperation(String achievementName, String modificationId) {
-        // TODO: implement
-        return EMPTY_STRING;
+        return "<<set $nlb_an = \"" + achievementName + "\">><<set $nlb_ak = \"" + modificationId + "\">><<display 'nlb_achieve'>>" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAchievedOperation(String variableName, String achievementName) {
-        // TODO: implement
-        return EMPTY_STRING;
+        String n = "$nlb_achs[\"n:" + achievementName + "\"]";
+        return "<<set " + variableName + " = " + n + " ? " + n + " : 0>>" + LINE_SEPARATOR;
     }
 
     @Override

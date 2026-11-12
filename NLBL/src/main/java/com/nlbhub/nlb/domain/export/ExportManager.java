@@ -263,9 +263,17 @@ public abstract class ExportManager {
         }
     }
 
+    /** Язык книги (нужен декораторам, которые вызываются раньше преамбулы) */
+    private String m_bookLanguage = Constants.EMPTY_STRING;
+
+    protected String bookLanguage() {
+        return m_bookLanguage;
+    }
+
     protected ExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
         try {
             m_encoding = encoding;
+            m_bookLanguage = nlb.getLanguage() != null ? nlb.getLanguage() : Constants.EMPTY_STRING;
             ExportData mainExportData = (
                     new ExportData(
                             nlb,
@@ -2579,6 +2587,14 @@ public abstract class ExportManager {
             }
         }
         m_objectLists = objectLists;
+    }
+
+    /**
+     * Объявление о полученном достижении — строкой в ответе (как OutputKind.Achievement плеера,
+     * «Получено достижение: »; в английских книгах — по-английски)
+     */
+    protected static String achievementAnnouncement(String lang) {
+        return Constants.RU.equalsIgnoreCase(lang) ? "Получено достижение: " : "Achievement unlocked: ";
     }
 
     /** Списки объектов (см. inferObjectReferences; заполняется только при shouldInferStringTypes) */
