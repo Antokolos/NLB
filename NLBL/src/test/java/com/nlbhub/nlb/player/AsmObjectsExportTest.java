@@ -62,8 +62,8 @@ public class AsmObjectsExportTest {
         assertTrue(sm, sm.contains(":: Start[::]0-0-0\n<<display 'nlb_init'>>\n<<goto '" + m_hall.getId() + "'>>"));
         assertTrue("места объектов при старте: " + sm, sm.contains("<<set $nlb_in[1] = \"" + m_hall.getId() + "\">><<set $nlb_in[2] = \""
                 + m_hall.getId() + "\">>"));
-        assertTrue("объекты места — по строке: " + sm, sm.contains(":: nlb_show_in[::]10-10-0\n<<set $nlb_ws = $nlb_where>>\n"
-                + "<<if $nlb_in[1] eq $nlb_where>><<display 'nlb_o_1_dsc'>><<endif>>\n"));
+        assertTrue("содержимое контейнера — по порядку книги: " + sm, sm.contains("<<set $nlb_cs[\"" + m_hall.getId() + "\"] = [1, 2]>>"));
+        assertTrue("объекты места — обходом списка: " + sm, sm.contains(":: nlb_show_in[::]10-10-0\n<<set $nlb_sd = $nlb_sd + 1>>"));
     }
 
     @Test
@@ -71,7 +71,7 @@ public class AsmObjectsExportTest {
         String sm = export();
         assertTrue("модификации — до текста, при повторном показе — нет: " + sm, sm.contains(":: " + m_hall.getId()
                 + "[::]150-0-0\n<<set $nlb_page = \"" + m_hall.getId() + "\">><<if $nlb_redraw eq 1>><<set $nlb_redraw = 0>><<else>>\n"));
-        assertTrue(sm, sm.contains("Зал.\n<<set $nlb_where = \"" + m_hall.getId() + "\">><<display 'nlb_show_in'>>\n"
+        assertTrue(sm, sm.contains("Зал.\n<<set $nlb_gen = $nlb_gen + 1>><<set $nlb_where = \"" + m_hall.getId() + "\">><<display 'nlb_show_in'>>\n"
                 + "<<display 'nlb_reply'>>\n<<display 'nlb_inv'>>\n"));
     }
 
@@ -86,9 +86,9 @@ public class AsmObjectsExportTest {
         String sm = export();
         assertTrue(sm, sm.contains("<<set $nlb_reply = $nlb_reply + \"Вы взяли ключ.\" + \"<br>\">>"));
         assertTrue("переносимый — в инвентарь: " + sm, sm.contains(":: nlb_o_1_act[::]10-10-0\n<<display 'nlb_o_1_acta'>>\n"
-                + "<<if ($nlb_in[1] eq \"nlb_inv\") and (\"nlb_inv\" neq \"nlb_inv\")>>"));
+                + "<<set $nlb_po = 1>><<set $nlb_tk = 1>><<display 'nlb_take'>>"));
         assertTrue("применение к двери: " + sm, sm.contains("<<if $nlb_t eq 2>>\n<<set $nlb_reply = $nlb_reply + \"Дверь открылась.\""));
-        assertFalse("дверь не переносимая: " + sm, sm.contains(":: nlb_o_2_act[::]10-10-0\n<<display 'nlb_o_2_acta'>>\n<<if"));
+        assertFalse("дверь не переносимая: " + sm, sm.contains(":: nlb_o_2_act[::]10-10-0\n<<display 'nlb_o_2_acta'>>\n<<set $nlb_po"));
         assertTrue("кавычка в подписи — числовой сущностью (именованную AXMA раскрывает): " + sm,
                 sm.contains("<<set $nlb_d = \"Дверь &#34;старая&#34;\">>"));
         assertTrue("предмет — кнопка с подписью-выражением: " + sm, sm.contains("[[$nlb_d|nlb_invclick {$nlb_o2 = 1}]]"));

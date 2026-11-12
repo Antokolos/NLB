@@ -7,6 +7,9 @@
 //   шаги: подпись кнопки; link:<N> — N-я ссылка в тексте; o:<подпись> — ссылка по подписи;
 //   inv:<подпись> — щелчок по предмету
 //   node urqw-run.js <каталог UrqW> <book.qst> random:<N>   — N случайных нажатий
+// DETERMINISTIC=1 — случайность как --deterministic Java-плеера (PlayerContext): RANDOM — счётчик
+// (0, 1, 2… по модулю, +1), SHUFFLE — разворот списка; так прогоны со случайностью (колода в бою
+// «Фронтира») сравнимы с плеером.
 // MEDIA=1 — картинки в тексте (IMG) и звуки с прошлого шага (SND: MUSIC — музыка, PLAY — эффект,
 // STOP — музыка остановлена)
 const fs = require('fs'), vm = require('vm'), path = require('path');
@@ -19,6 +22,8 @@ const jq = function (sel) {
   }
   const o = new Proxy(function () {}, { get: (t, k) => k === 'length' ? 0 : (k === 'text' || k === 'html' || k === 'val' ? () => '' : () => o), apply: () => o }); return o;
 };
+// $.each — обход объекта (invkill без аргумента так очищает инвентарь)
+jq.each = (obj, fn) => { for (const k of Object.keys(obj)) if (fn(k, obj[k]) === false) break; return obj; };
 const ctx = { console, Math, Date, JSON, parseInt, parseFloat, isNaN, isFinite, String, Number, Object, Array, RegExp, Error, setTimeout, clearTimeout,
   Audio: function () {
     this.paused = true; this.src = '';
@@ -47,7 +52,7 @@ function Client() {
 const quest = fs.readFileSync(questFile, 'latin1');
 const text = require('buffer').Buffer.from(quest, 'latin1');
 const decoded = new (require('util').TextDecoder)('windows-1251').decode(text);
-ctx.questText = decoded;
+ctx.questText = process.env.DETERMINISTIC ? deterministic(decoded) : decoded;
 vm.runInContext(`
 Game = new Quest(questText); Game.name = 'test'; Game.init();
 GlobalPlayer = new Player(); Game.sysVarInit();
@@ -106,3 +111,19 @@ for (const choice of script) {
 }
 const vars = vm.runInContext('Game.vars', ctx);
 console.log('VARS: ' + JSON.stringify(Object.fromEntries(Object.entries(vars).filter(([k]) => /^(counter|dice|lucky|i|x|nlb_)/.test(k)))));
+
+function deterministic(text) {
+  const nl = text.includes('\r\n') ? '\r\n' : '\n';
+  text = text.replace(/^(\w+)=rnd#(.+)\$$/gm, (m, v, max) => ['nlb_dmax=' + max, 'proc nlb_detrnd', v + '=nlb_dres'].join(nl));
+  const start = text.indexOf(':nlb_lshuffle' + nl), endMark = ':nlb_lshuffle_end' + nl + 'end';
+  const end = text.indexOf(endMark, start);
+  if (start < 0 || end < 0) throw new Error('DETERMINISTIC: нет метки nlb_lshuffle');
+  const shuffle = [':nlb_lshuffle', 'nlb_k=0', 'nlb_j=nlb_ln_#%nlb_lname$-1', ':nlb_lshuffle_loop',
+    'if nlb_k>=nlb_j then goto nlb_lshuffle_end',
+    'nlb_lres = nlb_li_#%nlb_lname$_#nlb_k$',
+    'nlb_li_#%nlb_lname$_#nlb_k$ = nlb_li_#%nlb_lname$_#nlb_j$',
+    'nlb_li_#%nlb_lname$_#nlb_j$ = nlb_lres',
+    'nlb_k=nlb_k+1', 'nlb_j=nlb_j-1', 'goto nlb_lshuffle_loop'].join(nl) + nl;
+  return text.slice(0, start) + shuffle + text.slice(end) + nl
+    + [':nlb_detrnd', 'nlb_dres=nlb_detc-nlb_dmax*int(nlb_detc/nlb_dmax)+1', 'nlb_detc=nlb_detc+1', 'end', ''].join(nl);
+}

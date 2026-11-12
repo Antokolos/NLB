@@ -55,9 +55,14 @@ public class UrqObjectsExportTest {
     public void startAndScene() throws Exception {
         String urq = export();
         assertTrue(urq, urq.contains(":nlb_start\n"));
-        assertTrue("места объектов: " + urq, urq.contains("nlb_in_1=\"" + m_hall.getId() + "\"\nnlb_id_1=\"" + m_key.getId() + "\"\nnlb_isobj_1=1\nnlb_in_2=\"" + m_hall.getId() + "\"\n"));
+        // контейнер — ключ: страница pN
+        java.util.regex.Matcher place = java.util.regex.Pattern.compile("nlb_in_1=\"(p\\d+)\"\nnlb_id_1=\"" + m_key.getId() + "\"\nnlb_isobj_1=1\n").matcher(urq);
+        assertTrue("места объектов: " + urq, place.find());
+        String hall = place.group(1);
+        assertTrue("содержимое страницы — список: " + urq, urq.contains("nlb_at_1_" + hall + "=1\nnlb_li_c" + hall + "_0=1\nnlb_at_2_" + hall
+                + "=1\nnlb_li_c" + hall + "_1=2\nnlb_ln_c" + hall + "=2\n"));
         assertTrue("& — не разделитель команд: " + urq, urq.contains("pln Зал ##38$ кухня."));
-        assertTrue("страница — вход, показ, ход: " + urq, urq.contains("nlb_page = \"" + m_hall.getId() + "\"\nproc "
+        assertTrue("страница — вход, показ, ход: " + urq, urq.contains("nlb_page = \"" + m_hall.getId() + "\"\nnlb_pkey = \"" + hall + "\"\nproc "
                 + m_hall.getId() + "_show\ngoto " + m_hall.getId() + "_turn\n:" + m_hall.getId() + "_show\n"));
         assertTrue("объект — ссылка: " + urq, urq.contains(":nlb_o_1_dsc\npln На столе [[ключ|nlb_act_1]].\n"));
         assertTrue("подпись предмета: " + urq, urq.contains("display_use_nlbo_1=\"Ключ\"\n"));
@@ -67,10 +72,10 @@ public class UrqObjectsExportTest {
     public void takeAndUse() throws Exception {
         String urq = export();
         assertTrue(urq, urq.contains(":nlb_o_1_acttext\nnlb_reply=nlb_reply+\"Вы взяли ключ.<br>\"\nend\n"));
-        assertTrue("переносимый — в инвентарь: " + urq, urq.contains("nlb_po=1\nnlb_pd=\"nlb_inv\"\nproc nlb_place\nend\n:nlb_o_1_use\n"));
+        assertTrue("переносимый — в инвентарь: " + urq, urq.contains("nlb_po=1\nnlb_tk=1\nproc nlb_take\nend\n:nlb_o_1_use\n"));
         assertTrue("применение к двери: " + urq, urq.contains("if nlb_t<>2 then goto nlb_o_1_use_2\nnlb_reply=nlb_reply+\"Дверь открылась.<br>\"\nnlb_printed=1\n"));
         assertTrue("щелчок по предмету: " + urq, urq.contains(":use_nlbo_1\nnlb_o2=1\ngoto nlb_invclick\n"));
-        assertFalse("дверь не переносимая: " + urq, urq.contains("nlb_po=2\nnlb_pd=\"nlb_inv\""));
+        assertFalse("дверь не переносимая: " + urq, urq.contains("nlb_po=2\nnlb_tk=1"));
         assertFalse("меток до сборки не осталось: " + urq, urq.contains("\u0001") || urq.contains("\u0003"));
     }
 

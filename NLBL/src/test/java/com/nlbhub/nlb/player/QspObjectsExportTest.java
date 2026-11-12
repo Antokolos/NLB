@@ -86,11 +86,11 @@ public class QspObjectsExportTest {
         String qsp = export();
         assertTrue(qsp, qsp.contains("#nlb_o_" + m_key.getId() + "_acttext\n'Вы взяли ключ.'\n" + END + "\n"));
         assertTrue("переносимый — в инвентарь: " + qsp,
-                qsp.contains("GOSUB 'nlb_place', '" + m_key.getId() + "', 'nlb_inv'\n" + END + "\n#nlb_o_" + m_key.getId() + "_use\n"));
+                qsp.contains("GOSUB 'nlb_take', '" + m_key.getId() + "', 1\n" + END + "\n#nlb_o_" + m_key.getId() + "_use\n"));
         assertTrue("применение к двери: " + qsp, qsp.contains("IF $ARGS[0] = '" + m_door.getId() + "':\n'Дверь открылась.'\nnlb_printed = 1\nEND\n"));
         assertTrue("без ответа — game.nouse: " + qsp, qsp.contains("#nlb_o_" + m_door.getId() + "_nouse\n'"));
         assertFalse("дверь не переносимая: " + qsp,
-                qsp.contains("GOSUB 'nlb_place', '" + m_door.getId() + "', 'nlb_inv'"));
+                qsp.contains("GOSUB 'nlb_take', '" + m_door.getId() + "'"));
     }
 
     /**

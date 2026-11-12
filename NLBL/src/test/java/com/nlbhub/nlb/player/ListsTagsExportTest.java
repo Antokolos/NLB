@@ -98,7 +98,7 @@ public class ListsTagsExportTest {
         assertTrue(qsp, qsp.contains("$t = $nlb_tag['" + apple + "']\n"));
         assertTrue(qsp, qsp.contains("GOSUB 'nlb_lobjs', 'lb', '" + m_box.getId() + "'\n"));
         assertTrue(qsp, qsp.contains("GOSUB 'nlb_clear', '" + m_box.getId() + "'\n"));
-        assertTrue(qsp, qsp.contains("h = 0\nIF $nlb_in['" + apple + "'] = 'nlb_inv': h = 1\n"));
+        assertTrue(qsp, qsp.contains("h = 0\nIF nlb_at['" + apple + "' + '|nlb_inv'] = 1: h = 1\n"));
         assertTrue("SPUSH — сама страница: " + qsp, qsp.contains("GOSUB 'nlb_lpush', 'listS', '" + m_shop.getId() + "'\n"));
         assertTrue("служебные локации списков: " + qsp, qsp.contains("#nlb_lpop\n") && qsp.contains("#nlb_lshuffle\n"));
     }
@@ -132,7 +132,7 @@ public class ListsTagsExportTest {
         assertTrue(sm, sm.contains("<<set $nlb_tags[$got] = \"red\">>\n"));
         assertTrue(sm, sm.contains("<<set $nlb_tags[\"" + m_shop.getId() + "\"] = \"shop\">>\n"));
         assertTrue(sm, sm.contains("<<set $nlb_c = \"" + m_box.getId() + "\">><<display 'nlb_clear'>>\n"));
-        assertTrue(sm, sm.contains("<<set $h = ($nlb_in[1] == \"nlb_inv\") ? 1 : 0>>\n"));
+        assertTrue(sm, sm.contains("<<set $h = (($nlb_cs[\"nlb_inv\"] && $nlb_cs[\"nlb_inv\"].indexOf(1) != -1) ? 1 : 0)>>\n"));
         assertTrue("<<loop>> — по массиву $nlb_a, не по индексу в скобках: " + sm,
                 sm.contains(":: nlb_addall[::]") && !sm.contains("<<loop $nlb_lists["));
     }
@@ -146,8 +146,8 @@ public class ListsTagsExportTest {
         assertTrue(urq, urq.contains("n = nlb_ln_listA\n"));
         assertTrue(urq, urq.contains("nlb_lname=\"listA\"\nproc nlb_lpop\ngot = nlb_lres\n"));
         assertTrue("тег по ссылке — имя с подстановкой: " + urq, urq.contains("nlb_tag_#%got$=\"red\"\n"));
-        assertTrue(urq, urq.contains("nlb_c=\"" + m_box.getId() + "\"\nproc nlb_clear\n"));
-        assertTrue(urq, urq.contains("h=0\nif nlb_in_1=\"nlb_inv\" then h=1\n"));
-        assertTrue("число объектов подставлено: " + urq, urq.contains("if nlb_m>2 then goto nlb_clear_end\n"));
+        assertTrue("контейнер — ключ oN: " + urq, java.util.regex.Pattern.compile("nlb_c=\"o\\d+\"\nproc nlb_clear\n").matcher(urq).find());
+        assertTrue(urq, urq.contains("h=0\nif nlb_at_1_inv=1 then h=1\n"));
+        assertTrue("CLEAR — по списку контейнера: " + urq, urq.contains("if nlb_m>=nlb_ln_#%nlb_lc$ then goto nlb_clear_end\n"));
     }
 }

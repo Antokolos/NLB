@@ -1034,6 +1034,7 @@ public abstract class ExportManager {
                 )
         );
         final ObjType objType = getObjType(obj, exportData);
+        blocks.setObjType(objType);
         blocks.setObjLabel(decorateObjLabel(obj.getId()));
         blocks.setObjComment(decorateObjComment(obj.getName()));
         // blocks obj default tag variable was set earlier
@@ -1082,6 +1083,13 @@ public abstract class ExportManager {
                 || (hasImage && obj.isImageInInventory() && !obj.isGraphical()));
         blocks.setObjDisp(decorateObjDisp(expandVariables(StringHelper.getTextChunks(obj.getDisp())), hasImage && obj.isImageInInventory(), obj.isGraphical()));
         blocks.setObjText(decorateObjText(obj.getId(), obj.getName(), obj.isSuppressDsc(), expandVariables(StringHelper.getTextChunks(obj.getText())), hasImage && obj.isImageInScene(), obj.isGraphical()));
+        blocks.setSuppressDsc(obj.isSuppressDsc());
+        // PDSC выводит только текст объекта (objDscF в плеере): у объекта без текста или с одной
+        // пустой меткой {} — ничего (заполнитель боя «Фронтира» fillerObj2), даже при suppressDsc
+        final boolean emptyText = obj.getText() == null || obj.getText().replaceAll("\\{\\s*\\}", "").isBlank();
+        blocks.setObjTextF(emptyText ? EMPTY_STRING : obj.isSuppressDsc()
+                ? decorateObjText(obj.getId(), obj.getName(), false, expandVariables(StringHelper.getTextChunks(obj.getText())), hasImage && obj.isImageInScene(), obj.isGraphical())
+                : blocks.getObjText());
         blocks.setGraphical(obj.isGraphical());
         blocks.setObjId(obj.getId());
         blocks.setContainerId(Obj.DEFAULT_CONTAINER_ID.equals(obj.getContainerId()) || obj.getContainerId() == null
@@ -2084,6 +2092,46 @@ public abstract class ExportManager {
         return result;
     }
 
+    /**
+     * Начальное содержимое контейнеров, как PlayerContext.initContainers: у страницы — её объекты,
+     * у объекта — его content (в порядке книги); затем объекты, чей контейнер их не перечисляет.
+     * Ключ — id страницы или объекта-контейнера; порядок ключей — порядок книги
+     */
+    protected static java.util.Map<String, List<String>> initialContents(NLBBuildingBlocks nlbBuildingBlocks) {
+        java.util.Map<String, ObjBuildingBlocks> byId = new java.util.HashMap<>();
+        for (ObjBuildingBlocks obj : nlbBuildingBlocks.getObjsBuildingBlocks()) {
+            byId.put(obj.getObjId(), obj);
+        }
+        java.util.Map<String, List<String>> result = new java.util.LinkedHashMap<>();
+        for (PageBuildingBlocks page : nlbBuildingBlocks.getPagesBuildingBlocks()) {
+            addContents(result, page.getPageId(), page.getAllContainedObjIds(), byId);
+        }
+        List<ObjBuildingBlocks> objs = orderedObjects(nlbBuildingBlocks);
+        for (ObjBuildingBlocks obj : objs) {
+            addContents(result, obj.getObjId(), obj.getContainedObjIds(), byId);
+        }
+        for (ObjBuildingBlocks obj : objs) {
+            String containerId = obj.getContainerId();
+            if (StringHelper.notEmpty(containerId)) {
+                addContents(result, containerId, java.util.Collections.singletonList(obj.getObjId()), byId);
+            }
+        }
+        return result;
+    }
+
+    private static void addContents(java.util.Map<String, List<String>> result, String ownerId, List<String> ids,
+                                    java.util.Map<String, ObjBuildingBlocks> byId) {
+        for (String id : ids) {
+            if (!byId.containsKey(id)) {
+                continue;
+            }
+            List<String> items = result.computeIfAbsent(ownerId, k -> new java.util.ArrayList<>());
+            if (!items.contains(id)) {
+                items.add(id);
+            }
+        }
+    }
+
     private static void addWithContents(String id, java.util.Map<String, ObjBuildingBlocks> byId, java.util.Set<String> order) {
         ObjBuildingBlocks obj = byId.get(id);
         if (obj == null || !order.add(id)) {
@@ -2558,6 +2606,8 @@ public abstract class ExportManager {
         }
         java.util.Set<String> objectLists = new java.util.HashSet<>();
         java.util.Set<String> objectVars = new java.util.HashSet<>();
+        // тег (GETTAG) — строка: «$ctag = тег», и условие «ctag = PLRTAG» читает её же (карты «Фронтира»)
+        java.util.Set<String> stringVars = new java.util.HashSet<>();
         boolean changed = true;
         while (changed) {
             changed = false;
@@ -2612,6 +2662,9 @@ public abstract class ExportManager {
                     case ID:
                     case CLONE:
                         changed |= exprIsRef && objectVars.add(expr);
+                        if (type == Modification.Type.GETTAG && var != null) {
+                            stringVars.add(var);
+                        }
                         if ((type == Modification.Type.CNTNR || type == Modification.Type.ID
                                 || type == Modification.Type.CLONE) && var != null) {
                             changed |= objectVars.add(var);
@@ -2622,6 +2675,7 @@ public abstract class ExportManager {
                 }
             }
         }
+        objectVars.addAll(stringVars);
         for (String var : objectVars) {
             Variable.DataType type = m_dataTypeMap.get(var);
             if (type == null || type == Variable.DataType.AUTO) {

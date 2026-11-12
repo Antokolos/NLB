@@ -15,6 +15,9 @@
 // (действия, ссылки, предметы) с подсчётом ошибок движка. TAIL=1 — показывать конец текста,
 // VARS=a,b — в конце вывести значения переменных; MEDIA=1 — картинки в тексте (IMG), звуки
 // с прошлого шага (SND: PLAY/CLOSE) и картинки предметов инвентаря.
+// DETERMINISTIC=1 (только для текста) — случайность как --deterministic Java-плеера
+// (PlayerContext): RANDOM — счётчик (0, 1, 2… по модулю, +1), SHUFFLE — разворот списка; так
+// прогоны со случайностью (колода в бою «Фронтира») сравнимы с плеером.
 // restartGame движка первую локацию не выполняет, поэтому игра начинается с GOTO первой локации.
 const fs = require('fs'), path = require('path');
 const P = process.argv[2], file = process.argv[3], script = (process.argv[4] || '').split(';;').filter(x => x);
@@ -23,8 +26,9 @@ const { readQsps, writeQsp } = require(path.join(P, 'conv/package/dist/index.cjs
 (async () => {
   const { initQspEngine } = await import('file://' + path.join(P, 'package/dist/wasm-engine.modern.js'));
   // готовый .qsp (например, от txt2gam) — как есть; текст — через @qsp/converters, как qSpider
-  const game = /\.(qsp|gam)$/i.test(file) ? new Uint8Array(fs.readFileSync(file))
-    : writeQsp(readQsps(fs.readFileSync(file).toString('utf16le').replace(/^\uFEFF/, '')));
+  let source = /\.(qsp|gam)$/i.test(file) ? null : fs.readFileSync(file).toString('utf16le').replace(/^\uFEFF/, '');
+  if (source !== null && process.env.DETERMINISTIC) source = deterministic(source);
+  const game = source === null ? new Uint8Array(fs.readFileSync(file)) : writeQsp(readQsps(source));
   const wasm = fs.readFileSync(path.join(P, 'package/dist/qsp-engine.wasm'));
   const api = await initQspEngine(wasm.buffer.slice(wasm.byteOffset, wasm.byteOffset + wasm.byteLength));
   let main = '', actions = [], objects = [], errors = [];
@@ -99,3 +103,18 @@ const { readQsps, writeQsp } = require(path.join(P, 'conv/package/dist/index.cjs
   for (const v of (process.env.VARS || '').split(',').filter(x => x)) vars[v] = api.readVariable(v);
   if (Object.keys(vars).length) console.log('VARS: ' + JSON.stringify(vars));
 })().catch(e => { console.error('FAIL', e); process.exit(1); });
+
+function deterministic(text) {
+  const nl = text.includes('\r\n') ? '\r\n' : '\n';
+  text = text.replace(/RAND\(1, ([^)]+)\)/g, "FUNC('nlb_detrnd', $1)");
+  const start = text.indexOf('#nlb_lshuffle' + nl), end = text.indexOf(nl + '---', start);
+  if (start < 0 || end < 0) throw new Error('DETERMINISTIC: нет локации nlb_lshuffle');
+  const shuffle = ['#nlb_lshuffle', 'LOCAL nlb_k, nlb_j, $nlb_v', 'nlb_k = 0', 'nlb_j = nlb_ln[$ARGS[0]] - 1',
+    'LOOP WHILE nlb_k < nlb_j:',
+    "    $nlb_v = $nlb_li[$ARGS[0] + ',' + $STR(nlb_k)]",
+    "    $nlb_li[$ARGS[0] + ',' + $STR(nlb_k)] = $nlb_li[$ARGS[0] + ',' + $STR(nlb_j)]",
+    "    $nlb_li[$ARGS[0] + ',' + $STR(nlb_j)] = $nlb_v",
+    '    nlb_k = nlb_k + 1', '    nlb_j = nlb_j - 1', 'END'].join(nl);
+  return text.slice(0, start) + shuffle + text.slice(end) + nl
+    + ['#nlb_detrnd', 'RESULT = nlb_detc MOD ARGS[0] + 1', 'nlb_detc = nlb_detc + 1', '--- nlb_detrnd ---------------------------------', ''].join(nl);
+}

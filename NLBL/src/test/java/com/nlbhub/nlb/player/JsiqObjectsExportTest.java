@@ -112,8 +112,8 @@ public class JsiqObjectsExportTest {
         File file = new File(m_temp.getRoot(), "mods.xml");
         b.nlb.exportToJSIQFile(file);
         String xml = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
-        assertTrue(xml, xml.contains("NLB.place(vars, '" + key.getId() + "', NLB.INV); "));
-        assertTrue(xml, xml.contains("if (NLB.has(vars, '" + key.getId() + "')) { NLB.place(vars, '" + key.getId() + "', ''); } "));
+        assertTrue(xml, xml.contains("if (!NLB.has(vars, '" + key.getId() + "')) { NLB.take(vars, '" + key.getId() + "', false); } "));
+        assertTrue(xml, xml.contains("NLB.del(vars, '" + key.getId() + "', NLB.INV); "));
         assertTrue(xml, xml.contains("NLB.countReset(vars); "));
     }
 

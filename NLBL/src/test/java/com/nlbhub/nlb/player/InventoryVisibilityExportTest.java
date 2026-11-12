@@ -52,7 +52,7 @@ public class InventoryVisibilityExportTest {
         String qsp = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_16LE).replace("\r\n", "\n");
         assertTrue("невидимый предмет: " + qsp, qsp.contains("nlb_invhide['" + m_sync.getId() + "'] = 1\n"));
         assertFalse(qsp, qsp.contains("nlb_invhide['" + m_status.getId() + "']"));
-        assertTrue("ADDOBJ — только видимых: " + qsp, qsp.contains("IF $nlb_in[$ARGS[0]] <> 'nlb_inv' AND $ARGS[1] = 'nlb_inv' AND nlb_invhide[$ARGS[0]] = 0:\n"));
+        assertTrue("в список показа — только видимые: " + qsp, qsp.contains("IF nlb_invhide[$ARGS[0]] = 0: GOSUB 'nlb_linject', ' invs', $ARGS[0]\n"));
     }
 
     @Test
@@ -61,7 +61,7 @@ public class InventoryVisibilityExportTest {
         book().exportToURQTextFile(file);
         String urq = new String(Files.readAllBytes(file.toPath()), Charset.forName("windows-1251")).replace("\r\n", "\n");
         assertTrue("невидимый предмет: " + urq, urq.contains("nlb_invhide_2=1\n") && !urq.contains("nlb_invhide_1=1"));
-        assertTrue(urq, urq.contains("and nlb_invhide_#nlb_po$=0 then inv+ nlbo_#nlb_po$\n"));
+        assertTrue(urq, urq.contains("if nlb_invhide_#nlb_iv$=0 then nlb_li_cinvs_#nlb_ln_cinvs$=nlb_iv & nlb_ln_cinvs=nlb_ln_cinvs+1\n"));
         assertTrue("подпись — одной строкой: " + urq, urq.contains("display_use_nlbo_1=\"Слава: 0 Сила: 1\"\n"));
         assertTrue("хвостовой '^' — без пустой строки: " + urq, urq.contains("pln Комната\n"));
     }
@@ -73,7 +73,7 @@ public class InventoryVisibilityExportTest {
         String xml = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
         String sync = xml.substring(xml.indexOf("N.objs['" + m_sync.getId() + "']"));
         assertTrue(xml, sync.substring(0, sync.indexOf("};")).contains("hidden: true,"));
-        assertTrue(xml, xml.contains("if (N.objs[id] && N.objs[id].hidden) { continue; }"));
+        assertTrue(xml, xml.contains("if (!o.hidden) {"));
     }
 
     @Test

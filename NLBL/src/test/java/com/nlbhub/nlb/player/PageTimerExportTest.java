@@ -105,7 +105,7 @@ public class PageTimerExportTest {
         String qsp = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_16LE).replace("\r\n", "\n");
         assertTrue("при входе — обнуление: " + qsp, qsp.contains("t = 0\nnlb_tick = 0\nGOSUB '" + m_room.getId() + "_show'\n"));
         assertTrue("ход игрока — тик до показа: " + qsp, qsp.contains("#" + m_room.getId()
-                + "_show\nIF nlb_tick = 1:\n    nlb_tick = 0\n    t = t + 1\nEND\n"));
+                + "_show\nKILLVAR 'nlb_seen'\nIF nlb_tick = 1:\n    nlb_tick = 0\n    t = t + 1\nEND\n"));
         assertTrue("повторный показ — ход игрока: " + qsp, qsp.contains("#nlb_refresh\nnlb_tick = 1\n"));
         assertTrue("заставка проматывается: " + qsp, section(qsp, "#" + m_intro.getId() + "_turn", "--")
                 .contains("nlb_wait = 0\nLOOP WHILE nlb_wait < 100000:\n    nlb_wait = nlb_wait + 1\n    t = t + 1\n"));
@@ -121,7 +121,7 @@ public class PageTimerExportTest {
         book().exportToURQTextFile(file);
         String urq = new String(Files.readAllBytes(file.toPath()), Charset.forName("windows-1251")).replace("\r\n", "\n");
         assertTrue(urq, urq.contains("t=0\nnlb_tick=0\nnlb_page = \"" + m_room.getId() + "\"\n"));
-        assertTrue(urq, urq.contains(":" + m_room.getId() + "_show\nif nlb_tick=1 then t=t+1\nnlb_tick=0\n"));
+        assertTrue(urq, urq.contains(":" + m_room.getId() + "_show\nnlb_gen=nlb_gen+1\nif nlb_tick=1 then t=t+1\nnlb_tick=0\n"));
         assertTrue(urq, urq.contains(":nlb_redraw\nnlb_tick=1\n"));
         String intro = m_intro.getId();
         assertTrue("заставка проматывается: " + urq, urq.contains(":" + intro + "_wait\nnlb_wait=0\n:" + intro + "_wait_loop\n"

@@ -93,8 +93,12 @@ public class QSPExportManager extends TextExportManager {
     /**
      * Начало игры и служебные локации объектов. Объекты QSP не знает (у него есть только
      * инвентарь — список подписей), поэтому место каждого объекта книги хранится в строковом
-     * массиве $nlb_in[id] (id страницы или объекта-контейнера, 'nlb_inv' — инвентарь, '' — нигде),
-     * а объекты сцены выводятся в тексте страницы ссылками EXEC (USEHTML).
+     * массиве nlb_at['id|контейнер'] (контейнер — id страницы или объекта, 'nlb_inv' — инвентарь).
+     * Объект может лежать в нескольких контейнерах сразу — ADD не убирает его из прежнего места,
+     * как objs():add в INSTEAD и PlayerContext.containerAdd в плеере; $nlb_in[id] — последний
+     * владелец (CNTNR). Содержимое контейнера по порядку — список '<контейнер' (сначала порядок
+     * книги, затем — по мере добавления, как в плеере); инвентарь — список '<nlb_inv'. Объекты сцены выводятся в
+     * тексте страницы ссылками EXEC (USEHTML).
      */
     @Override
     protected String generatePreambleText(NLBBuildingBlocks nlbBuildingBlocks) {
@@ -122,6 +126,15 @@ public class QSPExportManager extends TextExportManager {
             if (!obj.getObjSounds().isEmpty()) {
                 sb.append("nlb_hassnd['").append(obj.getObjId()).append("'] = 1").append(LINE_SEPARATOR);
             }
+            if (obj.getObjType() == ObjType.MENU || obj.getObjType() == ObjType.GMENU) {
+                // щелчок в инвентаре — действие, без выбора для применения (decorateObjInv: menu)
+                sb.append("nlb_menu['").append(obj.getObjId()).append("'] = 1").append(LINE_SEPARATOR);
+            } else if (obj.getObjType() == ObjType.STAT) {
+                sb.append("nlb_menu['").append(obj.getObjId()).append("'] = 2").append(LINE_SEPARATOR);  // только подпись
+            }
+            if (obj.isSuppressDsc()) {
+                sb.append("nlb_supp['").append(obj.getObjId()).append("'] = 1").append(LINE_SEPARATOR);
+            }
             if (!obj.isVisibleInInventory()) {
                 // предмет без подписи и картинки лежит в инвентаре невидимым (как в плеере и INSTEAD)
                 sb.append("nlb_invhide['").append(obj.getObjId()).append("'] = 1").append(LINE_SEPARATOR);
@@ -129,6 +142,16 @@ public class QSPExportManager extends TextExportManager {
             if (hasInventoryImage(obj)) {
                 sb.append("nlb_invimg['").append(obj.getObjId()).append("'] = 1").append(LINE_SEPARATOR);
             }
+        }
+        // содержимое контейнеров — списки '<контейнер' (порядок книги, content)
+        for (java.util.Map.Entry<String, List<String>> entry : initialContents(nlbBuildingBlocks).entrySet()) {
+            final String list = "<" + entry.getKey();
+            final List<String> items = entry.getValue();
+            for (int i = 0; i < items.size(); i++) {
+                sb.append("nlb_at['").append(items.get(i)).append("|").append(entry.getKey()).append("'] = 1").append(LINE_SEPARATOR);
+                sb.append("$nlb_li['").append(list).append(",").append(i).append("'] = '").append(items.get(i)).append("'").append(LINE_SEPARATOR);
+            }
+            sb.append("nlb_ln['").append(list).append("'] = ").append(items.size()).append(LINE_SEPARATOR);
         }
         // теги по умолчанию (var { tag = … } в INSTEAD): GETTAG без явного TAG возвращает их
         for (PageBuildingBlocks page : pages) {
@@ -219,18 +242,30 @@ public class QSPExportManager extends TextExportManager {
      * выбран предмет инвентаря, применение; nlb_refresh — снова показать страницу после действия:
      * ответ ($MAINTXT) — после текста страницы, действия-ссылки пересобираются; nlb_onobjsel —
      * выбор предмета в инвентаре: первый щелчок — inv (применение к себе или game.inv) и выбор
-     * для применения, щелчок по другому предмету — применение, по тому же — отмена выбора;
-     * nlb_use — применение ARGS[0] к ARGS[1], без ответа — nouse; nlb_place — перенести объект
-     * ARGS[0] в ARGS[1] (с инвентарём QSP); nlb_inv_sync — подписи предметов с переменными
-     * («Жизнь: 100»): в QSP подпись статична, поэтому в начале каждого хода изменившаяся подпись
-     * заменяется на том же месте списка.
+     * для применения, щелчок по другому предмету — применение, по тому же — отмена выбора; у
+     * предмета-меню (nlb_menu = 1, карты в бою «Фронтира») щелчок — действие, у показателя (2) —
+     * ничего, оба не выбираются (PlayerEngine.clickInventory);
+     * nlb_use — применение ARGS[0] к ARGS[1], без ответа — nouse; nlb_add, nlb_del, nlb_take —
+     * контейнеры и инвентарь; nlb_inv_sync — список предметов QSP (в начале каждого хода).
      */
     private static final String SERVICE_LOCATIONS = String.join("\n",
             "#nlb_show_in",
             "LOCAL nlb_i",
             "nlb_i = 0",
-            "LOOP WHILE nlb_i < nlb_objs_n:",
-            "    IF $nlb_in[$nlb_objs[nlb_i]] = $ARGS[0]: GOSUB 'nlb_o_' + $nlb_objs[nlb_i] + '_dsc'",
+            "LOOP WHILE nlb_i < nlb_ln['<' + $ARGS[0]]:",
+            "    GOSUB 'nlb_o_' + $nlb_li['<' + $ARGS[0] + ',' + $STR(nlb_i)] + '_dsc'",
+            "    nlb_i = nlb_i + 1",
+            "END",
+            LOC_END,
+            "#nlb_pdscs",
+            "LOCAL nlb_i, $nlb_v",
+            "nlb_i = 0",
+            "LOOP WHILE nlb_i < nlb_ln['<' + $ARGS[0]]:",
+            "    $nlb_v = $nlb_li['<' + $ARGS[0] + ',' + $STR(nlb_i)]",
+            "    IF nlb_supp[$nlb_v] = 1:",
+            "        GOSUB 'nlb_pdscs', $nlb_v",
+            "        IF FUNC('nlb_o_' + $nlb_v + '_on') = 1: GOSUB 'nlb_o_' + $nlb_v + '_textf'",
+            "    END",
             "    nlb_i = nlb_i + 1",
             "END",
             LOC_END,
@@ -257,7 +292,12 @@ public class QSPExportManager extends TextExportManager {
             "$nlb_o = $nlb_byname[$SELOBJ]",
             "IF $nlb_o = '': EXIT",
             "*CLR",
-            "IF $nlb_sel = '':",
+            "IF $nlb_sel = '' AND nlb_menu[$nlb_o] > 0:",
+            "    %COUNT% = %COUNT% + 1",
+            "    nlb_cnt_inv = nlb_cnt_inv + 1",
+            "    IF nlb_menu[$nlb_o] = 1: GOSUB 'nlb_o_' + $nlb_o + '_acta'",
+            "    UNSEL",
+            "ELSEIF $nlb_sel = '':",
             "    %COUNT% = %COUNT% + 1",
             "    nlb_cnt_inv = nlb_cnt_inv + 1",
             "    nlb_printed = 0",
@@ -281,18 +321,31 @@ public class QSPExportManager extends TextExportManager {
             "$nlb_sel = ''",
             "UNSEL",
             LOC_END,
-            "#nlb_place",
-            "IF $nlb_in[$ARGS[0]] = '%NLB_INV%' AND $ARGS[1] <> '%NLB_INV%' AND nlb_invhide[$ARGS[0]] = 0: DELOBJ $nlb_shown[$ARGS[0]]",
-            "IF $nlb_in[$ARGS[0]] <> '%NLB_INV%' AND $ARGS[1] = '%NLB_INV%' AND nlb_invhide[$ARGS[0]] = 0:",
-            "    $nlb_shown[$ARGS[0]] = $FUNC('nlb_o_' + $ARGS[0] + '_disp')",
-            "    $nlb_byname[$nlb_shown[$ARGS[0]]] = $ARGS[0]",
-            "    IF nlb_invimg[$ARGS[0]] = 1:",
-            "        ADDOBJ $nlb_shown[$ARGS[0]], $FUNC('nlb_img_' + $ARGS[0])",
-            "    ELSE",
-            "        ADDOBJ $nlb_shown[$ARGS[0]]",
-            "    END",
+            // nlb_add — положить ARGS[0] в ARGS[1], не убирая из прежних мест (objs():add);
+            // nlb_del — убрать из ARGS[1] (владелец сбрасывается, как decorateDelObj: container = nil);
+            // nlb_take — взять (take в INSTEAD): убрать из текущей комнаты, при ARGS[1] = 1 (щелчок
+            // по переносимому объекту) — и от последнего владельца, если не нашёлся в комнате
+            "#nlb_add",
+            "IF nlb_at[$ARGS[0] + '|' + $ARGS[1]] = 0:",
+            "    nlb_at[$ARGS[0] + '|' + $ARGS[1]] = 1",
+            "    GOSUB 'nlb_linject', '<' + $ARGS[1], $ARGS[0]",
             "END",
-            "$nlb_in[$ARGS[0]] = $ARGS[1]",
+            "IF $ARGS[1] <> '%NLB_INV%': $nlb_in[$ARGS[0]] = $ARGS[1]",
+            LOC_END,
+            "#nlb_del",
+            "IF nlb_at[$ARGS[0] + '|' + $ARGS[1]] = 1:",
+            "    nlb_at[$ARGS[0] + '|' + $ARGS[1]] = 0",
+            "    GOSUB 'nlb_lrmv', '<' + $ARGS[1], $ARGS[0]",
+            "END",
+            "IF $ARGS[1] <> '%NLB_INV%': $nlb_in[$ARGS[0]] = ''",
+            LOC_END,
+            "#nlb_take",
+            "IF nlb_at[$ARGS[0] + '|' + $CURLOC] = 1:",
+            "    GOSUB 'nlb_del', $ARGS[0], $CURLOC",
+            "ELSEIF ARGS[1] = 1 AND $nlb_in[$ARGS[0]] <> '':",
+            "    IF nlb_at[$ARGS[0] + '|' + $nlb_in[$ARGS[0]]] = 1: GOSUB 'nlb_del', $ARGS[0], $nlb_in[$ARGS[0]]",
+            "END",
+            "GOSUB 'nlb_add', $ARGS[0], '%NLB_INV%'",
             LOC_END,
             // Списки (nlb.lua: push/pop — начало, inject/eject — конец): элементы — строки
             // $nlb_li['имя,i'] (0 — начало), длина — nlb_ln['имя']; объект или страница — id,
@@ -365,8 +418,8 @@ public class QSPExportManager extends TextExportManager {
             "#nlb_lobjs",
             "LOCAL nlb_i",
             "nlb_i = 0",
-            "LOOP WHILE nlb_i < nlb_objs_n:",
-            "    IF $nlb_in[$nlb_objs[nlb_i]] = $ARGS[1]: GOSUB 'nlb_lpush', $ARGS[0], $nlb_objs[nlb_i]",
+            "LOOP WHILE nlb_i < nlb_ln['<' + $ARGS[1]]:",
+            "    GOSUB 'nlb_lpush', $ARGS[0], $nlb_li['<' + $ARGS[1] + ',' + $STR(nlb_i)]",
             "    nlb_i = nlb_i + 1",
             "END",
             LOC_END,
@@ -379,19 +432,23 @@ public class QSPExportManager extends TextExportManager {
             "    IF $ARGS[2] <> '':",
             "        GOSUB 'nlb_lpush', $ARGS[2], $nlb_v",
             "    ELSEIF nlb_isobj[$nlb_v] = 1:",
-            "        GOSUB 'nlb_place', $nlb_v, $ARGS[1]",
+            "        GOSUB 'nlb_add', $nlb_v, $ARGS[1]",
             "    END",
             "    nlb_k = nlb_k + 1",
             "END",
             LOC_END,
-            // CLEAR, CLRINV: всё содержимое контейнера (страницы, инвентаря) — никуда
+            // CLEAR, CLRINV: всё содержимое контейнера (страницы, инвентаря) — вон из него; владелец
+            // сбрасывается у тех, чей последний владелец — он (PlayerContext.containerClear)
             "#nlb_clear",
-            "LOCAL nlb_i",
+            "LOCAL nlb_i, $nlb_v",
             "nlb_i = 0",
-            "LOOP WHILE nlb_i < nlb_objs_n:",
-            "    IF $nlb_in[$nlb_objs[nlb_i]] = $ARGS[0]: GOSUB 'nlb_place', $nlb_objs[nlb_i], ''",
+            "LOOP WHILE nlb_i < nlb_ln['<' + $ARGS[0]]:",
+            "    $nlb_v = $nlb_li['<' + $ARGS[0] + ',' + $STR(nlb_i)]",
+            "    nlb_at[$nlb_v + '|' + $ARGS[0]] = 0",
+            "    IF $nlb_in[$nlb_v] = $ARGS[0]: $nlb_in[$nlb_v] = ''",
             "    nlb_i = nlb_i + 1",
             "END",
+            "nlb_ln['<' + $ARGS[0]] = 0",
             LOC_END,
             // Музыка (set_music в INSTEAD): тот же файл не перезапускается, '' — остановить (void)
             "#nlb_music",
@@ -406,26 +463,51 @@ public class QSPExportManager extends TextExportManager {
             "#nlb_imgtag",
             "IF $ARGS[0] <> '' AND nlb_leave = 0: $RESULT = '<img src=\"' + $ARGS[0] + '\">'",
             LOC_END,
+            // Инвентарь QSP — список подписей: предметы по взятию, за каждым — содержимое (вложенные
+            // объекты, как PlayerEngine.inventoryObjects: панель боя «Фронтира» с картами в ней);
+            // выключенный объект скрывает и содержимое, невидимый (nlb_invhide) — только себя.
+            // Подпись может зависеть от переменных («Жизнь: 100»), поэтому в начале каждого хода
+            // список собирается заново и, если отличается от показанного, показывается заново
             "#nlb_inv_sync",
-            "LOCAL nlb_i, nlb_j, $nlb_n, $nlb_id",
-            "nlb_i = 0",
-            "LOOP WHILE nlb_i < nlb_objs_n:",
-            "    $nlb_id = $nlb_objs[nlb_i]",
-            "    IF $nlb_in[$nlb_id] = '%NLB_INV%' AND nlb_invhide[$nlb_id] = 0:",
-            "        $nlb_n = $FUNC('nlb_o_' + $nlb_id + '_disp')",
-            "        IF $nlb_n <> $nlb_shown[$nlb_id]:",
-            "            nlb_j = 1",
-            "            LOOP WHILE nlb_j <= COUNTOBJ AND $GETOBJ(nlb_j) <> $nlb_shown[$nlb_id]: nlb_j = nlb_j + 1",
-            "            IF nlb_j <= COUNTOBJ: KILLOBJ nlb_j",
-            "            IF nlb_invimg[$nlb_id] = 1:",
-            "                ADDOBJ $nlb_n, $FUNC('nlb_img_' + $nlb_id), nlb_j",
-            "            ELSE",
-            "                ADDOBJ $nlb_n, '', nlb_j",
-            "            END",
-            "            $nlb_byname[$nlb_n] = $nlb_id",
-            "            $nlb_shown[$nlb_id] = $nlb_n",
+            "LOCAL nlb_k, nlb_d, $nlb_v, $nlb_n",
+            "KILLVAR 'nlb_invseen'",
+            "nlb_ln[' invs'] = 0",
+            "nlb_k = 0",
+            "LOOP WHILE nlb_k < nlb_ln['<%NLB_INV%']:",
+            "    GOSUB 'nlb_inv_item', $nlb_li['<%NLB_INV%,' + $STR(nlb_k)], 0",
+            "    nlb_k = nlb_k + 1",
+            "END",
+            "nlb_d = 0",
+            "IF COUNTOBJ <> nlb_ln[' invs']: nlb_d = 1",
+            "nlb_k = 0",
+            "LOOP WHILE nlb_d = 0 AND nlb_k < nlb_ln[' invs']:",
+            "    IF $GETOBJ(nlb_k + 1) <> $FUNC('nlb_o_' + $nlb_li[' invs,' + $STR(nlb_k)] + '_disp'): nlb_d = 1",
+            "    nlb_k = nlb_k + 1",
+            "END",
+            "IF nlb_d = 1:",
+            "    KILLOBJ",
+            "    nlb_k = 0",
+            "    LOOP WHILE nlb_k < nlb_ln[' invs']:",
+            "        $nlb_v = $nlb_li[' invs,' + $STR(nlb_k)]",
+            "        $nlb_n = $FUNC('nlb_o_' + $nlb_v + '_disp')",
+            "        $nlb_byname[$nlb_n] = $nlb_v",
+            "        IF nlb_invimg[$nlb_v] = 1:",
+            "            ADDOBJ $nlb_n, $FUNC('nlb_img_' + $nlb_v)",
+            "        ELSE",
+            "            ADDOBJ $nlb_n",
             "        END",
+            "        nlb_k = nlb_k + 1",
             "    END",
+            "END",
+            LOC_END,
+            "#nlb_inv_item",
+            "LOCAL nlb_i",
+            "IF nlb_invseen[$ARGS[0]] = 1 OR ARGS[1] > 32 OR FUNC('nlb_o_' + $ARGS[0] + '_on') = 0: EXIT",
+            "nlb_invseen[$ARGS[0]] = 1",
+            "IF nlb_invhide[$ARGS[0]] = 0: GOSUB 'nlb_linject', ' invs', $ARGS[0]",
+            "nlb_i = 0",
+            "LOOP WHILE nlb_i < nlb_ln['<' + $ARGS[0]]:",
+            "    GOSUB 'nlb_inv_item', $nlb_li['<' + $ARGS[0] + ',' + $STR(nlb_i)], ARGS[1] + 1",
             "    nlb_i = nlb_i + 1",
             "END",
             LOC_END,
@@ -490,30 +572,12 @@ public class QSPExportManager extends TextExportManager {
      * действия, модификации, общий объект; переносимый — в инвентарь), _acttext, _mods,
      * _use (применения к ARGS[0]: тексты успеха/неудачи, модификации), _nouse.
      */
-    @Override
-    protected String generateObjText(ObjBuildingBlocks objBlocks) {
+    /**
+     * Описание объекта в тексте страницы: метка {}, графический объект, объект-картинка
+     */
+    private String sceneText(ObjBuildingBlocks objBlocks, String rawText) {
         final String id = objBlocks.getObjId();
-        final String prefix = "#nlb_o_" + id;
-        final String common = objBlocks.getCommonObjId();
-        StringBuilder sb = new StringBuilder();
-        sb.append(objBlocks.getObjComment());
-        sb.append(prefix).append("_dsc").append(LINE_SEPARATOR);
-        final boolean constrained = StringHelper.notEmpty(objBlocks.getObjConstraint());
-        if (constrained) {
-            sb.append("IF ").append(objBlocks.getObjConstraint()).append(":").append(LINE_SEPARATOR);
-        }
-        sb.append("GOSUB 'nlb_o_").append(id).append("_text'").append(LINE_SEPARATOR);
-        sb.append("GOSUB 'nlb_show_in', '").append(id).append("'").append(LINE_SEPARATOR);
-        if (constrained) {
-            sb.append("END").append(LINE_SEPARATOR);
-        }
-        sb.append(LOC_END).append(LINE_SEPARATOR);
-
-        // описание объекта: _text — вывести (PDSC), _textv — значение (DSC). Графический объект
-        // (VN) щёлкают по картинке, а картинок здесь нет: если у него есть действие, ссылкой
-        // становится его текст (без ссылки EXEC в нём), а без текста — подпись (выбор навыков в
-        // «Варваре»); подпись без действия — просто текст (надпись-картинка)
-        String text = objBlocks.getObjText();
+        String text = rawText;
         if (text.contains(OBJ_LABEL_MARK)) {
             // подпись для пустой метки {}: disp, иначе первая строка текста действия (карта во
             // «Фронтире»), иначе имя — как PlayerEngine.sceneLabel
@@ -538,8 +602,59 @@ public class QSPExportManager extends TextExportManager {
             String image = "<<$FUNC(''nlb_imgtag'', $FUNC(''nlb_img_" + id + "''))>>";
             text = "'" + (objBlocks.hasAction() ? objectLink(id, image) : image) + "'" + LINE_SEPARATOR;
         }
+        return text;
+    }
+
+    @Override
+    protected String generateObjText(ObjBuildingBlocks objBlocks) {
+        final String id = objBlocks.getObjId();
+        final String prefix = "#nlb_o_" + id;
+        final String common = objBlocks.getCommonObjId();
+        StringBuilder sb = new StringBuilder();
+        sb.append(objBlocks.getObjComment());
+        sb.append(prefix).append("_dsc").append(LINE_SEPARATOR);
+        final boolean constrained = StringHelper.notEmpty(objBlocks.getObjConstraint());
+        if (constrained) {
+            sb.append("IF ").append(objBlocks.getObjConstraint()).append(":").append(LINE_SEPARATOR);
+        }
+        if (objBlocks.isGraphical() || objBlocks.isImageInScene()) {
+            // объект с картинкой в нескольких контейнерах (держатели карт «Фронтира») — на экране
+            // один раз, вместе с содержимым, как сцена плеера (PlayerEngine.sceneObjects)
+            sb.append("IF nlb_seen['").append(id).append("'] = 0:").append(LINE_SEPARATOR);
+            sb.append("nlb_seen['").append(id).append("'] = 1").append(LINE_SEPARATOR);
+            sb.append("GOSUB 'nlb_o_").append(id).append("_text'").append(LINE_SEPARATOR);
+            sb.append("GOSUB 'nlb_show_in', '").append(id).append("'").append(LINE_SEPARATOR);
+            sb.append("END").append(LINE_SEPARATOR);
+        } else {
+            sb.append("GOSUB 'nlb_o_").append(id).append("_text'").append(LINE_SEPARATOR);
+            sb.append("GOSUB 'nlb_show_in', '").append(id).append("'").append(LINE_SEPARATOR);
+        }
+        if (constrained) {
+            sb.append("END").append(LINE_SEPARATOR);
+        }
+        sb.append(LOC_END).append(LINE_SEPARATOR);
+        // _on — объект включён (условие объекта): выключенный не виден и в инвентаре
+        sb.append(prefix).append("_on").append(LINE_SEPARATOR);
+        if (constrained) {
+            sb.append("RESULT = 0").append(LINE_SEPARATOR);
+            sb.append("IF ").append(objBlocks.getObjConstraint()).append(": RESULT = 1").append(LINE_SEPARATOR);
+        } else {
+            sb.append("RESULT = 1").append(LINE_SEPARATOR);
+        }
+        sb.append(LOC_END).append(LINE_SEPARATOR);
+
+        // описание объекта: _text — вывести (PDSC), _textv — значение (DSC). Графический объект
+        // (VN) щёлкают по картинке, а картинок здесь нет: если у него есть действие, ссылкой
+        // становится его текст (без ссылки EXEC в нём), а без текста — подпись (выбор навыков в
+        // «Варваре»); подпись без действия — просто текст (надпись-картинка)
+        String text = sceneText(objBlocks, objBlocks.getObjText());
         sb.append(prefix).append("_text").append(LINE_SEPARATOR);
         sb.append(text);
+        sb.append(LOC_END).append(LINE_SEPARATOR);
+        // _textf — для PDSC: и у объекта с suppressDsc (objDscF в плеере)
+        sb.append(prefix).append("_textf").append(LINE_SEPARATOR);
+        sb.append(objBlocks.getObjTextF().isEmpty() ? EMPTY_STRING : objBlocks.isSuppressDsc() ? sceneText(objBlocks, objBlocks.getObjTextF())
+                : "GOSUB 'nlb_o_" + id + "_text'" + LINE_SEPARATOR);
         sb.append(LOC_END).append(LINE_SEPARATOR);
         sb.append(prefix).append("_textv").append(LINE_SEPARATOR);
         sb.append("$RESULT = ").append(text.isEmpty() ? "''" + LINE_SEPARATOR : text);
@@ -547,7 +662,8 @@ public class QSPExportManager extends TextExportManager {
 
         sb.append(prefix).append("_disp").append(LINE_SEPARATOR);
         // подпись в инвентаре; без неё — имя объекта (как nam в INSTEAD), без имени — id
-        String disp = StringHelper.notEmpty(objBlocks.getObjDisp()) ? objBlocks.getObjDisp()
+        // (по краям — без переводов строки: подпись плеера обрезается, «^^Player HP» во «Фронтире»)
+        String disp = StringHelper.notEmpty(objBlocks.getObjDisp()) ? trimLeadingBreaks(trimTrailingBreaks(objBlocks.getObjDisp()))
                 : StringHelper.notEmpty(objBlocks.getObjName()) ? qspString(objBlocks.getObjName()) : id;
         sb.append("$RESULT = '").append(disp).append("'").append(LINE_SEPARATOR);
         sb.append(LOC_END).append(LINE_SEPARATOR);
@@ -578,7 +694,7 @@ public class QSPExportManager extends TextExportManager {
         if (objBlocks.isTakable()) {
             // decorateObjTak: взять общий объект, если он переносимый, иначе этот
             String toTake = StringHelper.notEmpty(common) && isTakable(common) ? common : id;
-            sb.append("GOSUB 'nlb_place', '").append(toTake).append("', '").append(INVENTORY).append("'").append(LINE_SEPARATOR);
+            sb.append("GOSUB 'nlb_take', '").append(toTake).append("', 1").append(LINE_SEPARATOR);
         }
         sb.append(LOC_END).append(LINE_SEPARATOR);
 
@@ -741,7 +857,8 @@ public class QSPExportManager extends TextExportManager {
         while (matcher.find()) {
             String id = idByName.get(matcher.group(1));
             matcher.appendReplacement(result, java.util.regex.Matcher.quoteReplacement(
-                    id == null ? comment("PDSC: объект " + matcher.group(1) + " не найден").trim() : "GOSUB 'nlb_o_" + id + "_text'"));
+                    id == null ? comment("PDSC: объект " + matcher.group(1) + " не найден").trim()
+                            : "IF FUNC('nlb_o_" + id + "_on') = 1: GOSUB 'nlb_o_" + id + "_textf'"));
         }
         matcher.appendTail(result);
         return result.toString();
@@ -801,6 +918,18 @@ public class QSPExportManager extends TextExportManager {
             String stripped = result.stripTrailing();
             if (stripped.endsWith(BR)) {
                 result = stripped.substring(0, stripped.length() - BR.length());
+            } else {
+                return result;
+            }
+        }
+    }
+
+    private static String trimLeadingBreaks(String text) {
+        String result = text;
+        while (true) {
+            String stripped = result.stripLeading();
+            if (stripped.startsWith(BR)) {
+                result = stripped.substring(BR.length());
             } else {
                 return result;
             }
@@ -965,6 +1094,7 @@ public class QSPExportManager extends TextExportManager {
         stringBuilder.append("GOSUB '").append(pageId).append("_turn'").append(LINE_SEPARATOR);
         stringBuilder.append(LOC_END).append(LINE_SEPARATOR);
         stringBuilder.append("#").append(pageId).append("_show").append(LINE_SEPARATOR);
+        stringBuilder.append("KILLVAR 'nlb_seen'").append(LINE_SEPARATOR);
         if (hasTimer) {
             // тик таймера — ход игрока на странице (действие, nlb_refresh), до показа: текст
             // страницы видит новое значение; переход на страницу — не тик
@@ -976,11 +1106,19 @@ public class QSPExportManager extends TextExportManager {
         stringBuilder.append(pageBlocks.getPageCaption());
         // Картинка — при каждом показе (тег мог измениться). Служебная страница — без текста,
         // её сразу покидают по автоссылке — картинок (своей и объектов) не показывает, как в
-        // плеере (PlayerEngine.followLink): условие автоссылки проверяется до показа (nlb_leave)
+        // плеере (PlayerEngine.followLink): условие автоссылки проверяется до показа (nlb_leave).
+        // Объекты страницы, которую сейчас покинут, не показываются и при тексте (nlb_gone): сцена
+        // плеера — только у страницы, где остановились (ход боя «Фронтира» идёт через несколько
+        // страниц с одними и теми же объектами)
         List<MediaChoice> images = pageBlocks.getPageImages();
+        final String leave = leaveCheck(pageBlocks.getLinksBuildingBlocks());
         stringBuilder.append("nlb_leave = 0").append(LINE_SEPARATOR);
-        if (!pageBlocks.isHasPageText()) {
-            stringBuilder.append(leaveCheck(pageBlocks.getLinksBuildingBlocks()));
+        stringBuilder.append(leave);
+        if (!leave.isEmpty()) {
+            stringBuilder.append("nlb_gone = nlb_leave").append(LINE_SEPARATOR);
+            if (pageBlocks.isHasPageText()) {
+                stringBuilder.append("nlb_leave = 0").append(LINE_SEPARATOR);
+            }
         }
         if (images.size() == 1 && !images.get(0).hasConstraint()) {
             stringBuilder.append("IF nlb_leave = 0: '<img src=\"").append(images.get(0).getPath().replace("'", "''")).append("\">'").append(LINE_SEPARATOR);
@@ -990,7 +1128,8 @@ public class QSPExportManager extends TextExportManager {
         }
         stringBuilder.append(pageBlocks.getPageTextStart());
         stringBuilder.append(pageBlocks.getPageTextEnd());
-        stringBuilder.append("GOSUB 'nlb_show_in', '").append(pageId).append("'").append(LINE_SEPARATOR);
+        stringBuilder.append(leave.isEmpty() ? "" : "IF nlb_gone = 0: ")
+                .append("GOSUB 'nlb_show_in', '").append(pageId).append("'").append(LINE_SEPARATOR);
         stringBuilder.append(LOC_END).append(LINE_SEPARATOR);
         stringBuilder.append("#").append(pageId).append("_turn").append(LINE_SEPARATOR);
         stringBuilder.append("CLA").append(LINE_SEPARATOR);
@@ -1398,8 +1537,8 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateIfHave(String objId, String objVar) {
-        // место объекта — $nlb_in (объект из переменной экспорт не отслеживает: его нет)
-        return "IF " + (objId != null ? "$nlb_in['" + objId + "'] = '" + INVENTORY + "'" : "0") + ":" + LINE_SEPARATOR;
+        // объект из переменной экспорт не отслеживает: его нет
+        return "IF " + (objId != null ? "nlb_at['" + objId + "|" + INVENTORY + "'] = 1" : "0") + ":" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1429,7 +1568,7 @@ public class QSPExportManager extends TextExportManager {
         // variableName — «(имя = 1)» (decorateBooleanVar)
         String name = variableName.replaceAll("^\\((.*) = 1\\)$", "$1");
         String obj = objRef(objId, objVar);
-        return name + " = 0" + LINE_SEPARATOR + "IF $nlb_in[" + obj + "] = '" + INVENTORY + "': " + name + " = 1" + LINE_SEPARATOR;
+        return name + " = 0" + LINE_SEPARATOR + "IF nlb_at[" + obj + " + '|" + INVENTORY + "'] = 1: " + name + " = 1" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1440,10 +1579,8 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateContainerOperation(String variableName, String objId, String objVar) {
-        // контейнер объекта (страница или объект); инвентарь и «нигде» — пусто
-        String result = "$" + variableName;
-        return result + " = $nlb_in[" + objRef(objId, objVar) + "]" + LINE_SEPARATOR
-                + "IF " + result + " = '" + INVENTORY + "': " + result + " = ''" + LINE_SEPARATOR;
+        // последний владелец объекта (страница или объект); нигде — пусто
+        return "$" + variableName + " = $nlb_in[" + objRef(objId, objVar) + "]" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1457,30 +1594,34 @@ public class QSPExportManager extends TextExportManager {
     protected String decorateDelObj(String destinationId, final String destinationName, String objectId, String objectVar, String objectName, String objectDisplayName) {
         String obj = objRef(objectId, objectVar);
         if (destinationName != null) {
-            // место — список: nlb:rmv(список, obj), и объект — никуда
+            // место — список: nlb:rmv(список, obj) и obj.container = nil (из контейнеров не убирается)
             return "GOSUB 'nlb_lrmv', '" + destinationName + "', " + obj + LINE_SEPARATOR
-                    + "GOSUB 'nlb_place', " + obj + ", ''" + LINE_SEPARATOR;
+                    + "$nlb_in[" + obj + "] = ''" + LINE_SEPARATOR;
         }
+        // из получателя, без него — из текущей комнаты; в других контейнерах объект остаётся
         String destination = destinationId != null ? "'" + destinationId + "'" : "$CURLOC";
-        return "IF $nlb_in[" + obj + "] = " + destination + ": GOSUB 'nlb_place', " + obj + ", ''" + LINE_SEPARATOR;
+        return "GOSUB 'nlb_del', " + obj + ", " + destination + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateDelInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
         String obj = objRef(objectId, objectVar);
-        return "IF $nlb_in[" + obj + "] = '" + INVENTORY + "': GOSUB 'nlb_place', " + obj + ", ''" + LINE_SEPARATOR;
+        return "GOSUB 'nlb_del', " + obj + ", '" + INVENTORY + "'" + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName, boolean unique) {
         // без получателя — в себя (страницу или объект-контейнер; s в INSTEAD)
         String destination = destinationId != null ? "'" + destinationId + "'" : "'" + selfId() + "'";
-        return "GOSUB 'nlb_place', " + objRef(objectId, objectVar) + ", " + destination + LINE_SEPARATOR;
+        // из прежних мест не убирается (как objs():add); дубль (клон в INSTEAD) — не поддерживается
+        return "GOSUB 'nlb_add', " + objRef(objectId, objectVar) + ", " + destination + LINE_SEPARATOR;
     }
 
     @Override
     protected String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        return "GOSUB 'nlb_place', " + objRef(objectId, objectVar) + ", '" + INVENTORY + "'" + LINE_SEPARATOR;
+        // take: из текущей комнаты — в инвентарь; уже в инвентаре — ничего (клонов нет)
+        String obj = objRef(objectId, objectVar);
+        return "IF nlb_at[" + obj + " + '|" + INVENTORY + "'] = 0: GOSUB 'nlb_take', " + obj + ", 0" + LINE_SEPARATOR;
     }
 
     @Override
@@ -1565,13 +1706,24 @@ public class QSPExportManager extends TextExportManager {
 
     @Override
     protected String decorateSizeOperation(String variableName, String listVariableName) {
-        return variableName + " = nlb_ln['" + listVariableName + "']" + LINE_SEPARATOR;
+        return numberTo(variableName, "nlb_ln['" + listVariableName + "']");
     }
 
     @Override
     protected String decorateRndOperation(String variableName, String maxValue) {
         // rnd(n) в NLB — целое от 1 до n
-        return variableName + " = RAND(1, " + maxValue + ")" + LINE_SEPARATOR;
+        return numberTo(variableName, "RAND(1, " + maxValue + ")");
+    }
+
+    /**
+     * Число — в переменную; строковая (в книге в ней лежат и объекты: temp во «Фронтире») — $STR,
+     * иначе условие ($temp = 0) читает другую переменную QSP и не видит значения
+     */
+    private String numberTo(String variableName, String value) {
+        if (!variableName.startsWith("$") && variableDataType(variableName) == Variable.DataType.STRING) {
+            return "$" + variableName + " = $STR(" + value + ")" + LINE_SEPARATOR;
+        }
+        return variableName + " = " + value + LINE_SEPARATOR;
     }
 
     @Override
@@ -1693,8 +1845,9 @@ public class QSPExportManager extends TextExportManager {
         if (objId == null) {
             return EMPTY_STRING;  // объект из переменной — не поддерживается
         }
-        // описания объектов внутри объекта
-        return "GOSUB 'nlb_show_in', '" + objId + "'" + LINE_SEPARATOR;
+        // описания объектов внутри объекта: только с suppressDsc (их не выводит сцена), вложенные —
+        // раньше своего контейнера (ModificationInterpreter.pdscs)
+        return "GOSUB 'nlb_pdscs', '" + objId + "'" + LINE_SEPARATOR;
     }
 
     @Override

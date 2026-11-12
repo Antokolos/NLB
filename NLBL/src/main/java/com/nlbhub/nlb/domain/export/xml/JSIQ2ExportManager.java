@@ -353,10 +353,13 @@ public class JSIQ2ExportManager extends XMLExportManager {
     /**
      * Общий код NLB — глобальный скрипт nlbInit первой статьи; preload каждой статьи вызывает его,
      * а он создаёт window.NLB один раз. В jsIQ нет объектов и инвентаря, поэтому они — здесь, как
-     * в экспорте QSP: место каждого объекта — vars.nlb_in[id] (id страницы или объекта-контейнера,
-     * NLB.INV — инвентарь, '' — нигде; в vars — значит, и в сохранениях плеера), объекты сцены —
-     * ссылками в тексте статьи (каждое описание — с новой строки, как в INSTEAD), предметы
-     * инвентаря — ссылками под ним, в порядке, в котором их брали (vars.nlb_inv_order). Щелчок (NLB.click): по
+     * в экспорте QSP: содержимое контейнера — список vars.nlb_c[id] (id страницы или объекта, NLB.INV
+     * — инвентарь, в порядке, в котором клали; в vars — значит, и в сохранениях плеера). Объект
+     * может лежать в нескольких контейнерах сразу — ADD не убирает его из прежнего места
+     * (objs():add в INSTEAD, PlayerContext.containerAdd); vars.nlb_in[id] — последний владелец
+     * (CNTNR). Объекты сцены — ссылками в тексте статьи (каждое описание — с новой строки, как в
+     * INSTEAD), предметы инвентаря — ссылками под ним, в порядке, в котором их брали, а за
+     * каждым — его содержимое (PlayerEngine.inventoryObjects). Щелчок (NLB.click): по
      * объекту — его действие (act), по предмету — применение к себе (inv) и выбор, затем по
      * объекту или другому предмету — применение (use), по тому же — отмена выбора. После действия
      * статья показывается заново (ответ — после текста и объектов), а GOTO уводит на новую. В
@@ -371,12 +374,16 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "N.printed = false;",
             "N.vars = function () { return jsIQ.createEnv('nlb').vars(); };",
             "N.state = function (vars) {",
-            "    if (!vars.nlb_in) {",
+            "    if (!vars.nlb_in || !vars.nlb_c) {",
             "        vars.nlb_in = {};",
-            "        for (var id in N.start) { vars.nlb_in[id] = N.start[id]; if (N.start[id] === N.INV) { N.invOrder(vars).push(id); } }",
+            "        vars.nlb_c = {};",
+            "        for (var id in N.start) { vars.nlb_in[id] = N.start[id]; }",
+            "        for (var c in N.cont0) { vars.nlb_c[c] = N.cont0[c].slice(); }",
             "    }",
             "    return vars.nlb_in;",
             "};",
+            "N.cont = function (vars, c) { N.state(vars); if (!vars.nlb_c[c]) { vars.nlb_c[c] = []; } return vars.nlb_c[c]; };",
+            "N.inC = function (vars, id, c) { return N.cont(vars, c).indexOf(id) >= 0; };",
             "N.v = function (vars, name) { var v = vars[name]; return (v === undefined || v === null) ? '' : String(v); };",
             "N.say = function (vars, text) { vars.nlb_reply = (vars.nlb_reply || '') + text; };",
             "N.sayp = function (vars, text) {",
@@ -386,12 +393,25 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "};",
             "N.go = function (vars, to) { vars.nlb_goto = String(to); };",
             "N.here = function () { var a = jsIQ.current_article; return a ? (N.pages[a.title] || '') : ''; };",
-            "N.place = function (vars, id, where) {",
+            // add — в контейнер, не убирая из прежних мест; del — из контейнера (владелец
+            // сбрасывается, как decorateDelObj: container = nil); take — взять (take в INSTEAD): из
+            // текущей статьи, при щелчке по переносимому объекту — и от последнего владельца
+            "N.add = function (vars, id, c) {",
             "    if (!N.objs[id]) { return; }",
-            "    var st = N.state(vars), inv = N.invOrder(vars), i = inv.indexOf(id);",
-            "    if (where === N.INV && i < 0) { inv.push(id); }",
-            "    if (where !== N.INV && i >= 0) { inv.splice(i, 1); }",
-            "    st[id] = where;",
+            "    var l = N.cont(vars, c);",
+            "    if (l.indexOf(id) < 0) { l.push(id); }",
+            "    if (c !== N.INV) { N.state(vars)[id] = c; }",
+            "};",
+            "N.del = function (vars, id, c) {",
+            "    var l = N.cont(vars, c), i = l.indexOf(id);",
+            "    if (i >= 0) { l.splice(i, 1); }",
+            "    if (c !== N.INV) { N.state(vars)[id] = ''; }",
+            "};",
+            "N.take = function (vars, id, click) {",
+            "    var here = N.here(), owner = N.where(vars, id);",
+            "    if (here && N.inC(vars, id, here)) { N.del(vars, id, here); }",
+            "    else if (click && owner && N.inC(vars, id, owner)) { N.del(vars, id, owner); }",
+            "    N.add(vars, id, N.INV);",
             "};",
             // Списки (nlb.lua: push/pop — начало, inject/eject — конец; опустевший список исчезает,
             // pop из пустого — false), теги объектов и страниц (без явного — тег по умолчанию)
@@ -409,12 +429,16 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "    for (var i = l.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = l[i]; l[i] = l[j]; l[j] = t; }",
             "    N.lend(vars, name);",
             "};",
-            "N.objsTo = function (vars, name, cont) { for (var i = 0; i < N.order.length; i++) { if (N.where(vars, N.order[i]) === cont) { N.push(vars, name, N.order[i]); } } };",
+            "N.objsTo = function (vars, name, cont) { var l = N.cont(vars, cont).slice(); for (var i = 0; i < l.length; i++) { N.push(vars, name, l[i]); } };",
             "N.addAll = function (vars, src, cont, dst) {",
             "    var l = N.list(vars, src).slice(); N.lend(vars, src);",
-            "    for (var i = 0; i < l.length; i++) { if (dst) { N.push(vars, dst, l[i]); } else { N.place(vars, String(l[i]), cont); } }",
+            "    for (var i = 0; i < l.length; i++) { if (dst) { N.push(vars, dst, l[i]); } else { N.add(vars, String(l[i]), cont); } }",
             "};",
-            "N.clear = function (vars, cont) { for (var i = 0; i < N.order.length; i++) { if (N.where(vars, N.order[i]) === cont) { N.place(vars, N.order[i], ''); } } };",
+            "N.clear = function (vars, cont) {",
+            "    var st = N.state(vars), l = N.cont(vars, cont);",
+            "    for (var i = 0; i < l.length; i++) { if (st[l[i]] === cont) { st[l[i]] = ''; } }",
+            "    vars.nlb_c[cont] = [];",
+            "};",
             "N.setTag = function (vars, id, tag) { if (!vars.nlb_tags) { vars.nlb_tags = {}; } vars.nlb_tags[id] = tag; };",
             "N.tag = function (vars, id) { var t = vars.nlb_tags && vars.nlb_tags[id]; return (t !== undefined && t !== null) ? t : (N.deftag[id] || ''); };",
             // Достижения (PlayerContext.achieve, nlb.lua setAchievement) — в localStorage под ключом
@@ -479,14 +503,24 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "    }",
             "    if (voices.length) { N.voiceStop(); N.voiceQueue = voices; N.voiceNext(); }",
             "};",
-            "N.invOrder = function (vars) { if (!vars.nlb_inv_order) { vars.nlb_inv_order = []; } return vars.nlb_inv_order; };",
             "N.where = function (vars, id) { return N.state(vars)[id] || ''; };",
-            "N.has = function (vars, id) { return N.where(vars, id) === N.INV; };",
+            "N.has = function (vars, id) { return N.inC(vars, id, N.INV); };",
             "N.text = function (vars, id) { var o = N.objs[id]; return o ? o.text(vars) : ''; };",
+            // PDSC — текст объекта (и с suppressDsc; objDscF в плеере), PDSCS — описания объектов с
+            // suppressDsc в контейнере, вложенные — раньше своего контейнера (pdscs)
+            "N.on = function (vars, id) { var o = N.objs[id]; return !!o && (!o.visible || !!o.visible(vars)); };",
+            "N.pdsc = function (vars, id) { var o = N.objs[id]; if (N.on(vars, id)) { N.sayp(vars, o.textf ? o.textf(vars) : o.text(vars)); } };",
+            "N.pdscs = function (vars, where) {",
+            "    var l = N.cont(vars, where).slice();",
+            "    for (var i = 0; i < l.length; i++) { var o = N.objs[l[i]]; if (o && o.supp) { N.pdscs(vars, l[i]); N.pdsc(vars, l[i]); } }",
+            "};",
             "N.disp = function (vars, id) { var o = N.objs[id]; return o ? o.disp(vars) : ''; };",
             "N.dsc = function (vars, id) {",
             "    var o = N.objs[id];",
             "    if (!o || (o.visible && !o.visible(vars))) { return ''; }",
+            // объект с картинкой в нескольких контейнерах (держатели карт «Фронтира») — в сцене один
+            // раз, вместе с содержимым (PlayerEngine.sceneObjects)
+            "    if (o.pic && N.seen) { if (N.seen[id]) { return ''; } N.seen[id] = 1; }",
             "    var text = o.text(vars), inner = N.showIn(vars, id);",
             // картинка в сцене — в начале ссылки на объект, как imgv в INSTEAD; объект без
             // описания — одна картинка (с действием — ссылкой)
@@ -499,23 +533,29 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "    return text + ((text && inner) ? '<br/>' : '') + inner;",
             "};",
             "N.showIn = function (vars, where) {",
-            "    var st = N.state(vars), out = [];",
-            "    for (var i = 0; i < N.order.length; i++) {",
-            "        if (st[N.order[i]] === where) { var d = N.dsc(vars, N.order[i]); if (d) { out.push(d); } }",
-            "    }",
+            "    var l = N.cont(vars, where).slice(), out = [];",
+            "    for (var i = 0; i < l.length; i++) { var d = N.dsc(vars, l[i]); if (d) { out.push(d); } }",
             "    return out.join('<br/>');",
             "};",
+            // предметы по взятию, за каждым — содержимое; выключенный скрывает и содержимое,
+            // невидимый (без подписи и картинки, как в плеере и INSTEAD) — только себя
             "N.inventory = function (vars) {",
-            "    var inv = N.invOrder(vars), out = [];",
-            "    for (var i = 0; i < inv.length; i++) {",
-            "        var id = inv[i];",
-            // предмет без подписи и картинки лежит в инвентаре невидимым (как в плеере и INSTEAD)
-            "        if (N.objs[id] && N.objs[id].hidden) { continue; }",
-            "        var d = N.disp(vars, id);",
-            "        if (N.objs[id] && N.objs[id].imgInv) { d = N.imgTag(N.img(vars, id)) + d; }",
-            "        if (vars.nlb_sel === id) { d = '<b>' + d + '</b>'; }",
-            "        out.push('<a href=\"#\" class=\"nlb_item\" onclick=\"return NLB.click(\\'inv\\', \\'' + id + '\\')\">' + d + '</a>');",
-            "    }",
+            "    var out = [], seen = {};",
+            "    var walk = function (id, depth) {",
+            "        var o = N.objs[id];",
+            "        if (!o || seen[id] || depth > 32 || !N.on(vars, id)) { return; }",
+            "        seen[id] = 1;",
+            "        if (!o.hidden) {",
+            "            var d = N.disp(vars, id);",
+            "            if (o.imgInv) { d = N.imgTag(N.img(vars, id)) + d; }",
+            "            if (vars.nlb_sel === id) { d = '<b>' + d + '</b>'; }",
+            "            out.push('<a href=\"#\" class=\"nlb_item\" onclick=\"return NLB.click(\\'inv\\', \\'' + id + '\\')\">' + d + '</a>');",
+            "        }",
+            "        var l = N.cont(vars, id).slice();",
+            "        for (var i = 0; i < l.length; i++) { walk(l[i], depth + 1); }",
+            "    };",
+            "    var inv = N.cont(vars, N.INV).slice();",
+            "    for (var i = 0; i < inv.length; i++) { walk(inv[i], 0); }",
             "    return out.length ? '<hr/>' + out.join('<br/>') : '';",
             "};",
             "N.count = function (vars, type) { vars['nlb_cnt_' + type] = (vars['nlb_cnt_' + type] || 0) + 1; };",
@@ -539,7 +579,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "N.act = function (vars, id) {",
             "    N.actA(vars, id);",
             "    var o = N.objs[id];",
-            "    if (o && o.take && vars.nlb_goto == null) { N.place(vars, o.take, N.INV); }",
+            "    if (o && o.take && vars.nlb_goto == null) { N.take(vars, o.take, true); }",
             "};",
             "N.actA = function (vars, id) {",
             "    var o = N.objs[id];",
@@ -581,7 +621,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "N.click = function (kind, id) {",
             "    var vars = N.vars();",
             "    vars.nlb_reply = '';",
-            "    if (kind === 'inv' && !vars.nlb_sel) {",
+            // предмет-меню (карты в бою «Фронтира»): щелчок — действие, показатель — ничего; не
+            // выбираются (PlayerEngine.clickInventory)
+            "    if (kind === 'inv' && !vars.nlb_sel && N.objs[id] && N.objs[id].menu) {",
+            "        N.count(vars, 'inv');",
+            "        if (N.objs[id].menu === 1) { N.actA(vars, id); }",
+            "    } else if (kind === 'inv' && !vars.nlb_sel) {",
             "        N.count(vars, 'inv');",
             "        if (!N.useOn(vars, id, id)) { N.sayp(vars, N.gameInv); }",
             "        vars.nlb_sel = id;",
@@ -613,7 +658,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "    c.find('.nlb_inv').each(function () { $(this).html(N.inventory(vars)); });",
             "    c.find('.nlb_v').each(function () { $(this).text(N.v(vars, $(this).attr('data-v'))); });",
             "};",
-            "N.scene = function (vars) { return N.showIn(vars, N.here()); };",
+            "N.scene = function (vars) { N.seen = {}; var r = N.showIn(vars, N.here()); N.seen = null; return r; };",
             "jsIQ.addEventHandler('on_text_render', function (params, vars, process) { N.fill(params.container); process.next(); });",
             "jsIQ.addEventHandler('on_action_render', function (params, vars, process) { N.fill(params.container); process.next(); });",
             "");
@@ -659,6 +704,16 @@ public class JSIQ2ExportManager extends XMLExportManager {
         }
         sb.append("N.order = [").append(order).append("];\n");
         sb.append("N.start = {").append(start).append("};\n");
+        // начальное содержимое контейнеров (порядок книги, content)
+        StringBuilder cont0 = new StringBuilder();
+        for (java.util.Map.Entry<String, List<String>> entry : initialContents(nlbBlocks).entrySet()) {
+            cont0.append(cont0.length() == 0 ? "" : ",\n").append("'").append(entry.getKey()).append("': [");
+            for (int i = 0; i < entry.getValue().size(); i++) {
+                cont0.append(i == 0 ? "" : ", ").append("'").append(entry.getValue().get(i)).append("'");
+            }
+            cont0.append("]");
+        }
+        sb.append("N.cont0 = {").append(cont0).append("};\n");
         sb.append("N.names = {").append(names).append("};\n");
         // теги по умолчанию (var { tag = … } в INSTEAD)
         StringBuilder deftags = new StringBuilder();
@@ -738,22 +793,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
         // графический объект (VN) щёлкают по картинке, а картинок здесь нет: если у него есть
         // действие, ссылкой становится его текст (без {ссылки} в нём), а без текста — подпись
         // (выбор навыков в «Варваре»); подпись без действия — просто текст (надпись-картинка)
-        String text = obj.getObjText();
-        // подпись для пустой метки {}: disp, иначе первая строка текста действия (карта во
-        // «Фронтире»), иначе имя — как PlayerEngine.sceneLabel
-        String objLabel = StringHelper.notEmpty(obj.getObjDisp()) ? obj.getObjDisp() : firstLine(obj.getObjActStart());
-        if (objLabel.isEmpty()) {
-            objLabel = StringHelper.notEmpty(obj.getObjName()) ? obj.getObjName() : id;
-        }
-        text = text.replace(OBJ_LABEL_MARK, objLabel);
-        if (obj.isGraphical()) {
-            String label = StringHelper.notEmpty(text) ? text : obj.getObjDisp();
-            if (obj.hasAction() && !text.contains("class=\"nlb_obj\"") && StringHelper.notEmpty(label)) {
-                text = objectLink(id, label);
-            } else if (StringHelper.isEmpty(text) && StringHelper.notEmpty(label)) {
-                text = label;
-            }
-        }
+        String text = sceneText(obj, obj.getObjText());
         sb.append("    text: function (vars) { return ").append(jsText(text)).append("; },\n");
         if (StringHelper.notEmpty(obj.getObjActStart())) {
             sb.append("    acttext: function (vars) { return ").append(jsText(obj.getObjActStart())).append("; },\n");
@@ -804,6 +844,22 @@ public class JSIQ2ExportManager extends XMLExportManager {
         if (!obj.isVisibleInInventory()) {
             sb.append("    hidden: true,\n");
         }
+        if (obj.isGraphical() || obj.isImageInScene()) {
+            sb.append("    pic: true,\n");
+        }
+        if (obj.isSuppressDsc()) {
+            sb.append("    supp: true,\n");
+        }
+        if (obj.getObjTextF().isEmpty()) {
+            sb.append("    textf: function (vars) { return ''; },\n");
+        } else if (obj.isSuppressDsc()) {
+            sb.append("    textf: function (vars) { return ").append(jsText(sceneText(obj, obj.getObjTextF()))).append("; },\n");
+        }
+        if (obj.getObjType() == ObjType.MENU || obj.getObjType() == ObjType.GMENU) {
+            sb.append("    menu: 1,\n");  // щелчок в инвентаре — действие (decorateObjInv: menu)
+        } else if (obj.getObjType() == ObjType.STAT) {
+            sb.append("    menu: 2,\n");  // только подпись
+        }
         if (obj.isTakable()) {
             // decorateObjTak: взять общий объект, если он переносимый, иначе этот
             Boolean commonTakable = StringHelper.notEmpty(common) ? takable.get(common) : null;
@@ -812,6 +868,28 @@ public class JSIQ2ExportManager extends XMLExportManager {
         sb.append("    id: '").append(id).append("'\n");
         sb.append("};\n");
         return sb.toString();
+    }
+
+    /** Описание объекта в сцене: метка {}, графический объект */
+    private String sceneText(ObjBuildingBlocks obj, String rawText) {
+        final String id = obj.getObjId();
+        String text = rawText;
+        // подпись для пустой метки {}: disp, иначе первая строка текста действия (карта во
+        // «Фронтире»), иначе имя — как PlayerEngine.sceneLabel
+        String objLabel = StringHelper.notEmpty(obj.getObjDisp()) ? obj.getObjDisp() : firstLine(obj.getObjActStart());
+        if (objLabel.isEmpty()) {
+            objLabel = StringHelper.notEmpty(obj.getObjName()) ? obj.getObjName() : id;
+        }
+        text = text.replace(OBJ_LABEL_MARK, objLabel);
+        if (obj.isGraphical()) {
+            String label = StringHelper.notEmpty(text) ? text : obj.getObjDisp();
+            if (obj.hasAction() && !text.contains("class=\"nlb_obj\"") && StringHelper.notEmpty(label)) {
+                text = objectLink(id, label);
+            } else if (StringHelper.isEmpty(text) && StringHelper.notEmpty(label)) {
+                text = label;
+            }
+        }
+        return text;
     }
 
     /** Первая непустая строка текста (строки — через <br/>) */
@@ -1003,9 +1081,8 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     @Override
     protected String decorateContainerOperation(String variableName, String objId, String objVar) {
-        // контейнер объекта (страница или объект); инвентарь и «нигде» — false
-        String id = objectKey(objId, objVar);
-        return variableName + " = (NLB.where(vars, " + id + ") && NLB.where(vars, " + id + ") !== NLB.INV) ? NLB.where(vars, " + id + ") : false; ";
+        // последний владелец объекта (страница или объект); нигде — false
+        return variableName + " = NLB.where(vars, " + objectKey(objId, objVar) + ") || false; ";
     }
 
     @Override
@@ -1018,12 +1095,13 @@ public class JSIQ2ExportManager extends XMLExportManager {
     protected String decorateDelObj(String destinationId, final String destinationName, String objectId, String objectVar, String objectName, String objectDisplayName) {
         String id = objectKey(objectId, objectVar);
         if (destinationName != null) {
-            // место — список: nlb:rmv(список, obj), и объект — никуда
-            return "NLB.rmv(vars, '" + listName(destinationName) + "', " + id + "); NLB.place(vars, " + id + ", ''); ";
+            // место — список: nlb:rmv(список, obj) и obj.container = nil (из контейнеров не убирается)
+            return "NLB.rmv(vars, '" + listName(destinationName) + "', " + id + "); NLB.state(vars)[" + id + "] = ''; ";
         }
-        // без места — из текущей страницы (here() в INSTEAD)
+        // из получателя, без него — из текущей страницы (here() в INSTEAD); в других контейнерах
+        // объект остаётся
         String destination = destinationId != null ? "'" + destinationId + "'" : "NLB.here()";
-        return "if (NLB.where(vars, " + id + ") === " + destination + ") { NLB.place(vars, " + id + ", ''); } ";
+        return "NLB.del(vars, " + id + ", " + destination + "); ";
     }
 
     /**
@@ -1051,19 +1129,22 @@ public class JSIQ2ExportManager extends XMLExportManager {
     @Override
     protected String decorateDelInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
         String id = objectKey(objectId, objectVar);
-        return "if (NLB.has(vars, " + id + ")) { NLB.place(vars, " + id + ", ''); } ";
+        return "NLB.del(vars, " + id + ", NLB.INV); ";
     }
 
     @Override
     protected String decorateAddObj(String destinationId, String objectId, String objectVar, String objectName, String objectDisplayName, boolean unique) {
         // без получателя — в себя (страницу или объект-контейнер; s в INSTEAD)
         String destination = "'" + (destinationId != null ? destinationId : selfId()) + "'";
-        return "NLB.place(vars, " + objectKey(objectId, objectVar) + ", " + destination + "); ";
+        // из прежних мест не убирается (objs():add); дубль (клон в INSTEAD) — не поддерживается
+        return "NLB.add(vars, " + objectKey(objectId, objectVar) + ", " + destination + "); ";
     }
 
     @Override
     protected String decorateAddInvObj(String objectId, String objectVar, String objectName, String objectDisplayName) {
-        return "NLB.place(vars, " + objectKey(objectId, objectVar) + ", NLB.INV); ";
+        // take: из текущей статьи — в инвентарь; уже в инвентаре — ничего (клонов нет)
+        String id = objectKey(objectId, objectVar);
+        return "if (!NLB.has(vars, " + id + ")) { NLB.take(vars, " + id + ", false); } ";
     }
 
     @Override
@@ -1247,7 +1328,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
     protected String decoratePDscOperation(String objVariableName) {
         // объект задан именем (vars.имя): его id — в NLB.names
         String name = objVariableName.startsWith("vars.") ? objVariableName.substring(5) : objVariableName;
-        return "NLB.sayp(vars, NLB.text(vars, NLB.names['" + jsString(name) + "'] || '')); ";
+        return "NLB.pdsc(vars, NLB.names['" + jsString(name) + "'] || ''); ";
     }
 
     @Override
@@ -1255,8 +1336,8 @@ public class JSIQ2ExportManager extends XMLExportManager {
         if (objId == null) {
             return EMPTY_STRING;  // объект из переменной — не поддерживается
         }
-        // описания объектов внутри объекта
-        return "NLB.sayp(vars, NLB.showIn(vars, '" + objId + "')); ";
+        // описания объектов с suppressDsc внутри объекта (ModificationInterpreter.pdscs)
+        return "NLB.pdscs(vars, '" + objId + "'); ";
     }
 
     @Override
