@@ -88,7 +88,8 @@ jobs:
           Игра: instead.html?<адрес zip-архива игры> (по умолчанию — data.zip рядом).
           EOF
           sed -i 's/^          //' "$js/README.txt"
-          (cd "$js" && rm -rf fs && zip -qr -9 "$GITHUB_WORKSPACE/instead-em.zip" .)
+          # fs — исходники instead-em.data, sdl-instead.o — промежуточный объектный файл
+          (cd "$js" && rm -rf fs sdl-instead.o && zip -qr -9 "$GITHUB_WORKSPACE/instead-em.zip" .)
           unzip -l instead-em.zip
           sha256sum instead-em.zip
 
