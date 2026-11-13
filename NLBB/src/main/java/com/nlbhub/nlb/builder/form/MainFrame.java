@@ -1826,7 +1826,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             }
         });
         // Проверка экспортов в браузере: открытая книга экспортируется в ChoiceScript, jsIQ2, QSP, URQ,
-        // AXMA и INSTEAD (VN или STANDARD — по теме книги) в каталог export-preview (с окном прогресса), сервер редактора (если ещё не запущен)
+        // AXMA и INSTEAD (STANDARD для книг с темой STANDARD, иначе VN) в каталог export-preview (с окном прогресса), сервер редактора (если ещё не запущен)
         // запускается, и в браузере открывается /preview/ — игры в настоящих движках (их сервер
         // скачивает при первом открытии игры своего формата)
         m_previewExportButton.addActionListener(new ActionListener() {
@@ -1853,10 +1853,11 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                             facade.exportToQSPTextFile(preview.getQspDir());
                             facade.exportToURQTextFile(preview.getUrqDir());
                             facade.exportToASMFile(preview.getAxmaDir());
-                            if (facade.getNlb().getTheme() == Theme.VN) {
-                                facade.exportToVNSTEADFile(preview.getInsteadDir());
-                            } else {
+                            // как веб-плеер (BookLibrary.defaultMode): тема STANDARD — STANDARD, иначе VN
+                            if (facade.getNlb().getTheme() == Theme.STANDARD) {
                                 facade.exportToSTEADFile(preview.getInsteadDir());
+                            } else {
+                                facade.exportToVNSTEADFile(preview.getInsteadDir());
                             }
                         },
                         () -> {
