@@ -119,7 +119,9 @@ public class JSIQ2ExportManager extends XMLExportManager {
         article.setId(pageBlocks.getPageNumber());
         article.setMetadata(metadata);
         // картинка страницы — место, которое заполняет общий код NLB при показе (тег мог измениться)
-        article.setText((pageBlocks.getPageImages().isEmpty() ? "" : "<div class=\"nlb_pic\"></div>") + html(pageBlocks.getPageTextStart()));
+        // nlb_prev — тексты страниц, которые за этот ход покинули автоссылкой или GOTO (NLB.carry)
+        article.setText("<div class=\"nlb_prev\"></div>"
+                + (pageBlocks.getPageImages().isEmpty() ? "" : "<div class=\"nlb_pic\"></div>") + html(pageBlocks.getPageTextStart()));
         if (runtimeScript != null) {
             article.addScript(runtimeScript);
         }
@@ -168,11 +170,12 @@ public class JSIQ2ExportManager extends XMLExportManager {
                 // See decorateLinkGoTo() to understand why -1 is needed.
                 // Функции go() в окружении скриптов jsIQ нет: переход — jsIQ.showArticle, после
                 // того как плеер закончит показ текущей статьи; GOTO в модификациях ссылки важнее
-                // её цели; return — первая подходящая автоссылка уводит со страницы
+                // её цели; return — первая подходящая автоссылка уводит со страницы. Текст
+                // покидаемой страницы остаётся на экране перед текстом следующей (NLB.carry)
                 autosStringBuilder.append(linkCalls)
                         .append("var to = (vars.").append(GOTO_VAR).append(" != null) ? vars.").append(GOTO_VAR)
                         .append(" : '").append(linkBlocks.getTargetPageNumber() - 1).append("'; vars.")
-                        .append(GOTO_VAR).append(" = null; ")
+                        .append(GOTO_VAR).append(" = null; NLB.carry(vars); ")
                         .append(showArticleLater("to"))
                         .append("return true; ");
                 if (!condition.isEmpty()) {
@@ -245,12 +248,14 @@ public class JSIQ2ExportManager extends XMLExportManager {
         // страницы, которую сразу покидают, успевает появиться, и не начинается показ новой
         // статьи посреди показа текущей. Автоссылки проверяются и после действий с объектами.
         // Перед ними — конец хода (NLB.turn): callback-объекты, если игрок с прошлого хода что-то
-        // сделал (update_action_count в INSTEAD)
+        // сделал (update_action_count в INSTEAD). Текст страницы, которую покидают, остаётся на
+        // экране перед текстом следующей (NLB.carry), как в плеере: там события всех страниц
+        // одного хода идут подряд
         Script onLoadScript = new Script();
         onLoadScript.setType("onload");
         onLoadScript.setValue(
                 "NLB.turn(vars); if (vars." + GOTO_VAR + " != null) { var to = vars." + GOTO_VAR + "; vars." + GOTO_VAR
-                        + " = null; " + showArticleLater("to") + "return; } "
+                        + " = null; NLB.carry(vars); " + showArticleLater("to") + "return; } "
                         + (hasAutoLinks ? "if (autos()) { return; } " : Constants.EMPTY_STRING)
                         + timerWait(pageBlocks)
         );
@@ -588,9 +593,30 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "N.countReset = function (vars) {",
             "    for (var i = 0; i < N.TYPES.length; i++) { var t = N.TYPES[i]; vars['nlb_cntr_' + t] = vars['nlb_cnt_' + t] || 0; }",
             "};",
+            // Страница, которую покидают автоссылкой или GOTO (бой «Фронтира»: служебные страницы
+            // хода), — её текст остаётся на экране перед текстом следующей статьи, как в плеере, где
+            // события всех страниц одного хода идут подряд: сначала ответ, накопленный к этому
+            // моменту (действие игрока, модификации страницы), затем текст и картинка страницы. Её
+            // объекты (сцена) не переносятся — на экране сцена последней страницы; ссылки — простым
+            // текстом, переменные — со значениями, которые на той странице показали. Новый ход
+            // (переход по ссылке, щелчок) — заново
+            "N.carry = function (vars) {",
+            "    var t = jsIQ.containers && jsIQ.containers.text;",
+            "    var html = vars.nlb_reply ? '<div class=\"nlb_said\">' + vars.nlb_reply + '</div>' : '';",
+            "    vars.nlb_reply = '';",
+            "    if (t && t.length) {",
+            "        var c = t.clone();",
+            "        c.find('.nlb_prev, .nlb_reply, .nlb_inv, .nlb_scene').remove();",
+            "        c.find('a').each(function () { $(this).replaceWith($(this).contents()); });",
+            "        c.find('.nlb_v, .nlb_pic').removeClass('nlb_v nlb_pic');",
+            "        html += $.trim(c.html());",
+            "    }",
+            "    if (html) { vars.nlb_prev = (vars.nlb_prev || '') + '<div class=\"nlb_passed\">' + html + '</div>'; }",
+            "};",
             "N.walk = function (vars, counted) {",
             "    if (counted) { N.count(vars, 'walk'); }",
             "    vars.nlb_reply = '';",
+            "    vars.nlb_prev = '';",
             "    vars.nlb_sel = '';",
             "};",
             "N.act = function (vars, id) {",
@@ -644,6 +670,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "N.click = function (kind, id) {",
             "    var vars = N.vars();",
             "    vars.nlb_reply = '';",
+            "    vars.nlb_prev = '';",
             // предмет-меню (карты в бою «Фронтира»): щелчок — действие, показатель — ничего; не
             // выбираются (PlayerEngine.clickInventory)
             "    if (kind === 'inv' && !vars.nlb_sel && N.O(id) && N.O(id).menu) {",
@@ -675,6 +702,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "N.fill = function (c) {",
             "    if (!c) { return; }",
             "    var vars = N.vars();",
+            "    c.find('.nlb_prev').each(function () { $(this).html(vars.nlb_prev || ''); });",
             "    c.find('.nlb_pic').each(function () { $(this).html(N.imgTag(N.img(vars, N.here()))); });",
             "    c.find('.nlb_scene').each(function () { $(this).html(N.scene(vars)); });",
             "    c.find('.nlb_reply').each(function () { $(this).html(vars.nlb_reply || ''); });",

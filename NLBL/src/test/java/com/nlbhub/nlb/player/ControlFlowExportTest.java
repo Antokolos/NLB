@@ -103,7 +103,8 @@ public class ControlFlowExportTest {
 
     /** Номер статьи jsIQ с текстом text */
     private static String articleId(String xml, String text) {
-        Matcher m = Pattern.compile("<article id=\"(\\d+)\">(?:(?!</article>).)*<text><!\\[CDATA\\["
+        // перед текстом страницы — место для текстов покинутых за ход страниц (nlb_prev)
+        Matcher m = Pattern.compile("<article id=\"(\\d+)\">(?:(?!</article>).)*<text><!\\[CDATA\\[(?:<div class=\"nlb_prev\"></div>)?"
                 + Pattern.quote(text) + "\\]\\]></text>", Pattern.DOTALL).matcher(xml);
         assertTrue(text + ": " + xml, m.find());
         return m.group(1);
