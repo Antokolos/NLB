@@ -97,7 +97,7 @@ public class AltTextExportTest {
         assertTrue(xml, xml.matches("(?s).*<action (do=\"do_0\" )?goto=\"\\d+\" if=\"condition_0\"><!\\[CDATA\\[Открыть дверь\\]\\]></action>.*"));
         assertTrue("текст, видимый при ложном условии: " + xml,
                 xml.contains("<text ifnot=\"condition_0\"><![CDATA[" + ALT + "]]></text>"));
-        assertTrue("основной текст статьи — как был", xml.contains("<text><![CDATA[Вы в зале. Впереди дверь.]]></text>"));
+        assertTrue("основной текст статьи — как был", xml.contains("<text><![CDATA[<div class=\"nlb_prev\"></div>Вы в зале. Впереди дверь.]]></text>"));
         assertFalse(xml.contains("Без условия"));
     }
 

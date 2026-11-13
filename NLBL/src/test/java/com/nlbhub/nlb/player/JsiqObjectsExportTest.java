@@ -93,7 +93,7 @@ public class JsiqObjectsExportTest {
     public void variablesInText() throws Exception {
         String xml = export();
         assertTrue("в тексте статьи — span со значением: " + xml,
-                xml.contains("<text><![CDATA[Зал. Попыток: <span class=\"nlb_v\" data-v=\"tries\"></span>.]]></text>"));
+                xml.contains("<text><![CDATA[<div class=\"nlb_prev\"></div>Зал. Попыток: <span class=\"nlb_v\" data-v=\"tries\"></span>.]]></text>"));
         assertTrue("в тексте объекта — значение: " + xml,
                 xml.contains("disp: function (vars) { return 'Дверь (' + NLB.v(vars, 'tries') + ')'; },"));
         assertFalse("переменные больше не выводятся как $имя$: " + xml, xml.contains("$tries$"));
