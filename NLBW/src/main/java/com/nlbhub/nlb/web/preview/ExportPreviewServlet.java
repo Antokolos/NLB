@@ -68,7 +68,10 @@ import java.util.Locale;
  *   картинки и звук — из каталога экспорта;</li>
  *   <li>AXMA (/preview/axma/play.html?book=…) — редактор AXMA Story Maker в рамке: страница
  *   загружает в него .sm экспорта и запускает игру (Compile), как кнопка «Запуск» редактора;
- *   картинки игры — из каталога экспорта (адреса игры — относительно страницы редактора).</li>
+ *   картинки игры — из каталога экспорта (адреса игры — относительно страницы редактора);</li>
+ *   <li>INSTEAD (/preview/instead/) — INSTEAD-em (INSTEAD для браузера): его страница
+ *   instead.html?game.zip; game.zip сервер собирает на лету из каталога экспорта — одна папка
+ *   игры в архиве, как ждёт INSTEAD.</li>
  * </ul>
  * Движок скачивается при первом открытии игры своего формата
  * ({@link ExportPreview#ensureRuntime(ExportPreview.Engine)}).
@@ -119,6 +122,8 @@ public class ExportPreviewServlet extends HttpServlet {
             urq(path.substring("/urq/".length()), response);
         } else if (path.startsWith("/axma/")) {
             axma(path.substring("/axma/".length()), request, response);
+        } else if (path.startsWith("/instead/")) {
+            instead(path.substring("/instead/".length()), response);
         } else {
             // интерпретатор ChoiceScript: страница игры подключает его из каталога выше (../ui.js)
             file(new File(m_preview.getChoiceScriptRuntime(), "web"), path.substring(1), response);
@@ -143,6 +148,9 @@ public class ExportPreviewServlet extends HttpServlet {
             case "/axma/":
             case "/axma/play.html":
                 return ExportPreview.Engine.AXMA;
+            case "/instead/":
+            case "/instead/instead.html":
+                return ExportPreview.Engine.INSTEAD;
             default:
                 return null;
         }
@@ -160,6 +168,9 @@ public class ExportPreviewServlet extends HttpServlet {
                 return "raw.githubusercontent.com и registry.npmjs.org";
             case AXMA:
                 return "hyperbook.ru";
+            case INSTEAD:
+                return "github.com (instead-em.zip из выпуска NLB; его можно и положить самому — см. README.txt "
+                        + "каталога превью)";
             default:
                 return "";
         }
@@ -183,9 +194,16 @@ public class ExportPreviewServlet extends HttpServlet {
                 "QSP (book.txt — текст QSP, или .qsp)", m_preview.getQspDir());
         books(sb, "URQ (UrqW)", "urq/index-dev.html?encoding=CP1251&id=", urqIds(), "URQ (.qst)", m_preview.getUrqDir());
         books(sb, "AXMA", "axma/play.html?book=", books(m_preview.getAxmaDir(), ".sm"), "AXMA (.sm)", m_preview.getAxmaDir());
+        sb.append("<h2>INSTEAD</h2>");
+        if (hasInsteadGame()) {
+            sb.append("<p><a href='instead/'>Играть</a> (INSTEAD-em — INSTEAD в браузере)</p>");
+        } else {
+            empty(sb, "INSTEAD (main.lua, модули, images, sound)", m_preview.getInsteadDir());
+        }
         sb.append("<p class='note'>Движки скачаны с их сайтов в <code>runtime</code> при первом открытии игры. ChoiceScript — только "
                 + "для некоммерческого использования (<a href='license-choicescript'>лицензия</a>); UrqW — GPL; редактор "
-                + "AXMA Story Maker (hyperbook.ru) — бесплатный, без права распространения: он скачан только на эту машину.</p>");
+                + "AXMA Story Maker (hyperbook.ru) — бесплатный, без права распространения: он скачан только на эту машину; "
+                + "INSTEAD — MIT.</p>");
         return page("Проверка экспорта NLB", sb.toString());
     }
 
@@ -413,6 +431,64 @@ public class ExportPreviewServlet extends HttpServlet {
         }
     }
 
+    /** Экспорт в INSTEAD: main.lua (STEAD 2) или main3.lua (STEAD 3) */
+    private boolean hasInsteadGame() {
+        return new File(m_preview.getInsteadDir(), "main.lua").isFile() || new File(m_preview.getInsteadDir(), "main3.lua").isFile();
+    }
+
+    /** Папка игры в game.zip: INSTEAD устанавливает игру из архива с одной папкой */
+    static final String INSTEAD_GAME_DIR = "nlb-preview";
+
+    private void instead(String path, HttpServletResponse response) throws IOException {
+        if (path.isEmpty()) {
+            if (hasInsteadGame()) {
+                // post.js INSTEAD-em берёт адрес игры из строки запроса
+                response.sendRedirect("instead.html?game.zip");
+            } else {
+                response.sendRedirect("../");
+            }
+        } else if (path.equals("game.zip")) {
+            if (!hasInsteadGame()) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+            response.setContentType("application/zip");
+            zipGame(m_preview.getInsteadDir(), INSTEAD_GAME_DIR, response.getOutputStream());
+        } else {
+            file(m_preview.getInsteadRuntime(), path, response);
+        }
+    }
+
+    /** Каталог игры — в zip с одной папкой dirName (картинки и звук — без сжатия) */
+    static void zipGame(File dir, String dirName, java.io.OutputStream out) throws IOException {
+        java.nio.file.Path base = dir.toPath();
+        java.util.zip.ZipOutputStream zip = new java.util.zip.ZipOutputStream(out);
+        zip.putNextEntry(new java.util.zip.ZipEntry(dirName + "/"));
+        zip.closeEntry();
+        List<java.nio.file.Path> files;
+        try (var walk = Files.walk(base)) {
+            files = walk.sorted().toList();
+        }
+        for (java.nio.file.Path file : files) {
+            if (file.equals(base)) {
+                continue;
+            }
+            String name = dirName + "/" + base.relativize(file).toString().replace(File.separatorChar, '/');
+            if (Files.isDirectory(file)) {
+                zip.putNextEntry(new java.util.zip.ZipEntry(name + "/"));
+                zip.closeEntry();
+            } else if (Files.isRegularFile(file)) {
+                String lower = name.toLowerCase(Locale.ROOT);
+                boolean packed = lower.matches(".*[.](png|jpe?g|gif|webp|ogg|mp3|wav|flac|mod|xm|it|s3m|zip)$");
+                zip.setLevel(packed ? java.util.zip.Deflater.NO_COMPRESSION : java.util.zip.Deflater.DEFAULT_COMPRESSION);
+                zip.putNextEntry(new java.util.zip.ZipEntry(name));
+                Files.copy(file, zip);
+                zip.closeEntry();
+            }
+        }
+        zip.finish();
+    }
+
     /** Без редактора: .sm можно открыть в онлайн-редакторе (Загрузить -> Запуск) */
     private static String axmaFallback() {
         return "<p>Игру можно проверить и в онлайн-редакторе: откройте <a href='https://hyperbook.ru/editor/' target='_blank'>"
@@ -489,6 +565,7 @@ public class ExportPreviewServlet extends HttpServlet {
         if (n.endsWith(".xml")) return "application/xml; charset=utf-8";
         if (n.endsWith(".json")) return "application/json; charset=utf-8";
         if (n.endsWith(".wasm")) return "application/wasm";
+        if (n.endsWith(".lua")) return "text/plain; charset=utf-8";
         if (n.endsWith(".sm")) return "text/plain; charset=utf-8";
         if (n.endsWith(".qst")) return "text/plain; charset=windows-1251";
         if (n.endsWith(".png")) return "image/png";

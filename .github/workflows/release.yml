@@ -5,9 +5,11 @@
 # 2. Дистрибутивы со встроенной Java (build.sh / build.bat) на Windows x64, Linux x64, macOS arm64
 #    и macOS Intel. Встроенная Java собирается под ту ОС, на которой идёт сборка, поэтому — на
 #    каждой своей машине. Версия 1.1.0 подставляется только в сборке, в master не коммитится.
-# 3. Черновик выпуска v1.1.0 с архивами и списком изменений (заголовки PR с прошлого выпуска).
+# 3. INSTEAD-em (instead-em.yml) — INSTEAD для браузера: им проверка экспорта в браузере играет
+#    экспорт в INSTEAD; instead-em.zip кладётся в выпуск рядом с дистрибутивами.
+# 4. Черновик выпуска v1.1.0 с архивами и списком изменений (заголовки PR с прошлого выпуска).
 #    Тег v1.1.0 появится, когда черновик опубликуют, — на коммите, из которого собран выпуск.
-# 4. PR со следующей версией разработки (bump-version.sh patch|minor|major) — сливает владелец:
+# 5. PR со следующей версией разработки (bump-version.sh patch|minor|major) — сливает владелец:
 #    master защищён правилами, всё в него — через PR.
 #
 # На PR, меняющих этот файл или сборку дистрибутива, — пробный прогон: только сборка архивов на
@@ -28,6 +30,7 @@ on:
       - 'build.sh'
       - 'build.bat'
       - 'NLBB/script/**'
+      - '.github/workflows/instead-em.yml'
 
 concurrency:
   group: release-${{ github.ref }}
@@ -157,9 +160,13 @@ jobs:
           compression-level: 0
           retention-days: ${{ github.event_name == 'workflow_dispatch' && 30 || 3 }}
 
+  instead-em:
+    name: INSTEAD-em
+    uses: ./.github/workflows/instead-em.yml
+
   release:
     name: Draft release
-    needs: [prepare, build]
+    needs: [prepare, build, instead-em]
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -191,6 +198,9 @@ jobs:
 
           Java устанавливать не нужно — она внутри архива. Распаковать и запустить `run.bat`
           (Windows) или `run.sh` (Linux, macOS).
+
+          `instead-em.zip` — INSTEAD для браузера (github.com/instead-hub/instead, MIT): его сам
+          скачивает «Проверить экспорт в браузере», чтобы показать экспорт в INSTEAD.
 
           **macOS:** программа не подписана Apple, и при первом запуске macOS её блокирует. Один раз
           выполните в Терминале в папке с распакованным архивом:

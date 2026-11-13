@@ -22,7 +22,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Проверка экспортов в браузере (/preview/): страницы ChoiceScript, jsIQ2, QSP, URQ (UrqW) и AXMA и
+ * Проверка экспортов в браузере (/preview/): страницы ChoiceScript, jsIQ2, QSP, URQ (UrqW), AXMA и
+ * INSTEAD (INSTEAD-em) и
  * файлы игр. Движки подложены заглушками — тест не ходит в сеть.
  */
 public class ExportPreviewServletTest {
@@ -66,6 +67,11 @@ public class ExportPreviewServletTest {
         write(new File(m_preview.getUrqDir(), "images/u.png"), "upng");
         write(new File(m_preview.getAxmaDir(), "book.sm"), ":: Start");
         write(new File(m_preview.getAxmaDir(), "images/a.png"), "apng");
+        write(new File(m_preview.getInsteadRuntime(), "instead.html"), "<html>INSTEAD-em</html>");
+        write(new File(m_preview.getInsteadRuntime(), "instead-em.js"), "// instead-em");
+        write(new File(m_preview.getInsteadDir(), "main.lua"), "-- main");
+        write(new File(m_preview.getInsteadDir(), "modules/nlb.lua"), "-- nlb");
+        write(new File(m_preview.getInsteadDir(), "images/i.png"), "ipng");
 
         m_server = new Server();
         ServerConnector http = new ServerConnector(m_server);
@@ -103,6 +109,34 @@ public class ExportPreviewServletTest {
         assertTrue(r[1], r[1].contains("qsp/play.html?book=book.txt"));
         assertTrue(r[1], r[1].contains("urq/index-dev.html?encoding=CP1251&id=book"));
         assertTrue(r[1], r[1].contains("axma/play.html?book=book.sm"));
+        assertTrue(r[1], r[1].contains("href='instead/'"));
+    }
+
+    @Test
+    public void insteadGameZip() throws Exception {
+        String[] redirect = get("instead/");
+        assertEquals("302", redirect[0]);
+        assertTrue("адрес игры — в строке запроса (post.js INSTEAD-em): " + redirect[3], redirect[3].endsWith("instead.html?game.zip"));
+        assertEquals("<html>INSTEAD-em</html>", get("instead/instead.html")[1]);
+        HttpURLConnection c = (HttpURLConnection) new URL(m_base + "instead/game.zip").openConnection(Proxy.NO_PROXY);
+        assertEquals(200, c.getResponseCode());
+        java.util.List<String> names = new java.util.ArrayList<>();
+        String main = null;
+        try (java.util.zip.ZipInputStream zip = new java.util.zip.ZipInputStream(c.getInputStream())) {
+            java.util.zip.ZipEntry e;
+            while ((e = zip.getNextEntry()) != null) {
+                names.add(e.getName());
+                if (e.getName().endsWith("/main.lua")) {
+                    main = new String(zip.readAllBytes(), StandardCharsets.UTF_8);
+                }
+            }
+        }
+        assertEquals("одна папка игры — первой (её ищет INSTEAD при установке из zip): " + names, "nlb-preview/", names.get(0));
+        for (String name : names) {
+            assertTrue(names.toString(), name.startsWith("nlb-preview/"));
+        }
+        assertTrue(names.toString(), names.contains("nlb-preview/modules/nlb.lua") && names.contains("nlb-preview/images/i.png"));
+        assertEquals("-- main", main);
     }
 
     @Test
@@ -175,7 +209,8 @@ public class ExportPreviewServletTest {
         write(new File(m_temp.getRoot().getParentFile(), "secret.txt"), "TOP-SECRET-CONTENT");
         for (String path : new String[]{"choicescript/scenes/../../../secret.txt", "jsiq/..%2F..%2Fsecret.txt",
                 "choicescript/..%2F..%2Fsecret.txt", "jsiq/runtime/..%2F..%2F..%2Fsecret.txt",
-                "qsp/..%2F..%2Fsecret.txt", "urq/quests/book/..%2F..%2F..%2Fsecret.txt", "axma/editor/..%2F..%2Fsecret.txt"}) {
+                "qsp/..%2F..%2Fsecret.txt", "urq/quests/book/..%2F..%2F..%2Fsecret.txt", "axma/editor/..%2F..%2Fsecret.txt",
+                "instead/..%2F..%2F..%2Fsecret.txt"}) {
             assertFalse(path, get(path)[1].contains("TOP-SECRET-CONTENT"));
         }
     }

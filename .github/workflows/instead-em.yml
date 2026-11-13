@@ -1,0 +1,101 @@
+# INSTEAD-em — INSTEAD, собранный Emscripten для браузера (github.com/instead-hub/instead,
+# лицензия MIT). Им проверка экспорта в браузере (/preview/instead/) играет экспорт в INSTEAD.
+#
+# Сборка — скриптом самого INSTEAD contrib/instead-em-build.sh на закреплённом коммите INSTEAD и
+# закреплённой версии Emscripten; результат — instead-em.zip (страница instead.html,
+# instead-em.js, instead-em.wasm, instead-em.data с stead/themes/lang, лицензия INSTEAD).
+# Файл уходит артефактом прогона; release.yml вызывает этот workflow и кладёт instead-em.zip в
+# выпуск рядом с дистрибутивами — оттуда его скачивает превью.
+#
+# Запуск: вызов из release.yml, вручную (Actions -> INSTEAD-em -> Run workflow) и на PR,
+# меняющих этот файл.
+name: INSTEAD-em
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/instead-em.yml'
+
+permissions:
+  contents: read
+
+env:
+  # INSTEAD: коммит, с которым проверены экспорты NLB в браузере
+  INSTEAD_COMMIT: 1a07e0ffc0a1e8402b9d47a104d88d3f33204a7e
+  # Emscripten (emsdk), которым проверена сборка
+  EMSDK_VERSION: 7.0.0
+  # lua-5.1.5.tar.gz (www.lua.org) — сверяется перед сборкой
+  LUA_SHA256: 2640fc56a795f29d28ef15e13c34a47e223960b0240e8cb0a82d9b0738695333
+
+jobs:
+  build:
+    name: Build INSTEAD-em
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: instead-hub/instead
+          ref: ${{ env.INSTEAD_COMMIT }}
+          path: instead
+
+      - uses: actions/checkout@v4
+        with:
+          repository: emscripten-core/emsdk
+          path: emsdk
+
+      - name: Install Emscripten ${{ env.EMSDK_VERSION }}
+        working-directory: emsdk
+        run: |
+          ./emsdk install "$EMSDK_VERSION"
+          ./emsdk activate "$EMSDK_VERSION"
+
+      - name: Lua 5.1.5 sources
+        run: |
+          mkdir -p "$RUNNER_TEMP/ws"
+          cd "$RUNNER_TEMP/ws"
+          for url in https://www.lua.org/ftp/lua-5.1.5.tar.gz \
+                     https://www.tecgraf.puc-rio.br/lua/mirror/ftp/lua-5.1.5.tar.gz \
+                     http://archive.ubuntu.com/ubuntu/pool/main/l/lua5.1/lua5.1_5.1.5.orig.tar.gz; do
+            if curl -fsSL --retry 3 -o lua-5.1.5.tar.gz "$url" \
+                && echo "$LUA_SHA256  lua-5.1.5.tar.gz" | sha256sum -c -; then
+              exit 0
+            fi
+          done
+          echo "::error::lua-5.1.5.tar.gz: не удалось скачать или не совпала SHA-256"
+          exit 1
+
+      - name: Build (contrib/instead-em-build.sh)
+        working-directory: emsdk
+        run: |
+          WORKSPACE="$RUNNER_TEMP/ws" INSTEAD_SRC="$GITHUB_WORKSPACE/instead" \
+            bash "$GITHUB_WORKSPACE/instead/contrib/instead-em-build.sh"
+
+      - name: Pack instead-em.zip
+        run: |
+          js="$RUNNER_TEMP/ws/instead-em-js"
+          for f in instead.html instead-em.js instead-em.wasm instead-em.data post.js loader-em.js; do
+            test -s "$js/$f" || { echo "::error::нет $f"; exit 1; }
+          done
+          cp instead/COPYING "$js/COPYING-INSTEAD.txt"
+          cat > "$js/README.txt" <<EOF
+          INSTEAD-em — INSTEAD (https://github.com/instead-hub/instead), собранный Emscripten
+          $EMSDK_VERSION для браузера скриптом contrib/instead-em-build.sh.
+          Коммит INSTEAD: $INSTEAD_COMMIT
+          Лицензия INSTEAD — MIT (COPYING-INSTEAD.txt).
+          Игра: instead.html?<адрес zip-архива игры> (по умолчанию — data.zip рядом).
+          EOF
+          sed -i 's/^          //' "$js/README.txt"
+          # fs — исходники instead-em.data, sdl-instead.o — промежуточный объектный файл
+          (cd "$js" && rm -rf fs sdl-instead.o && zip -qr -9 "$GITHUB_WORKSPACE/instead-em.zip" .)
+          unzip -l instead-em.zip
+          sha256sum instead-em.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: instead-em
+          path: instead-em.zip
+          compression-level: 0
+          retention-days: ${{ github.event_name == 'pull_request' && 3 || 30 }}
