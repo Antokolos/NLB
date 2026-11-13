@@ -1825,8 +1825,8 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 }
             }
         });
-        // Проверка экспортов в браузере: открытая книга экспортируется в ChoiceScript, jsIQ2, QSP, URQ
-        // и AXMA в каталог export-preview (с окном прогресса), сервер редактора (если ещё не запущен)
+        // Проверка экспортов в браузере: открытая книга экспортируется в ChoiceScript, jsIQ2, QSP, URQ,
+        // AXMA и INSTEAD (VN или STANDARD — по теме книги) в каталог export-preview (с окном прогресса), сервер редактора (если ещё не запущен)
         // запускается, и в браузере открывается /preview/ — игры в настоящих движках (их сервер
         // скачивает при первом открытии игры своего формата)
         m_previewExportButton.addActionListener(new ActionListener() {
@@ -1844,7 +1844,8 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                         () -> {
                             preview.createDirs();
                             for (File dir : new File[]{preview.getChoiceScriptDir(), preview.getJsiqDir(),
-                                    preview.getQspDir(), preview.getUrqDir(), preview.getAxmaDir()}) {
+                                    preview.getQspDir(), preview.getUrqDir(), preview.getAxmaDir(),
+                                    preview.getInsteadDir()}) {
                                 ExportPreview.clear(dir);
                             }
                             facade.exportToChoiceScript(preview.getChoiceScriptDir());
@@ -1852,6 +1853,11 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                             facade.exportToQSPTextFile(preview.getQspDir());
                             facade.exportToURQTextFile(preview.getUrqDir());
                             facade.exportToASMFile(preview.getAxmaDir());
+                            if (facade.getNlb().getTheme() == Theme.VN) {
+                                facade.exportToVNSTEADFile(preview.getInsteadDir());
+                            } else {
+                                facade.exportToSTEADFile(preview.getInsteadDir());
+                            }
                         },
                         () -> {
                             try {

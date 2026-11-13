@@ -61,6 +61,7 @@ import java.time.Duration;
  *     qsp/            — экспорт в QSP: book.txt (текст QSP, UTF-16LE) и картинки, звук
  *     urq/            — экспорт в URQ: book.qst (windows-1251) и картинки, звук
  *     axma/           — экспорт в AXMA: book.sm и картинки, звук
+ *     instead/        — экспорт в INSTEAD (STANDARD или VN): main.lua, модули, картинки, звук
  *     runtime/        — движки, скачиваются при первом открытии страницы своего формата
  * </pre>
  * Движков в NLB нет и в дистрибутив они не кладутся — каждый скачивается со своего места:
@@ -74,7 +75,9 @@ import java.time.Duration;
  *   (jQuery, Bootstrap, i18next, JSZip — MIT);</li>
  *   <li>AXMA — редактор AXMA Story Maker с hyperbook.ru/editor: он собирает игру из .sm и
  *   показывает её. Редактор бесплатный, но распространять его нельзя — поэтому он скачивается на
- *   машину автора книги и только там и используется, без изменений.</li>
+ *   машину автора книги и только там и используется, без изменений;</li>
+ *   <li>INSTEAD — INSTEAD-em (INSTEAD для браузера, MIT): instead-em.zip из выпуска NLB на GitHub
+ *   (собирается workflow instead-em.yml), или файл/адрес из свойства nlb.insteadEm.</li>
  * </ul>
  * Пакеты npm сверяются с SHA-512 из реестра (integrity), файлы GitHub — по коммиту.
  * Каталог — свойство nlb.exportPreview, по умолчанию export-preview в текущем каталоге (в
@@ -104,7 +107,7 @@ public final class ExportPreview {
             "https://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js"};
 
     /** Движки по форматам: каждый скачивается, когда открывают страницу его формата */
-    public enum Engine { CHOICESCRIPT, JSIQ, QSP, URQ, AXMA }
+    public enum Engine { CHOICESCRIPT, JSIQ, QSP, URQ, AXMA, INSTEAD }
 
     /** Пакет npm: имя, версия, SHA-512 (integrity реестра) */
     static final class NpmPackage {
@@ -159,6 +162,9 @@ public final class ExportPreview {
     static final String AXMA_EDITOR = "https://hyperbook.ru/editor/";
     static final String[] AXMA_FILES = {"index.html", "axmastorymaker.js", "axmastorymaker.css"};
 
+    /** INSTEAD-em из последнего выпуска NLB (instead-em.yml, release.yml) */
+    static final String INSTEAD_EM = "https://github.com/Antokolos/NLB/releases/latest/download/instead-em.zip";
+
     private final File m_root;
 
     public ExportPreview(File root) {
@@ -195,6 +201,10 @@ public final class ExportPreview {
         return new File(m_root, "axma");
     }
 
+    public File getInsteadDir() {
+        return new File(m_root, "instead");
+    }
+
     File getRuntimeDir() {
         return new File(m_root, "runtime");
     }
@@ -219,21 +229,27 @@ public final class ExportPreview {
         return new File(getRuntimeDir(), "axma");
     }
 
+    File getInsteadRuntime() {
+        return new File(getRuntimeDir(), "instead-em");
+    }
+
     /** Каталоги игр и README (если их ещё нет) */
     public void createDirs() throws IOException {
-        for (File dir : new File[]{getChoiceScriptDir(), getJsiqDir(), getQspDir(), getUrqDir(), getAxmaDir()}) {
+        for (File dir : new File[]{getChoiceScriptDir(), getJsiqDir(), getQspDir(), getUrqDir(), getAxmaDir(),
+                getInsteadDir()}) {
             Files.createDirectories(dir.toPath());
         }
         Path readme = new File(m_root, "README.txt").toPath();
         if (!Files.exists(readme)) {
             Files.writeString(readme, String.join(System.lineSeparator(),
-                    "Проверка экспорта NLB в браузере (ChoiceScript, jsIQ2, QSP, URQ, AXMA)",
+                    "Проверка экспорта NLB в браузере (ChoiceScript, jsIQ2, QSP, URQ, AXMA, INSTEAD)",
                     "",
                     "choicescript/  — файлы экспорта в ChoiceScript: startup.txt (и каталог images)",
                     "jsiq/          — файлы экспорта в jsIQ2: .xml (например, example.xml)",
                     "qsp/           — файлы экспорта в QSP: book.txt (и каталоги images, sound)",
                     "urq/           — файлы экспорта в URQ: book.qst (и каталоги images, sound)",
                     "axma/          — файлы экспорта в AXMA: book.sm (и каталоги images, sound)",
+                    "instead/       — файлы экспорта в INSTEAD: main.lua, модули, images, sound",
                     "",
                     "Запуск: export-preview.sh (export-preview.bat) из каталога NLB, затем в браузере",
                     "http://localhost:8112/preview/ ; или кнопка «Проверить экспорт в браузере» в редакторе",
@@ -241,9 +257,11 @@ public final class ExportPreview {
                     "",
                     "runtime/ — движки: скачиваются при первом открытии игры своего формата с их мест",
                     "(github.com/dfabulich/choicescript, quest-book.ru, code.jquery.com, registry.npmjs.org,",
-                    "github.com/urqw/UrqW, hyperbook.ru). В NLB они не входят: ChoiceScript — только для",
-                    "некоммерческого использования (LICENSE.txt рядом), у плеера jsIQ лицензии нет, UrqW —",
-                    "GPL, редактор AXMA Story Maker распространять нельзя (он используется только здесь).",
+                    "github.com/urqw/UrqW, hyperbook.ru, выпуски NLB на github.com — INSTEAD-em). В NLB они",
+                    "не входят: ChoiceScript — только для некоммерческого использования (LICENSE.txt рядом),",
+                    "у плеера jsIQ лицензии нет, UrqW — GPL, редактор AXMA Story Maker распространять нельзя",
+                    "(он используется только здесь). INSTEAD-em (MIT) можно положить и самому: распаковать",
+                    "instead-em.zip в runtime/instead-em или указать его свойством nlb.insteadEm.",
                     ""), StandardCharsets.UTF_8);
         }
     }
@@ -274,6 +292,11 @@ public final class ExportPreview {
 
     boolean hasUrqwRuntime() {
         return new File(getUrqwRuntime(), "index-dev.html").isFile();
+    }
+
+    boolean hasInsteadRuntime() {
+        return new File(getInsteadRuntime(), "instead-em.js").isFile()
+                && new File(getInsteadRuntime(), "instead.html").isFile();
     }
 
     boolean hasAxmaRuntime() {
@@ -357,8 +380,49 @@ public final class ExportPreview {
                     commit(tmp, getAxmaRuntime());
                 }
                 break;
+            case INSTEAD:
+                if (!hasInsteadRuntime()) {
+                    Path tmp = part(getInsteadRuntime());
+                    String source = System.getProperty("nlb.insteadEm");
+                    Path zip = tmp.resolveSibling("instead-em.zip");
+                    try {
+                        if (source != null && !source.isEmpty() && !source.contains("://")) {
+                            Files.copy(new File(source).toPath(), zip, StandardCopyOption.REPLACE_EXISTING);
+                        } else {
+                            download(client, source != null && !source.isEmpty() ? source : INSTEAD_EM, zip);
+                        }
+                        unzip(zip, tmp);
+                    } finally {
+                        Files.deleteIfExists(zip);
+                    }
+                    if (!new File(tmp.toFile(), "instead-em.js").isFile()) {
+                        throw new IOException("В instead-em.zip нет instead-em.js");
+                    }
+                    commit(tmp, getInsteadRuntime());
+                }
+                break;
             default:
                 break;
+        }
+    }
+
+    /** Распаковать zip в каталог (без выхода за него) */
+    private static void unzip(Path zip, Path target) throws IOException {
+        Path base = target.toAbsolutePath().normalize();
+        try (java.util.zip.ZipInputStream in = new java.util.zip.ZipInputStream(Files.newInputStream(zip))) {
+            java.util.zip.ZipEntry entry;
+            while ((entry = in.getNextEntry()) != null) {
+                Path file = base.resolve(entry.getName()).normalize();
+                if (!file.startsWith(base) || file.equals(base)) {
+                    continue;
+                }
+                if (entry.isDirectory()) {
+                    Files.createDirectories(file);
+                } else {
+                    Files.createDirectories(file.getParent());
+                    Files.copy(in, file, StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
         }
     }
 

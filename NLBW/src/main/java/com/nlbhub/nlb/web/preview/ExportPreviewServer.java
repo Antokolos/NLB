@@ -46,7 +46,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import java.io.File;
 
 /**
- * Сервер проверки экспортов в браузере без редактора (ChoiceScript, jsIQ2, QSP, URQ, AXMA, см.
+ * Сервер проверки экспортов в браузере без редактора (ChoiceScript, jsIQ2, QSP, URQ, AXMA, INSTEAD, см.
  * {@link ExportPreview}).
  * <pre>
  *   export-preview.sh [каталог] [--port 8112] [--host localhost]
@@ -86,6 +86,7 @@ public final class ExportPreviewServer {
         System.out.println("  QSP:          " + preview.getQspDir() + "  (book.txt, images, sound)");
         System.out.println("  URQ:          " + preview.getUrqDir() + "  (book.qst, images, sound)");
         System.out.println("  AXMA:         " + preview.getAxmaDir() + "  (book.sm, images, sound)");
+        System.out.println("  INSTEAD:      " + preview.getInsteadDir() + "  (main.lua, модули, images, sound)");
         try {
             preview.ensureRuntime();
         } catch (Exception e) {
