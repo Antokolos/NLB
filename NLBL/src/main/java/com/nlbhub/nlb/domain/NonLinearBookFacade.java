@@ -40,6 +40,7 @@ package com.nlbhub.nlb.domain;
 
 import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.exception.*;
+import com.nlbhub.nlb.domain.export.ExportProgress;
 import com.nlbhub.nlb.util.BookFiles;
 import com.nlbhub.nlb.util.FileManipulator;
 import com.nlbhub.nlb.util.MultiLangString;
@@ -473,46 +474,56 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     public void exportToChoiceScript(File exportDir) throws NLBExportException {
+        ExportProgress.format("ChoiceScript");
         m_nlb.exportToChoiceScript(new File(exportDir, "startup.txt"));
         exportMedia(exportDir);
     }
 
     public void exportToQSPTextFile(File exportDir) throws NLBExportException {
+        ExportProgress.format("QSP");
         m_nlb.exportToQSPTextFile(new File(exportDir, "book.txt"));
         exportMedia(exportDir);
     }
 
     public void exportToURQTextFile(File exportDir) throws NLBExportException {
+        ExportProgress.format("URQ");
         m_nlb.exportToURQTextFile(new File(exportDir, "book.qst"));
         exportMedia(exportDir);
     }
 
     public void exportToPDFFile(File exportFile) throws NLBExportException {
+        ExportProgress.format("PDF");
         m_nlb.exportToPDFFile(exportFile);
     }
 
     public void exportToTXTFile(File exportDir) throws NLBExportException {
+        ExportProgress.format("TXT");
         m_nlb.exportToTXTFile(new File(exportDir, "book.txt"));
     }
 
     public void exportToHTMLFile(File exportDir) throws NLBExportException {
+        ExportProgress.format("HTML");
         m_nlb.exportToHTMLFile(new File(exportDir, "index.html"));
         File imagesExportDir = new File(exportDir, NonLinearBook.IMAGES_DIR_NAME);
+        ExportProgress.stage(ExportProgress.STAGE_IMAGES, countMedia(m_nlb, MediaFile.Type.Image));
         m_nlb.exportImages(true, imagesExportDir);
     }
 
     public void exportToJSIQFile(File exportDir) throws NLBExportException {
+        ExportProgress.format("jsIQ2");
         m_nlb.exportToJSIQFile(new File(exportDir, "example.xml"));
         exportMedia(exportDir);
     }
 
     public void exportToSTEADFile(File exportDir) throws NLBExportException, NLBIOException {
+        ExportProgress.format("INSTEAD");
         m_nlb.exportToSTEADFile(new File(exportDir, "main.lua"));
         exportMedia(exportDir);
         exportAdditionalMedia(exportDir);
     }
 
     public void exportToVNSTEADFile(File exportDir) throws NLBExportException, NLBIOException {
+        ExportProgress.format("INSTEAD VN");
         m_nlb.exportToVNSTEADFile(new File(exportDir, "main.lua"));
         exportMedia(exportDir);
         exportAdditionalMedia(exportDir);
@@ -528,12 +539,26 @@ public class NonLinearBookFacade implements NLBObservable {
      */
     private void exportMedia(File exportDir) throws NLBExportException {
         File imagesExportDir = new File(exportDir, NonLinearBook.IMAGES_DIR_NAME);
+        ExportProgress.stage(ExportProgress.STAGE_IMAGES, countMedia(m_nlb, MediaFile.Type.Image));
         m_nlb.exportImages(true, imagesExportDir);
         File soundExportDir = new File(exportDir, NonLinearBook.SOUND_DIR_NAME);
+        ExportProgress.stage(ExportProgress.STAGE_SOUND, countMedia(m_nlb, MediaFile.Type.Sound));
         m_nlb.exportSound(true, soundExportDir);
     }
 
+    /** Сколько файлов картинок или звука у книги вместе с внешними модулями — для прогресса */
+    private static int countMedia(NonLinearBook book, MediaFile.Type type) {
+        int count = (type == MediaFile.Type.Sound) ? book.getSoundFiles().size() : book.getImageFiles().size();
+        for (NonLinearBook module : book.getExternalModules().values()) {
+            if (!module.isEmpty()) {
+                count += countMedia(module, type);
+            }
+        }
+        return count;
+    }
+
     public void exportToASMFile(File exportDir) throws NLBExportException {
+        ExportProgress.format("AXMA");
         m_nlb.exportToASMFile(new File(exportDir, "book.sm"));
         exportMedia(exportDir);
     }

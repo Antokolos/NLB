@@ -46,7 +46,8 @@ import org.eclipse.jetty.server.ServerConnector;
 import java.io.File;
 
 /**
- * Сервер проверки экспортов в браузере без редактора (ChoiceScript и jsIQ2, см. {@link ExportPreview}).
+ * Сервер проверки экспортов в браузере без редактора (ChoiceScript, jsIQ2, QSP, URQ, AXMA, см.
+ * {@link ExportPreview}).
  * <pre>
  *   export-preview.sh [каталог] [--port 8112] [--host localhost]
  *   java -cp "lib/*" com.nlbhub.nlb.web.preview.ExportPreviewServer [каталог] [--port 8112]
@@ -82,6 +83,9 @@ public final class ExportPreviewServer {
         System.out.println("Каталог: " + preview.getRoot());
         System.out.println("  ChoiceScript: " + preview.getChoiceScriptDir() + "  (startup.txt и images)");
         System.out.println("  jsIQ2:        " + preview.getJsiqDir() + "  (.xml)");
+        System.out.println("  QSP:          " + preview.getQspDir() + "  (book.txt, images, sound)");
+        System.out.println("  URQ:          " + preview.getUrqDir() + "  (book.qst, images, sound)");
+        System.out.println("  AXMA:         " + preview.getAxmaDir() + "  (book.sm, images, sound)");
         try {
             preview.ensureRuntime();
         } catch (Exception e) {

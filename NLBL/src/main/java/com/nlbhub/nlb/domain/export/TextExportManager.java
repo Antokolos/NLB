@@ -65,6 +65,7 @@ public abstract class TextExportManager extends ExportManager {
         try {
             try {
                 NLBBuildingBlocks nlbBlocks = createNLBBuildingBlocks();
+                ExportProgress.stage(ExportProgress.STAGE_WRITE, 0);
                 final byte[] bytes = generateNLBText(nlbBlocks).getBytes(getEncoding());
                 outputStream = new FileOutputStream(targetFile);
                 outputStream.write(bytes);

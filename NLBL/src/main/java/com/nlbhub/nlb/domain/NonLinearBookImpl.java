@@ -5582,6 +5582,11 @@ public class NonLinearBookImpl implements NonLinearBook {
             if (mediaDir.exists()) {
                 for (MediaFile mediaFile : mediaFiles) {
                     processMediaFile(mediaFile, exportDir, mediaDir, mediaType);
+                    com.nlbhub.nlb.domain.export.ExportProgress.step(
+                            mediaType == MediaFile.Type.Sound
+                                    ? com.nlbhub.nlb.domain.export.ExportProgress.STAGE_SOUND
+                                    : com.nlbhub.nlb.domain.export.ExportProgress.STAGE_IMAGES
+                    );
                 }
             }
             for (Map.Entry<String, NonLinearBook> entry : getExternalModules().entrySet()) {

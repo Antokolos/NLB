@@ -52,18 +52,31 @@ import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 
 /**
- * Каталог проверки экспортов в браузере (export-preview): игры, экспортированные в ChoiceScript и
- * jsIQ2, и движки, которые их играют.
+ * Каталог проверки экспортов в браузере (export-preview): игры, экспортированные в ChoiceScript,
+ * jsIQ2, QSP, URQ и AXMA, и движки, которые их играют.
  * <pre>
  *   export-preview/
  *     choicescript/   — экспорт в ChoiceScript: startup.txt (и images/)
  *     jsiq/           — экспорт в jsIQ2: *.xml (и картинки)
- *     runtime/        — движки, скачиваются при первом запуске
+ *     qsp/            — экспорт в QSP: book.txt (текст QSP, UTF-16LE) и картинки, звук
+ *     urq/            — экспорт в URQ: book.qst (windows-1251) и картинки, звук
+ *     axma/           — экспорт в AXMA: book.sm и картинки, звук
+ *     runtime/        — движки, скачиваются при первом открытии страницы своего формата
  * </pre>
- * Движков в NLB нет и в дистрибутив они не кладутся: ChoiceScript — под лицензией ChoiceScript
- * (только некоммерческое использование), у плеера jsIQ лицензии нет вовсе. Поэтому они скачиваются
- * с их собственных мест: ChoiceScript — файлы закреплённого коммита github.com/dfabulich/choicescript,
- * jsIQ — плеер с quest-book.ru и jQuery 1.10.2 (MIT; code.jquery.com или зеркала), на которой он написан.
+ * Движков в NLB нет и в дистрибутив они не кладутся — каждый скачивается со своего места:
+ * <ul>
+ *   <li>ChoiceScript (только некоммерческое использование) — файлы закреплённого коммита
+ *   github.com/dfabulich/choicescript;</li>
+ *   <li>jsIQ (лицензии нет) — плеер с quest-book.ru и jQuery 1.10.2 (MIT);</li>
+ *   <li>QSP — пакеты npm @qsp/wasm-engine (движок QSP, WebAssembly) и @qsp/converters (текст QSP
+ *   -> игра), MIT, как в веб-плеере qSpider;</li>
+ *   <li>URQ — UrqW (GPL) закреплённого коммита github.com/urqw/UrqW и его библиотеки из npm
+ *   (jQuery, Bootstrap, i18next, JSZip — MIT);</li>
+ *   <li>AXMA — редактор AXMA Story Maker с hyperbook.ru/editor: он собирает игру из .sm и
+ *   показывает её. Редактор бесплатный, но распространять его нельзя — поэтому он скачивается на
+ *   машину автора книги и только там и используется, без изменений.</li>
+ * </ul>
+ * Пакеты npm сверяются с SHA-512 из реестра (integrity), файлы GitHub — по коммиту.
  * Каталог — свойство nlb.exportPreview, по умолчанию export-preview в текущем каталоге (в
  * дистрибутиве — рядом с run.sh).
  *
@@ -90,6 +103,62 @@ public final class ExportPreview {
             "https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js",
             "https://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js"};
 
+    /** Движки по форматам: каждый скачивается, когда открывают страницу его формата */
+    public enum Engine { CHOICESCRIPT, JSIQ, QSP, URQ, AXMA }
+
+    /** Пакет npm: имя, версия, SHA-512 (integrity реестра) */
+    static final class NpmPackage {
+        final String name;
+        final String version;
+        final String integrity;
+
+        NpmPackage(String name, String version, String integrity) {
+            this.name = name;
+            this.version = version;
+            this.integrity = integrity;
+        }
+
+        String tarball() {
+            String simple = name.substring(name.indexOf('/') + 1);
+            return "https://registry.npmjs.org/" + name + "/-/" + simple + "-" + version + ".tgz";
+        }
+    }
+
+    /** Движок QSP (WebAssembly) и преобразование текста QSP в игру — как в qSpider */
+    static final NpmPackage QSP_ENGINE = new NpmPackage("@qsp/wasm-engine", "1.6.1",
+            "sha512-KTgGTpYix0Dh9jLQGHRc1kZhKXwhhTCgAoZB7gidnUoKVYWmUgaMrYO1pjEOcI5PSPBfKJ2U8TnTAGixsOg9LQ==");
+    static final NpmPackage QSP_CONVERTERS = new NpmPackage("@qsp/converters", "2.0.0",
+            "sha512-TSgJl0zenqyQUefqazdGItvHlbWS1meDzncRAzMQSF9Aq0Aqg9pJTda6/0hPjhrVgEDV0hFKBYBPP37MHcD38Q==");
+
+    /** Коммит UrqW (проверен: экспорт NLB играется, стенд tools/export-engines/urqw-run.js) */
+    public static final String URQW_COMMIT = "cbab60a6ffa350dc8c73173a2f9baaef300f0c70";
+    static final String URQW_RAW = "https://raw.githubusercontent.com/urqw/UrqW/" + URQW_COMMIT + "/";
+    /** Файлы UrqW: страница index-dev.html (берёт библиотеки из node_modules), скрипты, локали */
+    static final String[] URQW_FILES = {
+            "LICENSE-GPL.txt", "index-dev.html", "css/style.css", "logo.svg", "rss.svg", "favicon.png",
+            "js/tools.js", "js/player/player.js", "js/player/engine.js", "js/quest.js", "js/parser.js",
+            "js/functions.js", "js/evaluator.js", "js/client.js", "js/ctrl.js", "js/hotkeys.js", "js/i18n.js",
+            "js/main.js", "locale/be.js", "locale/en.js", "locale/eo.js", "locale/es.js", "locale/hy.js",
+            "locale/isv_Latn.js", "locale/ru.js", "locale/uk.js"};
+    /** Библиотеки UrqW — версии из его package-lock.json */
+    static final NpmPackage[] URQW_PACKAGES = {
+            new NpmPackage("bootstrap", "3.4.1",
+                    "sha512-yN5oZVmRCwe5aKwzRj6736nSmKDX7pLYwsXiCj/EYmo16hODaBiT4En5btW/jhBF/seV+XMx3aYwukYC3A49DA=="),
+            new NpmPackage("i18next", "24.2.3",
+                    "sha512-lfbf80OzkocvX7nmZtu7nSTNbrTYR52sLWxPtlXX1zAhVw8WEnFk4puUkCR4B1dNQwbSpEHHHemcZu//7EcB7A=="),
+            new NpmPackage("i18next-browser-languagedetector", "8.0.4",
+                    "sha512-f3frU3pIxD50/Tz20zx9TD9HobKYg47fmAETb117GKGPrhwcSSPJDoCposXlVycVebQ9GQohC3Efbpq7/nnJ5w=="),
+            new NpmPackage("jquery", "2.1.4",
+                    "sha512-wWR+eCq/T/Qt0NcFyM+QVho0ZVzWxFYANijmSMImXiM5mjr1aOaf4SF0eOEPc92bbK2L2vDpxw3lIszus7eO8Q=="),
+            new NpmPackage("jszip", "2.7.0",
+                    "sha512-JIsRKRVC3gTRo2vM4Wy9WBC3TRcfnIZU8k65Phi3izkvPH975FowRYtKGT6PxevA0XnJ/yO8b0QwV0ydVyQwfw=="),
+            new NpmPackage("jszip-utils", "0.0.2",
+                    "sha512-6VaNqoaj25tYdRY6ADcrGT9PKZfeBm2ZsYqbR1eeoVd9rBmaX0dSlXxBi1cBzAed4Yxu3jRIe5GSC9iHuQuziQ==")};
+
+    /** Редактор AXMA Story Maker: страница, скрипт и стили (картинки кнопок редактора не нужны) */
+    static final String AXMA_EDITOR = "https://hyperbook.ru/editor/";
+    static final String[] AXMA_FILES = {"index.html", "axmastorymaker.js", "axmastorymaker.css"};
+
     private final File m_root;
 
     public ExportPreview(File root) {
@@ -114,6 +183,18 @@ public final class ExportPreview {
         return new File(m_root, "jsiq");
     }
 
+    public File getQspDir() {
+        return new File(m_root, "qsp");
+    }
+
+    public File getUrqDir() {
+        return new File(m_root, "urq");
+    }
+
+    public File getAxmaDir() {
+        return new File(m_root, "axma");
+    }
+
     File getRuntimeDir() {
         return new File(m_root, "runtime");
     }
@@ -126,26 +207,44 @@ public final class ExportPreview {
         return new File(getRuntimeDir(), "jsiq");
     }
 
+    File getQspRuntime() {
+        return new File(getRuntimeDir(), "qsp");
+    }
+
+    File getUrqwRuntime() {
+        return new File(getRuntimeDir(), "urqw");
+    }
+
+    File getAxmaRuntime() {
+        return new File(getRuntimeDir(), "axma");
+    }
+
     /** Каталоги игр и README (если их ещё нет) */
     public void createDirs() throws IOException {
-        Files.createDirectories(getChoiceScriptDir().toPath());
-        Files.createDirectories(getJsiqDir().toPath());
+        for (File dir : new File[]{getChoiceScriptDir(), getJsiqDir(), getQspDir(), getUrqDir(), getAxmaDir()}) {
+            Files.createDirectories(dir.toPath());
+        }
         Path readme = new File(m_root, "README.txt").toPath();
         if (!Files.exists(readme)) {
             Files.writeString(readme, String.join(System.lineSeparator(),
-                    "Проверка экспорта NLB в браузере (ChoiceScript, jsIQ2)",
+                    "Проверка экспорта NLB в браузере (ChoiceScript, jsIQ2, QSP, URQ, AXMA)",
                     "",
-                    "choicescript/  — сюда файлы экспорта в ChoiceScript: startup.txt (и каталог images)",
-                    "jsiq/          — сюда файлы экспорта в jsIQ2: .xml (например, example.xml)",
+                    "choicescript/  — файлы экспорта в ChoiceScript: startup.txt (и каталог images)",
+                    "jsiq/          — файлы экспорта в jsIQ2: .xml (например, example.xml)",
+                    "qsp/           — файлы экспорта в QSP: book.txt (и каталоги images, sound)",
+                    "urq/           — файлы экспорта в URQ: book.qst (и каталоги images, sound)",
+                    "axma/          — файлы экспорта в AXMA: book.sm (и каталоги images, sound)",
                     "",
                     "Запуск: export-preview.sh (export-preview.bat) из каталога NLB, затем в браузере",
                     "http://localhost:8112/preview/ ; или кнопка «Проверить экспорт в браузере» в редакторе",
                     "(она сама экспортирует открытую книгу сюда и откроет http://localhost:8111/preview/).",
                     "",
-                    "runtime/ — движки ChoiceScript и jsIQ: скачиваются при первом запуске с их сайтов",
-                    "(github.com/dfabulich/choicescript, quest-book.ru, code.jquery.com). В NLB они не",
-                    "входят: ChoiceScript — только для некоммерческого использования (LICENSE.txt рядом),",
-                    "у плеера jsIQ лицензии нет.", ""), StandardCharsets.UTF_8);
+                    "runtime/ — движки: скачиваются при первом открытии игры своего формата с их мест",
+                    "(github.com/dfabulich/choicescript, quest-book.ru, code.jquery.com, registry.npmjs.org,",
+                    "github.com/urqw/UrqW, hyperbook.ru). В NLB они не входят: ChoiceScript — только для",
+                    "некоммерческого использования (LICENSE.txt рядом), у плеера jsIQ лицензии нет, UrqW —",
+                    "GPL, редактор AXMA Story Maker распространять нельзя (он используется только здесь).",
+                    ""), StandardCharsets.UTF_8);
         }
     }
 
@@ -168,31 +267,131 @@ public final class ExportPreview {
         return new File(getJsiqRuntime(), "jsiqapi212.js").isFile() && new File(getJsiqRuntime(), "jquery.js").isFile();
     }
 
-    /** Скачать движки, которых ещё нет; ошибка загрузки — исключение с адресом */
-    public synchronized void ensureRuntime() throws IOException {
+    boolean hasQspRuntime() {
+        return new File(getQspRuntime(), "wasm-engine/dist/qsp-engine.wasm").isFile()
+                && new File(getQspRuntime(), "converters/dist/index.js").isFile();
+    }
+
+    boolean hasUrqwRuntime() {
+        return new File(getUrqwRuntime(), "index-dev.html").isFile();
+    }
+
+    boolean hasAxmaRuntime() {
+        return new File(getAxmaRuntime(), "axmastorymaker.js").isFile();
+    }
+
+    /** Скачать все движки, которых ещё нет; ошибка загрузки — исключение с адресом */
+    public void ensureRuntime() throws IOException {
+        IOException first = null;
+        for (Engine engine : Engine.values()) {
+            try {
+                ensureRuntime(engine);
+            } catch (IOException e) {
+                if (first == null) {
+                    first = e;
+                }
+            }
+        }
+        if (first != null) {
+            throw first;
+        }
+    }
+
+    /** Скачать движок формата, если его ещё нет; ошибка загрузки — исключение с адресом */
+    public synchronized void ensureRuntime(Engine engine) throws IOException {
         createDirs();
         HttpClient client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL)
                 .connectTimeout(Duration.ofSeconds(30)).build();
-        if (!hasChoiceScriptRuntime()) {
-            Path tmp = getRuntimeDir().toPath().resolve("choicescript.part");
-            clearPath(tmp);
-            for (String file : CHOICESCRIPT_FILES) {
-                download(client, new String[]{CHOICESCRIPT_RAW + file}, tmp.resolve(file));
-            }
-            for (String file : CHOICESCRIPT_OPTIONAL) {
-                try {
-                    download(client, new String[]{CHOICESCRIPT_RAW + file}, tmp.resolve(file));
-                } catch (IOException e) {
-                    // шрифт для дислексии — не обязателен
+        switch (engine) {
+            case CHOICESCRIPT:
+                if (!hasChoiceScriptRuntime()) {
+                    Path tmp = part(getChoiceScriptRuntime());
+                    for (String file : CHOICESCRIPT_FILES) {
+                        download(client, new String[]{CHOICESCRIPT_RAW + file}, tmp.resolve(file));
+                    }
+                    for (String file : CHOICESCRIPT_OPTIONAL) {
+                        try {
+                            download(client, new String[]{CHOICESCRIPT_RAW + file}, tmp.resolve(file));
+                        } catch (IOException e) {
+                            // шрифт для дислексии — не обязателен
+                        }
+                    }
+                    commit(tmp, getChoiceScriptRuntime());
                 }
-            }
-            clearPath(getChoiceScriptRuntime().toPath());
-            Files.move(tmp, getChoiceScriptRuntime().toPath());
+                break;
+            case JSIQ:
+                if (!hasJsiqRuntime()) {
+                    Files.createDirectories(getJsiqRuntime().toPath());
+                    download(client, JQUERY, new File(getJsiqRuntime(), "jquery.js").toPath());
+                    download(client, new String[]{JSIQ_PLAYER}, new File(getJsiqRuntime(), "jsiqapi212.js").toPath());
+                }
+                break;
+            case QSP:
+                if (!hasQspRuntime()) {
+                    Path tmp = part(getQspRuntime());
+                    npm(client, QSP_ENGINE, tmp.resolve("wasm-engine"));
+                    npm(client, QSP_CONVERTERS, tmp.resolve("converters"));
+                    commit(tmp, getQspRuntime());
+                }
+                break;
+            case URQ:
+                if (!hasUrqwRuntime()) {
+                    Path tmp = part(getUrqwRuntime());
+                    for (NpmPackage pkg : URQW_PACKAGES) {
+                        npm(client, pkg, tmp.resolve("node_modules").resolve(pkg.name));
+                    }
+                    for (String file : URQW_FILES) {
+                        download(client, new String[]{URQW_RAW + file}, tmp.resolve(file));
+                    }
+                    commit(tmp, getUrqwRuntime());
+                }
+                break;
+            case AXMA:
+                if (!hasAxmaRuntime()) {
+                    Path tmp = part(getAxmaRuntime());
+                    for (String file : AXMA_FILES) {
+                        // страница редактора — сам каталог editor/ (index.html по этому адресу нет)
+                        String url = AXMA_EDITOR + (file.equals("index.html") ? "" : file);
+                        download(client, new String[]{url}, tmp.resolve(file));
+                    }
+                    commit(tmp, getAxmaRuntime());
+                }
+                break;
+            default:
+                break;
         }
-        if (!hasJsiqRuntime()) {
-            Files.createDirectories(getJsiqRuntime().toPath());
-            download(client, JQUERY, new File(getJsiqRuntime(), "jquery.js").toPath());
-            download(client, new String[]{JSIQ_PLAYER}, new File(getJsiqRuntime(), "jsiqapi212.js").toPath());
+    }
+
+    /** Временный каталог загрузки движка (dir.part): движок появляется целиком или не появляется */
+    private Path part(File dir) throws IOException {
+        Path tmp = getRuntimeDir().toPath().resolve(dir.getName() + ".part");
+        clearPath(tmp);
+        Files.createDirectories(tmp);
+        return tmp;
+    }
+
+    private static void commit(Path tmp, File dir) throws IOException {
+        clearPath(dir.toPath());
+        Files.move(tmp, dir.toPath());
+    }
+
+    /** Скачать пакет npm, сверить SHA-512 и распаковать его каталог package/ в target */
+    private static void npm(HttpClient client, NpmPackage pkg, Path target) throws IOException {
+        Path tgz = target.resolveSibling(target.getFileName() + ".tgz");
+        download(client, pkg.tarball(), tgz);
+        try {
+            byte[] data = Files.readAllBytes(tgz);
+            String integrity = "sha512-" + java.util.Base64.getEncoder().encodeToString(
+                    java.security.MessageDigest.getInstance("SHA-512").digest(data));
+            if (!integrity.equals(pkg.integrity)) {
+                throw new IOException("Пакет " + pkg.name + " " + pkg.version + " не совпал с реестром npm (SHA-512): "
+                        + pkg.tarball());
+            }
+            Tar.extract(new java.util.zip.GZIPInputStream(new java.io.ByteArrayInputStream(data)), "package/", target);
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IOException(e);
+        } finally {
+            Files.deleteIfExists(tgz);
         }
     }
 

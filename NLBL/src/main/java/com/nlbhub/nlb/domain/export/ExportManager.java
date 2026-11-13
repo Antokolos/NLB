@@ -548,6 +548,11 @@ public abstract class ExportManager {
     }
 
     protected NLBBuildingBlocks createNLBBuildingBlocks() throws NLBConsistencyException, NLBExportException {
+        int total = 0;
+        for (ExportData data : m_exportDataMap.values()) {
+            total += data.getObjList().size() + data.getPageList().size();
+        }
+        ExportProgress.stage(ExportProgress.STAGE_BLOCKS, total);
         return createNLBBuildingBlocks(m_exportDataMap.get(MAIN_DATA_KEY));
     }
 
@@ -574,8 +579,10 @@ public abstract class ExportManager {
         //stringBuilder.append("#mode quote").append(LINE_SEPARATOR);
         for (final Obj obj : exportData.getObjList()) {
             blocks.addObjBuildingBlocks(createObjBuildingBlocks(createPreprocessedObj(obj), exportData));
+            ExportProgress.step(ExportProgress.STAGE_BLOCKS);
         }
         for (final Page page : exportData.getPageList()) {
+            ExportProgress.step(ExportProgress.STAGE_BLOCKS);
             if (page.getModule().isEmpty()) {
                 blocks.addPageBuildingBlocks(createPageBuildingBlocks(createPreprocessedPage(page), exportData));
             } else {

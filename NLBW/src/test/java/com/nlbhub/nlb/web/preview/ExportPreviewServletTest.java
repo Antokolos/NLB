@@ -22,8 +22,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Проверка экспортов в браузере (/preview/): страницы ChoiceScript и jsIQ2 и файлы игр. Движки
- * подложены заглушками — тест не ходит в сеть.
+ * Проверка экспортов в браузере (/preview/): страницы ChoiceScript, jsIQ2, QSP, URQ (UrqW) и AXMA и
+ * файлы игр. Движки подложены заглушками — тест не ходит в сеть.
  */
 public class ExportPreviewServletTest {
     @Rule
@@ -53,6 +53,19 @@ public class ExportPreviewServletTest {
         write(new File(m_preview.getChoiceScriptDir(), "chapter2.txt"), "Глава 2.\n");
         write(new File(m_preview.getChoiceScriptDir(), "images/1.png"), "png");
         write(new File(m_preview.getJsiqDir(), "example.xml"), "<book></book>");
+        write(new File(m_preview.getQspRuntime(), "wasm-engine/dist/qsp-engine.wasm"), "wasm");
+        write(new File(m_preview.getQspRuntime(), "converters/dist/index.js"), "// converters");
+        write(new File(m_preview.getUrqwRuntime(), "index-dev.html"), "<html>UrqW</html>");
+        write(new File(m_preview.getUrqwRuntime(), "node_modules/jquery/dist/jquery.min.js"), "// jquery 2");
+        write(new File(m_preview.getAxmaRuntime(), "index.html"), "<html>AXMA</html>");
+        write(new File(m_preview.getAxmaRuntime(), "axmastorymaker.js"), "// axma");
+        write(new File(m_preview.getAxmaRuntime(), "axmastorymaker.css"), "/* axma */");
+        write(new File(m_preview.getQspDir(), "book.txt"), "QSP");
+        write(new File(m_preview.getQspDir(), "images/q.png"), "qpng");
+        write(new File(m_preview.getUrqDir(), "book.qst"), ":start");
+        write(new File(m_preview.getUrqDir(), "images/u.png"), "upng");
+        write(new File(m_preview.getAxmaDir(), "book.sm"), ":: Start");
+        write(new File(m_preview.getAxmaDir(), "images/a.png"), "apng");
 
         m_server = new Server();
         ServerConnector http = new ServerConnector(m_server);
@@ -87,6 +100,50 @@ public class ExportPreviewServletTest {
         assertEquals("200", r[0]);
         assertTrue(r[1], r[1].contains("href='choicescript/'"));
         assertTrue(r[1], r[1].contains("jsiq/play.html?book=example.xml"));
+        assertTrue(r[1], r[1].contains("qsp/play.html?book=book.txt"));
+        assertTrue(r[1], r[1].contains("urq/index-dev.html?encoding=CP1251&id=book"));
+        assertTrue(r[1], r[1].contains("axma/play.html?book=book.sm"));
+    }
+
+    @Test
+    public void qspPage() throws Exception {
+        String[] redirect = get("qsp/");
+        assertEquals("302", redirect[0]);
+        assertTrue(redirect[3], redirect[3].endsWith("play.html?book=book.txt"));
+        String page = get("qsp/play.html?book=book.txt")[1];
+        assertTrue(page, page.contains("const book = 'book.txt';"));
+        assertTrue(page, page.contains("from './runtime/wasm-engine/dist/wasm-engine.modern.js'"));
+        assertEquals("application/wasm", get("qsp/runtime/wasm-engine/dist/qsp-engine.wasm")[2]);
+        assertEquals("файлы игры", "qpng", get("qsp/images/q.png")[1]);
+        assertEquals("QSP", get("qsp/book.txt")[1]);
+        assertEquals("неизвестная игра", "404", get("qsp/play.html?book=other.txt")[0]);
+    }
+
+    @Test
+    public void urqUrqw() throws Exception {
+        String[] redirect = get("urq/");
+        assertEquals("302", redirect[0]);
+        assertTrue(redirect[3], redirect[3].endsWith("index-dev.html?encoding=CP1251&id=book"));
+        assertEquals("<html>UrqW</html>", get("urq/index-dev.html")[1]);
+        assertEquals("// jquery 2", get("urq/node_modules/jquery/dist/jquery.min.js")[1]);
+        String[] main = get("urq/quests/book/main.qst");
+        assertEquals("игра — main.qst папки quests/<книга>", ":start", main[1]);
+        assertTrue(main[2], main[2].contains("windows-1251"));
+        assertEquals("upng", get("urq/quests/book/images/u.png")[1]);
+        assertEquals("нет такой игры (UrqW ищет и другие места)", "404", get("urq/quests/other/main.qst")[0]);
+    }
+
+    @Test
+    public void axmaEditor() throws Exception {
+        String[] redirect = get("axma/");
+        assertEquals("302", redirect[0]);
+        assertTrue(redirect[3], redirect[3].endsWith("play.html?book=book.sm"));
+        String page = get("axma/play.html?book=book.sm")[1];
+        assertTrue(page, page.contains("src='editor/index.html'") && page.contains("w.Compile(true, -1)"));
+        assertTrue("запасной путь — онлайн-редактор: " + page, page.contains("https://hyperbook.ru/editor/"));
+        assertEquals("редактор — из runtime", "// axma", get("axma/editor/axmastorymaker.js")[1]);
+        assertEquals("картинки игры — относительно страницы редактора", "apng", get("axma/editor/images/a.png")[1]);
+        assertEquals(":: Start", get("axma/book.sm")[1]);
     }
 
     @Test
@@ -117,7 +174,8 @@ public class ExportPreviewServletTest {
         // содержимое файла вне каталогов игр (Jetty повторяет адрес в странице 404, поэтому — по содержимому)
         write(new File(m_temp.getRoot().getParentFile(), "secret.txt"), "TOP-SECRET-CONTENT");
         for (String path : new String[]{"choicescript/scenes/../../../secret.txt", "jsiq/..%2F..%2Fsecret.txt",
-                "choicescript/..%2F..%2Fsecret.txt", "jsiq/runtime/..%2F..%2F..%2Fsecret.txt"}) {
+                "choicescript/..%2F..%2Fsecret.txt", "jsiq/runtime/..%2F..%2F..%2Fsecret.txt",
+                "qsp/..%2F..%2Fsecret.txt", "urq/quests/book/..%2F..%2F..%2Fsecret.txt", "axma/editor/..%2F..%2Fsecret.txt"}) {
             assertFalse(path, get(path)[1].contains("TOP-SECRET-CONTENT"));
         }
     }
