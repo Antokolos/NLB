@@ -52,15 +52,26 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Проверка экспортов в браузере: /preview/ — ChoiceScript (/preview/choicescript/) и jsIQ2
- * (/preview/jsiq/) из каталога {@link ExportPreview}.
+ * Проверка экспортов в браузере: /preview/ — список игр по форматам из каталога
+ * {@link ExportPreview}.
  * <ul>
- *   <li>ChoiceScript — страница игры из самого ChoiceScript (web/mygame/index.html); она грузит
- *   интерпретатор из каталога выше (/preview/ui.js…), сцены — из scenes/ (startup.txt экспорта),
- *   список сцен — mygame.js (startup и остальные .txt каталога игры);</li>
- *   <li>jsIQ2 — страница с плеером jsiqapi212.js (как на quest-book.ru) и книгой .xml экспорта.</li>
+ *   <li>ChoiceScript (/preview/choicescript/) — страница игры из самого ChoiceScript
+ *   (web/mygame/index.html); она грузит интерпретатор из каталога выше (/preview/ui.js…), сцены —
+ *   из scenes/ (startup.txt экспорта), список сцен — mygame.js (startup и остальные .txt);</li>
+ *   <li>jsIQ2 (/preview/jsiq/play.html?book=…) — страница с плеером jsiqapi212.js (как на
+ *   quest-book.ru) и книгой .xml экспорта;</li>
+ *   <li>QSP (/preview/qsp/play.html?book=…) — своя страница поверх движка @qsp/wasm-engine: текст
+ *   QSP экспорта переводится в игру (@qsp/converters, как в qSpider) прямо в браузере; текст,
+ *   действия, инвентарь, окна MSG и MENU, звук, таймер;</li>
+ *   <li>URQ (/preview/urq/) — UrqW: страница index-dev.html?id=&lt;книга&gt;; UrqW ищет игру в
+ *   quests/&lt;книга&gt;/main.qst — сервер отдаёт под этим именем файл .qst экспорта, а
+ *   картинки и звук — из каталога экспорта;</li>
+ *   <li>AXMA (/preview/axma/play.html?book=…) — редактор AXMA Story Maker в рамке: страница
+ *   загружает в него .sm экспорта и запускает игру (Compile), как кнопка «Запуск» редактора;
+ *   картинки игры — из каталога экспорта (адреса игры — относительно страницы редактора).</li>
  * </ul>
- * Движки скачиваются при первом обращении ({@link ExportPreview#ensureRuntime()}).
+ * Движок скачивается при первом открытии игры своего формата
+ * ({@link ExportPreview#ensureRuntime(ExportPreview.Engine)}).
  *
  * @author Anton P. Kolosov
  * @version 1.0
@@ -83,20 +94,18 @@ public class ExportPreviewServlet extends HttpServlet {
             return;
         }
         response.setHeader("Cache-Control", "no-store");
-        String runtimeError = null;
-        if (path.equals("/") || path.equals("/choicescript/") || path.equals("/choicescript/index.html") || path.equals("/jsiq/")
-                || path.equals("/jsiq/play.html")) {
+        ExportPreview.Engine engine = entryEngine(path);
+        if (engine != null) {
             try {
-                m_preview.ensureRuntime();
+                m_preview.ensureRuntime(engine);
             } catch (IOException e) {
-                runtimeError = e.getMessage();
+                html(response, page("Проверка экспорта", "<p class='error'>Не удалось скачать движок: " + escape(e.getMessage())
+                        + "</p><p>Нужен доступ в интернет к " + escape(hosts(engine)) + " (только при первом запуске; "
+                        + "движок сохраняется в " + escape(m_preview.getRoot().getPath()) + "/runtime).</p>"
+                        + (engine == ExportPreview.Engine.AXMA ? axmaFallback() : "")
+                        + "<p><a href='../'>← к списку</a></p>"));
+                return;
             }
-        }
-        if (runtimeError != null) {
-            html(response, page("Проверка экспорта", "<p class='error'>Не удалось скачать движки: " + escape(runtimeError)
-                    + "</p><p>Нужен доступ в интернет к github.com, quest-book.ru и code.jquery.com (только при первом запуске; "
-                    + "движки сохраняются в " + escape(m_preview.getRoot().getPath()) + "/runtime).</p>"));
-            return;
         }
         if (path.equals("/")) {
             html(response, index());
@@ -104,9 +113,55 @@ public class ExportPreviewServlet extends HttpServlet {
             choiceScript(path.substring("/choicescript/".length()), response);
         } else if (path.startsWith("/jsiq/")) {
             jsiq(path.substring("/jsiq/".length()), request, response);
+        } else if (path.startsWith("/qsp/")) {
+            qsp(path.substring("/qsp/".length()), request, response);
+        } else if (path.startsWith("/urq/")) {
+            urq(path.substring("/urq/".length()), response);
+        } else if (path.startsWith("/axma/")) {
+            axma(path.substring("/axma/".length()), request, response);
         } else {
             // интерпретатор ChoiceScript: страница игры подключает его из каталога выше (../ui.js)
             file(new File(m_preview.getChoiceScriptRuntime(), "web"), path.substring(1), response);
+        }
+    }
+
+    /** Страница входа в игру формата — перед ней движок скачивается (если его ещё нет) */
+    private static ExportPreview.Engine entryEngine(String path) {
+        switch (path) {
+            case "/choicescript/":
+            case "/choicescript/index.html":
+                return ExportPreview.Engine.CHOICESCRIPT;
+            case "/jsiq/":
+            case "/jsiq/play.html":
+                return ExportPreview.Engine.JSIQ;
+            case "/qsp/":
+            case "/qsp/play.html":
+                return ExportPreview.Engine.QSP;
+            case "/urq/":
+            case "/urq/index-dev.html":
+                return ExportPreview.Engine.URQ;
+            case "/axma/":
+            case "/axma/play.html":
+                return ExportPreview.Engine.AXMA;
+            default:
+                return null;
+        }
+    }
+
+    private static String hosts(ExportPreview.Engine engine) {
+        switch (engine) {
+            case CHOICESCRIPT:
+                return "raw.githubusercontent.com";
+            case JSIQ:
+                return "quest-book.ru и code.jquery.com";
+            case QSP:
+                return "registry.npmjs.org";
+            case URQ:
+                return "raw.githubusercontent.com и registry.npmjs.org";
+            case AXMA:
+                return "hyperbook.ru";
+            default:
+                return "";
         }
     }
 
@@ -115,37 +170,71 @@ public class ExportPreviewServlet extends HttpServlet {
         File scenesDir = new File(m_preview.getChoiceScriptDir(), "scenes");
         boolean hasChoiceScript = new File(m_preview.getChoiceScriptDir(), "startup.txt").isFile()
                 || new File(scenesDir, "startup.txt").isFile();
-        List<String> books = jsiqBooks();
         StringBuilder sb = new StringBuilder();
         sb.append("<p>Каталог: <code>").append(escape(m_preview.getRoot().getPath())).append("</code></p>");
         sb.append("<h2>ChoiceScript</h2>");
         if (hasChoiceScript) {
             sb.append("<p><a href='choicescript/'>Играть</a> (сцен: ").append(scenes == null ? 0 : scenes.length).append(")</p>");
         } else {
-            sb.append("<p>Положите файлы экспорта в ChoiceScript (startup.txt и каталог images) в <code>")
-                    .append(escape(m_preview.getChoiceScriptDir().getPath())).append("</code></p>");
+            empty(sb, "ChoiceScript (startup.txt и каталог images)", m_preview.getChoiceScriptDir());
         }
-        sb.append("<h2>jsIQ2</h2>");
-        if (books.isEmpty()) {
-            sb.append("<p>Положите файл экспорта в jsIQ2 (.xml) в <code>").append(escape(m_preview.getJsiqDir().getPath()))
-                    .append("</code></p>");
-        } else {
-            sb.append("<ul>");
-            for (String book : books) {
-                sb.append("<li><a href='jsiq/play.html?book=").append(escape(book)).append("'>").append(escape(book)).append("</a></li>");
-            }
-            sb.append("</ul>");
-        }
-        sb.append("<p class='note'>Движки скачаны с их сайтов в <code>runtime</code>; ChoiceScript — только для "
-                + "некоммерческого использования (<a href='license-choicescript'>лицензия</a>).</p>");
+        books(sb, "jsIQ2", "jsiq/play.html?book=", jsiqBooks(), "jsIQ2 (.xml)", m_preview.getJsiqDir());
+        books(sb, "QSP", "qsp/play.html?book=", books(m_preview.getQspDir(), ".txt", ".qsp", ".gam"),
+                "QSP (book.txt — текст QSP, или .qsp)", m_preview.getQspDir());
+        books(sb, "URQ (UrqW)", "urq/index-dev.html?encoding=CP1251&id=", urqIds(), "URQ (.qst)", m_preview.getUrqDir());
+        books(sb, "AXMA", "axma/play.html?book=", books(m_preview.getAxmaDir(), ".sm"), "AXMA (.sm)", m_preview.getAxmaDir());
+        sb.append("<p class='note'>Движки скачаны с их сайтов в <code>runtime</code> при первом открытии игры. ChoiceScript — только "
+                + "для некоммерческого использования (<a href='license-choicescript'>лицензия</a>); UrqW — GPL; редактор "
+                + "AXMA Story Maker (hyperbook.ru) — бесплатный, без права распространения: он скачан только на эту машину.</p>");
         return page("Проверка экспорта NLB", sb.toString());
     }
 
-    private List<String> jsiqBooks() {
-        String[] names = m_preview.getJsiqDir().list((d, n) -> n.toLowerCase(Locale.ROOT).endsWith(".xml"));
+    private static void empty(StringBuilder sb, String what, File dir) {
+        sb.append("<p>Положите файлы экспорта в ").append(escape(what)).append(" в <code>").append(escape(dir.getPath()))
+                .append("</code></p>");
+    }
+
+    private static void books(StringBuilder sb, String title, String href, List<String> books, String what, File dir) {
+        sb.append("<h2>").append(escape(title)).append("</h2>");
+        if (books.isEmpty()) {
+            empty(sb, what, dir);
+            return;
+        }
+        sb.append("<ul>");
+        for (String book : books) {
+            sb.append("<li><a href='").append(href).append(escape(java.net.URLEncoder.encode(book, StandardCharsets.UTF_8)))
+                    .append("'>").append(escape(book)).append("</a></li>");
+        }
+        sb.append("</ul>");
+    }
+
+    /** Файлы игр в каталоге (по расширениям), по имени */
+    private static List<String> books(File dir, String... extensions) {
+        String[] names = dir.list((d, n) -> {
+            String lower = n.toLowerCase(Locale.ROOT);
+            for (String ext : extensions) {
+                if (lower.endsWith(ext) && new File(d, n).isFile()) {
+                    return true;
+                }
+            }
+            return false;
+        });
         List<String> books = new ArrayList<>(names == null ? List.of() : Arrays.asList(names));
         books.sort(null);
         return books;
+    }
+
+    /** Игры URQ — имена .qst без расширения (UrqW открывает игру по имени: ?id=book) */
+    private List<String> urqIds() {
+        List<String> ids = new ArrayList<>();
+        for (String name : books(m_preview.getUrqDir(), ".qst")) {
+            ids.add(name.substring(0, name.length() - 4));
+        }
+        return ids;
+    }
+
+    private List<String> jsiqBooks() {
+        return books(m_preview.getJsiqDir(), ".xml");
     }
 
     private void choiceScript(String path, HttpServletResponse response) throws IOException {
@@ -224,7 +313,7 @@ public class ExportPreviewServlet extends HttpServlet {
 
     /** Страница плеера jsIQ: контейнеры текста, действий и листа персонажа, старт с первой статьи */
     private static String jsiqPage(String book) {
-        String bookJs = book.replace("\\", "\\\\").replace("'", "\\'");
+        String bookJs = jsString(book);
         return "<!doctype html>\n<html><head><meta charset='utf-8'><title>" + escape(book) + " — jsIQ2</title>\n"
                 + "<script src='runtime/jquery.js'></script>\n"
                 + "<script src='runtime/jsiqapi212.js' charset='windows-1251'></script>\n"
@@ -248,6 +337,130 @@ public class ExportPreviewServlet extends HttpServlet {
                 + "window.onerror = function (m) { $('#errors').append(document.createTextNode(m + '\\n')); };\n"
                 + "$(document).ready(function () { jsIQ.init('" + bookJs + "'); });\n"
                 + "</script>\n</body></html>\n";
+    }
+
+    /** Одна игра — сразу её страница, иначе — к списку */
+    private static void single(List<String> books, String playPrefix, HttpServletResponse response) throws IOException {
+        if (books.size() == 1) {
+            response.sendRedirect(playPrefix + java.net.URLEncoder.encode(books.get(0), StandardCharsets.UTF_8));
+        } else {
+            response.sendRedirect("../");
+        }
+    }
+
+    private void qsp(String path, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        List<String> books = books(m_preview.getQspDir(), ".txt", ".qsp", ".gam");
+        if (path.isEmpty()) {
+            single(books, "play.html?book=", response);
+        } else if (path.equals("play.html")) {
+            String book = request.getParameter("book");
+            if (book == null || !books.contains(book)) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Нет игры QSP: " + book);
+                return;
+            }
+            html(response, QspPage.html(book));
+        } else if (path.startsWith("runtime/")) {
+            file(m_preview.getQspRuntime(), path.substring("runtime/".length()), response);
+        } else {
+            file(m_preview.getQspDir(), path, response);
+        }
+    }
+
+    private void urq(String path, HttpServletResponse response) throws IOException {
+        List<String> ids = urqIds();
+        if (path.isEmpty()) {
+            single(ids, "index-dev.html?encoding=CP1251&id=", response);
+        } else if (path.startsWith("quests/")) {
+            // UrqW: quests/<имя>/main.qst — игра, остальное (картинки, звук) — рядом с ней
+            String rest = path.substring("quests/".length());
+            int slash = rest.indexOf('/');
+            String id = slash < 0 ? rest : rest.substring(0, slash);
+            String inGame = slash < 0 ? "" : rest.substring(slash + 1);
+            if (!ids.contains(id)) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            } else if (inGame.equals("main.qst")) {
+                file(m_preview.getUrqDir(), id + ".qst", response);
+            } else {
+                file(m_preview.getUrqDir(), inGame, response);
+            }
+        } else {
+            file(m_preview.getUrqwRuntime(), path.isEmpty() ? "index-dev.html" : path, response);
+        }
+    }
+
+    private void axma(String path, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        List<String> books = books(m_preview.getAxmaDir(), ".sm");
+        if (path.isEmpty()) {
+            single(books, "play.html?book=", response);
+        } else if (path.equals("play.html")) {
+            String book = request.getParameter("book");
+            if (book == null || !books.contains(book)) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Нет игры AXMA: " + book);
+                return;
+            }
+            html(response, axmaPage(book));
+        } else if (path.startsWith("editor/")) {
+            // редактор — из runtime; игра, которую он показывает, берёт картинки и звук относительно
+            // страницы редактора — они из каталога экспорта
+            String rest = path.substring("editor/".length());
+            if (Arrays.asList(ExportPreview.AXMA_FILES).contains(rest)) {
+                file(m_preview.getAxmaRuntime(), rest, response);
+            } else {
+                file(m_preview.getAxmaDir(), rest, response);
+            }
+        } else {
+            file(m_preview.getAxmaDir(), path, response);
+        }
+    }
+
+    /** Без редактора: .sm можно открыть в онлайн-редакторе (Загрузить -> Запуск) */
+    private static String axmaFallback() {
+        return "<p>Игру можно проверить и в онлайн-редакторе: откройте <a href='https://hyperbook.ru/editor/' target='_blank'>"
+                + "hyperbook.ru/editor</a>, загрузите в него файл .sm экспорта (кнопка «Загрузить») и нажмите «Запуск».</p>";
+    }
+
+    /**
+     * Страница AXMA: редактор AXMA Story Maker в рамке во всё окно; когда он загрузится, страница
+     * передаёт ему текст .sm (LoadStory) и запускает игру (Compile — как кнопка «Запуск»). Закрытие
+     * игры (крестик, Esc) возвращает к списку
+     */
+    private static String axmaPage(String book) {
+        String bookJs = jsString(book);
+        return "<!doctype html>\n<html><head><meta charset='utf-8'><title>" + escape(book) + " — AXMA</title>\n"
+                + "<style>html,body{margin:0;height:100%;overflow:hidden;font-family:sans-serif}"
+                + "#editor{border:0;width:100%;height:100%}"
+                + "#status{position:fixed;left:0;right:0;top:0;padding:.5em 1em;background:#fffbe6;border-bottom:1px solid #cc9}"
+                + "#status.hidden{display:none}.error{color:#a00}</style>\n"
+                + "</head><body>\n<div id='status'>Загрузка редактора AXMA Story Maker…</div>\n"
+                + "<iframe id='editor' src='editor/index.html'></iframe>\n<script>\n"
+                + "var book = '" + bookJs + "';\n"
+                + "var bar = document.getElementById('status');\n"
+                + "function fail(e) {\n"
+                + "  bar.className = 'error';\n"
+                + "  bar.innerHTML = 'Не удалось запустить игру в редакторе: ' + String(e).replace(/</g, '&lt;')\n"
+                + "    + '. <a href=\"' + encodeURIComponent(book) + '\" download>Скачать .sm</a> и открыть в '\n"
+                + "    + '<a href=\"https://hyperbook.ru/editor/\" target=\"_blank\">онлайн-редакторе</a> (Загрузить → Запуск). '\n"
+                + "    + '<a href=\"../\">← к списку</a>';\n"
+                + "}\n"
+                + "document.getElementById('editor').addEventListener('load', function () {\n"
+                + "  var w = this.contentWindow;\n"
+                + "  fetch(encodeURIComponent(book)).then(function (r) {\n"
+                + "    if (!r.ok) throw new Error('HTTP ' + r.status);\n"
+                + "    return r.text();\n"
+                + "  }).then(function (story) {\n"
+                + "    if (typeof w.LoadStory !== 'function' || typeof w.Compile !== 'function') throw new Error('в редакторе нет LoadStory/Compile');\n"
+                + "    w.ClosePreview = function () { location.href = '../'; };\n"
+                + "    w.LoadStory(0, false, story);\n"
+                + "    setTimeout(function () {\n"
+                + "      try { w.Compile(true, -1); bar.className = 'hidden'; } catch (e) { fail(e); }\n"
+                + "    }, 300);\n"
+                + "  }).catch(fail);\n"
+                + "});\n"
+                + "</script>\n</body></html>\n";
+    }
+
+    private static String jsString(String s) {
+        return s.replace("\\", "\\\\").replace("'", "\\'").replace("<", "\\x3c");
     }
 
     private void file(File dir, String relative, HttpServletResponse response) throws IOException {
@@ -275,6 +488,9 @@ public class ExportPreviewServlet extends HttpServlet {
         if (n.endsWith(".txt")) return "text/plain; charset=utf-8";
         if (n.endsWith(".xml")) return "application/xml; charset=utf-8";
         if (n.endsWith(".json")) return "application/json; charset=utf-8";
+        if (n.endsWith(".wasm")) return "application/wasm";
+        if (n.endsWith(".sm")) return "text/plain; charset=utf-8";
+        if (n.endsWith(".qst")) return "text/plain; charset=windows-1251";
         if (n.endsWith(".png")) return "image/png";
         if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";
         if (n.endsWith(".gif")) return "image/gif";

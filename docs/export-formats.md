@@ -677,18 +677,29 @@ NLB поверх этого по образцу Java-плеера (`PlayerEngine
 
 ## Как проверять экспорт в настоящих движках
 
-### Проверка в браузере из дистрибутива: ChoiceScript и jsIQ2
+### Проверка в браузере из дистрибутива: ChoiceScript, jsIQ2, QSP, URQ, AXMA
 
-Чтобы посмотреть экспорт в ChoiceScript или jsIQ2 в браузере, ничего ставить не нужно:
+Чтобы посмотреть экспорт в браузере, ничего ставить не нужно:
 
 - **Из редактора** — кнопка «Проверить экспорт в браузере» на панели (рядом с кнопками сервера).
   Она экспортирует открытую книгу (книга должна быть сохранена: картинки берутся из её каталога)
-  в `export-preview/choicescript` и `export-preview/jsiq`, запускает сервер редактора, если он не
-  запущен, и открывает `http://localhost:8111/preview/` — там ссылки на обе игры.
-- **Без редактора** — положить файлы экспорта в `export-preview/choicescript` (`startup.txt` и
-  `images`) и `export-preview/jsiq` (`.xml`) рядом со скриптами дистрибутива и запустить
-  `export-preview.sh` (`export-preview.bat`); страница — `http://localhost:8112/preview/`. Каталог
-  и порт можно указать: `export-preview.sh <каталог> --port 8112`.
+  во все пять форматов — `export-preview/choicescript`, `jsiq`, `qsp`, `urq`, `axma`, — запускает
+  сервер редактора, если он не запущен, и открывает `http://localhost:8111/preview/` — там ссылки
+  на все игры.
+- **Без редактора** — положить файлы экспорта в каталоги `export-preview/<формат>` рядом со
+  скриптами дистрибутива и запустить `export-preview.sh` (`export-preview.bat`); страница —
+  `http://localhost:8112/preview/`. Каталог и порт можно указать:
+  `export-preview.sh <каталог> --port 8112`.
+
+**Прогресс экспорта.** И кнопки «Экспорт в …», и проверка в браузере показывают окно с форматом,
+этапом (страницы и объекты, запись файла, картинки, звук), полосой «сделано из скольких» и кнопкой
+Cancel; экспорт идёт в фоне, окно модальное. Ядро — `ExportProgress` (NLBL,
+`domain/export`): слушатель на поток, этапы сообщают `ExportManager.createNLBBuildingBlocks`
+(каждая страница и объект, с внешними модулями), `TextExportManager`/`XMLExportManager` (запись),
+`NonLinearBookImpl.exportMedia` (каждый файл картинок и звука), формат —
+`NonLinearBookFacade.exportToXxx`. Отмена срабатывает на следующем шаге
+(`ExportProgress.Cancelled`); без слушателя шаги ничего не делают. Окно — `ExportProgressDialog`
+(NLBB).
 
 Устройство — `NLBW/src/main/java/com/nlbhub/nlb/web/preview`: сервлет `/preview/*` подключён и к
 серверу плеера (редактор, `play-web.sh`), и к отдельному `ExportPreviewServer`.
@@ -697,18 +708,50 @@ NLB поверх этого по образцу Java-плеера (`PlayerEngine
   список сцен — `mygame.js` (`startup` и остальные `.txt` каталога игры).
 - jsIQ2 — страница с плеером `jsiqapi212.js` (кодировка windows-1251) и jQuery 1.10.2, игра
   начинается со статьи `0`.
-- **Движков в NLB нет**: ChoiceScript — под лицензией ChoiceScript (только некоммерческое
-  использование), у плеера jsIQ лицензии нет вовсе. Сервер скачивает их при первом запуске в
-  `export-preview/runtime`: ChoiceScript — файлы закреплённого коммита с
-  `raw.githubusercontent.com` (`ExportPreview.CHOICESCRIPT_COMMIT`), jsIQ — с quest-book.ru,
-  jQuery — с code.jquery.com (запасные адреса — ajax.googleapis.com, cdnjs). Нужен интернет
-  только в первый раз; без него страница `/preview/` скажет, какой адрес недоступен.
+- QSP (`/preview/qsp/play.html?book=book.txt`) — своя страница (`QspPage`) поверх движка
+  `@qsp/wasm-engine` (настоящий движок QSP, WebAssembly): текст QSP экспорта (UTF-16LE) переводится
+  в игру прямо в браузере (`@qsp/converters`: `readQsps` + `writeQsp`, как в qSpider), игра
+  начинается с первой локации. Экран — описание (ссылки `EXEC:` выполняются), доп. описание,
+  действия, инвентарь; окна MSG, MENU, INPUT, VIEW; звук; таймер; ошибки движка — внизу страницы.
+  Готовый `.qsp` (от txt2gam) тоже играется.
+- URQ (`/preview/urq/`) — UrqW как есть (`index-dev.html?encoding=CP1251&id=book`): UrqW ищет
+  игру в `quests/<имя>/main.qst`, сервер отдаёт под этим именем `.qst` экспорта, а картинки и звук
+  — из каталога экспорта. Ошибки 404 на `quests/book.zip`, `urqw/main.qst`, `manifest.json`,
+  `script.js` в консоли браузера — UrqW так перебирает места, где может лежать игра.
+- AXMA (`/preview/axma/play.html?book=book.sm`) — редактор AXMA Story Maker в рамке: страница
+  передаёт ему текст `.sm` (`LoadStory`) и запускает игру (`Compile(true, -1)` — кнопка «Запуск»);
+  крестик и Esc возвращают к списку. Игра показывается в рамке редактора, поэтому её картинки
+  ищутся относительно `editor/` — сервер отдаёт их из каталога экспорта. Ошибки 404 на
+  `editor/img/*.png` — кнопки редактора (их картинки не скачиваются, редактор скрыт). Если
+  редактор не скачался или не запустил игру — страница предлагает скачать `.sm` и открыть его в
+  онлайн-редакторе hyperbook.ru/editor (Загрузить -> Запуск).
+- **Движков в NLB нет**, каждый скачивается при первом открытии игры своего формата в
+  `export-preview/runtime` (сначала в `<движок>.part`, потом целиком):
+  - ChoiceScript (только некоммерческое использование) — файлы закреплённого коммита с
+    `raw.githubusercontent.com` (`ExportPreview.CHOICESCRIPT_COMMIT`);
+  - jsIQ (лицензии нет) — с quest-book.ru, jQuery — с code.jquery.com (запасные адреса —
+    ajax.googleapis.com, cdnjs);
+  - QSP (MIT) — пакеты `@qsp/wasm-engine` 1.6.1 и `@qsp/converters` 2.0.0 с registry.npmjs.org;
+  - URQ — UrqW (GPL) закреплённого коммита (`ExportPreview.URQW_COMMIT`) с
+    `raw.githubusercontent.com` и его библиотеки (jQuery, Bootstrap, i18next, JSZip — версии из
+    его `package-lock.json`) с registry.npmjs.org;
+  - AXMA — редактор с hyperbook.ru/editor (страница, `axmastorymaker.js`, `.css`). Редактор
+    бесплатный, но распространять и изменять его нельзя: он скачивается на машину автора и
+    используется без изменений (страница превью только вызывает его функции).
+
+  Пакеты npm сверяются с SHA-512 реестра (`integrity`), распаковываются своим `Tar` (только
+  каталог `package/`, без выхода за целевой каталог). Нужен интернет только в первый раз; без него
+  страница формата скажет, какой адрес недоступен.
 - На localhost страница ChoiceScript ищет свои тестовые страницы (`quicktest.html`) и пишет в
   консоль браузера ошибку 404 — на игру это не влияет.
 
 Проверено (Chromium, Playwright): «Слуга Ра», экспортированный кнопкой редактора (редактор под
-Xvfb), играется в обоих движках через `localhost:8111/preview/` — выбор вариантов в ChoiceScript,
-действия и объекты в jsIQ2; то же — через `export-preview.sh` (порт 8112).
+Xvfb), играется в ChoiceScript и jsIQ2 через `localhost:8111/preview/` — выбор вариантов в
+ChoiceScript, действия и объекты в jsIQ2; то же — через `export-preview.sh` (порт 8112).
+QSP, URQ и AXMA — подтверждено runtime (локально, `ExportPreviewServer`, движки скачаны сервером):
+«Остров» — первая страница и переход по действию в QSP, первая страница в UrqW и в редакторе AXMA
+(с картинкой); «Слуга Ра» — случайные прогулки по 80 щелчков в QSP и UrqW без ошибок движка и
+страницы, инвентарь показывается.
 
 - **ChoiceScript:** `node randomtest.js num=20 game=<имя>` из репозитория ChoiceScript, экспорт —
   в `web/<имя>/scenes/startup.txt`; `showText=true` показывает прохождение. В книгах, где после

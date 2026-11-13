@@ -74,6 +74,7 @@ public abstract class XMLExportManager extends ExportManager {
         try {
             try {
                 NLBBuildingBlocks nlbBlocks = createNLBBuildingBlocks();
+                com.nlbhub.nlb.domain.export.ExportProgress.stage(com.nlbhub.nlb.domain.export.ExportProgress.STAGE_WRITE, 0);
                 JaxbMarshaller marshaller = createMarshaller();
 
                 /*

@@ -1488,161 +1488,100 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_exportToChoiceScript.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    File exportDir = chooseExportDir();
-                    if (exportDir != null) {
-                        getMainPaneInfo().getPaneNlbFacade().exportToChoiceScript(exportDir);
-                    }
-                } catch (NLBExportException ex) {
-                    JOptionPane.showMessageDialog(
-                            m_mainFramePanel,
-                            "Error while exporting to Choice Script file: " + ex.toString()
-                    );
+                final File exportDir = chooseExportDir();
+                if (exportDir != null) {
+                    ExportProgressDialog.run(m_mainFramePanel, "Export to ChoiceScript", "Error while exporting to Choice Script file: ",
+                            () -> getMainPaneInfo().getPaneNlbFacade().exportToChoiceScript(exportDir), null);
                 }
             }
         });
         m_exportToQSPText.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    File exportDir = chooseExportDir();
-                    if (exportDir != null) {
-                        getMainPaneInfo().getPaneNlbFacade().exportToQSPTextFile(exportDir);
-                    }
-                } catch (NLBExportException ex) {
-                    JOptionPane.showMessageDialog(
-                            m_mainFramePanel,
-                            "Error while exporting to QSP text file: " + ex.toString()
-                    );
+                final File exportDir = chooseExportDir();
+                if (exportDir != null) {
+                    ExportProgressDialog.run(m_mainFramePanel, "Export to QSP", "Error while exporting to QSP text file: ",
+                            () -> getMainPaneInfo().getPaneNlbFacade().exportToQSPTextFile(exportDir), null);
                 }
             }
         });
         m_exportToURQText.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    File exportDir = chooseExportDir();
-                    if (exportDir != null) {
-                        getMainPaneInfo().getPaneNlbFacade().exportToURQTextFile(exportDir);
-                    }
-                } catch (NLBExportException ex) {
-                    JOptionPane.showMessageDialog(
-                            m_mainFramePanel,
-                            "Error while exporting to URQ file: " + ex.toString()
-                    );
+                final File exportDir = chooseExportDir();
+                if (exportDir != null) {
+                    ExportProgressDialog.run(m_mainFramePanel, "Export to URQ", "Error while exporting to URQ file: ",
+                            () -> getMainPaneInfo().getPaneNlbFacade().exportToURQTextFile(exportDir), null);
                 }
             }
         });
         m_exportToPDF.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    File exportFile = chooseExportFile("book.pdf");
-                    if (exportFile != null) {
-                        getMainPaneInfo().getPaneNlbFacade().exportToPDFFile(exportFile);
-                    }
-                } catch (NLBExportException ex) {
-                    LOGGER.error("Error while exporting to PDF: ", ex);
-                    JOptionPane.showMessageDialog(
-                            m_mainFramePanel,
-                            "Error while exporting to PDF: " + ex.toString()
-                    );
+                final File exportFile = chooseExportFile("book.pdf");
+                if (exportFile != null) {
+                    ExportProgressDialog.run(m_mainFramePanel, "Export to PDF", "Error while exporting to PDF: ",
+                            () -> getMainPaneInfo().getPaneNlbFacade().exportToPDFFile(exportFile), null);
                 }
             }
         });
         m_exportTXT.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    File exportDir = chooseExportDir();
-                    if (exportDir != null) {
-                        getMainPaneInfo().getPaneNlbFacade().exportToTXTFile(exportDir);
-                    }
-                } catch (NLBExportException ex) {
-                    JOptionPane.showMessageDialog(
-                            m_mainFramePanel,
-                            "Error while exporting to TXT: " + ex.toString()
-                    );
+                final File exportDir = chooseExportDir();
+                if (exportDir != null) {
+                    ExportProgressDialog.run(m_mainFramePanel, "Export to TXT", "Error while exporting to TXT: ",
+                            () -> getMainPaneInfo().getPaneNlbFacade().exportToTXTFile(exportDir), null);
                 }
             }
         });
         m_exportToHTML.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    File exportDir = chooseExportDir();
-                    if (exportDir != null) {
-                        getMainPaneInfo().getPaneNlbFacade().exportToHTMLFile(exportDir);
-                    }
-                } catch (NLBExportException ex) {
-                    JOptionPane.showMessageDialog(
-                            m_mainFramePanel,
-                            "Error while exporting to HTML: " + ex.toString()
-                    );
+                final File exportDir = chooseExportDir();
+                if (exportDir != null) {
+                    ExportProgressDialog.run(m_mainFramePanel, "Export to HTML", "Error while exporting to HTML: ",
+                            () -> getMainPaneInfo().getPaneNlbFacade().exportToHTMLFile(exportDir), null);
                 }
             }
         });
         m_exportJSIQ.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    File exportDir = chooseExportDir();
-                    if (exportDir != null) {
-                        getMainPaneInfo().getPaneNlbFacade().exportToJSIQFile(exportDir);
-                    }
-                } catch (NLBExportException ex) {
-                    JOptionPane.showMessageDialog(
-                            m_mainFramePanel,
-                            "Error while exporting to HTML: " + ex.toString()
-                    );
+                final File exportDir = chooseExportDir();
+                if (exportDir != null) {
+                    ExportProgressDialog.run(m_mainFramePanel, "Export to jsIQ2", "Error while exporting to jsIQ2: ",
+                            () -> getMainPaneInfo().getPaneNlbFacade().exportToJSIQFile(exportDir), null);
                 }
             }
         });
         m_exportSTEAD.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    File exportDir = chooseExportDir();
-                    if (exportDir != null) {
-                        getMainPaneInfo().getPaneNlbFacade().exportToSTEADFile(exportDir);
-                    }
-                } catch (NLBExportException | NLBIOException ex) {
-                    JOptionPane.showMessageDialog(
-                            m_mainFramePanel,
-                            "Error while exporting to STEAD: " + ex.toString()
-                    );
+                final File exportDir = chooseExportDir();
+                if (exportDir != null) {
+                    ExportProgressDialog.run(m_mainFramePanel, "Export to INSTEAD", "Error while exporting to STEAD: ",
+                            () -> getMainPaneInfo().getPaneNlbFacade().exportToSTEADFile(exportDir), null);
                 }
             }
         });
         m_exportVNSTEAD.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    File exportDir = chooseExportDir();
-                    if (exportDir != null) {
-                        getMainPaneInfo().getPaneNlbFacade().exportToVNSTEADFile(exportDir);
-                    }
-                } catch (NLBExportException | NLBIOException ex) {
-                    JOptionPane.showMessageDialog(
-                            m_mainFramePanel,
-                            "Error while exporting to VNSTEAD: " + ex.toString()
-                    );
+                final File exportDir = chooseExportDir();
+                if (exportDir != null) {
+                    ExportProgressDialog.run(m_mainFramePanel, "Export to INSTEAD VN", "Error while exporting to VNSTEAD: ",
+                            () -> getMainPaneInfo().getPaneNlbFacade().exportToVNSTEADFile(exportDir), null);
                 }
             }
         });
         m_exportASM.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    File exportDir = chooseExportDir();
-                    if (exportDir != null) {
-                        getMainPaneInfo().getPaneNlbFacade().exportToASMFile(exportDir);
-                    }
-                } catch (NLBExportException ex) {
-                    JOptionPane.showMessageDialog(
-                            m_mainFramePanel,
-                            "Error while exporting to ASM: " + ex.toString()
-                    );
+                final File exportDir = chooseExportDir();
+                if (exportDir != null) {
+                    ExportProgressDialog.run(m_mainFramePanel, "Export to AXMA", "Error while exporting to ASM: ",
+                            () -> getMainPaneInfo().getPaneNlbFacade().exportToASMFile(exportDir), null);
                 }
             }
         });
@@ -1886,35 +1825,45 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                 }
             }
         });
-        // Проверка экспортов в браузере: открытая книга экспортируется в ChoiceScript и jsIQ2 в
-        // каталог export-preview, сервер редактора (если ещё не запущен) запускается, и в браузере
-        // открывается /preview/ — игры в настоящих движках (их сервер скачивает при первом запуске)
+        // Проверка экспортов в браузере: открытая книга экспортируется в ChoiceScript, jsIQ2, QSP, URQ
+        // и AXMA в каталог export-preview (с окном прогресса), сервер редактора (если ещё не запущен)
+        // запускается, и в браузере открывается /preview/ — игры в настоящих движках (их сервер
+        // скачивает при первом открытии игры своего формата)
         m_previewExportButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    if (getMainPaneInfo().getPaneNlbFacade().getNlb().getRootDir() == null) {
-                        // экспорт берёт картинки из каталога книги
-                        JOptionPane.showMessageDialog(m_mainFramePanel,
-                                "Save the book first: the export preview needs the book directory");
-                        return;
-                    }
-                    ExportPreview preview = ExportPreview.defaultPreview();
-                    preview.createDirs();
-                    ExportPreview.clear(preview.getChoiceScriptDir());
-                    ExportPreview.clear(preview.getJsiqDir());
-                    getMainPaneInfo().getPaneNlbFacade().exportToChoiceScript(preview.getChoiceScriptDir());
-                    getMainPaneInfo().getPaneNlbFacade().exportToJSIQFile(preview.getJsiqDir());
-                    if (!m_launcher.isRunning()) {
-                        startServer();
-                    }
-                    BareBonesBrowserLaunch.openURL("http://localhost:8111/preview/");
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(
-                            m_mainFramePanel,
-                            "Error while preparing the export preview: " + ex.toString()
-                    );
+                final NonLinearBookFacade facade = getMainPaneInfo().getPaneNlbFacade();
+                if (facade.getNlb().getRootDir() == null) {
+                    // экспорт берёт картинки из каталога книги
+                    JOptionPane.showMessageDialog(m_mainFramePanel,
+                            "Save the book first: the export preview needs the book directory");
+                    return;
                 }
+                final ExportPreview preview = ExportPreview.defaultPreview();
+                ExportProgressDialog.run(m_mainFramePanel, "Export preview", "Error while preparing the export preview: ",
+                        () -> {
+                            preview.createDirs();
+                            for (File dir : new File[]{preview.getChoiceScriptDir(), preview.getJsiqDir(),
+                                    preview.getQspDir(), preview.getUrqDir(), preview.getAxmaDir()}) {
+                                ExportPreview.clear(dir);
+                            }
+                            facade.exportToChoiceScript(preview.getChoiceScriptDir());
+                            facade.exportToJSIQFile(preview.getJsiqDir());
+                            facade.exportToQSPTextFile(preview.getQspDir());
+                            facade.exportToURQTextFile(preview.getUrqDir());
+                            facade.exportToASMFile(preview.getAxmaDir());
+                        },
+                        () -> {
+                            try {
+                                if (!m_launcher.isRunning()) {
+                                    startServer();
+                                }
+                                BareBonesBrowserLaunch.openURL("http://localhost:8111/preview/");
+                            } catch (Exception ex) {
+                                JOptionPane.showMessageDialog(m_mainFramePanel,
+                                        "Error while starting the export preview: " + ex.toString());
+                            }
+                        });
             }
         });
         m_stopServerButton.addActionListener(new ActionListener() {

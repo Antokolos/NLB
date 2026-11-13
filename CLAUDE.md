@@ -12,7 +12,7 @@
   книгу в `Launcher.putNLBInMemoryToCache` и открывает `http://localhost:8111/play/?book=…`.
 - **NLBW** — веб-плеер на Jetty (ee10): ядро плеера — пакет `com.nlbhub.nlb.player` в NLBL,
   веб-слой — `web/player` (`PlayerServlet` на `/play/*`: REST JSON, медиа, тема; `BookLibrary`,
-  `WebSession`, `ScreenTheme`, `PlayerServer`; проверка экспортов ChoiceScript и jsIQ2 в браузере —
+  `WebSession`, `ScreenTheme`, `PlayerServer`; проверка экспортов ChoiceScript, jsIQ2, QSP, URQ и AXMA в браузере —
   `web/preview`, `/preview/`, кнопка редактора и `export-preview.sh`), клиент — `resources/.../player/client`
   (`screen.js` — экран VN и STANDARD как GameScreen NLBNavigator). Темы INSTEAD:
   `res/instead/themes/default` (базовая) и `res/vnstead/themes/default` (тема игры, она же —
