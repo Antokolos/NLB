@@ -660,6 +660,11 @@ public class QSPExportManager extends TextExportManager {
     private String sceneText(ObjBuildingBlocks objBlocks, String rawText) {
         final String id = objBlocks.getObjId();
         String text = rawText;
+        if (text.contains(OBJ_LABEL_MARK) && !objBlocks.hasAction()) {
+            // только пустая метка {} и действия нет (заглушка карты и фон боя «Фронтира»): как в
+            // плеере — одна картинка, без ссылки и подписи (раньше — ссылка с именем объекта)
+            text = text.replaceAll("<a href=\"EXEC:[^\"]*\">((?:(?!</a>).)*)" + OBJ_LABEL_MARK + "</a>", "$1");
+        }
         if (text.contains(OBJ_LABEL_MARK)) {
             // подпись для пустой метки {}: disp, иначе первая строка текста действия (карта во
             // «Фронтире»), иначе имя — как PlayerEngine.sceneLabel
@@ -1227,15 +1232,17 @@ public class QSPExportManager extends TextExportManager {
         stringBuilder.append("nlb_leave = 0").append(LINE_SEPARATOR);
         stringBuilder.append(leave);
         if (!leave.isEmpty()) {
+            // страница с текстом показывается целиком, и та, которую сейчас покинут (плеер прячет
+            // только страницу без текста: «Слуга Ра», комната 3 и автоссылка импланта)
+            if (pageBlocks.isHasPageText()) {
+                stringBuilder.append("nlb_leave = 0").append(LINE_SEPARATOR);
+            }
             stringBuilder.append("nlb_gone = nlb_leave").append(LINE_SEPARATOR);
             final String noChoicesNow = noChoicesCondition(pageBlocks);
             if (noChoicesNow != null && pageBlocks.getAllContainedObjIds().isEmpty()) {
                 // выбирать нечего и своих объектов нет — время проматывается до автоссылки
                 // (TIMER_WAIT_TICKS), страницу сразу покинут: ход боя «Фронтира»
                 stringBuilder.append(noChoicesNow.isEmpty() ? "" : "IF " + noChoicesNow + ": ").append("nlb_gone = 1").append(LINE_SEPARATOR);
-            }
-            if (pageBlocks.isHasPageText()) {
-                stringBuilder.append("nlb_leave = 0").append(LINE_SEPARATOR);
             }
         }
         if (images.size() == 1 && !images.get(0).hasConstraint()) {

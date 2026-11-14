@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
  * Разметка INSTEAD в экспорте QSP — как в Java-плеере (PlayerEngine.displayText, sceneLabel) и
  * экспорте jsIQ2: '^' — перевод строки (&lt;br&gt;, USEHTML), в подписи ссылки — пробел, хвостовой
  * '^' пустой строки не даёт; пустая метка {} — ссылкой становится первая непустая строка рядом,
- * без неё — подпись объекта
+ * без неё — подпись объекта; у объекта без действия — ни ссылки, ни подписи (только картинка)
  */
 public class QspMarkupExportTest {
     @Rule
@@ -42,6 +42,9 @@ public class QspMarkupExportTest {
         b.link(room, out, "^Дальше");
         m_flag = b.obj(room, "flag", "{}^Показывать эту страницу", "", false);
         m_card = b.obj(room, "card", "{}", "Карта", false);
+        m_card.setActTexts(b.text("Карта открыта."));
+        // {} без действия (фон боя «Фронтира») — без ссылки и подписи, как в плеере
+        b.obj(room, "background", "{}", "", false);
         m_status = b.obj(room, "status", "Статус^", "Слава: 0^Боеспособность: 45", true);
         return b.nlb;
     }
@@ -55,6 +58,7 @@ public class QspMarkupExportTest {
         assertTrue("подпись ссылки — без '^': " + qsp, qsp.contains("ACT 'Дальше':"));
         assertTrue("{} — ссылкой строка рядом: " + qsp, qsp.contains("'<br><a href=\"EXEC:GOSUB ''nlb_act'', ''' + $nlb_me + '''\">Показывать эту страницу</a>'\n"));
         assertTrue("{} без строк рядом — подпись объекта: " + qsp, qsp.contains("'<a href=\"EXEC:GOSUB ''nlb_act'', ''' + $nlb_me + '''\">Карта</a>'\n"));
+        assertFalse("{} без действия — без ссылки и подписи: " + qsp, qsp.contains("\">background</a>"));
         assertTrue("подпись предмета — строками: " + qsp, qsp.contains("$RESULT = 'Слава: 0<br>Боеспособность: 45'\n"));
         assertTrue(qsp, qsp.contains("'Статус'\n"));
         assertFalse("'^' не остаётся в тексте: " + qsp, qsp.replaceAll("(?m)^!.*$", "").contains("^"));
