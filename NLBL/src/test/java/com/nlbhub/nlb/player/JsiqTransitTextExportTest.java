@@ -16,7 +16,7 @@ import java.nio.file.Files;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Текст служебной страницы в jsIQ2: страница, которую покидают автоссылкой (или GOTO из её
+ * Текст служебной страницы в jsIQ2 (и страница, показанная заново после действия, — не переносится): страница, которую покидают автоссылкой (или GOTO из её
  * модификаций), остаётся на экране перед текстом следующей статьи, как в плеере — там события
  * всех страниц одного хода идут подряд (бой «Фронтира»: «Применяются эффекты карт…», «Раунд
  * схватки начинается…»). Перед переходом NLB.carry переносит ответ и текст статьи (без сцены,
@@ -64,12 +64,19 @@ public class JsiqTransitTextExportTest {
         String xml = export();
         assertTrue("ответ — перед текстом страницы, затем сам ответ сброшен: " + xml,
                 xml.contains("var html = vars.nlb_reply ? '<div class=\"nlb_said\">' + vars.nlb_reply + '</div>' : '';")
-                        && xml.contains("vars.nlb_reply = '';\n    if (t && t.length) {"));
-        assertTrue("сцена, ответ и инвентарь не переносятся, ссылки — текстом: " + xml,
-                xml.contains("c.find('.nlb_prev, .nlb_reply, .nlb_inv, .nlb_scene').remove();")
+                        && xml.contains("vars.nlb_reply = '';\n    if (vars.nlb_redrawn) { t = null; vars.nlb_redrawn = false; }\n    if (t && t.length) {"));
+        assertTrue("ответ и инвентарь не переносятся, ссылки — текстом: " + xml,
+                xml.contains("c.find('.nlb_prev, .nlb_reply, .nlb_inv').remove();")
                         && xml.contains("c.find('a').each(function () { $(this).replaceWith($(this).contents()); });"));
-        assertTrue("переменные и картинка — как показали на той странице: " + xml,
-                xml.contains("c.find('.nlb_v, .nlb_pic').removeClass('nlb_v nlb_pic');"));
+        assertTrue("переменные, картинка и объекты — как показали на той странице: " + xml,
+                xml.contains("c.find('.nlb_v, .nlb_pic, .nlb_scene').removeClass('nlb_v nlb_pic nlb_scene');"));
+        assertTrue("страница, которую покидают сразу, объектов не выводит (nlb_gone), без текста — и картинки (nlb_leave): " + xml,
+                xml.contains("N.scene = function (vars) { if (vars.nlb_gone) { return ''; }")
+                        && xml.contains("$(this).html(vars.nlb_leave ? '' : N.imgTag(N.img(vars, N.here())));")
+                        && xml.contains("vars.nlb_gone = true; vars.nlb_leave = false; "));
+        assertTrue("статья, показанная заново после действия, не переносится — только ответ: " + xml,
+                xml.contains("nlbInit(); vars.nlb_redrawn = !!vars.nlb_redraw;")
+                        && xml.contains("if (vars.nlb_redrawn) { t = null; vars.nlb_redrawn = false; }"));
         assertTrue("новый ход — заново (ссылка и щелчок): " + xml,
                 xml.contains("vars.nlb_reply = '';\n    vars.nlb_prev = '';\n    vars.nlb_sel = '';")
                         && xml.contains("var vars = N.vars();\n    vars.nlb_reply = '';\n    vars.nlb_prev = '';"));

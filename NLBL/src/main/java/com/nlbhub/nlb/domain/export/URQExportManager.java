@@ -159,6 +159,8 @@ public class URQExportManager extends TextExportManager {
         sb.append("nlb_sel=0").append(LINE_SEPARATOR);
         sb.append("nlb_cnt_prev=0").append(LINE_SEPARATOR);
         sb.append("nlb_reply=\"\"").append(LINE_SEPARATOR);
+        sb.append("nlb_said=\"\"").append(LINE_SEPARATOR);
+        sb.append("nlb_redrawn=0").append(LINE_SEPARATOR);
         for (int i = 0; i < objs.size(); i++) {
             sb.append("nlb_in_").append(i + 1).append("=\"")
                     .append(StringHelper.notEmpty(objs.get(i).getContainerId()) ? containerKey(objs.get(i).getContainerId()) : "")
@@ -344,15 +346,27 @@ public class URQExportManager extends TextExportManager {
                 "if nlb_printed=0 then nlb_reply=nlb_reply+\"" + m_gameInvText + "<br>\"",
                 "nlb_sel=nlb_o2",
                 "goto nlb_redraw",
-                // показать страницу заново: сцена, ответ, кнопки
+                // показать страницу заново: сцена, ответ, кнопки. Если ход уводит со страницы
+                // автоссылкой (nlb_redrawn), повторный показ убирается (nlb_unshow): в плеере
+                // действие страницу заново не выводит — на экране ответ, тексты хода (nlb_said) и
+                // новая страница («Слуга Ра»: щелчок по панно, и автоссылка импланта уводит в
+                // «Больно вам, больно» — без комнаты и её картинки)
                 ":nlb_redraw",
                 // ход игрока на странице — тик её таймера (в начале показа)
                 "nlb_tick=1",
                 "cls",
                 "proc #%nlb_page$_show",
                 "if nlb_reply<>\"\" then pln #%nlb_reply$",
+                "nlb_said=nlb_reply",
                 "nlb_reply=\"\"",
+                "nlb_redrawn=1",
                 "goto #%nlb_page$_turn",
+                ":nlb_unshow",
+                "nlb_redrawn=0",
+                "cls",
+                "if nlb_said<>\"\" then pln #%nlb_said$",
+                "nlb_said=\"\"",
+                "end",
                 // Списки (nlb.lua: push/pop — начало, inject/eject — конец): имя — nlb_lname,
                 // длина — nlb_ln_<имя>, элементы — nlb_li_<имя>_<i> (0 — начало); значение — nlb_lval,
                 // снятое — nlb_lres (из пустого — 0). Счётчик nlb_k — у этих подпрограмм, nlb_m — у
@@ -1053,6 +1067,8 @@ public class URQExportManager extends TextExportManager {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(pageBlocks.getPageComment());
         stringBuilder.append(pageBlocks.getPageLabel());
+        // вход на страницу — не повторный показ (см. nlb_redraw)
+        stringBuilder.append("nlb_redrawn=0").append(LINE_SEPARATOR);
         stringBuilder.append(pageBlocks.getPageModifications());
         stringBuilder.append(pageBlocks.getPageVariable());
         final boolean hasTimer = pageBlocks.isHasPageTimer();
@@ -1109,6 +1125,8 @@ public class URQExportManager extends TextExportManager {
         // конец хода (callback-объекты); их текст действия — в ответ, он выводится сразу
         stringBuilder.append("proc nlb_turn").append(LINE_SEPARATOR);
         stringBuilder.append("if nlb_reply<>\"\" then pln #%nlb_reply$").append(LINE_SEPARATOR);
+        // тексты хода после повторного показа — их оставит nlb_unshow
+        stringBuilder.append("if nlb_redrawn=1 then nlb_said=nlb_said+nlb_reply").append(LINE_SEPARATOR);
         stringBuilder.append("nlb_reply=\"\"").append(LINE_SEPARATOR);
         stringBuilder.append("proc nlb_disp_all").append(LINE_SEPARATOR);
         stringBuilder.append("proc nlb_inv_sync").append(LINE_SEPARATOR);
@@ -1247,6 +1265,10 @@ public class URQExportManager extends TextExportManager {
         for (final LinkBuildingBlocks linkBlocks : pageBlocks.getLinksBuildingBlocks()) {
             postPage.append(linkBlocks.getLinkComment());
             postPage.append(linkBlocks.getLinkLabel());
+            if (linkBlocks.isAuto()) {
+                // автоссылка после повторного показа страницы — он убирается (nlb_unshow)
+                postPage.append("if nlb_redrawn=1 then proc nlb_unshow").append(LINE_SEPARATOR);
+            }
             if (!linkBlocks.isTechnical()) {
                 // переход по обычной ссылке — действие игрока (для автоссылок «needs action»);
                 // он же снимает выбор предмета для применения
