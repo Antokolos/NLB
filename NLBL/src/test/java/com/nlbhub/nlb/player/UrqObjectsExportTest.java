@@ -101,7 +101,7 @@ public class UrqObjectsExportTest {
                 + "if nlb_diff<=nlb_cnt_prev then goto nlb_turn_end\nnlb_cnt_prev=nlb_diff\nproc nlb_o_1_acta\n"
                 + ":nlb_turn_end\nnlb_cnt_prev=nlb_diff\nend\n"));
         assertTrue("конец хода страницы: " + urq, urq.contains(":" + hall.getId() + "_turn\nproc nlb_turn\n"
-                + "if nlb_reply<>\"\" then pln #%nlb_reply$\nnlb_reply=\"\"\n"));
+                + "if nlb_reply<>\"\" then pln #%nlb_reply$\nif nlb_redrawn=1 then nlb_said=nlb_said+nlb_reply\nnlb_reply=\"\"\n"));
         assertTrue("взять — только по щелчку: " + urq, urq.contains("nlb_a=nlb_me\nproc nlb_o_1_acta\nnlb_po=nlb_me\n"));
     }
 }

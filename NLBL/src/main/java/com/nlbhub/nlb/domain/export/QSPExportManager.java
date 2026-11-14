@@ -281,13 +281,27 @@ public class QSPExportManager extends TextExportManager {
             "END",
             "GOSUB 'nlb_refresh'",
             LOC_END,
+            // Действие игрока на странице: страница показывается заново, под ней — ответ, затем ход
+            // (callback-объекты, автоссылки). Если ход уводит со страницы (nlb_redrawn), её
+            // повторный показ убирается (nlb_unshow): в плеере действие страницу заново не выводит,
+            // на экране — ответ, тексты хода и новая страница («Слуга Ра»: щелчок по панно, и
+            // автоссылка импланта уводит в «Больно вам, больно» — без комнаты и её картинки)
             "#nlb_refresh",
             "nlb_tick = 1",
             "$nlb_reply = $MAINTXT",
             "*CLR",
             "GOSUB $CURLOC + '_show'",
+            "nlb_showlen = LEN($MAINTXT)",
             "IF $nlb_reply <> '': *P $nlb_reply",
+            "nlb_redrawn = 1",
             "GOSUB $CURLOC + '_turn'",
+            "nlb_redrawn = 0",
+            LOC_END,
+            "#nlb_unshow",
+            "nlb_redrawn = 0",
+            "$nlb_said = MID($MAINTXT, nlb_showlen + 1)",
+            "*CLR",
+            "*P $nlb_said",
             LOC_END,
             "#nlb_onobjsel",
             "$nlb_o = $nlb_byname[$SELOBJ]",
@@ -1174,6 +1188,8 @@ public class QSPExportManager extends TextExportManager {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(pageBlocks.getPageComment());
         stringBuilder.append(pageBlocks.getPageLabel());
+        // вход на страницу — не повторный показ (см. nlb_refresh)
+        stringBuilder.append("nlb_redrawn = 0").append(LINE_SEPARATOR);
         stringBuilder.append(pageBlocks.getPageModifications());
         stringBuilder.append(pageBlocks.getPageVariable());
         final boolean hasTimer = pageBlocks.isHasPageTimer();
@@ -1351,7 +1367,9 @@ public class QSPExportManager extends TextExportManager {
             stringBuilder.append(linkBlocks.getLinkVisitStateVariable());
             if (linkBlocks.isAuto()) {
                 // XGOTO не очищает основное окно: текст страницы, которую сразу покидают по
-                // автоссылке, остаётся виден перед текстом следующей (как в плеере)
+                // автоссылке, остаётся виден перед текстом следующей (как в плеере). Если её
+                // показали заново после действия — повторный показ убирается (nlb_unshow)
+                stringBuilder.append("    IF nlb_redrawn = 1: GOSUB 'nlb_unshow'").append(LINE_SEPARATOR);
                 stringBuilder.append(linkBlocks.getLinkGoTo().replaceFirst("GOTO '", "XGOTO '"));
             } else {
                 stringBuilder.append(linkBlocks.getLinkGoTo());

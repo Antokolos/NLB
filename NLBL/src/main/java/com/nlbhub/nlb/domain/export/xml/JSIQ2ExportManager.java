@@ -233,7 +233,7 @@ public class JSIQ2ExportManager extends XMLExportManager {
         Script preload = new Script();
         preload.setType("preload");
         preload.setValue(
-                "nlbInit(); if (vars." + REDRAW_VAR + ") { vars." + REDRAW_VAR + " = false; "
+                "nlbInit(); vars.nlb_redrawn = !!vars." + REDRAW_VAR + "; if (vars." + REDRAW_VAR + ") { vars." + REDRAW_VAR + " = false; "
                         + (hasTimer ? pageBlocks.getPageTimerVariable() : Constants.EMPTY_STRING)
                         + "} else { "
                         + (hasPageModifications ? "pmod(); " : Constants.EMPTY_STRING)
@@ -241,7 +241,8 @@ public class JSIQ2ExportManager extends XMLExportManager {
                         + (hasTimer ? pageBlocks.getPageTimerVariableInit() : Constants.EMPTY_STRING)
                         // initf(): звук страницы — при входе, после модификаций
                         + (pageBlocks.getPageSounds().isEmpty() ? Constants.EMPTY_STRING : "NLB.snd(vars, '" + pageBlocks.getPageId() + "'); ")
-                        + "}"
+                        + "} "
+                        + leaveFlags(pageBlocks)
         );
         article.addScript(preload);
         // Переход (GOTO в модификациях, автоссылки) — в onload, после показа статьи: так текст
@@ -292,6 +293,68 @@ public class JSIQ2ExportManager extends XMLExportManager {
         return (any.length() > 0 ? "if (!(" + any + ")) " : Constants.EMPTY_STRING)
                 + "{ for (var nlb_w = 0; nlb_w < " + pageBlocks.getTimerWaitTicks() + "; nlb_w++) { "
                 + pageBlocks.getPageTimerVariable() + "if (autos()) { return; } } } ";
+    }
+
+    /**
+     * Страницу сейчас покинут — как в QSP и URQ и в плеере (PlayerEngine.followLink), до показа:
+     * vars.nlb_gone — сработает автоссылка (или выбирать нечего и время проматывается до неё, а
+     * своих объектов нет) — объекты сцены не выводятся: сцена плеера — только у страницы, где
+     * остановились (ход боя «Фронтира»); vars.nlb_leave — то же у страницы без текста: и её картинка
+     * не выводится. Страница, которую покидают позже (после хода: callback-объекты, «needs action»),
+     * показывается целиком («Слуга Ра»: комната 3 и автоссылка импланта)
+     */
+    private String leaveFlags(PageBuildingBlocks pageBlocks) {
+        StringBuilder leave = new StringBuilder();
+        boolean always = false;
+        for (LinkBuildingBlocks linkBlocks : pageBlocks.getLinksBuildingBlocks()) {
+            if (!linkBlocks.isAuto()) {
+                continue;
+            }
+            String condition = StringHelper.isEmpty(linkBlocks.getLinkConstraint()) ? "" : "(" + linkBlocks.getLinkConstraint() + ")";
+            if (linkBlocks.isNeedsAction()) {
+                String hasAction = "(NLB.countGet(vars, 0) >= " + getNeedsActionCount() + ")";
+                condition = condition.isEmpty() ? hasAction : condition + " && " + hasAction;
+            }
+            if (condition.isEmpty()) {
+                always = true;
+                break;
+            }
+            leave.append(leave.length() > 0 ? " || " : "").append(condition);
+        }
+        if (!always && leave.length() == 0) {
+            return "vars.nlb_gone = false; vars.nlb_leave = false; ";
+        }
+        String leaveExpr = always ? "true" : "!!(" + leave + ")";
+        String gone = leaveExpr;
+        String noChoices = noChoicesCondition(pageBlocks);
+        if (noChoices != null && pageBlocks.getAllContainedObjIds().isEmpty()) {
+            // выбирать нечего и своих объектов нет — время проматывается до автоссылки
+            gone = noChoices.isEmpty() ? "true" : leaveExpr + " || !(" + noChoices + ")";
+        }
+        return "vars.nlb_gone = " + gone + "; vars.nlb_leave = "
+                + (pageBlocks.isHasPageText() ? "false" : leaveExpr) + "; ";
+    }
+
+    /**
+     * «Выбирать нечего» для проматывания таймера (как timerWait): условие, что доступна хоть одна
+     * обычная ссылка; пустая строка — обычных ссылок нет; null — не проматывается
+     */
+    private static String noChoicesCondition(PageBuildingBlocks pageBlocks) {
+        if (!pageBlocks.isHasPageTimer() || pageBlocks.getTimerWaitTicks() <= 0) {
+            return null;
+        }
+        boolean hasAuto = false;
+        StringBuilder any = new StringBuilder();
+        for (LinkBuildingBlocks linkBlocks : pageBlocks.getLinksBuildingBlocks()) {
+            if (linkBlocks.isAuto()) {
+                hasAuto = true;
+            } else if (StringHelper.isEmpty(linkBlocks.getLinkConstraint())) {
+                return null;
+            } else {
+                any.append(any.length() > 0 ? " || " : "").append("(").append(linkBlocks.getLinkConstraint()).append(")");
+            }
+        }
+        return hasAuto ? any.toString() : null;
     }
 
     /** Переменная jsIQ, в которой модификации оставляют статью для перехода (GOTO) */
@@ -596,19 +659,24 @@ public class JSIQ2ExportManager extends XMLExportManager {
             // Страница, которую покидают автоссылкой или GOTO (бой «Фронтира»: служебные страницы
             // хода), — её текст остаётся на экране перед текстом следующей статьи, как в плеере, где
             // события всех страниц одного хода идут подряд: сначала ответ, накопленный к этому
-            // моменту (действие игрока, модификации страницы), затем текст и картинка страницы. Её
-            // объекты (сцена) не переносятся — на экране сцена последней страницы; ссылки — простым
-            // текстом, переменные — со значениями, которые на той странице показали. Новый ход
-            // (переход по ссылке, щелчок) — заново
+            // моменту (действие игрока, модификации страницы), затем текст, картинка и объекты
+            // страницы — как их показали (страница, которую покидают сразу, объектов не выводит:
+            // nlb_gone); ссылки — простым текстом, переменные — со значениями, которые на той
+            // странице показали. Новый ход
+            // (переход по ссылке, щелчок) — заново. Статью, показанную заново после действия
+            // (nlb_redrawn), не переносят: в плеере действие страницу заново не выводит, на
+            // экране — только ответ («Слуга Ра»: щелчок по панно, автоссылка импланта уводит в
+            // «Больно вам, больно» — без текста комнаты)
             "N.carry = function (vars) {",
             "    var t = jsIQ.containers && jsIQ.containers.text;",
             "    var html = vars.nlb_reply ? '<div class=\"nlb_said\">' + vars.nlb_reply + '</div>' : '';",
             "    vars.nlb_reply = '';",
+            "    if (vars.nlb_redrawn) { t = null; vars.nlb_redrawn = false; }",
             "    if (t && t.length) {",
             "        var c = t.clone();",
-            "        c.find('.nlb_prev, .nlb_reply, .nlb_inv, .nlb_scene').remove();",
+            "        c.find('.nlb_prev, .nlb_reply, .nlb_inv').remove();",
             "        c.find('a').each(function () { $(this).replaceWith($(this).contents()); });",
-            "        c.find('.nlb_v, .nlb_pic').removeClass('nlb_v nlb_pic');",
+            "        c.find('.nlb_v, .nlb_pic, .nlb_scene').removeClass('nlb_v nlb_pic nlb_scene');",
             "        html += $.trim(c.html());",
             "    }",
             "    if (html) { vars.nlb_prev = (vars.nlb_prev || '') + '<div class=\"nlb_passed\">' + html + '</div>'; }",
@@ -703,13 +771,13 @@ public class JSIQ2ExportManager extends XMLExportManager {
             "    if (!c) { return; }",
             "    var vars = N.vars();",
             "    c.find('.nlb_prev').each(function () { $(this).html(vars.nlb_prev || ''); });",
-            "    c.find('.nlb_pic').each(function () { $(this).html(N.imgTag(N.img(vars, N.here()))); });",
+            "    c.find('.nlb_pic').each(function () { $(this).html(vars.nlb_leave ? '' : N.imgTag(N.img(vars, N.here()))); });",
             "    c.find('.nlb_scene').each(function () { $(this).html(N.scene(vars)); });",
             "    c.find('.nlb_reply').each(function () { $(this).html(vars.nlb_reply || ''); });",
             "    c.find('.nlb_inv').each(function () { $(this).html(N.inventory(vars)); });",
             "    c.find('.nlb_v').each(function () { $(this).text(N.v(vars, $(this).attr('data-v'))); });",
             "};",
-            "N.scene = function (vars) { N.seen = {}; var r = N.showIn(vars, N.here()); N.seen = null; return r; };",
+            "N.scene = function (vars) { if (vars.nlb_gone) { return ''; } N.seen = {}; var r = N.showIn(vars, N.here()); N.seen = null; return r; };",
             "jsIQ.addEventHandler('on_text_render', function (params, vars, process) { N.fill(params.container); process.next(); });",
             "jsIQ.addEventHandler('on_action_render', function (params, vars, process) { N.fill(params.container); process.next(); });",
             "");

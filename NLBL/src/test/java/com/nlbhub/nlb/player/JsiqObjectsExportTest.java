@@ -65,7 +65,7 @@ public class JsiqObjectsExportTest {
                 xml.contains("'" + m_key.getId() + "': '" + m_hall.getId() + "'"));
         assertTrue("статья 0 — страница зала: " + xml, xml.contains("N.pages = {'0': '" + m_hall.getId() + "'"));
         assertTrue("preload каждой статьи вызывает общий код: " + xml,
-                xml.contains("<script type=\"preload\"><![CDATA[nlbInit(); if (vars.nlb_redraw) { vars.nlb_redraw = false; } else { }]]>"));
+                xml.contains("<script type=\"preload\"><![CDATA[nlbInit(); vars.nlb_redrawn = !!vars.nlb_redraw; if (vars.nlb_redraw) { vars.nlb_redraw = false; } else { } vars.nlb_gone = false; vars.nlb_leave = false; ]]>"));
         assertTrue("места для объектов сцены, ответа и инвентаря: " + xml, xml.contains(
                 "<text><![CDATA[<div class=\"nlb_scene\"></div>]]></text>\n"
                         + "        <text><![CDATA[<div class=\"nlb_reply\"></div>]]></text>\n"
