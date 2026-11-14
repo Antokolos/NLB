@@ -40,7 +40,11 @@ public class JsiqTransitTextExportTest {
         b.link(fight, effects, "Удар");
         LinkImpl auto = b.link(effects, round, "");
         auto.setAuto(true);
-        LinkImpl back = b.link(round, fight, "");
+        // служебная страница без текста: покидают сразу — ни картинки, ни объектов
+        PageImpl blank = b.page("");
+        LinkImpl toBlank = b.link(round, blank, "");
+        toBlank.setAuto(true);
+        LinkImpl back = b.link(blank, fight, "");
         back.setAuto(true);
         NonLinearBookImpl nlb = b.nlb;
         File file = new File(m_temp.getRoot(), "book.xml");
@@ -70,10 +74,12 @@ public class JsiqTransitTextExportTest {
                         && xml.contains("c.find('a').each(function () { $(this).replaceWith($(this).contents()); });"));
         assertTrue("переменные, картинка и объекты — как показали на той странице: " + xml,
                 xml.contains("c.find('.nlb_v, .nlb_pic, .nlb_scene').removeClass('nlb_v nlb_pic nlb_scene');"));
-        assertTrue("страница, которую покидают сразу, объектов не выводит (nlb_gone), без текста — и картинки (nlb_leave): " + xml,
+        assertTrue("страница без текста, которую покидают сразу, не выводит ни объектов (nlb_gone), ни картинки (nlb_leave): " + xml,
                 xml.contains("N.scene = function (vars) { if (vars.nlb_gone) { return ''; }")
                         && xml.contains("$(this).html(vars.nlb_leave ? '' : N.imgTag(N.img(vars, N.here())));")
-                        && xml.contains("vars.nlb_gone = true; vars.nlb_leave = false; "));
+                        && xml.contains("vars.nlb_gone = true; vars.nlb_leave = true; "));
+        assertTrue("страница с текстом показывается целиком и тогда, когда её покидают сразу (как в плеере): " + xml,
+                xml.contains("vars.nlb_gone = false; vars.nlb_leave = false; "));
         assertTrue("статья, показанная заново после действия, не переносится — только ответ: " + xml,
                 xml.contains("nlbInit(); vars.nlb_redrawn = !!vars.nlb_redraw;")
                         && xml.contains("if (vars.nlb_redrawn) { t = null; vars.nlb_redrawn = false; }"));

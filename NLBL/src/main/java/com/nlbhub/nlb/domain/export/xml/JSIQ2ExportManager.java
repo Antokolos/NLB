@@ -297,11 +297,10 @@ public class JSIQ2ExportManager extends XMLExportManager {
 
     /**
      * Страницу сейчас покинут — как в QSP и URQ и в плеере (PlayerEngine.followLink), до показа:
-     * vars.nlb_gone — сработает автоссылка (или выбирать нечего и время проматывается до неё, а
-     * своих объектов нет) — объекты сцены не выводятся: сцена плеера — только у страницы, где
-     * остановились (ход боя «Фронтира»); vars.nlb_leave — то же у страницы без текста: и её картинка
-     * не выводится. Страница, которую покидают позже (после хода: callback-объекты, «needs action»),
-     * показывается целиком («Слуга Ра»: комната 3 и автоссылка импланта)
+     * страница без текста, которую покинет автоссылка, не выводит ни картинки (vars.nlb_leave), ни
+     * объектов (vars.nlb_gone); объекты не выводятся и там, где выбирать нечего и время проматывается
+     * до автоссылки, а своих объектов нет (ход боя «Фронтира»). Страница с текстом показывается
+     * целиком («Слуга Ра»: комната 3 и автоссылка импланта)
      */
     private String leaveFlags(PageBuildingBlocks pageBlocks) {
         StringBuilder leave = new StringBuilder();
@@ -324,15 +323,16 @@ public class JSIQ2ExportManager extends XMLExportManager {
         if (!always && leave.length() == 0) {
             return "vars.nlb_gone = false; vars.nlb_leave = false; ";
         }
-        String leaveExpr = always ? "true" : "!!(" + leave + ")";
+        // страница с текстом показывается целиком, и та, которую сейчас покинут (плеер прячет
+        // только страницу без текста: «Слуга Ра», комната 3 и автоссылка импланта)
+        String leaveExpr = pageBlocks.isHasPageText() ? "false" : always ? "true" : "!!(" + leave + ")";
         String gone = leaveExpr;
         String noChoices = noChoicesCondition(pageBlocks);
         if (noChoices != null && pageBlocks.getAllContainedObjIds().isEmpty()) {
             // выбирать нечего и своих объектов нет — время проматывается до автоссылки
             gone = noChoices.isEmpty() ? "true" : leaveExpr + " || !(" + noChoices + ")";
         }
-        return "vars.nlb_gone = " + gone + "; vars.nlb_leave = "
-                + (pageBlocks.isHasPageText() ? "false" : leaveExpr) + "; ";
+        return "vars.nlb_gone = " + gone + "; vars.nlb_leave = " + leaveExpr + "; ";
     }
 
     /**
@@ -1000,6 +1000,11 @@ public class JSIQ2ExportManager extends XMLExportManager {
         String text = rawText;
         // подпись для пустой метки {}: disp, иначе первая строка текста действия (карта во
         // «Фронтире»), иначе имя — как PlayerEngine.sceneLabel
+        if (text.contains(OBJ_LABEL_MARK) && !obj.hasAction()) {
+            // только пустая метка {} и действия нет (заглушка карты и фон боя «Фронтира»): как в
+            // плеере — одна картинка (её выводит общий код), без ссылки и подписи
+            text = text.replaceAll("<a href=\"#\" class=\"nlb_obj\" onclick=\"[^\"]*\">" + OBJ_LABEL_MARK + "</a>", "");
+        }
         String objLabel = StringHelper.notEmpty(obj.getObjDisp()) ? obj.getObjDisp() : firstLine(obj.getObjActStart());
         if (objLabel.isEmpty()) {
             objLabel = StringHelper.notEmpty(obj.getObjName()) ? obj.getObjName() : id;

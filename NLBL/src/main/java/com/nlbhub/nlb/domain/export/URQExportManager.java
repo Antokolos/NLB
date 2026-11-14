@@ -743,6 +743,26 @@ public class URQExportManager extends TextExportManager {
         return "nlb_reply=nlb_reply+\"" + text + "<br>\"" + LINE_SEPARATOR;
     }
 
+    /** Первая непустая строка текста действия (из reply(...): nlb_reply=nlb_reply+"…<br>") */
+    private static String firstActLine(String actStart) {
+        if (actStart == null) {
+            return EMPTY_STRING;
+        }
+        String prefix = "nlb_reply=nlb_reply+\"";
+        for (String code : actStart.split("\r?\n")) {
+            String c = code.strip();
+            if (!c.startsWith(prefix) || !c.endsWith("\"")) {
+                continue;
+            }
+            for (String line : c.substring(prefix.length(), c.length() - 1).split(BR)) {
+                if (!line.replaceAll("<[^>]*>", "").strip().isEmpty()) {
+                    return line.strip();
+                }
+            }
+        }
+        return EMPTY_STRING;
+    }
+
     /**
      * Объект N — служебные метки (подпрограммы): _dsc (описание со ссылкой и содержимое
      * контейнера; условие объекта скрывает и содержимое), _text (описание — в ответ, для PDSC),
@@ -770,10 +790,23 @@ public class URQExportManager extends TextExportManager {
             sb.append("nlb_seen_#nlb_me$=nlb_gen").append(LINE_SEPARATOR);
         }
         // ссылка без текста ({} у графического объекта) — подписью объекта: «[[|метка]]» UrqW
-        // ссылкой не считает
+        // ссылкой не считает. Подпись — disp, иначе первая строка текста действия (карта во
+        // «Фронтире»: «Сила карты 5»), иначе имя — как PlayerEngine.sceneLabel и экспорты QSP и
+        // jsIQ2 (раньше — сразу имя: в тексте боя были видны common5, cardPlaceholderObj, bgObj2)
+        String firstActLine = firstActLine(objBlocks.getObjActStart());
         final String label = StringHelper.notEmpty(objBlocks.getObjDisp()) ? objBlocks.getObjDisp()
+                : !firstActLine.isEmpty() ? firstActLine
                 : StringHelper.notEmpty(objBlocks.getObjName()) ? urqString(objBlocks.getObjName()) : "…";
-        final String text = withMe(objBlocks.getObjText().replace("[[|nlb_act_", "[[" + label + "|nlb_act_"), id);
+        String objText = objBlocks.getObjText();
+        if (!objBlocks.hasAction()) {
+            // только пустая метка {} и действия нет (заглушка карты и фон боя «Фронтира»): как в
+            // плеере — одна картинка, без ссылки и подписи (раньше — ссылка с именем объекта)
+            String rest = objText.replaceAll("\\[\\[\\|nlb_act_[^\\]]*\\]\\]", EMPTY_STRING);
+            if (!rest.equals(objText) && rest.replaceAll("<[^>]*>", EMPTY_STRING).isBlank()) {
+                objText = EMPTY_STRING;
+            }
+        }
+        final String text = withMe(objText.replace("[[|nlb_act_", "[[" + label + "|nlb_act_"), id);
         if (objBlocks.isImageInScene() && !objBlocks.isGraphical() && !text.isEmpty()) {
             // картинка объекта в сцене — перед его описанием (в INSTEAD — в начале ссылки; ссылка
             // UrqW — только текст)
@@ -1003,21 +1036,67 @@ public class URQExportManager extends TextExportManager {
         if (suppressDsc || StringHelper.isEmpty(objText)) {
             return EMPTY_STRING;
         }
-        // строки текста — «pln …» (пустая — «pln»): в описании объекта — одной строкой
-        String text = objText.replaceAll("(?m)^pln ?", EMPTY_STRING).replace(LINE_SEPARATOR, " ").strip();
+        // строки текста — «pln …» (пустая — «pln»): в описании объекта — одной строкой, переводы
+        // строк и абзацы — <br> (раньше — пробел: абзацы описания склеивались, «Фронтир», правила)
+        String text = joinLines(objText);
+        text = expandEmptyLink(text);
         return text.replaceAll("\\{([^}]*)\\}",
                 java.util.regex.Matcher.quoteReplacement("[[") + "$1" + java.util.regex.Matcher.quoteReplacement("|nlb_act_" + key(objId) + "]]"));
     }
 
     @Override
     protected String decorateObjActStart(String actTextExpanded, String commonObjId) {
-        String text = actTextExpanded == null ? EMPTY_STRING : actTextExpanded.replace(LINE_SEPARATOR, " ").replace("pln ", EMPTY_STRING).trim();
+        String text = joinLines(actTextExpanded);
         return text.isEmpty() ? EMPTY_STRING : reply(text);
     }
 
     @Override
     protected String decorateObjNouse(String nouseTextExpanded) {
-        return nouseTextExpanded == null ? EMPTY_STRING : nouseTextExpanded.replace(LINE_SEPARATOR, " ").replace("pln ", EMPTY_STRING).trim();
+        return joinLines(nouseTextExpanded);
+    }
+
+    /**
+     * Пустая метка {} (в INSTEAD — картинка: флажок «Показывать эту страницу» во «Фронтире»):
+     * ссылкой становится первая непустая строка описания (без других меток), как в QSP и jsIQ2;
+     * без такой строки метка остаётся пустой — её подпишет объект (dsc: disp, текст действия, имя).
+     * Раньше подписью было имя объекта — «showThisNextTimeObj2 Показывать эту страницу»
+     */
+    private static String expandEmptyLink(String text) {
+        java.util.regex.Matcher empty = java.util.regex.Pattern.compile("\\{\\s*\\}").matcher(text);
+        if (!empty.find()) {
+            return text;
+        }
+        String rest = empty.replaceAll(EMPTY_STRING);
+        String[] parts = rest.split(BR, -1);
+        for (int i = 0; i < parts.length; i++) {
+            String label = parts[i].strip();
+            if (!label.replaceAll("<[^>]*>", EMPTY_STRING).isBlank() && !label.contains("{")) {
+                parts[i] = parts[i].replace(label, "{" + label + "}");
+                return String.join(BR, parts);
+            }
+        }
+        return text;
+    }
+
+    /**
+     * Строки «pln …» текста (пустая — «pln») — в одну строку UrqW: переводы строк — <br>, пустые
+     * строки по краям убираются. Абзацы описаний и ответов остаются абзацами, как в плеере
+     */
+    private static String joinLines(String plnText) {
+        if (plnText == null) {
+            return EMPTY_STRING;
+        }
+        java.util.List<String> lines = new java.util.ArrayList<>();
+        for (String line : plnText.split("\\r?\\n")) {
+            lines.add(line.replaceFirst("^pln ?", EMPTY_STRING).strip());
+        }
+        while (!lines.isEmpty() && lines.get(0).isEmpty()) {
+            lines.remove(0);
+        }
+        while (!lines.isEmpty() && lines.get(lines.size() - 1).isEmpty()) {
+            lines.remove(lines.size() - 1);
+        }
+        return String.join(BR, lines);
     }
 
     @Override
@@ -1104,15 +1183,17 @@ public class URQExportManager extends TextExportManager {
         final String leave = leaveCondition(linksBlocksOf(pageBlocks));
         if (leave != null) {
             stringBuilder.append(leave.isEmpty() ? "nlb_leave=1" + LINE_SEPARATOR : leave);
+            // страница с текстом показывается целиком, и та, которую сейчас покинут (плеер прячет
+            // только страницу без текста: «Слуга Ра», комната 3 и автоссылка импланта)
+            if (pageBlocks.isHasPageText()) {
+                stringBuilder.append("nlb_leave=0").append(LINE_SEPARATOR);
+            }
             stringBuilder.append("nlb_gone=nlb_leave").append(LINE_SEPARATOR);
             final String noChoicesNow = noChoicesCondition(pageBlocks);
             if (noChoicesNow != null && pageBlocks.getAllContainedObjIds().isEmpty()) {
                 // выбирать нечего и своих объектов нет — время проматывается до автоссылки
                 // (TIMER_WAIT_TICKS), страницу сразу покинут: ход боя «Фронтира»
                 stringBuilder.append(noChoicesNow.isEmpty() ? "" : "if not " + noChoicesNow + " then ").append("nlb_gone=1").append(LINE_SEPARATOR);
-            }
-            if (pageBlocks.isHasPageText()) {
-                stringBuilder.append("nlb_leave=0").append(LINE_SEPARATOR);
             }
         }
         stringBuilder.append(showImage(ref, pageBlocks.getPageImages()));

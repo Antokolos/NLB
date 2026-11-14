@@ -84,7 +84,8 @@ const run = (o) => {
 };
 const show = () => {
   const s = ctx.screens[ctx.screens.length - 1];
-  console.log('TEXT: ' + s.text.replace(/<[^>]+>/g, '') + '\nBUTTONS: ' + JSON.stringify(s.buttons.map(b => b.split('=>')[0])) + '\nINV: ' + JSON.stringify(options().filter(o => o.kind === 'inv').map(o => o.name))
+  // <br> (переводы строк и абзацы описаний и ответов) — разделитель строк, как | между выводами
+  console.log('TEXT: ' + s.text.replace(/<br\s*\/?>/gi, '|').replace(/<[^>]+>/g, '') + '\nBUTTONS: ' + JSON.stringify(s.buttons.map(b => b.split('=>')[0])) + '\nINV: ' + JSON.stringify(options().filter(o => o.kind === 'inv').map(o => o.name))
     + (process.env.MEDIA ? '\nIMG: ' + JSON.stringify([...s.text.matchAll(/<img[^>]* src="([^"]*)"/g)].map(m => m[1])) + '\nSND: ' + JSON.stringify(ctx.sounds) : ''));
   ctx.sounds.length = 0;
 };
