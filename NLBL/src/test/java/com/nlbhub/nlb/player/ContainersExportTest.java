@@ -129,8 +129,9 @@ public class ContainersExportTest {
         File file = new File(m_temp.getRoot(), "book.sm");
         book().exportToASMFile(file);
         String sm = read(file, StandardCharsets.UTF_8);
-        assertTrue("ADD — в оба держателя: " + sm, sm.contains("<<set $nlb_po = 3>><<set $nlb_pd = \"" + m_holder1.getId() + "\">><<display 'nlb_add'>>")
-                && sm.contains("<<set $nlb_po = 3>><<set $nlb_pd = \"" + m_holder2.getId() + "\">><<display 'nlb_add'>>"));
+        // без unique: уже лежащий там — клоном ($nlb_pu = 1, addf)
+        assertTrue("ADD — в оба держателя: " + sm, sm.contains("<<set $nlb_po = 3>><<set $nlb_pd = \"" + m_holder1.getId() + "\">><<set $nlb_pu = 1>><<display 'nlb_add'>>")
+                && sm.contains("<<set $nlb_po = 3>><<set $nlb_pd = \"" + m_holder2.getId() + "\">><<set $nlb_pu = 1>><<display 'nlb_add'>>"));
         assertTrue("содержимое панели: " + sm, sm.contains("<<set $nlb_cs[\"" + m_panel.getId() + "\"] = [5]>>"));
         assertTrue("инвентарь — с содержимым предметов: " + sm, sm.contains(":: nlb_o_4_inv[::]") && sm.contains(":: nlb_inv_in[::]"));
         assertTrue("карта — предмет-меню: " + sm, sm.contains("<<set $nlb_menu[5] = 1>>"));

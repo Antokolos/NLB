@@ -221,7 +221,9 @@ public class ASMExportManager extends TextExportManager {
     private String servicePassages() {
         final String ls = LINE_SEPARATOR;
         StringBuilder sb = new StringBuilder();
-        // начальные значения: необъявленная переменная в JavaScript — ошибка
+        // начальные значения: необъявленная переменная в JavaScript — ошибка. Таблицы по номеру
+        // экземпляра ($nlb_in, $nlb_seen, $nlb_ivseen) — объекты, не массивы: номер клона — 100000+k,
+        // и массив в JSON (сохранение, консоль отладки редактора) стал бы сотней тысяч null
         sb.append(":: nlb_init[::]10-10-0").append(ls);
         sb.append("<<set $").append(ACTION_COUNT_VAR).append(" = 0>>");
         for (String type : COUNT_TYPES) {
@@ -230,10 +232,10 @@ public class ASMExportManager extends TextExportManager {
         sb.append("<<set $nlb_cnt_prev = 0>><<set $nlb_sel = 0>><<set $nlb_o = 0>><<set $nlb_o2 = 0>><<set $nlb_t = 0>>")
                 .append("<<set $nlb_printed = 0>><<set $nlb_reply = \"\">><<set $nlb_redraw = 0>><<set $nlb_page = \"\">>")
                 .append("<<set $nlb_where = \"\">><<set $nlb_ws = \"\">><<set $nlb_p = \"\">><<set $nlb_d = \"\">>")
-                .append("<<set $nlb_i = 0>><<set $nlb_diff = 0>><<set $nlb_in = []>>")
+                .append("<<set $nlb_i = 0>><<set $nlb_diff = 0>><<set $nlb_in = {}>>")
                 .append("<<set $nlb_cs = {}>><<set $nlb_po = 0>><<set $nlb_pd = \"\">><<set $nlb_j2 = -1>><<set $nlb_sd = 0>><<set $nlb_sw = []>>")
-                .append("<<set $nlb_si = []>><<set $nlb_w2 = \"\">><<set $nlb_k2 = 0>><<set $nlb_seen = []>><<set $nlb_gen = 0>><<set $nlb_on = 1>>")
-                .append("<<set $nlb_ivseen = []>><<set $nlb_ivn = 0>><<set $nlb_tk = 0>><<set $nlb_menu = []>><<set $nlb_ua = []>><<set $nlb_uj = 0>>")
+                .append("<<set $nlb_si = []>><<set $nlb_w2 = \"\">><<set $nlb_k2 = 0>><<set $nlb_seen = {}>><<set $nlb_gen = 0>><<set $nlb_on = 1>>")
+                .append("<<set $nlb_ivseen = {}>><<set $nlb_ivn = 0>><<set $nlb_tk = 0>><<set $nlb_menu = []>><<set $nlb_ua = []>><<set $nlb_uj = 0>>")
                 .append("<<set $nlb_lists = {}>><<set $nlb_tags = {}>><<set $nlb_music = \"\">><<set $nlb_hassnd = {}>><<set $nlb_j = 0>><<set $nlb_v = 0>><<set $nlb_c = \"\">>")
                 .append("<<set $nlb_ln = \"\">><<set $nlb_ln2 = \"\">><<set $nlb_ok = 0>><<set $nlb_k = 0>><<set $nlb_a = []>><<set $nlb_achs = {}>><<set $nlb_an = \"\">><<set $nlb_ak = \"\">><<set $nlb_ok = 0>>")
                 .append("<<set $nlb_proto = {}>><<set $nlb_ccount = 0>><<set $nlb_cq = 0>><<set $nlb_cres = 0>><<set $nlb_pu = 0>><<set $nlb_me = 0>>")

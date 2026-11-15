@@ -81,7 +81,8 @@ public class InventoryVisibilityExportTest {
         File file = new File(m_temp.getRoot(), "book.sm");
         book().exportToASMFile(file);
         String sm = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8).replace("\r\n", "\n");
-        assertTrue("невидимый предмет — пустой абзац: " + sm, sm.contains(":: nlb_o_2_item[::]10-10-0\n<<set $nlb_d = $nlb_d>>\n"));
-        assertTrue(sm, sm.contains(":: nlb_o_1_item[::]10-10-0\n<<set $nlb_d = "));
+        assertTrue("невидимый предмет — пустой абзац: " + sm, sm.contains(":: nlb_o_2_item[::]10-10-0\n<<set $nlb_ms = $nlb_ms + 1>><<set $nlb_mv[$nlb_ms] = $nlb_me>><<set $nlb_me = $nlb_ia ? $nlb_ia : 2>>"
+                + "<<set $nlb_ia = 0>>\n<<set $nlb_me = $nlb_mv[$nlb_ms]>><<set $nlb_ms = $nlb_ms - 1>>\n\n"));
+        assertTrue(sm, sm.contains(":: nlb_o_1_item[::]10-10-0\n<<set $nlb_ms = $nlb_ms + 1>>") && sm.contains("<<set $nlb_ia = 0>>\n<<set $nlb_d = "));
     }
 }
