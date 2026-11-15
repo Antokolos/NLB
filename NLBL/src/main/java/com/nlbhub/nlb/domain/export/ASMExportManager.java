@@ -687,13 +687,17 @@ public class ASMExportManager extends TextExportManager {
         final String common = objBlocks.getCommonObjId();
         final boolean hasCommon = StringHelper.notEmpty(common) && m_keys.containsKey(common);
         final String disp = objLabel(objBlocks);
+        // подпись в сцене (PlayerEngine.sceneLabel, как в экспортах QSP и URQ): disp, иначе первая
+        // строка текста действия («Сила карты 20» у карт «Фронтира»), иначе имя
+        final String firstAct = firstActLine(objBlocks.getObjActStart());
+        final String label = StringHelper.notEmpty(objBlocks.getObjDisp()) || firstAct.isEmpty() ? disp : firstAct;
         StringBuilder sb = new StringBuilder();
 
-        String text = objBlocks.getObjText().replace(EMPTY_LINK_LABEL, disp);
+        String text = objBlocks.getObjText().replace(EMPTY_LINK_LABEL, label);
         if (objBlocks.isGraphical()) {
             // графический объект (VN) щёлкают по картинке, а картинок здесь нет: с действием —
             // ссылкой его текст (одна строка без макросов) или подпись; без действия — просто текст
-            final String link = "[[" + disp + "|nlb_act {$nlb_o = " + n + "}]]";
+            final String link = "[[" + label + "|nlb_act {$nlb_o = " + n + "}]]";
             if (objBlocks.hasAction() && !text.contains("|nlb_act {")) {
                 text = text.isEmpty() ? link
                         : !text.contains(ls) && !text.contains("<<") ? "[[" + text + "|nlb_act {$nlb_o = " + n + "}]]"
@@ -735,7 +739,7 @@ public class ASMExportManager extends TextExportManager {
         sb.append(leave()).append(ls);
 
         // _text — для PDSC: текст объекта и у объекта с suppressDsc (objDscF в плеере)
-        final String textF = objBlocks.getObjTextF().replace(EMPTY_LINK_LABEL, disp);
+        final String textF = objBlocks.getObjTextF().replace(EMPTY_LINK_LABEL, label);
         sb.append(prefix).append("_text[::]10-10-0").append(ls);
         sb.append(enter(n)).append(textF.isEmpty() ? "" : instanceLinks(textF, n, id) + ls).append(leave()).append(ls);
         // _on — объект включён (условие объекта)
@@ -939,6 +943,32 @@ public class ASMExportManager extends TextExportManager {
         // абзац звука — прототипа, тег — экземпляра ($nlb_sref)
         return "<<set $nlb_sref = " + ref + ">><<set $nlb_iv = " + proto("$nlb_sref") + ">><<if $nlb_hassnd[$nlb_iv] eq 1>>"
                 + "<<set $nlb_p = \"nlb_snd_\" + $nlb_iv>><<display $nlb_p>><<endif>>" + LINE_SEPARATOR;
+    }
+
+    /**
+     * Первая непустая строка текста действия (из reply(): «&lt;&lt;set $nlb_reply = $nlb_reply + "…" +
+     * "&lt;br&gt;"&gt;&gt;»); с переменными — пусто (подписью станет имя)
+     */
+    private static String firstActLine(String actStart) {
+        if (actStart == null) {
+            return EMPTY_STRING;
+        }
+        final String prefix = "<<set $nlb_reply = $nlb_reply + \"", suffix = "\" + \"<br>\">>";
+        for (String code : actStart.split("\r?\n")) {
+            String c = code.strip();
+            if (!c.startsWith(prefix) || !c.endsWith(suffix)) {
+                continue;
+            }
+            for (String line : c.substring(prefix.length(), c.length() - suffix.length()).split("<br>")) {
+                if (line.contains("\" + ")) {
+                    return EMPTY_STRING;
+                }
+                if (!line.replaceAll("<[^>]*>", "").strip().isEmpty()) {
+                    return line.strip();
+                }
+            }
+        }
+        return EMPTY_STRING;
     }
 
     /** Подпись объекта: disp, без неё — имя (как nam в INSTEAD), без имени — id */

@@ -96,6 +96,24 @@ public class AsmObjectsExportTest {
         assertTrue("предмет — кнопка с подписью-выражением: " + sm, sm.contains("[[$nlb_d|nlb_invclick {$nlb_o2 = 1}]]"));
     }
 
+    /**
+     * Подпись в сцене — как PlayerEngine.sceneLabel и экспорты QSP и URQ: у пустой метки {} без
+     * disp — первая строка текста действия (карты «Фронтира»: «Сила карты 5»), а не имя объекта
+     */
+    @Test
+    public void sceneLabelIsFirstActLine() throws Exception {
+        TestBook b = new TestBook();
+        PageImpl room = b.page("Бой.");
+        b.link(room, b.page("Конец."), "Сдаться");
+        ObjImpl card = b.obj(room, "card5", "{}", "", false);
+        card.setActTexts(b.text("Сила карты 5^Подробнее"));
+        File file = new File(m_temp.getRoot(), "card.sm");
+        b.nlb.exportToASMFile(file);
+        String sm = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8).replace("\r\n", "\n");
+        assertTrue(sm, sm.contains("[[Сила карты 5|nlb_act {$nlb_o = 1}]]"));
+        assertFalse(sm, sm.contains("[[card5|"));
+    }
+
     private static void mod(TestBook b, com.nlbhub.nlb.domain.AbstractModifyingItem item, String target,
                             com.nlbhub.nlb.api.Modification.Type type, String varName,
                             com.nlbhub.nlb.api.Variable.DataType dataType, String expr) {
