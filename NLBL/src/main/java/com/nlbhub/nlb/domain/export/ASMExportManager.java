@@ -1313,7 +1313,25 @@ public class ASMExportManager extends TextExportManager {
 
     @Override
     protected String decorateAssignment(String variableName, String variableValue) {
+        if (hasLogic(variableValue)) {
+            // В <<set>> AXMA не переводит and/or и <> и оставляет < и > сущностями (&lt; &gt;) —
+            // «<<set $a = ($x > 3) or ($y <= 15)>>» падал с «Unexpected token ';'» и обрывал
+            // абзац (бой «Фронтира», агрессия противника). В <<if>> всё это переводится, поэтому
+            // логическое значение присваивается через условие
+            return "<<if " + variableValue + ">><<set " + variableName + " = true>><<else>><<set "
+                    + variableName + " = false>><<endif>>" + LINE_SEPARATOR;
+        }
         return "<<set " + variableName + " = " + variableValue + ">>" + LINE_SEPARATOR;
+    }
+
+    private static final java.util.regex.Pattern QUOTED =
+            java.util.regex.Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*\"|'(?:[^'\\\\]|\\\\.)*'");
+    private static final java.util.regex.Pattern LOGIC = java.util.regex.Pattern.compile(
+            "\\s(?:and|or)\\s|<>|==|<=|>=|(?<![-=!<>])>(?!=)|(?<![<!=])<(?![>=])");
+
+    /** Есть ли в выражении сравнение или and/or (без строк в кавычках) */
+    static boolean hasLogic(String expression) {
+        return expression != null && LOGIC.matcher(QUOTED.matcher(expression).replaceAll("\"\"")).find();
     }
 
     @Override
