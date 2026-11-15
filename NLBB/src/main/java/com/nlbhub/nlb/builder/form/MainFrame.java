@@ -2145,6 +2145,52 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     private void rearrangeCustomComponents() {
         m_toolbarPanel.setLayout(new WrapLayout(FlowLayout.LEFT, 5, 5));
         m_toolbarPanel.setSize(new Dimension(300, 1));
+        groupExportButtons();
+    }
+
+    /**
+     * Экспорты — одной кнопкой «Export» с выпадающим списком вместо ряда кнопок на панели. Кнопки
+     * экспорта из формы остаются (скрытыми) со своими обработчиками: пункт списка нажимает свою
+     * кнопку, поэтому и доступность (PNG выключается на время экспорта) берётся у неё
+     */
+    private void groupExportButtons() {
+        final Object[][] exports = {
+                {m_exportToChoiceScript, "ChoiceScript"},
+                {m_exportToQSPText, "QSP (text)"},
+                {m_exportToURQText, "URQ (UrqW)"},
+                {m_exportJSIQ, "jsIQ2"},
+                {m_exportASM, "AXMA Story Maker"},
+                {m_exportSTEAD, "INSTEAD"},
+                {m_exportVNSTEAD, "INSTEAD (VN)"},
+                {m_exportToHTML, "HTML"},
+                {m_exportToPDF, "PDF"},
+                {m_exportTXT, "TXT"},
+                {m_exportPNG, "PNG (book scheme)"},
+        };
+        final Container toolbar = m_exportToChoiceScript.getParent();
+        if (toolbar == null) {
+            return;
+        }
+        final JPopupMenu menu = new JPopupMenu();
+        final java.util.Map<JMenuItem, JButton> items = new java.util.LinkedHashMap<>();
+        for (Object[] export : exports) {
+            final JButton button = (JButton) export[0];
+            final JMenuItem item = new JMenuItem("Export to " + export[1], button.getIcon());
+            item.addActionListener(e -> button.doClick());
+            items.put(item, button);
+            menu.add(item);
+            button.setVisible(false);
+        }
+        final JButton exportButton = new JButton(new ImageIcon(MainFrame.class.getResource("/common/export.png")));
+        exportButton.setToolTipText("Export the book to other formats");
+        exportButton.setBorderPainted(false);
+        exportButton.setFocusPainted(false);
+        exportButton.setRolloverEnabled(true);
+        exportButton.addActionListener(e -> {
+            items.forEach((item, button) -> item.setEnabled(button.isEnabled()));
+            menu.show(exportButton, 0, exportButton.getHeight());
+        });
+        toolbar.add(exportButton, 0);
     }
 
     public void serrext() {
