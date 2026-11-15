@@ -70,7 +70,7 @@ public class AsmObjectsExportTest {
     public void pageShowsSceneReplyAndInventory() throws Exception {
         String sm = export();
         assertTrue("модификации — до текста, при повторном показе — нет: " + sm, sm.contains(":: " + m_hall.getId()
-                + "[::]150-0-0\n<<set $nlb_page = \"" + m_hall.getId() + "\">><<if $nlb_redraw eq 1>><<set $nlb_redraw = 0>><<else>>\n"));
+                + "[::]150-0-0\n<<set $nlb_ms = 0>><<set $nlb_me = 0>><<set $nlb_ia = 0>><<set $nlb_pu = 0>><<set $nlb_page = \"" + m_hall.getId() + "\">><<if $nlb_redraw eq 1>><<set $nlb_redraw = 0>><<else>>\n"));
         assertTrue(sm, sm.contains("Зал.\n<<set $nlb_gen = $nlb_gen + 1>><<set $nlb_where = \"" + m_hall.getId() + "\">><<display 'nlb_show_in'>>\n"
                 + "<<display 'nlb_reply'>>\n<<display 'nlb_inv'>>\n"));
     }
@@ -78,20 +78,40 @@ public class AsmObjectsExportTest {
     @Test
     public void sceneObjectIsLink() throws Exception {
         String sm = export();
-        assertTrue(sm, sm.contains(":: nlb_o_1_dsc[::]10-10-0\nНа столе [[ключ|nlb_act {$nlb_o = 1}]] Пети.\n"));
+        // у самого объекта — ссылка с его номером, у клона — абзац nlb_lnk_k со ссылкой на клон
+        assertTrue(sm, sm.contains("На столе <<if $nlb_me eq 1>>[[ключ|nlb_act {$nlb_o = 1}]]<<else>><<set $nlb_d = \"ключ\">>"
+                + "<<set $nlb_lk[$nlb_me] = 1>><<set $nlb_p = \"nlb_lnk_\" + ($nlb_me - 100000)>><<display $nlb_p>><<endif>> Пети.\n"));
     }
 
     @Test
     public void takeAndUse() throws Exception {
         String sm = export();
         assertTrue(sm, sm.contains("<<set $nlb_reply = $nlb_reply + \"Вы взяли ключ.\" + \"<br>\">>"));
-        assertTrue("переносимый — в инвентарь: " + sm, sm.contains(":: nlb_o_1_act[::]10-10-0\n<<display 'nlb_o_1_acta'>>\n"
-                + "<<set $nlb_po = 1>><<set $nlb_tk = 1>><<display 'nlb_take'>>"));
-        assertTrue("применение к двери: " + sm, sm.contains("<<if $nlb_t eq 2>>\n<<set $nlb_reply = $nlb_reply + \"Дверь открылась.\""));
-        assertFalse("дверь не переносимая: " + sm, sm.contains(":: nlb_o_2_act[::]10-10-0\n<<display 'nlb_o_2_acta'>>\n<<set $nlb_po"));
+        assertTrue("переносимый — в инвентарь: " + sm, sm.contains("<<set $nlb_ia = $nlb_me>><<display 'nlb_o_1_acta'>>\n"
+                + "<<set $nlb_po = $nlb_me>><<set $nlb_tk = 1>><<display 'nlb_take'>>"));
+        assertTrue("применение к двери: " + sm, sm.contains("<<if $nlb_tpv[$nlb_ms] eq 2>>\n<<set $nlb_reply = $nlb_reply + \"Дверь открылась.\""));
+        assertFalse("дверь не переносимая: " + sm, sm.contains("<<display 'nlb_o_2_acta'>>\n<<set $nlb_po"));
         assertTrue("кавычка в подписи — числовой сущностью (именованную AXMA раскрывает): " + sm,
                 sm.contains("<<set $nlb_d = \"Дверь &#34;старая&#34;\">>"));
         assertTrue("предмет — кнопка с подписью-выражением: " + sm, sm.contains("[[$nlb_d|nlb_invclick {$nlb_o2 = 1}]]"));
+    }
+
+    /**
+     * Подпись в сцене — как PlayerEngine.sceneLabel и экспорты QSP и URQ: у пустой метки {} без
+     * disp — первая строка текста действия (карты «Фронтира»: «Сила карты 5»), а не имя объекта
+     */
+    @Test
+    public void sceneLabelIsFirstActLine() throws Exception {
+        TestBook b = new TestBook();
+        PageImpl room = b.page("Бой.");
+        b.link(room, b.page("Конец."), "Сдаться");
+        ObjImpl card = b.obj(room, "card5", "{}", "", false);
+        card.setActTexts(b.text("Сила карты 5^Подробнее"));
+        File file = new File(m_temp.getRoot(), "card.sm");
+        b.nlb.exportToASMFile(file);
+        String sm = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8).replace("\r\n", "\n");
+        assertTrue(sm, sm.contains("[[Сила карты 5|nlb_act {$nlb_o = 1}]]"));
+        assertFalse(sm, sm.contains("[[card5|"));
     }
 
     private static void mod(TestBook b, com.nlbhub.nlb.domain.AbstractModifyingItem item, String target,

@@ -25,7 +25,8 @@ import static org.junit.Assert.assertTrue;
  * CLONE создаёт экземпляр (тег копируется), ID — его прототип, описание, действие и применения —
  * у прототипа, «s» в коде объекта — экземпляр; USE применяет объект к объекту из переменной или к
  * каждому элементу списка (бой «Фронтира»: карты в руке — клоны, enemyAttack применяется к
- * сыгранной карте). В AXMA — только USE: клонов там нет
+ * сыгранной карте). В AXMA ссылка вычисляет код при щелчке, а не при показе, поэтому у клона k —
+ * заранее заведённый абзац nlb_lnk_k со ссылкой на свой номер (до 2000, как метки nlb_act_N в URQ)
  */
 public class ClonesExportTest {
     @Rule
@@ -118,5 +119,29 @@ public class ClonesExportTest {
         String sm = read(file, StandardCharsets.UTF_8);
         assertTrue("USE к списку или переменной: " + sm, sm.contains("<<if $nlb_lists.hasOwnProperty(\"hand\")>>")
                 && sm.contains("<<else>><<set $nlb_t = $hand>><<set $nlb_o = 2>><<set $nlb_printed = 0>><<display 'nlb_o_2_use'>><<endif>>"));
+        assertTrue("CLONE: " + sm, sm.contains("<<set $nlb_cq = 1>><<display 'nlb_clone'>><<set $copy = $nlb_cres>>"));
+        assertTrue("ID — прототип: " + sm, sm.contains("<<set $nlb_iv = $copy>><<set $proto = ($nlb_proto[$nlb_iv] ? $nlb_proto[$nlb_iv] : $nlb_iv)>>"));
+        assertTrue("клон — номер от 100001, прототип, тег копируется: " + sm, sm.contains("<<set $nlb_cres = 100000 + $nlb_ccount>>"
+                + "<<set $nlb_proto[$nlb_cres] = ($nlb_proto[$nlb_cq] ? $nlb_proto[$nlb_cq] : $nlb_cq)>><<set $nlb_tags[$nlb_cres] = $nlb_tags[$nlb_cq]>>"));
+        assertTrue("обход контейнера — абзацы прототипа, экземпляр — в $nlb_ia: " + sm,
+                sm.contains("<<set $nlb_p = \"nlb_o_\" + ($nlb_proto[$nlb_iv] ? $nlb_proto[$nlb_iv] : $nlb_iv) + \"_dsc\">><<set $nlb_si[$nlb_sd] = $nlb_k2 + 1>><<set $nlb_ia = $nlb_iv>><<display $nlb_p>>"));
+        assertTrue("абзац объекта — от имени экземпляра: " + sm, sm.contains(":: nlb_o_1_dsc[::]10-10-0\n<<set $nlb_ms = $nlb_ms + 1>>"
+                + "<<set $nlb_mv[$nlb_ms] = $nlb_me>><<set $nlb_me = $nlb_ia ? $nlb_ia : 1>><<set $nlb_ia = 0>>\n"));
+        assertTrue("ссылка клона — его абзац nlb_lnk_k: " + sm, sm.contains("<<if $nlb_me eq 1>>[[Карта|nlb_act {$nlb_o = 1}]]<<else>>")
+                && sm.contains(":: nlb_lnk_1[::]10-10-0\n[[$nlb_d|nlb_lclick {$nlb_o3 = 100001}]]\n")
+                && sm.contains(":: nlb_lnk_2000[::]10-10-0\n") && !sm.contains(":: nlb_lnk_2001["));
+    }
+
+    /** Книга без клонов (нет CLONE, ADD без unique, ADDINV) — без абзацев nlb_lnk_k */
+    @Test
+    public void asmWithoutClones() throws Exception {
+        TestBook b = new TestBook();
+        PageImpl room = b.page("Комната.");
+        b.link(room, b.page("Улица."), "Выйти");
+        b.obj(room, "stone", "{Камень}", "Камень", false);
+        File file = new File(m_temp.getRoot(), "plain.sm");
+        b.nlb.exportToASMFile(file);
+        String sm = read(file, StandardCharsets.UTF_8);
+        assertTrue(sm, sm.contains(":: nlb_o_1_dsc[") && !sm.contains(":: nlb_lnk_"));
     }
 }
