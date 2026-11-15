@@ -4,8 +4,9 @@
 //
 // Запуск:
 //   node urqw-run.js <каталог UrqW> <book.qst (windows-1251)> "<шаги через запятую>"
-//   шаги: подпись кнопки; link:<N> — N-я ссылка в тексте; o:<подпись> — ссылка по подписи;
-//   inv:<подпись> — щелчок по предмету
+//   шаги: подпись кнопки; link:<N> — N-я ссылка в тексте; o:<подпись> — ссылка по подписи
+//   (o:<подпись>#<N> — N-я с этой подписью, с 1: два «крана» в «Слуге Ра»);
+//   inv:<подпись> — щелчок по предмету (inv:<подпись>#<N> — N-й с этой подписью)
 //   node urqw-run.js <каталог UrqW> <book.qst> random:<N>   — N случайных нажатий
 // DETERMINISTIC=1 — случайность как --deterministic Java-плеера (PlayerContext): RANDOM — счётчик
 // (0, 1, 2… по модулю, +1), SHUFFLE — разворот списка; так прогоны со случайностью (колода в бою
@@ -14,6 +15,8 @@
 // MEDIA=1 — картинки в тексте (IMG) и звуки с прошлого шага (SND: MUSIC — музыка, PLAY — эффект,
 // STOP — музыка остановлена)
 const fs = require('fs'), vm = require('vm'), path = require('path');
+// «подпись#N» -> [подпись, N]; без #N — [подпись, 1] (одинаковые подписи: N-я по порядку на экране)
+const labelAndNth = (s) => { const m = /^(.*)#(\d+)$/.exec(s); return m ? [m[1], parseInt(m[2])] : [s, 1]; };
 // шаги — через запятую или, если в подписях есть запятые, через «;;»
 const U = process.argv[2], questFile = process.argv[3], arg4 = process.argv[4] || '',
   script = arg4.split(arg4.includes(';;') ? ';;' : ',').filter(x => x);
@@ -104,8 +107,8 @@ if (script[0] && script[0].startsWith('random:')) {
 for (const choice of script) {
   let opt;
   if (choice.startsWith('link:')) opt = options().filter(o => o.kind === 'link')[parseInt(choice.slice(5)) - 1];
-  else if (choice.startsWith('inv:')) opt = options().find(o => o.kind === 'inv' && o.name === choice.slice(4));
-  else if (choice.startsWith('o:')) opt = options().find(o => o.kind === 'link' && o.name.replace(/<[^>]*>/g, '') === choice.slice(2));
+  else if (choice.startsWith('inv:')) { const [name, nth] = labelAndNth(choice.slice(4)); opt = options().filter(o => o.kind === 'inv' && o.name === name)[nth - 1]; }
+  else if (choice.startsWith('o:')) { const [name, nth] = labelAndNth(choice.slice(2)); opt = options().filter(o => o.kind === 'link' && o.name.replace(/<[^>]*>/g, '') === name)[nth - 1]; }
   else opt = options().find(o => o.kind === 'btn' && decode(o.name) === choice);
   if (!opt) { console.log('нет ' + choice); break; }
   run(opt);

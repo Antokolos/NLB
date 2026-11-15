@@ -12,6 +12,9 @@
 // (txt2gam — github.com/QSPFoundation/txt2gam, сборка cmake; число локаций он печатает в конце)
 // Шаги: подпись действия; obj:<подпись предмета> — выбрать предмет инвентаря; link:<N> — N-я
 // ссылка на объект в тексте; o:<подпись> — ссылка на объект по подписи; exec:<код> — выполнить код QSP; random:<N> — N случайных шагов
+// Одинаковые подписи (два «крана» в «Слуге Ра», клоны карт во «Фронтире»): o:<подпись>#<N> и
+// obj:<подпись>#<N> — N-я ссылка или N-й предмет с этой подписью (по порядку на экране, с 1); без
+// #<N> — первый. Порядок тот же, что в списке «Здесь:» и «Инвентарь:» Java-плеера (порядок книги)
 // (действия, ссылки, предметы) с подсчётом ошибок движка. TAIL=1 — показывать конец текста,
 // VARS=a,b — в конце вывести значения переменных; MEDIA=1 — картинки в тексте (IMG), звуки
 // с прошлого шага (SND: PLAY/CLOSE) и картинки предметов инвентаря.
@@ -21,6 +24,8 @@
 // restartGame движка первую локацию не выполняет, поэтому игра начинается с GOTO первой локации.
 const fs = require('fs'), path = require('path');
 const P = process.argv[2], file = process.argv[3], script = (process.argv[4] || '').split(';;').filter(x => x);
+// «подпись#N» -> [подпись, N]; без #N — [подпись, 1]
+const labelAndNth = (s) => { const m = /^(.*)#(\d+)$/.exec(s); return m ? [m[1], parseInt(m[2])] : [s, 1]; };
 const { readQsps, writeQsp } = require(path.join(P, 'conv/package/dist/index.cjs'));
 
 (async () => {
@@ -77,13 +82,15 @@ const { readQsps, writeQsp } = require(path.join(P, 'conv/package/dist/index.cjs
   }
   for (const step of script) {
     if (step.startsWith('obj:')) {
-      const i = objects.findIndex(o => o.name === step.slice(4));
+      const [name, nth] = labelAndNth(step.slice(4));
+      const i = objects.map((o, k) => o.name === name ? k : -1).filter(k => k >= 0)[nth - 1] ?? -1;
       if (i < 0) { console.log('нет предмета ' + step); break; }
       api.selectObject(i);
     } else if (step.startsWith('o:')) {
       // ссылка на объект в тексте по подписи
       // подпись — без разметки (в ссылке может быть картинка объекта)
-      const m = [...main.matchAll(/<a href="EXEC:([^"]*)">(.*?)<\/a>/g)].find(x => x[2].replace(/<[^>]*>/g, '') === step.slice(2));
+      const [name, nth] = labelAndNth(step.slice(2));
+      const m = [...main.matchAll(/<a href="EXEC:([^"]*)">(.*?)<\/a>/g)].filter(x => x[2].replace(/<[^>]*>/g, '') === name)[nth - 1];
       if (!m) { console.log('нет ссылки ' + step); break; }
       api.execCode(m[1].replace(/''/g, "'"));
     } else if (step.startsWith('link:')) {
