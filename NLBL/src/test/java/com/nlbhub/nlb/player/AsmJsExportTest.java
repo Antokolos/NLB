@@ -81,7 +81,7 @@ public class AsmJsExportTest {
         assertTrue(sm, sm.startsWith("ASMJS[::]128[::]0[::]0[::]0[::]mw[::]html\n"));
         assertTrue("обязательные для библиотеки абзацы: " + sm, sm.contains(":: StoryTitle[::]")
                 && sm.contains(":: StoryAuthor[::]") && sm.contains(":: StorySubtitle[::]"));
-        assertTrue("Start — начальное состояние и первая страница: " + sm, sm.contains(":: Start[::]10-10-0\ndisplay(\"nlb_init\");\ngoto(\""
+        assertTrue("Start — начальное состояние и первая страница: " + sm, sm.contains(":: Start[::]10-10-0\ndisplay(\"nlb_init\"); display(\"nlb_lib\");\ngoto(\""
                 + m_room.getId() + "\");"));
         assertTrue("переменные книги — свойства v: " + sm, sm.contains("v = {}; nlb = {page: \"\""));
     }
@@ -94,9 +94,10 @@ public class AsmJsExportTest {
         assertTrue("текст — выражение: кавычки экранированы, переменная — значением, '^' — <br>, HTML — сущностями: " + sm,
                 sm.contains("print(\"Комната. \\\"Сила\\\": \" + nlb.str(v.power) + \"\\u003cbr>Вторая строка &lt;b&gt;\" + \"<br><br>\");"));
         assertTrue("ссылка с условием — кнопкой, подпись с переменной: " + sm,
-                sm.contains("if ((v.power > 2)) { print(button(\"Дверь (\" + nlb.str(v.power) + \")\", \"" + m_door.getId() + "\", \"\")); "));
+                sm.contains("if ((v.power > 2)) { print(nlbf.a(\"Дверь (\" + nlb.str(v.power) + \")\", \"" + m_door.getId() + "\", undefined, 1)); "));
         assertTrue("абзац ссылки — действие игрока, модификации, переход: " + sm,
-                sm.contains(":: " + m_door.getId() + "[::]10-10-0\nnlb.ac++; nlb.cnt.walk++; ")
+                sm.contains(":: " + m_door.getId() + "[::]10-10-0\nif (!window.nlbf) { display(\"nlb_lib\"); }\n"
+                        + "nlb.ms = []; nlb.me = \"\"; nlb.rp = nlb.page; nlb.ac++; nlb.cnt.walk++; nlb.sel = \"\"; ")
                         && sm.contains("v.power = v.power + 1; goto(\"" + m_hall.getId() + "\");"));
     }
 
@@ -105,7 +106,7 @@ public class AsmJsExportTest {
         String sm = export();
         assertTrue("GOTO из модификаций ссылки — раньше её цели: " + sm,
                 sm.contains("goto(\"" + m_room.getId() + "\"); goto(\"" + m_pass.getId() + "\");"));
-        assertTrue("автоссылка со страницы без текста — сразу goto: " + sm, sm.contains("if (nlb.redraw) { nlb.redraw = 0; } else { }\ngoto(\"" + m_auto.getId() + "\"); "));
+        assertTrue("автоссылка со страницы без текста — сразу goto: " + sm, sm.contains("if (nlb.redraw) { nlb.redraw = 0; } else { }\nnlbf.turn();\ngoto(\"" + m_auto.getId() + "\"); "));
         assertFalse("старых макросов нет: " + sm, sm.contains("<<"));
     }
 }
