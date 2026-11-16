@@ -5428,6 +5428,12 @@ public class NonLinearBookImpl implements NonLinearBook {
         manager.exportToFile(targetFile);
     }
 
+    /** AXMA Story Maker JS — новая версия AXMA (тело абзаца — JavaScript) */
+    public void exportToASMJSFile(final File targetFile) throws NLBExportException {
+        ExportManager manager = new ASMJSExportManager(this, ExportManager.UTF_8);
+        manager.exportToFile(targetFile);
+    }
+
     public void addVariable(@NotNull VariableImpl variable) {
         m_variables.add(variable);
     }

@@ -2181,6 +2181,17 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             menu.add(item);
             button.setVisible(false);
         }
+        // AXMA Story Maker JS — без кнопки в форме: пункт списка сразу запускает экспорт
+        final JMenuItem asmJs = new JMenuItem("Export to AXMA Story Maker JS", m_exportASM.getIcon());
+        asmJs.addActionListener(e -> {
+            final File exportDir = chooseExportDir();
+            if (exportDir != null) {
+                ExportProgressDialog.run(m_mainFramePanel, "Export to AXMA JS", "Error while exporting to AXMA JS: ",
+                        () -> getMainPaneInfo().getPaneNlbFacade().exportToASMJSFile(exportDir), null);
+            }
+        });
+        menu.insert(asmJs, java.util.Arrays.asList(menu.getComponents()).indexOf(
+                items.entrySet().stream().filter(entry -> entry.getValue() == m_exportASM).findFirst().get().getKey()) + 1);
         final JButton exportButton = new JButton(new ImageIcon(MainFrame.class.getResource("/common/export.png")));
         exportButton.setToolTipText("Export the book to other formats");
         exportButton.setBorderPainted(false);

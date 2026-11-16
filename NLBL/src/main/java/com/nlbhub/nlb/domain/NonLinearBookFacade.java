@@ -563,6 +563,13 @@ public class NonLinearBookFacade implements NLBObservable {
         exportMedia(exportDir);
     }
 
+    /** AXMA Story Maker JS: book.sm нового формата (ASMJS) и медиа */
+    public void exportToASMJSFile(File exportDir) throws NLBExportException {
+        ExportProgress.format("AXMA JS");
+        m_nlb.exportToASMJSFile(new File(exportDir, "book.sm"));
+        exportMedia(exportDir);
+    }
+
     public void updateModifications(
             final ModifyingItem modifyingItem,
             final ModificationsTableModel modificationsTableModel
