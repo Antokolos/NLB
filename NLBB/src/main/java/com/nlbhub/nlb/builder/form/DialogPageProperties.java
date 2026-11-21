@@ -250,12 +250,15 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                     String selectedFileName = dialog.getSelectedFileName();
                     if (selectedFileName != null) {
                         m_imageFileName = selectedFileName;
-                        m_imageFileNameLabel.setText(m_imageFileName);
+                        updateImageLabel();
                         setPageImage(m_imageFileName);
                     }
                 }
             }
         });
+
+        m_backgroundCheckBox.addItemListener(e -> updateImageLabel());
+        m_themeComboBox.addActionListener(e -> updateImageLabel());
 
         m_languageComboBox.addActionListener(new ActionListener() {
             @Override
@@ -372,7 +375,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_imageFileName = page.getImageFileName();
         m_backgroundCheckBox.setSelected(page.isImageBackground());
         m_animatedCheckBox.setSelected(page.isImageAnimated());
-        m_imageFileNameLabel.setText(m_imageFileName);
+        updateImageLabel();
 
         m_soundFileName = page.getSoundFileName();
         m_soundSFXCheckBox.setSelected(page.isSoundSFX());
@@ -400,6 +403,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         }
         m_themeComboBox.setModel(themeComboboxModel);
         m_themeComboBox.setSelectedItem(page.getTheme());
+        updateImageLabel();
         m_pageIdTextField.setText(page.getId());
         m_pageVariableTextField.setText(variable != null ? variable.getName() : "");
         m_timerVariableTextField.setText(timerVariable != null ? timerVariable.getName() : "");
@@ -452,6 +456,28 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         m_autowireInTextPanel.setVisible(visible);
         m_autowireOutTextLabel.setVisible(visible);
         m_autowireOutTextPanel.setVisible(visible);
+    }
+
+    /**
+     * Имя картинки и предупреждение, если она больше экрана: фон VN-страницы (тема не STANDARD —
+     * DEFAULT экспортируется в VN как VN) или картинка-фон рисуются в своём размере
+     */
+    private void updateImageLabel() {
+        if (m_page == null) {
+            return;  // слушатели флажка и темы срабатывают и при заполнении диалога
+        }
+        Theme theme = (Theme) m_themeComboBox.getSelectedItem();
+        if (theme == null || theme == Theme.DEFAULT) {
+            theme = m_page.getCurrentNLB().getTheme();
+        }
+        final boolean applies = theme != Theme.STANDARD || m_backgroundCheckBox.isSelected();
+        ImageSizeWarning.show(
+                m_imageFileNameLabel,
+                m_nlbFacade.getMainFacade().getNlb().getImagesDir(),
+                m_imageFileName,
+                applies,
+                "the background will be cut off or stretched"
+        );
     }
 
     private void setPageImage(final String imageFileName) {

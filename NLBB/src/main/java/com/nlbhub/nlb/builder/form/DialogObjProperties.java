@@ -218,6 +218,8 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
             }
         });
 
+        m_objIsGraphical.addItemListener(e -> updateImageLabel());
+
         m_languageComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -250,7 +252,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                 String selectedFileName = dialog.getSelectedFileName();
                 if (!dialog.isCanceled() && selectedFileName != null) {
                     m_imageFileName = selectedFileName;
-                    m_imageFileNameLabel.setText(m_imageFileName);
+                    updateImageLabel();
                     setObjImage(m_imageFileName);
                 }
             }
@@ -458,7 +460,21 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_selectedLanguage = (String) m_languageComboBox.getSelectedItem();
         m_imageFileName = obj.getImageFileName();
         m_animatedImageCheckBox.setSelected(obj.isAnimatedImage());
-        m_imageFileNameLabel.setText(m_imageFileName);
+        updateImageLabel();
+    }
+
+    /** Имя картинки и предупреждение, если спрайт (графический объект) больше экрана */
+    private void updateImageLabel() {
+        if (m_obj == null) {
+            return;  // слушатель флажка срабатывает и при заполнении диалога
+        }
+        ImageSizeWarning.show(
+                m_imageFileNameLabel,
+                m_nlbFacade.getMainFacade().getNlb().getImagesDir(),
+                m_imageFileName,
+                m_objIsGraphical.isSelected(),
+                "the sprite will be cut off"
+        );
     }
 
     private void onOK() {
