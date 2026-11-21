@@ -134,6 +134,58 @@ public class MediaExportTest {
         assertFalse("эффекты AXMA играет только из вложенных файлов: " + sm, sm.contains("click.ogg"));
     }
 
+    /**
+     * AXMA JS: картинка страницы — строкой перед текстом при каждом показе (по тегу), картинка
+     * объекта — в начале его ссылки; звук — функция snd (музыка — фоном, эффект страницы — фразой
+     * озвучки), при входе и по SND; медиа — в папке files
+     */
+    @Test
+    public void asmJs() throws Exception {
+        File file = new File(m_temp.getRoot(), "book.sm");
+        book().exportToASMJSFile(file);
+        String sm = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+        String room = "\"" + m_room.getId() + "\"", lamp = "\"" + m_lamp.getId() + "\"";
+        assertTrue("картинка страницы: " + sm, sm.contains("nlbf.pimg(nlbf.pick(" + room
+                + ", [ [\"night\", \"images/a.jpg\"], [\"\", \"images/b.jpg\"] ])); "));
+        assertTrue("звук страницы — при входе: " + sm, sm.contains("nlbf.snd(" + room + "); }"));
+        assertTrue(sm, sm.contains("nlbo[" + room + "].snd = function () { var t = nlb.tags[nlb.me], vo = 0; "
+                + "nlbf.music(\"sound/m.mp3\"); if (!vo) { nlbf.sfx(\"sound/s.ogg\"); vo = 1; } };"));
+        assertTrue("картинка объекта — в ссылке: " + sm, sm.contains("nlbf.lnk(nlbf.oimg(nlb.me) + \"Лампа\", nlb.me)"));
+        assertTrue(sm, sm.contains("nlbo[" + lamp + "].img = function () { return nlbf.pick(nlb.me, [ [\"\", \"images/l.jpg\"] ]); };"));
+        assertTrue("SND — звук объекта: " + sm, sm.contains("nlbf.snd(" + lamp + "); "));
+        assertTrue(sm, sm.contains("nlbo[" + lamp + "].snd = function () { var t = nlb.tags[nlb.me], vo = 0; nlbf.sfx(\"sound/click.ogg\"); };"));
+        assertTrue("медиа — из папки files: " + sm, sm.contains("nlbf.src = function (p) { p = \"files/\" + p;"));
+        assertFalse("«[[» AXMA JS принимает за ссылку и в коде: " + sm, sm.contains("[["));
+    }
+
+    /**
+     * Переадресация (.redirect): путь — к цели, и PNG -> JPG — по параметрам цели, а не исходного
+     * имени («Остров»: 109_1.png с прозрачностью остаётся PNG, а 109.png, куда он ведёт, — 109.jpg;
+     * в коде экспорта был 109.png, которого нет)
+     */
+    @Test
+    public void redirectUsesTargetExportParameters() throws Exception {
+        TestBook b = new TestBook();
+        PageImpl glade = b.page("Поляна.");
+        b.link(glade, b.page("Лес."), "В лес");
+        glade.setImageFileName("t.png");
+        MediaFileImpl t = media("t.png", "", false);
+        t.setRedirect("s.png");
+        t.setPreset(com.nlbhub.nlb.domain.MediaExportParameters.Preset.NOCHANGE);
+        MediaFileImpl target = media("s.png", "", false);
+        target.setPreset(com.nlbhub.nlb.domain.MediaExportParameters.Preset.COMPRESSED);
+        b.nlb.addImageFile(t);
+        b.nlb.addImageFile(target);
+        File file = new File(m_temp.getRoot(), "redirect.sm");
+        b.nlb.exportToASMJSFile(file);
+        String sm = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+        assertTrue(sm, sm.contains("[\"\", \"images/s.jpg\"]"));
+        File qsp = new File(m_temp.getRoot(), "redirect.txt");
+        b.nlb.exportToQSPTextFile(qsp);
+        String qspText = new String(Files.readAllBytes(qsp.toPath()), StandardCharsets.UTF_16LE);
+        assertTrue("и в QSP (общий слой): " + qspText, qspText.contains("images/s.jpg") && !qspText.contains("images/s.png"));
+    }
+
     @Test
     public void choiceScript() throws Exception {
         File file = new File(m_temp.getRoot(), "startup.txt");

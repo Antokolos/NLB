@@ -118,6 +118,19 @@ public class AchievementsExportTest {
                 .replace("<br>", "").matches("(?s).*([<>]|\\|\\|).*"));
     }
 
+    /** AXMA JS: достижения — в хранилище браузера (между прохождениями), не в сохранении игры */
+    @Test
+    public void asmJs() throws Exception {
+        File file = new File(m_temp.getRoot(), "book.sm");
+        book().exportToASMJSFile(file);
+        String sm = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+        assertTrue(sm, sm.contains("nlbf.achmax(\"COLLECTOR\", 2); "));
+        assertTrue(sm, sm.contains("nlbf.achieve(\"COLLECTOR\", \""));
+        assertTrue(sm, sm.contains("v.got = nlbf.achn(\"COLLECTOR\"); "));
+        assertTrue("хранилище браузера: " + sm, sm.contains("localStorage.setItem(nlbf.achKey(), JSON.stringify(nlbf.achs()))"));
+        assertTrue(sm, sm.contains("nlbf.achNames = [\"COLLECTOR\"]; nlbf.perfect = \"\"; nlbf.achAnn = "));
+    }
+
     @Test
     public void choiceScript() throws Exception {
         File file = new File(m_temp.getRoot(), "startup.txt");

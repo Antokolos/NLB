@@ -3674,7 +3674,10 @@ public abstract class ExportManager {
             List<ImagePathData> result = new ArrayList<>();
             String[] fileNamesArr = imageFileNames.split(Constants.MEDIA_FILE_NAME_SEP);
             for (String fileName : fileNamesArr) {
-                MediaExportParameters mediaExportParameters = getMediaExportParameters(externalHierarchy, fileName);
+                // параметры (PNG -> JPG) — файла, на который ведёт путь: при переадресации
+                // (.redirect) это цель, а не исходное имя («Остров»: 109_1.png с прозрачностью
+                // остаётся PNG, а 109.png, куда он ведёт, становится 109.jpg)
+                MediaExportParameters mediaExportParameters = getMediaExportParameters(externalHierarchy, getRedirectMediaOrSelf(fileName));
                 result.add(getImagePath(externalHierarchy, fileName, animatedImage, removeFrameNumber, mediaExportParameters));
             }
             return result;

@@ -72,7 +72,7 @@ import java.util.regex.Pattern;
  *   generateObjText).
  *
  * AXMA JS склеивает строки абзаца через «;»: каждая строка — законченный оператор.
- * Медиа и достижения — следующий этап (пока модификации с ними — комментарием «не поддерживается»).
+ * - картинки, звук (медиа — в папке files), достижения (в хранилище браузера, между прохождениями).
  */
 public class ASMJSExportManager extends TextExportManager {
     private static final String LINE_SEPARATOR = "\n";
@@ -165,6 +165,9 @@ public class ASMJSExportManager extends TextExportManager {
     private final java.util.Map<String, Boolean> m_takable = new java.util.HashMap<>();
     private final java.util.Map<String, String> m_objNames = new java.util.LinkedHashMap<>();
     private final List<String> m_callbacks = new java.util.ArrayList<>();
+    /** Все достижения книги и perfect game */
+    private final List<String> m_achievementNames = new java.util.ArrayList<>();
+    private String m_perfectGame = "";
     private String m_gameInvText = "";
     private String m_gameNouseText = "";
 
@@ -307,6 +310,10 @@ public class ASMJSExportManager extends TextExportManager {
         sb.append(textPassage("StorySubtitle", title));
         m_gameInvText = nlbBuildingBlocks.getGameInvText() == null ? "" : html(nlbBuildingBlocks.getGameInvText());
         m_gameNouseText = nlbBuildingBlocks.getGameNouseText() == null ? "" : html(nlbBuildingBlocks.getGameNouseText());
+        m_achievementNames.clear();
+        m_achievementNames.addAll(nlbBuildingBlocks.getAchievements());
+        m_perfectGame = StringHelper.notEmpty(nlbBuildingBlocks.getAchievementNamePerfectGame())
+                ? nlbBuildingBlocks.getAchievementNamePerfectGame() : "";
         m_callbacks.clear();
         for (ObjBuildingBlocks obj : orderedObjects(nlbBuildingBlocks)) {
             if (obj.isCallback()) {
@@ -331,7 +338,7 @@ public class ASMJSExportManager extends TextExportManager {
         }
         StringBuilder sb = new StringBuilder("v = {}; nlb = {page: \"\", redraw: 0, ac: 0, cnt: {" + counters + "}, cntr: {"
                 + counters + "}, cprev: 0, cs: {}, own: {}, proto: {}, cc: 0, tags: {}, lists: {}, sel: \"\", o: \"\", o2: \"\", "
-                + "reply: \"\", rp: \"\", me: \"\", ms: [], gen: 0, seen: {}, ivn: 0, ivseen: {}};");
+                + "reply: \"\", rp: \"\", me: \"\", ms: [], gen: 0, seen: {}, ivn: 0, ivseen: {}, music: \"\"};");
         sb.append(LINE_SEPARATOR)
                 // значение переменной в тексте: undefined — пусто, как незаданная в плеере
                 .append("nlb.str = function (x) { return x === undefined || x === null ? \"\" : String(x); };")
@@ -451,6 +458,38 @@ public class ASMJSExportManager extends TextExportManager {
                 // USE в модификациях: цель — список с этим именем (каждый элемент), иначе объект
                 "nlbf.useOp = function (x, n, t) { if (nlb.lists.hasOwnProperty(n)) { var a = nlb.lists[n].slice(); "
                         + "for (var i = 0; i < a.length; i++) { nlbf.call(x, \"use\", a[i]); } } else { nlbf.call(x, \"use\", t); } };",
+                // медиа — в папке files рядом с историей (так их принимает публикация AXMA JS); в
+                // редакторе путь к ним даёт asmGlobal_GetMediaPath
+                "nlbf.src = function (p) { p = \"files/\" + p; return window.asmGlobal_GetMediaPath ? asmGlobal_GetMediaPath(p) : p; };",
+                // картинка по тегу экземпляра x (ModificationInterpreter.selectImage): первая, чьё
+                // условие совпало с тегом (без условия — всегда)
+                "nlbf.pick = function (x, a) { var t = nlb.tags[x]; for (var i = 0; i < a.length; i++) { if (!a[i][0] || a[i][0] == t) { return a[i][1]; } } return \"\"; };",
+                "nlbf.img = function (p) { return p ? \"<img class='nlb_img' style='max-width:100%' src='\" + String(nlbf.src(p)).split(\"'\").join(\"%27\") + \"'>\" : \"\"; };",
+                "nlbf.pimg = function (p) { if (p) { print(nlbf.img(p) + \"<br>\"); } };",
+                "nlbf.oimg = function (x) { return nlbf.img(nlbf.call(x, \"img\") || \"\"); };",
+                // звук: музыка — фоном (тот же файл не перезапускается, set_music в INSTEAD), эффект —
+                // отдельным Audio, если звук не выключен в настройках игры
+                // (music() сама переводит путь через asmGlobal_GetMediaPath — ей путь в files как есть)
+                "nlbf.music = function (p) { if (p == nlb.music) { return; } nlb.music = p; if (p) { music(\"files/\" + p); } else { music(); } };",
+                "nlbf.sfx = function (p) { if (window.asmGlobal && !asmGlobal.audio_enable) { return; } "
+                        + "try { var r = new Audio(nlbf.src(p)).play(); if (r && r.catch) { r.catch(function () {}); } } catch (e) {} };",
+                "nlbf.snd = function (x) { nlbf.call(x, \"snd\"); };",
+                // достижения (PlayerContext.achieve, setAchievement в nlb.lua) — между прохождениями,
+                // как в INSTEAD: в хранилище браузера (не в сохранении игры); «id:имя|место» — место
+                // засчитано, «n:имя» — число мест, «max:имя» — порог, «got:имя» — объявлено
+                "nlbf.achKey = function () { return \"nlb_ach:\" + (window[\"$$storytitle\"] || \"\"); };",
+                "nlbf.achs = function () { if (!nlbf.A) { try { nlbf.A = JSON.parse(localStorage.getItem(nlbf.achKey())); } catch (e) {} "
+                        + "if (!nlbf.A || typeof nlbf.A != \"object\") { nlbf.A = {}; } } return nlbf.A; };",
+                "nlbf.achSave = function () { try { localStorage.setItem(nlbf.achKey(), JSON.stringify(nlbf.achs())); } catch (e) {} };",
+                "nlbf.achn = function (n) { return nlbf.achs()[\"n:\" + n] || 0; };",
+                "nlbf.achmax = function (n, m) { nlbf.achs()[\"max:\" + n] = m; nlbf.achSave(); };",
+                "nlbf.achDone = function (n) { var a = nlbf.achs(); return (a[\"n:\" + n] || 0) >= Math.max(a[\"max:\" + n] || 0, 1); };",
+                "nlbf.achGot = function (n) { var a = nlbf.achs(); if (!a[\"got:\" + n] && nlbf.achDone(n)) { a[\"got:\" + n] = 1; nlbf.say(nlbf.achAnn + n); } };",
+                "nlbf.achieve = function (n, place) { var a = nlbf.achs(), k = \"id:\" + n + \"|\" + place; "
+                        + "if (!a[k]) { a[k] = 1; a[\"n:\" + n] = (a[\"n:\" + n] || 0) + 1; } nlbf.achGot(n); "
+                        + "if (nlbf.perfect && !a[\"got:\" + nlbf.perfect]) { var ok = 1; for (var i = 0; i < nlbf.achNames.length; i++) { "
+                        + "if (nlbf.achNames[i] != nlbf.perfect && !nlbf.achDone(nlbf.achNames[i])) { ok = 0; } } "
+                        + "if (ok) { a[\"n:\" + nlbf.perfect] = Math.max(a[\"n:\" + nlbf.perfect] || 0, 1); nlbf.achGot(nlbf.perfect); } } nlbf.achSave(); };",
                 // конец хода: callback-объекты, если игрок с прошлого хода что-то сделал
                 "nlbf.turn = function () { var d = " + countSum(0) + "; if (d > nlb.cprev) { nlb.cprev = d; "
                         + "for (var i = 0; i < nlbf.cbs.length; i++) { if (nlbf.on(nlbf.cbs[i])) { nlbf.call(nlbf.cbs[i], \"acta\"); } } } nlb.cprev = d; };",
@@ -463,6 +502,12 @@ public class ASMJSExportManager extends TextExportManager {
             cbs.append(cbs.length() > 0 ? ", " : "").append(jsString(id));
         }
         sb.append("nlbf.cbs = [").append(cbs).append("];").append(ls);
+        StringBuilder achs = new StringBuilder();
+        for (String name : m_achievementNames) {
+            achs.append(achs.length() > 0 ? ", " : "").append(jsString(name));
+        }
+        sb.append("nlbf.achNames = [").append(achs).append("]; nlbf.perfect = ").append(jsString(m_perfectGame))
+                .append("; nlbf.achAnn = ").append(jsString(achievementAnnouncement(m_language))).append(";").append(ls);
         StringBuilder names = new StringBuilder();
         for (java.util.Map.Entry<String, String> name : m_objNames.entrySet()) {
             names.append(names.length() > 0 ? ", " : "").append(jsString(name.getKey())).append(": ").append(jsString(name.getValue()));
@@ -499,6 +544,68 @@ public class ASMJSExportManager extends TextExportManager {
             }
         }
         return sum.length() > 0 ? "(" + sum + ")" : "0";
+    }
+
+    /**
+     * Картинки для nlbf.pick: [ ["тег", "путь"], … ] (тег "" — без условия). Скобки — через пробел:
+     * «[[…]]» AXMA JS принимает за ссылку даже в коде
+     */
+    static String imageArray(List<MediaChoice> images) {
+        StringBuilder sb = new StringBuilder("[ ");
+        for (MediaChoice image : images) {
+            sb.append(sb.length() > 2 ? ", " : "").append("[").append(jsString(image.hasConstraint() ? image.getConstraint() : ""))
+                    .append(", ").append(jsString(image.getPath())).append("]");
+        }
+        return sb.append(" ]").toString();
+    }
+
+    /**
+     * Звук страницы или объекта (ModificationInterpreter.playSound, snd в INSTEAD) — функция snd:
+     * без условия — всегда, подряд идущие с условием — цепочка по тегу экземпляра. Музыка —
+     * nlbf.music, эффект — nlbf.sfx; у страницы эффект — фраза озвучки: в STANDARD при входе звучит
+     * одна, первая подходящая (как в экспорте QSP)
+     */
+    static String soundFunction(List<MediaChoice> sounds, boolean page) {
+        StringBuilder sb = new StringBuilder("snd = function () { var t = nlb.tags[nlb.me], vo = 0; ");
+        for (List<MediaChoice> step : MediaChoice.soundSteps(sounds)) {
+            if (step.size() == 1 && !step.get(0).hasConstraint()) {
+                sb.append(soundStatement(step.get(0), page));
+                continue;
+            }
+            boolean first = true;
+            for (MediaChoice sound : step) {
+                sb.append(first ? "if (" : "else if (").append("t == ").append(jsString(sound.getConstraint())).append(") { ")
+                        .append(soundStatement(sound, page)).append("} ");
+                first = false;
+            }
+        }
+        return sb.append("}").toString();
+    }
+
+    private static String soundStatement(MediaChoice sound, boolean page) {
+        if (sound.isStop()) {
+            return "nlbf.music(\"\"); ";
+        }
+        if (!sound.isSfx()) {
+            return "nlbf.music(" + jsString(sound.getPath()) + "); ";
+        }
+        return page ? "if (!vo) { nlbf.sfx(" + jsString(sound.getPath()) + "); vo = 1; } " : "nlbf.sfx(" + jsString(sound.getPath()) + "); ";
+    }
+
+    /** Медиа страницы (объекта) в nlb_lib: nlbo[id].img — путь картинки по тегу, nlbo[id].snd — звук */
+    private static String mediaCode(String id, List<MediaChoice> images, List<MediaChoice> sounds, boolean page) {
+        final String o = "nlbo[" + jsString(id) + "]";
+        StringBuilder sb = new StringBuilder();
+        if (page) {
+            sb.append(o).append(" = ").append(o).append(" || {};").append(LINE_SEPARATOR);
+        }
+        if (!images.isEmpty()) {
+            sb.append(o).append(".img = function () { return nlbf.pick(nlb.me, ").append(imageArray(images)).append("); };").append(LINE_SEPARATOR);
+        }
+        if (!sounds.isEmpty()) {
+            sb.append(o).append(".").append(soundFunction(sounds, page)).append(";").append(LINE_SEPARATOR);
+        }
+        return sb.toString();
     }
 
     @Override
@@ -549,6 +656,11 @@ public class ASMJSExportManager extends TextExportManager {
             } else if (text.isEmpty() && StringHelper.notEmpty(objBlocks.getObjDisp())) {
                 text = js(objBlocks.getObjDisp());
             }
+        }
+        if (text.isEmpty() && objBlocks.isImageInScene() && !objBlocks.isGraphical()) {
+            // объект без описания, но с картинкой (фон боя, рамка карты во «Фронтире») — одна
+            // картинка, как в плеере; с действием — ссылкой
+            text = objBlocks.hasAction() ? "nlbf.lnk(nlbf.oimg(nlb.me), nlb.me)" : "nlbf.oimg(nlb.me)";
         }
         final String textF = objBlocks.getObjTextF().replace(EMPTY_LINK_LABEL, label);
         final boolean constrained = StringHelper.notEmpty(objBlocks.getObjConstraint());
@@ -618,7 +730,9 @@ public class ASMJSExportManager extends TextExportManager {
         parts.add("nouse = function () { return " + (StringHelper.notEmpty(nouse) ? js(nouse) : jsString(m_gameNouseText)) + "; }");
         if (objBlocks.isVisibleInInventory()) {
             // предмет без подписи и картинки лежит в инвентаре невидимым (как в плеере и INSTEAD)
-            parts.add("item = function () { var d = " + js(disp) + "; if (nlb.sel == nlb.me) { d = \"» \" + d; } print(nlbf.btn(d, nlb.me)); }");
+            // картинка предмета в инвентаре — перед подписью
+            final boolean invImage = objBlocks.isImageInInventory() && !objBlocks.isGraphical() && !objBlocks.getObjImages().isEmpty();
+            parts.add("item = function () { var d = " + (invImage ? "nlbf.oimg(nlb.me) + " : "") + js(disp) + "; if (nlb.sel == nlb.me) { d = \"» \" + d; } print(nlbf.btn(d, nlb.me)); }");
         }
         if (objBlocks.isTakable()) {
             // decorateObjTak: взять общий объект, если он переносимый, иначе этот (экземпляр)
@@ -634,6 +748,9 @@ public class ASMJSExportManager extends TextExportManager {
         for (String part : parts) {
             sb.append(o).append(".").append(part.replace("\r", "").replace("\n", " ")).append(";").append(ls);
         }
+        // картинка (у графического объекта VN её щёлкают, здесь её нет) и звук объекта
+        sb.append(mediaCode(id, objBlocks.isGraphical() ? java.util.Collections.emptyList() : objBlocks.getObjImages(),
+                objBlocks.getObjSounds(), false));
         m_objCode.append(sb);
         return "";
     }
@@ -656,6 +773,11 @@ public class ASMJSExportManager extends TextExportManager {
         if (suppressDsc || StringHelper.isEmpty(objText) || objText.trim().isEmpty()) {
             return "";
         }
+        // картинка объекта в сцене — в начале ссылки, как imgv в INSTEAD ({картинка метка})
+        final String image = imageEnabled && !isGraphicalObj ? "nlbf.oimg(nlb.me) + " : "";
+        if (EMPTY_LINK.matcher(objText).find()) {
+            objText = expandEmptyLink(objText);
+        }
         Matcher m = Pattern.compile("\\{([^}]*)\\}").matcher(objText);
         StringBuilder result = new StringBuilder();
         int at = 0;
@@ -663,15 +785,38 @@ public class ASMJSExportManager extends TextExportManager {
             if (m.start() > at) {
                 result.append(result.length() > 0 ? " + " : "").append(js(objText.substring(at, m.start())));
             }
-            // пустая метка {} в INSTEAD — картинка объекта: ссылкой станет подпись объекта
+            // метка, ставшая пустой, — подпись объекта (generateObjText)
             String label = m.group(1).trim().isEmpty() ? EMPTY_LINK_LABEL : js(m.group(1));
-            result.append(result.length() > 0 ? " + " : "").append("nlbf.lnk(").append(label).append(", nlb.me)");
+            result.append(result.length() > 0 ? " + " : "").append("nlbf.lnk(").append(image).append(label).append(", nlb.me)");
             at = m.end();
         }
         if (at < objText.length()) {
             result.append(result.length() > 0 ? " + " : "").append(js(objText.substring(at)));
         }
         return result.toString();
+    }
+
+    private static final Pattern EMPTY_LINK = Pattern.compile("\\{\\s*\\}");
+
+    /**
+     * Пустая метка {} — картинка объекта в INSTEAD; без неё, как в экспорте QSP и в плеере, ссылкой
+     * становится первая строка текста с видимыми знаками («{} Офицер по безопасности» во «Фронтире»),
+     * а если её нет — подпись объекта
+     */
+    static String expandEmptyLink(String objText) {
+        String rest = EMPTY_LINK.matcher(objText).replaceAll("");
+        String[] parts = rest.split("(?<=<br>)", -1);
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
+            String body = part.endsWith("<br>") ? part.substring(0, part.length() - 4) : part;
+            if (!body.replaceAll("<[^>]*>", "").isBlank()) {
+                String label = body.strip();
+                int start = body.indexOf(label);
+                parts[i] = body.substring(0, start) + "{" + label + "}" + body.substring(start + label.length()) + part.substring(body.length());
+                return String.join("", parts);
+            }
+        }
+        return rest + "{}";
     }
 
     @Override
@@ -738,6 +883,11 @@ public class ASMJSExportManager extends TextExportManager {
         if (pageBlocks.isHasPageTimer()) {
             sb.append(pageBlocks.getPageTimerVariableInit());
         }
+        if (!pageBlocks.getPageSounds().isEmpty()) {
+            // звук страницы — при входе, после её модификаций (initf в INSTEAD)
+            sb.append("nlbf.snd(").append(jsString(pageId)).append("); ");
+            m_objCode.append(mediaCode(pageId, java.util.Collections.emptyList(), pageBlocks.getPageSounds(), true));
+        }
         sb.append("}").append(LINE_SEPARATOR);
         sb.append("nlbf.turn();").append(LINE_SEPARATOR);
         sb.append(pageBlocks.getPageCaption());
@@ -746,18 +896,22 @@ public class ASMJSExportManager extends TextExportManager {
         // ответ на действие, после которого перешли сюда, — перед текстом страницы; объекты
         // страницы, ответ, инвентарь. Страница без текста, которую сразу покидают по автоссылке
         // (goto() стирает экран), их не выводит — ответ остаётся для следующей страницы
-        final String body = "nlbf.before(" + (hasText ? js(text.trim()) : "\"\"") + "); "
-                + "nlb.gen++; nlbf.show(" + jsString(pageId) + "); nlbf.reply(); nlbf.inv();" + LINE_SEPARATOR;
+        // картинка страницы — при каждом показе (тег мог измениться), строкой перед текстом
+        final List<MediaChoice> images = pageBlocks.getPageImages();
+        final String pre = (images.isEmpty() ? "" : "nlbf.pimg(nlbf.pick(" + jsString(pageId) + ", " + imageArray(images) + ")); ")
+                + "nlbf.before(" + (hasText ? js(text.trim()) : "\"\"") + "); ";
+        final String post = "nlb.gen++; nlbf.show(" + jsString(pageId) + "); nlbf.reply(); nlbf.inv();" + LINE_SEPARATOR;
+        final String body = pre + post;
         final boolean bodyFirst = pageBlocks.isHasPageText() || pageBlocks.getLinksBuildingBlocks().stream().noneMatch(LinkBuildingBlocks::isAuto);
         if (bodyFirst) {
-            sb.append(body.substring(0, body.indexOf("nlb.gen++"))).append(LINE_SEPARATOR);
+            sb.append(pre).append(LINE_SEPARATOR);
         }
         if (hasText) {
             // print не переводит строку: текст — абзацем перед ссылками
             sb.append("print(").append(js(text.trim())).append(" + \"<br><br>\");").append(LINE_SEPARATOR);
         }
         if (bodyFirst) {
-            sb.append(body.substring(body.indexOf("nlb.gen++")));
+            sb.append(post);
         }
         List<LinkBuildingBlocks> links = pageBlocks.getLinksBuildingBlocks();
         sb.append(timerWait(pageBlocks));
@@ -1358,36 +1512,37 @@ public class ASMJSExportManager extends TextExportManager {
         return "nlbf.useOp(" + source + ", " + listKey(targetVariable) + ", " + targetVariable + "); ";
     }
 
-    // --- следующие этапы: медиа, достижения, окно
+    // --- звук и достижения
 
     @Override
     protected String decorateSSndOperation() {
-        return todo("SSND");
+        return "nlbf.snd(" + objRef(null, null) + "); ";
     }
 
     @Override
     protected String decorateWSndOperation() {
-        return todo("WSND");
+        // ww — объект, к которому применяют (в коде применения — t); вне применения — ничего
+        return inUseLink() ? "nlbf.snd(t); " : "";
     }
 
     @Override
     protected String decorateSndOperation(String objectId, String objectVar) {
-        return todo("SND");
+        return "nlbf.snd(" + objRef(objectId, objectVar) + "); ";
     }
 
     @Override
     protected String decorateAchMaxOperation(String achievementName, int max) {
-        return todo("ACHMAX");
+        return "nlbf.achmax(" + jsString(achievementName) + ", " + max + "); ";
     }
 
     @Override
     protected String decorateAchieveOperation(String achievementName, String modificationId) {
-        return todo("ACHIEVE");
+        return "nlbf.achieve(" + jsString(achievementName) + ", " + jsString(modificationId) + "); ";
     }
 
     @Override
     protected String decorateAchievedOperation(String variableName, String achievementName) {
-        return todo("ACHIEVED");
+        return variableName + " = nlbf.achn(" + jsString(achievementName) + "); ";
     }
 
     @Override
