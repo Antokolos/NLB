@@ -1,0 +1,66 @@
+# Сборка на новой машине: bootstrap.sh (Linux) и bootstrap.bat (Windows) сами скачивают JDK 21
+# (Amazon Corretto) и Maven в .tools и собирают дистрибутив. Запускается, когда меняются эти
+# скрипты или скрипты сборки, и вручную (Actions -> Bootstrap -> Run workflow). Java и Maven
+# раннера скрипты не используют — проверка, что собранное идёт на скачанном JDK
+name: Bootstrap
+
+on:
+  pull_request:
+    paths:
+      - bootstrap.sh
+      - bootstrap.bat
+      - tools/bootstrap.ps1
+      - build.sh
+      - build.bat
+      - .github/workflows/bootstrap.yml
+  workflow_dispatch:
+
+concurrency:
+  group: bootstrap-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    name: bootstrap.sh (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build with bootstrap.sh
+        run: ./bootstrap.sh
+
+      - name: Downloaded JDK and Maven are used
+        run: |
+          ./bootstrap.sh java -version 2>&1 | tee java.txt
+          grep -q Corretto java.txt
+          ./bootstrap.sh mvn -v | tee mvn.txt
+          grep -q "Apache Maven 3.9.9" mvn.txt
+          dist/runtime/bin/java -version 2>&1 | grep Corretto
+
+  windows:
+    name: bootstrap.bat (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - run: git config --global core.longpaths true
+
+      - uses: actions/checkout@v4
+
+      - name: Build with bootstrap.bat
+        shell: cmd
+        run: bootstrap.bat
+
+      - name: Downloaded JDK and Maven are used
+        shell: cmd
+        run: |
+          call bootstrap.bat java -version 2> java.txt
+          type java.txt
+          findstr /C:"Corretto" java.txt || exit /b 1
+          call bootstrap.bat mvn -v > mvn.txt
+          type mvn.txt
+          findstr /C:"Apache Maven 3.9.9" mvn.txt || exit /b 1
+          dist\runtime\bin\java -version 2>&1 | findstr /C:"Corretto" || exit /b 1

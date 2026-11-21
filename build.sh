@@ -24,5 +24,12 @@ JLINK=jlink
 if [ -n "$JAVA_HOME" ]; then
     JLINK="$JAVA_HOME/bin/jlink"
 fi
-"$JLINK" --add-modules "$RUNTIME_MODULES" --strip-debug --no-header-files --no-man-pages --compress=zip-6 --output dist/runtime
+# --strip-debug on Linux also strips native libraries with objcopy (binutils), which a fresh machine
+# may not have (bootstrap.sh); without it only Java debug attributes are stripped
+STRIP=--strip-debug
+if [ "$(uname -s)" = Linux ] && ! command -v objcopy >/dev/null 2>&1; then
+    echo "objcopy (binutils) not found: native libraries of the runtime are not stripped"
+    STRIP=--strip-java-debug-attributes
+fi
+"$JLINK" --add-modules "$RUNTIME_MODULES" $STRIP --no-header-files --no-man-pages --compress=zip-6 --output dist/runtime
 mvn clean
