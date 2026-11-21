@@ -100,7 +100,8 @@ public final class DialogScreenPreview {
         final ScreenLayout.Element bg = screen.getBackground();
         if (bg != null && !bg.hasImage()) {
             lines.add("Background " + escape(bg.getLabel()) + " is not found or cannot be read.");
-        } else if (screen.isBackgroundMismatched()) {
+        } else if (screen.isBackgroundMismatched() && !screen.isStandardTheme()) {
+            // у STANDARD картинка страницы вписывается в свою область — размер не беда
             lines.add("Background " + escape(bg.getLabel()) + " is " + bg.getWidth() + "×" + bg.getHeight() + ", not "
                     + ScreenLayout.SCREEN_WIDTH + "×" + ScreenLayout.SCREEN_HEIGHT
                     + ": INSTEAD shows it centered in its size (shown here), NLBNavigator and the web player stretch it.");
@@ -114,7 +115,8 @@ public final class DialogScreenPreview {
         if (lines.isEmpty()) {
             lines.add(screen.getSprites().isEmpty() && bg == null ? "Nothing to show: no background and no graphical objects."
                     : "Everything fits the screen.");
-        } else if (screen.getSprites().stream().anyMatch(ScreenLayout.Element::isCut) || screen.isBackgroundMismatched()) {
+        } else if (screen.getSprites().stream().anyMatch(ScreenLayout.Element::isCut)
+                || (screen.isBackgroundMismatched() && !screen.isStandardTheme())) {
             lines.add("To fit: Set image... -> Downscale... in the media library.");
         }
         return "<html>" + String.join("<br>", lines) + "</html>";
