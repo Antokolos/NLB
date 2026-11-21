@@ -67,6 +67,11 @@ public class ExportPreviewServletTest {
         write(new File(m_preview.getUrqDir(), "images/u.png"), "upng");
         write(new File(m_preview.getAxmaDir(), "book.sm"), ":: Start");
         write(new File(m_preview.getAxmaDir(), "images/a.png"), "apng");
+        write(new File(m_preview.getAxmaJsRuntime(), "index.html"), "<html>AXMA JS</html>");
+        write(new File(m_preview.getAxmaJsRuntime(), "axmastorymaker.js"), "// axma js");
+        write(new File(m_preview.getAxmaJsRuntime(), "axmastorymaker.css"), "/* axma js */");
+        write(new File(m_preview.getAxmaJsDir(), "book.sm"), "ASMJS[::]128");
+        write(new File(m_preview.getAxmaJsDir(), "files/images/j.png"), "jpng");
         write(new File(m_preview.getInsteadRuntime(), "instead.html"), "<html>INSTEAD-em</html>");
         write(new File(m_preview.getInsteadRuntime(), "instead-em.js"), "// instead-em");
         write(new File(m_preview.getInsteadDir(), "main.lua"), "-- main");
@@ -180,6 +185,27 @@ public class ExportPreviewServletTest {
         assertEquals(":: Start", get("axma/book.sm")[1]);
     }
 
+    /**
+     * AXMA JS: функции онлайн-редактора снаружи недоступны — страница кладёт .sm в его резервную
+     * копию (localStorage) и нажимает «Загрузить» -> «Из резервной копии» -> «Запустить»; медиа
+     * игры — files/… относительно страницы редактора
+     */
+    @Test
+    public void axmaJsEditor() throws Exception {
+        assertTrue(get("")[1], get("")[1].contains("axmajs/play.html?book=book.sm"));
+        String[] redirect = get("axmajs/");
+        assertEquals("302", redirect[0]);
+        assertTrue(redirect[3], redirect[3].endsWith("play.html?book=book.sm"));
+        String page = get("axmajs/play.html?book=book.sm")[1];
+        assertTrue(page, page.contains("localStorage.setItem('backup', story)") && page.contains("editor.src = 'editor/index.html'"));
+        assertTrue(page, page.contains("click('toolbutton_load'") && page.contains("click('item4'") && page.contains("click('toolbutton_run'"));
+        assertTrue("запасной путь — онлайн-редактор: " + page, page.contains("https://online.axmajs.ru/"));
+        assertEquals("редактор — из runtime", "// axma js", get("axmajs/editor/axmastorymaker.js")[1]);
+        assertEquals("медиа игры — files/… относительно страницы редактора", "jpng", get("axmajs/editor/files/images/j.png")[1]);
+        assertEquals("ASMJS[::]128", get("axmajs/book.sm")[1]);
+        assertEquals("редактор классического AXMA — свой", "// axma", get("axma/editor/axmastorymaker.js")[1]);
+    }
+
     @Test
     public void choiceScriptPageScenesAndInterpreter() throws Exception {
         assertTrue("страница игры — из ChoiceScript", get("choicescript/")[1].contains("mygame.js"));
@@ -209,7 +235,7 @@ public class ExportPreviewServletTest {
         write(new File(m_temp.getRoot().getParentFile(), "secret.txt"), "TOP-SECRET-CONTENT");
         for (String path : new String[]{"choicescript/scenes/../../../secret.txt", "jsiq/..%2F..%2Fsecret.txt",
                 "choicescript/..%2F..%2Fsecret.txt", "jsiq/runtime/..%2F..%2F..%2Fsecret.txt",
-                "qsp/..%2F..%2Fsecret.txt", "urq/quests/book/..%2F..%2F..%2Fsecret.txt", "axma/editor/..%2F..%2Fsecret.txt",
+                "qsp/..%2F..%2Fsecret.txt", "urq/quests/book/..%2F..%2F..%2Fsecret.txt", "axma/editor/..%2F..%2Fsecret.txt", "axmajs/editor/..%2F..%2Fsecret.txt",
                 "instead/..%2F..%2F..%2Fsecret.txt"}) {
             assertFalse(path, get(path)[1].contains("TOP-SECRET-CONTENT"));
         }
