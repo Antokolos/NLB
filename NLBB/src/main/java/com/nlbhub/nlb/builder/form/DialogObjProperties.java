@@ -201,8 +201,10 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                         )
                 );
                 dialog.showDialog();
-                if (!dialog.isCanceled()) {
-                    m_soundFileName = dialog.getSelectedFileName();
+                // OK без выбранного файла (null) — оставить прежний звук, как в DialogPageProperties
+                String selectedFileName = dialog.getSelectedFileName();
+                if (!dialog.isCanceled() && selectedFileName != null) {
+                    m_soundFileName = selectedFileName;
                     m_soundFileNameLabel.setText(m_soundFileName);
                 }
             }
@@ -244,8 +246,10 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
                         )
                 );
                 dialog.showDialog();
-                if (!dialog.isCanceled()) {
-                    m_imageFileName = dialog.getSelectedFileName();
+                // OK без выбранного файла (null) — оставить прежнюю картинку, как в DialogPageProperties
+                String selectedFileName = dialog.getSelectedFileName();
+                if (!dialog.isCanceled() && selectedFileName != null) {
+                    m_imageFileName = selectedFileName;
                     m_imageFileNameLabel.setText(m_imageFileName);
                     setObjImage(m_imageFileName);
                 }
