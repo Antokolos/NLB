@@ -563,11 +563,18 @@ public class NonLinearBookFacade implements NLBObservable {
         exportMedia(exportDir);
     }
 
-    /** AXMA Story Maker JS: book.sm нового формата (ASMJS) и медиа */
+    /**
+     * AXMA Story Maker JS: book.sm нового формата (ASMJS) и медиа — в папке files рядом с ним
+     * (files/images, files/sound): только оттуда публикация AXMA JS берёт файлы игры
+     */
     public void exportToASMJSFile(File exportDir) throws NLBExportException {
         ExportProgress.format("AXMA JS");
         m_nlb.exportToASMJSFile(new File(exportDir, "book.sm"));
-        exportMedia(exportDir);
+        File filesDir = new File(exportDir, "files");
+        if (!filesDir.isDirectory() && !filesDir.mkdirs()) {
+            throw new NLBExportException("Cannot create media export directory " + filesDir);
+        }
+        exportMedia(filesDir);
     }
 
     public void updateModifications(
