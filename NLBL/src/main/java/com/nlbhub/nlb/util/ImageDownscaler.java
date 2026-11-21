@@ -227,11 +227,28 @@ public final class ImageDownscaler {
         return limit > 0 ? Math.min(result, limit) : result;
     }
 
+    /**
+     * Размер картинки из заголовка файла (без декодирования); null — нет файла, формат не
+     * поддерживается или файл не читается
+     */
+    public static int[] imageSize(File file) {
+        if (file == null || !file.isFile()) {
+            return null;
+        }
+        return readSize(file);
+    }
+
     private static Item readItem(File file) {
         String format = formatOf(file);
         if (!SUPPORTED.contains(format)) {
             return new Item(file, 0, 0, "format is not supported");
         }
+        int[] size = readSize(file);
+        return size == null ? new Item(file, 0, 0, "cannot be read") : new Item(file, size[0], size[1], null);
+    }
+
+    /** Размер из заголовка файла любым читателем ImageIO; null — не читается */
+    private static int[] readSize(File file) {
         try (ImageInputStream in = ImageIO.createImageInputStream(file)) {
             if (in != null) {
                 Iterator<ImageReader> readers = ImageIO.getImageReaders(in);
@@ -239,7 +256,7 @@ public final class ImageDownscaler {
                     ImageReader reader = readers.next();
                     try {
                         reader.setInput(in, true, true);
-                        return new Item(file, reader.getWidth(0), reader.getHeight(0), null);
+                        return new int[]{reader.getWidth(0), reader.getHeight(0)};
                     } finally {
                         reader.dispose();
                     }
@@ -248,7 +265,7 @@ public final class ImageDownscaler {
         } catch (IOException ignored) {
             // ниже — «не читается»
         }
-        return new Item(file, 0, 0, "cannot be read");
+        return null;
     }
 
     /**

@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.*;
+import com.nlbhub.nlb.domain.ScreenLayout;
 import com.nlbhub.nlb.builder.model.LinksTableModelSwing;
 import com.nlbhub.nlb.builder.util.ImageHelper;
 import com.nlbhub.nlb.builder.util.LanguageHelper;
@@ -103,6 +104,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
     private JButton m_setImageButton;
     private JLabel m_imageFileNameLabel;
     private JXImageView m_imageView;
+    private JButton m_screenPreviewButton;
     private JCheckBox m_autoInCheckBox;
     private JCheckBox m_autoOutCheckBox;
     private JCheckBox m_autowireCheckBox;
@@ -257,6 +259,17 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
             }
         });
 
+        // «Screen preview...» и двойной щелчок по миниатюре — экран VN страницы как в игре, с
+        // несохранёнными правками (картинка, тема)
+        m_screenPreviewButton.addActionListener(e -> showScreenPreview());
+        m_imageView.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    showScreenPreview();
+                }
+            }
+        });
         m_backgroundCheckBox.addItemListener(e -> updateImageLabel());
         m_themeComboBox.addActionListener(e -> updateImageLabel());
 
@@ -462,6 +475,16 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
      * Имя картинки и предупреждение, если она больше экрана: фон VN-страницы (тема не STANDARD —
      * DEFAULT экспортируется в VN как VN) или картинка-фон рисуются в своём размере
      */
+    private void showScreenPreview() {
+        DialogScreenPreview.show(
+                this,
+                m_nlbFacade,
+                ScreenLayout.Input.of(m_page).pageImage(m_imageFileName).theme((Theme) m_themeComboBox.getSelectedItem()),
+                null,
+                m_page.getCaption()
+        );
+    }
+
     private void updateImageLabel() {
         if (m_page == null) {
             return;  // слушатели флажка и темы срабатывают и при заполнении диалога

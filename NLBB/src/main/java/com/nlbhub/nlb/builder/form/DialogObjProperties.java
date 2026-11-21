@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.builder.form;
 
+import com.nlbhub.nlb.domain.ScreenLayout;
 import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.builder.util.ImageHelper;
 import com.nlbhub.nlb.builder.util.LanguageHelper;
@@ -89,6 +90,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
     private JButton m_setBorderColorButton;
     private JButton m_setImageButton;
     private JLabel m_imageFileNameLabel;
+    private JButton m_screenPreviewButton;
     private JXImageView m_imageView;
     private JTextArea m_objTextTextArea;
     private JCheckBox m_imageInScene;
@@ -218,6 +220,17 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
             }
         });
 
+        // «Screen preview...» и двойной щелчок по миниатюре — экран страницы объекта как в игре,
+        // объект выделен; несохранённые правки (картинка, «Graphical», угол, offset) учитываются
+        m_screenPreviewButton.addActionListener(e -> showScreenPreview());
+        m_imageView.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    showScreenPreview();
+                }
+            }
+        });
         m_objIsGraphical.addItemListener(e -> updateImageLabel());
 
         m_languageComboBox.addActionListener(new ActionListener() {
@@ -461,6 +474,19 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         m_imageFileName = obj.getImageFileName();
         m_animatedImageCheckBox.setSelected(obj.isAnimatedImage());
         updateImageLabel();
+    }
+
+    private void showScreenPreview() {
+        final String id = m_obj.getId();
+        DialogScreenPreview.show(
+                this,
+                m_nlbFacade,
+                ScreenLayout.Input.ofObj(m_obj)
+                        .obj(id, m_imageFileName, m_objIsGraphical.isSelected())
+                        .objPlacement(id, getCoordsOrigin(), m_offset.getText()),
+                id,
+                m_objNameTextField.getText()
+        );
     }
 
     /** Имя картинки и предупреждение, если спрайт (графический объект) больше экрана */

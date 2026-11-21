@@ -1300,6 +1300,13 @@
                                                   <text value="―"/>
                                                 </properties>
                                               </component>
+                                              <component id="c7e10" class="javax.swing.JButton" binding="m_screenPreviewButton">
+                                                <constraints/>
+                                                <properties>
+                                                  <text value="Screen preview..."/>
+                                                  <toolTipText value="The VN screen of this page as the game shows it: background, sprites, what is cut off (double click on the picture — the same)"/>
+                                                </properties>
+                                              </component>
                                             </children>
                                           </grid>
                                           <grid id="7bc00" layout-manager="BorderLayout" hgap="0" vgap="0">
@@ -1325,7 +1332,10 @@
                                       </grid>
                                       <component id="ae4f5" class="org.jdesktop.swingx.JXImageView" binding="m_imageView">
                                         <constraints border-constraint="Center"/>
-                                        <properties/>
+                                        <properties>
+                                          <minimumSize width="160" height="140"/>
+                                          <preferredSize width="200" height="140"/>
+                                        </properties>
                                       </component>
                                     </children>
                                   </grid>

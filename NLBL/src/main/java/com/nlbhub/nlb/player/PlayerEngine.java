@@ -43,13 +43,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.nlbhub.nlb.api.Coords;
 import com.nlbhub.nlb.api.Link;
 import com.nlbhub.nlb.api.Modification;
 import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.api.Obj;
 import com.nlbhub.nlb.api.Page;
 import com.nlbhub.nlb.api.SpecialVariablesNameHelper;
+import com.nlbhub.nlb.domain.ScreenPlacement;
 import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.api.Variable;
 import com.nlbhub.nlb.api.config.Export;
@@ -2212,50 +2212,9 @@ public class PlayerEngine {
         }
         // ExportManager.getRelativeCoords: координаты относительно страницы, пересчитанные на
         // экран 1920×1080, и getTransformedCoords — отсчёт от выбранного угла
-        final double screenW = 1920.0;
-        final double screenH = 1080.0;
-        Coords rel = obj.getRelativeCoords(true);
-        double w = rel.getWidth();
-        double h = rel.getHeight();
-        double left = w != 0 ? Math.floor(rel.getLeft() * screenW / w) : 0.0;
-        double top = h != 0 ? Math.floor(rel.getTop() * screenH / h) : 0.0;
-        double x = left;
-        double y = top;
-        switch (origin) {
-            case 1:  // MiddleTop
-                x = left - screenW / 2;
-                break;
-            case 2:  // RightTop (как в экспорте)
-                x = screenW - left;
-                y = 0;
-                break;
-            case 3:  // LeftMiddle
-                y = screenH / 2 - top;
-                break;
-            case 4:  // MiddleMiddle
-                x = left - screenW / 2;
-                y = screenH / 2 - top;
-                break;
-            case 5:  // RightMiddle
-                x = screenW - left;
-                y = screenH / 2 - top;
-                break;
-            case 6:  // LeftBottom
-                y = screenH - top;
-                break;
-            case 7:  // MiddleBottom
-                x = left - screenW / 2;
-                y = screenH - top;
-                break;
-            case 8:  // RightBottom
-                x = screenW - left;
-                y = screenH - top;
-                break;
-            default:  // LeftTop
-                break;
-        }
-        p.m_armX = (int) x;
-        p.m_armY = (int) y;
+        int[] arm = ScreenPlacement.arm(obj);
+        p.m_armX = arm[0];
+        p.m_armY = arm[1];
         return p;
     }
 
@@ -2625,46 +2584,6 @@ public class PlayerEngine {
         }
     }
 
-    private static int[] parsePair(String s) {
-        if (s == null) {
-            return null;
-        }
-        int comma = s.indexOf(',');
-        if (comma < 0) {
-            return null;
-        }
-        Long x = parseCInt(s.substring(0, comma));
-        Long y = parseCInt(s.substring(comma + 1));
-        return (x == null || y == null) ? null : new int[]{x.intValue(), y.intValue()};
-    }
-
-    /**
-     * Как std::stoi: пробелы, знак, цифры; остаток строки не важен. null — числа нет
-     */
-    private static Long parseCInt(String s) {
-        int i = 0;
-        while (i < s.length() && Character.isWhitespace(s.charAt(i))) {
-            i++;
-        }
-        int start = i;
-        if (i < s.length() && (s.charAt(i) == '+' || s.charAt(i) == '-')) {
-            i++;
-        }
-        int digits = i;
-        while (i < s.length() && Character.isDigit(s.charAt(i))) {
-            i++;
-        }
-        if (i == digits) {
-            return null;
-        }
-        try {
-            long value = Long.parseLong(s.substring(start, i));
-            return (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) ? null : value;
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
-
     /**
      * Снимок экрана: что должно быть видно сейчас (порт PlayerEngine::screen NLBNavigator)
      */
@@ -2800,7 +2719,7 @@ public class PlayerEngine {
             Placement p = objPlacement(instanceId);
             int origin = java.util.Arrays.asList(Placement.ORIGINS).indexOf(p.m_origin);
             so.m_placement.m_anchor = ScreenModel.Anchor.values()[origin < 0 ? 0 : origin];
-            int[] offset = p.m_offset.isEmpty() ? null : parsePair(p.m_offset);
+            int[] offset = p.m_offset.isEmpty() ? null : ScreenPlacement.parsePair(p.m_offset);
             if (offset != null) {
                 so.m_placement.m_hasOffset = true;
                 so.m_placement.m_offsetX = offset[0];
@@ -2812,15 +2731,9 @@ public class PlayerEngine {
                 // iarm (decorateObjArm): только у объекта, вложенного в объект в самой книге —
                 // его offset или координаты относительно родителя
                 so.m_placement.m_hasInnerArm = true;
-                int[] inner = parsePair(obj.getOffset());
-                if (inner != null) {
-                    so.m_placement.m_innerArmX = inner[0];
-                    so.m_placement.m_innerArmY = inner[1];
-                } else {
-                    Coords rel = obj.getRelativeCoords(true);
-                    so.m_placement.m_innerArmX = (int) rel.getLeft();
-                    so.m_placement.m_innerArmY = (int) rel.getTop();
-                }
+                int[] inner = ScreenPlacement.innerArm(obj);
+                so.m_placement.m_innerArmX = inner[0];
+                so.m_placement.m_innerArmY = inner[1];
             }
             ScreenModel.Appearance a = so.m_appearance;
             a.m_effect = obj.getEffect() == null

@@ -28,6 +28,8 @@ bootstrap.bat           (Windows 10/11)
 - `docs/external-modules.md` — внешние модули книги и git (подмодули).
 - `docs/image-downscale.md` — уменьшение картинок в Media Library («Downscale...»): спрайты и фоны
   больше экрана игры.
+- `docs/screen-preview.md` — предпросмотр «как на экране» («Screen preview...»): экран VN страницы
+  по правилам игры.
 
 ## Большие книги и антивирус
 

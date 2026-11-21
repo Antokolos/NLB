@@ -12,6 +12,9 @@
   книгу в `Launcher.putNLBInMemoryToCache` и открывает `http://localhost:8111/play/?book=…`.
   Media Library: «Downscale...» — уменьшение картинок группой с общим коэффициентом (ядро —
   `util/ImageDownscaler` в NLBL, диалог — `DialogDownscaleImages`; `docs/image-downscale.md`).
+  «Screen preview...» в свойствах страницы и объекта — экран VN как в игре (раскладка —
+  `domain/ScreenLayout`, положение объектов — `domain/ScreenPlacement`, общее с экспортом и
+  веб-плеером; окно — `DialogScreenPreview`; `docs/screen-preview.md`).
 - **NLBW** — веб-плеер на Jetty (ee10): ядро плеера — пакет `com.nlbhub.nlb.player` в NLBL,
   веб-слой — `web/player` (`PlayerServlet` на `/play/*`: REST JSON, медиа, тема; `BookLibrary`,
   `WebSession`, `ScreenTheme`, `PlayerServer`; проверка экспортов ChoiceScript, jsIQ2, QSP, URQ, AXMA, AXMA JS и INSTEAD (INSTEAD-em из выпуска, `instead-em.yml`) в браузере —

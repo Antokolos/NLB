@@ -184,6 +184,13 @@
                                               <text value="―"/>
                                             </properties>
                                           </component>
+                                          <component id="c7e11" class="javax.swing.JButton" binding="m_screenPreviewButton">
+                                            <constraints/>
+                                            <properties>
+                                              <text value="Screen preview..."/>
+                                              <toolTipText value="The VN screen of the page of this object as the game shows it (double click on the picture — the same)"/>
+                                            </properties>
+                                          </component>
                                         </children>
                                       </grid>
                                     </children>
