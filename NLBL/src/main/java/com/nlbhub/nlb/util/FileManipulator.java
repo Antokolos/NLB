@@ -536,6 +536,18 @@ public class FileManipulator {
         }
     }
 
+    /**
+     * Файл книги изменён на месте (например, уменьшена картинка): отметить его в VCS как
+     * изменённый — коммит редактора берёт только отмеченное (setAll(false) в GitAdapter)
+     */
+    public void markModified(final File file) throws NLBIOException, NLBFileManipulationException, NLBVCSException {
+        try {
+            addToVCS(file, false);
+        } catch (IOException e) {
+            throw new NLBIOException("Error while marking modified file " + file, e);
+        }
+    }
+
     private void addToVCS(
             final File file,
             final boolean isNewFile

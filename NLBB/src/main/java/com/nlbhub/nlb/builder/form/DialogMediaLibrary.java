@@ -90,6 +90,7 @@ public class DialogMediaLibrary extends JDialog {
     private JButton m_voidButton;
     private JButton m_buttonPlaceholder;
     private JButton m_buttonSearchUsages;
+    private JButton m_buttonDownscale;
     private JButton m_buttonZoomIn;
     private JButton m_buttonZoomOut;
 
@@ -113,30 +114,7 @@ public class DialogMediaLibrary extends JDialog {
                         if (mediaType != MediaFile.Type.Image) {
                             return;
                         }
-                        try {
-                            if (lsm.isSelectionEmpty()) {
-                                // TODO: should clear
-                            } else {
-                                // Find out which indexes are selected.
-                                int minIndex = lsm.getMinSelectionIndex();
-                                int maxIndex = lsm.getMaxSelectionIndex();
-                                for (int i = minIndex; i <= maxIndex; i++) {
-                                    if (lsm.isSelectedIndex(i)) {
-                                        File imageFile = (
-                                                new File(
-                                                        nonLinearBookFacade.getNlb().getImagesDir(),
-                                                        (String) m_mediaFileModelSwing.getValueAt(i, 0)
-                                                )
-                                        );
-                                        m_imageView.setImage(imageFile);
-                                        m_imageView.setScale(ImageHelper.getScaleToFit(m_imageView, imageFile));
-                                        break;
-                                    }
-                                }
-                            }
-                        } catch (IOException ignore) {
-                            // ignore
-                        }
+                        showPreview(lsm, nonLinearBookFacade);
                     }
                 }
         );
@@ -206,6 +184,30 @@ public class DialogMediaLibrary extends JDialog {
                         )
                 );
                 dialog.showDialog();
+            }
+        });
+
+        // «Downscale...»: выделенные картинки (с кадрами анимации и целями переадресаций) —
+        // меньше, с одним коэффициентом; после записи — таблица и предпросмотр заново
+        m_buttonDownscale.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                List<String> selected = new ArrayList<>();
+                for (int row : m_mediaFileList.getSelectedRows()) {
+                    selected.add((String) m_mediaFileModelSwing.getValueAt(row, 0));
+                }
+                if (selected.isEmpty()) {
+                    JOptionPane.showMessageDialog(self, "Select the images to downscale first.");
+                    return;
+                }
+                if (DialogDownscaleImages.show(self, nonLinearBookFacade, selected)) {
+                    int[] rows = m_mediaFileList.getSelectedRows();
+                    m_mediaFileModelSwing.fireTableDataChanged();
+                    ListSelectionModel model = m_mediaFileList.getSelectionModel();
+                    for (int row : rows) {
+                        model.addSelectionInterval(row, row);
+                    }
+                    showPreview(model, nonLinearBookFacade);
+                }
             }
         });
 
@@ -322,7 +324,36 @@ public class DialogMediaLibrary extends JDialog {
                 break;
             case Sound:
                 m_imagePreviewPanel.setVisible(false);
+                m_buttonDownscale.setVisible(false);
                 break;
+        }
+    }
+
+    /** Предпросмотр первой выделенной картинки (файл читается заново — после уменьшения новый) */
+    private void showPreview(ListSelectionModel lsm, NonLinearBookFacade nonLinearBookFacade) {
+        try {
+            if (lsm.isSelectionEmpty()) {
+                // TODO: should clear
+            } else {
+                // Find out which indexes are selected.
+                int minIndex = lsm.getMinSelectionIndex();
+                int maxIndex = lsm.getMaxSelectionIndex();
+                for (int i = minIndex; i <= maxIndex; i++) {
+                    if (lsm.isSelectedIndex(i)) {
+                        File imageFile = (
+                                new File(
+                                        nonLinearBookFacade.getNlb().getImagesDir(),
+                                        (String) m_mediaFileModelSwing.getValueAt(i, 0)
+                                )
+                        );
+                        m_imageView.setImage(imageFile);
+                        m_imageView.setScale(ImageHelper.getScaleToFit(m_imageView, imageFile));
+                        break;
+                    }
+                }
+            }
+        } catch (IOException ignore) {
+            // ignore
         }
     }
 

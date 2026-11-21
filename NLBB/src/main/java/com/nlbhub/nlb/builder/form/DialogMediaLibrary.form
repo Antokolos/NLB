@@ -126,6 +126,16 @@
                           <text value="Search usages..."/>
                         </properties>
                       </component>
+                      <component id="d5c1a" class="javax.swing.JButton" binding="m_buttonDownscale">
+                        <constraints/>
+                        <properties>
+                          <maximumSize width="110" height="25"/>
+                          <minimumSize width="110" height="25"/>
+                          <preferredSize width="110" height="25"/>
+                          <text value="Downscale..."/>
+                          <toolTipText value="Make the selected images smaller (all by the same scale) so that they fit into the screen"/>
+                        </properties>
+                      </component>
                     </children>
                   </grid>
                 </children>

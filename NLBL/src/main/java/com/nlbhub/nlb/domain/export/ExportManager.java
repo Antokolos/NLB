@@ -80,7 +80,10 @@ public abstract class ExportManager {
     private static final String NOT_PLACEHOLDER = "2164a414-ba30-45b4-baa3-c32e194304db";
     private static final String OR_PLACEHOLDER = "179ef88a-88b7-4ad2-8dfa-d2040debde73";
     private static final String AND_PLACEHOLDER = "f0e77ec8-a270-4a3f-8b8f-1ade38988f37";
-    private static final Pattern FILE_NAME_PATTERN = Pattern.compile("(^.*\\D|^)(\\d*)(\\..*)$");
+    // Имя картинки: (основа)(номер кадра)(расширение); у анимированной картинки в книге — имя
+    // последнего кадра (intro-1478.jpg -> кадры intro-1.jpg … intro-1478.jpg). Общее правило и
+    // для уменьшения картинок в библиотеке (ImageDownscaler)
+    public static final Pattern FILE_NAME_PATTERN =Pattern.compile("(^.*\\D|^)(\\d*)(\\..*)$");
     private static final int NONEXISTING_PAGE = -1;
 
     public static final String NO_CONTAINER = "function() return nil; end";
