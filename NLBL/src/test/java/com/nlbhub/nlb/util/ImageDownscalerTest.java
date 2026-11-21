@@ -292,4 +292,17 @@ public class ImageDownscalerTest {
         assertEquals(1000, again.getItems().get(0).getNewHeight());
         assertFalse(ImageDownscaler.replan(plan, 0, 0).hasChanges());
     }
+    @Test
+    public void oversizedImagesOfField() throws IOException {
+        png("big.png", 1086, 1448);
+        png("wide.png", 2560, 1000);
+        png("fits.png", 1920, 1080);
+        List<ImageDownscaler.Item> big = ImageDownscaler.oversized(m_tmp.getRoot(), "big.png;fits.png;missing.png;VOID;wide.png", 1920, 1080);
+        assertEquals(2, big.size());
+        assertEquals("big.png", big.get(0).getFile().getName());
+        assertEquals(1448, big.get(0).getHeight());
+        assertEquals("wide.png", big.get(1).getFile().getName());
+        assertTrue(ImageDownscaler.oversized(m_tmp.getRoot(), "fits.png", 1920, 1080).isEmpty());
+        assertTrue(ImageDownscaler.oversized(m_tmp.getRoot(), "", 1920, 1080).isEmpty());
+    }
 }

@@ -251,6 +251,32 @@ public final class ImageDownscaler {
         return new Item(file, 0, 0, "cannot be read");
     }
 
+    /**
+     * Картинки из поля книги (имена через «;»), которые больше экрана — для предупреждения в
+     * свойствах страницы и объекта. Нет файла, VOID, нечитаемый файл — пропускаются (о них
+     * предупреждать не здесь).
+     */
+    public static List<Item> oversized(File imagesDir, String imageFileNames, int maxWidth, int maxHeight) {
+        List<Item> result = new ArrayList<>();
+        if (StringHelper.isEmpty(imageFileNames)) {
+            return result;
+        }
+        for (String name : imageFileNames.split(Constants.MEDIA_FILE_NAME_SEP)) {
+            if (name.isEmpty() || Constants.VOID.equals(name)) {
+                continue;
+            }
+            File file = new File(imagesDir, name);
+            if (!file.isFile()) {
+                continue;
+            }
+            Item item = readItem(file);
+            if (item.getProblem() == null && (item.getWidth() > maxWidth || item.getHeight() > maxHeight)) {
+                result.add(item);
+            }
+        }
+        return result;
+    }
+
     private static String formatOf(File file) {
         String name = file.getName();
         int dot = name.lastIndexOf('.');
