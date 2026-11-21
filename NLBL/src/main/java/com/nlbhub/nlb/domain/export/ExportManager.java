@@ -39,6 +39,7 @@ package com.nlbhub.nlb.domain.export;
 import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.api.config.Export;
 import com.nlbhub.nlb.api.config.Text;
+import com.nlbhub.nlb.domain.ScreenPlacement;
 import com.nlbhub.nlb.domain.MediaExportParameters;
 import com.nlbhub.nlb.domain.NonLinearBookImpl;
 import com.nlbhub.nlb.domain.SearchResult;
@@ -487,67 +488,11 @@ public abstract class ExportManager {
         );
     }
 
-    private int getScreenWidth() {
-        return 1920;
-    }
-
-    private int getScreenHeight() {
-        return 1080;
-    }
-
     private String getRelativeCoords(Obj obj) {
-        Coords coords = obj.getRelativeCoords(true);
-        double left = Math.floor(coords.getLeft() * getScreenWidth() / coords.getWidth());
-        double top = Math.floor(coords.getTop() * getScreenHeight() / coords.getHeight());
-        Coords transformedCoords = getTransformedCoords(obj, left, top);
-        String x = String.valueOf((int) transformedCoords.getLeft());
-        String y = String.valueOf((int) transformedCoords.getTop());
-        return x + "," + y;
-    }
-
-    private Coords getTransformedCoords(Obj obj, double left, double top) {
-        CoordsLw coords = new CoordsLw();
-        coords.setLeft((float) left);
-        coords.setTop((float) top);
-        switch (obj.getCoordsOrigin()) {
-            case LeftTop:
-                coords.setLeft((float) left);
-                coords.setTop((float) top);
-                break;
-            case MiddleTop:
-                coords.setLeft((float) left - getScreenWidth() / 2.0f);
-                coords.setTop((float) top);
-                break;
-            case RightTop:
-                coords.setLeft(getScreenWidth() - (float) left);
-                coords.setTop(0.0f);
-                break;
-            case LeftMiddle:
-                coords.setLeft((float) left);
-                coords.setTop(getScreenHeight() / 2.0f - (float) top);
-                break;
-            case MiddleMiddle:
-                coords.setLeft((float) left - getScreenWidth() / 2.0f);
-                coords.setTop(getScreenHeight() / 2.0f - (float) top);
-                break;
-            case RightMiddle:
-                coords.setLeft(getScreenWidth() - (float) left);
-                coords.setTop(getScreenHeight() / 2.0f - (float) top);
-                break;
-            case LeftBottom:
-                coords.setLeft((float) left);
-                coords.setTop(getScreenHeight() - (float) top);
-                break;
-            case MiddleBottom:
-                coords.setLeft((float) left - getScreenWidth() / 2.0f);
-                coords.setTop(getScreenHeight() - (float) top);
-                break;
-            case RightBottom:
-                coords.setLeft(getScreenWidth() - (float) left);
-                coords.setTop(getScreenHeight() - (float) top);
-                break;
-        }
-        return coords;
+        // координаты относительно страницы, пересчитанные на экран 1920×1080, с отсчётом от
+        // выбранного угла — общие правила с веб-плеером и предпросмотром редактора
+        int[] arm = ScreenPlacement.arm(obj);
+        return arm[0] + "," + arm[1];
     }
 
     protected NLBBuildingBlocks createNLBBuildingBlocks() throws NLBConsistencyException, NLBExportException {
