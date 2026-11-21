@@ -104,7 +104,7 @@ public final class DialogScreenPreview {
             // у STANDARD картинка страницы вписывается в свою область — размер не беда
             lines.add("Background " + escape(bg.getLabel()) + " is " + bg.getWidth() + "×" + bg.getHeight() + ", not "
                     + ScreenLayout.SCREEN_WIDTH + "×" + ScreenLayout.SCREEN_HEIGHT
-                    + ": INSTEAD shows it centered in its size (shown here), NLBNavigator and the web player stretch it.");
+                    + ": the game shows it centered in its size, as here (cut off or with the border colour around).");
         }
         for (ScreenLayout.Element e : screen.getSprites()) {
             if (e.isCut()) {
