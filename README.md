@@ -26,6 +26,8 @@ bootstrap.bat           (Windows 10/11)
 Документация:
 - `docs/web-player.md` — веб-плеер: устройство, раскладки VN и STANDARD, темы;
 - `docs/external-modules.md` — внешние модули книги и git (подмодули).
+- `docs/image-downscale.md` — уменьшение картинок в Media Library («Downscale...»): спрайты и фоны
+  больше экрана игры.
 
 ## Большие книги и антивирус
 
