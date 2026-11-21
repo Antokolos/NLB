@@ -21,7 +21,9 @@
   история — `docs/web-player.md`.
 
 Сборка: `mvn -q -DskipTests package` (из корня). Тесты — `mvn test`. Дистрибутив со встроенной
-Java — `build.sh` / `build.bat` (папка `dist`). Версия проекта при сборке не меняется; повысить —
+Java — `build.sh` / `build.bat` (папка `dist`); на машине без Java и Maven —
+`bootstrap.sh` / `bootstrap.bat` (скачивают JDK 21 Corretto и Maven 3.9.9 в `.tools`, проверка —
+`.github/workflows/bootstrap.yml`). Версия проекта при сборке не меняется; повысить —
 `bump-version.sh` / `bump-version.bat` (без параметра — последний номер, `minor` — 1.0.6 -> 1.1.0,
 `major` — 1.0.6 -> 2.0.0, или версия явно: `bump-version.sh 1.2.3-SNAPSHOT`).
 CI — `.github/workflows/ci.yml`: `mvn package` с тестами на каждый PR и push в `master` (Linux — обязательная

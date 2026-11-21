@@ -5,6 +5,24 @@ Non-Linear Book: редактор нелинейных книг (NLBB), библ
 веб-плеер (NLBW). Сборка — `mvn -q -DskipTests package`, дистрибутив со встроенной Java —
 `build.sh` / `build.bat` (каталог `dist`).
 
+## Сборка на новой машине (без Java и Maven)
+
+Нужны только git и интернет: скрипт сам скачает JDK 21 (Amazon Corretto, бесплатная сборка
+OpenJDK) и Maven 3.9.9 в папку `.tools` внутри репозитория — без прав администратора, ничего не
+меняя в системе, — сверит их контрольные суммы и соберёт дистрибутив (`build.sh` /
+`build.bat`, каталог `dist`):
+
+```
+git clone https://github.com/Antokolos/NLB.git
+cd NLB
+./bootstrap.sh          (Linux, macOS)
+bootstrap.bat           (Windows 10/11)
+```
+
+Повторный запуск ничего не скачивает. С аргументами скрипт запускает в том же окружении любую
+команду: `./bootstrap.sh mvn test`, `bootstrap.bat mvn -q -DskipTests package`. Удалить
+скачанное — удалить папку `.tools`.
+
 Документация:
 - `docs/web-player.md` — веб-плеер: устройство, раскладки VN и STANDARD, темы;
 - `docs/external-modules.md` — внешние модули книги и git (подмодули).

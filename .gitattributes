@@ -3,3 +3,8 @@
 NLBL/src/test/resources/player-expressions/** text eol=lf
 NLBL/src/test/resources/player-reference/** text eol=lf
 tools/player-reference/** text eol=lf
+# Скрипты сборки на новой машине (bootstrap): cmd и Windows PowerShell — CRLF, sh — LF, при любом
+# core.autocrlf
+bootstrap.bat text eol=crlf
+tools/bootstrap.ps1 text eol=crlf
+bootstrap.sh text eol=lf
