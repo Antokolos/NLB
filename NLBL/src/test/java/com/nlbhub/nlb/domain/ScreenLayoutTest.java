@@ -272,4 +272,41 @@ public class ScreenLayoutTest {
         assertNull(sprites.get(3).getFile());
         assertNotNull(none);
     }
+    @Test
+    public void unsavedPlacementAndObjectWithoutPage() throws IOException {
+        png("s.png", 100, 50);
+        ObjImpl obj = sprite("s.png", Obj.CoordsOrigin.LeftTop);
+        // несохранённые правки диалога объекта: угол и offset
+        ScreenLayout.Element e = ScreenLayout.layout(
+                ScreenLayout.Input.of(m_page).objPlacement(obj.getId(), Obj.CoordsOrigin.RightBottom, ""), m_images, m_library
+        ).getSprites().get(0);
+        assertEquals(1820, e.getX());
+        assertEquals(1030, e.getY());
+        e = ScreenLayout.layout(
+                ScreenLayout.Input.of(m_page).objPlacement(obj.getId(), Obj.CoordsOrigin.LeftTop, "7,9"), m_images, m_library
+        ).getSprites().get(0);
+        assertEquals(7, e.getX());
+        assertEquals(9, e.getY());
+
+        // страница объекта — и через объект-контейнер
+        ObjImpl inner = new ObjImpl(m_book);
+        inner.setContainerId(obj.getId());
+        obj.addContainedObjId(inner.getId());
+        m_book.addObj(inner);
+        assertEquals(m_page.getId(), ScreenLayout.Input.pageOf(inner).getId());
+
+        // объект ни на какой странице — экран с ним одним
+        ObjImpl alone = new ObjImpl(m_book);
+        alone.setImageFileName("s.png");
+        alone.setGraphical(true);
+        alone.setImageInScene(true);
+        alone.setCoordsOrigin(Obj.CoordsOrigin.MiddleMiddle);
+        m_book.addObj(alone);
+        assertNull(ScreenLayout.Input.pageOf(alone));
+        ScreenLayout.Screen screen = ScreenLayout.layout(ScreenLayout.Input.ofObj(alone), m_images, m_library);
+        assertNull(screen.getBackground());
+        assertEquals(1, screen.getSprites().size());
+        assertEquals(910, screen.getSprites().get(0).getX());
+        assertEquals(515, screen.getSprites().get(0).getY());
+    }
 }

@@ -213,19 +213,59 @@ public final class ScreenLayout {
      */
     public static final class Input {
         private final Page m_page;
+        /** Объект не на странице: экран с ним одним */
+        private final Obj m_aloneObj;
         private String m_pageImage;
         private Theme m_theme;
         private final Map<String, String> m_objImages = new HashMap<>();
         private final Map<String, Boolean> m_objGraphical = new HashMap<>();
+        private final Map<String, Obj.CoordsOrigin> m_objOrigins = new HashMap<>();
+        private final Map<String, String> m_objOffsets = new HashMap<>();
 
-        private Input(Page page) {
+        private Input(Page page, Obj aloneObj) {
             m_page = page;
-            m_pageImage = page.getImageFileName();
-            m_theme = page.getTheme();
+            m_aloneObj = aloneObj;
+            m_pageImage = page == null ? null : page.getImageFileName();
+            m_theme = page == null ? Theme.DEFAULT : page.getTheme();
         }
 
         public static Input of(Page page) {
-            return new Input(page);
+            return new Input(page, null);
+        }
+
+        /**
+         * Экран страницы, на которой лежит объект (через объекты-контейнеры); объект ни на какой
+         * странице — экран с ним одним
+         */
+        public static Input ofObj(Obj obj) {
+            Page page = pageOf(obj);
+            return page != null ? new Input(page, null) : new Input(null, obj);
+        }
+
+        /** Страница объекта: контейнер или контейнер контейнера; null — нет */
+        public static Page pageOf(Obj obj) {
+            final NonLinearBook book = obj.getCurrentNLB();
+            final Set<String> seen = new HashSet<>();
+            String containerId = obj.getContainerId();
+            while (StringHelper.notEmpty(containerId) && seen.add(containerId)) {
+                Page page = book.getPageById(containerId);
+                if (page != null) {
+                    return page.isDeleted() ? null : page;
+                }
+                Obj parent = book.getObjById(containerId);
+                if (parent == null) {
+                    return null;
+                }
+                containerId = parent.getContainerId();
+            }
+            return null;
+        }
+
+        /** Несохранённые точка отсчёта и offset объекта */
+        public Input objPlacement(String objId, Obj.CoordsOrigin origin, String offset) {
+            m_objOrigins.put(objId, origin);
+            m_objOffsets.put(objId, offset);
+            return this;
         }
 
         public Input pageImage(String imageFileNames) {
@@ -252,7 +292,7 @@ public final class ScreenLayout {
      */
     public static Screen layout(Input input, File imagesDir, List<MediaFile> imageFiles) {
         final Page page = input.m_page;
-        final NonLinearBook book = page.getCurrentNLB();
+        final NonLinearBook book = page != null ? page.getCurrentNLB() : input.m_aloneObj.getCurrentNLB();
         Theme theme = input.m_theme;
         if (theme == null || theme == Theme.DEFAULT) {
             theme = book.getTheme();
@@ -267,7 +307,7 @@ public final class ScreenLayout {
         }
 
         Element background = null;
-        File bgFile = imageFile(imagesDir, input.m_pageImage, page.isImageAnimated(), 1, redirects);
+        File bgFile = page == null ? null : imageFile(imagesDir, input.m_pageImage, page.isImageAnimated(), 1, redirects);
         if (bgFile != null) {
             int[] size = ImageDownscaler.imageSize(bgFile);
             int w = size == null ? 0 : size[0];
@@ -280,7 +320,8 @@ public final class ScreenLayout {
         }
 
         final List<Element> sprites = new ArrayList<>();
-        addObjects(input, book, page.getContainedObjIds(), null, imagesDir, redirects, sprites, new HashSet<>());
+        final List<String> roots = page != null ? page.getContainedObjIds() : List.of(input.m_aloneObj.getId());
+        addObjects(input, book, roots, null, imagesDir, redirects, sprites, new HashSet<>());
         return new Screen(standard, background, sprites);
     }
 
@@ -307,18 +348,20 @@ public final class ScreenLayout {
             int h = size == null ? 0 : size[1];
             int x;
             int y;
+            String offsetString = input.m_objOffsets.containsKey(id) ? input.m_objOffsets.get(id) : obj.getOffset();
+            Obj.CoordsOrigin coordsOrigin = input.m_objOrigins.containsKey(id) ? input.m_objOrigins.get(id) : obj.getCoordsOrigin();
             if (parent != null) {
                 // вложенный в объект: точка родителя + iarm (offset или координаты внутри родителя)
-                int[] inner = ScreenPlacement.innerArm(obj);
+                int[] inner = ScreenPlacement.innerArm(obj, offsetString);
                 x = parent.getX() + inner[0];
                 y = parent.getY() + inner[1];
             } else {
-                int origin = obj.getCoordsOrigin() == null ? 0 : obj.getCoordsOrigin().ordinal();
+                int origin = coordsOrigin == null ? 0 : coordsOrigin.ordinal();
                 int col = origin % 3;
                 int row = origin / 3;
                 // с offset arm = 0,0 (decorateObjEffect: arm только без offset)
-                int[] offset = StringHelper.isEmpty(obj.getOffset()) ? null : ScreenPlacement.parsePair(obj.getOffset());
-                int[] arm = StringHelper.isEmpty(obj.getOffset()) ? ScreenPlacement.arm(obj) : new int[]{0, 0};
+                int[] offset = StringHelper.isEmpty(offsetString) ? null : ScreenPlacement.parsePair(offsetString);
+                int[] arm = StringHelper.isEmpty(offsetString) ? ScreenPlacement.arm(obj, coordsOrigin) : new int[]{0, 0};
                 x = col == 0 ? arm[0] : col == 2 ? SCREEN_WIDTH - w : Math.floorDiv(SCREEN_WIDTH - w, 2);
                 y = row == 0 ? arm[1] : row == 2 ? SCREEN_HEIGHT - h : Math.floorDiv(SCREEN_HEIGHT - h, 2);
                 if (offset != null) {

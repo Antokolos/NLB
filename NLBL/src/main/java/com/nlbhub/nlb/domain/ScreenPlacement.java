@@ -60,6 +60,11 @@ public final class ScreenPlacement {
      * страницы 0 — координата 0.
      */
     public static int[] arm(Obj obj) {
+        return arm(obj, obj.getCoordsOrigin());
+    }
+
+    /** То же с другой точкой отсчёта (несохранённая правка в свойствах объекта) */
+    public static int[] arm(Obj obj, Obj.CoordsOrigin coordsOrigin) {
         final double screenW = SCREEN_WIDTH;
         final double screenH = SCREEN_HEIGHT;
         Coords rel = obj.getRelativeCoords(true);
@@ -69,7 +74,7 @@ public final class ScreenPlacement {
         double top = h != 0 ? Math.floor(rel.getTop() * screenH / h) : 0.0;
         double x = left;
         double y = top;
-        int origin = obj.getCoordsOrigin() == null ? 0 : obj.getCoordsOrigin().ordinal();
+        int origin = coordsOrigin == null ? 0 : coordsOrigin.ordinal();
         switch (origin) {
             case 1:  // MiddleTop
                 x = left - screenW / 2;
@@ -111,7 +116,12 @@ public final class ScreenPlacement {
      * координаты относительно родителя (без пересчёта на экран)
      */
     public static int[] innerArm(Obj obj) {
-        int[] inner = parsePair(obj.getOffset());
+        return innerArm(obj, obj.getOffset());
+    }
+
+    /** То же с другим offset (несохранённая правка в свойствах объекта) */
+    public static int[] innerArm(Obj obj, String offset) {
+        int[] inner = parsePair(offset);
         if (inner != null) {
             return inner;
         }
