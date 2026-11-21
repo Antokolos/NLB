@@ -464,7 +464,7 @@ public class ASMJSExportManager extends TextExportManager {
                 // картинка по тегу экземпляра x (ModificationInterpreter.selectImage): первая, чьё
                 // условие совпало с тегом (без условия — всегда)
                 "nlbf.pick = function (x, a) { var t = nlb.tags[x]; for (var i = 0; i < a.length; i++) { if (!a[i][0] || a[i][0] == t) { return a[i][1]; } } return \"\"; };",
-                "nlbf.img = function (p) { return p ? \"<img class='nlb_img' style='max-width:100%' src='\" + String(nlbf.src(p)).split(\"'\").join(\"%27\") + \"'>\" : \"\"; };",
+                "nlbf.img = function (p) { return p ? \"<img class='nlb_img' style='max-width:100%;max-height:50vh' src='\" + String(nlbf.src(p)).split(\"'\").join(\"%27\") + \"'>\" : \"\"; };",
                 "nlbf.pimg = function (p) { if (p) { print(nlbf.img(p) + \"<br>\"); } };",
                 "nlbf.oimg = function (x) { return nlbf.img(nlbf.call(x, \"img\") || \"\"); };",
                 // звук: музыка — фоном (тот же файл не перезапускается, set_music в INSTEAD), эффект —

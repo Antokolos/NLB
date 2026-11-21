@@ -1826,7 +1826,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
             }
         });
         // Проверка экспортов в браузере: открытая книга экспортируется в ChoiceScript, jsIQ2, QSP, URQ,
-        // AXMA и INSTEAD (STANDARD для книг с темой STANDARD, иначе VN) в каталог export-preview (с окном прогресса), сервер редактора (если ещё не запущен)
+        // AXMA, AXMA JS и INSTEAD (STANDARD для книг с темой STANDARD, иначе VN) в каталог export-preview (с окном прогресса), сервер редактора (если ещё не запущен)
         // запускается, и в браузере открывается /preview/ — игры в настоящих движках (их сервер
         // скачивает при первом открытии игры своего формата)
         m_previewExportButton.addActionListener(new ActionListener() {
@@ -1845,7 +1845,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                             preview.createDirs();
                             for (File dir : new File[]{preview.getChoiceScriptDir(), preview.getJsiqDir(),
                                     preview.getQspDir(), preview.getUrqDir(), preview.getAxmaDir(),
-                                    preview.getInsteadDir()}) {
+                                    preview.getAxmaJsDir(), preview.getInsteadDir()}) {
                                 ExportPreview.clear(dir);
                             }
                             facade.exportToChoiceScript(preview.getChoiceScriptDir());
@@ -1853,6 +1853,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                             facade.exportToQSPTextFile(preview.getQspDir());
                             facade.exportToURQTextFile(preview.getUrqDir());
                             facade.exportToASMFile(preview.getAxmaDir());
+                            facade.exportToASMJSFile(preview.getAxmaJsDir());
                             // как веб-плеер (BookLibrary.defaultMode): тема STANDARD — STANDARD, иначе VN
                             if (facade.getNlb().getTheme() == Theme.STANDARD) {
                                 facade.exportToSTEADFile(preview.getInsteadDir());

@@ -61,6 +61,7 @@ import java.time.Duration;
  *     qsp/            — экспорт в QSP: book.txt (текст QSP, UTF-16LE) и картинки, звук
  *     urq/            — экспорт в URQ: book.qst (windows-1251) и картинки, звук
  *     axma/           — экспорт в AXMA: book.sm и картинки, звук
+ *     axmajs/         — экспорт в AXMA Story Maker JS: book.sm и files/ (картинки, звук)
  *     instead/        — экспорт в INSTEAD (STANDARD или VN): main.lua, модули, картинки, звук
  *     runtime/        — движки, скачиваются при первом открытии страницы своего формата
  * </pre>
@@ -76,6 +77,8 @@ import java.time.Duration;
  *   <li>AXMA — редактор AXMA Story Maker с hyperbook.ru/editor: он собирает игру из .sm и
  *   показывает её. Редактор бесплатный, но распространять его нельзя — поэтому он скачивается на
  *   машину автора книги и только там и используется, без изменений;</li>
+ *   <li>AXMA JS — онлайн-редактор AXMA Story Maker JS с online.axmajs.ru (те же условия: бесплатный,
+ *   без права распространения — скачивается на машину автора книги);</li>
  *   <li>INSTEAD — INSTEAD-em (INSTEAD для браузера, MIT): instead-em.zip из выпуска NLB на GitHub
  *   (собирается workflow instead-em.yml), или файл/адрес из свойства nlb.insteadEm.</li>
  * </ul>
@@ -107,7 +110,7 @@ public final class ExportPreview {
             "https://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js"};
 
     /** Движки по форматам: каждый скачивается, когда открывают страницу его формата */
-    public enum Engine { CHOICESCRIPT, JSIQ, QSP, URQ, AXMA, INSTEAD }
+    public enum Engine { CHOICESCRIPT, JSIQ, QSP, URQ, AXMA, AXMA_JS, INSTEAD }
 
     /** Пакет npm: имя, версия, SHA-512 (integrity реестра) */
     static final class NpmPackage {
@@ -161,6 +164,8 @@ public final class ExportPreview {
     /** Редактор AXMA Story Maker: страница, скрипт и стили (картинки кнопок редактора не нужны) */
     static final String AXMA_EDITOR = "https://hyperbook.ru/editor/";
     static final String[] AXMA_FILES = {"index.html", "axmastorymaker.js", "axmastorymaker.css"};
+    /** Онлайн-редактор AXMA Story Maker JS: те же три файла (страница, скрипт, стили) */
+    static final String AXMA_JS_EDITOR = "https://online.axmajs.ru/";
 
     /** INSTEAD-em из последнего выпуска NLB (instead-em.yml, release.yml) */
     static final String INSTEAD_EM = "https://github.com/Antokolos/NLB/releases/latest/download/instead-em.zip";
@@ -201,6 +206,10 @@ public final class ExportPreview {
         return new File(m_root, "axma");
     }
 
+    public File getAxmaJsDir() {
+        return new File(m_root, "axmajs");
+    }
+
     public File getInsteadDir() {
         return new File(m_root, "instead");
     }
@@ -229,6 +238,10 @@ public final class ExportPreview {
         return new File(getRuntimeDir(), "axma");
     }
 
+    File getAxmaJsRuntime() {
+        return new File(getRuntimeDir(), "axmajs");
+    }
+
     File getInsteadRuntime() {
         return new File(getRuntimeDir(), "instead-em");
     }
@@ -236,19 +249,20 @@ public final class ExportPreview {
     /** Каталоги игр и README (если их ещё нет) */
     public void createDirs() throws IOException {
         for (File dir : new File[]{getChoiceScriptDir(), getJsiqDir(), getQspDir(), getUrqDir(), getAxmaDir(),
-                getInsteadDir()}) {
+                getAxmaJsDir(), getInsteadDir()}) {
             Files.createDirectories(dir.toPath());
         }
         Path readme = new File(m_root, "README.txt").toPath();
         if (!Files.exists(readme)) {
             Files.writeString(readme, String.join(System.lineSeparator(),
-                    "Проверка экспорта NLB в браузере (ChoiceScript, jsIQ2, QSP, URQ, AXMA, INSTEAD)",
+                    "Проверка экспорта NLB в браузере (ChoiceScript, jsIQ2, QSP, URQ, AXMA, AXMA JS, INSTEAD)",
                     "",
                     "choicescript/  — файлы экспорта в ChoiceScript: startup.txt (и каталог images)",
                     "jsiq/          — файлы экспорта в jsIQ2: .xml (например, example.xml)",
                     "qsp/           — файлы экспорта в QSP: book.txt (и каталоги images, sound)",
                     "urq/           — файлы экспорта в URQ: book.qst (и каталоги images, sound)",
                     "axma/          — файлы экспорта в AXMA: book.sm (и каталоги images, sound)",
+                    "axmajs/        — файлы экспорта в AXMA Story Maker JS: book.sm (и каталог files)",
                     "instead/       — файлы экспорта в INSTEAD: main.lua, модули, images, sound",
                     "",
                     "Запуск: export-preview.sh (export-preview.bat) из каталога NLB, затем в браузере",
@@ -257,10 +271,10 @@ public final class ExportPreview {
                     "",
                     "runtime/ — движки: скачиваются при первом открытии игры своего формата с их мест",
                     "(github.com/dfabulich/choicescript, quest-book.ru, code.jquery.com, registry.npmjs.org,",
-                    "github.com/urqw/UrqW, hyperbook.ru, выпуски NLB на github.com — INSTEAD-em). В NLB они",
-                    "не входят: ChoiceScript — только для некоммерческого использования (LICENSE.txt рядом),",
-                    "у плеера jsIQ лицензии нет, UrqW — GPL, редактор AXMA Story Maker распространять нельзя",
-                    "(он используется только здесь). INSTEAD-em (MIT) можно положить и самому: распаковать",
+                    "github.com/urqw/UrqW, hyperbook.ru, online.axmajs.ru, выпуски NLB на github.com — INSTEAD-em).",
+                    "В NLB они не входят: ChoiceScript — только для некоммерческого использования (LICENSE.txt",
+                    "рядом), у плеера jsIQ лицензии нет, UrqW — GPL, редакторы AXMA Story Maker и AXMA Story Maker JS",
+                    "распространять нельзя (они используются только здесь). INSTEAD-em (MIT) можно положить и самому: распаковать",
                     "instead-em.zip в runtime/instead-em или указать его свойством nlb.insteadEm.",
                     ""), StandardCharsets.UTF_8);
         }
@@ -301,6 +315,10 @@ public final class ExportPreview {
 
     boolean hasAxmaRuntime() {
         return new File(getAxmaRuntime(), "axmastorymaker.js").isFile();
+    }
+
+    boolean hasAxmaJsRuntime() {
+        return new File(getAxmaJsRuntime(), "axmastorymaker.js").isFile();
     }
 
     /** Скачать все движки, которых ещё нет; ошибка загрузки — исключение с адресом */
@@ -378,6 +396,17 @@ public final class ExportPreview {
                         download(client, new String[]{url}, tmp.resolve(file));
                     }
                     commit(tmp, getAxmaRuntime());
+                }
+                break;
+            case AXMA_JS:
+                if (!hasAxmaJsRuntime()) {
+                    Path tmp = part(getAxmaJsRuntime());
+                    for (String file : AXMA_FILES) {
+                        String url = AXMA_JS_EDITOR + (file.equals("index.html") ? "" : file);
+                        // сайт иногда обрывает соединение — до трёх попыток
+                        download(client, new String[]{url, url, url}, tmp.resolve(file));
+                    }
+                    commit(tmp, getAxmaJsRuntime());
                 }
                 break;
             case INSTEAD:

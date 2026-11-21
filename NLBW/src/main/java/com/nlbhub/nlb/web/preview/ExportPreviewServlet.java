@@ -69,6 +69,8 @@ import java.util.Locale;
  *   <li>AXMA (/preview/axma/play.html?book=…) — редактор AXMA Story Maker в рамке: страница
  *   загружает в него .sm экспорта и запускает игру (Compile), как кнопка «Запуск» редактора;
  *   картинки игры — из каталога экспорта (адреса игры — относительно страницы редактора);</li>
+ *   <li>AXMA JS (/preview/axmajs/play.html?book=…) — так же, онлайн-редактор AXMA Story Maker JS
+ *   (online.axmajs.ru); медиа игры (files/…) — из каталога экспорта;</li>
  *   <li>INSTEAD (/preview/instead/) — INSTEAD-em (INSTEAD для браузера): его страница
  *   instead.html?game.zip; game.zip сервер собирает на лету из каталога экспорта — одна папка
  *   игры в архиве, как ждёт INSTEAD.</li>
@@ -84,9 +86,13 @@ public class ExportPreviewServlet extends HttpServlet {
     public static final String PATH = "/preview/*";
 
     private final ExportPreview m_preview;
+    private final Axma m_axma;
+    private final Axma m_axmaJs;
 
     public ExportPreviewServlet(ExportPreview preview) {
         m_preview = preview;
+        m_axma = new Axma(preview.getAxmaDir(), preview.getAxmaRuntime(), ExportPreview.AXMA_EDITOR, "AXMA Story Maker");
+        m_axmaJs = new Axma(preview.getAxmaJsDir(), preview.getAxmaJsRuntime(), ExportPreview.AXMA_JS_EDITOR, "AXMA Story Maker JS");
     }
 
     @Override
@@ -105,7 +111,8 @@ public class ExportPreviewServlet extends HttpServlet {
                 html(response, page("Проверка экспорта", "<p class='error'>Не удалось скачать движок: " + escape(e.getMessage())
                         + "</p><p>Нужен доступ в интернет к " + escape(hosts(engine)) + " (только при первом запуске; "
                         + "движок сохраняется в " + escape(m_preview.getRoot().getPath()) + "/runtime).</p>"
-                        + (engine == ExportPreview.Engine.AXMA ? axmaFallback() : "")
+                        + (engine == ExportPreview.Engine.AXMA ? axmaFallback(m_axma) : "")
+                        + (engine == ExportPreview.Engine.AXMA_JS ? axmaFallback(m_axmaJs) : "")
                         + "<p><a href='../'>← к списку</a></p>"));
                 return;
             }
@@ -121,7 +128,9 @@ public class ExportPreviewServlet extends HttpServlet {
         } else if (path.startsWith("/urq/")) {
             urq(path.substring("/urq/".length()), response);
         } else if (path.startsWith("/axma/")) {
-            axma(path.substring("/axma/".length()), request, response);
+            axma(m_axma, path.substring("/axma/".length()), request, response);
+        } else if (path.startsWith("/axmajs/")) {
+            axma(m_axmaJs, path.substring("/axmajs/".length()), request, response);
         } else if (path.startsWith("/instead/")) {
             instead(path.substring("/instead/".length()), response);
         } else {
@@ -148,6 +157,9 @@ public class ExportPreviewServlet extends HttpServlet {
             case "/axma/":
             case "/axma/play.html":
                 return ExportPreview.Engine.AXMA;
+            case "/axmajs/":
+            case "/axmajs/play.html":
+                return ExportPreview.Engine.AXMA_JS;
             case "/instead/":
             case "/instead/instead.html":
                 return ExportPreview.Engine.INSTEAD;
@@ -168,6 +180,8 @@ public class ExportPreviewServlet extends HttpServlet {
                 return "raw.githubusercontent.com и registry.npmjs.org";
             case AXMA:
                 return "hyperbook.ru";
+            case AXMA_JS:
+                return "online.axmajs.ru";
             case INSTEAD:
                 return "github.com (instead-em.zip из выпуска NLB; его можно и положить самому — см. README.txt "
                         + "каталога превью)";
@@ -194,6 +208,8 @@ public class ExportPreviewServlet extends HttpServlet {
                 "QSP (book.txt — текст QSP, или .qsp)", m_preview.getQspDir());
         books(sb, "URQ (UrqW)", "urq/index-dev.html?encoding=CP1251&id=", urqIds(), "URQ (.qst)", m_preview.getUrqDir());
         books(sb, "AXMA", "axma/play.html?book=", books(m_preview.getAxmaDir(), ".sm"), "AXMA (.sm)", m_preview.getAxmaDir());
+        books(sb, "AXMA Story Maker JS", "axmajs/play.html?book=", books(m_preview.getAxmaJsDir(), ".sm"),
+                "AXMA Story Maker JS (.sm и каталог files)", m_preview.getAxmaJsDir());
         sb.append("<h2>INSTEAD</h2>");
         if (hasInsteadGame()) {
             sb.append("<p><a href='instead/'>Играть</a> (INSTEAD-em — INSTEAD в браузере)</p>");
@@ -202,7 +218,8 @@ public class ExportPreviewServlet extends HttpServlet {
         }
         sb.append("<p class='note'>Движки скачаны с их сайтов в <code>runtime</code> при первом открытии игры. ChoiceScript — только "
                 + "для некоммерческого использования (<a href='license-choicescript'>лицензия</a>); UrqW — GPL; редактор "
-                + "AXMA Story Maker (hyperbook.ru) — бесплатный, без права распространения: он скачан только на эту машину; "
+                + "AXMA Story Maker (hyperbook.ru) и AXMA Story Maker JS (online.axmajs.ru) — бесплатные, без права "
+                + "распространения: они скачаны только на эту машину; "
                 + "INSTEAD — MIT.</p>");
         return page("Проверка экспорта NLB", sb.toString());
     }
@@ -406,28 +423,43 @@ public class ExportPreviewServlet extends HttpServlet {
         }
     }
 
-    private void axma(String path, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        List<String> books = books(m_preview.getAxmaDir(), ".sm");
+    /** AXMA или AXMA JS: каталог игр, каталог редактора, адрес онлайн-редактора и название */
+    private static final class Axma {
+        final File dir;
+        final File runtime;
+        final String editor;
+        final String title;
+
+        Axma(File dir, File runtime, String editor, String title) {
+            this.dir = dir;
+            this.runtime = runtime;
+            this.editor = editor;
+            this.title = title;
+        }
+    }
+
+    private void axma(Axma axma, String path, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        List<String> books = books(axma.dir, ".sm");
         if (path.isEmpty()) {
             single(books, "play.html?book=", response);
         } else if (path.equals("play.html")) {
             String book = request.getParameter("book");
             if (book == null || !books.contains(book)) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Нет игры AXMA: " + book);
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Нет игры " + axma.title + ": " + book);
                 return;
             }
-            html(response, axmaPage(book));
+            html(response, axma == m_axmaJs ? axmaJsPage(book) : axmaPage(axma, book));
         } else if (path.startsWith("editor/")) {
             // редактор — из runtime; игра, которую он показывает, берёт картинки и звук относительно
-            // страницы редактора — они из каталога экспорта
+            // страницы редактора — они из каталога экспорта (у AXMA JS — files/…)
             String rest = path.substring("editor/".length());
             if (Arrays.asList(ExportPreview.AXMA_FILES).contains(rest)) {
-                file(m_preview.getAxmaRuntime(), rest, response);
+                file(axma.runtime, rest, response);
             } else {
-                file(m_preview.getAxmaDir(), rest, response);
+                file(axma.dir, rest, response);
             }
         } else {
-            file(m_preview.getAxmaDir(), path, response);
+            file(axma.dir, path, response);
         }
     }
 
@@ -490,9 +522,9 @@ public class ExportPreviewServlet extends HttpServlet {
     }
 
     /** Без редактора: .sm можно открыть в онлайн-редакторе (Загрузить -> Запуск) */
-    private static String axmaFallback() {
-        return "<p>Игру можно проверить и в онлайн-редакторе: откройте <a href='https://hyperbook.ru/editor/' target='_blank'>"
-                + "hyperbook.ru/editor</a>, загрузите в него файл .sm экспорта (кнопка «Загрузить») и нажмите «Запуск».</p>";
+    private static String axmaFallback(Axma axma) {
+        return "<p>Игру можно проверить и в онлайн-редакторе: откройте <a href='" + axma.editor + "' target='_blank'>"
+                + escape(axma.editor) + "</a>, загрузите в него файл .sm экспорта (кнопка «Загрузить») и нажмите «Запуск».</p>";
     }
 
     /**
@@ -500,14 +532,14 @@ public class ExportPreviewServlet extends HttpServlet {
      * передаёт ему текст .sm (LoadStory) и запускает игру (Compile — как кнопка «Запуск»). Закрытие
      * игры (крестик, Esc) возвращает к списку
      */
-    private static String axmaPage(String book) {
+    private static String axmaPage(Axma axma, String book) {
         String bookJs = jsString(book);
-        return "<!doctype html>\n<html><head><meta charset='utf-8'><title>" + escape(book) + " — AXMA</title>\n"
+        return "<!doctype html>\n<html><head><meta charset='utf-8'><title>" + escape(book) + " — " + escape(axma.title) + "</title>\n"
                 + "<style>html,body{margin:0;height:100%;overflow:hidden;font-family:sans-serif}"
                 + "#editor{border:0;width:100%;height:100%}"
                 + "#status{position:fixed;left:0;right:0;top:0;padding:.5em 1em;background:#fffbe6;border-bottom:1px solid #cc9}"
                 + "#status.hidden{display:none}.error{color:#a00}</style>\n"
-                + "</head><body>\n<div id='status'>Загрузка редактора AXMA Story Maker…</div>\n"
+                + "</head><body>\n<div id='status'>Загрузка редактора " + escape(axma.title) + "…</div>\n"
                 + "<iframe id='editor' src='editor/index.html'></iframe>\n<script>\n"
                 + "var book = '" + bookJs + "';\n"
                 + "var bar = document.getElementById('status');\n"
@@ -515,7 +547,7 @@ public class ExportPreviewServlet extends HttpServlet {
                 + "  bar.className = 'error';\n"
                 + "  bar.innerHTML = 'Не удалось запустить игру в редакторе: ' + String(e).replace(/</g, '&lt;')\n"
                 + "    + '. <a href=\"' + encodeURIComponent(book) + '\" download>Скачать .sm</a> и открыть в '\n"
-                + "    + '<a href=\"https://hyperbook.ru/editor/\" target=\"_blank\">онлайн-редакторе</a> (Загрузить → Запуск). '\n"
+                + "    + '<a href=\"" + axma.editor + "\" target=\"_blank\">онлайн-редакторе</a> (Загрузить → Запуск). '\n"
                 + "    + '<a href=\"../\">← к списку</a>';\n"
                 + "}\n"
                 + "document.getElementById('editor').addEventListener('load', function () {\n"
@@ -532,6 +564,60 @@ public class ExportPreviewServlet extends HttpServlet {
                 + "    }, 300);\n"
                 + "  }).catch(fail);\n"
                 + "});\n"
+                + "</script>\n</body></html>\n";
+    }
+
+    /**
+     * Страница AXMA JS: редактор AXMA Story Maker JS в рамке. Его функции снаружи недоступны (весь
+     * код — в одной функции), но онлайн-редактор умеет загрузить историю из резервной копии в
+     * хранилище браузера (localStorage["backup"], тот же адрес сервера) — страница кладёт
+     * туда .sm экспорта, открывает редактор и нажимает «Загрузить» -> «Из резервной копии» ->
+     * «Запустить» (#toolbutton_load, #item4, #toolbutton_run). Медиа игры —
+     * files/… относительно страницы редактора, из каталога экспорта
+     */
+    private static String axmaJsPage(String book) {
+        String bookJs = jsString(book);
+        return "<!doctype html>\n<html><head><meta charset='utf-8'><title>" + escape(book) + " — AXMA Story Maker JS</title>\n"
+                + "<style>html,body{margin:0;height:100%;overflow:hidden;font-family:sans-serif}"
+                + "#editor{border:0;width:100%;height:100%}"
+                + "#status{position:fixed;left:0;right:0;top:0;padding:.5em 1em;background:#fffbe6;border-bottom:1px solid #cc9}"
+                + "#status.hidden{display:none}.error{color:#a00}</style>\n"
+                + "</head><body>\n<div id='status'>Загрузка редактора AXMA Story Maker JS…</div>\n"
+                + "<iframe id='editor'></iframe>\n<script>\n"
+                + "var book = '" + bookJs + "';\n"
+                + "var bar = document.getElementById('status');\n"
+                + "function fail(e) {\n"
+                + "  bar.className = 'error';\n"
+                + "  bar.innerHTML = 'Не удалось запустить игру в редакторе: ' + String(e).replace(/</g, '&lt;')\n"
+                + "    + '. <a href=\"' + encodeURIComponent(book) + '\" download>Скачать .sm</a> и открыть в '\n"
+                + "    + '<a href=\"" + ExportPreview.AXMA_JS_EDITOR + "\" target=\"_blank\">онлайн-редакторе</a> (Загрузить → Запустить). '\n"
+                + "    + '<a href=\"../\">← к списку</a>';\n"
+                + "}\n"
+                + "var editor = document.getElementById('editor');\n"
+                + "fetch(encodeURIComponent(book)).then(function (r) {\n"
+                + "  if (!r.ok) throw new Error('HTTP ' + r.status);\n"
+                + "  return r.text();\n"
+                + "}).then(function (story) {\n"
+                + "  localStorage.setItem('backup', story);\n"
+                + "  editor.addEventListener('load', function () {\n"
+                // щёлкнуть элемент id, когда он появится; затем — дальше
+                + "    function click(id, what, then) {\n"
+                + "      var tries = 0;\n"
+                + "      (function wait() {\n"
+                + "        var d = editor.contentDocument, e = d && d.getElementById(id);\n"
+                + "        if (!e) { if (++tries > 50) fail('нет кнопки «' + what + '»'); else setTimeout(wait, 200); return; }\n"
+                + "        try { e.click(); } catch (x) { fail(x); return; }\n"
+                + "        setTimeout(then, 500);\n"
+                + "      })();\n"
+                + "    }\n"
+                + "    click('toolbutton_load', 'Загрузить', function () {\n"
+                + "      click('item4', 'Из резервной копии', function () {\n"
+                + "        click('toolbutton_run', 'Запустить', function () { bar.className = 'hidden'; });\n"
+                + "      });\n"
+                + "    });\n"
+                + "  });\n"
+                + "  editor.src = 'editor/index.html';\n"
+                + "}).catch(fail);\n"
                 + "</script>\n</body></html>\n";
     }
 
