@@ -129,7 +129,7 @@ public final class ImageDownscaler {
             return m_newHeight;
         }
 
-        /** Почему файл не уменьшить (не читается, формат не поддерживается); null — можно */
+        /** Почему файл не уменьшить (не читается, формат не поддерживается; текст для редактора); null — можно */
         public String getProblem() {
             return m_problem;
         }
@@ -176,11 +176,29 @@ public final class ImageDownscaler {
      */
     public static Plan plan(Collection<File> files, int maxWidth, int maxHeight) {
         List<Item> items = new ArrayList<>();
+        for (File file : files) {
+            items.add(readItem(file));
+        }
+        return compute(items, maxWidth, maxHeight);
+    }
+
+    /**
+     * Тот же набор файлов с другими ограничениями — без чтения диска (размеры уже известны):
+     * диалог пересчитывает план на каждое изменение поля, а кадров анимации бывают тысячи
+     * (заставка «Фронтира» — 1478, чтение их заголовков — больше секунды)
+     */
+    public static Plan replan(Plan plan, int maxWidth, int maxHeight) {
+        List<Item> items = new ArrayList<>();
+        for (Item item : plan.getItems()) {
+            items.add(new Item(item.getFile(), item.getWidth(), item.getHeight(), item.getProblem()));
+        }
+        return compute(items, maxWidth, maxHeight);
+    }
+
+    private static Plan compute(List<Item> items, int maxWidth, int maxHeight) {
         int groupWidth = 0;
         int groupHeight = 0;
-        for (File file : files) {
-            Item item = readItem(file);
-            items.add(item);
+        for (Item item : items) {
             if (item.getProblem() == null) {
                 groupWidth = Math.max(groupWidth, item.getWidth());
                 groupHeight = Math.max(groupHeight, item.getHeight());
@@ -212,7 +230,7 @@ public final class ImageDownscaler {
     private static Item readItem(File file) {
         String format = formatOf(file);
         if (!SUPPORTED.contains(format)) {
-            return new Item(file, 0, 0, "формат не поддерживается");
+            return new Item(file, 0, 0, "format is not supported");
         }
         try (ImageInputStream in = ImageIO.createImageInputStream(file)) {
             if (in != null) {
@@ -230,7 +248,7 @@ public final class ImageDownscaler {
         } catch (IOException ignored) {
             // ниже — «не читается»
         }
-        return new Item(file, 0, 0, "не удалось прочитать");
+        return new Item(file, 0, 0, "cannot be read");
     }
 
     private static String formatOf(File file) {
@@ -439,6 +457,80 @@ public final class ImageDownscaler {
             }
         }
         return new ArrayList<>(result);
+    }
+
+    /**
+     * Предупреждения для диалога редактора (по-английски, как его интерфейс): объекты с
+     * картинками группы, положение которых задано в пикселях, — смещение (offset) и вложенные
+     * объекты (их координаты — в пикселях картинки родителя). После уменьшения пиксели не
+     * пересчитываются, и такие объекты сдвинутся относительно картинки.
+     *
+     * @param group имена файлов группы ({@link #group}); переадресованные на них имена тоже учитываются
+     */
+    public static List<String> offsetWarnings(NonLinearBook book, Collection<String> group, List<MediaFile> imageFiles) {
+        Set<String> names = new HashSet<>(group);
+        for (MediaFile file : imageFiles) {
+            if (!StringHelper.isEmpty(file.getRedirect()) && group.contains(file.getRedirect())) {
+                names.add(file.getFileName());
+            }
+        }
+        List<String> result = new ArrayList<>();
+        collectWarnings(book, names, result, Collections.newSetFromMap(new java.util.IdentityHashMap<>()));
+        return result;
+    }
+
+    private static void collectWarnings(NonLinearBook book, Set<String> names, List<String> result, Set<NonLinearBook> visited) {
+        if (book == null || !visited.add(book)) {
+            return;
+        }
+        Map<String, Integer> nested = new HashMap<>();
+        for (Obj obj : book.getObjs().values()) {
+            if (!obj.isDeleted() && obj.getContainerType() == Obj.ContainerType.Obj) {
+                nested.merge(obj.getContainerId(), 1, Integer::sum);
+            }
+        }
+        for (Obj obj : book.getObjs().values()) {
+            if (obj.isDeleted() || !usesAny(obj.getImageFileName(), names)) {
+                continue;
+            }
+            String label = label(obj) + "' (" + obj.getImageFileName().replace(Constants.MEDIA_FILE_NAME_SEP, ", ") + ")";
+            String offset = obj.getOffset();
+            if (!StringHelper.isEmpty(offset) && !offset.replace(" ", "").equals("0,0")) {
+                result.add("Object '" + label + " is placed with offset " + offset
+                        + " (pixels): check its position after downscaling.");
+            }
+            Integer count = nested.get(obj.getId());
+            if (count != null) {
+                result.add("Object '" + label + " contains " + count + " nested object(s) positioned in pixels"
+                        + " of its image: they will not move with the downscaled image.");
+            }
+        }
+        for (Page page : book.getPages().values()) {
+            if (!page.isDeleted() && !page.isModuleExternal()) {
+                collectWarnings(page.getModule(), names, result, visited);
+            }
+        }
+    }
+
+    /** Как назвать объект автору: имя, иначе отображаемое имя, иначе идентификатор */
+    private static String label(Obj obj) {
+        if (!StringHelper.isEmpty(obj.getName())) {
+            return obj.getName();
+        }
+        String disp = obj.getDisp();
+        return StringHelper.isEmpty(disp) ? obj.getId() : disp.trim();
+    }
+
+    private static boolean usesAny(String imageFileNames, Set<String> names) {
+        if (StringHelper.isEmpty(imageFileNames)) {
+            return false;
+        }
+        for (String name : imageFileNames.split(Constants.MEDIA_FILE_NAME_SEP)) {
+            if (names.contains(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static String resolve(String name, Map<String, String> redirects, Set<String> library) {

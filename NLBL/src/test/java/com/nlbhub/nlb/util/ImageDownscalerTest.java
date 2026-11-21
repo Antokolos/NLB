@@ -250,4 +250,46 @@ public class ImageDownscalerTest {
         assertEquals(new HashSet<>(List.of("intro-1478.jpg", "fire8.png", "smoke4.png")),
                 ImageDownscaler.animatedImageNames(book));
     }
+    @Test
+    public void offsetWarningsForOffsetsAndNestedObjects() {
+        NonLinearBookImpl book = new NonLinearBookImpl();
+        ObjImpl scroll = new ObjImpl(book);
+        scroll.setName("scroll");
+        scroll.setImageFileName("scroll.png");
+        book.addObj(scroll);
+        ObjImpl icon = new ObjImpl(book);
+        icon.setName("icon");
+        icon.setImageFileName("icon.png");
+        icon.setContainerId(scroll.getId());
+        book.addObj(icon);
+        ObjImpl hero = new ObjImpl(book);
+        hero.setName("hero");
+        hero.setImageFileName("hero.png");
+        hero.setOffset("120,40");
+        book.addObj(hero);
+        ObjImpl doctor = new ObjImpl(book);
+        doctor.setName("doctor");
+        doctor.setImageFileName("drmunoz_neutral.png");
+        doctor.setOffset("0,0");
+        book.addObj(doctor);
+        List<MediaFile> library = List.of(media("hero.png", "hero_big.png"), media("hero_big.png", null),
+                media("scroll.png", null), media("icon.png", null), media("drmunoz_neutral.png", null));
+
+        List<String> warnings = ImageDownscaler.offsetWarnings(book, List.of("scroll.png", "hero_big.png", "drmunoz_neutral.png"), library);
+        assertEquals(warnings.toString(), 2, warnings.size());
+        assertTrue(warnings.toString(), warnings.stream().anyMatch(w -> w.contains("'scroll'") && w.contains("1 nested")));
+        assertTrue("переадресованный на файл группы — тоже", warnings.stream().anyMatch(w -> w.contains("'hero'") && w.contains("120,40")));
+        assertTrue("смещение 0,0 — без предупреждения", ImageDownscaler.offsetWarnings(book, List.of("drmunoz_neutral.png"), library).isEmpty());
+    }
+    @Test
+    public void replanWithoutReadingFiles() throws IOException {
+        File sprite = png("r.png", 1086, 1448);
+        ImageDownscaler.Plan plan = ImageDownscaler.plan(List.of(sprite), 1920, 1080);
+        assertTrue(sprite.delete());
+        ImageDownscaler.Plan again = ImageDownscaler.replan(plan, 0, 1000);
+        assertNull("файл уже не читается, но размер известен", again.getItems().get(0).getProblem());
+        assertEquals(750, again.getItems().get(0).getNewWidth());
+        assertEquals(1000, again.getItems().get(0).getNewHeight());
+        assertFalse(ImageDownscaler.replan(plan, 0, 0).hasChanges());
+    }
 }

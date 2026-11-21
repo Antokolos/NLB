@@ -43,6 +43,7 @@ import com.nlbhub.nlb.exception.*;
 import com.nlbhub.nlb.domain.export.ExportProgress;
 import com.nlbhub.nlb.util.BookFiles;
 import com.nlbhub.nlb.util.FileManipulator;
+import com.nlbhub.nlb.util.ImageDownscaler;
 import com.nlbhub.nlb.util.MultiLangString;
 import com.nlbhub.nlb.util.ResourceManager;
 import com.nlbhub.nlb.util.StringHelper;
@@ -946,6 +947,38 @@ public class NonLinearBookFacade implements NLBObservable {
         } else {
             throw new NLBConsistencyException("NLB root dir is undefined");
         }
+    }
+
+    /**
+     * Уменьшить картинки библиотеки по плану ({@link ImageDownscaler#plan}): файлы
+     * перезаписываются на месте и отмечаются в VCS как изменённые. Книга только для чтения —
+     * ничего не меняется.
+     *
+     * @return false, если изменения запрещены (книга только для чтения)
+     */
+    public boolean downscaleImageFiles(
+            final @NotNull ImageDownscaler.Plan plan,
+            final int jpegQuality
+    ) throws NLBIOException, NLBFileManipulationException, NLBVCSException, NLBConsistencyException {
+        if (refuseChange(true)) {
+            return false;
+        }
+        File rootDir = m_nlb.getRootDir();
+        if (rootDir == null) {
+            throw new NLBConsistencyException("NLB root dir is undefined");
+        }
+        try {
+            ImageDownscaler.apply(plan, jpegQuality);
+        } catch (IOException e) {
+            throw new NLBIOException("Error while downscaling images", e);
+        }
+        FileManipulator fileManipulator = new FileManipulator(m_vcsAdapter, rootDir);
+        for (ImageDownscaler.Item item : plan.getItems()) {
+            if (item.isChanged()) {
+                fileManipulator.markModified(item.getFile());
+            }
+        }
+        return true;
     }
 
     /**
