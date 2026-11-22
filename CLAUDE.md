@@ -17,7 +17,8 @@
   веб-плеером; окно — `DialogScreenPreview`; `docs/screen-preview.md`).
   Размер экрана книги (файл `screen`, 16:9: 1280×720 … 3840×2160, по умолчанию 1920×1080) —
   `api/ScreenSize`, «Screen» в свойствах книги с пересчётом смещений объектов;
-  `docs/screen-size.md` (экспорт и плееры — следующий этап).
+  `docs/screen-size.md`; экспорт подгоняет тему INSTEAD (`domain/export/ThemeScaler`, `nlb:px`
+  в модулях), веб-плеер — `bookScale` темы (NLBNavigator — следующий этап).
 - **NLBW** — веб-плеер на Jetty (ee10): ядро плеера — пакет `com.nlbhub.nlb.player` в NLBL,
   веб-слой — `web/player` (`PlayerServlet` на `/play/*`: REST JSON, медиа, тема; `BookLibrary`,
   `WebSession`, `ScreenTheme`, `PlayerServer`; проверка экспортов ChoiceScript, jsIQ2, QSP, URQ, AXMA, AXMA JS и INSTEAD (INSTEAD-em из выпуска, `instead-em.yml`) в браузере —

@@ -535,7 +535,8 @@ window.NLBScreen = function (ctx) {
     pic.style.objectFit = 'fill';
     if (vn || s.imageIsBackground) {
       const a = t.screenArea;
-      const w = size ? size.w * t.scale : a.w, h = size ? size.h * t.scale : a.h;
+      const k = t.scale * (t.bookScale || 1);  // пиксели книги -> экран 1920×1080
+      const w = size ? size.w * k : a.w, h = size ? size.h * k : a.h;
       place(pic, { x: a.x + Math.floor((a.w - w) / 2), y: a.y + Math.floor((a.h - h) / 2), w: w, h: h });
     } else if (t.gfxMode === 'fixed') {
       const r = fitPicture(size, t);
@@ -584,7 +585,10 @@ window.NLBScreen = function (ctx) {
   function objectRect(s, index, rects, size) {
     const o = s.sceneObjects[index];
     const img = size.get(ctx.imageUrl(o.image));
-    let w = img ? img.w : 0, h = img ? img.h : 0;
+    // спрайт, arm, offset, iarm — в пикселях экрана книги; в экран 1920×1080 — множителем
+    // bookScale (книга не 1920×1080 — тема NLB под её экран, как в экспорте; иначе 1 — как было)
+    const bs = theme().bookScale || 1;
+    let w = img ? img.w * bs : 0, h = img ? img.h * bs : 0;
     const textOnly = !img && isHumanLabel(o.label);
     let labelW = 0, labelH = 0, labelCoef = 0;
     if (textOnly) {
@@ -603,7 +607,7 @@ window.NLBScreen = function (ctx) {
     if (parent) {
       let ax = 0, ay = 0;
       if (p.hasInnerArm) {
-        ax = p.innerArmX; ay = p.innerArmY;
+        ax = p.innerArmX * bs; ay = p.innerArmY * bs;
       } else {
         for (let i = 0; i < index; i++) {
           const prev = s.sceneObjects[i];
@@ -616,9 +620,9 @@ window.NLBScreen = function (ctx) {
     }
     const a = Math.max(0, ANCHORS.indexOf(p.anchor));
     const col = a % 3, row = Math.floor(a / 3);
-    let x = col === 0 ? p.armX : col === 2 ? W - w : Math.floor((W - w) / 2);
-    let y = row === 0 ? p.armY : row === 2 ? H - h : Math.floor((H - h) / 2);
-    if (p.hasOffset) { x += p.offsetX; y += p.offsetY; }
+    let x = col === 0 ? p.armX * bs : col === 2 ? W - w : Math.floor((W - w) / 2);
+    let y = row === 0 ? p.armY * bs : row === 2 ? H - h : Math.floor((H - h) / 2);
+    if (p.hasOffset) { x += p.offsetX * bs; y += p.offsetY * bs; }
     return finish(x, y);
   }
 
