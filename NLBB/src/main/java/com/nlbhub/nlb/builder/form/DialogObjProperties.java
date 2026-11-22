@@ -497,6 +497,7 @@ public class DialogObjProperties extends JDialog implements NLBObserver {
         ImageSizeWarning.show(
                 m_imageFileNameLabel,
                 m_nlbFacade.getMainFacade().getNlb().getImagesDir(),
+                m_nlbFacade.getMainFacade().getNlb().getScreenSize(),
                 m_imageFileName,
                 m_objIsGraphical.isSelected(),
                 "the sprite will be cut off"

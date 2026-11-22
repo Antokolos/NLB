@@ -598,6 +598,24 @@
                                       </component>
                                     </children>
                                   </scrollpane>
+                                  <component id="5c2f1" class="javax.swing.JLabel">
+                                    <constraints>
+                                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                                      <gridbag top="0" left="10" bottom="0" right="5" weightx="0.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <text value="Screen"/>
+                                    </properties>
+                                  </component>
+                                  <component id="5c2f2" class="javax.swing.JComboBox" binding="m_screenSizeComboBox">
+                                    <constraints>
+                                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                                      <gridbag weightx="0.0" weighty="0.0"/>
+                                    </constraints>
+                                    <properties>
+                                      <toolTipText value="Screen of the game, for VN and STANDARD pages (all sizes are 16:9). Pictures are not rescaled: make them for the new size"/>
+                                    </properties>
+                                  </component>
                                 </children>
                               </grid>
                               <component id="26e21" class="javax.swing.JLabel">

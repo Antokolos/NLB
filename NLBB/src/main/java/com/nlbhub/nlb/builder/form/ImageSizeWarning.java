@@ -1,6 +1,7 @@
 package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.Constants;
+import com.nlbhub.nlb.api.ScreenSize;
 import com.nlbhub.nlb.util.ImageDownscaler;
 import com.nlbhub.nlb.util.StringHelper;
 
@@ -15,23 +16,24 @@ import java.util.List;
  * второй строкой в метке имени картинки и в её подсказке; лечится «Set image...» -> «Downscale...».
  */
 final class ImageSizeWarning {
-    static final int SCREEN_WIDTH = DialogDownscaleImages.DEFAULT_MAX_WIDTH;
-    static final int SCREEN_HEIGHT = DialogDownscaleImages.DEFAULT_MAX_HEIGHT;
     private static final String NO_IMAGE = "<NO IMAGE>";
 
     private ImageSizeWarning() {
     }
 
     /**
+     * @param screen         размер экрана книги
      * @param imageFileNames поле картинки (имена через «;»)
      * @param applies        проверять ли размер (графический объект; VN-страница или картинка-фон)
      * @param consequence    что будет в игре: «the sprite will be cut off»…
      */
-    static void show(JLabel label, File imagesDir, String imageFileNames, boolean applies, String consequence) {
+    static void show(JLabel label, File imagesDir, ScreenSize screen, String imageFileNames, boolean applies, String consequence) {
+        final int screenWidth = screen.getWidth();
+        final int screenHeight = screen.getHeight();
         final String names = imageFileNames == null ? "" : imageFileNames;
         final List<ImageDownscaler.Item> oversized = (
                 applies && imagesDir != null && StringHelper.notEmpty(names)
-                        ? ImageDownscaler.oversized(imagesDir, names, SCREEN_WIDTH, SCREEN_HEIGHT)
+                        ? ImageDownscaler.oversized(imagesDir, names, screenWidth, screenHeight)
                         : List.of()
         );
         if (oversized.isEmpty()) {
@@ -51,7 +53,7 @@ final class ImageSizeWarning {
             }
             sizes.append(item.getWidth()).append('×').append(item.getHeight());
         }
-        final String message = "Larger than the " + SCREEN_WIDTH + "×" + SCREEN_HEIGHT + " screen (" + sizes + "): "
+        final String message = "Larger than the " + screenWidth + "×" + screenHeight + " screen (" + sizes + "): "
                 + consequence + ". Set image... -> Downscale...";
         // ширина задана — длинное предупреждение переносится, а не растягивает диалог
         label.setText("<html><body style='width: 360px'>" + escape(names)
