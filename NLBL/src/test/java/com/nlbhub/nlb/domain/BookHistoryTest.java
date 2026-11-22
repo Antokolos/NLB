@@ -210,6 +210,26 @@ public class BookHistoryTest {
     }
 
     @Test
+    public void navigationTargets() {
+        assertEquals("[] p1", BookHistory.navigation("pages/p1").toString());
+        assertEquals("[] o1", BookHistory.navigation("objs/o1").toString());
+        assertEquals("[] L1", BookHistory.navigation("pages/p1/links/L1").toString());
+        // модификация — к владельцу (странице, ссылке, объекту)
+        assertEquals("[] p1", BookHistory.navigation("pages/p1/modifications/M1").toString());
+        assertEquals("[] L1", BookHistory.navigation("pages/p1/links/L1/modifications/M1").toString());
+        assertEquals("[] o1", BookHistory.navigation("objs/o1/modifications/M1").toString());
+        // внутренние модули: вкладки по порядку; настройки модуля — к странице-модулю
+        assertEquals("[A] q1", BookHistory.navigation("pages/A/module/pages/q1").toString());
+        assertEquals("[A, B] x", BookHistory.navigation("pages/A/module/pages/B/module/objs/x").toString());
+        assertEquals("[] A", BookHistory.navigation("pages/A/module").toString());
+        assertEquals("[A] B", BookHistory.navigation("pages/A/module/pages/B/module").toString());
+        // на схеме их нет
+        for (String key : new String[]{"vars/v1", "images/a.png", "sound/s.ogg", "modules/forest", "", "misc/x"}) {
+            assertEquals(key, null, BookHistory.navigation(key));
+        }
+    }
+
+    @Test
     public void languageOfTheBookIsPreferredForNames() {
         final List<BookFileChange> files = Arrays.asList(
                 added("pages/p1/caption/en", "Pantry"),
