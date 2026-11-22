@@ -599,13 +599,7 @@ public class GitAdapter implements VCSAdapter {
                 ? credentialsProvider(url, userName, password, prompts) : null;
         try {
             m_git.fetch().setRemote("origin").setCredentialsProvider(provider).call();
-            final String branch = m_localRepo.getBranch();
-            String upstream = m_localRepo.getConfig().getString(ConfigConstants.CONFIG_BRANCH_SECTION, branch,
-                    ConfigConstants.CONFIG_KEY_MERGE);
-            if (upstream == null) {
-                upstream = Constants.R_HEADS + branch;
-            }
-            final Ref theirs = m_localRepo.exactRef(Constants.R_REMOTES + "origin/" + Repository.shortenRefName(upstream));
+            final Ref theirs = GitHistory.remoteTrackingRef(m_localRepo);
             final ObjectId head = m_localRepo.resolve(Constants.HEAD);
             if (theirs == null) {
                 return new ServerChanges(0, Collections.emptyList(), null, 0);
@@ -657,6 +651,30 @@ public class GitAdapter implements VCSAdapter {
             }
         }
         return new NLBVCSException("Error while " + what + " the Git repository: " + e.getMessage(), e);
+    }
+
+    /**
+     * История книги: версии первой линии истории (см. {@link GitHistory})
+     */
+    @Override
+    public synchronized List<BookVersion> getHistory(final int offset, final int limit) throws NLBVCSException {
+        return GitHistory.history(m_localRepo, offset, limit);
+    }
+
+    @Override
+    public synchronized List<BookFileChange> getVersionChanges(final String versionId) throws NLBVCSException {
+        return GitHistory.changes(m_localRepo, versionId);
+    }
+
+    @Override
+    public synchronized Map<String, String> readVersionTexts(final String versionId, final String dirPath)
+            throws NLBVCSException {
+        return GitHistory.texts(m_localRepo, versionId, dirPath);
+    }
+
+    @Override
+    public synchronized List<String> listVersionFiles(final String versionId) throws NLBVCSException {
+        return GitHistory.files(m_localRepo, versionId);
     }
 
     @Override

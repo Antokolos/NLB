@@ -160,6 +160,26 @@ public class GitAdapterWithPathDecoration implements VCSAdapter {
     }
 
     @Override
+    public java.util.List<BookVersion> getHistory(int offset, int limit) throws NLBVCSException {
+        return m_gitAdapter.getHistory(offset, limit);
+    }
+
+    @Override
+    public java.util.List<BookFileChange> getVersionChanges(String versionId) throws NLBVCSException {
+        return m_gitAdapter.getVersionChanges(versionId);
+    }
+
+    @Override
+    public java.util.Map<String, String> readVersionTexts(String versionId, String dirPath) throws NLBVCSException {
+        return m_gitAdapter.readVersionTexts(versionId, dirPath);
+    }
+
+    @Override
+    public java.util.List<String> listVersionFiles(String versionId) throws NLBVCSException {
+        return m_gitAdapter.listVersionFiles(versionId);
+    }
+
+    @Override
     public String getRemoteUrl() {
         return m_gitAdapter.getRemoteUrl();
     }

@@ -455,6 +455,72 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     /**
+     * История главной книги: версии от новых к старым, начиная с offset, не больше limit (без VCS —
+     * пусто). Внешние модули — свои репозитории, в историю книги не входят: их обновление видно как
+     * изменение модуля
+     */
+    public List<com.nlbhub.nlb.vcs.BookVersion> getHistory(final int offset, final int limit) throws NLBVCSException {
+        return getMainFacade().m_vcsAdapter.getHistory(offset, limit);
+    }
+
+    /**
+     * Изменения версии по элементам книги ({@link BookHistory}); versionId == null — сохранённые,
+     * но не закоммиченные правки (войдут в следующий Commit)
+     */
+    public List<BookHistory.ElementChange> getVersionChanges(final String versionId) throws NLBVCSException {
+        final VCSAdapter adapter = getMainFacade().m_vcsAdapter;
+        final List<com.nlbhub.nlb.vcs.BookFileChange> files = adapter.getVersionChanges(versionId);
+        final File rootDir = getMainFacade().getNlb().getRootDir();
+        final BookHistory.VersionTexts texts = new BookHistory.VersionTexts() {
+            // папки версии и предыдущей — один обход дерева на версию, а не по обходу на элемент
+            private final java.util.Map<Boolean, java.util.Set<String>> m_dirs = new java.util.HashMap<>();
+
+            @Override
+            public java.util.Map<String, String> texts(final String dirPath, final boolean previous) {
+                if (versionId == null && !previous) {
+                    // несохранённые правки: «версия» — сама книга на диске
+                    return BookHistory.readTexts(rootDir, dirPath);
+                }
+                try {
+                    return adapter.readVersionTexts(id(previous), dirPath);
+                } catch (NLBVCSException e) {
+                    return java.util.Collections.emptyMap();
+                }
+            }
+
+            @Override
+            public boolean exists(final String dirPath, final boolean previous) {
+                if (versionId == null && !previous) {
+                    return rootDir != null && new File(rootDir, dirPath).isDirectory();
+                }
+                return m_dirs.computeIfAbsent(previous, p -> {
+                    final java.util.Set<String> dirs = new java.util.HashSet<>();
+                    try {
+                        for (String path : adapter.listVersionFiles(id(p))) {
+                            for (int slash = path.lastIndexOf('/'); slash > 0; slash = path.lastIndexOf('/', slash - 1)) {
+                                if (!dirs.add(path.substring(0, slash))) {
+                                    break;  // эта папка и все выше уже есть
+                                }
+                            }
+                        }
+                    } catch (NLBVCSException e) {
+                        // версию не прочитать — элементов в ней нет
+                    }
+                    return dirs;
+                }).contains(dirPath);
+            }
+
+            /**
+             * Версия для чтения: предыдущая несохранённых правок — последняя (HEAD)
+             */
+            private String id(final boolean previous) {
+                return versionId == null ? null : previous ? versionId + "^" : versionId;
+            }
+        };
+        return BookHistory.group(getMainFacade().getNlb(), files, texts);
+    }
+
+    /**
      * Pull с решением для каждого пересёкшегося поля
      */
     public void pull(final String userName, final String password, final ProgressData progressData,
