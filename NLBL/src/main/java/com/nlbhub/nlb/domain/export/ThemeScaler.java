@@ -65,6 +65,12 @@ import java.util.regex.Pattern;
  * иначе bg.jpg (фон страниц STANDARD) — закрыть экран целиком и обрезать по центру, остальные
  * (боковины окна текста, кнопка меню, стрелки, «Конец») — × k с сохранением пропорций.
  * Готовые файлы под размеры в игру не копируются.</li>
+ * <li>курсор мыши: INSTEAD масштабирует картинку курсора темы вместе с темой (theme_img_scale в
+ * themes.c), и у темы на 2560×1440 курсор из встроенной темы INSTEAD (точка нажатия 2,2) стал бы
+ * мельче, на 1280×720 — крупнее. Поэтому тема получает свой курсор gfx/cursor.png и
+ * gfx/cursor-use.png (копии из встроенной темы INSTEAD, × k или готовые файлы) и строки
+ * scr.gfx.cursor.* в theme.ini. При 1920×1080 файлы курсора удаляются, theme.ini не меняется —
+ * экспорт прежний.</li>
  * </ul>
  * Пиксели модулей (vn.lua, nlb.lua) пересчитывает сама игра множителем nlb._screen_k из
  * main.lua (nlb:px). Ручную тему 640x480 и темы книг со своим theme.ini не трогаем.
@@ -80,6 +86,11 @@ public final class ThemeScaler {
     private static final Pattern INI_BOX = Pattern.compile("(box:)(\\d+)x(\\d+)");
     private static final Pattern LUA_GEOM = Pattern.compile("(theme\\.(?:win|inv)\\.geom\\()\\s*(-?\\d+)\\s*,\\s*(-?\\d+)\\s*,\\s*(-?\\d+)\\s*,\\s*(-?\\d+)\\s*(\\))");
     private static final Pattern LUA_FONT_SIZE = Pattern.compile("(theme\\.set\\('[a-z]+\\.fnt\\.size',\\s*)(\\d+)(\\))");
+    /** Курсор темы (копии встроенной темы INSTEAD) и его точка нажатия при 1920×1080 */
+    static final String CURSOR = "cursor.png";
+    static final String CURSOR_USE = "cursor-use.png";
+    private static final int CURSOR_HOTSPOT = 2;
+    private static final Pattern INI_CURSOR = Pattern.compile("^\\s*scr\\.gfx\\.cursor\\.", Pattern.MULTILINE);
     private static final Pattern SIZED_NAME = Pattern.compile("^(.+)_(\\d+)x(\\d+)(\\.[^.]+)$");
 
     private ThemeScaler() {
@@ -93,16 +104,21 @@ public final class ThemeScaler {
         if (!themeDir.isDirectory()) {
             return;
         }
+        final File gfx = new File(themeDir, "gfx");
         if (ScreenSize.DEFAULT.equals(size)) {
-            for (File file : sizedImages(new File(themeDir, "gfx"))) {
+            for (File file : sizedImages(gfx)) {
                 Files.deleteIfExists(file.toPath());
             }
+            // курсор нужен только темам другого размера: при 1920×1080 — курсор INSTEAD, как было
+            Files.deleteIfExists(new File(gfx, CURSOR).toPath());
+            Files.deleteIfExists(new File(gfx, CURSOR_USE).toPath());
             return;
         }
         final double k = size.scaleFrom(ScreenSize.DEFAULT);
         final File ini = new File(themeDir, "theme.ini");
         if (ini.isFile()) {
-            write(ini, scaleIni(read(ini), k, size));
+            final boolean cursor = new File(gfx, CURSOR).isFile() && new File(gfx, CURSOR_USE).isFile();
+            write(ini, scaleIni(read(ini), k, size, cursor));
         }
         for (String lua : new String[]{"theme_vn.lua", "theme_standard.lua"}) {
             final File file = new File(themeDir, lua);
@@ -110,14 +126,18 @@ public final class ThemeScaler {
                 write(file, scaleLua(read(file), k));
             }
         }
-        scaleImages(new File(themeDir, "gfx"), k, size);
+        scaleImages(gfx, k, size);
     }
 
     static int px(int value, double k) {
         return (int) Math.round(value * k);
     }
 
-    static String scaleIni(String text, double k, ScreenSize size) {
+    /**
+     * @param cursor дописать курсор темы (gfx/cursor.png, gfx/cursor-use.png), если theme.ini
+     *               своего курсора не задаёт
+     */
+    static String scaleIni(String text, double k, ScreenSize size, boolean cursor) {
         final StringBuilder out = new StringBuilder();
         for (String line : text.split("\n", -1)) {
             String result = line;
@@ -132,6 +152,17 @@ public final class ThemeScaler {
             out.append(result).append('\n');
         }
         out.setLength(out.length() - 1);
+        if (cursor && !INI_CURSOR.matcher(text).find()) {
+            final String eol = text.contains("\r\n") ? "\r\n" : "\n";
+            if (out.length() > 0 && out.charAt(out.length() - 1) != '\n') {
+                out.append(eol);
+            }
+            final int hotspot = px(CURSOR_HOTSPOT, k);
+            out.append("scr.gfx.cursor.normal = gfx/").append(CURSOR).append(eol)
+                    .append("scr.gfx.cursor.use = gfx/").append(CURSOR_USE).append(eol)
+                    .append("scr.gfx.cursor.x = ").append(hotspot).append(eol)
+                    .append("scr.gfx.cursor.y = ").append(hotspot).append(eol);
+        }
         return out.toString();
     }
 
