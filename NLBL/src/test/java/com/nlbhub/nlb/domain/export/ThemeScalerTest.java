@@ -82,8 +82,9 @@ public class ThemeScalerTest {
         }
     }
 
+    /** Текст файла с переводами строк «\n»: на Windows git выгружает тему с CRLF, ThemeScaler их сохраняет */
     private String text(String name) throws IOException {
-        return new String(Files.readAllBytes(new File(m_theme, name).toPath()), StandardCharsets.UTF_8);
+        return new String(Files.readAllBytes(new File(m_theme, name).toPath()), StandardCharsets.UTF_8).replace("\r\n", "\n");
     }
 
     private int[] size(String name) throws IOException {
@@ -151,5 +152,17 @@ public class ThemeScalerTest {
         assertArrayEquals(new int[]{1280, 720}, size("bg.jpg"));
         assertArrayEquals("32×96 × 2/3", new int[]{21, 64}, size("aup.png"));
         assertEquals("theme.ini", true, text("theme.ini").contains("scr.w = 1280\n"));
+    }
+    @Test
+    public void crlfThemeKeepsItsLineEndings() throws IOException {
+        // как тема на Windows (git autocrlf): числа пересчитываются, CRLF остаётся
+        File ini = new File(m_theme, "theme.ini");
+        String lf = new String(Files.readAllBytes(ini.toPath()), StandardCharsets.UTF_8).replace("\r\n", "\n");
+        Files.write(ini.toPath(), lf.replace("\n", "\r\n").getBytes(StandardCharsets.UTF_8));
+        ThemeScaler.scale(m_theme, new ScreenSize(3840, 2160));
+        String raw = new String(Files.readAllBytes(ini.toPath()), StandardCharsets.UTF_8);
+        assertTrue(raw.contains("scr.w = 3840\r\n"));
+        assertTrue(raw.contains("win.fnt.size = 48\r\n"));
+        assertFalse("нет голых \\n", raw.replace("\r\n", "").contains("\n"));
     }
 }
