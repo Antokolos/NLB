@@ -34,7 +34,8 @@ import java.util.concurrent.ExecutionException;
  * схеме и порядок — свёрнуты в одну строку, большие группы («Added 120 images») — тоже. Внизу —
  * выбранное поле: текст «было / стало» с подсветкой слов, картинка «было / стало», остальное —
  * таблицей. Только просмотр: ни переключения на старую версию, ни отката. «Go to element» (и
- * двойной щелчок) закрывает окно и показывает элемент на схеме.
+ * двойной щелчок) закрывает окно и показывает элемент на схеме. «Restore this field» возвращает
+ * выбранное поле таким, каким оно было до версии (файлы поля — из истории, книга перечитывается).
  */
 final class DialogHistory {
     /**
@@ -79,11 +80,20 @@ final class DialogHistory {
         final String m_html;
         final BookHistory.ElementChange m_element;
         final List<BookHistory.FieldChange> m_fields;
+        /**
+         * Поле элемента (иначе — сам элемент или группа)
+         */
+        final boolean m_field;
 
         Node(String html, BookHistory.ElementChange element, List<BookHistory.FieldChange> fields) {
+            this(html, element, fields, false);
+        }
+
+        Node(String html, BookHistory.ElementChange element, List<BookHistory.FieldChange> fields, boolean field) {
             m_html = html;
             m_element = element;
             m_fields = fields;
+            m_field = field;
         }
 
         @Override
@@ -97,6 +107,18 @@ final class DialogHistory {
      * Показать элемент на схеме по его папке; false — его там нет (удалён позже)
      */
     private final java.util.function.Predicate<String> m_goTo;
+
+    /**
+     * Вернуть файлы поля такими, какими они были до версии (versionId == null — правки, ещё не
+     * вошедшие в Commit) и перечитать книгу; false — не вернули (например, есть несохранённые
+     * правки)
+     */
+    interface Restorer {
+        boolean restore(String versionId, List<String> paths);
+    }
+
+    private final Restorer m_restorer;
+    private final JButton m_restoreButton = new JButton("Restore this field");
     private final JButton m_goToButton = new JButton("Go to element");
     private final JDialog m_dialog;
     private final DefaultListModel<Row> m_versions = new DefaultListModel<>();
@@ -124,9 +146,11 @@ final class DialogHistory {
     private int m_request = 0;
     private int m_loaded = 0;
 
-    private DialogHistory(Component parent, NonLinearBookFacade facade, java.util.function.Predicate<String> goTo) {
+    private DialogHistory(Component parent, NonLinearBookFacade facade, java.util.function.Predicate<String> goTo,
+                          Restorer restorer) {
         m_facade = facade;
         m_goTo = goTo;
+        m_restorer = restorer;
         final Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
         m_dialog = new JDialog(owner, "History of the book", Dialog.ModalityType.APPLICATION_MODAL);
 
@@ -157,6 +181,10 @@ final class DialogHistory {
         m_tree.addTreeSelectionListener(e -> {
             showNode(selectedNode());
             m_goToButton.setEnabled(goToKey(selectedNode()) != null);
+            m_restoreButton.setEnabled(restoreReason(selectedNode()) == null);
+            m_restoreButton.setToolTipText(restoreReason(selectedNode()) == null
+                    ? "Make the selected field as it was before this version (the book is reloaded from disk)"
+                    : restoreReason(selectedNode()));
         });
         m_tree.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -169,6 +197,8 @@ final class DialogHistory {
             }
         });
         m_goToButton.setEnabled(false);
+        m_restoreButton.setEnabled(false);
+        m_restoreButton.addActionListener(e -> restoreField());
         m_goToButton.setToolTipText("Close the history and show the selected page, object or link on the scheme");
         m_goToButton.addActionListener(e -> goToElement());
         final JScrollPane treeScroll = new JScrollPane(m_tree);
@@ -205,6 +235,9 @@ final class DialogHistory {
         if (m_goTo != null) {
             buttons.add(m_goToButton);
         }
+        if (m_restorer != null) {
+            buttons.add(m_restoreButton);
+        }
         buttons.add(refresh);
         buttons.add(close);
         final JPanel bottom = new JPanel(new BorderLayout());
@@ -228,8 +261,81 @@ final class DialogHistory {
     /**
      * Показать историю книги (модально: пока окно открыто, книга не меняется)
      */
-    static void show(Component parent, NonLinearBookFacade facade, java.util.function.Predicate<String> goTo) {
-        new DialogHistory(parent, facade, goTo).m_dialog.setVisible(true);
+    static void show(Component parent, NonLinearBookFacade facade, java.util.function.Predicate<String> goTo,
+                     Restorer restorer) {
+        new DialogHistory(parent, facade, goTo, restorer).m_dialog.setVisible(true);
+    }
+
+    /**
+     * Почему выбранное нельзя вернуть (подсказка неактивной кнопки); null — можно
+     */
+    private String restoreReason(Node node) {
+        if (m_restorer == null || node == null || !node.m_field) {
+            return "Select a field of a changed element";
+        }
+        final BookHistory.ElementChange element = node.m_element;
+        if (element.getKind() == BookFileChange.Kind.ADDED) {
+            return "The element is new in this version: there is nothing to restore";
+        }
+        if (element.getKind() == BookFileChange.Kind.DELETED) {
+            return "The element is deleted in this version";
+        }
+        // страница, объект, ссылка… — только если элемент сейчас есть в книге (на диске)
+        final BookHistory.Type type = element.getType();
+        if (type != BookHistory.Type.BOOK && type != BookHistory.Type.IMAGE && type != BookHistory.Type.SOUND
+                && type != BookHistory.Type.FILE) {
+            final java.io.File root = m_facade.getNlb().getRootDir();
+            if (root == null || !new java.io.File(root, element.getKey()).isDirectory()) {
+                return "This element is not in the book now: it was deleted later";
+            }
+        }
+        if (node.m_fields.stream().anyMatch(f -> f.getFile().isSubmodule())) {
+            return "The version of an external module is changed in its own repository";
+        }
+        return null;
+    }
+
+    private void restoreField() {
+        final Node node = selectedNode();
+        if (restoreReason(node) != null) {
+            return;
+        }
+        final Row row = m_versionList.getSelectedValue();
+        if (row == null || row.m_more) {
+            return;
+        }
+        final BookHistory.FieldChange first = node.m_fields.get(0);
+        final String label = first.getLabel().isEmpty() ? "the file" : first.getLabel();
+        final String value;
+        if (first.getKind() == BookFileChange.Kind.ADDED) {
+            value = "<i>(none: the field is removed)</i>";
+        } else if (first.isBinary()) {
+            value = "<i>the previous file</i>";
+        } else {
+            String text = nonNull(first.getDisplayBefore()).trim();
+            if (text.length() > 300) {
+                text = text.substring(0, 299) + "…";
+            }
+            value = text.isEmpty() ? "<i>(empty)</i>" : "<b>" + escape(text).replace("\n", "<br>") + "</b>";
+        }
+        final String when = row.m_uncommitted ? "before the changes that are not committed yet"
+                : "before the version \"" + escape(row.m_version.getShortMessage()) + "\"";
+        final int answer = JOptionPane.showConfirmDialog(m_dialog,
+                "<html><body style='width: 420px'>" + escape(node.m_element.getTitle()) + ": <b>" + escape(label)
+                        + "</b> will become as it was " + when + ":<br><br>" + value
+                        + "<br><br>The book is reloaded from disk; the change will be in the history as "
+                        + "<b>Not committed yet</b>.</body></html>",
+                "Restore this field", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (answer != JOptionPane.OK_OPTION) {
+            return;
+        }
+        final List<String> paths = new ArrayList<>();
+        for (BookHistory.FieldChange field : node.m_fields) {
+            paths.add(field.getFile().getPath());
+        }
+        if (m_restorer.restore(row.m_uncommitted ? null : row.m_version.getId(), paths)) {
+            m_dialog.dispose();
+        }
     }
 
     /**
@@ -455,7 +561,7 @@ final class DialogHistory {
             final String label = entry.getKey().isEmpty() ? "contents" : entry.getKey();
             final String html = "<html>" + (first.isNoise() ? "<font color='gray'>" : "") + escape(label) + " — "
                     + fieldVerb(first.getKind()) + (first.isNoise() ? "</font>" : "") + "</html>";
-            node.add(new DefaultMutableTreeNode(new Node(html, change, entry.getValue())));
+            node.add(new DefaultMutableTreeNode(new Node(html, change, entry.getValue(), true)));
         }
         return node;
     }

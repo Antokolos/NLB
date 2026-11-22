@@ -471,6 +471,15 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     /**
+     * Вернуть файлы главной книги такими, какими они были до версии (before) или в ней (см.
+     * VCSAdapter.restoreVersionFiles). Книгу после этого перечитывает редактор
+     */
+    public void restoreVersionFiles(final String versionId, final List<String> paths, final boolean before)
+            throws NLBVCSException {
+        getMainFacade().m_vcsAdapter.restoreVersionFiles(versionId, paths, before);
+    }
+
+    /**
      * Текущая ветка книги; null — нет VCS
      */
     public String getBranchName() throws NLBVCSException {

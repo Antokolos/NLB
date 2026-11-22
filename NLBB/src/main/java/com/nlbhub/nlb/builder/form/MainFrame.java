@@ -1404,7 +1404,8 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         });
         m_historyButton.addActionListener(e -> {
             try {
-                DialogHistory.show(m_mainFramePanel, getMainPaneInfo().getPaneNlbFacade(), this::goToElement);
+                DialogHistory.show(m_mainFramePanel, getMainPaneInfo().getPaneNlbFacade(), this::goToElement,
+                        this::restoreFromHistory);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(m_mainFramePanel, "Error while reading the history: " + ex);
             }
@@ -1924,6 +1925,40 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     }
 
     /**
+     * «Restore this field» из окна истории: вернуть файлы поля такими, какими они были до версии
+     * (versionId == null — до правок, ещё не вошедших в Commit), и перечитать книгу с диска, как после
+     * Pull; затем окно истории — снова, с этой правкой среди «Not committed yet». Несохранённые
+     * правки редактора перечитывание потеряло бы — тогда сначала сохранить
+     *
+     * @return вернули ли
+     */
+    boolean restoreFromHistory(final String versionId, final List<String> paths) {
+        final NonLinearBookFacade facade = getMainPaneInfo().getPaneNlbFacade();
+        if (facade.hasChanges()) {
+            JOptionPane.showMessageDialog(m_mainFramePanel,
+                    "The book has unsaved changes. Save the book first, then restore the field.",
+                    "Restore this field", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        try {
+            facade.restoreVersionFiles(versionId, paths, true);
+        } catch (NLBVCSException ex) {
+            JOptionPane.showMessageDialog(m_mainFramePanel, "Error while restoring: " + ex.getMessage());
+            return false;
+        }
+        m_progressMonitor = new ProgressMonitor(m_mainFramePanel, "Reloading Non-Linear Book", "Initializing...", 0, 100);
+        m_progressMonitor.setProgress(0);
+        m_progressMonitor.setMillisToDecideToPopup(200);
+        m_progressMonitor.setMillisToPopup(200);
+        m_task = new OpenTask(facade.getNlb().getRootDir(), () -> DialogHistory.show(m_mainFramePanel,
+                getMainPaneInfo().getPaneNlbFacade(), this::goToElement, this::restoreFromHistory));
+        m_task.addPropertyChangeListener(this);
+        m_openFileButton.setEnabled(false);
+        m_task.execute();
+        return true;
+    }
+
+    /**
      * Показать на схеме элемент из окна истории (key — папка элемента, {@link
      * com.nlbhub.nlb.domain.BookHistory#navigation}): вкладка его модуля (открывается, если закрыта)
      * и элемент по центру
@@ -2029,7 +2064,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                         + what + "<br>" + next + "</html>",
                 "Commit", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[1]);
         if (answer == 0) {
-            DialogHistory.show(m_mainFramePanel, facade, this::goToElement);
+            DialogHistory.show(m_mainFramePanel, facade, this::goToElement, this::restoreFromHistory);
         }
     }
 

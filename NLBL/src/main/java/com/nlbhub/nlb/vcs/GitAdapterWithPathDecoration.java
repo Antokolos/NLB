@@ -185,6 +185,12 @@ public class GitAdapterWithPathDecoration implements VCSAdapter {
     }
 
     @Override
+    public void restoreVersionFiles(String versionId, java.util.List<String> paths, boolean before)
+            throws NLBVCSException {
+        m_gitAdapter.restoreVersionFiles(versionId, paths, before);
+    }
+
+    @Override
     public String getBranchName() throws NLBVCSException {
         return m_gitAdapter.getBranchName();
     }

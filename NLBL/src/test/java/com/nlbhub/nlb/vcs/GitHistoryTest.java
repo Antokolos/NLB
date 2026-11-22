@@ -266,6 +266,49 @@ public class GitHistoryTest {
     }
 
     @Test
+    public void restoreFieldsFromVersions() throws Exception {
+        threeVersions(false);
+        final GitAdapter adapter = adapter();
+        try {
+            final List<BookVersion> history = adapter.getHistory(0, 10);
+            final String bell = history.get(1).getId();
+            final String removed = history.get(0).getId();
+            final String first = history.get(2).getId();
+            // изменённый текст — как было до версии
+            adapter.restoreVersionFiles(bell, List.of("pages/p1/text/en"), true);
+            assertEquals("The shelves are empty.", read(m_mine, "pages/p1/text/en"));
+            // удалённая страница — её поле снова на диске
+            adapter.restoreVersionFiles(removed, List.of("pages/p2/caption/en"), true);
+            assertEquals("Gate", read(m_mine, "pages/p2/caption/en"));
+            // до первой версии файлов не было — удаляется
+            adapter.restoreVersionFiles(first, List.of("title"), true);
+            assertFalse(new File(m_mine, "title").exists());
+            // всё отмечено в индексе: войдёт в следующий Commit
+            assertEquals(Arrays.asList("pages/p1/text/en", "pages/p2/caption/en", "title"),
+                    adapter.getVersionChanges(null).stream().map(BookFileChange::getPath).sorted()
+                            .collect(Collectors.toList()));
+            // «стало» версии — как в ней
+            adapter.restoreVersionFiles(bell, List.of("pages/p1/text/en"), false);
+            assertEquals("Only a bell is left on the shelves.", read(m_mine, "pages/p1/text/en"));
+            // несохранённые правки: «было» — последняя версия, правка отменяется
+            adapter.restoreVersionFiles(null, List.of("pages/p2/caption/en", "title"), true);
+            assertTrue(adapter.getVersionChanges(null).isEmpty());
+            assertFalse(new File(m_mine, "pages/p2/caption/en").exists());
+            assertEquals("Pantry tales", read(m_mine, "title"));
+            // двоичный файл — побайтно
+            Files.write(new File(m_mine, "images/a.png").toPath(), new byte[]{1, 2, 3});
+            adapter.restoreVersionFiles(first, List.of("images/a.png"), false);
+            assertArrayEquals(PNG, Files.readAllBytes(new File(m_mine, "images/a.png").toPath()));
+        } finally {
+            adapter.closeAdapter();
+        }
+    }
+
+    private static String read(File root, String path) throws IOException {
+        return Files.readString(new File(root, path).toPath(), StandardCharsets.UTF_8);
+    }
+
+    @Test
     public void withoutVcsHistoryIsEmpty() throws Exception {
         final DummyVCSAdapter dummy = new DummyVCSAdapter();
         assertTrue(dummy.getHistory(0, 10).isEmpty());
