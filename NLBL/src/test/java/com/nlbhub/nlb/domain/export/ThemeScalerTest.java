@@ -96,9 +96,12 @@ public class ThemeScalerTest {
     public void defaultSizeChangesNothing() throws IOException {
         byte[] ini = Files.readAllBytes(new File(m_theme, "theme.ini").toPath());
         byte[] bg = Files.readAllBytes(new File(m_theme, "gfx/bg.jpg").toPath());
+        File ready = new File(m_theme, "gfx/bg_3840x2160.jpg");
+        ImageIO.write(new BufferedImage(64, 36, BufferedImage.TYPE_INT_RGB), "jpg", ready);
         ThemeScaler.scale(m_theme, ScreenSize.DEFAULT);
         assertArrayEquals(ini, Files.readAllBytes(new File(m_theme, "theme.ini").toPath()));
         assertArrayEquals(bg, Files.readAllBytes(new File(m_theme, "gfx/bg.jpg").toPath()));
+        assertFalse("готовые картинки под другие размеры в игру 1920×1080 не идут", ready.exists());
     }
 
     @Test

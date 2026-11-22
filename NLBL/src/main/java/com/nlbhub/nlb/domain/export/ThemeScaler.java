@@ -85,9 +85,18 @@ public final class ThemeScaler {
     private ThemeScaler() {
     }
 
-    /** Подогнать тему themeDir под экран size; при 1920×1080 ничего не делает */
+    /**
+     * Подогнать тему themeDir под экран size. При 1920×1080 тема остаётся как есть — убираются
+     * только готовые картинки под другие размеры ({@code <имя>_<W>x<H>}): в игре они не нужны
+     */
     public static void scale(File themeDir, ScreenSize size) throws IOException {
-        if (ScreenSize.DEFAULT.equals(size) || !themeDir.isDirectory()) {
+        if (!themeDir.isDirectory()) {
+            return;
+        }
+        if (ScreenSize.DEFAULT.equals(size)) {
+            for (File file : sizedImages(new File(themeDir, "gfx"))) {
+                Files.deleteIfExists(file.toPath());
+            }
             return;
         }
         final double k = size.scaleFrom(ScreenSize.DEFAULT);
@@ -150,12 +159,7 @@ public final class ThemeScaler {
             return;
         }
         final String suffix = "_" + size.getWidth() + "x" + size.getHeight();
-        final List<File> sized = new ArrayList<>();
-        for (File file : files) {
-            if (file.isFile() && SIZED_NAME.matcher(file.getName()).matches()) {
-                sized.add(file);
-            }
-        }
+        final List<File> sized = sizedImages(gfx);
         for (File file : files) {
             if (!file.isFile() || sized.contains(file)) {
                 continue;
@@ -179,6 +183,20 @@ public final class ThemeScaler {
         for (File file : sized) {
             Files.deleteIfExists(file.toPath());
         }
+    }
+
+    /** Готовые картинки под размеры экрана: {@code <имя>_<W>x<H>.<расширение>} */
+    private static List<File> sizedImages(File gfx) {
+        final List<File> result = new ArrayList<>();
+        final File[] files = gfx.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isFile() && SIZED_NAME.matcher(file.getName()).matches()) {
+                    result.add(file);
+                }
+            }
+        }
+        return result;
     }
 
     private static String read(File file) throws IOException {
