@@ -1404,7 +1404,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         });
         m_historyButton.addActionListener(e -> {
             try {
-                DialogHistory.show(m_mainFramePanel, getMainPaneInfo().getPaneNlbFacade());
+                DialogHistory.show(m_mainFramePanel, getMainPaneInfo().getPaneNlbFacade(), this::goToElement);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(m_mainFramePanel, "Error while reading the history: " + ex);
             }
@@ -1923,6 +1923,37 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         m_progressMonitor.setMillisToPopup(200);
     }
 
+    /**
+     * Показать на схеме элемент из окна истории (key — папка элемента, {@link
+     * com.nlbhub.nlb.domain.BookHistory#navigation}): вкладка его модуля (открывается, если закрыта)
+     * и элемент по центру
+     *
+     * @return нашёлся ли элемент (удалённого позже — нет)
+     */
+    boolean goToElement(final String key) {
+        final com.nlbhub.nlb.domain.BookHistory.Target target = com.nlbhub.nlb.domain.BookHistory.navigation(key);
+        if (target == null) {
+            return false;
+        }
+        PaneEditorInfo info = m_mainEditorInfo;
+        for (String modulePageId : target.getModulePages()) {
+            PaneEditorInfo next = m_paneEditorInfoMap.get(modulePageId);
+            if (next == null || next.getPaneIndex() == PaneEditorInfo.INDEX_UNDEFINED) {
+                final Page page = info.getPaneNlbFacade().getNlb().getPageById(modulePageId);
+                if (page == null || page.isDeleted()) {
+                    return false;
+                }
+                next = createGraphEditorPane(info, page);
+            }
+            info = next;
+        }
+        if (!info.getPaneGraphEditor().goTo(target.getItemId())) {
+            return false;
+        }
+        m_graphEditorsPane.setSelectedIndex(info.getPaneIndex());
+        return true;
+    }
+
     public void goTo(String modulePageId, String itemId) {
         PaneEditorInfo paneEditorInfo = m_paneEditorInfoMap.get(modulePageId);
         paneEditorInfo.getPaneGraphEditor().goTo(itemId);
@@ -1955,10 +1986,6 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
         }
     }
 
-    /**
-     * Спросить имя и e-mail для коммитов и записать их в настройки репозитория книги
-     * (.git/config — у каждого соавтора свои; их же можно поменять в свойствах книги)
-     */
     /**
      * Изменений, которые войдут в следующий Commit (без перемещений на схеме и порядка); -1 —
      * не удалось узнать
@@ -2002,10 +2029,14 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                         + what + "<br>" + next + "</html>",
                 "Commit", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[1]);
         if (answer == 0) {
-            DialogHistory.show(m_mainFramePanel, facade);
+            DialogHistory.show(m_mainFramePanel, facade, this::goToElement);
         }
     }
 
+    /**
+     * Спросить имя и e-mail для коммитов и записать их в настройки репозитория книги
+     * (.git/config — у каждого соавтора свои; их же можно поменять в свойствах книги)
+     */
     private boolean askCommitter(final NonLinearBookFacade facade) throws NLBVCSException {
         final JTextField name = new JTextField(30);
         final JTextField email = new JTextField(30);

@@ -1094,11 +1094,17 @@ public class GraphEditor extends PCanvas {
         camera.scaleViewAboutPoint(scale, center.getX(), center.getY());
     }
 
-    public void goTo(final String itemId) {
+    /**
+     * Показать элемент (страницу, объект, ссылку) по центру схемы
+     *
+     * @return нашёлся ли он на схеме
+     */
+    public boolean goTo(final String itemId) {
         Rectangle2D rect = m_graphItemsMapper.getItemRectById(itemId);
         if (rect != null) {
             getCamera().animateViewToCenterBounds(rect, false, ANIMATE_DURATION_MILLIS);
         }
+        return rect != null;
     }
 
     public BulkSelectionHandler getBulkSelectionHandler() {

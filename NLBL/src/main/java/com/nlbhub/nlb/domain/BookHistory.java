@@ -210,6 +210,33 @@ public final class BookHistory {
      */
     private static final java.util.Set<String> REFERENCES = new java.util.HashSet<>(Arrays.asList(
             "containerid", "target", "startpoint", "retpage", "commonto", "morphover", "morphout"));
+    /**
+     * Куда перейти на схеме редактора: вкладки модулей по порядку (id страниц-модулей, от главной
+     * книги вглубь; пусто — главная) и элемент (страница, объект или ссылка)
+     */
+    public static final class Target {
+        private final List<String> m_modulePages;
+        private final String m_itemId;
+
+        Target(List<String> modulePages, String itemId) {
+            m_modulePages = Collections.unmodifiableList(modulePages);
+            m_itemId = itemId;
+        }
+
+        public List<String> getModulePages() {
+            return m_modulePages;
+        }
+
+        public String getItemId() {
+            return m_itemId;
+        }
+
+        @Override
+        public String toString() {
+            return m_modulePages + " " + m_itemId;
+        }
+    }
+
     private static final List<String> MEDIA_META = Arrays.asList(".flag", ".preset", ".constrid", ".redirect");
     private static final Map<String, String> MEDIA_FIELDS = new LinkedHashMap<>();
 
@@ -413,6 +440,43 @@ public final class BookHistory {
 
     private static String lastSegment(final String path) {
         return path.substring(path.lastIndexOf('/') + 1);
+    }
+
+    /**
+     * Куда перейти на схеме к элементу с папкой key ({@link ElementChange#getKey()}): страница,
+     * объект, ссылка — к нему; модификация — к её владельцу; настройки внутреннего модуля — к
+     * странице-модулю. Переменная, картинка, звук, внешний модуль, настройки книги — null (на
+     * схеме их нет)
+     */
+    public static Target navigation(final String key) {
+        final String[] parts = key.split("/");
+        final List<String> modules = new ArrayList<>();
+        int i = 0;
+        String item = null;
+        while (i + 1 < parts.length) {
+            if (!"pages".equals(parts[i]) && !"objs".equals(parts[i])) {
+                return null;
+            }
+            item = parts[i + 1];
+            int j = i + 2;
+            if ("pages".equals(parts[i]) && j < parts.length && "module".equals(parts[j])) {
+                if (j + 1 == parts.length) {
+                    // настройки внутреннего модуля — к странице-модулю в её книге
+                    return new Target(modules, item);
+                }
+                modules.add(item);
+                item = null;
+                i = j + 1;
+                continue;
+            }
+            if (j + 1 < parts.length && "links".equals(parts[j])) {
+                item = parts[j + 1];
+                j += 2;
+            }
+            // модификация (j указывает на «modifications») — к владельцу: item уже он
+            return new Target(modules, item);
+        }
+        return item == null ? null : new Target(modules, item);
     }
 
     /**

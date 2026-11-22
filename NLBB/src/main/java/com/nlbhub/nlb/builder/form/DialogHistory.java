@@ -33,7 +33,8 @@ import java.util.concurrent.ExecutionException;
  * элементам книги ({@link BookHistory}): страница, объект, ссылка… и их поля; перемещения на
  * схеме и порядок — свёрнуты в одну строку, большие группы («Added 120 images») — тоже. Внизу —
  * выбранное поле: текст «было / стало» с подсветкой слов, картинка «было / стало», остальное —
- * таблицей. Только просмотр: ни переключения на старую версию, ни отката.
+ * таблицей. Только просмотр: ни переключения на старую версию, ни отката. «Go to element» (и
+ * двойной щелчок) закрывает окно и показывает элемент на схеме.
  */
 final class DialogHistory {
     /**
@@ -92,6 +93,11 @@ final class DialogHistory {
     }
 
     private final NonLinearBookFacade m_facade;
+    /**
+     * Показать элемент на схеме по его папке; false — его там нет (удалён позже)
+     */
+    private final java.util.function.Predicate<String> m_goTo;
+    private final JButton m_goToButton = new JButton("Go to element");
     private final JDialog m_dialog;
     private final DefaultListModel<Row> m_versions = new DefaultListModel<>();
     private final JList<Row> m_versionList = new JList<>(m_versions);
@@ -118,8 +124,9 @@ final class DialogHistory {
     private int m_request = 0;
     private int m_loaded = 0;
 
-    private DialogHistory(Component parent, NonLinearBookFacade facade) {
+    private DialogHistory(Component parent, NonLinearBookFacade facade, java.util.function.Predicate<String> goTo) {
         m_facade = facade;
+        m_goTo = goTo;
         final Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
         m_dialog = new JDialog(owner, "History of the book", Dialog.ModalityType.APPLICATION_MODAL);
 
@@ -147,7 +154,23 @@ final class DialogHistory {
                 return this;
             }
         });
-        m_tree.addTreeSelectionListener(e -> showNode(selectedNode()));
+        m_tree.addTreeSelectionListener(e -> {
+            showNode(selectedNode());
+            m_goToButton.setEnabled(goToKey(selectedNode()) != null);
+        });
+        m_tree.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                // двойной щелчок по элементу или полю — к элементу на схеме (у группы —
+                // раскрыть, как обычно)
+                if (e.getClickCount() == 2 && goToKey(selectedNode()) != null) {
+                    goToElement();
+                }
+            }
+        });
+        m_goToButton.setEnabled(false);
+        m_goToButton.setToolTipText("Close the history and show the selected page, object or link on the scheme");
+        m_goToButton.addActionListener(e -> goToElement());
         final JScrollPane treeScroll = new JScrollPane(m_tree);
         treeScroll.setPreferredSize(new Dimension(620, 260));
 
@@ -179,6 +202,9 @@ final class DialogHistory {
         final JButton close = new JButton("Close");
         close.addActionListener(e -> m_dialog.dispose());
         final JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        if (m_goTo != null) {
+            buttons.add(m_goToButton);
+        }
         buttons.add(refresh);
         buttons.add(close);
         final JPanel bottom = new JPanel(new BorderLayout());
@@ -202,8 +228,34 @@ final class DialogHistory {
     /**
      * Показать историю книги (модально: пока окно открыто, книга не меняется)
      */
-    static void show(Component parent, NonLinearBookFacade facade) {
-        new DialogHistory(parent, facade).m_dialog.setVisible(true);
+    static void show(Component parent, NonLinearBookFacade facade, java.util.function.Predicate<String> goTo) {
+        new DialogHistory(parent, facade, goTo).m_dialog.setVisible(true);
+    }
+
+    /**
+     * Папка элемента выбранного узла, если к нему можно перейти: есть на схеме (страница, объект,
+     * ссылка, модификация — к владельцу) и не удалён в этой версии; иначе null
+     */
+    private String goToKey(Node node) {
+        if (m_goTo == null || node == null || node.m_element == null
+                || node.m_element.getKind() == BookFileChange.Kind.DELETED) {
+            return null;
+        }
+        final String key = node.m_element.getKey();
+        return BookHistory.navigation(key) == null ? null : key;
+    }
+
+    private void goToElement() {
+        final String key = goToKey(selectedNode());
+        if (key == null) {
+            return;
+        }
+        if (m_goTo.test(key)) {
+            m_dialog.dispose();
+        } else {
+            JOptionPane.showMessageDialog(m_dialog, "This element is not in the book now: it was deleted later.",
+                    "Go to element", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     private String intro() {
