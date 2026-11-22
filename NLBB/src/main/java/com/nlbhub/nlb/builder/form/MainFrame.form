@@ -159,6 +159,17 @@
                   <text value=""/>
                 </properties>
               </component>
+              <component id="4f2c9" class="javax.swing.JButton" binding="m_historyButton">
+                <constraints/>
+                <properties>
+                  <borderPainted value="false"/>
+                  <focusPainted value="false"/>
+                  <icon value="common/history.png"/>
+                  <rolloverEnabled value="true"/>
+                  <text value=""/>
+                  <toolTipText value="history: saved versions of the book (commits) and what changed in each of them"/>
+                </properties>
+              </component>
               <component id="101a8" class="javax.swing.JButton" binding="m_pushButton">
                 <constraints/>
                 <properties>

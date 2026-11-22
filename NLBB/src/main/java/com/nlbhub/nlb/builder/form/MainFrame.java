@@ -134,6 +134,7 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
     private JButton m_exportJSIQ;
     private JToggleButton m_addObjButton;
     private JButton m_commitButton;
+    private JButton m_historyButton;
     private JButton m_startServerButton;
     private JButton m_stopServerButton;
     private JButton m_previewExportButton;
@@ -1388,7 +1389,10 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                     DialogCommit dialog = new DialogCommit();
                     dialog.showDialog();
                     if (dialog.isOk()) {
+                        // сколько изменений войдёт в версию — до коммита (после него их нет)
+                        final int changes = countUncommittedChanges(facade);
                         facade.commit(dialog.getCommitMessageText());
+                        reportCommit(facade, dialog.getCommitMessageText(), changes);
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(
@@ -1396,6 +1400,13 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
                             "Error while committing to VCS: " + ex.toString()
                     );
                 }
+            }
+        });
+        m_historyButton.addActionListener(e -> {
+            try {
+                DialogHistory.show(m_mainFramePanel, getMainPaneInfo().getPaneNlbFacade());
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(m_mainFramePanel, "Error while reading the history: " + ex);
             }
         });
         m_pushButton.addActionListener(new ActionListener() {
@@ -1948,6 +1959,53 @@ public class MainFrame implements PropertyChangeListener, NLBObserver {
      * Спросить имя и e-mail для коммитов и записать их в настройки репозитория книги
      * (.git/config — у каждого соавтора свои; их же можно поменять в свойствах книги)
      */
+    /**
+     * Изменений, которые войдут в следующий Commit (без перемещений на схеме и порядка); -1 —
+     * не удалось узнать
+     */
+    private static int countUncommittedChanges(final NonLinearBookFacade facade) {
+        try {
+            int count = 0;
+            for (com.nlbhub.nlb.domain.BookHistory.ElementChange change : facade.getVersionChanges(null)) {
+                if (!change.isNoiseOnly()) {
+                    count++;
+                }
+            }
+            return count;
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
+    /**
+     * После Commit — что произошло: версия сохранена на этом компьютере, на сервер уйдёт после
+     * Push (или Publish, если сервера нет); кнопка «Open history»
+     */
+    private void reportCommit(final NonLinearBookFacade facade, final String message, final int changes) {
+        com.nlbhub.nlb.vcs.BookVersion.ServerState state = com.nlbhub.nlb.vcs.BookVersion.ServerState.NO_SERVER;
+        try {
+            final List<com.nlbhub.nlb.vcs.BookVersion> last = facade.getHistory(0, 1);
+            if (!last.isEmpty()) {
+                state = last.get(0).getServerState();
+            }
+        } catch (Exception e) {
+            // нет истории — без подсказки про сервер
+        }
+        final String what = changes < 0 ? "" : changes == 0 ? " (only positions on the scheme or order)"
+                : " (" + changes + " change" + (changes == 1 ? "" : "s") + ")";
+        final String next = state == com.nlbhub.nlb.vcs.BookVersion.ServerState.NO_SERVER
+                ? "It is saved on this computer. To share the book, press <b>Publish</b>."
+                : "It is saved on this computer only: press <b>Push</b> to send it to the server.";
+        final Object[] options = {"Open history", "OK"};
+        final int answer = JOptionPane.showOptionDialog(m_mainFramePanel,
+                "<html>Version saved: <b>" + DialogHistory.escape(message == null ? "" : message.trim()) + "</b>"
+                        + what + "<br>" + next + "</html>",
+                "Commit", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[1]);
+        if (answer == 0) {
+            DialogHistory.show(m_mainFramePanel, facade);
+        }
+    }
+
     private boolean askCommitter(final NonLinearBookFacade facade) throws NLBVCSException {
         final JTextField name = new JTextField(30);
         final JTextField email = new JTextField(30);

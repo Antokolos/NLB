@@ -200,6 +200,58 @@ public interface VCSAdapter {
     }
 
     /**
+     * История книги — версии первой линии истории, от новых к старым, начиная с offset, не больше
+     * limit. Без VCS (и у Mercurial) — пусто
+     */
+    public default java.util.List<BookVersion> getHistory(int offset, int limit) throws NLBVCSException {
+        return java.util.Collections.emptyList();
+    }
+
+    /**
+     * Изменённые файлы версии относительно предыдущей (у слияния — относительно нашей прежней
+     * версии, первого родителя; у первой версии — всё добавлено). versionId == null — сохранённые,
+     * но ещё не закоммиченные правки (то, что войдёт в следующий Commit: индекс против HEAD)
+     */
+    public default java.util.List<BookFileChange> getVersionChanges(String versionId) throws NLBVCSException {
+        return java.util.Collections.emptyList();
+    }
+
+    /**
+     * Тексты файлов в папке dirPath (относительно папки книги, на любую глубину) в версии
+     * versionId: {путь от dirPath: текст}. versionId == null — последняя версия (HEAD); «id^» —
+     * предыдущая. Папки или версии нет — пусто. Нужен, чтобы назвать элемент, которого в книге уже
+     * нет (удалённая страница — по её заголовку в той версии)
+     */
+    public default java.util.Map<String, String> readVersionTexts(String versionId, String dirPath)
+            throws NLBVCSException {
+        return java.util.Collections.emptyMap();
+    }
+
+    /**
+     * Пути всех файлов версии versionId (относительно папки книги; null — HEAD, «id^» —
+     * предыдущая). Нет версии — пусто. Чтобы за один раз узнать, какие элементы в версии были
+     */
+    public default java.util.List<String> listVersionFiles(String versionId) throws NLBVCSException {
+        return java.util.Collections.emptyList();
+    }
+
+    /**
+     * Содержимое файла версии по его id ({@link BookFileChange#getBeforeObjectId()} и
+     * getAfterObjectId): миниатюры картинок «было / стало». Нет или больше maxBytes — null
+     */
+    public default byte[] readVersionObject(String objectId, int maxBytes) throws NLBVCSException {
+        return null;
+    }
+
+    /**
+     * Текущая ветка книги (null — нет VCS или ветки): окно истории предупреждает, если она не
+     * основная
+     */
+    public default String getBranchName() throws NLBVCSException {
+        return null;
+    }
+
+    /**
      * Скачать книгу с сервера в новую папку path вместе с её внешними модулями (подмодулями, на
      * любую глубину), без установки git. userName == null — без учётных данных (открытый
      * репозиторий по https); по ssh — ключи и вопросы, как при pull/push. Не удалось — папка,
