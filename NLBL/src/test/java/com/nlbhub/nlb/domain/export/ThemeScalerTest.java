@@ -102,6 +102,42 @@ public class ThemeScalerTest {
         assertArrayEquals(ini, Files.readAllBytes(new File(m_theme, "theme.ini").toPath()));
         assertArrayEquals(bg, Files.readAllBytes(new File(m_theme, "gfx/bg.jpg").toPath()));
         assertFalse("готовые картинки под другие размеры в игру 1920×1080 не идут", ready.exists());
+        assertFalse("курсор при 1920×1080 — встроенный INSTEAD, как было", new File(m_theme, "gfx/cursor.png").exists());
+        assertFalse(new File(m_theme, "gfx/cursor-use.png").exists());
+    }
+
+    @Test
+    public void cursorKeepsItsSizeOnScreen() throws IOException {
+        // INSTEAD уменьшает курсор темы 2560×1440 до окна 1920×1080 — свой курсор темы × 4/3
+        ThemeScaler.scale(m_theme, new ScreenSize(2560, 1440));
+        String ini = text("theme.ini");
+        assertTrue(ini, ini.endsWith("menu.fnt.height = 1.3\n"
+                + "scr.gfx.cursor.normal = gfx/cursor.png\n"
+                + "scr.gfx.cursor.use = gfx/cursor-use.png\n"
+                + "scr.gfx.cursor.x = 3\n"
+                + "scr.gfx.cursor.y = 3\n"));
+        assertArrayEquals("готовый: 17×25 × 4/3", new int[]{23, 33}, size("cursor.png"));
+        assertArrayEquals("готовый: 43×41 × 4/3", new int[]{57, 55}, size("cursor-use.png"));
+        assertTrue(ImageIO.read(new File(m_theme, "gfx/cursor.png")).getColorModel().hasAlpha());
+    }
+
+    @Test
+    public void cursorForSmallerScreen() throws IOException {
+        ThemeScaler.scale(m_theme, new ScreenSize(1280, 720));
+        String ini = text("theme.ini");
+        assertTrue(ini, ini.contains("scr.gfx.cursor.x = 1\n"));
+        assertArrayEquals("17×25 × 2/3", new int[]{11, 17}, size("cursor.png"));
+        assertArrayEquals("43×41 × 2/3", new int[]{29, 27}, size("cursor-use.png"));
+    }
+
+    @Test
+    public void ownCursorOfThemeIsKept() throws IOException {
+        File ini = new File(m_theme, "theme.ini");
+        Files.write(ini.toPath(), (text("theme.ini") + "\nscr.gfx.cursor.normal = gfx/arrow.png\n").getBytes(StandardCharsets.UTF_8));
+        ThemeScaler.scale(m_theme, new ScreenSize(3840, 2160));
+        String result = text("theme.ini");
+        assertTrue(result.endsWith("scr.gfx.cursor.normal = gfx/arrow.png\n"));
+        assertFalse(result.contains("cursor.use"));
     }
 
     @Test
@@ -156,6 +192,7 @@ public class ThemeScalerTest {
         assertArrayEquals("32×96 × 2/3", new int[]{21, 64}, size("aup.png"));
         assertEquals("theme.ini", true, text("theme.ini").contains("scr.w = 1280\n"));
     }
+
     @Test
     public void crlfThemeKeepsItsLineEndings() throws IOException {
         // как тема на Windows (git autocrlf): числа пересчитываются, CRLF остаётся
@@ -167,5 +204,6 @@ public class ThemeScalerTest {
         assertTrue(raw.contains("scr.w = 3840\r\n"));
         assertTrue(raw.contains("win.fnt.size = 48\r\n"));
         assertFalse("нет голых \\n", raw.replace("\r\n", "").contains("\n"));
+        assertTrue("курсор — тоже с CRLF", raw.contains("scr.gfx.cursor.x = 4\r\n"));
     }
 }
