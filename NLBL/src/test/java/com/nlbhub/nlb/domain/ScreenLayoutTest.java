@@ -309,4 +309,59 @@ public class ScreenLayoutTest {
         assertEquals(910, screen.getSprites().get(0).getX());
         assertEquals(515, screen.getSprites().get(0).getY());
     }
+    /** Все 9 точек отсчёта на экране книги size: arm — от размера экрана, middle/right/bottom — от него же */
+    private void nineOrigins(com.nlbhub.nlb.api.ScreenSize size, int[][] expected) throws IOException {
+        m_book.createChangeScreenSizeCommand(size, false).execute();
+        png("s.png", 100, 50);
+        for (Obj.CoordsOrigin origin : Obj.CoordsOrigin.values()) {
+            sprite("s.png", origin);
+        }
+        ScreenLayout.Screen screen = layout();
+        assertEquals(size, screen.getSize());
+        List<ScreenLayout.Element> sprites = screen.getSprites();
+        for (int i = 0; i < 9; i++) {
+            String what = size + " " + Obj.CoordsOrigin.values()[i].name();
+            assertEquals(what, expected[i][0], sprites.get(i).getX());
+            assertEquals(what, expected[i][1], sprites.get(i).getY());
+            assertFalse(what, sprites.get(i).isCut());
+        }
+    }
+
+    @Test
+    public void nineOriginsOn4k() throws IOException {
+        // arm: floor(50 * 3840 / 200) = 960, floor(50 * 2160 / 100) = 1080
+        nineOrigins(new com.nlbhub.nlb.api.ScreenSize(3840, 2160), new int[][]{
+                {960, 1080}, {1870, 1080}, {3740, 0},
+                {960, 1055}, {1870, 1055}, {3740, 1055},
+                {960, 2110}, {1870, 2110}, {3740, 2110}});
+    }
+
+    @Test
+    public void nineOriginsOn720p() throws IOException {
+        // arm: floor(50 * 1280 / 200) = 320, floor(50 * 720 / 100) = 360
+        nineOrigins(new com.nlbhub.nlb.api.ScreenSize(1280, 720), new int[][]{
+                {320, 360}, {590, 360}, {1180, 0},
+                {320, 335}, {590, 335}, {1180, 335},
+                {320, 670}, {590, 670}, {1180, 670}});
+    }
+
+    @Test
+    public void spriteFitsBiggerScreenAndBackgroundCentered() throws IOException {
+        // доктор CoolAir 1086×1448: на 1920×1080 срезан на 368 px, на 2560×1440 — на 8, на 4K помещается
+        png("doctor.png", 1086, 1448);
+        ObjImpl doctor = sprite("doctor.png", Obj.CoordsOrigin.LeftBottom);
+        doctor.setOffset("0,0");
+        assertEquals(368, layout().getSprites().get(0).overflowTop());
+        m_book.createChangeScreenSizeCommand(new com.nlbhub.nlb.api.ScreenSize(2560, 1440), false).execute();
+        assertEquals(8, layout().getSprites().get(0).overflowTop());
+        m_book.createChangeScreenSizeCommand(new com.nlbhub.nlb.api.ScreenSize(3840, 2160), false).execute();
+        assertFalse(layout().getSprites().get(0).isCut());
+        assertEquals(2160 - 1448, layout().getSprites().get(0).getY());
+        png("bg.png", 1920, 1080);
+        m_page.setImageFileName("bg.png");
+        ScreenLayout.Screen screen = layout();
+        assertTrue("фон 1920×1080 на 4K — не того размера", screen.isBackgroundMismatched());
+        assertEquals(960, screen.getBackground().getX());
+        assertEquals(540, screen.getBackground().getY());
+    }
 }
