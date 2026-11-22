@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.web.player;
 
+import com.nlbhub.nlb.api.ScreenSize;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -173,10 +174,12 @@ public class PlayerServlet extends HttpServlet {
                 }
                 ObjectNode theme = JSON.createObjectNode();
                 ScreenTheme.Root[] roots = ScreenTheme.roots(m_library.bookDir(p[2]));
-                theme.set("vn", ScreenTheme.load(roots, true).toJson());
-                theme.set("standard", ScreenTheme.load(roots, false).toJson());
-                // режим по умолчанию — для адреса без ?mode=
                 NonLinearBook book = m_library.book(p[2], null);
+                // экран книги (файл screen): тема NLB 1920×1080 — под него
+                ScreenSize screen = book == null ? ScreenSize.DEFAULT : book.getScreenSize();
+                theme.set("vn", ScreenTheme.load(roots, true).forBookScreen(screen).toJson());
+                theme.set("standard", ScreenTheme.load(roots, false).forBookScreen(screen).toJson());
+                // режим по умолчанию — для адреса без ?mode=
                 theme.put("mode", book == null ? "vn" : BookLibrary.defaultMode(book));
                 sendJson(response, theme);
             } else if (p[0].equals("api") && p.length == 3 && p[1].equals("sessions")) {

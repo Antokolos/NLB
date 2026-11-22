@@ -244,8 +244,8 @@ vn = obj {
         s.vnticks_diff = s:ticks_threshold();
         s.renewticks_diff = s:renew_threshold();
         local tr = nlb:theme_root();
-        s.hudFont = gr:font(tr .. 'fonts/STEINEMU.ttf', 29);  -- Medieval_English.ttf
-        s.hudFont_H1 = gr:font(tr .. 'fonts/STEINEMU.ttf', 45);  -- Medieval_English.ttf
+        s.hudFont = gr:font(tr .. 'fonts/STEINEMU.ttf', nlb:px(29));  -- Medieval_English.ttf
+        s.hudFont_H1 = gr:font(tr .. 'fonts/STEINEMU.ttf', nlb:px(45));  -- Medieval_English.ttf
         s.empty_s = gr:load('gfx/empty.png');
         if nlb:file_exists(tr .. 'gfx/fl.png') then
             s.fln_s = gr:load(tr .. 'gfx/fl.png');
@@ -1762,7 +1762,7 @@ vn = obj {
         end
         local win_width = spw;
         local win_height = hf;
-        local real_height = win_height - 2 * s.textpad;
+        local real_height = win_height - 2 * nlb:px(s.textpad);
         return math.floor((scr_width - win_width) / 2), math.floor((scr_height - real_height) / 2), math.floor(win_width), math.floor(real_height);
     end;
     get_choices_coords = function(s)
@@ -1865,7 +1865,7 @@ vn = obj {
         if (s.direct_lock or not s:in_vnr()) and not s:force_textbg() then
             return;
         end
-        local pad = s.textpad;
+        local pad = nlb:px(s.textpad);
         local wf = s._wf;
         local w, h = theme.get 'win.w', theme.get 'win.h'
         local x, y = theme.get 'win.x', theme.get 'win.y'
@@ -2267,11 +2267,11 @@ vn = obj {
                         if w > wmax then
                             wmax = w;
                         end
-                        htotal = htotal + h + s.hud_line_spacing;
+                        htotal = htotal + h + nlb:px(s.hud_line_spacing);
                         stead.table.insert(sprites, {["spr"] = textSprite, ["w"] = w, ["h"] = h});
                     else
-                        htotal = htotal + s.hud_indent_spacing;
-                        stead.table.insert(sprites, {["spr"] = nil, ["w"] = 0, ["h"] = s.hud_indent_spacing});
+                        htotal = htotal + nlb:px(s.hud_indent_spacing);
+                        stead.table.insert(sprites, {["spr"] = nil, ["w"] = 0, ["h"] = nlb:px(s.hud_indent_spacing)});
                     end
                 end
                 if v.cache_text and not tmp_sprite then
@@ -2291,7 +2291,7 @@ vn = obj {
                 htotal = cached_sprites.htotal;
                 wmax = cached_sprites.wmax;
             end
-            htotal = htotal - s.hud_line_spacing; -- spacing for the last line should not be taken into account
+            htotal = htotal - nlb:px(s.hud_line_spacing); -- spacing for the last line should not be taken into account
             local ycur = ypos - htotal * s:get_pos_coef(v);
             if empty_text then
                 return {["v"] = v, ["x"] = xpos, ["y"] = ycur, ["w"] = 0, ["h"] = 0};
@@ -2331,12 +2331,12 @@ vn = obj {
         for i, ss in ipairs(sprites) do
             if (ss.spr or clear) and ycur + ss.h > 0 and ycur < tonumber(s.scr_h) then
                 if clear then
-                    s:clear(xpos, ycur, ss.w, ss.h + s.hud_line_spacing, target);
+                    s:clear(xpos, ycur, ss.w, ss.h + nlb:px(s.hud_line_spacing), target);
                 else
                     gr:draw(ss.spr, target, xpos, ycur);
                 end
             end
-            ycur = ycur + ss.h + s.hud_line_spacing;
+            ycur = ycur + ss.h + nlb:px(s.hud_line_spacing);
             if freesp and ss.spr then
                 gr:free(ss.spr);
             end
@@ -2549,7 +2549,7 @@ vn = obj {
         return {["spr"] = s.empty_s, ["w"] = w, ["h"] = h, ["tmp"] = false, ["preloaded_effect"] = false, ["alpha"] = 0, ["scale"] = 0.0};
     end;
     undertext = function(s, w, h, invw, invh)
-        local pad = s.textpad;
+        local pad = nlb:px(s.textpad);
         local sb_index = tostring(w) .. "x" .. tostring(h);
         local si_index = tostring(invw) .. "x" .. tostring(invh);
         if not s.undertextb_cache[sb_index] then

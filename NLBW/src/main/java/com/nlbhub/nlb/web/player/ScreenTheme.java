@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.web.player;
 
+import com.nlbhub.nlb.api.ScreenSize;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -216,6 +217,14 @@ public final class ScreenTheme {
     double m_gfxMaxHeight = Double.NaN;
     double m_scale = 1.0;
     /**
+     * Пиксели книги (спрайты, arm, offset, фон страницы) — в пиксели темы: у темы NLB 1920×1080
+     * и книги с другим размером экрана — 1920 / ширина книги (как подгоняет тему экспорт,
+     * ThemeScaler); у своих тем книги (800×600 «Фронтира») и у книги 1920×1080 — 1
+     */
+    double m_bookScale = 1.0;
+    /** scr.w×scr.h темы — по нему видно, тема ли это NLB 1920×1080 */
+    double[] m_themeScreen = {1920, 1080};
+    /**
      * Где экран темы (scr.w×scr.h) на экране 1920×1080
      */
     double[] m_screenArea = {0, 0, 1920, 1080};
@@ -390,6 +399,17 @@ public final class ScreenTheme {
     /**
      * Тема из корней [базовая, игры] (тема игры может быть null)
      */
+    /**
+     * Экран книги (файл screen) другого размера: тема NLB 1920×1080 — под него (bookScale);
+     * свои темы книги рисуют картинки в своих пикселях — их не трогаем
+     */
+    public ScreenTheme forBookScreen(ScreenSize size) {
+        if (!ScreenSize.DEFAULT.equals(size) && m_themeScreen[0] == 1920 && m_themeScreen[1] == 1080) {
+            m_bookScale = 1920.0 / size.getWidth();
+        }
+        return this;
+    }
+
     public static ScreenTheme load(Root[] roots, boolean visualNovel) {
         ScreenTheme t = new ScreenTheme(visualNovel);
         Map<String, IniValue> ini = new HashMap<>();
@@ -406,6 +426,7 @@ public final class ScreenTheme {
         double ox = (1920 - sw * k) / 2;
         double oy = (1080 - sh * k) / 2;
         t.m_scale = k;
+        t.m_themeScreen = new double[]{sw, sh};
         t.m_screenArea = new double[]{ox, oy, sw * k, sh * k};
         if (ini.containsKey("scr.col.bg")) {
             t.m_background = color(ini.get("scr.col.bg").value, t.m_background);
@@ -555,6 +576,7 @@ public final class ScreenTheme {
             node.put("gfxMaxHeight", m_gfxMaxHeight);
         }
         node.put("scale", m_scale);
+        node.put("bookScale", m_bookScale);
         node.set("text", m_text.toJson());
         node.set("inventory", m_inventory.toJson());
         node.put("inventoryHorizontal", m_inventoryHorizontal);

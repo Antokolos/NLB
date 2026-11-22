@@ -63,9 +63,8 @@ public final class ScreenPlacement {
     }
 
     /**
-     * То же на экране size и с точкой отсчёта coordsOrigin (несохранённая правка в свойствах
-     * объекта). Экспорт и веб-плеер пока считают на 1920×1080 ({@link #arm(Obj)}): экран темы
-     * нужного размера у них появится вместе с размером экрана книги в теме экспорта
+     * То же на экране size (экран книги, файл screen) и с точкой отсчёта coordsOrigin
+     * (несохранённая правка в свойствах объекта) — так считают экспорт, веб-плеер и предпросмотр
      */
     public static int[] arm(Obj obj, Obj.CoordsOrigin coordsOrigin, ScreenSize size) {
         final double screenW = size.getWidth();

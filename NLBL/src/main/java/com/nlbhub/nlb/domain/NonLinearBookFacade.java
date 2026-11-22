@@ -41,6 +41,7 @@ package com.nlbhub.nlb.domain;
 import com.nlbhub.nlb.api.*;
 import com.nlbhub.nlb.exception.*;
 import com.nlbhub.nlb.domain.export.ExportProgress;
+import com.nlbhub.nlb.domain.export.ThemeScaler;
 import com.nlbhub.nlb.util.BookFiles;
 import com.nlbhub.nlb.util.FileManipulator;
 import com.nlbhub.nlb.util.ImageDownscaler;
@@ -532,6 +533,12 @@ public class NonLinearBookFacade implements NLBObservable {
 
     private void exportAdditionalMedia(File exportDir) throws NLBIOException {
         ResourceManager.exportBundledFiles(exportDir);
+        // тема игры — под экран книги (при 1920×1080 — как есть); ручная тема 640x480 — как есть
+        try {
+            ThemeScaler.scale(new File(exportDir, "themes/default"), m_nlb.getScreenSize());
+        } catch (IOException e) {
+            throw new NLBIOException("Error while fitting the theme to the screen size " + m_nlb.getScreenSize(), e);
+        }
     }
 
     /**

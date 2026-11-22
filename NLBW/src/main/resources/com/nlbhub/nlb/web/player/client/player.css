@@ -61,7 +61,8 @@ body.playing { background: #0c0c10; overflow: hidden; }
 .stage-embedded img { display: inline-block; vertical-align: top; }
 .stage-objects { position: absolute; inset: 0; }
 .stage-obj { position: absolute; }
-.stage-obj img { display: block; pointer-events: none; }
+/* картинка — в размер прямоугольника объекта: у книги с экраном не 1920×1080 он × bookScale */
+.stage-obj img { display: block; pointer-events: none; width: 100%; height: 100%; }
 .stage-obj.hit { cursor: pointer; }
 .stage-label { position: absolute; white-space: pre; pointer-events: none; }
 .stage a.link { color: var(--link); text-decoration: none; border: none; }

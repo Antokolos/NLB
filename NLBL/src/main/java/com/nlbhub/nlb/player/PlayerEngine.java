@@ -2212,7 +2212,9 @@ public class PlayerEngine {
         }
         // ExportManager.getRelativeCoords: координаты относительно страницы, пересчитанные на
         // экран 1920×1080, и getTransformedCoords — отсчёт от выбранного угла
-        int[] arm = ScreenPlacement.arm(obj);
+        // в пикселях экрана книги (файл screen главной книги); клиент переводит их в пиксели
+        // темы множителем bookScale
+        int[] arm = ScreenPlacement.arm(obj, obj.getCoordsOrigin(), m_rootBook.getScreenSize());
         p.m_armX = arm[0];
         p.m_armY = arm[1];
         return p;

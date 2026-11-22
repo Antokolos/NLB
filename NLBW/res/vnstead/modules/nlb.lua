@@ -453,6 +453,16 @@ nlb = obj {
             vn:cleanup_scene();
         end
     end;
+    -- Пиксели модулей (шрифты подписей, отступы) в масштабе экрана книги: множитель
+    -- nlb._screen_k пишет в main.lua экспорт книги с размером экрана не 1920×1080
+    -- (2560×1440 — 4/3, 3840×2160 — 2); нет его — 1, всё как прежде
+    px = function(s, v)
+        local k = s._screen_k or 1;
+        if k == 1 then
+            return v;
+        end
+        return math.floor(v * k + 0.5);
+    end;
     theme_root = function(s)
         local theme_name = theme.name();
         return 'themes' .. theme_name:gsub('[\\.]', '/') .. '/';
@@ -637,7 +647,7 @@ _syscall_hud_dark_sparse = menu {
     system_type = true,
     act = function(s)
         vn:set_hud_theme('dark');
-        vn:set_hud_spacing(25);
+        vn:set_hud_spacing(25);  -- в пикселях 1920×1080: vn пересчитывает nlb:px
     end,
     actf = function(s) return s:act(); end
 }

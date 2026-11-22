@@ -69,4 +69,22 @@ public class ScreenThemeTest {
         assertEquals("#000000", t.path("border").asText());
         assertTrue(t.path("text").path("upX").isNull());
     }
+    @Test
+    public void bookScreenScalesOnlyTheNlbTheme() throws Exception {
+        // тема NLB 1920×1080 (без своей темы у книги) и книга 2560×1440: пиксели книги × 0,75
+        com.nlbhub.nlb.api.ScreenSize qhd = new com.nlbhub.nlb.api.ScreenSize(2560, 1440);
+        JsonNode vn = ScreenTheme.load(ScreenTheme.roots(null), true).forBookScreen(qhd).toJson();
+        assertEquals(0.75, vn.path("bookScale").asDouble(), 1e-9);
+        JsonNode std = ScreenTheme.load(ScreenTheme.roots(null), false).forBookScreen(new com.nlbhub.nlb.api.ScreenSize(1280, 720)).toJson();
+        assertEquals(1.5, std.path("bookScale").asDouble(), 1e-9);
+        assertEquals("книга 1920×1080 — как было", 1.0,
+                ScreenTheme.load(ScreenTheme.roots(null), true).forBookScreen(com.nlbhub.nlb.api.ScreenSize.DEFAULT).toJson().path("bookScale").asDouble(), 0);
+
+        // своя тема книги (800×600, как у «Фронтира») рисует картинки в своих пикселях — не трогаем
+        File book = m_temp.newFolder("own");
+        File theme = new File(book, "__theme__");
+        assertTrue(theme.mkdirs());
+        Files.writeString(new File(theme, "theme.ini").toPath(), "scr.w = 800\nscr.h = 600\n", StandardCharsets.UTF_8);
+        assertEquals(1.0, ScreenTheme.load(ScreenTheme.roots(book), false).forBookScreen(qhd).toJson().path("bookScale").asDouble(), 0);
+    }
 }

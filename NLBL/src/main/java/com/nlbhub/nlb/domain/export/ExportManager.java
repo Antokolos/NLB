@@ -93,6 +93,7 @@ public abstract class ExportManager {
     public static final String UTF_16LE = "UTF-16LE";
     public static final String CP1251 = "CP1251";
     private static final String MAIN_DATA_KEY = Constants.MAIN_MODULE_NAME;
+    private final ScreenSize m_screenSize;
     private String m_encoding;
     private Map<String, ExportData> m_exportDataMap;
     private Map<String, Variable.DataType> m_dataTypeMap;
@@ -305,6 +306,7 @@ public abstract class ExportManager {
     protected ExportManager(NonLinearBookImpl nlb, String encoding) throws NLBExportException {
         try {
             m_encoding = encoding;
+            m_screenSize = nlb.getScreenSize();
             m_bookLanguage = nlb.getLanguage() != null ? nlb.getLanguage() : Constants.EMPTY_STRING;
             ExportData mainExportData = (
                     new ExportData(
@@ -488,10 +490,26 @@ public abstract class ExportManager {
         );
     }
 
+    /** Размер экрана книги (файл screen главной книги; по умолчанию 1920×1080) */
+    protected ScreenSize getScreenSize() {
+        return m_screenSize;
+    }
+
+    /**
+     * Пиксели экрана 1920×1080 (раскладка темы и модулей NLB) — на экран книги: × ширина / 1920,
+     * с округлением; при 1920×1080 — то же число
+     */
+    protected int screenPx(int value) {
+        if (ScreenSize.DEFAULT.equals(m_screenSize)) {
+            return value;
+        }
+        return (int) Math.round(value * m_screenSize.scaleFrom(ScreenSize.DEFAULT));
+    }
+
     private String getRelativeCoords(Obj obj) {
-        // координаты относительно страницы, пересчитанные на экран 1920×1080, с отсчётом от
+        // координаты относительно страницы, пересчитанные на экран книги, с отсчётом от
         // выбранного угла — общие правила с веб-плеером и предпросмотром редактора
-        int[] arm = ScreenPlacement.arm(obj);
+        int[] arm = ScreenPlacement.arm(obj, obj.getCoordsOrigin(), m_screenSize);
         return arm[0] + "," + arm[1];
     }
 
