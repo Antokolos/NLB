@@ -499,7 +499,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
                 m_nlbFacade.getMainFacade().getNlb().getImagesDir(),
                 m_imageFileName,
                 applies,
-                "the background will be cut off or stretched"
+                "the background will be cut off"
         );
     }
 

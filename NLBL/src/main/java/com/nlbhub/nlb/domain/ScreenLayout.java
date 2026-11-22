@@ -198,8 +198,8 @@ public final class ScreenLayout {
         }
 
         /**
-         * Фон не того размера: INSTEAD рисует его в своём размере по центру (лишнее обрезано,
-         * вокруг — цвет рамки), NLBNavigator и веб-плеер растягивают на весь экран
+         * Фон не того размера: игра (INSTEAD, NLBNavigator, веб-плеер) рисует его в своём размере по
+         * центру — лишнее обрезано, вокруг — цвет рамки
          */
         public boolean isBackgroundMismatched() {
             return m_background != null && m_background.hasImage()

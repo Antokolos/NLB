@@ -458,8 +458,9 @@ window.NLBScreen = function (ctx) {
     // вне экрана темы (scr.w×scr.h, вписан в 1920×1080) — цвет рамки scr.col.brd, на нём — scr.col.bg
     stage.style.background = t.border || '#000';
     place($('stage-screen'), t.screenArea);
-    // картинка-фон страницы STANDARD заменяет фон темы (theme.gfx.bg в экспорте): вокруг неё — цвет рамки
-    const pageBg = !vn && s.imageIsBackground && !!ctx.imageUrl(s.pageImage);
+    // картинка-фон страницы заменяет фон темы (theme.gfx.bg в экспорте; у VN картинка страницы —
+    // всегда фон): вокруг неё — цвет рамки
+    const pageBg = (vn || s.imageIsBackground) && !!ctx.imageUrl(s.pageImage);
     $('stage-screen').style.background = pageBg ? (t.border || '#000') : t.background;
     // меню — шрифтом меню темы (menu.fnt.name), как в INSTEAD
     document.documentElement.style.setProperty('--menu-font', family(t.menuFont));
@@ -521,8 +522,9 @@ window.NLBScreen = function (ctx) {
   const inWindowPicture = (s, vn, t) => !vn && !s.imageIsBackground && (t.gfxMode === 'fixed' || t.gfxMode === 'embedded');
 
   function renderPicture(s, vn, t, size) {
-    // VN — во весь экран; STANDARD: картинка-фон — как фон INSTEAD (в своём размере с масштабом
-    // темы, по центру экрана темы, вокруг — цвет рамки); scr.gfx.mode float — в области scr.gfx,
+    // VN и картинка-фон STANDARD — как фон INSTEAD (vn.lua, themes.c): в своём размере с масштабом
+    // темы, по центру экрана темы, вокруг — цвет рамки; раньше VN растягивался на весь экран с
+    // искажением (как в GameScreen NLBNavigator до того же исправления); scr.gfx.mode float — в области scr.gfx,
     // вписанной по центру; fixed — в окне текста под заголовком (место задаёт renderStandardText);
     // embedded — в тексте сцены (тоже там), а этот элемент не нужен
     const pic = $('stage-picture');
@@ -531,12 +533,10 @@ window.NLBScreen = function (ctx) {
     if (!url || embedded) { pic.hidden = true; pic.removeAttribute('src'); pic.dataset.key = ''; return; }
     pic.hidden = false;
     pic.style.objectFit = 'fill';
-    if (vn) {
-      place(pic, { x: 0, y: 0, w: W, h: H });
-    } else if (s.imageIsBackground) {
+    if (vn || s.imageIsBackground) {
       const a = t.screenArea;
       const w = size ? size.w * t.scale : a.w, h = size ? size.h * t.scale : a.h;
-      place(pic, { x: a.x + (a.w - w) / 2, y: a.y + (a.h - h) / 2, w: w, h: h });
+      place(pic, { x: a.x + Math.floor((a.w - w) / 2), y: a.y + Math.floor((a.h - h) / 2), w: w, h: h });
     } else if (t.gfxMode === 'fixed') {
       const r = fitPicture(size, t);
       if (r) { pic.style.width = r.w + 'px'; pic.style.height = r.h + 'px'; }

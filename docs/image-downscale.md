@@ -43,8 +43,8 @@ Media Library картинок (свойства страницы или объ�
 (1086×1448): …», если картинка больше экрана и будет видна не целиком:
 - **объект** — если он графический (спрайт VN): «the sprite will be cut off»;
 - **страница** — если её тема не STANDARD (DEFAULT экспорт в VN играет как VN) или стоит флажок
-  «Background» (фон рисуется в своём размере): «the background will be cut off or stretched»
-  (INSTEAD обрезает, NLBNavigator и веб-плеер растягивают). У страницы STANDARD без флажка
+  «Background» (фон рисуется в своём размере): «the background will be cut off» (INSTEAD,
+  NLBNavigator и веб-плеер — одинаково). У страницы STANDARD без флажка
   картинка вписывается в свою область — предупреждения нет.
 
 Предупреждение обновляется при выборе картинки и при смене флажков «Graphical», «Background» и
