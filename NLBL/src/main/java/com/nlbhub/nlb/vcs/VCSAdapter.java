@@ -244,6 +244,18 @@ public interface VCSAdapter {
     }
 
     /**
+     * Вернуть файлы книги (paths — относительно папки книги) такими, какими они были в версии:
+     * before — до версии versionId (в предыдущей), иначе — в ней самой; versionId == null — правки,
+     * ещё не вошедшие в Commit: before — последняя версия (HEAD). Файла там не было — он удаляется.
+     * Возвращённое сразу отмечается в индексе, как сохранённое редактором: в истории оно — среди
+     * правок для следующего Commit. Книгу в редакторе после этого нужно перечитать
+     */
+    public default void restoreVersionFiles(String versionId, java.util.List<String> paths, boolean before)
+            throws NLBVCSException {
+        throw new NLBVCSException("The editor is started without version control (novcs): nothing to restore");
+    }
+
+    /**
      * Текущая ветка книги (null — нет VCS или ветки): окно истории предупреждает, если она не
      * основная
      */

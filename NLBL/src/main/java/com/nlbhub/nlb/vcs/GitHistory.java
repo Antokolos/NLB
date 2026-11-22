@@ -230,6 +230,61 @@ final class GitHistory {
     }
 
     /**
+     * Вернуть файлы такими, какими они были в версии (см. VCSAdapter.restoreVersionFiles): записать
+     * содержимое из дерева версии или удалить, если файла там не было, и отметить в индексе
+     */
+    static void restore(final org.eclipse.jgit.api.Git git, final String versionId, final List<String> paths,
+                        final boolean before) throws NLBVCSException {
+        if (git == null || paths.isEmpty()) {
+            return;
+        }
+        final Repository repo = git.getRepository();
+        final String revision = versionId == null ? Constants.HEAD : before ? versionId + "^" : versionId;
+        try (ObjectReader reader = repo.newObjectReader(); RevWalk walk = new RevWalk(reader)) {
+            // нет предыдущей версии (первая версия книги) — до неё файлов не было
+            final ObjectId commit = repo.resolve(revision);
+            final org.eclipse.jgit.revwalk.RevTree tree = commit == null ? null : walk.parseCommit(commit).getTree();
+            final java.io.File workTree = repo.getWorkTree();
+            boolean added = false;
+            boolean removed = false;
+            final org.eclipse.jgit.api.AddCommand add = git.add();
+            final org.eclipse.jgit.api.RmCommand rm = git.rm().setCached(true);
+            for (String path : paths) {
+                final java.io.File file = new java.io.File(workTree, path);
+                final TreeWalk found = tree == null ? null : TreeWalk.forPath(reader, path, tree);
+                if (found != null && found.getFileMode(0) != FileMode.GITLINK
+                        && found.getFileMode(0) != FileMode.TREE) {
+                    final byte[] bytes = reader.open(found.getObjectId(0)).getBytes();
+                    final java.io.File parent = file.getParentFile();
+                    if (!parent.isDirectory() && !parent.mkdirs()) {
+                        throw new NLBVCSException("Cannot create the folder " + parent);
+                    }
+                    java.nio.file.Files.write(file.toPath(), bytes);
+                    add.addFilepattern(path);
+                    added = true;
+                } else if (found == null) {
+                    if (file.isFile()) {
+                        java.nio.file.Files.delete(file.toPath());
+                    }
+                    rm.addFilepattern(path);
+                    removed = true;
+                }
+                if (found != null) {
+                    found.close();
+                }
+            }
+            if (added) {
+                add.call();
+            }
+            if (removed) {
+                rm.call();
+            }
+        } catch (IOException | org.eclipse.jgit.api.errors.GitAPIException e) {
+            throw new NLBVCSException("Cannot restore the files of the book: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Содержимое объекта по id; нет, не id или больше maxBytes — null
      */
     static byte[] object(final Repository repo, final String objectId, final int maxBytes) throws NLBVCSException {

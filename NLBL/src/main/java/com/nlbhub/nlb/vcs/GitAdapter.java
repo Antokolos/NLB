@@ -683,6 +683,13 @@ public class GitAdapter implements VCSAdapter {
     }
 
     @Override
+    public synchronized void restoreVersionFiles(final String versionId, final List<String> paths, final boolean before)
+            throws NLBVCSException {
+        awaitStatuses();
+        GitHistory.restore(m_git, versionId, paths, before);
+    }
+
+    @Override
     public String getBranchName() throws NLBVCSException {
         if (m_localRepo == null) {
             return null;
