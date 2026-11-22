@@ -230,6 +230,24 @@ final class GitHistory {
     }
 
     /**
+     * Содержимое объекта по id; нет, не id или больше maxBytes — null
+     */
+    static byte[] object(final Repository repo, final String objectId, final int maxBytes) throws NLBVCSException {
+        if (repo == null || objectId == null || !ObjectId.isId(objectId)) {
+            return null;
+        }
+        try (ObjectReader reader = repo.newObjectReader()) {
+            final ObjectId id = ObjectId.fromString(objectId);
+            if (!reader.has(id) || reader.getObjectSize(id, Constants.OBJ_BLOB) > maxBytes) {
+                return null;
+            }
+            return reader.open(id).getCachedBytes(maxBytes);
+        } catch (IOException e) {
+            throw new NLBVCSException("Cannot read the file of the book version", e);
+        }
+    }
+
+    /**
      * Пути всех файлов версии (относительно папки книги); версии нет — пусто
      */
     static List<String> files(final Repository repo, final String versionId) throws NLBVCSException {

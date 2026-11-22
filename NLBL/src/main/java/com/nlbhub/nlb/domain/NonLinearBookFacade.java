@@ -464,6 +464,20 @@ public class NonLinearBookFacade implements NLBObservable {
     }
 
     /**
+     * Содержимое файла версии по id (миниатюры картинок); нет или больше maxBytes — null
+     */
+    public byte[] readVersionObject(final String objectId, final int maxBytes) throws NLBVCSException {
+        return getMainFacade().m_vcsAdapter.readVersionObject(objectId, maxBytes);
+    }
+
+    /**
+     * Текущая ветка книги; null — нет VCS
+     */
+    public String getBranchName() throws NLBVCSException {
+        return getMainFacade().m_vcsAdapter.getBranchName();
+    }
+
+    /**
      * Изменения версии по элементам книги ({@link BookHistory}); versionId == null — сохранённые,
      * но не закоммиченные правки (войдут в следующий Commit)
      */

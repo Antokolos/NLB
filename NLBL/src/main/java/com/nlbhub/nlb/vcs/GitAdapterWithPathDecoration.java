@@ -180,6 +180,16 @@ public class GitAdapterWithPathDecoration implements VCSAdapter {
     }
 
     @Override
+    public byte[] readVersionObject(String objectId, int maxBytes) throws NLBVCSException {
+        return m_gitAdapter.readVersionObject(objectId, maxBytes);
+    }
+
+    @Override
+    public String getBranchName() throws NLBVCSException {
+        return m_gitAdapter.getBranchName();
+    }
+
+    @Override
     public String getRemoteUrl() {
         return m_gitAdapter.getRemoteUrl();
     }

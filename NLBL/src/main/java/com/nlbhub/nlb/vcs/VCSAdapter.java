@@ -236,6 +236,22 @@ public interface VCSAdapter {
     }
 
     /**
+     * Содержимое файла версии по его id ({@link BookFileChange#getBeforeObjectId()} и
+     * getAfterObjectId): миниатюры картинок «было / стало». Нет или больше maxBytes — null
+     */
+    public default byte[] readVersionObject(String objectId, int maxBytes) throws NLBVCSException {
+        return null;
+    }
+
+    /**
+     * Текущая ветка книги (null — нет VCS или ветки): окно истории предупреждает, если она не
+     * основная
+     */
+    public default String getBranchName() throws NLBVCSException {
+        return null;
+    }
+
+    /**
      * Скачать книгу с сервера в новую папку path вместе с её внешними модулями (подмодулями, на
      * любую глубину), без установки git. userName == null — без учётных данных (открытый
      * репозиторий по https); по ssh — ключи и вопросы, как при pull/push. Не удалось — папка,

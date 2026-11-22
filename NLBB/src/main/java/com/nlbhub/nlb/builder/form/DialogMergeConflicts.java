@@ -8,10 +8,6 @@ import com.nlbhub.nlb.vcs.ConflictResolution;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,8 +15,6 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * «Слияние правок»: pull нашёл поля книги, изменённые и у автора, и на сервере. Слева — список
@@ -30,8 +24,6 @@ import java.util.regex.Pattern;
  * всё, слить нельзя; «Cancel pull» — ничего не менять.
  */
 final class DialogMergeConflicts {
-    private static final Color REMOVED = new Color(0xFFD6D6);
-    private static final Color ADDED = new Color(0xD3F5D3);
 
     /**
      * Решение по полю и итоговый текст (для правки)
@@ -350,66 +342,12 @@ final class DialogMergeConflicts {
         pane.setCaretPosition(0);
     }
 
-    private static final Pattern TOKEN = Pattern.compile("\\s+|[\\p{L}\\p{N}_]+|[^\\s\\p{L}\\p{N}_]");
-
     /**
      * Обе версии с подсветкой различий по словам: в своей — чего нет на сервере, в версии
-     * сервера — чего нет в своей (общая часть — наибольшая общая подпоследовательность слов)
+     * сервера — чего нет в своей ({@link WordDiff})
      */
     private void highlight(String mine, String theirs) {
-        final List<String> a = tokens(mine);
-        final List<String> b = tokens(theirs);
-        final boolean[] commonA = new boolean[a.size()];
-        final boolean[] commonB = new boolean[b.size()];
-        if ((long) a.size() * b.size() <= 4_000_000L) {
-            final int[][] lcs = new int[a.size() + 1][b.size() + 1];
-            for (int i = a.size() - 1; i >= 0; i--) {
-                for (int j = b.size() - 1; j >= 0; j--) {
-                    lcs[i][j] = a.get(i).equals(b.get(j)) ? lcs[i + 1][j + 1] + 1 : Math.max(lcs[i + 1][j], lcs[i][j + 1]);
-                }
-            }
-            int i = 0;
-            int j = 0;
-            while (i < a.size() && j < b.size()) {
-                if (a.get(i).equals(b.get(j))) {
-                    commonA[i++] = true;
-                    commonB[j++] = true;
-                } else if (lcs[i + 1][j] >= lcs[i][j + 1]) {
-                    i++;
-                } else {
-                    j++;
-                }
-            }
-        }
-        fill(m_mine, a, commonA, REMOVED);
-        fill(m_theirs, b, commonB, ADDED);
-    }
-
-    private static void fill(JTextPane pane, List<String> tokens, boolean[] common, Color color) {
-        pane.setText("");
-        final StyledDocument doc = pane.getStyledDocument();
-        final SimpleAttributeSet plain = new SimpleAttributeSet();
-        final SimpleAttributeSet marked = new SimpleAttributeSet();
-        StyleConstants.setBackground(marked, color);
-        try {
-            for (int i = 0; i < tokens.size(); i++) {
-                final String token = tokens.get(i);
-                final boolean space = token.trim().isEmpty();
-                doc.insertString(doc.getLength(), token, common[i] || space ? plain : marked);
-            }
-        } catch (BadLocationException e) {
-            pane.setText(String.join("", tokens));
-        }
-        pane.setCaretPosition(0);
-    }
-
-    private static List<String> tokens(String text) {
-        final List<String> result = new ArrayList<>();
-        final Matcher matcher = TOKEN.matcher(text == null ? "" : text);
-        while (matcher.find()) {
-            result.add(matcher.group());
-        }
-        return result;
+        WordDiff.show(m_mine, mine, m_theirs, theirs);
     }
 
     private static String escape(String text) {

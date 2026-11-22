@@ -678,6 +678,23 @@ public class GitAdapter implements VCSAdapter {
     }
 
     @Override
+    public synchronized byte[] readVersionObject(final String objectId, final int maxBytes) throws NLBVCSException {
+        return GitHistory.object(m_localRepo, objectId, maxBytes);
+    }
+
+    @Override
+    public String getBranchName() throws NLBVCSException {
+        if (m_localRepo == null) {
+            return null;
+        }
+        try {
+            return m_localRepo.getBranch();
+        } catch (IOException e) {
+            throw new NLBVCSException("Cannot read the branch of the book", e);
+        }
+    }
+
+    @Override
     public boolean canSetCommitter() {
         return m_localRepo != null;
     }
