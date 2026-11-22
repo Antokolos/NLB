@@ -59,7 +59,10 @@ body.playing { background: #0c0c10; overflow: hidden; }
 /* картинка в тексте сцены (scr.gfx.mode = embedded) */
 .stage-embedded { text-align: center; }
 .stage-embedded img { display: inline-block; vertical-align: top; }
-.stage-objects { position: absolute; inset: 0; }
+/* свой контекст наложения: z-index спрайтов (порядок объектов на странице) действует только внутри
+   слоя, и все спрайты — под подложкой и текстом, как в INSTEAD. Без него спрайт с z-index 1 и выше
+   поднимался над окном текста (у того z-index не задан) */
+.stage-objects { position: absolute; inset: 0; z-index: 0; }
 .stage-obj { position: absolute; }
 /* картинка — в размер прямоугольника объекта: у книги с экраном не 1920×1080 он × bookScale */
 .stage-obj img { display: block; pointer-events: none; width: 100%; height: 100%; }
