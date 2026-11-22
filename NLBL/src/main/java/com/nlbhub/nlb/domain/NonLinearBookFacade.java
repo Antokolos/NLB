@@ -682,6 +682,23 @@ public class NonLinearBookFacade implements NLBObservable {
         notifyObservers();
     }
 
+    /**
+     * Сменить размер экрана книги (главной; модули берут её размер) и, если rescaleOffsets,
+     * пересчитать смещения объектов тем же множителем — одним шагом undo
+     */
+    public void changeScreenSize(final ScreenSize screenSize, final boolean rescaleOffsets) {
+        if (refuseChange(true) || screenSize.equals(m_nlb.getScreenSize())) {
+            return;
+        }
+        m_undoManager.executeAndStore(m_nlb.createChangeScreenSizeCommand(screenSize, rescaleOffsets));
+        notifyObservers();
+    }
+
+    /** Сколько объектов затронет пересчёт смещений при смене размера на screenSize */
+    public int countOffsetChanges(final ScreenSize screenSize) {
+        return m_nlb.countOffsetChanges(screenSize);
+    }
+
     public void updatePage(
             final Page page,
             final String imageFileName,

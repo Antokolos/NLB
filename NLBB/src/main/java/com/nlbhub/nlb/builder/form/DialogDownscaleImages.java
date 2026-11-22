@@ -2,6 +2,7 @@ package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.MediaFile;
 import com.nlbhub.nlb.api.NonLinearBook;
+import com.nlbhub.nlb.api.ScreenSize;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
 import com.nlbhub.nlb.util.ImageDownscaler;
 import com.nlbhub.nlb.util.StringHelper;
@@ -25,9 +26,6 @@ import java.util.concurrent.ExecutionException;
  * перезаписываются только после «Downscale».
  */
 public final class DialogDownscaleImages {
-    /** Экран VN по умолчанию (тема NLB); позже — размер экрана из свойств книги */
-    static final int DEFAULT_MAX_WIDTH = 1920;
-    static final int DEFAULT_MAX_HEIGHT = 1080;
     /**
      * Качество JPG при перезаписи: это исходник книги, сжимает его потом экспорт (пресеты
      * .preset относятся к PNG -> JPG при экспорте), поэтому — почти без потерь
@@ -38,8 +36,9 @@ public final class DialogDownscaleImages {
     private final JDialog m_dialog;
     private final List<String> m_group;
     private final Map<String, String> m_notes = new HashMap<>();
-    private final JSpinner m_maxWidth = new JSpinner(new SpinnerNumberModel(DEFAULT_MAX_WIDTH, 0, 100000, 10));
-    private final JSpinner m_maxHeight = new JSpinner(new SpinnerNumberModel(DEFAULT_MAX_HEIGHT, 0, 100000, 10));
+    /** По умолчанию — вписать в экран книги (свойства книги, по умолчанию 1920×1080) */
+    private final JSpinner m_maxWidth;
+    private final JSpinner m_maxHeight;
     private final DefaultTableModel m_model = new DefaultTableModel(new Object[]{"File", "Size", "New size", "Note"}, 0) {
         @Override
         public boolean isCellEditable(int row, int column) {
@@ -66,6 +65,9 @@ public final class DialogDownscaleImages {
     private DialogDownscaleImages(Component parent, NonLinearBookFacade facade, List<String> selected) {
         m_facade = facade;
         final NonLinearBook book = facade.getNlb();
+        final ScreenSize screen = book.getScreenSize();
+        m_maxWidth = new JSpinner(new SpinnerNumberModel(screen.getWidth(), 0, 100000, 10));
+        m_maxHeight = new JSpinner(new SpinnerNumberModel(screen.getHeight(), 0, 100000, 10));
         final List<MediaFile> imageFiles = book.getImageFiles();
         m_group = ImageDownscaler.group(selected, imageFiles, ImageDownscaler.animatedImageNames(book));
         describeAdded(selected, imageFiles);

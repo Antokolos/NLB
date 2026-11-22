@@ -497,6 +497,7 @@ public class DialogPageProperties extends JDialog implements NLBObserver {
         ImageSizeWarning.show(
                 m_imageFileNameLabel,
                 m_nlbFacade.getMainFacade().getNlb().getImagesDir(),
+                m_nlbFacade.getMainFacade().getNlb().getScreenSize(),
                 m_imageFileName,
                 applies,
                 "the background will be cut off"

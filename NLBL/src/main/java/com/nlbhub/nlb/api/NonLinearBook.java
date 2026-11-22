@@ -301,6 +301,14 @@ public interface NonLinearBook {
 
     public Theme getTheme();
 
+    /**
+     * Размер экрана игры (файл screen; нет — 1920×1080). Один на всю игру: у модулей — размер
+     * главной книги
+     */
+    default ScreenSize getScreenSize() {
+        return ScreenSize.DEFAULT;
+    }
+
     public boolean isFullAutowire();
 
     public boolean isSuppressMedia();

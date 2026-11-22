@@ -91,6 +91,8 @@ public class NonLinearBookImpl implements NonLinearBook {
     };
     private static final String STARTPOINT_FILE_NAME = "startpoint";
     private static final String THEME_FILE_NAME = "theme";
+    /** Размер экрана игры «1280x720»; нет файла — 1920×1080 (ScreenSize.DEFAULT) */
+    private static final String SCREEN_FILE_NAME = "screen";
     private static final String LANGUAGE_FILE_NAME = "language";
     private static final String LICENSE_FILE_NAME = "license";
     private static final String FULLAUTO_FILE_NAME = "fullauto";
@@ -125,6 +127,8 @@ public class NonLinearBookImpl implements NonLinearBook {
      */
     private String m_startPoint;
     private Theme m_theme;
+    /** Только у главной книги (isMainBook); модули берут размер у неё (getScreenSize) */
+    private ScreenSize m_screenSize = ScreenSize.DEFAULT;
     private String m_language;
     private String m_license;
     private String m_title;
@@ -2038,6 +2042,155 @@ public class NonLinearBookImpl implements NonLinearBook {
         }
     }
 
+    /**
+     * Смена размера экрана книги и, по желанию, пересчёт смещений объектов тем же множителем —
+     * одним шагом undo. Пиксели экрана сами не пересчитываются: offset корневых и вложенных
+     * объектов, а у вложенных без offset — их координаты внутри родителя на холсте (iarm). Место
+     * по холсту у корневых объектов без offset пересчитывается при показе само (ScreenPlacement).
+     */
+    class ChangeScreenSizeCommand extends NotifyingCommand {
+        private final ScreenSize m_prevSize;
+        private final ScreenSize m_newSize;
+        private final List<OffsetChange> m_changes;
+
+        ChangeScreenSizeCommand(final ScreenSize newSize, final boolean rescaleOffsets) {
+            m_prevSize = m_screenSize;
+            m_newSize = newSize;
+            m_changes = rescaleOffsets ? collectOffsetChanges(newSize.scaleFrom(m_prevSize)) : new ArrayList<>();
+        }
+
+        @Override
+        public void execute() {
+            m_screenSize = m_newSize;
+            for (OffsetChange change : m_changes) {
+                change.apply(true);
+            }
+            notifyAllChildren();
+        }
+
+        @Override
+        public void revert() {
+            m_screenSize = m_prevSize;
+            for (int i = m_changes.size() - 1; i >= 0; i--) {
+                m_changes.get(i).apply(false);
+            }
+            notifyAllChildren();
+        }
+    }
+
+    /** Смещение объекта до и после пересчёта (offset и/или координаты на холсте) */
+    static final class OffsetChange {
+        final ObjImpl m_obj;
+        final String m_oldOffset;
+        final String m_newOffset;
+        final float m_oldLeft;
+        final float m_oldTop;
+        final float m_newLeft;
+        final float m_newTop;
+
+        OffsetChange(ObjImpl obj, String newOffset, float newLeft, float newTop) {
+            m_obj = obj;
+            m_oldOffset = obj.getOffset();
+            m_newOffset = newOffset;
+            m_oldLeft = obj.getCoords().getLeft();
+            m_oldTop = obj.getCoords().getTop();
+            m_newLeft = newLeft;
+            m_newTop = newTop;
+        }
+
+        void apply(boolean forward) {
+            m_obj.setOffset(forward ? m_newOffset : m_oldOffset);
+            m_obj.getCoords().setLeft(forward ? m_newLeft : m_oldLeft);
+            m_obj.getCoords().setTop(forward ? m_newTop : m_oldTop);
+            m_obj.notifyObservers();
+        }
+    }
+
+    /**
+     * Что пересчитать при множителе k, в этой книге и её внутренних модулях: offset «x,y» любого
+     * объекта; у вложенного в объект без offset — его место внутри родителя на холсте (вложенные
+     * в него сдвигаются вместе с ним — их место внутри него пересчитывается своим шагом)
+     */
+    List<OffsetChange> collectOffsetChanges(final double k) {
+        final List<OffsetChange> result = new ArrayList<>();
+        // новые места на холсте считаются от старых мест родителей: сначала все старые координаты
+        final Map<String, float[]> oldCoords = new HashMap<>();
+        for (ObjImpl obj : m_objs.values()) {
+            oldCoords.put(obj.getId(), new float[]{obj.getCoords().getLeft(), obj.getCoords().getTop()});
+        }
+        final Map<String, float[]> newCoords = new HashMap<>();
+        for (ObjImpl obj : m_objs.values()) {
+            if (!obj.isDeleted()) {
+                newCoordsOf(obj, k, oldCoords, newCoords, new HashSet<>());
+            }
+        }
+        for (ObjImpl obj : m_objs.values()) {
+            if (obj.isDeleted()) {
+                continue;
+            }
+            final int[] offset = ScreenPlacement.parsePair(obj.getOffset());
+            final String newOffset = (offset != null)
+                    ? Math.round(offset[0] * k) + "," + Math.round(offset[1] * k)
+                    : obj.getOffset();
+            final float[] old = oldCoords.get(obj.getId());
+            final float[] moved = newCoords.get(obj.getId());
+            final boolean offsetChanged = offset != null && !newOffset.equals(obj.getOffset());
+            final boolean coordsChanged = moved != null && (moved[0] != old[0] || moved[1] != old[1]);
+            if (offsetChanged || coordsChanged) {
+                result.add(new OffsetChange(obj, newOffset, moved != null ? moved[0] : old[0], moved != null ? moved[1] : old[1]));
+            }
+        }
+        for (PageImpl page : m_pages.values()) {
+            NonLinearBookImpl module = page.getModuleImpl();
+            if (!page.isDeleted() && module != null && !module.isEmpty()) {
+                result.addAll(module.collectOffsetChanges(k));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Новое место объекта на холсте: у вложенного в объект без offset — место родителя (новое)
+     * плюс его место внутри родителя × k; у остальных — прежнее
+     */
+    private float[] newCoordsOf(
+            final ObjImpl obj, final double k, final Map<String, float[]> oldCoords,
+            final Map<String, float[]> newCoords, final Set<String> visiting
+    ) {
+        float[] done = newCoords.get(obj.getId());
+        if (done != null) {
+            return done;
+        }
+        final float[] old = oldCoords.get(obj.getId());
+        float[] result = old;
+        final ObjImpl parent = m_objs.get(obj.getContainerId());
+        if (parent != null && !parent.isDeleted() && visiting.add(obj.getId())) {
+            final float[] parentOld = oldCoords.get(parent.getId());
+            final float[] parentNew = newCoordsOf(parent, k, oldCoords, newCoords, visiting);
+            if (ScreenPlacement.parsePair(obj.getOffset()) == null) {
+                // iarm — место внутри родителя на холсте: в пикселях, × k
+                result = new float[]{
+                        parentNew[0] + Math.round((old[0] - parentOld[0]) * k),
+                        parentNew[1] + Math.round((old[1] - parentOld[1]) * k)
+                };
+            } else {
+                // с offset место на холсте на экран не влияет — двигаем вместе с родителем
+                result = new float[]{old[0] + parentNew[0] - parentOld[0], old[1] + parentNew[1] - parentOld[1]};
+            }
+        }
+        newCoords.put(obj.getId(), result);
+        return result;
+    }
+
+    /** Сколько объектов затронет пересчёт смещений при смене размера (для вопроса в редакторе) */
+    public int countOffsetChanges(final ScreenSize newSize) {
+        return collectOffsetChanges(newSize.scaleFrom(m_screenSize)).size();
+    }
+
+    ChangeScreenSizeCommand createChangeScreenSizeCommand(final ScreenSize newSize, final boolean rescaleOffsets) {
+        return new ChangeScreenSizeCommand(newSize, rescaleOffsets);
+    }
+
     class PasteCommand extends NotifyingCommand {
         private CommandChainCommand m_commandChain = new CommandChainCommand();
 
@@ -2927,6 +3080,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_license = operand.getLicense();
         if (overwriteTheme) {
             m_theme = operand.getTheme();
+            m_screenSize = operand.getScreenSize();
         }
         m_fullAutowire = operand.isFullAutowire();
         m_suppressMedia = operand.isSuppressMedia();
@@ -2981,6 +3135,7 @@ public class NonLinearBookImpl implements NonLinearBook {
         m_language = (m_parentNLB != null) ? m_parentNLB.getLanguage() : DEFAULT_LANGUAGE;
         m_license = (m_parentNLB != null) ? m_parentNLB.getLicense() : DEFAULT_LICENSE;
         m_theme = DEFAULT_THEME;
+        m_screenSize = ScreenSize.DEFAULT;
         m_title = (m_parentNLB != null) ? m_parentNLB.getTitle() : DEFAULT_TITLE;
         m_author = (m_parentNLB != null) ? m_parentNLB.getAuthor() : DEFAULT_AUTHOR;
         m_version = (m_parentNLB != null) ? m_parentNLB.getVersion() : DEFAULT_VERSION;
@@ -3142,6 +3297,11 @@ public class NonLinearBookImpl implements NonLinearBook {
     @Override
     public Theme getTheme() {
         return m_theme;
+    }
+
+    @Override
+    public ScreenSize getScreenSize() {
+        return isMainBook() ? m_screenSize : m_parentNLB.getScreenSize();
     }
 
     @Override
@@ -3629,6 +3789,9 @@ public class NonLinearBookImpl implements NonLinearBook {
                         THEME_FILE_NAME,
                         DEFAULT_THEME.name()
                 )
+        );
+        m_screenSize = ScreenSize.parse(
+                FileManipulator.getOptionalFileAsString(rootDir, SCREEN_FILE_NAME, ScreenSize.DEFAULT.toString())
         );
         m_fullAutowire = "true".equals(
                 FileManipulator.getOptionalFileAsString(
@@ -4385,6 +4548,10 @@ public class NonLinearBookImpl implements NonLinearBook {
         fileManipulator.writeOptionalString(rootDir, STARTPOINT_FILE_NAME, m_startPoint, DEFAULT_STARTPOINT);
         fileManipulator.writeOptionalString(rootDir, PERFECT_GAME_ACHIEVEMENT_FILE_NAME, m_perfectGameAchievementName, DEFAULT_PERFECT_GAME_ACHIEVEMENT_NAME);
         fileManipulator.writeOptionalString(rootDir, THEME_FILE_NAME, m_theme.name(), DEFAULT_THEME.name());
+        if (isMainBook()) {
+            // размер экрана — свойство всей игры: пишет только главная книга, по умолчанию — без файла
+            fileManipulator.writeOptionalString(rootDir, SCREEN_FILE_NAME, m_screenSize.toString(), ScreenSize.DEFAULT.toString());
+        }
         if (m_parentNLB != null) {
             fileManipulator.writeOptionalString(
                     rootDir,

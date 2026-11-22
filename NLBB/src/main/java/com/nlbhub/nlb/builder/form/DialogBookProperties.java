@@ -39,6 +39,7 @@
 package com.nlbhub.nlb.builder.form;
 
 import com.nlbhub.nlb.api.NonLinearBook;
+import com.nlbhub.nlb.api.ScreenSize;
 import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.builder.util.LanguageHelper;
 import com.nlbhub.nlb.domain.NonLinearBookFacade;
@@ -48,6 +49,8 @@ import com.nlbhub.nlb.vcs.Author;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DialogBookProperties extends JDialog {
     private NonLinearBookFacade m_nlbFacade;
@@ -67,6 +70,9 @@ public class DialogBookProperties extends JDialog {
     private JTextField m_titleTextField;
     private JTextField m_perfectGameAchievementTextField;
     private JComboBox m_themeComboBox;
+    /** Размер экрана игры (ScreenSize.PRESETS, все 16:9; файл screen книги) */
+    private JComboBox<String> m_screenSizeComboBox;
+    private final List<ScreenSize> m_screenSizes = new ArrayList<>();
     /**
      * Имя и e-mail для коммитов из редактора — не свойства книги, а настройки git (user.name,
      * user.email) в .git/config её клона: у каждого соавтора свои. Показаны действующие (из
@@ -133,6 +139,19 @@ public class DialogBookProperties extends JDialog {
         }
         m_themeComboBox.setModel(themeComboboxModel);
         m_themeComboBox.setSelectedItem(nonLinearBook.getTheme());
+        // размер экрана — главной книги (у модулей — её); размер не из списка (файл правили
+        // вручную) тоже показываем, чтобы OK его не сбрасывал
+        final ScreenSize current = m_nlbFacade.getMainFacade().getNlb().getScreenSize();
+        m_screenSizes.addAll(ScreenSize.PRESETS);
+        if (!m_screenSizes.contains(current)) {
+            m_screenSizes.add(current);
+        }
+        final DefaultComboBoxModel<String> screenModel = new DefaultComboBoxModel<>();
+        for (ScreenSize size : m_screenSizes) {
+            screenModel.addElement(size.getWidth() + "×" + size.getHeight() + (size.equals(ScreenSize.DEFAULT) ? " (default)" : ""));
+        }
+        m_screenSizeComboBox.setModel(screenModel);
+        m_screenSizeComboBox.setSelectedIndex(m_screenSizes.indexOf(current));
         m_committer = m_nlbFacade.getCommitter();
         m_commitAuthorTextField.setText(m_committer != null ? m_committer.getName() : "");
         m_commitEmailTextField.setText(m_committer != null ? m_committer.getEmail() : "");
@@ -165,6 +184,32 @@ public class DialogBookProperties extends JDialog {
         if (language == null) {
             return;
         }
+        // размер экрана: смещения объектов в пикселях экрана сами не пересчитываются — спросить
+        final NonLinearBookFacade mainFacade = m_nlbFacade.getMainFacade();
+        final ScreenSize oldSize = mainFacade.getNlb().getScreenSize();
+        final ScreenSize newSize = m_screenSizes.get(Math.max(0, m_screenSizeComboBox.getSelectedIndex()));
+        boolean rescaleOffsets = false;
+        if (!newSize.equals(oldSize)) {
+            final int count = mainFacade.countOffsetChanges(newSize);
+            if (count > 0) {
+                final String k = new java.text.DecimalFormat("0.##").format(newSize.scaleFrom(oldSize));
+                final int answer = JOptionPane.showConfirmDialog(
+                        this,
+                        "<html>Screen size changes from " + oldSize.getWidth() + "×" + oldSize.getHeight()
+                                + " to " + newSize.getWidth() + "×" + newSize.getHeight() + ".<br>"
+                                + count + " object(s) are placed in screen pixels (offset, position inside a parent"
+                                + " object).<br>Rescale them ×" + k + " so that they stay in place?<br><br>"
+                                + "Pictures are not rescaled: make them for the new size.</html>",
+                        "Screen size",
+                        JOptionPane.YES_NO_CANCEL_OPTION,
+                        JOptionPane.QUESTION_MESSAGE
+                );
+                if (answer == JOptionPane.CANCEL_OPTION || answer == JOptionPane.CLOSED_OPTION) {
+                    return;
+                }
+                rescaleOffsets = answer == JOptionPane.YES_OPTION;
+            }
+        }
         m_nlbFacade.updateBookProperties(
                 m_licenseTextArea.getText(),
                 (Theme) m_themeComboBox.getSelectedItem(),
@@ -180,6 +225,9 @@ public class DialogBookProperties extends JDialog {
                 m_choiceLinksCheckBox.isSelected(),
                 m_propagateToSubmodulesCheckBox.isSelected()
         );
+        if (!newSize.equals(oldSize)) {
+            mainFacade.changeScreenSize(newSize, rescaleOffsets);
+        }
         // имя и e-mail для коммитов — в .git/config книги, только если их поменяли (иначе общие
         // настройки git, показанные в полях, переписались бы в настройки книги)
         final String name = m_commitAuthorTextField.getText().trim();

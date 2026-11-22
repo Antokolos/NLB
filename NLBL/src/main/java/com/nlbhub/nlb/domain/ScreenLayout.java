@@ -43,6 +43,7 @@ import com.nlbhub.nlb.api.MediaFile;
 import com.nlbhub.nlb.api.NonLinearBook;
 import com.nlbhub.nlb.api.Obj;
 import com.nlbhub.nlb.api.Page;
+import com.nlbhub.nlb.api.ScreenSize;
 import com.nlbhub.nlb.api.Theme;
 import com.nlbhub.nlb.domain.export.ExportManager;
 import com.nlbhub.nlb.util.ImageDownscaler;
@@ -59,7 +60,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 
 /**
- * Раскладка экрана VN 1920×1080 для предпросмотра «как на экране» в редакторе: фон страницы и
+ * Раскладка экрана VN (размер экрана книги, по умолчанию 1920×1080) для предпросмотра «как на экране» в редакторе: фон страницы и
  * спрайты её графических объектов — прямоугольники в координатах экрана (могут выходить за него:
  * так видно, что обрежется).
  * <p>
@@ -74,8 +75,6 @@ import java.util.regex.Matcher;
  * первая.
  */
 public final class ScreenLayout {
-    public static final int SCREEN_WIDTH = ScreenPlacement.SCREEN_WIDTH;
-    public static final int SCREEN_HEIGHT = ScreenPlacement.SCREEN_HEIGHT;
 
     private ScreenLayout() {
     }
@@ -93,8 +92,9 @@ public final class ScreenLayout {
         private final int m_y;
         private final int m_width;
         private final int m_height;
+        private final ScreenSize m_screen;
 
-        Element(Kind kind, String objId, String parentId, String label, File file, int x, int y, int width, int height) {
+        Element(Kind kind, String objId, String parentId, String label, File file, int x, int y, int width, int height, ScreenSize screen) {
             m_kind = kind;
             m_objId = objId;
             m_parentId = parentId;
@@ -104,6 +104,7 @@ public final class ScreenLayout {
             m_y = y;
             m_width = width;
             m_height = height;
+            m_screen = screen;
         }
 
         public Kind getKind() {
@@ -155,7 +156,7 @@ public final class ScreenLayout {
         }
 
         public int overflowBottom() {
-            return Math.max(0, m_y + m_height - SCREEN_HEIGHT);
+            return Math.max(0, m_y + m_height - m_screen.getHeight());
         }
 
         public int overflowLeft() {
@@ -163,7 +164,7 @@ public final class ScreenLayout {
         }
 
         public int overflowRight() {
-            return Math.max(0, m_x + m_width - SCREEN_WIDTH);
+            return Math.max(0, m_x + m_width - m_screen.getWidth());
         }
 
         /** Часть картинки за краем экрана — в игре не видна */
@@ -174,14 +175,21 @@ public final class ScreenLayout {
 
     /** Экран страницы: фон (может не быть) и спрайты в порядке рисования */
     public static final class Screen {
+        private final ScreenSize m_size;
         private final boolean m_standard;
         private final Element m_background;
         private final List<Element> m_sprites;
 
-        Screen(boolean standard, Element background, List<Element> sprites) {
+        Screen(ScreenSize size, boolean standard, Element background, List<Element> sprites) {
+            m_size = size;
             m_standard = standard;
             m_background = background;
             m_sprites = Collections.unmodifiableList(sprites);
+        }
+
+        /** Размер экрана книги */
+        public ScreenSize getSize() {
+            return m_size;
         }
 
         /** Тема страницы — STANDARD: экран задаёт её theme.ini, раскладка VN к ней не относится */
@@ -203,7 +211,7 @@ public final class ScreenLayout {
          */
         public boolean isBackgroundMismatched() {
             return m_background != null && m_background.hasImage()
-                    && (m_background.getWidth() != SCREEN_WIDTH || m_background.getHeight() != SCREEN_HEIGHT);
+                    && (m_background.getWidth() != m_size.getWidth() || m_background.getHeight() != m_size.getHeight());
         }
     }
 
@@ -299,6 +307,8 @@ public final class ScreenLayout {
         }
         // DEFAULT экспорт в VN играет как VN (VNSTEADExportManager: тема не STANDARD)
         final boolean standard = theme == Theme.STANDARD;
+        // размер экрана — книги (у модулей — главной книги), по умолчанию 1920×1080
+        final ScreenSize screen = book.getScreenSize();
         final Map<String, String> redirects = new HashMap<>();
         for (MediaFile file : imageFiles) {
             if (StringHelper.notEmpty(file.getRedirect())) {
@@ -315,19 +325,19 @@ public final class ScreenLayout {
             // vn.lua: фон не во весь экран — по центру, math.floor((sw - w) / 2)
             background = new Element(
                     Kind.BACKGROUND, null, null, bgFile.getName(), bgFile,
-                    Math.floorDiv(SCREEN_WIDTH - w, 2), Math.floorDiv(SCREEN_HEIGHT - h, 2), w, h
+                    Math.floorDiv(screen.getWidth() - w, 2), Math.floorDiv(screen.getHeight() - h, 2), w, h, screen
             );
         }
 
         final List<Element> sprites = new ArrayList<>();
         final List<String> roots = page != null ? page.getContainedObjIds() : List.of(input.m_aloneObj.getId());
-        addObjects(input, book, roots, null, imagesDir, redirects, sprites, new HashSet<>());
-        return new Screen(standard, background, sprites);
+        addObjects(input, book, screen, roots, null, imagesDir, redirects, sprites, new HashSet<>());
+        return new Screen(screen, standard, background, sprites);
     }
 
     /** Обход «родитель раньше детей», в порядке файла content страницы и объектов */
     private static void addObjects(
-            Input input, NonLinearBook book, List<String> ids, Element parent, File imagesDir,
+            Input input, NonLinearBook book, ScreenSize screen, List<String> ids, Element parent, File imagesDir,
             Map<String, String> redirects, List<Element> sprites, Set<String> visited
     ) {
         for (String id : ids) {
@@ -361,19 +371,21 @@ public final class ScreenLayout {
                 int row = origin / 3;
                 // с offset arm = 0,0 (decorateObjEffect: arm только без offset)
                 int[] offset = StringHelper.isEmpty(offsetString) ? null : ScreenPlacement.parsePair(offsetString);
-                int[] arm = StringHelper.isEmpty(offsetString) ? ScreenPlacement.arm(obj, coordsOrigin) : new int[]{0, 0};
-                x = col == 0 ? arm[0] : col == 2 ? SCREEN_WIDTH - w : Math.floorDiv(SCREEN_WIDTH - w, 2);
-                y = row == 0 ? arm[1] : row == 2 ? SCREEN_HEIGHT - h : Math.floorDiv(SCREEN_HEIGHT - h, 2);
+                int[] arm = StringHelper.isEmpty(offsetString) ? ScreenPlacement.arm(obj, coordsOrigin, screen) : new int[]{0, 0};
+                int sw = screen.getWidth();
+                int sh = screen.getHeight();
+                x = col == 0 ? arm[0] : col == 2 ? sw - w : Math.floorDiv(sw - w, 2);
+                y = row == 0 ? arm[1] : row == 2 ? sh - h : Math.floorDiv(sh - h, 2);
                 if (offset != null) {
                     x += offset[0];
                     y += offset[1];
                 }
             }
             Element element = new Element(
-                    Kind.SPRITE, id, parent == null ? null : parent.getObjId(), label(obj, file), file, x, y, w, h
+                    Kind.SPRITE, id, parent == null ? null : parent.getObjId(), label(obj, file), file, x, y, w, h, screen
             );
             sprites.add(element);
-            addObjects(input, book, obj.getContainedObjIds(), element, imagesDir, redirects, sprites, visited);
+            addObjects(input, book, screen, obj.getContainedObjIds(), element, imagesDir, redirects, sprites, visited);
         }
     }
 

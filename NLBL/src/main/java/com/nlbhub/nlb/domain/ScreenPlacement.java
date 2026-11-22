@@ -40,33 +40,36 @@ package com.nlbhub.nlb.domain;
 
 import com.nlbhub.nlb.api.Coords;
 import com.nlbhub.nlb.api.Obj;
+import com.nlbhub.nlb.api.ScreenSize;
 
 /**
- * Положение графического объекта на экране VN 1920×1080 — общие правила экспорта в INSTEAD
+ * Положение графического объекта на экране VN (размер экрана книги, по умолчанию 1920×1080) — общие правила экспорта в INSTEAD
  * (ExportManager.getRelativeCoords: arm), ядра веб-плеера (PlayerEngine.objPlacement) и
  * предпросмотра «как на экране» в редакторе (ScreenLayout). Порт PlayerEngine::objPlacement
  * NLBNavigator.
  */
 public final class ScreenPlacement {
-    public static final int SCREEN_WIDTH = 1920;
-    public static final int SCREEN_HEIGHT = 1080;
 
     private ScreenPlacement() {
     }
 
     /**
-     * arm корневого объекта: координаты относительно страницы, пересчитанные на экран 1920×1080,
+     * arm корневого объекта на экране 1920×1080: координаты относительно страницы, пересчитанные на экран,
      * и отсчёт от выбранного угла (ExportManager.getTransformedCoords). Ширина или высота
      * страницы 0 — координата 0.
      */
     public static int[] arm(Obj obj) {
-        return arm(obj, obj.getCoordsOrigin());
+        return arm(obj, obj.getCoordsOrigin(), ScreenSize.DEFAULT);
     }
 
-    /** То же с другой точкой отсчёта (несохранённая правка в свойствах объекта) */
-    public static int[] arm(Obj obj, Obj.CoordsOrigin coordsOrigin) {
-        final double screenW = SCREEN_WIDTH;
-        final double screenH = SCREEN_HEIGHT;
+    /**
+     * То же на экране size и с точкой отсчёта coordsOrigin (несохранённая правка в свойствах
+     * объекта). Экспорт и веб-плеер пока считают на 1920×1080 ({@link #arm(Obj)}): экран темы
+     * нужного размера у них появится вместе с размером экрана книги в теме экспорта
+     */
+    public static int[] arm(Obj obj, Obj.CoordsOrigin coordsOrigin, ScreenSize size) {
+        final double screenW = size.getWidth();
+        final double screenH = size.getHeight();
         Coords rel = obj.getRelativeCoords(true);
         double w = rel.getWidth();
         double h = rel.getHeight();

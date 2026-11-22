@@ -23,12 +23,10 @@ import java.util.Map;
  * сводка: что обрезается и на сколько, фон не того размера. Окно немодальное и растягивается.
  */
 public final class DialogScreenPreview {
-    /** Окно текста VN темы NLB (vn:auto_geom, theme.win.geom) и отступ подложки textpad */
+    /** Окно текста VN темы NLB на экране 1920×1080 (vn:auto_geom, theme.win.geom) и отступ подложки textpad; на другом экране — × ширина / 1920 */
     static final Rectangle TEXT_WINDOW = new Rectangle(248, 838, 1424, 204);
     private static final int TEXT_PAD = 8;
     /** За краем экрана показываем не больше экрана с каждой стороны — дальше картинка не нужна */
-    private static final int MAX_MARGIN_X = ScreenLayout.SCREEN_WIDTH / 2;
-    private static final int MAX_MARGIN_Y = ScreenLayout.SCREEN_HEIGHT / 2;
     private static final Color OUTSIDE_FILL = new Color(0, 0, 0, 150);
     private static final Color SCREEN_BG = new Color(1, 19, 34);  // фон темы VN NLB (#011322)
     private static final Color FRAME = new Color(255, 200, 0);
@@ -103,7 +101,7 @@ public final class DialogScreenPreview {
         } else if (screen.isBackgroundMismatched() && !screen.isStandardTheme()) {
             // у STANDARD картинка страницы вписывается в свою область — размер не беда
             lines.add("Background " + escape(bg.getLabel()) + " is " + bg.getWidth() + "×" + bg.getHeight() + ", not "
-                    + ScreenLayout.SCREEN_WIDTH + "×" + ScreenLayout.SCREEN_HEIGHT
+                    + screen.getSize().getWidth() + "×" + screen.getSize().getHeight()
                     + ": the game shows it centered in its size, as here (cut off or with the border colour around).");
         }
         for (ScreenLayout.Element e : screen.getSprites()) {
@@ -171,19 +169,24 @@ public final class DialogScreenPreview {
         private Rectangle2D area() {
             double minX = 0;
             double minY = 0;
-            double maxX = ScreenLayout.SCREEN_WIDTH;
-            double maxY = ScreenLayout.SCREEN_HEIGHT;
+            final int sw = m_screen.getSize().getWidth();
+            final int sh = m_screen.getSize().getHeight();
+            // за краем — не дальше полэкрана с каждой стороны
+            final int marginX = sw / 2;
+            final int marginY = sh / 2;
+            double maxX = sw;
+            double maxY = sh;
             for (ScreenLayout.Element e : elements()) {
                 if (!e.hasImage()) {
                     continue;
                 }
-                minX = Math.min(minX, Math.max(-MAX_MARGIN_X, e.getX()));
-                minY = Math.min(minY, Math.max(-MAX_MARGIN_Y, e.getY()));
-                maxX = Math.max(maxX, Math.min(ScreenLayout.SCREEN_WIDTH + MAX_MARGIN_X, e.getX() + e.getWidth()));
-                maxY = Math.max(maxY, Math.min(ScreenLayout.SCREEN_HEIGHT + MAX_MARGIN_Y, e.getY() + e.getHeight()));
+                minX = Math.min(minX, Math.max(-marginX, e.getX()));
+                minY = Math.min(minY, Math.max(-marginY, e.getY()));
+                maxX = Math.max(maxX, Math.min(sw + marginX, e.getX() + e.getWidth()));
+                maxY = Math.max(maxY, Math.min(sh + marginY, e.getY() + e.getHeight()));
             }
             // поле вокруг экрана, чтобы рамка не прилипала к краю окна
-            final double pad = 40;
+            final double pad = 40.0 * sw / 1920;
             return new Rectangle2D.Double(minX - pad, minY - pad, maxX - minX + 2 * pad, maxY - minY + 2 * pad);
         }
 
@@ -205,8 +208,10 @@ public final class DialogScreenPreview {
                 g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                final int sw = ScreenLayout.SCREEN_WIDTH;
-                final int sh = ScreenLayout.SCREEN_HEIGHT;
+                final int sw = m_screen.getSize().getWidth();
+                final int sh = m_screen.getSize().getHeight();
+                // раскладка темы при другом размере — тем же множителем (все размеры 16:9)
+                final double ks = sw / 1920.0;
                 g.setColor(SCREEN_BG);
                 g.fillRect(0, 0, sw, sh);
                 for (ScreenLayout.Element e : elements()) {
@@ -217,11 +222,11 @@ public final class DialogScreenPreview {
                 }
                 if (m_textWindow.isSelected() && !m_screen.isStandardTheme()) {
                     g.setColor(new Color(0, 0, 0, 127));  // vn:textbg — bgalpha 127
-                    g.fillRect(TEXT_WINDOW.x - TEXT_PAD, TEXT_WINDOW.y - TEXT_PAD,
-                            TEXT_WINDOW.width + 2 * TEXT_PAD, TEXT_WINDOW.height + 2 * TEXT_PAD);
+                    g.fill(new Rectangle2D.Double((TEXT_WINDOW.x - TEXT_PAD) * ks, (TEXT_WINDOW.y - TEXT_PAD) * ks,
+                            (TEXT_WINDOW.width + 2 * TEXT_PAD) * ks, (TEXT_WINDOW.height + 2 * TEXT_PAD) * ks));
                     g.setColor(new Color(255, 255, 255, 140));
-                    g.setFont(g.getFont().deriveFont(Font.PLAIN, 28f));
-                    g.drawString("text window", TEXT_WINDOW.x + 12, TEXT_WINDOW.y + 36);
+                    g.setFont(g.getFont().deriveFont(Font.PLAIN, (float) (28 * ks)));
+                    g.drawString("text window", (float) ((TEXT_WINDOW.x + 12) * ks), (float) ((TEXT_WINDOW.y + 36) * ks));
                 }
                 // за краем экрана — затемнение: в игре этого не видно
                 g.setColor(OUTSIDE_FILL);
@@ -246,8 +251,8 @@ public final class DialogScreenPreview {
                 }
                 if (m_screen.isStandardTheme()) {
                     g.setColor(new Color(255, 255, 255, 200));
-                    g.setFont(g.getFont().deriveFont(Font.PLAIN, 40f));
-                    g.drawString("STANDARD theme: VN screen shown for reference", 40, 80);
+                    g.setFont(g.getFont().deriveFont(Font.PLAIN, (float) (40 * ks)));
+                    g.drawString("STANDARD theme: VN screen shown for reference", (float) (40 * ks), (float) (80 * ks));
                 }
             } finally {
                 g.dispose();
