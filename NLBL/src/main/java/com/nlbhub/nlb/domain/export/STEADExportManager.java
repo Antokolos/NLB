@@ -38,6 +38,7 @@
  */
 package com.nlbhub.nlb.domain.export;
 
+import com.nlbhub.nlb.api.ScreenSize;
 import com.nlbhub.nlb.api.Constants;
 import com.nlbhub.nlb.api.Obj;
 import com.nlbhub.nlb.api.TextChunk;
@@ -117,6 +118,11 @@ public class STEADExportManager extends TextExportManager {
         stringBuilder.append("require 'dice/modules/big_pig'").append(LINE_SEPARATOR);
         stringBuilder.append("game.codepage='UTF-8';").append(LINE_SEPARATOR);
         stringBuilder.append("stead.scene_delim = '^';").append(LINE_SEPARATOR);
+        if (!ScreenSize.DEFAULT.equals(getScreenSize())) {
+            // экран книги не 1920×1080: пиксели модулей (шрифты подписей, отступы) — × множитель
+            // (nlb:px); тему под этот экран подгоняет экспорт (ThemeScaler)
+            stringBuilder.append("nlb._screen_k = ").append(getScreenSize().getWidth()).append(" / 1920;").append(LINE_SEPARATOR);
+        }
         stringBuilder.append(LINE_SEPARATOR);
 
         if (StringHelper.isEmpty(nlbBuildingBlocks.getGameActText())) {
@@ -999,7 +1005,7 @@ public class STEADExportManager extends TextExportManager {
                     "        vn.hz = vn.hz_preloaded;" + LINE_SEPARATOR +
                     "        vn:preload_effect(s:pic(), " + startFrame + ", " + maxFrames + ", " + startFrame + ", " + preloadFrames + ", function()" + LINE_SEPARATOR +
                     "            vn:gshow(s);" + LINE_SEPARATOR +
-                    "            if room then vn:geom(8, 864, 1904, 184, 'dissolve', 240, function() room.autos(room); vn.hz = vn.hz_onthefly; end); end;" + LINE_SEPARATOR +
+                    "            if room then vn:geom(" + screenPx(8) + ", " + screenPx(864) + ", " + screenPx(1904) + ", " + screenPx(184) + ", 'dissolve', " + screenPx(240) + ", function() room.autos(room); vn.hz = vn.hz_onthefly; end); end;" + LINE_SEPARATOR +
                     "        end, false, s.load_once);" + LINE_SEPARATOR +
                     "    end," + LINE_SEPARATOR;
         } else {

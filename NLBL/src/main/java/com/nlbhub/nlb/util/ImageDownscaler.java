@@ -333,6 +333,66 @@ public final class ImageDownscaler {
         }
     }
 
+    /**
+     * Картинка в k раз (и больше, и меньше), с сохранением формата и прозрачности — картинки темы
+     * экспорта под экран книги другого размера
+     */
+    public static void rescale(File file, double k, int jpegQuality) throws IOException {
+        final BufferedImage source = read(file);
+        final int width = Math.max(1, (int) Math.round(source.getWidth() * k));
+        final int height = Math.max(1, (int) Math.round(source.getHeight() * k));
+        replace(file, resizeFor(file, source, width, height), jpegQuality);
+    }
+
+    /**
+     * Закрыть экран width×height целиком (масштаб max по осям) и обрезать лишнее по центру — фон
+     * темы под экран книги
+     */
+    public static void cover(File file, int width, int height, int jpegQuality) throws IOException {
+        final BufferedImage source = read(file);
+        final double k = Math.max((double) width / source.getWidth(), (double) height / source.getHeight());
+        final int scaledWidth = Math.max(width, (int) Math.round(source.getWidth() * k));
+        final int scaledHeight = Math.max(height, (int) Math.round(source.getHeight() * k));
+        final BufferedImage scaled = resizeFor(file, source, scaledWidth, scaledHeight);
+        final BufferedImage cropped = scaled.getSubimage(
+                (scaledWidth - width) / 2, (scaledHeight - height) / 2, width, height
+        );
+        // getSubimage делит растр с исходной — копия, чтобы писатель видел ровно width×height
+        final BufferedImage copy = new BufferedImage(width, height, cropped.getType());
+        copy.getGraphics().drawImage(cropped, 0, 0, null);
+        replace(file, copy, jpegQuality);
+    }
+
+    private static BufferedImage read(File file) throws IOException {
+        final BufferedImage source = ImageIO.read(file);
+        if (source == null) {
+            throw new IOException("Не удалось прочитать " + file);
+        }
+        return source;
+    }
+
+    private static BufferedImage resizeFor(File file, BufferedImage source, int width, int height) {
+        final String format = formatOf(file);
+        final boolean opaque = format.equals("jpg") || format.equals("jpeg") || format.equals("bmp")
+                || !source.getColorModel().hasAlpha();
+        return resize(source, width, height, opaque);
+    }
+
+    /** Записать через временный файл рядом и заменить */
+    private static void replace(File file, BufferedImage image, int jpegQuality) throws IOException {
+        final File temp = new File(file.getParentFile(), file.getName() + TEMP_SUFFIX);
+        try {
+            write(image, formatOf(file), temp, jpegQuality);
+            try {
+                Files.move(temp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(temp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+        } finally {
+            Files.deleteIfExists(temp.toPath());
+        }
+    }
+
     private static void write(BufferedImage image, String format, File target, int jpegQuality) throws IOException {
         String writerFormat = format.equals("jpeg") ? "jpg" : format;
         Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(writerFormat);
