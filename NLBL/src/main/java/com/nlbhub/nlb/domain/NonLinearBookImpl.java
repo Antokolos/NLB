@@ -4525,7 +4525,7 @@ public class NonLinearBookImpl implements NonLinearBook {
 
     private void removeDeletedObjs(List<String> objsIds) {
         for (final String objId : objsIds) {
-            m_pages.remove(objId);
+            m_objs.remove(objId);
         }
     }
 
