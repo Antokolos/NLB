@@ -5,7 +5,9 @@
 ## Модули (Maven, Java 21; корневой `pom.xml`)
 - **NLBL** — библиотека: модель книги (`com.nlbhub.nlb.api`, `domain`: `NonLinearBookImpl`,
   `PageImpl`, `ObjImpl`, `LinkImpl`, `ModificationImpl`, `VariableImpl`, `MediaFileImpl`),
-  чтение/запись каталога книги, выражения через ScriptEngine (Rhino/Nashorn), экспортёры
+  чтение/запись каталога книги, выражения (в редакторе — проверка формул: Rhino ищет имена
+  переменных, `ScriptEngineManager`/Nashorn вычисляет; в плеере — свой вычислитель
+  `player/Expression` с семантикой `cparse`, а не JavaScript), экспортёры
   (`domain/export`: `ExportManager`, `STEADExportManager`, `VNSTEADExportManager`, QSP, URQ,
   ChoiceScript, ASM, текст, HTML/PDF…).
 - **NLBB** — редактор (Swing, piccolo2d, swingx). Встраивает веб-плеер NLBW: `MainFrame` кладёт
